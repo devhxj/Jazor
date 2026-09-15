@@ -16,9 +16,11 @@ public sealed class CssRaw : ICssBorderPart
     [ECMAScriptInline("__arg1")]
     internal static extern CssRaw create(string value);
 
+    /// <summary>Appends a typed border token to a raw fragment and returns a border-only value. 将类型化边框 token 追加到原始片段，并返回仅限边框属性使用的值。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssRaw left, ICssBorderPart right);
 
+    /// <summary>Appends a closed color keyword to a raw border fragment. 将封闭颜色关键字追加到原始边框片段。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssRaw left, CssColorKeyword right);
 }
@@ -53,9 +55,11 @@ public sealed class CssVariable : ICssBorderPart
     [ECMAScriptInline("__arg1")]
     internal static extern CssVariable create(string value);
 
+    /// <summary>Appends a typed border token after a custom-property reference. 在自定义属性引用后追加类型化边框 token。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssVariable left, ICssBorderPart right);
 
+    /// <summary>Appends a closed color keyword after a custom-property reference in a border shorthand. 在边框简写中将封闭颜色关键字追加到自定义属性引用后。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssVariable left, CssColorKeyword right);
 }
@@ -76,27 +80,35 @@ public sealed partial class CssLength : ICssBorderPart
     [ECMAScriptInline("__arg1")]
     internal static extern CssLength create(string value);
 
+    /// <summary>Adds two lengths as a typed <c>calc(...)</c> length expression. 将两个长度相加为类型化 <c>calc(...)</c> 长度表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLength operator +(CssLength left, CssLength right);
 
+    /// <summary>Adds a length and percentage, widening only to the length-percentage domain. 将长度与百分比相加，只扩展为长度/百分比值域。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssLength left, CssPercentage right);
 
+    /// <summary>Subtracts two lengths as a typed <c>calc(...)</c> length expression. 将两个长度相减为类型化 <c>calc(...)</c> 长度表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLength operator -(CssLength left, CssLength right);
 
+    /// <summary>Subtracts a percentage from a length and returns a length-percentage expression. 从长度减去百分比并返回长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssLength left, CssPercentage right);
 
+    /// <summary>Scales a length by a unitless factor. 使用无单位系数缩放长度。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssLength operator *(CssLength value, double factor);
 
+    /// <summary>Scales a length by a unitless factor written on the left. 使用写在左侧的无单位系数缩放长度。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssLength operator *(double factor, CssLength value);
 
+    /// <summary>Divides a length by a unitless divisor. 使用无单位除数除以长度。</summary>
     [ECMAScriptInline("`calc(${__arg1} / ${__arg2})`")]
     public static extern CssLength operator /(CssLength value, double divisor);
 
+    /// <summary>Negates a length while retaining its length-only domain. 对长度取负，同时保持仅长度值域。</summary>
     [ECMAScriptInline("`calc(-1 * ${__arg1})`")]
     public static extern CssLength operator -(CssLength value);
 
@@ -108,9 +120,11 @@ public sealed partial class CssLength : ICssBorderPart
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssPaddingPair operator |(CssLength left, CssLength right);
 
+    /// <summary>Appends a border token after a length in a border shorthand. 在边框简写中将边框 token 追加到长度后。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssLength left, ICssBorderPart right);
 
+    /// <summary>Appends a color keyword after a length in a border shorthand. 在边框简写中将颜色关键字追加到长度后。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssLength left, CssColorKeyword right);
 }
@@ -130,21 +144,27 @@ public sealed partial class CssPercentage
     [ECMAScriptInline("__arg1")]
     internal static extern CssPercentage create(string value);
 
+    /// <summary>Adds two percentages as a typed <c>calc(...)</c> percentage expression. 将两个百分比相加为类型化 <c>calc(...)</c> 百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssPercentage operator +(CssPercentage left, CssPercentage right);
 
+    /// <summary>Adds a percentage and length, widening only to the length-percentage domain. 将百分比与长度相加，只扩展为长度/百分比值域。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssPercentage left, CssLength right);
 
+    /// <summary>Subtracts two percentages as a typed <c>calc(...)</c> percentage expression. 将两个百分比相减为类型化 <c>calc(...)</c> 百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssPercentage operator -(CssPercentage left, CssPercentage right);
 
+    /// <summary>Subtracts a length from a percentage and returns a length-percentage expression. 从百分比减去长度并返回长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssPercentage left, CssLength right);
 
+    /// <summary>Scales a percentage by a unitless factor. 使用无单位系数缩放百分比。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssPercentage operator *(CssPercentage value, double factor);
 
+    /// <summary>Divides a percentage by a unitless divisor. 使用无单位除数除以百分比。</summary>
     [ECMAScriptInline("`calc(${__arg1} / ${__arg2})`")]
     public static extern CssPercentage operator /(CssPercentage value, double divisor);
 }
@@ -164,45 +184,59 @@ public sealed partial class CssLengthPercentage
     [ECMAScriptInline("__arg1")]
     internal static extern CssLengthPercentage create(string value);
 
+    /// <summary>Adds two length-percentage expressions. 将两个长度/百分比表达式相加。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssLengthPercentage left, CssLengthPercentage right);
 
+    /// <summary>Adds a length to a length-percentage expression. 将长度加到长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssLengthPercentage left, CssLength right);
 
+    /// <summary>Adds a length-percentage expression to a length written on the left. 将长度/百分比表达式加到左侧的长度。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssLength left, CssLengthPercentage right);
 
+    /// <summary>Adds a percentage to a length-percentage expression. 将百分比加到长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssLengthPercentage left, CssPercentage right);
 
+    /// <summary>Adds a length-percentage expression to a percentage written on the left. 将长度/百分比表达式加到左侧的百分比。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssLengthPercentage operator +(CssPercentage left, CssLengthPercentage right);
 
+    /// <summary>Subtracts two length-percentage expressions. 将两个长度/百分比表达式相减。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssLengthPercentage left, CssLengthPercentage right);
 
+    /// <summary>Subtracts a length from a length-percentage expression. 从长度/百分比表达式减去长度。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssLengthPercentage left, CssLength right);
 
+    /// <summary>Subtracts a length-percentage expression from a length. 从长度减去长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssLength left, CssLengthPercentage right);
 
+    /// <summary>Subtracts a percentage from a length-percentage expression. 从长度/百分比表达式减去百分比。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssLengthPercentage left, CssPercentage right);
 
+    /// <summary>Subtracts a length-percentage expression from a percentage. 从百分比减去长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssLengthPercentage operator -(CssPercentage left, CssLengthPercentage right);
 
+    /// <summary>Scales a length-percentage expression by a unitless factor. 使用无单位系数缩放长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssLengthPercentage operator *(CssLengthPercentage value, double factor);
 
+    /// <summary>Scales a length-percentage expression by a unitless factor written on the left. 使用写在左侧的无单位系数缩放长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssLengthPercentage operator *(double factor, CssLengthPercentage value);
 
+    /// <summary>Divides a length-percentage expression by a unitless divisor. 使用无单位除数除以长度/百分比表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} / ${__arg2})`")]
     public static extern CssLengthPercentage operator /(CssLengthPercentage value, double divisor);
 
+    /// <summary>Negates a length-percentage expression. 对长度/百分比表达式取负。</summary>
     [ECMAScriptInline("`calc(-1 * ${__arg1})`")]
     public static extern CssLengthPercentage operator -(CssLengthPercentage value);
 }
@@ -320,30 +354,39 @@ public sealed class CssCalcSizeExpression
     [ECMAScriptInline("__arg1")]
     internal static extern CssCalcSizeExpression create(string value);
 
+    /// <summary>Adds a length to a <c>calc-size(...)</c> result expression. 将长度加到 <c>calc-size(...)</c> 的结果表达式。</summary>
     [ECMAScriptInline("__arg1 + \" + \" + __arg2")]
     public static extern CssCalcSizeExpression operator +(CssCalcSizeExpression left, CssLength right);
 
+    /// <summary>Adds a percentage to a <c>calc-size(...)</c> result expression. 将百分比加到 <c>calc-size(...)</c> 的结果表达式。</summary>
     [ECMAScriptInline("__arg1 + \" + \" + __arg2")]
     public static extern CssCalcSizeExpression operator +(CssCalcSizeExpression left, CssPercentage right);
 
+    /// <summary>Adds a length-percentage expression to a <c>calc-size(...)</c> result expression. 将长度/百分比表达式加到 <c>calc-size(...)</c> 的结果表达式。</summary>
     [ECMAScriptInline("__arg1 + \" + \" + __arg2")]
     public static extern CssCalcSizeExpression operator +(CssCalcSizeExpression left, CssLengthPercentage right);
 
+    /// <summary>Subtracts a length from a <c>calc-size(...)</c> result expression. 从 <c>calc-size(...)</c> 的结果表达式减去长度。</summary>
     [ECMAScriptInline("__arg1 + \" - \" + __arg2")]
     public static extern CssCalcSizeExpression operator -(CssCalcSizeExpression left, CssLength right);
 
+    /// <summary>Subtracts a percentage from a <c>calc-size(...)</c> result expression. 从 <c>calc-size(...)</c> 的结果表达式减去百分比。</summary>
     [ECMAScriptInline("__arg1 + \" - \" + __arg2")]
     public static extern CssCalcSizeExpression operator -(CssCalcSizeExpression left, CssPercentage right);
 
+    /// <summary>Subtracts a length-percentage expression from a <c>calc-size(...)</c> result expression. 从 <c>calc-size(...)</c> 的结果表达式减去长度/百分比表达式。</summary>
     [ECMAScriptInline("__arg1 + \" - \" + __arg2")]
     public static extern CssCalcSizeExpression operator -(CssCalcSizeExpression left, CssLengthPercentage right);
 
+    /// <summary>Scales a <c>calc-size(...)</c> result expression by a unitless factor. 使用无单位系数缩放 <c>calc-size(...)</c> 的结果表达式。</summary>
     [ECMAScriptInline("__arg1 + \" * \" + __arg2")]
     public static extern CssCalcSizeExpression operator *(CssCalcSizeExpression value, double factor);
 
+    /// <summary>Scales a <c>calc-size(...)</c> result expression by a left-side unitless factor. 使用左侧无单位系数缩放 <c>calc-size(...)</c> 的结果表达式。</summary>
     [ECMAScriptInline("__arg1 + \" * \" + __arg2")]
     public static extern CssCalcSizeExpression operator *(double factor, CssCalcSizeExpression value);
 
+    /// <summary>Divides a <c>calc-size(...)</c> result expression by a unitless divisor. 使用无单位除数除以 <c>calc-size(...)</c> 的结果表达式。</summary>
     [ECMAScriptInline("__arg1 + \" / \" + __arg2")]
     public static extern CssCalcSizeExpression operator /(CssCalcSizeExpression value, double divisor);
 }
@@ -363,15 +406,19 @@ public sealed class CssAngle
     [ECMAScriptInline("__arg1")]
     internal static extern CssAngle create(string value);
 
+    /// <summary>Adds two CSS angles as a typed <c>calc(...)</c> expression. 将两个 CSS 角度相加为类型化 <c>calc(...)</c> 表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssAngle operator +(CssAngle left, CssAngle right);
 
+    /// <summary>Subtracts two CSS angles as a typed <c>calc(...)</c> expression. 将两个 CSS 角度相减为类型化 <c>calc(...)</c> 表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssAngle operator -(CssAngle left, CssAngle right);
 
+    /// <summary>Scales a CSS angle by a unitless factor. 使用无单位系数缩放 CSS 角度。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssAngle operator *(CssAngle value, double factor);
 
+    /// <summary>Divides a CSS angle by a unitless divisor. 使用无单位除数除以 CSS 角度。</summary>
     [ECMAScriptInline("`calc(${__arg1} / ${__arg2})`")]
     public static extern CssAngle operator /(CssAngle value, double divisor);
 }
@@ -391,15 +438,19 @@ public sealed class CssTime
     [ECMAScriptInline("__arg1")]
     internal static extern CssTime create(string value);
 
+    /// <summary>Adds two CSS time values as a typed <c>calc(...)</c> expression. 将两个 CSS 时间值相加为类型化 <c>calc(...)</c> 表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} + ${__arg2})`")]
     public static extern CssTime operator +(CssTime left, CssTime right);
 
+    /// <summary>Subtracts two CSS time values as a typed <c>calc(...)</c> expression. 将两个 CSS 时间值相减为类型化 <c>calc(...)</c> 表达式。</summary>
     [ECMAScriptInline("`calc(${__arg1} - ${__arg2})`")]
     public static extern CssTime operator -(CssTime left, CssTime right);
 
+    /// <summary>Scales a CSS time value by a unitless factor. 使用无单位系数缩放 CSS 时间值。</summary>
     [ECMAScriptInline("`calc(${__arg1} * ${__arg2})`")]
     public static extern CssTime operator *(CssTime value, double factor);
 
+    /// <summary>Divides a CSS time value by a unitless divisor. 使用无单位除数除以 CSS 时间值。</summary>
     [ECMAScriptInline("`calc(${__arg1} / ${__arg2})`")]
     public static extern CssTime operator /(CssTime value, double divisor);
 }
@@ -448,9 +499,11 @@ public sealed class CssColor : ICssBorderPart
     [ECMAScriptInline("__arg1")]
     internal static extern CssColor create(string value);
 
+    /// <summary>Appends a typed border token after a concrete color in a border shorthand. 在边框简写中将类型化边框 token 追加到具体颜色后。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssColor left, ICssBorderPart right);
 
+    /// <summary>Appends a closed color keyword after a concrete color in a border shorthand. 在边框简写中将封闭颜色关键字追加到具体颜色后。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssColor left, CssColorKeyword right);
 }
@@ -582,9 +635,11 @@ public sealed class CssBorder
     [ECMAScriptInline("__arg1")]
     internal static extern CssBorder create(string value);
 
+    /// <summary>Appends another typed border token while preserving shorthand order. 追加另一个类型化边框 token，并保留简写顺序。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssBorder left, ICssBorderPart right);
 
+    /// <summary>Appends a closed color keyword to an existing border shorthand. 将封闭颜色关键字追加到已有边框简写。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssBorder left, CssColorKeyword right);
 }
@@ -816,10 +871,15 @@ public sealed class CssRatio
 [String]
 public enum CssWideKeyword
 {
+    /// <summary>Uses the parent element's computed value. 使用父元素的计算值。</summary>
     [Description("@#inherit")] Inherit,
+    /// <summary>Uses the specification-defined initial value. 使用规范定义的初始值。</summary>
     [Description("@#initial")] Initial,
+    /// <summary>Inherits when the property is inherited; otherwise uses its initial value. 继承型属性继承，其他属性使用初始值。</summary>
     [Description("@#unset")] Unset,
+    /// <summary>Reverts this declaration to an earlier cascade origin. 将该声明回退到更早的层叠来源。</summary>
     [Description("@#revert")] Revert,
+    /// <summary>Reverts this declaration within the current cascade-layer model. 在当前层叠层模型中回退该声明。</summary>
     [Description("@#revert-layer")] RevertLayer
 }
 
@@ -830,6 +890,7 @@ public enum CssWideKeyword
 [String]
 public enum CssAutoKeyword
 {
+    /// <summary>Lets the receiving property's automatic behavior determine the value. 由接收属性的自动行为决定值。</summary>
     [Description("@#auto")] Auto
 }
 
@@ -841,6 +902,7 @@ public enum CssAutoKeyword
 [String]
 public enum CssNoneKeyword
 {
+    /// <summary>Disables the feature represented by the receiving property. 禁用接收属性所表示的功能。</summary>
     [Description("@#none")] None
 }
 
@@ -851,6 +913,7 @@ public enum CssNoneKeyword
 [String]
 public enum CssNormalKeyword
 {
+    /// <summary>Uses the normal behavior defined by the receiving property. 使用接收属性定义的 normal 行为。</summary>
     [Description("@#normal")] Normal
 }
 
@@ -862,7 +925,9 @@ public enum CssNormalKeyword
 [String]
 public enum CssSizingKeyword
 {
+    /// <summary>Uses the smallest intrinsic content contribution. 使用最小内在内容贡献。</summary>
     [Description("@#min-content")] MinContent,
+    /// <summary>Uses the largest intrinsic content contribution. 使用最大内在内容贡献。</summary>
     [Description("@#max-content")] MaxContent
 }
 
@@ -875,8 +940,11 @@ public enum CssSizingKeyword
 [String]
 public enum CssSizingFunctionKeyword
 {
+    /// <summary>Uses the keyword form of intrinsic <c>fit-content</c>, without a limit argument. 使用无上限参数的内在 <c>fit-content</c> 关键字形式。</summary>
     [Description("@#fit-content")] FitContent,
+    /// <summary>Stretches to the available size where the property grammar permits it. 在属性语法允许时拉伸到可用尺寸。</summary>
     [Description("@#stretch")] Stretch,
+    /// <summary>Uses the intrinsic containment sizing behavior. 使用内在 containment 尺寸行为。</summary>
     [Description("@#contain")] Contain
 }
 
@@ -889,16 +957,27 @@ public enum CssSizingFunctionKeyword
 [String]
 public enum CssAnchorSide
 {
+    /// <summary>Uses the inner side of the named anchor. 使用命名锚点的内侧。</summary>
     [Description("@#inside")] Inside,
+    /// <summary>Uses the outer side of the named anchor. 使用命名锚点的外侧。</summary>
     [Description("@#outside")] Outside,
+    /// <summary>Uses the anchor's physical top side. 使用锚点的物理上边。</summary>
     [Description("@#top")] Top,
+    /// <summary>Uses the anchor's physical right side. 使用锚点的物理右边。</summary>
     [Description("@#right")] Right,
+    /// <summary>Uses the anchor's physical bottom side. 使用锚点的物理下边。</summary>
     [Description("@#bottom")] Bottom,
+    /// <summary>Uses the anchor's physical left side. 使用锚点的物理左边。</summary>
     [Description("@#left")] Left,
+    /// <summary>Uses the anchor's logical start side. 使用锚点的逻辑起始边。</summary>
     [Description("@#start")] Start,
+    /// <summary>Uses the anchor's logical end side. 使用锚点的逻辑结束边。</summary>
     [Description("@#end")] End,
+    /// <summary>Uses the anchor's own logical start side. 使用锚点自身的逻辑起始边。</summary>
     [Description("@#self-start")] SelfStart,
+    /// <summary>Uses the anchor's own logical end side. 使用锚点自身的逻辑结束边。</summary>
     [Description("@#self-end")] SelfEnd,
+    /// <summary>Uses the center of the named anchor. 使用命名锚点的中心。</summary>
     [Description("@#center")] Center
 }
 
@@ -909,11 +988,17 @@ public enum CssAnchorSide
 [String]
 public enum CssAnchorSizeAxis
 {
+    /// <summary>Reads the anchor's physical width. 读取锚点的物理宽度。</summary>
     [Description("@#width")] Width,
+    /// <summary>Reads the anchor's physical height. 读取锚点的物理高度。</summary>
     [Description("@#height")] Height,
+    /// <summary>Reads the anchor's block-axis size. 读取锚点的块轴尺寸。</summary>
     [Description("@#block")] Block,
+    /// <summary>Reads the anchor's inline-axis size. 读取锚点的行内轴尺寸。</summary>
     [Description("@#inline")] Inline,
+    /// <summary>Reads the anchor's own block-axis size. 读取锚点自身的块轴尺寸。</summary>
     [Description("@#self-block")] SelfBlock,
+    /// <summary>Reads the anchor's own inline-axis size. 读取锚点自身的行内轴尺寸。</summary>
     [Description("@#self-inline")] SelfInline
 }
 
@@ -924,6 +1009,7 @@ public enum CssAnchorSizeAxis
 [String]
 public enum CssCalcSizeBasisKeyword
 {
+    /// <summary>Uses the special <c>any</c> basis accepted by <c>calc-size(...)</c>. 使用 <c>calc-size(...)</c> 接受的特殊 <c>any</c> 基值。</summary>
     [Description("@#any")] Any
 }
 
@@ -934,6 +1020,7 @@ public enum CssCalcSizeBasisKeyword
 [String]
 public enum CssPositionAnchorKeyword
 {
+    /// <summary>Uses the containing block's position anchor where the grammar permits it. 在语法允许时使用包含块的 position anchor。</summary>
     [Description("@#match-parent")] MatchParent
 }
 
@@ -944,6 +1031,7 @@ public enum CssPositionAnchorKeyword
 [String]
 public enum CssAnchorScopeKeyword
 {
+    /// <summary>Makes all eligible descendant anchors visible to the scope. 让作用域内所有符合条件的后代锚点可见。</summary>
     [Description("@#all")] All
 }
 
@@ -954,6 +1042,7 @@ public enum CssAnchorScopeKeyword
 [String]
 public enum CssFlexBasisKeyword
 {
+    /// <summary>Uses the flex item's content size as its flex basis. 使用弹性项目的内容尺寸作为 flex basis。</summary>
     [Description("@#content")] Content
 }
 
@@ -965,16 +1054,27 @@ public enum CssFlexBasisKeyword
 [String]
 public enum CssDisplayKeyword
 {
+    /// <summary>Creates a block-level box. 创建块级盒。</summary>
     [Description("@#block")] Block,
+    /// <summary>Participates in inline layout. 参与行内布局。</summary>
     [Description("@#inline")] Inline,
+    /// <summary>Creates an inline-level box with block-like inner layout. 创建具有块级内部布局的行内级盒。</summary>
     [Description("@#inline-block")] InlineBlock,
+    /// <summary>Creates a flex container. 创建弹性布局容器。</summary>
     [Description("@#flex")] Flex,
+    /// <summary>Creates an inline-level flex container. 创建行内级弹性布局容器。</summary>
     [Description("@#inline-flex")] InlineFlex,
+    /// <summary>Creates a grid container. 创建网格布局容器。</summary>
     [Description("@#grid")] Grid,
+    /// <summary>Creates an inline-level grid container. 创建行内级网格布局容器。</summary>
     [Description("@#inline-grid")] InlineGrid,
+    /// <summary>Creates a block box with a new block formatting context. 创建具有新块格式化上下文的块盒。</summary>
     [Description("@#flow-root")] FlowRoot,
+    /// <summary>Suppresses the principal box while preserving child layout. 抑制主盒，同时保留子元素布局。</summary>
     [Description("@#contents")] Contents,
+    /// <summary>Uses table formatting. 使用表格格式化。</summary>
     [Description("@#table")] Table,
+    /// <summary>Creates a list-item box and marker where applicable. 在适用时创建列表项盒和标记。</summary>
     [Description("@#list-item")] ListItem
 }
 
@@ -986,10 +1086,15 @@ public enum CssDisplayKeyword
 [String]
 public enum CssPositionKeyword
 {
+    /// <summary>Keeps the box in normal flow without offsets. 保持盒位于常规流中且不应用偏移。</summary>
     [Description("@#static")] Static,
+    /// <summary>Keeps the box in normal flow while allowing visual offsets. 保持盒位于常规流中，同时允许视觉偏移。</summary>
     [Description("@#relative")] Relative,
+    /// <summary>Positions the box out of normal flow relative to its containing block. 相对于包含块将盒脱离常规流定位。</summary>
     [Description("@#absolute")] Absolute,
+    /// <summary>Fixes the box to the viewport or its fixed-position containing block. 将盒固定到视口或其固定定位包含块。</summary>
     [Description("@#fixed")] Fixed,
+    /// <summary>Uses relative positioning until a scroll threshold, then sticks. 滚动到阈值前使用相对定位，随后吸附。</summary>
     [Description("@#sticky")] Sticky
 }
 
@@ -1002,9 +1107,13 @@ public enum CssPositionKeyword
 [String]
 public enum CssOverflowKeyword
 {
+    /// <summary>Allows overflow to paint outside the box. 允许溢出内容绘制到盒外。</summary>
     [Description("@#visible")] Visible,
+    /// <summary>Clips overflow while retaining supported programmatic scrolling. 裁剪溢出内容，同时保留支持的程序化滚动。</summary>
     [Description("@#hidden")] Hidden,
+    /// <summary>Clips overflow without establishing a scroll container. 裁剪溢出内容且不建立滚动容器。</summary>
     [Description("@#clip")] Clip,
+    /// <summary>Establishes a scroll container. 建立滚动容器。</summary>
     [Description("@#scroll")] Scroll
 }
 
@@ -1022,9 +1131,11 @@ public sealed class CssBorderWidth : ICssBorderPart
     [ECMAScriptInline("__arg1")]
     internal static extern CssBorderWidth create(string value);
 
+    /// <summary>Starts or extends a border shorthand from a named border width. 使用具名边框宽度开始或扩展边框简写。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssBorderWidth left, ICssBorderPart right);
 
+    /// <summary>Combines a named border width with a closed color keyword. 将具名边框宽度与封闭颜色关键字组合。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssBorderWidth left, CssColorKeyword right);
 }
@@ -1042,9 +1153,11 @@ public sealed class CssBorderStyle : ICssBorderPart
     [ECMAScriptInline("__arg1")]
     internal static extern CssBorderStyle create(string value);
 
+    /// <summary>Starts or extends a border shorthand from a border style token. 使用边框线型 token 开始或扩展边框简写。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssBorderStyle left, ICssBorderPart right);
 
+    /// <summary>Combines a border style token with a closed color keyword. 将边框线型 token 与封闭颜色关键字组合。</summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssBorderStyle left, CssColorKeyword right);
 }
@@ -1065,7 +1178,9 @@ public interface ICssBorderPart
 [String]
 public enum CssColorKeyword
 {
+    /// <summary>Represents a fully transparent color. 表示完全透明的颜色。</summary>
     [Description("@#transparent")] Transparent,
+    /// <summary>Uses the element's computed <c>color</c> value. 使用元素计算后的 <c>color</c> 值。</summary>
     [Description("@#currentColor")] CurrentColor
 }
 
@@ -1077,19 +1192,33 @@ public enum CssColorKeyword
 [String]
 public enum CssAlignmentKeyword
 {
+    /// <summary>Aligns to the logical start edge. 对齐到逻辑起始边。</summary>
     [Description("@#start")] Start,
+    /// <summary>Aligns to the logical end edge. 对齐到逻辑结束边。</summary>
     [Description("@#end")] End,
+    /// <summary>Centers on the alignment axis. 沿对齐轴居中。</summary>
     [Description("@#center")] Center,
+    /// <summary>Aligns to the flex container's start edge. 对齐到弹性容器起始边。</summary>
     [Description("@#flex-start")] FlexStart,
+    /// <summary>Aligns to the flex container's end edge. 对齐到弹性容器结束边。</summary>
     [Description("@#flex-end")] FlexEnd,
+    /// <summary>Aligns to the item's own logical start edge. 对齐到项目自身逻辑起始边。</summary>
     [Description("@#self-start")] SelfStart,
+    /// <summary>Aligns to the item's own logical end edge. 对齐到项目自身逻辑结束边。</summary>
     [Description("@#self-end")] SelfEnd,
+    /// <summary>Aligns to the physical left edge where permitted. 在允许时对齐到物理左边。</summary>
     [Description("@#left")] Left,
+    /// <summary>Aligns to the physical right edge where permitted. 在允许时对齐到物理右边。</summary>
     [Description("@#right")] Right,
+    /// <summary>Stretches auto-sized items across the alignment axis. 沿对齐轴拉伸自动尺寸项目。</summary>
     [Description("@#stretch")] Stretch,
+    /// <summary>Aligns participating items by baseline. 按参与项目的基线对齐。</summary>
     [Description("@#baseline")] Baseline,
+    /// <summary>Places free space only between items. 仅在项目之间放置剩余空间。</summary>
     [Description("@#space-between")] SpaceBetween,
+    /// <summary>Places free space around items with half-sized outer gaps. 在项目周围放置剩余空间，外侧间隙为内部的一半。</summary>
     [Description("@#space-around")] SpaceAround,
+    /// <summary>Places equal free space between items and at both ends. 在项目之间和两端放置相等的剩余空间。</summary>
     [Description("@#space-evenly")] SpaceEvenly
 }
 
@@ -1097,9 +1226,13 @@ public enum CssAlignmentKeyword
 [String]
 public enum CssFlexDirectionKeyword
 {
+    /// <summary>Uses the inline axis as the flex main axis. 使用行内轴作为弹性主轴。</summary>
     [Description("@#row")] Row,
+    /// <summary>Uses the reversed inline axis as the flex main axis. 使用反向行内轴作为弹性主轴。</summary>
     [Description("@#row-reverse")] RowReverse,
+    /// <summary>Uses the block axis as the flex main axis. 使用块轴作为弹性主轴。</summary>
     [Description("@#column")] Column,
+    /// <summary>Uses the reversed block axis as the flex main axis. 使用反向块轴作为弹性主轴。</summary>
     [Description("@#column-reverse")] ColumnReverse
 }
 
@@ -1107,8 +1240,11 @@ public enum CssFlexDirectionKeyword
 [String]
 public enum CssFlexWrapKeyword
 {
+    /// <summary>Keeps all flex items on a single line. 让所有弹性项目保持在单行。</summary>
     [Description("@#nowrap")] NoWrap,
+    /// <summary>Allows flex items to wrap onto additional lines. 允许弹性项目换行到额外行。</summary>
     [Description("@#wrap")] Wrap,
+    /// <summary>Wraps flex items with reversed cross-axis line order. 换行时反转交叉轴上的行顺序。</summary>
     [Description("@#wrap-reverse")] WrapReverse
 }
 
@@ -1116,7 +1252,9 @@ public enum CssFlexWrapKeyword
 [String]
 public enum CssBackgroundSizeKeyword
 {
+    /// <summary>Scales the image to cover the background positioning area, allowing cropping. 缩放图像以覆盖背景定位区域，允许裁切。</summary>
     [Description("@#cover")] Cover,
+    /// <summary>Scales the image to fit inside the background positioning area without cropping. 缩放图像以完整容纳在背景定位区域内。</summary>
     [Description("@#contain")] Contain
 }
 
@@ -1124,7 +1262,9 @@ public enum CssBackgroundSizeKeyword
 [String]
 public enum CssBoxSizingKeyword
 {
+    /// <summary>Includes padding and border in declared width and height. 声明的宽高包含内边距和边框。</summary>
     [Description("@#border-box")] BorderBox,
+    /// <summary>Applies declared width and height to the content box only. 声明的宽高仅作用于内容盒。</summary>
     [Description("@#content-box")] ContentBox
 }
 
@@ -1132,12 +1272,19 @@ public enum CssBoxSizingKeyword
 [String]
 public enum CssCursorKeyword
 {
+    /// <summary>Uses the platform default cursor. 使用平台默认鼠标指针。</summary>
     [Description("@#default")] Default,
+    /// <summary>Uses the pointer cursor for clickable targets. 为可点击目标使用指针样式。</summary>
     [Description("@#pointer")] Pointer,
+    /// <summary>Uses the prohibited-action cursor. 使用禁止操作指针样式。</summary>
     [Description("@#not-allowed")] NotAllowed,
+    /// <summary>Uses the text-selection cursor. 使用文本选择指针样式。</summary>
     [Description("@#text")] Text,
+    /// <summary>Uses the move cursor for draggable content. 为可拖动内容使用移动指针样式。</summary>
     [Description("@#move")] Move,
+    /// <summary>Uses the grab cursor before a drag begins. 在拖动开始前使用抓取指针样式。</summary>
     [Description("@#grab")] Grab,
+    /// <summary>Uses the grabbing cursor during an active drag. 在正在拖动时使用抓住指针样式。</summary>
     [Description("@#grabbing")] Grabbing
 }
 
@@ -1145,10 +1292,15 @@ public enum CssCursorKeyword
 [String]
 public enum CssTextTransformKeyword
 {
+    /// <summary>Capitalizes the first typographic letter of each word where supported. 在支持时大写每个词的首个排版字母。</summary>
     [Description("@#capitalize")] Capitalize,
+    /// <summary>Converts text to uppercase. 将文本转换为大写。</summary>
     [Description("@#uppercase")] Uppercase,
+    /// <summary>Converts text to lowercase. 将文本转换为小写。</summary>
     [Description("@#lowercase")] Lowercase,
+    /// <summary>Transforms text to full-width forms where applicable. 在适用时将文本转换为全角形式。</summary>
     [Description("@#full-width")] FullWidth,
+    /// <summary>Transforms kana text to full-size kana where applicable. 在适用时将假名转换为全尺寸假名。</summary>
     [Description("@#full-size-kana")] FullSizeKana
 }
 
@@ -1156,10 +1308,15 @@ public enum CssTextTransformKeyword
 [String]
 public enum CssWhiteSpaceKeyword
 {
+    /// <summary>Collapses whitespace and prevents automatic wrapping. 合并空白字符并禁止自动换行。</summary>
     [Description("@#nowrap")] NoWrap,
+    /// <summary>Preserves whitespace and line breaks in preformatted text. 为预格式化文本保留空白和换行。</summary>
     [Description("@#pre")] Pre,
+    /// <summary>Preserves whitespace while allowing automatic wrapping. 保留空白字符，同时允许自动换行。</summary>
     [Description("@#pre-wrap")] PreWrap,
+    /// <summary>Collapses whitespace while preserving newline characters as line breaks. 合并空白字符，同时保留换行符作为换行。</summary>
     [Description("@#pre-line")] PreLine,
+    /// <summary>Preserves sequences of spaces and allows wrapping at every preserved space. 保留连续空格，并允许在每个保留空格处换行。</summary>
     [Description("@#break-spaces")] BreakSpaces
 }
 
@@ -1167,7 +1324,9 @@ public enum CssWhiteSpaceKeyword
 [String]
 public enum CssTextOverflowKeyword
 {
+    /// <summary>Clips overflowing inline text without an overflow marker. 裁剪溢出的行内文本且不显示溢出标记。</summary>
     [Description("@#clip")] Clip,
+    /// <summary>Displays an ellipsis marker for clipped inline text. 为被裁剪的行内文本显示省略号标记。</summary>
     [Description("@#ellipsis")] Ellipsis
 }
 
@@ -1175,6 +1334,7 @@ public enum CssTextOverflowKeyword
 [String]
 public enum CssIsolationKeyword
 {
+    /// <summary>Creates a new stacking context for the element. 为元素创建新的堆叠上下文。</summary>
     [Description("@#isolate")] Isolate
 }
 
@@ -1182,8 +1342,11 @@ public enum CssIsolationKeyword
 [String]
 public enum CssColorSchemeKeyword
 {
+    /// <summary>Declares support for a light color scheme. 声明支持浅色配色方案。</summary>
     [Description("@#light")] Light,
+    /// <summary>Declares support for a dark color scheme. 声明支持深色配色方案。</summary>
     [Description("@#dark")] Dark,
+    /// <summary>Declares support for both light and dark color schemes. 声明同时支持浅色和深色配色方案。</summary>
     [Description("@#light dark")] LightDark
 }
 
@@ -1191,12 +1354,19 @@ public enum CssColorSchemeKeyword
 [String]
 public enum CssTimingFunctionKeyword
 {
+    /// <summary>Uses a constant-rate timing curve. 使用恒定速率的时间曲线。</summary>
     [Description("@#linear")] Linear,
+    /// <summary>Uses the default ease timing curve. 使用默认缓入缓出时间曲线。</summary>
     [Description("@#ease")] Ease,
+    /// <summary>Uses an ease-in timing curve. 使用缓入时间曲线。</summary>
     [Description("@#ease-in")] EaseIn,
+    /// <summary>Uses an ease-out timing curve. 使用缓出时间曲线。</summary>
     [Description("@#ease-out")] EaseOut,
+    /// <summary>Uses an ease-in-out timing curve. 使用缓入缓出时间曲线。</summary>
     [Description("@#ease-in-out")] EaseInOut,
+    /// <summary>Uses a step timing curve that jumps at the start of each interval. 使用每个区间起始处跳变的步进时间曲线。</summary>
     [Description("@#step-start")] StepStart,
+    /// <summary>Uses a step timing curve that jumps at the end of each interval. 使用每个区间结束处跳变的步进时间曲线。</summary>
     [Description("@#step-end")] StepEnd
 }
 

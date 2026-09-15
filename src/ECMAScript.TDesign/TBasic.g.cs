@@ -5,9 +5,17 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.TDesign;
 
+/// <summary>
+/// 预设快捷日期选择，示例：{ '特定日期范围': ['2021-01-01', '2022-01-01'], '本月': [dayjs().startOf('month'), dayjs().endOf('month')] }
+/// </summary>
 [ECMAScript]
 public delegate (TDateValue Item1, TDateValue Item2) TPresetRangeIndexOption2();
 
+/// <summary>
+/// trigger on row active change
+///
+/// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+/// </summary>
 [ECMAScript]
 public record TActiveChangeContext<T> : VueProps
 {
@@ -22,6 +30,11 @@ public record TActiveChangeContext<T> : VueProps
     public TActiveChangeContextType Type { get; init; }
 }
 
+/// <summary>
+/// trigger on row active change
+///
+/// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+/// </summary>
 [ECMAScript]
 public record TActiveChangeContextActiveRowListItem<T> : VueProps
 {
@@ -32,16 +45,32 @@ public record TActiveChangeContextActiveRowListItem<T> : VueProps
     public Number RowIndex { get; init; }
 }
 
+/// <summary>
+/// trigger on row active change
+///
+/// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+/// </summary>
 [ECMAScript]
 [String]
 public enum TActiveChangeContextType
 {
+    /// <summary>
+    /// JavaScript value: active.
+    /// </summary>
     [Description("@#active")]
     Active,
+    /// <summary>
+    /// JavaScript value: inactive.
+    /// </summary>
     [Description("@#inactive")]
     Inactive,
 }
 
+/// <summary>
+/// keyboard operation event actions. used to mock selection behavior, just like macOS or windows
+///
+/// 键盘操作事件。开启行高亮功能后，会自动开启键盘操作功能，如：通过键盘(Shift)或鼠标操作连续选中高亮行时触发，一般用于处理行选中等批量操作，模拟操作系统区域选择行为
+/// </summary>
 [ECMAScript]
 public record TActiveRowActionContext<T> : VueProps
 {
@@ -53,6 +82,11 @@ public record TActiveRowActionContext<T> : VueProps
     public TActiveRowActionContextActiveRowListItem<T>[] ActiveRowList { get; init; } = default!;
 }
 
+/// <summary>
+/// keyboard operation event actions. used to mock selection behavior, just like macOS or windows
+///
+/// 键盘操作事件。开启行高亮功能后，会自动开启键盘操作功能，如：通过键盘(Shift)或鼠标操作连续选中高亮行时触发，一般用于处理行选中等批量操作，模拟操作系统区域选择行为
+/// </summary>
 [ECMAScript]
 public record TActiveRowActionContextActiveRowListItem<T> : VueProps
 {
@@ -63,20 +97,40 @@ public record TActiveRowActionContextActiveRowListItem<T> : VueProps
     public Number RowIndex { get; init; }
 }
 
+/// <summary>
+/// keyboard operation event actions. used to mock selection behavior, just like macOS or windows
+///
+/// 键盘操作事件。开启行高亮功能后，会自动开启键盘操作功能，如：通过键盘(Shift)或鼠标操作连续选中高亮行时触发，一般用于处理行选中等批量操作，模拟操作系统区域选择行为
+/// </summary>
 [ECMAScript]
 [String]
 public enum TActiveRowActionType
 {
+    /// <summary>
+    /// JavaScript value: shift-area-selection.
+    /// </summary>
     [Description("@#shift-area-selection")]
     ShiftAreaSelection,
+    /// <summary>
+    /// JavaScript value: space-one-selection.
+    /// </summary>
     [Description("@#space-one-selection")]
     SpaceOneSelection,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: select-all.
+    /// </summary>
     [Description("@#select-all")]
     SelectAll,
 }
 
+/// <summary>
+/// 固定状态发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TAffixFixedChangeEventContext : VueProps
 {
@@ -84,11 +138,19 @@ public record TAffixFixedChangeEventContext : VueProps
     public Number Top { get; init; }
 }
 
+/// <summary>
+/// Close button. Value &quot;true&quot; show the close button. Value &quot;False&quot; hide close button. Value type string display as is. Use TNode to custom the close trigger.
+///
+/// 关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
+/// </summary>
 [ECMAScript]
 public readonly union TAlertCloseBtnValue(string, bool)
 {
 }
 
+/// <summary>
+/// 关闭按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TAlertCloseEventContext : VueProps
 {
@@ -97,11 +159,19 @@ public record TAlertCloseEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// Deprecated, use closeBtn instead.
+///
+/// 即将废弃，请使用 closeBtn 属性。关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
+/// </summary>
 [ECMAScript]
 public readonly union TAlertCloseValue(string, bool)
 {
 }
 
+/// <summary>
+/// 告警提示框关闭动画结束后触发
+/// </summary>
 [ECMAScript]
 public record TAlertClosedEventContext : VueProps
 {
@@ -110,6 +180,11 @@ public record TAlertClosedEventContext : VueProps
     public TransitionEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TAlertConfig : VueProps
 {
@@ -120,25 +195,46 @@ public record TAlertConfig : VueProps
     public string? ExpandText { get; init; }
 }
 
+/// <summary>
+/// 组件风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TAlertThemeValue
 {
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: info.
+    /// </summary>
     [Description("@#info")]
     Info,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// TDesign binding type TAllValidateResult.
+/// </summary>
 [ECMAScript]
 public readonly union TAllValidateResult(TCustomValidateObj, TValidateResultType)
 {
 }
 
+/// <summary>
+/// 锚点被点击时触发
+/// </summary>
 [ECMAScript]
 public record TAnchorClickEventLink : VueProps
 {
@@ -155,6 +251,11 @@ public record TAnchorClickEventLink : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TAnchorConfig : VueProps
 {
@@ -165,55 +266,110 @@ public record TAnchorConfig : VueProps
     public string? CopyText { get; init; }
 }
 
+/// <summary>
+/// Custom Highlighted Anchor Points
+///
+/// 自定义高亮的锚点
+/// </summary>
 [ECMAScript]
 public delegate string TAnchorGetCurrentAnchorValue(string activeLink);
 
+/// <summary>
+/// 锚点文本
+/// </summary>
 [ECMAScript]
 [String]
 public enum TAnchorItemTargetValue
 {
+    /// <summary>
+    /// JavaScript value: _self.
+    /// </summary>
     [Description("@#_self")]
     Self,
+    /// <summary>
+    /// JavaScript value: _blank.
+    /// </summary>
     [Description("@#_blank")]
     Blank,
+    /// <summary>
+    /// JavaScript value: _parent.
+    /// </summary>
     [Description("@#_parent")]
     Parent,
+    /// <summary>
+    /// JavaScript value: _top.
+    /// </summary>
     [Description("@#_top")]
     Top,
 }
 
+/// <summary>
+/// 组件尺寸，small(120px)，medium(200px)，large(320px)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TAnchorSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TAnimationType
 {
+    /// <summary>
+    /// JavaScript value: ripple.
+    /// </summary>
     [Description("@#ripple")]
     Ripple,
+    /// <summary>
+    /// JavaScript value: expand.
+    /// </summary>
     [Description("@#expand")]
     Expand,
+    /// <summary>
+    /// JavaScript value: fade.
+    /// </summary>
     [Description("@#fade")]
     Fade,
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TAttachNode(string, TAttachNodeOption2)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate TAttachNodeReturnValue TAttachNodeOption2(HTMLElement? triggerNode = default);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 [Union]
 public readonly struct TAttachNodeReturnValue : IUnion
@@ -272,6 +428,9 @@ public readonly struct TAttachNodeReturnValue : IUnion
 
 }
 
+/// <summary>
+/// 失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteBlurEventContext<T> : VueProps
 {
@@ -284,6 +443,9 @@ public record TAutoCompleteBlurEventContext<T> : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框值发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteChangeEventContext<T> : VueProps
 {
@@ -291,11 +453,17 @@ public record TAutoCompleteChangeEventContext<T> : VueProps
     public TAutoCompleteChangeEventContextE<T>? E { get; init; }
 }
 
+/// <summary>
+/// 输入框值发生变化时触发
+/// </summary>
 [ECMAScript]
 public readonly union TAutoCompleteChangeEventContextE<T>(InputEvent, MouseEvent, CompositionEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteClearEventContext<T> : VueProps
 {
@@ -304,6 +472,11 @@ public record TAutoCompleteClearEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on compositionend
+///
+/// 中文输入结束时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteCompositionendEventContext<T> : VueProps
 {
@@ -316,6 +489,11 @@ public record TAutoCompleteCompositionendEventContext<T> : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on compositionstart
+///
+/// 中文输入开始时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteCompositionstartEventContext<T> : VueProps
 {
@@ -328,6 +506,11 @@ public record TAutoCompleteCompositionstartEventContext<T> : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteConfig : VueProps
 {
@@ -335,6 +518,9 @@ public record TAutoCompleteConfig : VueProps
     public string? Empty { get; init; }
 }
 
+/// <summary>
+/// 回车键按下时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteEnterEventContext<T> : VueProps
 {
@@ -347,14 +533,23 @@ public record TAutoCompleteEnterEventContext<T> : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义过滤规则，用于对现有数据进行搜索过滤，判断是否过滤某一项数据。参数 `filterWords` 表示搜索词，`option`表示单个选项内容，返回值为 `true` 保留该选项，返回值为 `false` 则隐藏该选项。使用该方法时无需设置 `filterable`
+/// </summary>
 [ECMAScript]
 public delegate TAutoCompleteFilterValueResult<T> TAutoCompleteFilterValue<T>(string filterWords, T option);
 
+/// <summary>
+/// 自定义过滤规则，用于对现有数据进行搜索过滤，判断是否过滤某一项数据。参数 `filterWords` 表示搜索词，`option`表示单个选项内容，返回值为 `true` 保留该选项，返回值为 `false` 则隐藏该选项。使用该方法时无需设置 `filterable`
+/// </summary>
 [ECMAScript]
 public readonly union TAutoCompleteFilterValueResult<T>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// 获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteFocusEventContext<T> : VueProps
 {
@@ -367,11 +562,17 @@ public record TAutoCompleteFocusEventContext<T> : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TAutoCompleteOption.
+/// </summary>
 [ECMAScript]
 public readonly union TAutoCompleteOption(string, TAutoCompleteOptionObj)
 {
 }
 
+/// <summary>
+/// TDesign binding type TAutoCompleteOptionObj.
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteOptionObj : VueProps
 {
@@ -382,11 +583,17 @@ public record TAutoCompleteOptionObj : VueProps
     public string? Text { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TAutoCompleteOptionObjLabel.
+/// </summary>
 [ECMAScript]
 public readonly union TAutoCompleteOptionObjLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 选中联想词时触发
+/// </summary>
 [ECMAScript]
 public record TAutoCompleteSelectEventContext<T> : VueProps
 {
@@ -394,25 +601,48 @@ public record TAutoCompleteSelectEventContext<T> : VueProps
     public TAutoCompleteSelectEventContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// 选中联想词时触发
+/// </summary>
 [ECMAScript]
 public readonly union TAutoCompleteSelectEventContextE<T>(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TAutoCompleteStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// trigger on image load failed
+///
+/// 图片加载失败时触发
+/// </summary>
 [ECMAScript]
 public record TAvatarErrorEventContext : VueProps
 {
@@ -421,6 +651,9 @@ public record TAvatarErrorEventContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击回到顶部时触发
+/// </summary>
 [ECMAScript]
 public record TBackTopClickEventContext : VueProps
 {
@@ -429,78 +662,147 @@ public record TBackTopClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 回到顶部相对右下角的位置偏移，示例：[10, 20] 或 ['10em', '8rem']
+/// </summary>
 [ECMAScript]
 public readonly union TBackTopOffsetValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// shape of BackTop element
+///
+/// 回到顶部的形状
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBackTopShapeEnum
 {
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
 }
 
+/// <summary>
+/// size of BackTop
+///
+/// 组件尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBackTopSizeValue
 {
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
 }
 
+/// <summary>
+/// theme of BackTop
+///
+/// 组件主题风格，浅色、主色、深色
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBackTopThemeValue
 {
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
 }
 
+/// <summary>
+/// 滚动高度达到此参数值才出现
+/// </summary>
 [ECMAScript]
 public readonly union TBackTopVisibleHeightValue(string, Number)
 {
 }
 
+/// <summary>
+/// 徽标右上角内容。可以是数字，也可以是文字。如：'new'/3/99+
+/// </summary>
 [ECMAScript]
 public readonly union TBadgeCountValue(string, Number)
 {
 }
 
+/// <summary>
+/// 设置状态点的位置偏移，示例：[-10, 20] 或 ['10em', '8rem']
+/// </summary>
 [ECMAScript]
 public readonly union TBadgeOffsetValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// 形状
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBadgeShapeValue
 {
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
 }
 
+/// <summary>
+/// 尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBadgeSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
 }
 
+/// <summary>
+/// ≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象（小尺寸电脑）
+/// </summary>
 [ECMAScript]
 public record TBaseColProps : VueProps
 {
@@ -520,26 +822,52 @@ public record TBaseColProps : VueProps
     public Number? Span { get; init; }
 }
 
+/// <summary>
+/// trigger on row active change
+///
+/// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableActiveChangeEventActiveRowKeysItem(string, Number)
 {
 }
 
+/// <summary>
+/// keys of highlight rows, used to mock area selection behavior, just like macOS or windows area selection
+///
+/// 高亮行，支持鼠标键盘操作(Shift)连续高亮行，可用于处理行选中等批量操作，模拟操作系统区域选择行为
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableActiveRowKeysValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// make nodes can be highlight on clicked
+///
+/// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBaseTableActiveRowTypeValue
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// trigger on cell clicked
+///
+/// 单元格点击时触发
+/// </summary>
 [ECMAScript]
 public record TBaseTableCellEventContext<T> : VueProps
 {
@@ -561,6 +889,9 @@ public record TBaseTableCellEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableCellParams.
+/// </summary>
 [ECMAScript]
 public record TBaseTableCellParams<T> : VueProps
 {
@@ -578,6 +909,9 @@ public record TBaseTableCellParams<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableCol.
+/// </summary>
 [ECMAScript]
 public record TBaseTableCol<T> : VueProps
 {
@@ -639,33 +973,57 @@ public record TBaseTableCol<T> : VueProps
     public TBaseTableColWidth<T>? Width { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColAlign.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBaseTableColAlign
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColCell.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColCell<T>(string, RenderFragment<TBaseTableCellParams<T>>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColClassName.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColClassName<T>(TTableColumnClassName<T>, TTableColumnClassName<T>[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColEllipsis.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColEllipsis<T>(bool, RenderFragment<TBaseTableCellParams<T>>, TdTooltipProps, TBaseTableColEllipsisOption4<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColEllipsisOption4.
+/// </summary>
 [ECMAScript]
 public record TBaseTableColEllipsisOption4<T> : VueProps
 {
@@ -678,11 +1036,17 @@ public record TBaseTableColEllipsisOption4<T> : VueProps
     public RenderFragment<TBaseTableCellParams<T>> Content { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColEllipsisTitle.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColEllipsisTitle<T>(bool, RenderFragment<TBaseTableColParams<T>>, TdTooltipProps, TBaseTableColEllipsisTitleOption4<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColEllipsisTitleOption4.
+/// </summary>
 [ECMAScript]
 public record TBaseTableColEllipsisTitleOption4<T> : VueProps
 {
@@ -695,21 +1059,36 @@ public record TBaseTableColEllipsisTitleOption4<T> : VueProps
     public RenderFragment<TBaseTableColParams<T>> Content { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColFixed.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBaseTableColFixed
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColFoot.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColFoot<T>(string, RenderFragment<TBaseTableColFootOption2Context<T>>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColFootOption2Context.
+/// </summary>
 [ECMAScript]
 public record TBaseTableColFootOption2Context<T> : VueProps
 {
@@ -721,11 +1100,17 @@ public record TBaseTableColFootOption2Context<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColMinWidth.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColMinWidth<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColParams.
+/// </summary>
 [ECMAScript]
 public record TBaseTableColParams<T> : VueProps
 {
@@ -737,16 +1122,25 @@ public record TBaseTableColParams<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColThClassName.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColThClassName<T>(TTableColumnClassName<T>, TTableColumnClassName<T>[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColTitle.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColTitle<T>(string, RenderFragment<TBaseTableColTitleOption2Context<T>>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColTitleOption2Context.
+/// </summary>
 [ECMAScript]
 public record TBaseTableColTitleOption2Context<T> : VueProps
 {
@@ -758,19 +1152,31 @@ public record TBaseTableColTitleOption2Context<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColWidth.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColWidth<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColumnAttributes.
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableColumnAttributes<T>(TJsonObject, TBaseTableColumnAttributesOption2<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableColumnAttributesOption2.
+/// </summary>
 [ECMAScript]
 public delegate TJsonObject TBaseTableColumnAttributesOption2<T>(TCellData<T> context);
 
+/// <summary>
+/// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+/// </summary>
 [ECMAScript]
 public record TBaseTableColumnResizeChangeEventContext : VueProps
 {
@@ -779,41 +1185,77 @@ public record TBaseTableColumnResizeChangeEventContext : VueProps
     public TBaseTableColumnResizeChangeEventContextColumnsWidth ColumnsWidth { get; init; } = default!;
 }
 
+/// <summary>
+/// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+/// </summary>
 [ECMAScript]
 public record TBaseTableColumnResizeChangeEventContextColumnsWidth : VueDictionary<Number>
 {
 }
 
+/// <summary>
+/// affix foot to viewport bottom
+///
+/// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableFooterAffixedBottomValue(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// affix header to viewport top
+///
+/// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableHeaderAffixedTopValue(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// table height
+///
+/// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableHeightValue(string, Number)
 {
 }
 
+/// <summary>
+/// affix props
+///
+/// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableHorizontalScrollAffixedBottomValue(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// table max height
+///
+/// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableMaxHeightValue(string, Number)
 {
 }
 
+/// <summary>
+/// affix props
+///
+/// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTablePaginationAffixedBottomValue(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// TDesign binding type TBaseTableRenderParams.
+/// </summary>
 [ECMAScript]
 public record TBaseTableRenderParams<T> : VueProps
 {
@@ -834,14 +1276,29 @@ public record TBaseTableRenderParams<T> : VueProps
     public TRenderType Type { get; init; }
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public readonly union TBaseTableRowClassNameValue(TClassName, TBaseTableRowClassNameValueOption2)
 {
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public delegate TClassName TBaseTableRowClassNameValueOption2(TRowClassNameParams<TTableRowData> @params);
 
+/// <summary>
+/// trigger on table content scroll
+///
+/// 表格内容滚动时触发
+/// </summary>
 [ECMAScript]
 public record TBaseTableScrollEventParams : VueProps
 {
@@ -850,6 +1307,11 @@ public record TBaseTableScrollEventParams : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on scroll horizontal
+///
+/// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
+/// </summary>
 [ECMAScript]
 public record TBaseTableScrollXEventParams : VueProps
 {
@@ -858,6 +1320,11 @@ public record TBaseTableScrollXEventParams : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on scroll vertical
+///
+/// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
+/// </summary>
 [ECMAScript]
 public record TBaseTableScrollYEventParams : VueProps
 {
@@ -866,28 +1333,56 @@ public record TBaseTableScrollYEventParams : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// table-layout css properties, [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout). set value to be `fixed` on `resizable=true` please
+///
+/// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBaseTableTableLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: auto.
+    /// </summary>
     [Description("@#auto")]
     Auto,
+    /// <summary>
+    /// JavaScript value: fixed.
+    /// </summary>
     [Description("@#fixed")]
     Fixed,
 }
 
+/// <summary>
+/// vertical align
+///
+/// 行内容上下方向对齐
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBaseTableVerticalAlignValue
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: middle.
+    /// </summary>
     [Description("@#middle")]
     Middle,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// TDesign binding type TBreadcrumbEllipsisSlotContext.
+/// </summary>
 [ECMAScript]
 public record TBreadcrumbEllipsisSlotContext : VueProps
 {
@@ -899,106 +1394,218 @@ public record TBreadcrumbEllipsisSlotContext : VueProps
     public TBreadcrumbEllipsisSlotContextSeparator Separator { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TBreadcrumbEllipsisSlotContextSeparator.
+/// </summary>
 [ECMAScript]
 public readonly union TBreadcrumbEllipsisSlotContextSeparator(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 链接或路由跳转方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBreadcrumbItemTargetValue
 {
+    /// <summary>
+    /// JavaScript value: _blank.
+    /// </summary>
     [Description("@#_blank")]
     Blank,
+    /// <summary>
+    /// JavaScript value: _self.
+    /// </summary>
     [Description("@#_self")]
     Self,
+    /// <summary>
+    /// JavaScript value: _parent.
+    /// </summary>
     [Description("@#_parent")]
     Parent,
+    /// <summary>
+    /// JavaScript value: _top.
+    /// </summary>
     [Description("@#_top")]
     Top,
 }
 
+/// <summary>
+/// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+/// </summary>
 [ECMAScript]
 public readonly union TBreadcrumbItemToValue(string, TRoute)
 {
 }
 
+/// <summary>
+/// 组件风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TBreadcrumbThemeValue
 {
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
 }
 
+/// <summary>
+/// button shape
+///
+/// 按钮形状，有 4 种：长方形、正方形、圆角长方形、圆形
+/// </summary>
 [ECMAScript]
 [String]
 public enum TButtonShapeValue
 {
+    /// <summary>
+    /// JavaScript value: rectangle.
+    /// </summary>
     [Description("@#rectangle")]
     Rectangle,
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
 }
 
+/// <summary>
+/// HTML Tag Element
+///
+/// 渲染按钮的 HTML 标签，默认使用标签 `&lt;button&gt;` 渲染，可以自定义为 `&lt;a&gt;` `&lt;div&gt;` 等。透传全部 HTML 属性，如：`href/target/data-*` 等。⚠️ 禁用按钮 `&lt;button disabled&gt;`无法显示 Popup 浮层信息，可通过修改 `tag=div` 解决这个问题
+/// </summary>
 [ECMAScript]
 [String]
 public enum TButtonTagValue
 {
+    /// <summary>
+    /// JavaScript value: button.
+    /// </summary>
     [Description("@#button")]
     Button,
+    /// <summary>
+    /// JavaScript value: a.
+    /// </summary>
     [Description("@#a")]
     A,
+    /// <summary>
+    /// JavaScript value: div.
+    /// </summary>
     [Description("@#div")]
     Div,
 }
 
+/// <summary>
+/// button theme
+///
+/// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
+/// </summary>
 [ECMAScript]
 [String]
 public enum TButtonThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// type of button element in html
+///
+/// 按钮类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TButtonTypeValue
 {
+    /// <summary>
+    /// JavaScript value: submit.
+    /// </summary>
     [Description("@#submit")]
     Submit,
+    /// <summary>
+    /// JavaScript value: reset.
+    /// </summary>
     [Description("@#reset")]
     Reset,
+    /// <summary>
+    /// JavaScript value: button.
+    /// </summary>
     [Description("@#button")]
     Button,
 }
 
+/// <summary>
+/// variant of button
+///
+/// 按钮形式，基础、线框、虚线、文字
+/// </summary>
 [ECMAScript]
 [String]
 public enum TButtonVariantValue
 {
+    /// <summary>
+    /// JavaScript value: base.
+    /// </summary>
     [Description("@#base")]
     Base,
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
+    /// <summary>
+    /// JavaScript value: dashed.
+    /// </summary>
     [Description("@#dashed")]
     Dashed,
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
 }
 
+/// <summary>
+/// TDesign binding type TCalendarCell.
+/// </summary>
 [ECMAScript]
 public record TCalendarCell : VueProps
 {
@@ -1036,6 +1643,9 @@ public record TCalendarCell : VueProps
     public Number? WeekOrder { get; init; }
 }
 
+/// <summary>
+/// 日历单元格点击时触发
+/// </summary>
 [ECMAScript]
 public record TCalendarCellClickEventOptions : VueProps
 {
@@ -1048,6 +1658,9 @@ public record TCalendarCellClickEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 日历单元格双击时触发
+/// </summary>
 [ECMAScript]
 public record TCalendarCellDoubleClickEventOptions : VueProps
 {
@@ -1060,6 +1673,9 @@ public record TCalendarCellDoubleClickEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 日历单元格右击时触发
+/// </summary>
 [ECMAScript]
 public record TCalendarCellRightClickEventOptions : VueProps
 {
@@ -1072,6 +1688,11 @@ public record TCalendarCellRightClickEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TCalendarConfig : VueProps
 {
@@ -1115,14 +1736,29 @@ public record TCalendarConfig : VueProps
     public string? YearSelection { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TCalendarConfigMonthSelection(string, TCalendarConfigMonthSelectionOption2)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate string TCalendarConfigMonthSelectionOption2(TCalendarConfigMonthSelectionOption2Data data);
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TCalendarConfigMonthSelectionOption2Data : VueProps
 {
@@ -1130,6 +1766,9 @@ public record TCalendarConfigMonthSelectionOption2Data : VueProps
     public Number Month { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCalendarController : VueProps
 {
@@ -1152,11 +1791,17 @@ public record TCalendarController : VueProps
     public TCalendarControllerYear? Year { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TCalendarControllerConfigValue(bool, TCalendarController)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCalendarControllerCurrent : VueProps
 {
@@ -1170,6 +1815,9 @@ public record TCalendarControllerCurrent : VueProps
     public TdButtonProps? CurrentMonthButtonProps { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCalendarControllerMode : VueProps
 {
@@ -1180,6 +1828,9 @@ public record TCalendarControllerMode : VueProps
     public TdRadioGroupProps<TRadioValue>? RadioGroupProps { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCalendarControllerMonth : VueProps
 {
@@ -1190,6 +1841,9 @@ public record TCalendarControllerMonth : VueProps
     public TdSelectProps<TSelectOption>? SelectProps { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCalendarControllerWeekend : VueProps
 {
@@ -1203,6 +1857,9 @@ public record TCalendarControllerWeekend : VueProps
     public TdCheckTagProps? HideWeekendButtonProps { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCalendarControllerYear : VueProps
 {
@@ -1213,16 +1870,28 @@ public record TCalendarControllerYear : VueProps
     public TdSelectProps<TSelectOption>? SelectProps { get; init; }
 }
 
+/// <summary>
+/// 日历展示维度
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCalendarModeValue
 {
+    /// <summary>
+    /// JavaScript value: month.
+    /// </summary>
     [Description("@#month")]
     Month,
+    /// <summary>
+    /// JavaScript value: year.
+    /// </summary>
     [Description("@#year")]
     Year,
 }
 
+/// <summary>
+/// 月份切换时触发
+/// </summary>
 [ECMAScript]
 public record TCalendarMonthChangeEventOptions : VueProps
 {
@@ -1235,31 +1904,52 @@ public record TCalendarMonthChangeEventOptions : VueProps
     public string Year { get; init; } = default!;
 }
 
+/// <summary>
+/// 控制当前面板展示月份，优先级高于 `controllerConfig.month`
+/// </summary>
 [ECMAScript]
 public readonly union TCalendarMonthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 日历风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCalendarThemeValue
 {
+    /// <summary>
+    /// JavaScript value: full.
+    /// </summary>
     [Description("@#full")]
     Full,
+    /// <summary>
+    /// JavaScript value: card.
+    /// </summary>
     [Description("@#card")]
     Card,
 }
 
+/// <summary>
+/// 用于设置日历的年月份显示范围，[范围开始，范围结束]
+/// </summary>
 [ECMAScript]
 public readonly union TCalendarValue(string, Date)
 {
 }
 
+/// <summary>
+/// 当前高亮的日期
+/// </summary>
 [ECMAScript]
 public readonly union TCalendarValueValue(TCalendarValue, TCalendarValue[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TCalendarWeek.
+/// </summary>
 [ECMAScript]
 public record TCalendarWeek : VueProps
 {
@@ -1267,36 +1957,66 @@ public record TCalendarWeek : VueProps
     public Number Day { get; init; }
 }
 
+/// <summary>
+/// 控制当前面板展示年份，优先级高于 `controllerConfig.year`
+/// </summary>
 [ECMAScript]
 public readonly union TCalendarYearValue(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TCallback.
+/// </summary>
 [ECMAScript]
 public delegate void TCallback();
 
+/// <summary>
+/// 尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCardSizeValue
 {
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
 }
 
+/// <summary>
+/// 卡片风格：普通风格、海报风格1（操作区域在顶部）、海报风格2（操作区域在底部）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCardThemeValue
 {
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: poster1.
+    /// </summary>
     [Description("@#poster1")]
     Poster1,
+    /// <summary>
+    /// JavaScript value: poster2.
+    /// </summary>
     [Description("@#poster2")]
     Poster2,
 }
 
+/// <summary>
+/// 当输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TCascaderBlurEventContext<CascaderOption> : VueProps
 {
@@ -1317,11 +2037,17 @@ public record TCascaderBlurEventContext<CascaderOption> : VueProps
     public TCascaderValue<CascaderOption> Value { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCascaderCascaderOptionDefaultTDefault.
+/// </summary>
 [ECMAScript]
 public readonly union TCascaderCascaderOptionDefaultTDefault(string, Number)
 {
 }
 
+/// <summary>
+/// 选中值发生变化时触发。TreeNodeModel 从树组件中导出。`context.node` 表示触发事件的节点，`context.source` 表示触发事件的来源
+/// </summary>
 [ECMAScript]
 public record TCascaderChangeContext<CascaderOption> : VueProps
 {
@@ -1332,20 +2058,38 @@ public record TCascaderChangeContext<CascaderOption> : VueProps
     public TCascaderChangeSource Source { get; init; }
 }
 
+/// <summary>
+/// 选中值发生变化时触发。TreeNodeModel 从树组件中导出。`context.node` 表示触发事件的节点，`context.source` 表示触发事件的来源
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCascaderChangeSource
 {
+    /// <summary>
+    /// JavaScript value: invalid-value.
+    /// </summary>
     [Description("@#invalid-value")]
     InvalidValue,
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
 }
 
+/// <summary>
+/// TDesign binding type TCascaderCollapsedItemsSlotContext.
+/// </summary>
 [ECMAScript]
 public record TCascaderCollapsedItemsSlotContext<CascaderOption> : VueProps
 {
@@ -1365,9 +2109,15 @@ public record TCascaderCollapsedItemsSlotContext<CascaderOption> : VueProps
     public TCascaderCollapsedItemsSlotContextOnClose<CascaderOption> OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TCascaderCollapsedItemsSlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TCascaderCollapsedItemsSlotContextOnClose<CascaderOption>(TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> context);
 
+/// <summary>
+/// TDesign binding type TCascaderCollapsedItemsSlotContextOnCloseContext.
+/// </summary>
 [ECMAScript]
 public record TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> : VueProps
 {
@@ -1378,6 +2128,11 @@ public record TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> :
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TCascaderConfig : VueProps
 {
@@ -1391,19 +2146,31 @@ public record TCascaderConfig : VueProps
     public string? Placeholder { get; init; }
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TCascaderFilterValueResult<CascaderOption> TCascaderFilterValue<CascaderOption>(string filterWords, TTreeNodeModel<TTreeOptionData<TCascaderFilterValueNodeTDefaultTDefault>> node);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TCascaderFilterValueNodeTDefaultTDefault(string, Number)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TCascaderFilterValueResult<CascaderOption>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// 获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TCascaderFocusEventContext<CascaderOption> : VueProps
 {
@@ -1415,9 +2182,15 @@ public record TCascaderFocusEventContext<CascaderOption> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 加载子树数据的方法（仅当节点 children 为 true 时生效）
+/// </summary>
 [ECMAScript]
 public delegate IPromise<CascaderOption[]> TCascaderLoadValue<CascaderOption>(TTreeNodeModel<CascaderOption> node);
 
+/// <summary>
+/// TDesign binding type TCascaderOptionSlotContext.
+/// </summary>
 [ECMAScript]
 public record TCascaderOptionSlotContext<CascaderOption> : VueProps
 {
@@ -1436,41 +2209,77 @@ public record TCascaderOptionSlotContext<CascaderOption> : VueProps
     public TCascaderOptionSlotContextOnExpand<CascaderOption> OnExpand { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TCascaderOptionSlotContextOnChange.
+/// </summary>
 [ECMAScript]
 public delegate void TCascaderOptionSlotContextOnChange<CascaderOption>();
 
+/// <summary>
+/// TDesign binding type TCascaderOptionSlotContextOnExpand.
+/// </summary>
 [ECMAScript]
 public delegate void TCascaderOptionSlotContextOnExpand<CascaderOption>();
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCascaderStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 展开下一层级的方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCascaderTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
 }
 
+/// <summary>
+/// 选中项的值
+/// </summary>
 [ECMAScript]
 public readonly union TCascaderValue<T>(string, Number, T, TCascaderValue<T>[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TCascaderValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TCascaderValueDisplaySlotContext<CascaderOption> : VueProps
 {
@@ -1489,41 +2298,79 @@ public record TCascaderValueDisplaySlotContext<CascaderOption> : VueProps
     public CascaderOption[] SelectedOptions { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TCascaderValueDisplaySlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TCascaderValueDisplaySlotContextOnClose<CascaderOption>(Number index);
 
+/// <summary>
+/// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCascaderValueModeValue
 {
+    /// <summary>
+    /// JavaScript value: onlyLeaf.
+    /// </summary>
     [Description("@#onlyLeaf")]
     OnlyLeaf,
+    /// <summary>
+    /// JavaScript value: parentFirst.
+    /// </summary>
     [Description("@#parentFirst")]
     ParentFirst,
+    /// <summary>
+    /// JavaScript value: all.
+    /// </summary>
     [Description("@#all")]
     All,
 }
 
+/// <summary>
+/// 用于控制选中值的类型。single 表示输入输出值为 叶子结点值， full 表示输入输出值为全路径
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCascaderValueTypeValue
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: full.
+    /// </summary>
     [Description("@#full")]
     Full,
 }
 
+/// <summary>
+/// multiple images cascading
+///
+/// 图片之间的层叠关系，可选值：左侧图片在上和右侧图片在上
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCascadingValue
 {
+    /// <summary>
+    /// JavaScript value: left-up.
+    /// </summary>
     [Description("@#left-up")]
     LeftUp,
+    /// <summary>
+    /// JavaScript value: right-up.
+    /// </summary>
     [Description("@#right-up")]
     RightUp,
 }
 
+/// <summary>
+/// TDesign binding type TCellData.
+/// </summary>
 [ECMAScript]
 public record TCellData<T> : VueProps
 {
@@ -1544,16 +2391,28 @@ public record TCellData<T> : VueProps
     public TCellDataType Type { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCellDataType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCellDataType
 {
+    /// <summary>
+    /// JavaScript value: th.
+    /// </summary>
     [Description("@#th")]
     Th,
+    /// <summary>
+    /// JavaScript value: td.
+    /// </summary>
     [Description("@#td")]
     Td,
 }
 
+/// <summary>
+/// 值变化时触发，`type` 表示触发本次变化的来源
+/// </summary>
 [ECMAScript]
 public record TChangeContext : VueProps
 {
@@ -1564,31 +2423,63 @@ public record TChangeContext : VueProps
     public TChangeContextE E { get; init; }
 }
 
+/// <summary>
+/// 值变化时触发，`type` 表示触发本次变化的来源
+/// </summary>
 [ECMAScript]
 public readonly union TChangeContextE(InputEvent, MouseEvent, FocusEvent, KeyboardEvent, CompositionEvent)
 {
 }
 
+/// <summary>
+/// 值变化时触发，`type` 表示触发本次变化的来源
+/// </summary>
 [ECMAScript]
 [String]
 public enum TChangeSource
 {
+    /// <summary>
+    /// JavaScript value: add.
+    /// </summary>
     [Description("@#add")]
     Add,
+    /// <summary>
+    /// JavaScript value: reduce.
+    /// </summary>
     [Description("@#reduce")]
     Reduce,
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: blur.
+    /// </summary>
     [Description("@#blur")]
     Blur,
+    /// <summary>
+    /// JavaScript value: enter.
+    /// </summary>
     [Description("@#enter")]
     Enter,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: props.
+    /// </summary>
     [Description("@#props")]
     Props,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TChatConfig : VueProps
 {
@@ -1644,14 +2535,23 @@ public record TChatConfig : VueProps
     public string? UploadAttachmentText { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCheckProps.
+/// </summary>
 [ECMAScript]
 public readonly union TCheckProps<T>(TdCheckboxProps, TdRadioProps<TRadioValue>, TCheckPropsOption3<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TCheckPropsOption3.
+/// </summary>
 [ECMAScript]
 public delegate TCheckPropsOption3Result<T> TCheckPropsOption3<T>(TCheckPropsOption3Options<T> options);
 
+/// <summary>
+/// TDesign binding type TCheckPropsOption3Options.
+/// </summary>
 [ECMAScript]
 public record TCheckPropsOption3Options<T> : VueProps
 {
@@ -1662,11 +2562,17 @@ public record TCheckPropsOption3Options<T> : VueProps
     public Number RowIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCheckPropsOption3Result.
+/// </summary>
 [ECMAScript]
 public readonly union TCheckPropsOption3Result<T>(TdCheckboxProps, TdRadioProps<TRadioValue>)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TCheckTagChangeContext : VueProps
 {
@@ -1677,16 +2583,25 @@ public record TCheckTagChangeContext : VueProps
     public TCheckTagChangeContextValue Value { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagChangeContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagChangeContextValue(string, Number)
 {
 }
 
+/// <summary>
+/// 点击标签时触发
+/// </summary>
 [ECMAScript]
 public record TCheckTagClickEventContext : VueProps
 {
@@ -1695,11 +2610,17 @@ public record TCheckTagClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 组件子元素；传入数组时：[选中内容，非选中内容]
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagContentValue(string, Number, string[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TCheckTagGroupChangeContext.
+/// </summary>
 [ECMAScript]
 public record TCheckTagGroupChangeContext : VueProps
 {
@@ -1713,26 +2634,46 @@ public record TCheckTagGroupChangeContext : VueProps
     public TCheckTagGroupChangeContextValue Value { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCheckTagGroupChangeContextE.
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupChangeContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// TDesign binding type TCheckTagGroupChangeContextType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCheckTagGroupChangeContextType
 {
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
 }
 
+/// <summary>
+/// TDesign binding type TCheckTagGroupChangeContextValue.
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupChangeContextValue(string, Number)
 {
 }
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public record TCheckTagGroupOption : VueProps
 {
@@ -1776,27 +2717,57 @@ public record TCheckTagGroupOption : VueProps
     public TCheckTagGroupOptionLabel Label { get; init; }
 }
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupOptionContent(string, Number, string[], RenderFragment)
 {
 }
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupOptionDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupOptionLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public delegate void TCheckTagGroupOptionOnChange(bool @checked, TCheckTagChangeContext context);
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public delegate void TCheckTagGroupOptionOnClick(TCheckTagGroupOptionOnClickContext context);
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public record TCheckTagGroupOptionOnClickContext : VueProps
 {
@@ -1805,21 +2776,39 @@ public record TCheckTagGroupOptionOnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// tag list
+///
+/// 标签选项列表
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupOptionValue(string, Number)
 {
 }
 
+/// <summary>
+/// selected tag value list
+///
+/// 选中标签值
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagGroupValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// tag unique key
+///
+/// 标签唯一标识，一般用于标签组场景，单个可选择标签无需设置
+/// </summary>
 [ECMAScript]
 public readonly union TCheckTagValueValue(string, Number)
 {
 }
 
+/// <summary>
+/// 值变化时触发
+/// </summary>
 [ECMAScript]
 public record TCheckboxChangeEventContext : VueProps
 {
@@ -1828,6 +2817,9 @@ public record TCheckboxChangeEventContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 值变化时触发。`context.current` 表示当前变化的数据项，如果是全选则为空；`context.type` 表示引起选中数据变化的是选中或是取消选中，`context.option` 表示当前变化的数据项
+/// </summary>
 [ECMAScript]
 public record TCheckboxGroupChangeContext : VueProps
 {
@@ -1845,36 +2837,60 @@ public record TCheckboxGroupChangeContext : VueProps
     public TCheckboxGroupChangeContextType Type { get; init; }
 }
 
+/// <summary>
+/// 值变化时触发。`context.current` 表示当前变化的数据项，如果是全选则为空；`context.type` 表示引起选中数据变化的是选中或是取消选中，`context.option` 表示当前变化的数据项
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxGroupChangeContextCurrent(string, Number, bool)
 {
 }
 
+/// <summary>
+/// 值变化时触发。`context.current` 表示当前变化的数据项，如果是全选则为空；`context.type` 表示引起选中数据变化的是选中或是取消选中，`context.option` 表示当前变化的数据项
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxGroupChangeContextOption(TCheckboxOption, TdCheckboxProps)
 {
 }
 
+/// <summary>
+/// 值变化时触发。`context.current` 表示当前变化的数据项，如果是全选则为空；`context.type` 表示引起选中数据变化的是选中或是取消选中，`context.option` 表示当前变化的数据项
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCheckboxGroupChangeContextType
 {
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
 }
 
+/// <summary>
+/// TDesign binding type TCheckboxGroupValueItem.
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxGroupValueItem(string, Number, bool)
 {
 }
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxOption(string, Number, TCheckboxOptionObj)
 {
 }
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public record TCheckboxOptionObj : VueProps
 {
@@ -1924,19 +2940,31 @@ public record TCheckboxOptionObj : VueProps
     public string? Text { get; init; }
 }
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxOptionObjDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxOptionObjLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public delegate void TCheckboxOptionObjOnChange(bool @checked, TCheckboxOptionObjOnChangeContext context);
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public record TCheckboxOptionObjOnChangeContext : VueProps
 {
@@ -1945,16 +2973,27 @@ public record TCheckboxOptionObjOnChangeContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxOptionObjValue(string, Number, bool)
 {
 }
 
+/// <summary>
+/// value of checkbox
+///
+/// 多选框的值
+/// </summary>
 [ECMAScript]
 public readonly union TCheckboxValueValue(string, Number, bool)
 {
 }
 
+/// <summary>
+/// 源数据列表或目标数据列表的选中项发生变化时触发，`context.type` 可以区分触发来源是目标列表，还是源列表
+/// </summary>
 [ECMAScript]
 public record TCheckedOptions : VueProps
 {
@@ -1974,71 +3013,116 @@ public record TCheckedOptions : VueProps
     public TTransferListType Type { get; init; }
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TClassName(TClassNameDictionary, TClassName[], string)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public sealed record TClassNameDictionary : VueDictionary<bool>
 {
 }
 
+/// <summary>
+/// flex 布局填充。CSS 属性 flex 值。示例：2 / 3 / '100px' / 'auto' / '1 1 200px'
+/// </summary>
 [ECMAScript]
 public readonly union TColFlexValue(string, Number)
 {
 }
 
+/// <summary>
+/// ≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象（小尺寸电脑）
+/// </summary>
 [ECMAScript]
 public readonly union TColLgValue(Number, TBaseColProps)
 {
 }
 
+/// <summary>
+/// ≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象（超小尺寸电脑）
+/// </summary>
 [ECMAScript]
 public readonly union TColMdValue(Number, TBaseColProps)
 {
 }
 
+/// <summary>
+/// ≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象（平板）
+/// </summary>
 [ECMAScript]
 public readonly union TColSmValue(Number, TBaseColProps)
 {
 }
 
+/// <summary>
+/// ≥1400px 响应式栅格，可为栅格数或一个包含其他属性的对象（中尺寸电脑）
+/// </summary>
 [ECMAScript]
 public readonly union TColXlValue(Number, TBaseColProps)
 {
 }
 
+/// <summary>
+/// &lt;768px 响应式栅格，可为栅格数或一个包含其他属性的对象（手机）
+/// </summary>
 [ECMAScript]
 public readonly union TColXsValue(Number, TBaseColProps)
 {
 }
 
+/// <summary>
+/// ≥1880px 响应式栅格，可为栅格数或一个包含其他属性的对象（大尺寸电脑）
+/// </summary>
 [ECMAScript]
 public readonly union TColXxlValue(Number, TBaseColProps)
 {
 }
 
+/// <summary>
+/// 展开图标的位置，左侧或右侧
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCollapseExpandIconPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 当前面板唯一标识，如果值为空则取当前面下标兜底作为唯一标识
+/// </summary>
 [ECMAScript]
 public readonly union TCollapsePanelValueValue(string, Number)
 {
 }
 
+/// <summary>
+/// 展开的面板集合
+/// </summary>
 [ECMAScript]
 public readonly union TCollapseValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
+/// </summary>
 [ECMAScript]
 public record TColorObject : VueProps
 {
@@ -2094,6 +3178,9 @@ public record TColorObject : VueProps
     public string? LinearGradient { get; init; }
 }
 
+/// <summary>
+/// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
+/// </summary>
 [ECMAScript]
 public record TColorPickerChangeEventContext : VueProps
 {
@@ -2105,28 +3192,58 @@ public record TColorPickerChangeEventContext : VueProps
     public TColorPickerChangeTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
+/// </summary>
 [ECMAScript]
 [String]
 public enum TColorPickerChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: palette-saturation-brightness.
+    /// </summary>
     [Description("@#palette-saturation-brightness")]
     PaletteSaturationBrightness,
+    /// <summary>
+    /// JavaScript value: palette-saturation.
+    /// </summary>
     [Description("@#palette-saturation")]
     PaletteSaturation,
+    /// <summary>
+    /// JavaScript value: palette-brightness.
+    /// </summary>
     [Description("@#palette-brightness")]
     PaletteBrightness,
+    /// <summary>
+    /// JavaScript value: palette-hue-bar.
+    /// </summary>
     [Description("@#palette-hue-bar")]
     PaletteHueBar,
+    /// <summary>
+    /// JavaScript value: palette-alpha-bar.
+    /// </summary>
     [Description("@#palette-alpha-bar")]
     PaletteAlphaBar,
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: preset.
+    /// </summary>
     [Description("@#preset")]
     Preset,
+    /// <summary>
+    /// JavaScript value: recent.
+    /// </summary>
     [Description("@#recent")]
     Recent,
 }
 
+/// <summary>
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TColorPickerClearEventContext : VueProps
 {
@@ -2135,16 +3252,30 @@ public record TColorPickerClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 颜色模式选择。同时支持单色和渐变两种模式，可仅使用单色或者渐变其中一种模式，也可以同时使用。`monochrome` 表示单色，`linear-gradient` 表示渐变色
+/// </summary>
 [ECMAScript]
 [String]
 public enum TColorPickerColorModesValueItem
 {
+    /// <summary>
+    /// JavaScript value: monochrome.
+    /// </summary>
     [Description("@#monochrome")]
     Monochrome,
+    /// <summary>
+    /// JavaScript value: linear-gradient.
+    /// </summary>
     [Description("@#linear-gradient")]
     LinearGradient,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TColorPickerConfig : VueProps
 {
@@ -2158,32 +3289,70 @@ public record TColorPickerConfig : VueProps
     public string? SwatchColorTitle { get; init; }
 }
 
+/// <summary>
+/// When `enableAlpha` is true, `HEX8/RGBA/HSLA/HSVA` are valid
+///
+/// 格式化色值。`enableAlpha` 为真时，`HEX8/RGBA/HSLA/HSVA` 有效
+/// </summary>
 [ECMAScript]
 [String]
 public enum TColorPickerFormatValue
 {
+    /// <summary>
+    /// JavaScript value: HEX.
+    /// </summary>
     [Description("@#HEX")]
     HEX,
+    /// <summary>
+    /// JavaScript value: HEX8.
+    /// </summary>
     [Description("@#HEX8")]
     HEX8,
+    /// <summary>
+    /// JavaScript value: RGB.
+    /// </summary>
     [Description("@#RGB")]
     RGB,
+    /// <summary>
+    /// JavaScript value: RGBA.
+    /// </summary>
     [Description("@#RGBA")]
     RGBA,
+    /// <summary>
+    /// JavaScript value: HSL.
+    /// </summary>
     [Description("@#HSL")]
     HSL,
+    /// <summary>
+    /// JavaScript value: HSLA.
+    /// </summary>
     [Description("@#HSLA")]
     HSLA,
+    /// <summary>
+    /// JavaScript value: HSV.
+    /// </summary>
     [Description("@#HSV")]
     HSV,
+    /// <summary>
+    /// JavaScript value: HSVA.
+    /// </summary>
     [Description("@#HSVA")]
     HSVA,
+    /// <summary>
+    /// JavaScript value: CMYK.
+    /// </summary>
     [Description("@#CMYK")]
     CMYK,
+    /// <summary>
+    /// JavaScript value: CSS.
+    /// </summary>
     [Description("@#CSS")]
     CSS,
 }
 
+/// <summary>
+/// 调色板控制器的值变化时触发，`context.color` 指调色板控制器的值
+/// </summary>
 [ECMAScript]
 public record TColorPickerPaletteBarChangeEventContext : VueProps
 {
@@ -2192,6 +3361,9 @@ public record TColorPickerPaletteBarChangeEventContext : VueProps
     public TColorObject Color { get; init; } = default!;
 }
 
+/// <summary>
+/// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
+/// </summary>
 [ECMAScript]
 public record TColorPickerPanelChangeEventContext : VueProps
 {
@@ -2203,6 +3375,9 @@ public record TColorPickerPanelChangeEventContext : VueProps
     public TColorPickerChangeTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TColorPickerPanelClearEventContext.
+/// </summary>
 [ECMAScript]
 public record TColorPickerPanelClearEventContext : VueProps
 {
@@ -2211,42 +3386,89 @@ public record TColorPickerPanelClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 颜色模式选择。同时支持单色和渐变两种模式，可仅使用单色或者渐变其中一种模式，也可以同时使用。`monochrome` 表示单色，`linear-gradient` 表示渐变色
+/// </summary>
 [ECMAScript]
 [String]
 public enum TColorPickerPanelColorModesValueItem
 {
+    /// <summary>
+    /// JavaScript value: monochrome.
+    /// </summary>
     [Description("@#monochrome")]
     Monochrome,
+    /// <summary>
+    /// JavaScript value: linear-gradient.
+    /// </summary>
     [Description("@#linear-gradient")]
     LinearGradient,
 }
 
+/// <summary>
+/// When `enableAlpha` is true, `HEX8/RGBA/HSLA/HSVA` are valid
+///
+/// 格式化色值。`enableAlpha` 为真时，`HEX8/RGBA/HSLA/HSVA` 有效
+/// </summary>
 [ECMAScript]
 [String]
 public enum TColorPickerPanelFormatValue
 {
+    /// <summary>
+    /// JavaScript value: HEX.
+    /// </summary>
     [Description("@#HEX")]
     HEX,
+    /// <summary>
+    /// JavaScript value: HEX8.
+    /// </summary>
     [Description("@#HEX8")]
     HEX8,
+    /// <summary>
+    /// JavaScript value: RGB.
+    /// </summary>
     [Description("@#RGB")]
     RGB,
+    /// <summary>
+    /// JavaScript value: RGBA.
+    /// </summary>
     [Description("@#RGBA")]
     RGBA,
+    /// <summary>
+    /// JavaScript value: HSL.
+    /// </summary>
     [Description("@#HSL")]
     HSL,
+    /// <summary>
+    /// JavaScript value: HSLA.
+    /// </summary>
     [Description("@#HSLA")]
     HSLA,
+    /// <summary>
+    /// JavaScript value: HSV.
+    /// </summary>
     [Description("@#HSV")]
     HSV,
+    /// <summary>
+    /// JavaScript value: HSVA.
+    /// </summary>
     [Description("@#HSVA")]
     HSVA,
+    /// <summary>
+    /// JavaScript value: CMYK.
+    /// </summary>
     [Description("@#CMYK")]
     CMYK,
+    /// <summary>
+    /// JavaScript value: CSS.
+    /// </summary>
     [Description("@#CSS")]
     CSS,
 }
 
+/// <summary>
+/// 调色板控制器的值变化时触发，`context.color` 指调色板控制器的值
+/// </summary>
 [ECMAScript]
 public record TColorPickerPanelPaletteBarChangeEventContext : VueProps
 {
@@ -2255,34 +3477,65 @@ public record TColorPickerPanelPaletteBarChangeEventContext : VueProps
     public TColorObject Color { get; init; } = default!;
 }
 
+/// <summary>
+/// used color recently
+///
+/// 最近使用的颜色。值为 [] 表示以组件内部的“最近使用颜色”为准，值长度大于 0 则以该值为准显示“最近使用颜色”。值为 false 或 null 则完全不显示“最近使用颜色”
+/// </summary>
 [ECMAScript]
 public readonly union TColorPickerPanelRecentColorsValue(string[], bool)
 {
 }
 
+/// <summary>
+/// used color recently
+///
+/// 最近使用的颜色。值为 [] 表示以组件内部的“最近使用颜色”为准，值长度大于 0 则以该值为准显示“最近使用颜色”。值为 false 或 null 则完全不显示“最近使用颜色”
+/// </summary>
 [ECMAScript]
 public readonly union TColorPickerRecentColorsValue(string[], bool)
 {
 }
 
+/// <summary>
+/// 头像
+/// </summary>
 [ECMAScript]
 public readonly union TCommentAvatarValue(string, TdAvatarProps)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TConfigPresetDate : VueDictionary<TConfigPresetDateIndex>
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TConfigPresetDateIndex(TDateConfigValue, TConfigPresetDateIndexOption2)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate TDateConfigValue TConfigPresetDateIndexOption2();
 
+/// <summary>
+/// TDesign binding type TControllerOptions.
+/// </summary>
 [ECMAScript]
 public record TControllerOptions : VueProps
 {
@@ -2302,6 +3555,9 @@ public record TControllerOptions : VueProps
     public bool IsShowWeekend { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCustomValidateObj.
+/// </summary>
 [ECMAScript]
 public record TCustomValidateObj : VueProps
 {
@@ -2316,26 +3572,47 @@ public record TCustomValidateObj : VueProps
     public TCustomValidateObjType? Type { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TCustomValidateObjType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TCustomValidateObjType
 {
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// TDesign binding type TCustomValidateResolveType.
+/// </summary>
 [ECMAScript]
 public readonly union TCustomValidateResolveType(bool, TCustomValidateObj)
 {
 }
 
+/// <summary>
+/// TDesign binding type TCustomValidator.
+/// </summary>
 [ECMAScript]
 public delegate TCustomValidatorResult TCustomValidator(TJsonValue val, TCustomValidatorContext? context = default);
 
+/// <summary>
+/// TDesign binding type TCustomValidatorContext.
+/// </summary>
 [ECMAScript]
 public record TCustomValidatorContext : VueProps
 {
@@ -2348,11 +3625,19 @@ public record TCustomValidatorContext : VueProps
     public string Name { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TCustomValidatorResult.
+/// </summary>
 [ECMAScript]
 public readonly union TCustomValidatorResult(TCustomValidateResolveType, IPromise<TCustomValidateResolveType>)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public record TDOMRect : VueProps
 {
@@ -2381,6 +3666,9 @@ public record TDOMRect : VueProps
     public Number Y { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TDataOption.
+/// </summary>
 [ECMAScript]
 public record TDataOption : VueProps
 {
@@ -2394,11 +3682,19 @@ public record TDataOption : VueProps
     public bool? Disabled { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TDateConfigValue(string, Date, TDateConfigValue[])
 {
 }
 
+/// <summary>
+/// 当输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerBlurEventContext : VueProps
 {
@@ -2410,11 +3706,17 @@ public record TDatePickerBlurEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 当输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDatePickerBlurEventContextValue(TDateValue, TDateValue[])
 {
 }
 
+/// <summary>
+/// 选中值发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerChangeEventContext : VueProps
 {
@@ -2425,11 +3727,19 @@ public record TDatePickerChangeEventContext : VueProps
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
+/// <summary>
+/// 选中值发生变化时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDatePickerChangeEventValue(TDateValue, TDateValue[])
 {
 }
 
+/// <summary>
+/// Triggered when the clear button is clicked
+///
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerClearEventContext : VueProps
 {
@@ -2438,6 +3748,11 @@ public record TDatePickerClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TDatePickerConfig : VueProps
 {
@@ -2514,6 +3829,11 @@ public record TDatePickerConfig : VueProps
     public string? YearAriaLabel { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TDatePickerConfigPlaceholder : VueProps
 {
@@ -2527,6 +3847,9 @@ public record TDatePickerConfigPlaceholder : VueProps
     public string? Year { get; init; }
 }
 
+/// <summary>
+/// 如果存在“确定”按钮，则点击“确定”按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerConfirmEventContext : VueProps
 {
@@ -2539,9 +3862,19 @@ public record TDatePickerConfirmEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期时间选择器中可用
+/// </summary>
 [ECMAScript]
 public delegate TDatePickerDisableTimeValueResultPartial TDatePickerDisableTimeValue(Date time);
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期时间选择器中可用
+/// </summary>
 [ECMAScript]
 public record TDatePickerDisableTimeValueResultPartial : VueProps
 {
@@ -2562,6 +3895,9 @@ public record TDatePickerDisableTimeValueResultPartial : VueProps
     public Number[] Millisecond { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerFocusEventContext : VueProps
 {
@@ -2573,27 +3909,51 @@ public record TDatePickerFocusEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDatePickerFocusEventContextValue(TDateValue, TDateValue[])
 {
 }
 
+/// <summary>
+/// 选择器模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerModeValue
 {
+    /// <summary>
+    /// JavaScript value: year.
+    /// </summary>
     [Description("@#year")]
     Year,
+    /// <summary>
+    /// JavaScript value: quarter.
+    /// </summary>
     [Description("@#quarter")]
     Quarter,
+    /// <summary>
+    /// JavaScript value: month.
+    /// </summary>
     [Description("@#month")]
     Month,
+    /// <summary>
+    /// JavaScript value: week.
+    /// </summary>
     [Description("@#week")]
     Week,
+    /// <summary>
+    /// JavaScript value: date.
+    /// </summary>
     [Description("@#date")]
     Date,
 }
 
+/// <summary>
+/// TDesign binding type TDatePickerMonthChangeEventContext.
+/// </summary>
 [ECMAScript]
 public record TDatePickerMonthChangeEventContext : VueProps
 {
@@ -2611,20 +3971,38 @@ public record TDatePickerMonthChangeEventContext : VueProps
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TDatePickerMonthChangeTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerMonthChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: month-select.
+    /// </summary>
     [Description("@#month-select")]
     MonthSelect,
+    /// <summary>
+    /// JavaScript value: month-arrow-next.
+    /// </summary>
     [Description("@#month-arrow-next")]
     MonthArrowNext,
+    /// <summary>
+    /// JavaScript value: month-arrow-previous.
+    /// </summary>
     [Description("@#month-arrow-previous")]
     MonthArrowPrevious,
+    /// <summary>
+    /// JavaScript value: today.
+    /// </summary>
     [Description("@#today")]
     Today,
 }
 
+/// <summary>
+/// 点击日期单元格时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelCellClickEventContext : VueProps
 {
@@ -2637,6 +4015,9 @@ public record TDatePickerPanelCellClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelChangeEventContext : VueProps
 {
@@ -2650,6 +4031,9 @@ public record TDatePickerPanelChangeEventContext : VueProps
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
+/// <summary>
+/// 如果存在“确定”按钮，则点击“确定”按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelConfirmEventContext : VueProps
 {
@@ -2662,9 +4046,19 @@ public record TDatePickerPanelConfirmEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期时间选择器中可用
+/// </summary>
 [ECMAScript]
 public delegate TDatePickerPanelDisableTimeValueResultPartial TDatePickerPanelDisableTimeValue(Date time);
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期时间选择器中可用
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelDisableTimeValueResultPartial : VueProps
 {
@@ -2685,22 +4079,43 @@ public record TDatePickerPanelDisableTimeValueResultPartial : VueProps
     public Number[] Millisecond { get; init; } = default!;
 }
 
+/// <summary>
+/// 选择器模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerPanelModeValue
 {
+    /// <summary>
+    /// JavaScript value: year.
+    /// </summary>
     [Description("@#year")]
     Year,
+    /// <summary>
+    /// JavaScript value: quarter.
+    /// </summary>
     [Description("@#quarter")]
     Quarter,
+    /// <summary>
+    /// JavaScript value: month.
+    /// </summary>
     [Description("@#month")]
     Month,
+    /// <summary>
+    /// JavaScript value: week.
+    /// </summary>
     [Description("@#week")]
     Week,
+    /// <summary>
+    /// JavaScript value: date.
+    /// </summary>
     [Description("@#date")]
     Date,
 }
 
+/// <summary>
+/// 月份切换发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelMonthChangeEventContext : VueProps
 {
@@ -2718,6 +4133,9 @@ public record TDatePickerPanelMonthChangeEventContext : VueProps
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 点击面板时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelPanelClickEventContext : VueProps
 {
@@ -2726,6 +4144,9 @@ public record TDatePickerPanelPanelClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击预设按钮后触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelPresetClickEventContext : VueProps
 {
@@ -2738,20 +4159,38 @@ public record TDatePickerPanelPresetClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 预设面板展示区域（包含确定按钮）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerPanelPresetsPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// 时间切换发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelTimeChangeEventContext : VueProps
 {
@@ -2770,11 +4209,17 @@ public record TDatePickerPanelTimeChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 选中值
+/// </summary>
 [ECMAScript]
 public readonly union TDatePickerPanelValueValue(TDateValue, TDateValue[])
 {
 }
 
+/// <summary>
+/// 年份切换发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPanelYearChangeEventContext : VueProps
 {
@@ -2792,6 +4237,9 @@ public record TDatePickerPanelYearChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 点击预设按钮后触发
+/// </summary>
 [ECMAScript]
 public record TDatePickerPresetClickEventContext : VueProps
 {
@@ -2804,64 +4252,130 @@ public record TDatePickerPresetClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 预设面板展示区域（包含确定按钮）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerPresetsPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 时间切换发生变化时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerTimeChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: time-hour.
+    /// </summary>
     [Description("@#time-hour")]
     TimeHour,
+    /// <summary>
+    /// JavaScript value: time-minute.
+    /// </summary>
     [Description("@#time-minute")]
     TimeMinute,
+    /// <summary>
+    /// JavaScript value: time-second.
+    /// </summary>
     [Description("@#time-second")]
     TimeSecond,
 }
 
+/// <summary>
+/// 选中值发生变化时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerTriggerSource
 {
+    /// <summary>
+    /// JavaScript value: confirm.
+    /// </summary>
     [Description("@#confirm")]
     Confirm,
+    /// <summary>
+    /// JavaScript value: pick.
+    /// </summary>
     [Description("@#pick")]
     Pick,
+    /// <summary>
+    /// JavaScript value: enter.
+    /// </summary>
     [Description("@#enter")]
     Enter,
+    /// <summary>
+    /// JavaScript value: preset.
+    /// </summary>
     [Description("@#preset")]
     Preset,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: tag-remove.
+    /// </summary>
     [Description("@#tag-remove")]
     TagRemove,
 }
 
+/// <summary>
+/// TDesign binding type TDatePickerValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TDatePickerValueDisplaySlotContext : VueProps
 {
@@ -2872,35 +4386,71 @@ public record TDatePickerValueDisplaySlotContext : VueProps
     public TDateValue? DisplayValue { get; init; }
 }
 
+/// <summary>
+/// 用于格式化日期的值，仅支持部分格式，时间戳、日期等。⚠️ `YYYYMMDD` 这种格式不支持，请勿使用，如果希望支持可以给 `dayjs` 提个 PR。注意和 `format` 的区别，`format` 仅用于处理日期在页面中呈现的格式。`ValueTypeEnum` 即将废弃，请更为使用 `DatePickerValueType`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerValueType
 {
+    /// <summary>
+    /// JavaScript value: time-stamp.
+    /// </summary>
     [Description("@#time-stamp")]
     TimeStamp,
+    /// <summary>
+    /// JavaScript value: Date.
+    /// </summary>
     [Description("@#Date")]
     Date,
+    /// <summary>
+    /// JavaScript value: YYYY.
+    /// </summary>
     [Description("@#YYYY")]
     YYYY,
+    /// <summary>
+    /// JavaScript value: YYYY-MM.
+    /// </summary>
     [Description("@#YYYY-MM")]
     YYYYMM,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD.
+    /// </summary>
     [Description("@#YYYY-MM-DD")]
     YYYYMMDD,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH")]
     YYYYMMDDHH,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH:mm.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH:mm")]
     YYYYMMDDHHMm,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH:mm:ss.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH:mm:ss")]
     YYYYMMDDHHMmSs,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH:mm:ss:SSS.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH:mm:ss:SSS")]
     YYYYMMDDHHMmSsSSS,
 }
 
+/// <summary>
+/// 选中值
+/// </summary>
 [ECMAScript]
 public readonly union TDatePickerValueValue(TDateValue, TDateValue[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TDatePickerYearChangeEventContext.
+/// </summary>
 [ECMAScript]
 public record TDatePickerYearChangeEventContext : VueProps
 {
@@ -2918,20 +4468,38 @@ public record TDatePickerYearChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TDatePickerYearChangeTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDatePickerYearChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: year-select.
+    /// </summary>
     [Description("@#year-select")]
     YearSelect,
+    /// <summary>
+    /// JavaScript value: year-arrow-next.
+    /// </summary>
     [Description("@#year-arrow-next")]
     YearArrowNext,
+    /// <summary>
+    /// JavaScript value: year-arrow-previous.
+    /// </summary>
     [Description("@#year-arrow-previous")]
     YearArrowPrevious,
+    /// <summary>
+    /// JavaScript value: today.
+    /// </summary>
     [Description("@#today")]
     Today,
 }
 
+/// <summary>
+/// 当输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerBlurEventContext : VueProps
 {
@@ -2947,6 +4515,9 @@ public record TDateRangePickerBlurEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选中值发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerChangeEventContext : VueProps
 {
@@ -2957,6 +4528,9 @@ public record TDateRangePickerChangeEventContext : VueProps
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
+/// <summary>
+/// 如果存在“确定”按钮，则点击“确定”按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerConfirmEventContext : VueProps
 {
@@ -2972,9 +4546,19 @@ public record TDateRangePickerConfirmEventContext : VueProps
     public TDateRangePickerPartial Partial { get; init; }
 }
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期区间选择器中开启时间展示时可用
+/// </summary>
 [ECMAScript]
 public delegate TDateRangePickerDisableTimeValueResultPartial TDateRangePickerDisableTimeValue(Date[]? times, TDateRangePickerDisableTimeValueContext context);
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期区间选择器中开启时间展示时可用
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerDisableTimeValueContext : VueProps
 {
@@ -2982,6 +4566,11 @@ public record TDateRangePickerDisableTimeValueContext : VueProps
     public TDateRangePickerPartial Partial { get; init; }
 }
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数，仅在日期区间选择器中开启时间展示时可用
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerDisableTimeValueResultPartial : VueProps
 {
@@ -2998,11 +4587,17 @@ public record TDateRangePickerDisableTimeValueResultPartial : VueProps
     public Number[] Second { get; init; } = default!;
 }
 
+/// <summary>
+/// 是否禁用组件
+/// </summary>
 [ECMAScript]
 public readonly union TDateRangePickerDisabledValue(bool, bool[])
 {
 }
 
+/// <summary>
+/// 输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerFocusEventContext : VueProps
 {
@@ -3018,6 +4613,9 @@ public record TDateRangePickerFocusEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框数据发生变化时触发，参数 input 表示输入内容，value 表示组件当前有效值
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerInputEventContext : VueProps
 {
@@ -3037,22 +4635,43 @@ public record TDateRangePickerInputEventContext : VueProps
     public InputEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选择器模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerModeValue
 {
+    /// <summary>
+    /// JavaScript value: year.
+    /// </summary>
     [Description("@#year")]
     Year,
+    /// <summary>
+    /// JavaScript value: quarter.
+    /// </summary>
     [Description("@#quarter")]
     Quarter,
+    /// <summary>
+    /// JavaScript value: month.
+    /// </summary>
     [Description("@#month")]
     Month,
+    /// <summary>
+    /// JavaScript value: week.
+    /// </summary>
     [Description("@#week")]
     Week,
+    /// <summary>
+    /// JavaScript value: date.
+    /// </summary>
     [Description("@#date")]
     Date,
 }
 
+/// <summary>
+/// TDesign binding type TDateRangePickerMonthChangeEventContext.
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerMonthChangeEventContext : VueProps
 {
@@ -3073,6 +4692,9 @@ public record TDateRangePickerMonthChangeEventContext : VueProps
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 点击日期单元格时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelCellClickEventContext : VueProps
 {
@@ -3088,6 +4710,9 @@ public record TDateRangePickerPanelCellClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelChangeEventContext : VueProps
 {
@@ -3104,6 +4729,9 @@ public record TDateRangePickerPanelChangeEventContext : VueProps
     public TDatePickerTriggerSource? Trigger { get; init; }
 }
 
+/// <summary>
+/// 如果存在“确定”按钮，则点击“确定”按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelConfirmEventContext : VueProps
 {
@@ -3116,22 +4744,43 @@ public record TDateRangePickerPanelConfirmEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选择器模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerPanelModeValue
 {
+    /// <summary>
+    /// JavaScript value: year.
+    /// </summary>
     [Description("@#year")]
     Year,
+    /// <summary>
+    /// JavaScript value: quarter.
+    /// </summary>
     [Description("@#quarter")]
     Quarter,
+    /// <summary>
+    /// JavaScript value: month.
+    /// </summary>
     [Description("@#month")]
     Month,
+    /// <summary>
+    /// JavaScript value: week.
+    /// </summary>
     [Description("@#week")]
     Week,
+    /// <summary>
+    /// JavaScript value: date.
+    /// </summary>
     [Description("@#date")]
     Date,
 }
 
+/// <summary>
+/// 月份切换发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelMonthChangeEventContext : VueProps
 {
@@ -3152,6 +4801,9 @@ public record TDateRangePickerPanelMonthChangeEventContext : VueProps
     public TDatePickerMonthChangeTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 点击面板时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelPanelClickEventContext : VueProps
 {
@@ -3160,6 +4812,9 @@ public record TDateRangePickerPanelPanelClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击预设按钮后触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelPresetClickEventContext : VueProps
 {
@@ -3172,20 +4827,38 @@ public record TDateRangePickerPanelPresetClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 预设面板展示区域（包含确定按钮）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerPanelPresetsPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// 时间切换发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelTimeChangeEventContext : VueProps
 {
@@ -3207,6 +4880,9 @@ public record TDateRangePickerPanelTimeChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 年份切换发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPanelYearChangeEventContext : VueProps
 {
@@ -3227,21 +4903,36 @@ public record TDateRangePickerPanelYearChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerPartial
 {
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
 }
 
+/// <summary>
+/// 占位符，值为数组表示可分别为开始日期和结束日期设置占位符
+/// </summary>
 [ECMAScript]
 public readonly union TDateRangePickerPlaceholderValue(string, string[])
 {
 }
 
+/// <summary>
+/// 点击预设按钮后触发
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerPresetClickEventContext : VueProps
 {
@@ -3254,58 +4945,121 @@ public record TDateRangePickerPresetClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 预设面板展示区域（包含确定按钮）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerPresetsPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 用于格式化日期的值，仅支持部分格式，时间戳、日期等。⚠️ `YYYYMMDD` 这种格式不支持，请勿使用，如果希望支持可以给 `dayjs` 提个 PR。注意和 `format` 的区别，`format` 仅用于处理日期在页面中呈现的格式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDateRangePickerValueTypeValue
 {
+    /// <summary>
+    /// JavaScript value: time-stamp.
+    /// </summary>
     [Description("@#time-stamp")]
     TimeStamp,
+    /// <summary>
+    /// JavaScript value: Date.
+    /// </summary>
     [Description("@#Date")]
     Date,
+    /// <summary>
+    /// JavaScript value: YYYY.
+    /// </summary>
     [Description("@#YYYY")]
     YYYY,
+    /// <summary>
+    /// JavaScript value: YYYY-MM.
+    /// </summary>
     [Description("@#YYYY-MM")]
     YYYYMM,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD.
+    /// </summary>
     [Description("@#YYYY-MM-DD")]
     YYYYMMDD,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH")]
     YYYYMMDDHH,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH:mm.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH:mm")]
     YYYYMMDDHHMm,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH:mm:ss.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH:mm:ss")]
     YYYYMMDDHHMmSs,
+    /// <summary>
+    /// JavaScript value: YYYY-MM-DD HH:mm:ss:SSS.
+    /// </summary>
     [Description("@#YYYY-MM-DD HH:mm:ss:SSS")]
     YYYYMMDDHHMmSsSSS,
 }
 
+/// <summary>
+/// TDesign binding type TDateRangePickerYearChangeEventContext.
+/// </summary>
 [ECMAScript]
 public record TDateRangePickerYearChangeEventContext : VueProps
 {
@@ -3326,16 +5080,27 @@ public record TDateRangePickerYearChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public readonly union TDateValue(string, Number, Date)
 {
 }
 
+/// <summary>
+/// 选中值发生变化时触发
+/// </summary>
 [ECMAScript]
 public sealed record TDayjs : VueProps
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TDescriptionsConfig : VueProps
 {
@@ -3343,41 +5108,80 @@ public record TDescriptionsConfig : VueProps
     public string? ColonText { get; init; }
 }
 
+/// <summary>
+/// layout direction of description item
+///
+/// 描述项的排列方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDescriptionsItemLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// layout direction
+///
+/// 排列方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDescriptionsLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// Sets the algorithm used to layout `table` cells, rows, and columns, exactly the same as the native table-layout css property. `fixed`: uses fixed layout algorithm; `auto`: uses automatic layout algorithm. For more details, see [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)
+///
+/// 用于设置底层 `table` 单元格、行和列的布局算法，与原生 table-layout css 属性完全一致。`fixed`：采用固定布局算法；`auto`：采用自动布局算法。详情可参考 [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDescriptionsTableLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: fixed.
+    /// </summary>
     [Description("@#fixed")]
     Fixed,
+    /// <summary>
+    /// JavaScript value: auto.
+    /// </summary>
     [Description("@#auto")]
     Auto,
 }
 
+/// <summary>
+/// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCancelBtnValue(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
+/// </summary>
 [ECMAScript]
 public record TDialogCancelEventContext : VueProps
 {
@@ -3386,11 +5190,17 @@ public record TDialogCancelEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCardCancelBtnValue(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
+/// </summary>
 [ECMAScript]
 public record TDialogCardCancelEventContext : VueProps
 {
@@ -3399,6 +5209,9 @@ public record TDialogCardCancelEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击右上角关闭按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDialogCardCloseBtnClickEventContext : VueProps
 {
@@ -3407,16 +5220,25 @@ public record TDialogCardCloseBtnClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCardCloseBtnValue(string, bool)
 {
 }
 
+/// <summary>
+/// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCardConfirmBtnValue(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
+/// </summary>
 [ECMAScript]
 public record TDialogCardConfirmEventContext : VueProps
 {
@@ -3424,32 +5246,59 @@ public record TDialogCardConfirmEventContext : VueProps
     public TDialogCardConfirmEventContextE E { get; init; }
 }
 
+/// <summary>
+/// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCardConfirmEventContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCardHeaderValue(string, bool)
 {
 }
 
+/// <summary>
+/// 对话框风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDialogCardThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: info.
+    /// </summary>
     [Description("@#info")]
     Info,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// 点击右上角关闭按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDialogCloseBtnClickEventContext : VueProps
 {
@@ -3458,11 +5307,17 @@ public record TDialogCloseBtnClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCloseBtnValue(string, bool)
 {
 }
 
+/// <summary>
+/// 关闭事件，点击取消按钮、点击关闭按钮、点击蒙层、按下 ESC 等场景下触发
+/// </summary>
 [ECMAScript]
 public record TDialogCloseContext : VueProps
 {
@@ -3473,11 +5328,19 @@ public record TDialogCloseContext : VueProps
     public TDialogCloseContextE E { get; init; }
 }
 
+/// <summary>
+/// 关闭事件，点击取消按钮、点击关闭按钮、点击蒙层、按下 ESC 等场景下触发
+/// </summary>
 [ECMAScript]
 public readonly union TDialogCloseContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TDialogConfig : VueProps
 {
@@ -3503,16 +5366,31 @@ public record TDialogConfig : VueProps
     public Number? ZIndex { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TDialogConfigCancel(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TDialogConfigConfirm(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TDialogConfigConfirmBtnTheme : VueProps
 {
@@ -3537,21 +5415,38 @@ public record TDialogConfigConfirmBtnTheme : VueProps
     public string Success { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDialogConfigPlacement
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
 }
 
+/// <summary>
+/// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+/// </summary>
 [ECMAScript]
 public readonly union TDialogConfirmBtnValue(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
+/// </summary>
 [ECMAScript]
 public record TDialogConfirmEventContext : VueProps
 {
@@ -3559,11 +5454,17 @@ public record TDialogConfirmEventContext : VueProps
     public TDialogConfirmEventContextE E { get; init; }
 }
 
+/// <summary>
+/// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDialogConfirmEventContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 按下 ESC 时触发事件
+/// </summary>
 [ECMAScript]
 public record TDialogEscKeydownEventContext : VueProps
 {
@@ -3572,39 +5473,75 @@ public record TDialogEscKeydownEventContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭事件，点击取消按钮、点击关闭按钮、点击蒙层、按下 ESC 等场景下触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDialogEventSource
 {
+    /// <summary>
+    /// JavaScript value: esc.
+    /// </summary>
     [Description("@#esc")]
     Esc,
+    /// <summary>
+    /// JavaScript value: close-btn.
+    /// </summary>
     [Description("@#close-btn")]
     CloseBtn,
+    /// <summary>
+    /// JavaScript value: cancel.
+    /// </summary>
     [Description("@#cancel")]
     Cancel,
+    /// <summary>
+    /// JavaScript value: overlay.
+    /// </summary>
     [Description("@#overlay")]
     Overlay,
 }
 
+/// <summary>
+/// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
+/// </summary>
 [ECMAScript]
 public readonly union TDialogHeaderValue(string, bool)
 {
 }
 
+/// <summary>
+/// 对话框类型，有 4 种：模态对话框、非模态对话框、普通对话框、全屏对话框。弹出「模态对话框」时，只能操作对话框里面的内容，不能操作其他内容。弹出「非模态对话框」时，则可以操作页面内所有内容。「普通对话框」是指没有脱离文档流的对话框，可以在这个基础上开发更多的插件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDialogModeValue
 {
+    /// <summary>
+    /// JavaScript value: modal.
+    /// </summary>
     [Description("@#modal")]
     Modal,
+    /// <summary>
+    /// JavaScript value: modeless.
+    /// </summary>
     [Description("@#modeless")]
     Modeless,
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: full-screen.
+    /// </summary>
     [Description("@#full-screen")]
     FullScreen,
 }
 
+/// <summary>
+/// 如果蒙层存在，点击蒙层时触发
+/// </summary>
 [ECMAScript]
 public record TDialogOverlayClickEventContext : VueProps
 {
@@ -3613,57 +5550,107 @@ public record TDialogOverlayClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 对话框位置，内置两种：垂直水平居中显示 和 靠近顶部（top:20%）显示。默认情况，为避免贴顶或贴底，顶部和底部距离最小为 `48px`，可通过调整 `top` 覆盖默认大小
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDialogPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
 }
 
+/// <summary>
+/// 对话框风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDialogThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: info.
+    /// </summary>
     [Description("@#info")]
     Info,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// 用于弹框具体窗口顶部的距离，优先级大于 placement
+/// </summary>
 [ECMAScript]
 public readonly union TDialogTopValue(string, Number)
 {
 }
 
+/// <summary>
+/// 对话框宽度，示例：320, '500px', '80%'
+/// </summary>
 [ECMAScript]
 public readonly union TDialogWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDirection
 {
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
 }
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public readonly union TDisableDate(TDateValue[], TDisableDateObj, TDisableDateOption3)
 {
 }
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public record TDisableDateObj : VueProps
 {
@@ -3680,17 +5667,29 @@ public record TDisableDateObj : VueProps
     public string? After { get; init; }
 }
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public delegate bool TDisableDateOption3(TDateValue date);
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public readonly union TDisableRangeDate(TDateValue[], TDisableDateObj, TDisableRangeDateOption3)
 {
 }
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public delegate bool TDisableRangeDateOption3(TDisableRangeDateOption3Context context);
 
+/// <summary>
+/// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+/// </summary>
 [ECMAScript]
 public record TDisableRangeDateOption3Context : VueProps
 {
@@ -3702,38 +5701,73 @@ public record TDisableRangeDateOption3Context : VueProps
     public TDateRangePickerPartial Partial { get; init; }
 }
 
+/// <summary>
+/// 文本位置（仅在水平分割线有效）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDividerAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
 }
 
+/// <summary>
+/// 分隔线类型有两种：水平和垂直
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDividerLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 请更为使用 `layout`。分隔线类型有两种：水平和垂直
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDividerThemeValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 public record TDragSortContext<T> : VueProps
 {
@@ -3768,16 +5802,30 @@ public record TDragSortContext<T> : VueProps
     public TDragSortContextSort Sort { get; init; }
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDragSortContextSort
 {
+    /// <summary>
+    /// JavaScript value: row.
+    /// </summary>
     [Description("@#row")]
     Row,
+    /// <summary>
+    /// JavaScript value: col.
+    /// </summary>
     [Description("@#col")]
     Col,
 }
 
+/// <summary>
+/// 如果“取消”按钮存在，点击“取消”按钮时触发，同时触发关闭事件
+/// </summary>
 [ECMAScript]
 public record TDrawerCancelEventContext : VueProps
 {
@@ -3786,6 +5834,9 @@ public record TDrawerCancelEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 如果关闭按钮存在，点击关闭按钮时触发该事件，同时触发关闭事件
+/// </summary>
 [ECMAScript]
 public record TDrawerCloseBtnClickEventContext : VueProps
 {
@@ -3794,11 +5845,17 @@ public record TDrawerCloseBtnClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+/// </summary>
 [ECMAScript]
 public readonly union TDrawerCloseBtnValue(string, bool)
 {
 }
 
+/// <summary>
+/// 关闭事件，取消按钮点击时、关闭按钮点击时、ESC 按下时、点击蒙层时均会触发
+/// </summary>
 [ECMAScript]
 public record TDrawerCloseContext : VueProps
 {
@@ -3809,11 +5866,19 @@ public record TDrawerCloseContext : VueProps
     public TDrawerCloseContextE E { get; init; }
 }
 
+/// <summary>
+/// 关闭事件，取消按钮点击时、关闭按钮点击时、ESC 按下时、点击蒙层时均会触发
+/// </summary>
 [ECMAScript]
 public readonly union TDrawerCloseContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TDrawerConfig : VueProps
 {
@@ -3833,16 +5898,29 @@ public record TDrawerConfig : VueProps
     public string? Size { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TDrawerConfigCancel(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TDrawerConfigConfirm(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 如果“确认”按钮存在，则点击“确认”按钮时触发
+/// </summary>
 [ECMAScript]
 public record TDrawerConfirmEventContext : VueProps
 {
@@ -3851,6 +5929,9 @@ public record TDrawerConfirmEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 按下 ESC 键时触发
+/// </summary>
 [ECMAScript]
 public record TDrawerEscKeydownEventContext : VueProps
 {
@@ -3859,35 +5940,65 @@ public record TDrawerEscKeydownEventContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭事件，取消按钮点击时、关闭按钮点击时、ESC 按下时、点击蒙层时均会触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDrawerEventSource
 {
+    /// <summary>
+    /// JavaScript value: esc.
+    /// </summary>
     [Description("@#esc")]
     Esc,
+    /// <summary>
+    /// JavaScript value: close-btn.
+    /// </summary>
     [Description("@#close-btn")]
     CloseBtn,
+    /// <summary>
+    /// JavaScript value: cancel.
+    /// </summary>
     [Description("@#cancel")]
     Cancel,
+    /// <summary>
+    /// JavaScript value: overlay.
+    /// </summary>
     [Description("@#overlay")]
     Overlay,
 }
 
+/// <summary>
+/// 头部内容。值为 true 显示空白头部，值为 false 不显示头部，值类型为 string 则直接显示值，值类型为 TNode 表示自定义头部内容
+/// </summary>
 [ECMAScript]
 public readonly union TDrawerHeaderValue(string, bool)
 {
 }
 
+/// <summary>
+/// 展开方式，有两种：直接展示在内容上方 和 推开内容区域
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDrawerModeValue
 {
+    /// <summary>
+    /// JavaScript value: overlay.
+    /// </summary>
     [Description("@#overlay")]
     Overlay,
+    /// <summary>
+    /// JavaScript value: push.
+    /// </summary>
     [Description("@#push")]
     Push,
 }
 
+/// <summary>
+/// 如果蒙层存在，点击蒙层时触发
+/// </summary>
 [ECMAScript]
 public record TDrawerOverlayClickEventContext : VueProps
 {
@@ -3896,20 +6007,40 @@ public record TDrawerOverlayClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 抽屉方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDrawerPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// trigger on size drag end
+///
+/// 抽屉大小拖拽结束时触发，事件参数 `size` 在横向抽屉中表示宽度，在纵向抽屉中表示高度
+/// </summary>
 [ECMAScript]
 public record TDrawerSizeDragEndEventContext : VueProps
 {
@@ -3921,11 +6052,19 @@ public record TDrawerSizeDragEndEventContext : VueProps
     public Number Size { get; init; }
 }
 
+/// <summary>
+/// allow resizing drawer width/height, set `max` or `min` to limit size
+///
+/// 抽屉大小可拖拽调整，横向抽屉调整宽度，纵向抽屉调整高度。`sizeDraggable.max` 和 `sizeDraggable.min` 用于控制拖拽尺寸大小限制
+/// </summary>
 [ECMAScript]
 public readonly union TDrawerSizeDraggableValue(bool, TSizeDragLimit)
 {
 }
 
+/// <summary>
+/// 下拉操作项点击时触发
+/// </summary>
 [ECMAScript]
 public record TDropdownClickEventContext : VueProps
 {
@@ -3934,21 +6073,36 @@ public record TDropdownClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 下拉操作项点击时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDropdownClickEventDropdownItem(string, Number, TJsonObject)
 {
 }
 
+/// <summary>
+/// 多层级操作时，子层级展开方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDropdownDirectionValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TDropdownItemClickEventContext : VueProps
 {
@@ -3957,40 +6111,70 @@ public record TDropdownItemClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public readonly union TDropdownItemClickEventDropdownItem(string, Number, TJsonObject)
 {
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDropdownItemTheme
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 下拉操作项唯一标识
+/// </summary>
 [ECMAScript]
 public readonly union TDropdownItemValueValue(string, Number, TJsonObject)
 {
 }
 
+/// <summary>
+/// 选项最大宽度，内容超出时，显示为省略号。值为字符串时，值就是最大宽度；值为数字时，单位：px
+/// </summary>
 [ECMAScript]
 public readonly union TDropdownMaxColumnWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 选项最小宽度。值为字符串时，值就是最小宽度；值为数字时，单位：px
+/// </summary>
 [ECMAScript]
 public readonly union TDropdownMinColumnWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public record TDropdownOption : VueProps
 {
@@ -4022,53 +6206,115 @@ public record TDropdownOption : VueProps
     public TDropdownOption[]? Children { get; init; }
 }
 
+/// <summary>
+/// 弹窗定位方式，可选值同 Popup 组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDropdownPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
+    /// <summary>
+    /// JavaScript value: top-left.
+    /// </summary>
     [Description("@#top-left")]
     TopLeft,
+    /// <summary>
+    /// JavaScript value: top-right.
+    /// </summary>
     [Description("@#top-right")]
     TopRight,
+    /// <summary>
+    /// JavaScript value: bottom-left.
+    /// </summary>
     [Description("@#bottom-left")]
     BottomLeft,
+    /// <summary>
+    /// JavaScript value: bottom-right.
+    /// </summary>
     [Description("@#bottom-right")]
     BottomRight,
+    /// <summary>
+    /// JavaScript value: left-top.
+    /// </summary>
     [Description("@#left-top")]
     LeftTop,
+    /// <summary>
+    /// JavaScript value: left-bottom.
+    /// </summary>
     [Description("@#left-bottom")]
     LeftBottom,
+    /// <summary>
+    /// JavaScript value: right-top.
+    /// </summary>
     [Description("@#right-top")]
     RightTop,
+    /// <summary>
+    /// JavaScript value: right-bottom.
+    /// </summary>
     [Description("@#right-bottom")]
     RightBottom,
 }
 
+/// <summary>
+/// 触发下拉显示的方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TDropdownTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
+    /// <summary>
+    /// JavaScript value: focus.
+    /// </summary>
     [Description("@#focus")]
     Focus,
+    /// <summary>
+    /// JavaScript value: context-menu.
+    /// </summary>
     [Description("@#context-menu")]
     ContextMenu,
 }
 
+/// <summary>
+/// 单元格是否允许编辑。返回值为 `true` 则表示可编辑；返回值为 `false` 则表示不可编辑，只读状态
+/// </summary>
 [ECMAScript]
 public delegate bool TEditableCellType<T>(TPrimaryTableCellParams<T> @params);
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TEmptyConfig : VueProps
 {
@@ -4079,6 +6325,11 @@ public record TEmptyConfig : VueProps
     public TEmptyConfigTitleText? TitleText { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TEmptyConfigImage : VueProps
 {
@@ -4103,6 +6354,11 @@ public record TEmptyConfigImage : VueProps
     public RenderFragment NetworkError { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TEmptyConfigTitleText : VueProps
 {
@@ -4127,37 +6383,71 @@ public record TEmptyConfigTitleText : VueProps
     public string NetworkError { get; init; } = default!;
 }
 
+/// <summary>
+/// image url, or Image component props, or custom any node you need
+///
+/// 组件图片，可以完全自定义内容。值类型为字符串时，表示图片地址；值类型为对象时，则表示透传全部属性到图片组件，示例：`&lt;Empty image={{ src: '', shape: 'round' }} /&gt;`
+/// </summary>
 [ECMAScript]
 public readonly union TEmptyImageValue(string, TdImageProps)
 {
 }
 
+/// <summary>
+/// 列表为空时呈现的内容。值类型为数组，则表示分别控制源列表和目标列表数据为空的呈现内容
+/// </summary>
 [ECMAScript]
 public readonly union TEmptyType(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// Empty component type
+///
+/// 组件类型，如：空数据/成功/失败/网络错误/建设中
+/// </summary>
 [ECMAScript]
 [String]
 public enum TEmptyTypeValue
 {
+    /// <summary>
+    /// JavaScript value: empty.
+    /// </summary>
     [Description("@#empty")]
     Empty,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: fail.
+    /// </summary>
     [Description("@#fail")]
     Fail,
+    /// <summary>
+    /// JavaScript value: network-error.
+    /// </summary>
     [Description("@#network-error")]
     NetworkError,
+    /// <summary>
+    /// JavaScript value: maintenance.
+    /// </summary>
     [Description("@#maintenance")]
     Maintenance,
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableActiveChangeEventActiveRowKeysItem.
+/// </summary>
 [ECMAScript]
 public readonly union TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableAsyncLoadingClickEventContext.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableAsyncLoadingClickEventContext<T> : VueProps
 {
@@ -4165,19 +6455,36 @@ public record TEnhancedTableAsyncLoadingClickEventContext<T> : VueProps
     public TEnhancedTableAsyncLoadingClickEventContextStatus Status { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableAsyncLoadingClickEventContextStatus.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TEnhancedTableAsyncLoadingClickEventContextStatus
 {
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
+    /// <summary>
+    /// JavaScript value: load-more.
+    /// </summary>
     [Description("@#load-more")]
     LoadMore,
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 public delegate bool TEnhancedTableBeforeDragSortValue<T>(TDragSortContext<T> context);
 
+/// <summary>
+/// TDesign binding type TEnhancedTableColumnControllerVisibleChangeEventContext.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
@@ -4185,18 +6492,33 @@ public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VuePr
     public TEnhancedTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableColumnControllerVisibleChangeEventContextTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TEnhancedTableColumnControllerVisibleChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: cancel.
+    /// </summary>
     [Description("@#cancel")]
     Cancel,
+    /// <summary>
+    /// JavaScript value: confirm.
+    /// </summary>
     [Description("@#confirm")]
     Confirm,
+    /// <summary>
+    /// JavaScript value: open.
+    /// </summary>
     [Description("@#open")]
     Open,
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableColumnResizeChangeEventContext.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableColumnResizeChangeEventContext<T> : VueProps
 {
@@ -4205,26 +6527,45 @@ public record TEnhancedTableColumnResizeChangeEventContext<T> : VueProps
     public TEnhancedTableColumnResizeChangeEventContextColumnsWidth<T> ColumnsWidth { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableColumnResizeChangeEventContextColumnsWidth.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionary<Number>
 {
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableExpandChangeEventExpandedRowKeysItem.
+/// </summary>
 [ECMAScript]
 public readonly union TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded
+///
+/// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public readonly union TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// expanded tree node row keys, row key value is from data[rowKey]
+///
+/// 展开的树形节点。非必须。在需要自由控制展开的树形节点时使用。其他场景无需设置，表格组件有内置展开逻辑
+/// </summary>
 [ECMAScript]
 public readonly union TEnhancedTableExpandedTreeNodesValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableScrollEventParams.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableScrollEventParams<T> : VueProps
 {
@@ -4233,6 +6574,9 @@ public record TEnhancedTableScrollEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableScrollXEventParams.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableScrollXEventParams<T> : VueProps
 {
@@ -4241,6 +6585,9 @@ public record TEnhancedTableScrollXEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableScrollYEventParams.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableScrollYEventParams<T> : VueProps
 {
@@ -4249,11 +6596,17 @@ public record TEnhancedTableScrollYEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableSelectChangeEventSelectedRowKeysItem.
+/// </summary>
 [ECMAScript]
 public readonly union TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableTreeExpandAndFoldIconSlotContext.
+/// </summary>
 [ECMAScript]
 public record TEnhancedTableTreeExpandAndFoldIconSlotContext<T> : VueProps
 {
@@ -4264,16 +6617,28 @@ public record TEnhancedTableTreeExpandAndFoldIconSlotContext<T> : VueProps
     public T Row { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TEnhancedTableTreeExpandAndFoldIconSlotContextType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TEnhancedTableTreeExpandAndFoldIconSlotContextType
 {
+    /// <summary>
+    /// JavaScript value: expand.
+    /// </summary>
     [Description("@#expand")]
     Expand,
+    /// <summary>
+    /// JavaScript value: fold.
+    /// </summary>
     [Description("@#fold")]
     Fold,
 }
 
+/// <summary>
+/// TDesign binding type TExpandArrowRenderParams.
+/// </summary>
 [ECMAScript]
 public record TExpandArrowRenderParams<T> : VueProps
 {
@@ -4284,6 +6649,9 @@ public record TExpandArrowRenderParams<T> : VueProps
     public Number Index { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TExpandOptions.
+/// </summary>
 [ECMAScript]
 public record TExpandOptions<T> : VueProps
 {
@@ -4295,28 +6663,51 @@ public record TExpandOptions<T> : VueProps
     public T CurrentRowData { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TFilterProps.
+/// </summary>
 [ECMAScript]
 public readonly union TFilterProps(TdRadioProps<TRadioValue>, TdCheckboxProps, TdInputProps<TInputValue>, TJsonObject)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFilterType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFilterType
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+/// </summary>
 [ECMAScript]
 public readonly union TFooterButton(string, TdButtonProps, RenderFragment)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TFormConfig : VueProps
 {
@@ -4333,16 +6724,32 @@ public record TFormConfig : VueProps
     public TFormConfigRequiredMarkPosition? RequiredMarkPosition { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormConfigRequiredMarkPosition
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TFormErrorMessage : VueProps
 {
@@ -4389,72 +6796,137 @@ public record TFormErrorMessage : VueProps
     public string? Whitespace { get; init; }
 }
 
+/// <summary>
+/// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐。默认使用 Form 的对齐方式，优先级高于 Form.labelAlign
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormItemLabelAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
 }
 
+/// <summary>
+/// 可以整体设置标签宽度，优先级高于 Form.labelWidth
+/// </summary>
 [ECMAScript]
 public readonly union TFormItemLabelWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 校验状态，可在需要完全自主控制校验状态时使用
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormItemStatusValue
 {
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormLabelAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
 }
 
+/// <summary>
+/// 可以整体设置label标签宽度，默认为100px
+/// </summary>
 [ECMAScript]
 public readonly union TFormLabelWidthValue<FormData>(string, Number)
 {
 }
 
+/// <summary>
+/// 表单布局，有两种方式：纵向布局 和 行内布局
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
+    /// <summary>
+    /// JavaScript value: inline.
+    /// </summary>
     [Description("@#inline")]
     Inline,
 }
 
+/// <summary>
+/// Display position of required symbols
+///
+/// 表单必填符号（*）显示位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormRequiredMarkPositionValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 表单重置时触发
+/// </summary>
 [ECMAScript]
 public record TFormResetEventContext<FormData> : VueProps
 {
@@ -4462,16 +6934,28 @@ public record TFormResetEventContext<FormData> : VueProps
     public EventRef? E { get; init; }
 }
 
+/// <summary>
+/// 重置表单的方式，值为 empty 表示重置表单为空，值为 initial 表示重置表单数据为初始值
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormResetTypeValue
 {
+    /// <summary>
+    /// JavaScript value: empty.
+    /// </summary>
     [Description("@#empty")]
     Empty,
+    /// <summary>
+    /// JavaScript value: initial.
+    /// </summary>
     [Description("@#initial")]
     Initial,
 }
 
+/// <summary>
+/// TDesign binding type TFormRule.
+/// </summary>
 [ECMAScript]
 public record TFormRule : VueProps
 {
@@ -4530,73 +7014,126 @@ public record TFormRule : VueProps
     public bool? Whitespace { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleDate.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRuleDate(bool, TIsDateOptions)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleEmail.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRuleEmail(bool, TIsEmailOptions)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleLen.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRuleLen(Number, bool)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleMax.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRuleMax(Number, bool)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleMin.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRuleMin(Number, bool)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFormRulePattern.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRulePattern(RegExp, string)
 {
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormRuleType
 {
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
 }
 
+/// <summary>
+/// TDesign binding type TFormRuleUrl.
+/// </summary>
 [ECMAScript]
 public readonly union TFormRuleUrl(bool, TIsURLOptions)
 {
 }
 
+/// <summary>
+/// 表单字段校验规则
+/// </summary>
 [ECMAScript]
 public record TFormRules<T> : VueDictionary<TFormRule[]>
 {
 }
 
+/// <summary>
+/// 表单校验不通过时，是否自动滚动到第一个校验不通过的字段，平滑滚动或是瞬间直达。值为空则表示不滚动
+/// </summary>
 [ECMAScript]
 [String]
 public enum TFormScrollToFirstErrorValue
 {
+    /// <summary>
+    /// JavaScript value: .
+    /// </summary>
     [Description("@#")]
     Value,
+    /// <summary>
+    /// JavaScript value: smooth.
+    /// </summary>
     [Description("@#smooth")]
     Smooth,
+    /// <summary>
+    /// JavaScript value: auto.
+    /// </summary>
     [Description("@#auto")]
     Auto,
 }
 
+/// <summary>
+/// 表单提交时触发。其中 `context.validateResult` 表示校验结果，`context.firstError` 表示校验不通过的第一个规则提醒。`context.validateResult` 值为 `true` 表示校验通过；如果校验不通过，`context.validateResult` 值为校验结果列表。&lt;br /&gt;【注意】⚠️ 默认情况，输入框按下 Enter 键会自动触发提交事件，如果希望禁用这个默认行为，可以给输入框添加  enter 事件，并在事件中设置 `e.preventDefault()`
+/// </summary>
 [ECMAScript]
 public readonly union TFormValidateResult<T>(bool, TValidateResultObj<T>)
 {
 }
 
+/// <summary>
+/// redefine response data structure
+///
+/// 用于格式化文件上传后的接口响应数据，`response` 便是接口响应的原始数据。`action` 存在时有效。&lt;br/&gt; 示例返回值：`{ error, url, status, files }` &lt;br/&gt; 此函数的返回值 `error` 会作为错误文本提醒，表示上传失败的原因，如果存在会判定为本次上传失败。&lt;br/&gt; 此函数的返回值 `url` 会作为单个文件上传成功后的链接。&lt;br/&gt; `files` 表示一个请求同时上传多个文件后的文件列表
+/// </summary>
 [ECMAScript]
 public record TFormatResponseContext : VueProps
 {
@@ -4608,6 +7145,11 @@ public record TFormatResponseContext : VueProps
     public TUploadFile[]? CurrentFiles { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TGlobalConfigProvider : VueProps
 {
@@ -4723,6 +7265,11 @@ public record TGlobalConfigProvider : VueProps
     public TUploadConfig? Upload { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TGlobalIconConfig : VueProps
 {
@@ -9439,9 +11986,19 @@ public record TGlobalIconConfig : VueProps
     public TGlobalIconType? ZoomOutIcon { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate RenderFragment TGlobalIconType();
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public record TGroupOptions : VueProps
 {
@@ -9465,46 +12022,97 @@ public record TGroupOptions : VueProps
     public bool? RevertClone { get; init; }
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate TGroupOptionsCheckPullOption1Result TGroupOptionsCheckPullOption1(TSortable sortable, TSortable activeSortable, HTMLElement dragEl, TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TGroupOptionsCheckPullOption1Result(bool, string, string[])
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate TGroupOptionsCheckPutOption1Result TGroupOptionsCheckPutOption1(TSortable sortable, TSortable activeSortable, HTMLElement dragEl, TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TGroupOptionsCheckPutOption1Result(bool, string, TGroupOptionsCheckPutOption1ResultOption3, string[])
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TGroupOptionsCheckPutOption1ResultOption3
 {
+    /// <summary>
+    /// JavaScript value: clone.
+    /// </summary>
     [Description("@#clone")]
     CloneElement,
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TGroupOptionsPull(TPullResult, TGroupOptionsPullOption2)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate TPullResult TGroupOptionsPullOption2(TSortable to, TSortable @from, HTMLElement dragEl, TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TGroupOptionsPut(TPutResult, TGroupOptionsPutOption2)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate TPutResult TGroupOptionsPutOption2(TSortable to, TSortable @from, HTMLElement dragEl, TSortableEvent @event);
 
+/// <summary>
+/// 当前步骤发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TGuideChangeEventContext : VueProps
 {
@@ -9516,6 +12124,11 @@ public record TGuideChangeEventContext : VueProps
     public Number Total { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TGuideConfig : VueProps
 {
@@ -9532,6 +12145,9 @@ public record TGuideConfig : VueProps
     public TdButtonProps? SkipButtonProps { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TGuideCounterSlotContext.
+/// </summary>
 [ECMAScript]
 public record TGuideCounterSlotContext : VueProps
 {
@@ -9542,6 +12158,9 @@ public record TGuideCounterSlotContext : VueProps
     public Number Total { get; init; }
 }
 
+/// <summary>
+/// 点击完成按钮时触发
+/// </summary>
 [ECMAScript]
 public record TGuideFinishEventContext : VueProps
 {
@@ -9556,16 +12175,28 @@ public record TGuideFinishEventContext : VueProps
     public Number Total { get; init; }
 }
 
+/// <summary>
+/// 引导框的类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TGuideModeValue
 {
+    /// <summary>
+    /// JavaScript value: popup.
+    /// </summary>
     [Description("@#popup")]
     Popup,
+    /// <summary>
+    /// JavaScript value: dialog.
+    /// </summary>
     [Description("@#dialog")]
     Dialog,
 }
 
+/// <summary>
+/// 点击下一步时触发
+/// </summary>
 [ECMAScript]
 public record TGuideNextStepClickEventContext : VueProps
 {
@@ -9583,6 +12214,9 @@ public record TGuideNextStepClickEventContext : VueProps
     public Number Total { get; init; }
 }
 
+/// <summary>
+/// 点击上一步时触发
+/// </summary>
 [ECMAScript]
 public record TGuidePrevStepClickEventContext : VueProps
 {
@@ -9600,6 +12234,9 @@ public record TGuidePrevStepClickEventContext : VueProps
     public Number Total { get; init; }
 }
 
+/// <summary>
+/// 点击跳过按钮时触发
+/// </summary>
 [ECMAScript]
 public record TGuideSkipEventContext : VueProps
 {
@@ -9614,6 +12251,9 @@ public record TGuideSkipEventContext : VueProps
     public Number Total { get; init; }
 }
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 public record TGuideStep : VueProps
 {
@@ -9663,31 +12303,52 @@ public record TGuideStep : VueProps
     public string? Title { get; init; }
 }
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 public readonly union TGuideStepBody(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TGuideStepMode
 {
+    /// <summary>
+    /// JavaScript value: popup.
+    /// </summary>
     [Description("@#popup")]
     Popup,
+    /// <summary>
+    /// JavaScript value: dialog.
+    /// </summary>
     [Description("@#dialog")]
     Dialog,
 }
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 public readonly union TGuideStepOffsetItem(string, Number)
 {
 }
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 public readonly union TGuideStepPlacement(TStepPopupPlacement, TStepDialogPlacement)
 {
 }
 
+/// <summary>
+/// 栅格间隔，示例：`{ xs: 8, sm: 16, md: 24, lg: 32, xl: 32, xxl: 40 }`。当数据类型为 Number 和 Object 时，用于指定横向间隔。当数据类型为数组时，第一个参数为横向间隔，第二个参数为纵向间隔， [水平间隔, 垂直间隔]
+/// </summary>
 [ECMAScript]
 public record TGutterObject : VueProps
 {
@@ -9710,31 +12371,57 @@ public record TGutterObject : VueProps
     public Number? Xxl { get; init; }
 }
 
+/// <summary>
+/// `tr` attributes
+///
+/// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+/// </summary>
 [ECMAScript]
 public record THTMLElementAttributes : VueDictionary<string>
 {
 }
 
+/// <summary>
+/// 二级菜单展开方式，平铺展开和浮层展开
+/// </summary>
 [ECMAScript]
 [String]
 public enum THeadMenuExpandTypeValue
 {
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: popup.
+    /// </summary>
     [Description("@#popup")]
     Popup,
 }
 
+/// <summary>
+/// TDesign binding type THeadMenuThemeValue.
+/// </summary>
 [ECMAScript]
 [String]
 public enum THeadMenuThemeValue
 {
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
 }
 
+/// <summary>
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TIconClickEventContext : VueProps
 {
@@ -9743,11 +12430,19 @@ public record TIconClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 图标地址，地址内容参考[组件内部默认加载图标](https://tdesign.gtimg.com/icon/web/index.js)
+/// </summary>
 [ECMAScript]
 public readonly union TIconUrlValue(string, string[])
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TImageConfig : VueProps
 {
@@ -9761,9 +12456,19 @@ public record TImageConfig : VueProps
     public TImageConfigReplaceImageSrc? ReplaceImageSrc { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate string TImageConfigReplaceImageSrc(TdImageProps @params);
 
+/// <summary>
+/// trigger on image load failed
+///
+/// 图片加载失败时触发
+/// </summary>
 [ECMAScript]
 public record TImageErrorEventContext : VueProps
 {
@@ -9772,22 +12477,43 @@ public record TImageErrorEventContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 图片填充模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageFitValue
 {
+    /// <summary>
+    /// JavaScript value: contain.
+    /// </summary>
     [Description("@#contain")]
     Contain,
+    /// <summary>
+    /// JavaScript value: cover.
+    /// </summary>
     [Description("@#cover")]
     Cover,
+    /// <summary>
+    /// JavaScript value: fill.
+    /// </summary>
     [Description("@#fill")]
     Fill,
+    /// <summary>
+    /// JavaScript value: none.
+    /// </summary>
     [Description("@#none")]
     None,
+    /// <summary>
+    /// JavaScript value: scale-down.
+    /// </summary>
     [Description("@#scale-down")]
     ScaleDown,
 }
 
+/// <summary>
+/// 图片数组。`mainImage` 表示主图，必传；`thumbnail` 表示缩略图，如果不存在，则使用主图显示；`download` 是否允许下载图片，默认允许下载。示例: `['img_url_1', 'img_url_2']`，`[{ thumbnail: 'small_image_url', mainImage: 'big_image_url', download: false }]`
+/// </summary>
 [ECMAScript]
 public record TImageInfo : VueProps
 {
@@ -9804,16 +12530,27 @@ public record TImageInfo : VueProps
     public bool? IsSvg { get; init; }
 }
 
+/// <summary>
+/// 图片数组。`mainImage` 表示主图，必传；`thumbnail` 表示缩略图，如果不存在，则使用主图显示；`download` 是否允许下载图片，默认允许下载。示例: `['img_url_1', 'img_url_2']`，`[{ thumbnail: 'small_image_url', mainImage: 'big_image_url', download: false }]`
+/// </summary>
 [ECMAScript]
 public readonly union TImageInfoMainImage(string, FileRef)
 {
 }
 
+/// <summary>
+/// 图片数组。`mainImage` 表示主图，必传；`thumbnail` 表示缩略图，如果不存在，则使用主图显示；`download` 是否允许下载图片，默认允许下载。示例: `['img_url_1', 'img_url_2']`，`[{ thumbnail: 'small_image_url', mainImage: 'big_image_url', download: false }]`
+/// </summary>
 [ECMAScript]
 public readonly union TImageInfoThumbnail(string, FileRef)
 {
 }
 
+/// <summary>
+/// trigger on image loaded
+///
+/// 图片加载完成时触发
+/// </summary>
 [ECMAScript]
 public record TImageLoadEventContext : VueProps
 {
@@ -9822,38 +12559,79 @@ public record TImageLoadEventContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 浮层 `overlayContent` 出现的时机
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageOverlayTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: always.
+    /// </summary>
     [Description("@#always")]
     Always,
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
 }
 
+/// <summary>
+/// attribute of `&lt;img&gt;`, [MDN Definition](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+///
+/// `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageReferrerpolicyValue
 {
+    /// <summary>
+    /// JavaScript value: no-referrer.
+    /// </summary>
     [Description("@#no-referrer")]
     NoReferrer,
+    /// <summary>
+    /// JavaScript value: no-referrer-when-downgrade.
+    /// </summary>
     [Description("@#no-referrer-when-downgrade")]
     NoReferrerWhenDowngrade,
+    /// <summary>
+    /// JavaScript value: origin.
+    /// </summary>
     [Description("@#origin")]
     Origin,
+    /// <summary>
+    /// JavaScript value: origin-when-cross-origin.
+    /// </summary>
     [Description("@#origin-when-cross-origin")]
     OriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: same-origin.
+    /// </summary>
     [Description("@#same-origin")]
     SameOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin.
+    /// </summary>
     [Description("@#strict-origin")]
     StrictOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin-when-cross-origin.
+    /// </summary>
     [Description("@#strict-origin-when-cross-origin")]
     StrictOriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: unsafe-url.
+    /// </summary>
     [Description("@#unsafe-url")]
     UnsafeUrl,
 }
 
+/// <summary>
+/// 图片缩放相关配置。`imageScale.max` 缩放的最大比例；`imageScale.min` 缩放的最小比例；`imageScale.step` 缩放的步长速度; `imageScale.defaultScale` 默认的缩放比例
+/// </summary>
 [ECMAScript]
 public record TImageScale : VueProps
 {
@@ -9870,23 +12648,43 @@ public record TImageScale : VueProps
     public Number DefaultScale { get; init; }
 }
 
+/// <summary>
+/// 图片圆角类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageShapeValue
 {
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
 }
 
+/// <summary>
+/// src attribute of `&lt;img&gt;`. image File can also be loaded
+///
+/// 用于显示图片的链接或原始图片文件对象
+/// </summary>
 [ECMAScript]
 public readonly union TImageSrcValue(string, FileRef)
 {
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public record TImageSrcset : VueProps
 {
@@ -9899,6 +12697,9 @@ public record TImageSrcset : VueProps
     public string ImageWebp { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
+/// </summary>
 [ECMAScript]
 public record TImageViewerCloseEventContext : VueProps
 {
@@ -9909,23 +12710,43 @@ public record TImageViewerCloseEventContext : VueProps
     public TImageViewerCloseEventContextE E { get; init; }
 }
 
+/// <summary>
+/// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
+/// </summary>
 [ECMAScript]
 public readonly union TImageViewerCloseEventContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageViewerCloseEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: close-btn.
+    /// </summary>
     [Description("@#close-btn")]
     CloseBtn,
+    /// <summary>
+    /// JavaScript value: overlay.
+    /// </summary>
     [Description("@#overlay")]
     Overlay,
+    /// <summary>
+    /// JavaScript value: esc.
+    /// </summary>
     [Description("@#esc")]
     Esc,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TImageViewerConfig : VueProps
 {
@@ -9945,38 +12766,76 @@ public record TImageViewerConfig : VueProps
     public string? RotateTipText { get; init; }
 }
 
+/// <summary>
+/// 自定义预览图片下载操作，url为图片链接
+/// </summary>
 [ECMAScript]
 public readonly union TImageViewerDownloadEventUrl(string, FileRef)
 {
 }
 
+/// <summary>
+/// attribute of `&lt;img&gt;`, [MDN Definition](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+///
+/// 图片预览中的 `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageViewerImageReferrerpolicyValue
 {
+    /// <summary>
+    /// JavaScript value: no-referrer.
+    /// </summary>
     [Description("@#no-referrer")]
     NoReferrer,
+    /// <summary>
+    /// JavaScript value: no-referrer-when-downgrade.
+    /// </summary>
     [Description("@#no-referrer-when-downgrade")]
     NoReferrerWhenDowngrade,
+    /// <summary>
+    /// JavaScript value: origin.
+    /// </summary>
     [Description("@#origin")]
     Origin,
+    /// <summary>
+    /// JavaScript value: origin-when-cross-origin.
+    /// </summary>
     [Description("@#origin-when-cross-origin")]
     OriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: same-origin.
+    /// </summary>
     [Description("@#same-origin")]
     SameOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin.
+    /// </summary>
     [Description("@#strict-origin")]
     StrictOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin-when-cross-origin.
+    /// </summary>
     [Description("@#strict-origin-when-cross-origin")]
     StrictOriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: unsafe-url.
+    /// </summary>
     [Description("@#unsafe-url")]
     UnsafeUrl,
 }
 
+/// <summary>
+/// 图片数组。`mainImage` 表示主图，必传；`thumbnail` 表示缩略图，如果不存在，则使用主图显示；`download` 是否允许下载图片，默认允许下载。示例: `['img_url_1', 'img_url_2']`，`[{ thumbnail: 'small_image_url', mainImage: 'big_image_url', download: false }]`
+/// </summary>
 [ECMAScript]
 public readonly union TImageViewerImagesValueItem(string, FileRef, TImageInfo)
 {
 }
 
+/// <summary>
+/// 预览图片切换时触发，`context.prev` 切换到上一张图片，`context.next` 切换到下一张图片
+/// </summary>
 [ECMAScript]
 public record TImageViewerIndexChangeEventContext : VueProps
 {
@@ -9984,28 +12843,52 @@ public record TImageViewerIndexChangeEventContext : VueProps
     public TImageViewerIndexChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 预览图片切换时触发，`context.prev` 切换到上一张图片，`context.next` 切换到下一张图片
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageViewerIndexChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: prev.
+    /// </summary>
     [Description("@#prev")]
     Prev,
+    /// <summary>
+    /// JavaScript value: next.
+    /// </summary>
     [Description("@#next")]
     Next,
+    /// <summary>
+    /// JavaScript value: current.
+    /// </summary>
     [Description("@#current")]
     Current,
 }
 
+/// <summary>
+/// 模态预览（modal）和非模态预览（modeless)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TImageViewerModeValue
 {
+    /// <summary>
+    /// JavaScript value: modal.
+    /// </summary>
     [Description("@#modal")]
     Modal,
+    /// <summary>
+    /// JavaScript value: modeless.
+    /// </summary>
     [Description("@#modeless")]
     Modeless,
 }
 
+/// <summary>
+/// 限制预览器缩放的最小宽度和最小高度，仅 `mode=modeless` 时有效
+/// </summary>
 [ECMAScript]
 public record TImageViewerScale : VueProps
 {
@@ -10016,18 +12899,35 @@ public record TImageViewerScale : VueProps
     public Number MinHeight { get; init; }
 }
 
+/// <summary>
+/// text align type
+///
+/// 文本内容位置，居左/居中/居右
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TInputBlurEventContext<T> : VueProps
 {
@@ -10036,6 +12936,11 @@ public record TInputBlurEventContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on input value changed
+///
+/// 输入框值发生变化时触发。参数 `trigger=initial` 表示传入的数据不符合预期，组件自动处理后触发 change 告知父组件。如：初始值长度超过 `maxlength` 限制
+/// </summary>
 [ECMAScript]
 public record TInputChangeEventContext<T> : VueProps
 {
@@ -10046,23 +12951,45 @@ public record TInputChangeEventContext<T> : VueProps
     public TInputChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// trigger on input value changed
+///
+/// 输入框值发生变化时触发。参数 `trigger=initial` 表示传入的数据不符合预期，组件自动处理后触发 change 告知父组件。如：初始值长度超过 `maxlength` 限制
+/// </summary>
 [ECMAScript]
 public readonly union TInputChangeEventContextE<T>(InputEvent, MouseEvent, CompositionEvent)
 {
 }
 
+/// <summary>
+/// trigger on input value changed
+///
+/// 输入框值发生变化时触发。参数 `trigger=initial` 表示传入的数据不符合预期，组件自动处理后触发 change 告知父组件。如：初始值长度超过 `maxlength` 限制
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: initial.
+    /// </summary>
     [Description("@#initial")]
     Initial,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TInputClearEventContext<T> : VueProps
 {
@@ -10071,6 +12998,9 @@ public record TInputClearEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击组件时触发
+/// </summary>
 [ECMAScript]
 public record TInputClickEventContext<T> : VueProps
 {
@@ -10079,6 +13009,11 @@ public record TInputClickEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on compositionend
+///
+/// 中文输入结束时触发
+/// </summary>
 [ECMAScript]
 public record TInputCompositionendEventContext<T> : VueProps
 {
@@ -10087,6 +13022,11 @@ public record TInputCompositionendEventContext<T> : VueProps
     public CompositionEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on compositionstart
+///
+/// 中文输入开始时触发
+/// </summary>
 [ECMAScript]
 public record TInputCompositionstartEventContext<T> : VueProps
 {
@@ -10095,6 +13035,11 @@ public record TInputCompositionstartEventContext<T> : VueProps
     public CompositionEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TInputConfig : VueProps
 {
@@ -10105,6 +13050,9 @@ public record TInputConfig : VueProps
     public string? Placeholder { get; init; }
 }
 
+/// <summary>
+/// 回车键按下时触发
+/// </summary>
 [ECMAScript]
 public record TInputEnterEventContext<T> : VueProps
 {
@@ -10113,6 +13061,9 @@ public record TInputEnterEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TInputFocusEventContext<T> : VueProps
 {
@@ -10121,9 +13072,15 @@ public record TInputFocusEventContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate string TInputFormatType(string @value);
 
+/// <summary>
+/// 键盘按下时触发
+/// </summary>
 [ECMAScript]
 public record TInputKeydownEventContext<T> : VueProps
 {
@@ -10132,6 +13089,9 @@ public record TInputKeydownEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
+/// </summary>
 [ECMAScript]
 public record TInputKeypressEventContext<T> : VueProps
 {
@@ -10140,6 +13100,9 @@ public record TInputKeypressEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 释放键盘时触发
+/// </summary>
 [ECMAScript]
 public record TInputKeyupEventContext<T> : VueProps
 {
@@ -10148,11 +13111,19 @@ public record TInputKeyupEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用户最多可以输入的文本长度，一个中文等于一个计数长度。默认为空，不限制输入长度。`maxcharacter` 和 `maxlength` 二选一使用
+/// </summary>
 [ECMAScript]
 public readonly union TInputMaxlengthValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// trigger on mouseenter
+///
+/// 进入输入框时触发
+/// </summary>
 [ECMAScript]
 public record TInputMouseenterEventContext<T> : VueProps
 {
@@ -10161,6 +13132,11 @@ public record TInputMouseenterEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on mouseleave
+///
+/// 离开输入框时触发
+/// </summary>
 [ECMAScript]
 public record TInputMouseleaveEventContext<T> : VueProps
 {
@@ -10169,18 +13145,33 @@ public record TInputMouseleaveEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 文本内容位置，居左/居中/居右
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputNumberAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TInputNumberBlurEventContext<T> : VueProps
 {
@@ -10189,11 +13180,17 @@ public record TInputNumberBlurEventContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// [小数位数](https://en.wiktionary.org/wiki/decimal_place)
+/// </summary>
 [ECMAScript]
 public readonly union TInputNumberDecimalPlaces(Number, TInputNumberDecimalPlacesOption2)
 {
 }
 
+/// <summary>
+/// [小数位数](https://en.wiktionary.org/wiki/decimal_place)
+/// </summary>
 [ECMAScript]
 public record TInputNumberDecimalPlacesOption2 : VueProps
 {
@@ -10204,6 +13201,9 @@ public record TInputNumberDecimalPlacesOption2 : VueProps
     public Number Places { get; init; }
 }
 
+/// <summary>
+/// 回车键按下时触发
+/// </summary>
 [ECMAScript]
 public record TInputNumberEnterEventContext<T> : VueProps
 {
@@ -10212,6 +13212,9 @@ public record TInputNumberEnterEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 获取焦点时触发
+/// </summary>
 [ECMAScript]
 public record TInputNumberFocusEventContext<T> : VueProps
 {
@@ -10220,9 +13223,15 @@ public record TInputNumberFocusEventContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 格式化输入框展示值。第二个事件参数 `context.fixedNumber` 表示处理过小数位数 `decimalPlaces` 的数字
+/// </summary>
 [ECMAScript]
 public delegate TInputNumberValue TInputNumberFormatValue<T>(TInputNumberValue @value, TInputNumberFormatValueContext<T>? context = default);
 
+/// <summary>
+/// 格式化输入框展示值。第二个事件参数 `context.fixedNumber` 表示处理过小数位数 `decimalPlaces` 的数字
+/// </summary>
 [ECMAScript]
 public record TInputNumberFormatValueContext<T> : VueProps
 {
@@ -10230,6 +13239,9 @@ public record TInputNumberFormatValueContext<T> : VueProps
     public TInputNumberValue? FixedNumber { get; init; }
 }
 
+/// <summary>
+/// 键盘按下时触发
+/// </summary>
 [ECMAScript]
 public record TInputNumberKeydownEventContext<T> : VueProps
 {
@@ -10238,6 +13250,9 @@ public record TInputNumberKeydownEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
+/// </summary>
 [ECMAScript]
 public record TInputNumberKeypressEventContext<T> : VueProps
 {
@@ -10246,6 +13261,9 @@ public record TInputNumberKeypressEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 释放键盘时触发
+/// </summary>
 [ECMAScript]
 public record TInputNumberKeyupEventContext<T> : VueProps
 {
@@ -10254,44 +13272,86 @@ public record TInputNumberKeyupEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 组件尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputNumberSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 文本框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputNumberStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 按钮布局
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputNumberThemeValue
 {
+    /// <summary>
+    /// JavaScript value: column.
+    /// </summary>
     [Description("@#column")]
     Column,
+    /// <summary>
+    /// JavaScript value: row.
+    /// </summary>
     [Description("@#row")]
     Row,
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
 }
 
+/// <summary>
+/// 最大值或最小值校验结束后触发，`exceed-maximum` 表示超出最大值，`below-minimum` 表示小于最小值
+/// </summary>
 [ECMAScript]
 public record TInputNumberValidateEventContext<T> : VueProps
 {
@@ -10299,21 +13359,36 @@ public record TInputNumberValidateEventContext<T> : VueProps
     public TInputNumberValidateEventContextError? Error { get; init; }
 }
 
+/// <summary>
+/// 最大值或最小值校验结束后触发，`exceed-maximum` 表示超出最大值，`below-minimum` 表示小于最小值
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputNumberValidateEventContextError
 {
+    /// <summary>
+    /// JavaScript value: exceed-maximum.
+    /// </summary>
     [Description("@#exceed-maximum")]
     ExceedMaximum,
+    /// <summary>
+    /// JavaScript value: below-minimum.
+    /// </summary>
     [Description("@#below-minimum")]
     BelowMinimum,
 }
 
+/// <summary>
+/// 格式化输入框展示值。第二个事件参数 `context.fixedNumber` 表示处理过小数位数 `decimalPlaces` 的数字
+/// </summary>
 [ECMAScript]
 public readonly union TInputNumberValue(Number, string)
 {
 }
 
+/// <summary>
+/// 粘贴事件，`pasteValue` 表示粘贴板的内容
+/// </summary>
 [ECMAScript]
 public record TInputPasteEventContext<T> : VueProps
 {
@@ -10326,42 +13401,91 @@ public record TInputPasteEventContext<T> : VueProps
     public string PasteValue { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// type attribute of input element. if you are using `type=number`, `InputNumber` Component might be better
+///
+/// 输入框类型。`type=number` 仅支持最基础的数字输入功能，更多功能建议使用 `InputNumber` 组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputTypeValue
 {
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
+    /// <summary>
+    /// JavaScript value: number.
+    /// </summary>
     [Description("@#number")]
     Number,
+    /// <summary>
+    /// JavaScript value: url.
+    /// </summary>
     [Description("@#url")]
     Url,
+    /// <summary>
+    /// JavaScript value: tel.
+    /// </summary>
     [Description("@#tel")]
     Tel,
+    /// <summary>
+    /// JavaScript value: password.
+    /// </summary>
     [Description("@#password")]
     Password,
+    /// <summary>
+    /// JavaScript value: search.
+    /// </summary>
     [Description("@#search")]
     Search,
+    /// <summary>
+    /// JavaScript value: submit.
+    /// </summary>
     [Description("@#submit")]
     Submit,
+    /// <summary>
+    /// JavaScript value: hidden.
+    /// </summary>
     [Description("@#hidden")]
     Hidden,
 }
 
+/// <summary>
+/// trigger on text length being over max length or max character
+///
+/// 字数超出限制时触发
+/// </summary>
 [ECMAScript]
 public record TInputValidateEventContext<T> : VueProps
 {
@@ -10369,21 +13493,40 @@ public record TInputValidateEventContext<T> : VueProps
     public TInputValidateEventContextError? Error { get; init; }
 }
 
+/// <summary>
+/// trigger on text length being over max length or max character
+///
+/// 字数超出限制时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputValidateEventContextError
 {
+    /// <summary>
+    /// JavaScript value: exceed-maximum.
+    /// </summary>
     [Description("@#exceed-maximum")]
     ExceedMaximum,
+    /// <summary>
+    /// JavaScript value: below-minimum.
+    /// </summary>
     [Description("@#below-minimum")]
     BelowMinimum,
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TInputValue(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TInputValueChangeContext : VueProps
 {
@@ -10394,25 +13537,52 @@ public record TInputValueChangeContext : VueProps
     public TInputValueChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TInputValueChangeContextE(InputEvent, MouseEvent, CompositionEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TInputValueChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: enter.
+    /// </summary>
     [Description("@#enter")]
     Enter,
+    /// <summary>
+    /// JavaScript value: blur.
+    /// </summary>
     [Description("@#blur")]
     Blur,
 }
 
+/// <summary>
+/// trigger on mouse wheel
+///
+/// 输入框中滚动鼠标时触发
+/// </summary>
 [ECMAScript]
 public record TInputWheelEventContext<T> : VueProps
 {
@@ -10421,6 +13591,9 @@ public record TInputWheelEventContext<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TIsDateOptions.
+/// </summary>
 [ECMAScript]
 public record TIsDateOptions : VueProps
 {
@@ -10436,6 +13609,9 @@ public record TIsDateOptions : VueProps
     public string[] Delimiters { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TIsEmailOptions.
+/// </summary>
 [ECMAScript]
 public record TIsEmailOptions : VueProps
 {
@@ -10473,16 +13649,25 @@ public record TIsEmailOptions : VueProps
     public string? BlacklistedChars { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TIsEmailOptionsHostBlacklistOption1Item.
+/// </summary>
 [ECMAScript]
 public readonly union TIsEmailOptionsHostBlacklistOption1Item(string, RegExp)
 {
 }
 
+/// <summary>
+/// TDesign binding type TIsEmailOptionsHostWhitelistOption1Item.
+/// </summary>
 [ECMAScript]
 public readonly union TIsEmailOptionsHostWhitelistOption1Item(string, RegExp)
 {
 }
 
+/// <summary>
+/// TDesign binding type TIsURLOptions.
+/// </summary>
 [ECMAScript]
 public record TIsURLOptions : VueProps
 {
@@ -10535,31 +13720,49 @@ public record TIsURLOptions : VueProps
     public TIsURLOptionsMaxAllowedLength? MaxAllowedLength { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TIsURLOptionsHostBlacklistOption1Item.
+/// </summary>
 [ECMAScript]
 public readonly union TIsURLOptionsHostBlacklistOption1Item(string, RegExp)
 {
 }
 
+/// <summary>
+/// TDesign binding type TIsURLOptionsHostWhitelistOption1Item.
+/// </summary>
 [ECMAScript]
 public readonly union TIsURLOptionsHostWhitelistOption1Item(string, RegExp)
 {
 }
 
+/// <summary>
+/// TDesign binding type TIsURLOptionsMaxAllowedLength.
+/// </summary>
 [ECMAScript]
 public readonly union TIsURLOptionsMaxAllowedLength(Number, bool)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public sealed record TJsonObject : VueDictionary<TJsonValue>
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TJsonValue(bool, Number, string, TJsonValue[], TJsonObject)
 {
 }
 
+/// <summary>
+/// 按钮禁用配置
+/// </summary>
 [ECMAScript]
 public record TJumperDisabledConfig : VueProps
 {
@@ -10573,6 +13776,9 @@ public record TJumperDisabledConfig : VueProps
     public bool? Next { get; init; }
 }
 
+/// <summary>
+/// 提示文案配置，值为 `true` 显示默认文案；值为 `false` 不显示提示文案；值类型为对象则单独配置文案内容
+/// </summary>
 [ECMAScript]
 public record TJumperTipsConfig : VueProps
 {
@@ -10586,18 +13792,35 @@ public record TJumperTipsConfig : VueProps
     public string? Next { get; init; }
 }
 
+/// <summary>
+/// 按钮点击事件回调
+/// </summary>
 [ECMAScript]
 [String]
 public enum TJumperTrigger
 {
+    /// <summary>
+    /// JavaScript value: prev.
+    /// </summary>
     [Description("@#prev")]
     Prev,
+    /// <summary>
+    /// JavaScript value: current.
+    /// </summary>
     [Description("@#current")]
     Current,
+    /// <summary>
+    /// JavaScript value: next.
+    /// </summary>
     [Description("@#next")]
     Next,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TKeysType : VueProps
 {
@@ -10611,47 +13834,95 @@ public record TKeysType : VueProps
     public string? Disabled { get; init; }
 }
 
+/// <summary>
+/// 【开发中】布局方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TLayoutDirectionValue
 {
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
 }
 
+/// <summary>
+/// Causes the browser to treat the linked URL as a download
+///
+/// 使得浏览器将链接的 URL 视为可下载资源
+/// </summary>
 [ECMAScript]
 public readonly union TLinkDownloadValue(string, bool)
 {
 }
 
+/// <summary>
+/// hover link style
+///
+/// 链接悬浮态样式，有 文本颜色变化、添加下划线等 2 种方法
+/// </summary>
 [ECMAScript]
 [String]
 public enum TLinkHoverValue
 {
+    /// <summary>
+    /// JavaScript value: color.
+    /// </summary>
     [Description("@#color")]
     Color,
+    /// <summary>
+    /// JavaScript value: underline.
+    /// </summary>
     [Description("@#underline")]
     Underline,
 }
 
+/// <summary>
+/// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
+/// </summary>
 [ECMAScript]
 [String]
 public enum TLinkThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TListConfig : VueProps
 {
@@ -10662,16 +13933,28 @@ public record TListConfig : VueProps
     public string? LoadingText { get; init; }
 }
 
+/// <summary>
+/// 排列方式（待设计稿输出）
+/// </summary>
 [ECMAScript]
 [String]
 public enum TListLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 点击加载更多时触发
+/// </summary>
 [ECMAScript]
 public record TListLoadMoreEventOptions : VueProps
 {
@@ -10680,6 +13963,9 @@ public record TListLoadMoreEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 列表滚动时触发，scrollTop 表示顶部滚动距离，scrollBottom 表示底部滚动距离
+/// </summary>
 [ECMAScript]
 public record TListScrollEventOptions : VueProps
 {
@@ -10693,6 +13979,9 @@ public record TListScrollEventOptions : VueProps
     public Number ScrollBottom { get; init; }
 }
 
+/// <summary>
+/// 列表滚动时触发，scrollTop 表示顶部滚动距离，scrollBottom 表示底部滚动距离
+/// </summary>
 [ECMAScript]
 [Union]
 public readonly struct TListScrollEventOptionsE : IUnion
@@ -10735,18 +14024,35 @@ public readonly struct TListScrollEventOptionsE : IUnion
 
 }
 
+/// <summary>
+/// 尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TListSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TLoadingConfig : VueProps
 {
@@ -10790,16 +14096,30 @@ public record TLoadingConfig : VueProps
     public Number? ZIndex { get; init; }
 }
 
+/// <summary>
+/// 二级菜单展开方式，平铺展开和浮层展开
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMenuExpandTypeValue
 {
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: popup.
+    /// </summary>
     [Description("@#popup")]
     Popup,
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TMenuItemClickEventContext : VueProps
 {
@@ -10811,35 +14131,62 @@ public record TMenuItemClickEventContext : VueProps
     public TMenuValue Value { get; init; }
 }
 
+/// <summary>
+/// 链接或路由跳转方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMenuItemTargetValue
 {
+    /// <summary>
+    /// JavaScript value: _blank.
+    /// </summary>
     [Description("@#_blank")]
     Blank,
+    /// <summary>
+    /// JavaScript value: _self.
+    /// </summary>
     [Description("@#_self")]
     Self,
+    /// <summary>
+    /// JavaScript value: _parent.
+    /// </summary>
     [Description("@#_parent")]
     Parent,
+    /// <summary>
+    /// JavaScript value: _top.
+    /// </summary>
     [Description("@#_top")]
     Top,
 }
 
+/// <summary>
+/// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+/// </summary>
 [ECMAScript]
 public readonly union TMenuItemToValue(string, TMenuRoute)
 {
 }
 
+/// <summary>
+/// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+/// </summary>
 [ECMAScript]
 public record TMenuQueryData : VueDictionary<TMenuQueryDataIndex>
 {
 }
 
+/// <summary>
+/// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+/// </summary>
 [ECMAScript]
 public readonly union TMenuQueryDataIndex(string, string[])
 {
 }
 
+/// <summary>
+/// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+/// </summary>
 [ECMAScript]
 public record TMenuRoute : VueProps
 {
@@ -10859,31 +14206,54 @@ public record TMenuRoute : VueProps
     public TMenuQueryData? Params { get; init; }
 }
 
+/// <summary>
+/// Menu can be light mode or dark mode
+///
+/// 菜单风格，有亮色模式和暗色模式两种。当 `theme = global` 时，模式随整个组件库；当 `theme = system` 时，模式跟随系统。⚠️ `global/system` 正在开发中，暂勿使用
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMenuThemeValue
 {
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
 }
 
+/// <summary>
+/// 展开的子菜单集合
+/// </summary>
 [ECMAScript]
 public readonly union TMenuValue(string, Number)
 {
 }
 
+/// <summary>
+/// 菜单宽度。值类型为数组时，分别表示菜单展开和折叠的宽度。[ 展开时的宽度, 折叠时的宽度 ]，示例：['200px', '80px']
+/// </summary>
 [ECMAScript]
 public readonly union TMenuWidthValue(string, Number, TMenuWidthValueOption3Item[])
 {
 }
 
+/// <summary>
+/// 菜单宽度。值类型为数组时，分别表示菜单展开和折叠的宽度。[ 展开时的宽度, 折叠时的宽度 ]，示例：['200px', '80px']
+/// </summary>
 [ECMAScript]
 public readonly union TMenuWidthValueOption3Item(string, Number)
 {
 }
 
+/// <summary>
+/// 当关闭按钮存在时，用户点击关闭按钮触发
+/// </summary>
 [ECMAScript]
 public record TMessageCloseBtnClickEventContext : VueProps
 {
@@ -10892,11 +14262,19 @@ public record TMessageCloseBtnClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。也可以完全自定义按钮
+/// </summary>
 [ECMAScript]
 public readonly union TMessageCloseBtnValue(string, bool)
 {
 }
 
+/// <summary>
+/// close message event
+///
+/// 关闭消息时触发
+/// </summary>
 [ECMAScript]
 public record TMessageCloseEventContext : VueProps
 {
@@ -10907,16 +14285,32 @@ public record TMessageCloseEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// close message event
+///
+/// 关闭消息时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMessageCloseEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: close-click.
+    /// </summary>
     [Description("@#close-click")]
     CloseClick,
+    /// <summary>
+    /// JavaScript value: duration-end.
+    /// </summary>
     [Description("@#duration-end")]
     DurationEnd,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TMessageConfig : VueProps
 {
@@ -10963,32 +14357,67 @@ public record TMessageConfig : VueProps
     public Number? ZIndex { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TMessageConfigCloseBtn(string, bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TMessageConfigContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TMessageConfigIcon(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TMessageConfigOffsetItem(string, Number)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate void TMessageConfigOnClose(TMessageConfigOnCloseContext context);
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate void TMessageConfigOnCloseBtnClick(TMessageConfigOnCloseBtnClickContext context);
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TMessageConfigOnCloseBtnClickContext : VueProps
 {
@@ -10997,6 +14426,11 @@ public record TMessageConfigOnCloseBtnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TMessageConfigOnCloseContext : VueProps
 {
@@ -11007,61 +14441,137 @@ public record TMessageConfigOnCloseContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMessageConfigOnCloseContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: close-click.
+    /// </summary>
     [Description("@#close-click")]
     CloseClick,
+    /// <summary>
+    /// JavaScript value: duration-end.
+    /// </summary>
     [Description("@#duration-end")]
     DurationEnd,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public delegate void TMessageConfigOnDurationEnd();
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMessagePlacementList
 {
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
+    /// <summary>
+    /// JavaScript value: top-left.
+    /// </summary>
     [Description("@#top-left")]
     TopLeft,
+    /// <summary>
+    /// JavaScript value: top-right.
+    /// </summary>
     [Description("@#top-right")]
     TopRight,
+    /// <summary>
+    /// JavaScript value: bottom-left.
+    /// </summary>
     [Description("@#bottom-left")]
     BottomLeft,
+    /// <summary>
+    /// JavaScript value: bottom-right.
+    /// </summary>
     [Description("@#bottom-right")]
     BottomRight,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TMessageThemeList
 {
+    /// <summary>
+    /// JavaScript value: info.
+    /// </summary>
     [Description("@#info")]
     Info,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: question.
+    /// </summary>
     [Description("@#question")]
     Question,
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public record TMoveEvent : VueProps
 {
@@ -11093,6 +14603,9 @@ public record TMoveEvent : VueProps
     public bool? WillInsertAfter { get; init; }
 }
 
+/// <summary>
+/// 点击关闭按钮时触发
+/// </summary>
 [ECMAScript]
 public record TNotificationCloseBtnClickEventContext : VueProps
 {
@@ -11101,25 +14614,46 @@ public record TNotificationCloseBtnClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+/// </summary>
 [ECMAScript]
 public readonly union TNotificationCloseBtnValue(string, bool)
 {
 }
 
+/// <summary>
+/// 消息类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TNotificationThemeList
 {
+    /// <summary>
+    /// JavaScript value: info.
+    /// </summary>
     [Description("@#info")]
     Info,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// TDesign binding type TOptionData.
+/// </summary>
 [ECMAScript]
 public record TOptionData : VueProps
 {
@@ -11130,16 +14664,27 @@ public record TOptionData : VueProps
     public TOptionDataValue? Value { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TOptionDataValue.
+/// </summary>
 [ECMAScript]
 public readonly union TOptionDataValue(string, Number)
 {
 }
 
+/// <summary>
+/// 选项值
+/// </summary>
 [ECMAScript]
 public readonly union TOptionValueValue(string, Number, bool, BigInt)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TPageInfo : VueProps
 {
@@ -11153,6 +14698,11 @@ public record TPageInfo : VueProps
     public Number PageSize { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TPaginationConfig : VueProps
 {
@@ -11169,6 +14719,9 @@ public record TPaginationConfig : VueProps
     public string? Total { get; init; }
 }
 
+/// <summary>
+/// 按钮点击事件回调
+/// </summary>
 [ECMAScript]
 public record TPaginationMiniChangeEventContext : VueProps
 {
@@ -11180,51 +14733,92 @@ public record TPaginationMiniChangeEventContext : VueProps
     public TJumperTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 按钮禁用配置
+/// </summary>
 [ECMAScript]
 public readonly union TPaginationMiniDisabledValue(bool, TJumperDisabledConfig)
 {
 }
 
+/// <summary>
+/// horizontal or vertical
+///
+/// 按钮方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPaginationMiniLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 提示文案配置，值为 `true` 显示默认文案；值为 `false` 不显示提示文案；值类型为对象则单独配置文案内容
+/// </summary>
 [ECMAScript]
 public readonly union TPaginationMiniTipsValue(bool, TJumperTipsConfig)
 {
 }
 
+/// <summary>
+/// 按钮形式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPaginationMiniVariantValue
 {
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
 }
 
+/// <summary>
+/// 页码数量超出时，前后省略模式, `mid`表示中间省略, `both-ends` 表示两端省略
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPaginationPageEllipsisModeValue
 {
+    /// <summary>
+    /// JavaScript value: mid.
+    /// </summary>
     [Description("@#mid")]
     Mid,
+    /// <summary>
+    /// JavaScript value: both-ends.
+    /// </summary>
     [Description("@#both-ends")]
     BothEnds,
 }
 
+/// <summary>
+/// 分页大小控制器，值为 [] 则不显示
+/// </summary>
 [ECMAScript]
 public readonly union TPaginationPageSizeOptionsValueItem(Number, TPaginationPageSizeOptionsValueItemOption2)
 {
 }
 
+/// <summary>
+/// 分页大小控制器，值为 [] 则不显示
+/// </summary>
 [ECMAScript]
 public record TPaginationPageSizeOptionsValueItemOption2 : VueProps
 {
@@ -11236,31 +14830,57 @@ public record TPaginationPageSizeOptionsValueItemOption2 : VueProps
     public Number Value { get; init; }
 }
 
+/// <summary>
+/// 分页组件尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPaginationSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
 }
 
+/// <summary>
+/// 分页组件风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPaginationThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: simple.
+    /// </summary>
     [Description("@#simple")]
     Simple,
 }
 
+/// <summary>
+/// add ellipsis style
+///
+/// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public readonly union TParagraphEllipsisValue(bool, TTypographyEllipsis)
 {
 }
 
+/// <summary>
+/// 选中日期时触发，可能是开始日期，也可能是结束日期，第二个参数可以区分是开始日期或是结束日期
+/// </summary>
 [ECMAScript]
 public record TPickContext : VueProps
 {
@@ -11272,11 +14892,17 @@ public record TPickContext : VueProps
     public TDateRangePickerPartial Partial { get; init; }
 }
 
+/// <summary>
+/// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+/// </summary>
 [ECMAScript]
 public readonly union TPopconfirmCancelBtnValue(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 点击取消按钮时触发
+/// </summary>
 [ECMAScript]
 public record TPopconfirmCancelEventOptions : VueProps
 {
@@ -11285,6 +14911,11 @@ public record TPopconfirmCancelEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TPopconfirmConfig : VueProps
 {
@@ -11298,16 +14929,31 @@ public record TPopconfirmConfig : VueProps
     public TPopconfirmConfigConfirmBtnTheme? ConfirmBtnTheme { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TPopconfirmConfigCancel(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public readonly union TPopconfirmConfigConfirm(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TPopconfirmConfigConfirmBtnTheme : VueProps
 {
@@ -11324,11 +14970,17 @@ public record TPopconfirmConfigConfirmBtnTheme : VueProps
     public string Danger { get; init; } = default!;
 }
 
+/// <summary>
+/// 确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+/// </summary>
 [ECMAScript]
 public readonly union TPopconfirmConfirmBtnValue(string, TdButtonProps)
 {
 }
 
+/// <summary>
+/// 点击确认按钮时触发
+/// </summary>
 [ECMAScript]
 public record TPopconfirmConfirmEventOptions : VueProps
 {
@@ -11337,48 +14989,102 @@ public record TPopconfirmConfirmEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 浮层出现位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPopconfirmPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
+    /// <summary>
+    /// JavaScript value: top-left.
+    /// </summary>
     [Description("@#top-left")]
     TopLeft,
+    /// <summary>
+    /// JavaScript value: top-right.
+    /// </summary>
     [Description("@#top-right")]
     TopRight,
+    /// <summary>
+    /// JavaScript value: bottom-left.
+    /// </summary>
     [Description("@#bottom-left")]
     BottomLeft,
+    /// <summary>
+    /// JavaScript value: bottom-right.
+    /// </summary>
     [Description("@#bottom-right")]
     BottomRight,
+    /// <summary>
+    /// JavaScript value: left-top.
+    /// </summary>
     [Description("@#left-top")]
     LeftTop,
+    /// <summary>
+    /// JavaScript value: left-bottom.
+    /// </summary>
     [Description("@#left-bottom")]
     LeftBottom,
+    /// <summary>
+    /// JavaScript value: right-top.
+    /// </summary>
     [Description("@#right-top")]
     RightTop,
+    /// <summary>
+    /// JavaScript value: right-bottom.
+    /// </summary>
     [Description("@#right-bottom")]
     RightBottom,
 }
 
+/// <summary>
+/// 文字提示风格。如果期望不显示文本前方的主题图标，请更为设置 `icon` 为 `null`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPopconfirmThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
 }
 
+/// <summary>
+/// 确认框显示或隐藏时触发
+/// </summary>
 [ECMAScript]
 public record TPopconfirmVisibleChangeContext : VueProps
 {
@@ -11389,11 +15095,21 @@ public record TPopconfirmVisibleChangeContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// delay to show or hide popover
+///
+/// 延时显示或隐藏浮层，[延迟显示的时间，延迟隐藏的时间]，单位：毫秒。如果只有一个时间，则表示显示和隐藏的延迟时间相同。示例 `'300'` 或者 `[200, 200]`。默认为：[250, 150]
+/// </summary>
 [ECMAScript]
 public readonly union TPopupDelayValue(Number, Number[])
 {
 }
 
+/// <summary>
+/// trigger on popup content click
+///
+/// 内容面板点击时触发
+/// </summary>
 [ECMAScript]
 public record TPopupOverlayClickEventContext : VueProps
 {
@@ -11402,52 +15118,106 @@ public record TPopupOverlayClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public readonly union TPopupOverlayInnerStyleValue(TStyles, TPopupOverlayInnerStyleValueOption2)
 {
 }
 
+/// <summary>
+/// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public delegate TStyles TPopupOverlayInnerStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
+/// <summary>
+/// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public readonly union TPopupOverlayStyleValue(TStyles, TPopupOverlayStyleValueOption2)
 {
 }
 
+/// <summary>
+/// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public delegate TStyles TPopupOverlayStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPopupPlacement
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
+    /// <summary>
+    /// JavaScript value: top-left.
+    /// </summary>
     [Description("@#top-left")]
     TopLeft,
+    /// <summary>
+    /// JavaScript value: top-right.
+    /// </summary>
     [Description("@#top-right")]
     TopRight,
+    /// <summary>
+    /// JavaScript value: bottom-left.
+    /// </summary>
     [Description("@#bottom-left")]
     BottomLeft,
+    /// <summary>
+    /// JavaScript value: bottom-right.
+    /// </summary>
     [Description("@#bottom-right")]
     BottomRight,
+    /// <summary>
+    /// JavaScript value: left-top.
+    /// </summary>
     [Description("@#left-top")]
     LeftTop,
+    /// <summary>
+    /// JavaScript value: left-bottom.
+    /// </summary>
     [Description("@#left-bottom")]
     LeftBottom,
+    /// <summary>
+    /// JavaScript value: right-top.
+    /// </summary>
     [Description("@#right-top")]
     RightTop,
+    /// <summary>
+    /// JavaScript value: right-bottom.
+    /// </summary>
     [Description("@#right-bottom")]
     RightBottom,
 }
 
+/// <summary>
+/// 下拉选项滚动事件
+/// </summary>
 [ECMAScript]
 public record TPopupScrollEventContext : VueProps
 {
@@ -11456,6 +15226,9 @@ public record TPopupScrollEventContext : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
+/// </summary>
 [ECMAScript]
 public record TPopupScrollToBottomEventContext : VueProps
 {
@@ -11464,51 +15237,105 @@ public record TPopupScrollToBottomEventContext : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TPopupTriggerEvent(MouseEvent, FocusEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPopupTriggerSource
 {
+    /// <summary>
+    /// JavaScript value: document.
+    /// </summary>
     [Description("@#document")]
     Document,
+    /// <summary>
+    /// JavaScript value: trigger-element-click.
+    /// </summary>
     [Description("@#trigger-element-click")]
     TriggerElementClick,
+    /// <summary>
+    /// JavaScript value: trigger-element-hover.
+    /// </summary>
     [Description("@#trigger-element-hover")]
     TriggerElementHover,
+    /// <summary>
+    /// JavaScript value: trigger-element-blur.
+    /// </summary>
     [Description("@#trigger-element-blur")]
     TriggerElementBlur,
+    /// <summary>
+    /// JavaScript value: trigger-element-focus.
+    /// </summary>
     [Description("@#trigger-element-focus")]
     TriggerElementFocus,
+    /// <summary>
+    /// JavaScript value: trigger-element-mousedown.
+    /// </summary>
     [Description("@#trigger-element-mousedown")]
     TriggerElementMousedown,
+    /// <summary>
+    /// JavaScript value: trigger-element-close.
+    /// </summary>
     [Description("@#trigger-element-close")]
     TriggerElementClose,
+    /// <summary>
+    /// JavaScript value: context-menu.
+    /// </summary>
     [Description("@#context-menu")]
     ContextMenu,
+    /// <summary>
+    /// JavaScript value: keydown-esc.
+    /// </summary>
     [Description("@#keydown-esc")]
     KeydownEsc,
 }
 
+/// <summary>
+/// 触发浮层出现的方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPopupTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
+    /// <summary>
+    /// JavaScript value: focus.
+    /// </summary>
     [Description("@#focus")]
     Focus,
+    /// <summary>
+    /// JavaScript value: mousedown.
+    /// </summary>
     [Description("@#mousedown")]
     Mousedown,
+    /// <summary>
+    /// JavaScript value: context-menu.
+    /// </summary>
     [Description("@#context-menu")]
     ContextMenu,
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public record TPopupVisibleChangeContext : VueProps
 {
@@ -11519,75 +15346,134 @@ public record TPopupVisibleChangeContext : VueProps
     public TPopupTriggerSource? Trigger { get; init; }
 }
 
+/// <summary>
+/// 预设快捷日期选择，示例：`{ '元旦': '2021-01-01', '昨天':  dayjs().subtract(1, 'day').format('YYYY-MM-DD'), '特定日期': () =&gt; ['2021-02-01'] }`
+/// </summary>
 [ECMAScript]
 public record TPresetDate : VueDictionary<TPresetDateIndex>
 {
 }
 
+/// <summary>
+/// 预设快捷日期选择，示例：`{ '元旦': '2021-01-01', '昨天':  dayjs().subtract(1, 'day').format('YYYY-MM-DD'), '特定日期': () =&gt; ['2021-02-01'] }`
+/// </summary>
 [ECMAScript]
 public readonly union TPresetDateIndex(TDateValue, TPresetDateIndexOption2)
 {
 }
 
+/// <summary>
+/// 预设快捷日期选择，示例：`{ '元旦': '2021-01-01', '昨天':  dayjs().subtract(1, 'day').format('YYYY-MM-DD'), '特定日期': () =&gt; ['2021-02-01'] }`
+/// </summary>
 [ECMAScript]
 public delegate TDateValue TPresetDateIndexOption2();
 
+/// <summary>
+/// 预设快捷日期选择，示例：{ '特定日期范围': ['2021-01-01', '2022-01-01'], '本月': [dayjs().startOf('month'), dayjs().endOf('month')] }
+/// </summary>
 [ECMAScript]
 public record TPresetRange : VueDictionary<TPresetRangeIndex>
 {
 }
 
+/// <summary>
+/// 预设快捷日期选择，示例：{ '特定日期范围': ['2021-01-01', '2022-01-01'], '本月': [dayjs().startOf('month'), dayjs().endOf('month')] }
+/// </summary>
 [ECMAScript]
 public readonly union TPresetRangeIndex((TDateValue Item1, TDateValue Item2), TPresetRangeIndexOption2)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TPresetTime : VueDictionary<TPresetTimeIndex>
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TPresetTimeIndex(string, TPresetTimeIndexOption2)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate string TPresetTimeIndexOption2();
 
+/// <summary>
+/// 预设快捷时间范围选择，示例：{ '下午': ['13:00:00', '18:00:00'] }
+/// </summary>
 [ECMAScript]
 public record TPresetTimeRange : VueDictionary<TPresetTimeRangeIndex>
 {
 }
 
+/// <summary>
+/// 预设快捷时间范围选择，示例：{ '下午': ['13:00:00', '18:00:00'] }
+/// </summary>
 [ECMAScript]
 public readonly union TPresetTimeRangeIndex(string[], TPresetTimeRangeIndexOption2)
 {
 }
 
+/// <summary>
+/// 预设快捷时间范围选择，示例：{ '下午': ['13:00:00', '18:00:00'] }
+/// </summary>
 [ECMAScript]
 public delegate string[] TPresetTimeRangeIndexOption2();
 
+/// <summary>
+/// trigger on row active change
+///
+/// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// keys of highlight rows, used to mock area selection behavior, just like macOS or windows area selection
+///
+/// 高亮行，支持鼠标键盘操作(Shift)连续高亮行，可用于处理行选中等批量操作，模拟操作系统区域选择行为
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableActiveRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// make nodes can be highlight on clicked
+///
+/// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableActiveRowTypeValue
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// trigger on async loading text clicked
+///
+/// 异步加载区域被点击时触发
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableAsyncLoadingClickEventContext<T> : VueProps
 {
@@ -11595,26 +15481,51 @@ public record TPrimaryTableAsyncLoadingClickEventContext<T> : VueProps
     public TPrimaryTableAsyncLoadingClickEventContextStatus Status { get; init; }
 }
 
+/// <summary>
+/// trigger on async loading text clicked
+///
+/// 异步加载区域被点击时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableAsyncLoadingClickEventContextStatus
 {
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
+    /// <summary>
+    /// JavaScript value: load-more.
+    /// </summary>
     [Description("@#load-more")]
     LoadMore,
 }
 
+/// <summary>
+/// async loading state
+///
+/// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableAsyncLoadingValue
 {
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
+    /// <summary>
+    /// JavaScript value: load-more.
+    /// </summary>
     [Description("@#load-more")]
     LoadMore,
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableCellEventContext.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableCellEventContext<T> : VueProps
 {
@@ -11636,6 +15547,9 @@ public record TPrimaryTableCellEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableCellParams.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableCellParams<T> : VueProps
 {
@@ -11653,6 +15567,9 @@ public record TPrimaryTableCellParams<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableCol.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableCol<T> : VueProps
 {
@@ -11735,6 +15652,9 @@ public record TPrimaryTableCol<T> : VueProps
     public TPrimaryTableColType? Type { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColBase1.
+/// </summary>
 [ECMAScript]
 public sealed record TPrimaryTableColBase1<T> : VueProps
 {
@@ -11784,14 +15704,23 @@ public sealed record TPrimaryTableColBase1<T> : VueProps
     public TBaseTableColWidth<TTableRowData>? Width { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColCell.
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableColCell<T>(string, RenderFragment<TPrimaryTableCellParams<T>>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColDisabled.
+/// </summary>
 [ECMAScript]
 public delegate bool TPrimaryTableColDisabled<T>(TPrimaryTableColDisabledOptions<T> options);
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColDisabledOptions.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableColDisabledOptions<T> : VueProps
 {
@@ -11802,16 +15731,25 @@ public record TPrimaryTableColDisabledOptions<T> : VueProps
     public Number RowIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColSorter.
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableColSorter<T>(bool, TSorterFun<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColTitle.
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableColTitle<T>(string, RenderFragment<TPrimaryTableColTitleOption2Context<T>>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColTitleOption2Context.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableColTitleOption2Context<T> : VueProps
 {
@@ -11823,16 +15761,28 @@ public record TPrimaryTableColTitleOption2Context<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableColType
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColumnChange.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableColumnChange<T> : VueProps
 {
@@ -11849,16 +15799,28 @@ public record TPrimaryTableColumnChange<T> : VueProps
     public EventRef? E { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableColumnChangeType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableColumnChangeType
 {
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
 }
 
+/// <summary>
+/// 列配置弹窗显示或隐藏变化时触发
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
@@ -11866,18 +15828,33 @@ public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VuePro
     public TPrimaryTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 列配置弹窗显示或隐藏变化时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableColumnControllerVisibleChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: cancel.
+    /// </summary>
     [Description("@#cancel")]
     Cancel,
+    /// <summary>
+    /// JavaScript value: confirm.
+    /// </summary>
     [Description("@#confirm")]
     Confirm,
+    /// <summary>
+    /// JavaScript value: open.
+    /// </summary>
     [Description("@#open")]
     Open,
 }
 
+/// <summary>
+/// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableColumnResizeChangeEventContext<T> : VueProps
 {
@@ -11886,42 +15863,83 @@ public record TPrimaryTableColumnResizeChangeEventContext<T> : VueProps
     public TPrimaryTableColumnResizeChangeEventContextColumnsWidth<T> ColumnsWidth { get; init; } = default!;
 }
 
+/// <summary>
+/// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionary<Number>
 {
 }
 
+/// <summary>
+/// dag sort
+///
+/// 拖拽排序方式，值为 `row` 表示行拖拽排序，这种方式无法进行文本复制，慎用。值为`row-handler` 表示通过拖拽手柄进行行拖拽排序。值为 `col` 表示列顺序拖拽。值为 `row-handler-col` 表示同时支持行拖拽和列拖拽。⚠️`drag-col` 已废弃，请勿使用
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableDragSortValue
 {
+    /// <summary>
+    /// JavaScript value: row.
+    /// </summary>
     [Description("@#row")]
     Row,
+    /// <summary>
+    /// JavaScript value: row-handler.
+    /// </summary>
     [Description("@#row-handler")]
     RowHandler,
+    /// <summary>
+    /// JavaScript value: col.
+    /// </summary>
     [Description("@#col")]
     Col,
+    /// <summary>
+    /// JavaScript value: row-handler-col.
+    /// </summary>
     [Description("@#row-handler-col")]
     RowHandlerCol,
+    /// <summary>
+    /// JavaScript value: drag-col.
+    /// </summary>
     [Description("@#drag-col")]
     DragCol,
 }
 
+/// <summary>
+/// editable row keys, row key value is from data[rowKey]
+///
+/// 处于编辑状态的行
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableEditableRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// trigger on expand row keys changing
+///
+/// 展开行发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// expanded row keys, row key value is from data[rowKey]
+///
+/// 展开行
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableExpandedRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableFilterIconSlotContext.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableFilterIconSlotContext<T> : VueProps
 {
@@ -11933,36 +15951,69 @@ public record TPrimaryTableFilterIconSlotContext<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// affix foot to viewport bottom
+///
+/// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableFooterAffixedBottomValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// affix header to viewport top
+///
+/// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableHeaderAffixedTopValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// table height
+///
+/// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableHeightValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// affix props
+///
+/// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableHorizontalScrollAffixedBottomValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// indeterminate selected row keys, row key is from data[rowKey]
+///
+/// 半选状态行。选中行请更为使用 `selectedRowKeys` 控制
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// table max height
+///
+/// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableMaxHeightValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableOnEditedContext.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableOnEditedContext<T> : VueProps
 {
@@ -11987,11 +16038,19 @@ public record TPrimaryTableOnEditedContext<T> : VueProps
     public T NewRowData { get; init; } = default!;
 }
 
+/// <summary>
+/// affix props
+///
+/// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTablePaginationAffixedBottomValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableRenderParams.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableRenderParams<T> : VueProps
 {
@@ -12012,14 +16071,27 @@ public record TPrimaryTableRenderParams<T> : VueProps
     public TRenderType Type { get; init; }
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableRowClassNameValue<T>(TClassName, TPrimaryTableRowClassNameValueOption2<T>)
 {
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public delegate TClassName TPrimaryTableRowClassNameValueOption2<T>(TRowClassNameParams<T> @params);
 
+/// <summary>
+/// TDesign binding type TPrimaryTableRowEditContext.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableRowEditContext<T> : VueProps
 {
@@ -12043,16 +16115,30 @@ public record TPrimaryTableRowEditContext<T> : VueProps
     public T EditedRow { get; init; } = default!;
 }
 
+/// <summary>
+/// single row selection, or multiple row selection
+///
+/// 行选中类型，单选或多选。效果和 `columns` 中配置的 `{ colKey: 'row-select', type: 'single' }` 一样
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableRowSelectionTypeValue
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableRowValidateContext.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableRowValidateContext<T> : VueProps
 {
@@ -12064,6 +16150,11 @@ public record TPrimaryTableRowValidateContext<T> : VueProps
     public TTableValidateTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// trigger on table content scroll
+///
+/// 表格内容滚动时触发
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableScrollEventParams<T> : VueProps
 {
@@ -12072,6 +16163,11 @@ public record TPrimaryTableScrollEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on scroll horizontal
+///
+/// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableScrollXEventParams<T> : VueProps
 {
@@ -12080,6 +16176,11 @@ public record TPrimaryTableScrollXEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on scroll vertical
+///
+/// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableScrollYEventParams<T> : VueProps
 {
@@ -12088,26 +16189,50 @@ public record TPrimaryTableScrollYEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on select changing
+///
+/// 选中行发生变化时触发，泛型 T 指表格数据类型。两个参数，第一个参数为选中行 keys，第二个参数为更多参数，具体如下：`type = uncheck` 表示当前行操作为「取消行选中」；`type = check` 表示当前行操作为「行选中」； `currentRowKey` 表示当前操作行的 rowKey 值； `currentRowData` 表示当前操作行的行数据
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// selected row keys, row key is from data[rowKey]
+///
+/// 选中行。半选状态行请更为使用 `indeterminateSelectedRowKeys` 控制
+/// </summary>
 [ECMAScript]
 public readonly union TPrimaryTableSelectedRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// table-layout css properties, [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout). set value to be `fixed` on `resizable=true` please
+///
+/// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableTableLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: auto.
+    /// </summary>
     [Description("@#auto")]
     Auto,
+    /// <summary>
+    /// JavaScript value: fixed.
+    /// </summary>
     [Description("@#fixed")]
     Fixed,
 }
 
+/// <summary>
+/// TDesign binding type TPrimaryTableValidateContext.
+/// </summary>
 [ECMAScript]
 public record TPrimaryTableValidateContext : VueProps
 {
@@ -12116,23 +16241,45 @@ public record TPrimaryTableValidateContext : VueProps
     public TTableErrorListMap Result { get; init; } = default!;
 }
 
+/// <summary>
+/// vertical align
+///
+/// 行内容上下方向对齐
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPrimaryTableVerticalAlignValue
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: middle.
+    /// </summary>
     [Description("@#middle")]
     Middle,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// 进度条颜色。示例：'#ED7B2F' 或 'orange' 或 `['#f00', '#0ff', '#f0f']` 或 `{ '0%': '#f00', '100%': '#0ff' }` 或  `{ from: '#000', to: '#000' }` 等
+/// </summary>
 [ECMAScript]
 public readonly union TProgressColorValue(string, string[], VueDictionary<string>)
 {
 }
 
+/// <summary>
+/// uploading request progress event
+///
+/// 上传进度变化时触发，真实进度和模拟进度都会触发。&lt;br/&gt;⚠️ 原始上传请求，小文件的上传进度只有 0 和 100，故而不会触发 `progress` 事件；只有大文件才有真实的中间进度。如果你希望很小的文件也显示上传进度，保证 `useMockProgress=true` 的情况下，设置 `mockProgressDuration` 为更小的值。&lt;br/&gt;参数 `options.type=real` 表示真实上传进度，`options.type=mock` 表示模拟上传进度
+/// </summary>
 [ECMAScript]
 public record TProgressContext : VueProps
 {
@@ -12155,65 +16302,124 @@ public record TProgressContext : VueProps
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
+/// <summary>
+/// 进度百分比，可自定义
+/// </summary>
 [ECMAScript]
 public readonly union TProgressLabelValue(string, bool)
 {
 }
 
+/// <summary>
+/// 进度条尺寸，示例：small/medium/large/240。small 值为 72； medium 值为 112；large 值为 160
+/// </summary>
 [ECMAScript]
 public readonly union TProgressSizeValue(string, Number)
 {
 }
 
+/// <summary>
+/// 进度条状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TProgressStatus
 {
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: active.
+    /// </summary>
     [Description("@#active")]
     Active,
 }
 
+/// <summary>
+/// 进度条线宽。宽度数值不能超过 size 的一半，否则不能输出环形进度
+/// </summary>
 [ECMAScript]
 public readonly union TProgressStrokeWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 进度条风格。值为 line，标签（label）显示在进度条右侧；值为 plump，标签（label）显示在进度条里面；值为 circle，标签（label）显示在进度条正中间
+/// </summary>
 [ECMAScript]
 [String]
 public enum TProgressTheme
 {
+    /// <summary>
+    /// JavaScript value: line.
+    /// </summary>
     [Description("@#line")]
     Line,
+    /// <summary>
+    /// JavaScript value: plump.
+    /// </summary>
     [Description("@#plump")]
     Plump,
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TPullResult(string[], bool, TPullResultOption3)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 [String]
 public enum TPullResultOption3
 {
+    /// <summary>
+    /// JavaScript value: clone.
+    /// </summary>
     [Description("@#clone")]
     CloneElement,
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TPutResult(string[], bool)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TQRCodeConfig : VueProps
 {
@@ -12227,11 +16433,21 @@ public record TQRCodeConfig : VueProps
     public string? ScannedText { get; init; }
 }
 
+/// <summary>
+/// The size of the picture in the QR code
+///
+/// 二维码中图片的大小
+/// </summary>
 [ECMAScript]
 public readonly union TQRCodeIconSizeValue(Number, TQRCodeIconSizeValueOption2)
 {
 }
 
+/// <summary>
+/// The size of the picture in the QR code
+///
+/// 二维码中图片的大小
+/// </summary>
 [ECMAScript]
 public record TQRCodeIconSizeValueOption2 : VueProps
 {
@@ -12242,44 +16458,92 @@ public record TQRCodeIconSizeValueOption2 : VueProps
     public Number Height { get; init; }
 }
 
+/// <summary>
+/// QR code error correction level
+///
+/// 二维码纠错等级
+/// </summary>
 [ECMAScript]
 [String]
 public enum TQRCodeLevelValue
 {
+    /// <summary>
+    /// JavaScript value: L.
+    /// </summary>
     [Description("@#L")]
     L,
+    /// <summary>
+    /// JavaScript value: M.
+    /// </summary>
     [Description("@#M")]
     M,
+    /// <summary>
+    /// JavaScript value: Q.
+    /// </summary>
     [Description("@#Q")]
     Q,
+    /// <summary>
+    /// JavaScript value: H.
+    /// </summary>
     [Description("@#H")]
     H,
 }
 
+/// <summary>
+/// render type
+///
+/// 渲染类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TQRCodeTypeValue
 {
+    /// <summary>
+    /// JavaScript value: canvas.
+    /// </summary>
     [Description("@#canvas")]
     Canvas,
+    /// <summary>
+    /// JavaScript value: svg.
+    /// </summary>
     [Description("@#svg")]
     Svg,
 }
 
+/// <summary>
+/// QR code status
+///
+/// 二维码状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TQRStatus
 {
+    /// <summary>
+    /// JavaScript value: active.
+    /// </summary>
     [Description("@#active")]
     Active,
+    /// <summary>
+    /// JavaScript value: expired.
+    /// </summary>
     [Description("@#expired")]
     Expired,
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
+    /// <summary>
+    /// JavaScript value: scanned.
+    /// </summary>
     [Description("@#scanned")]
     Scanned,
 }
 
+/// <summary>
+/// 选中状态变化时触发
+/// </summary>
 [ECMAScript]
 public record TRadioButtonChangeEventContext<T> : VueProps
 {
@@ -12288,6 +16552,11 @@ public record TRadioButtonChangeEventContext<T> : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发，一般用于外层阻止冒泡场景
+/// </summary>
 [ECMAScript]
 public record TRadioButtonClickEventContext<T> : VueProps
 {
@@ -12296,6 +16565,9 @@ public record TRadioButtonClickEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选中状态变化时触发
+/// </summary>
 [ECMAScript]
 public record TRadioChangeEventContext<T> : VueProps
 {
@@ -12304,6 +16576,11 @@ public record TRadioChangeEventContext<T> : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发，一般用于外层阻止冒泡场景
+/// </summary>
 [ECMAScript]
 public record TRadioClickEventContext<T> : VueProps
 {
@@ -12312,6 +16589,9 @@ public record TRadioClickEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选中值发生变化时触发, `context.name` 指 RadioGroup 的 name 属性
+/// </summary>
 [ECMAScript]
 public record TRadioGroupChangeEventContext<T> : VueProps
 {
@@ -12323,33 +16603,62 @@ public record TRadioGroupChangeEventContext<T> : VueProps
     public string? Name { get; init; }
 }
 
+/// <summary>
+/// Determine the style of radio when using options API
+///
+/// 用于在使用 options 方式渲染时决定组件的风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRadioGroupThemeValue
 {
+    /// <summary>
+    /// JavaScript value: radio.
+    /// </summary>
     [Description("@#radio")]
     Radio,
+    /// <summary>
+    /// JavaScript value: button.
+    /// </summary>
     [Description("@#button")]
     Button,
 }
 
+/// <summary>
+/// 单选组件按钮形式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRadioGroupVariantValue
 {
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
+    /// <summary>
+    /// JavaScript value: primary-filled.
+    /// </summary>
     [Description("@#primary-filled")]
     PrimaryFilled,
+    /// <summary>
+    /// JavaScript value: default-filled.
+    /// </summary>
     [Description("@#default-filled")]
     DefaultFilled,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TRadioOption(string, Number, TRadioOptionObj)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TRadioOptionObj : VueProps
 {
@@ -12363,21 +16672,33 @@ public record TRadioOptionObj : VueProps
     public bool? Disabled { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TRadioOptionObjLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TRadioOptionObjValue(string, Number, bool)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TRadioValue(string, Number, bool)
 {
 }
 
+/// <summary>
+/// 范围输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputBlurEventContext : VueProps
 {
@@ -12388,6 +16709,9 @@ public record TRangeInputBlurEventContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 范围输入框值发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputChangeEventContext : VueProps
 {
@@ -12401,23 +16725,41 @@ public record TRangeInputChangeEventContext : VueProps
     public TRangeInputChangeEventContextTrigger? Trigger { get; init; }
 }
 
+/// <summary>
+/// 范围输入框值发生变化时触发
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputChangeEventContextE(InputEvent, MouseEvent, CompositionEvent)
 {
 }
 
+/// <summary>
+/// 范围输入框值发生变化时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRangeInputChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: initial.
+    /// </summary>
     [Description("@#initial")]
     Initial,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputClearEventContext : VueProps
 {
@@ -12426,6 +16768,9 @@ public record TRangeInputClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 范围输入框点击时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputClickEventContext : VueProps
 {
@@ -12436,11 +16781,17 @@ public record TRangeInputClickEventContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 是否禁用范围输入框
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputDisabledValue(bool, bool[])
 {
 }
 
+/// <summary>
+/// 回车键按下时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputEnterEventContext : VueProps
 {
@@ -12451,11 +16802,17 @@ public record TRangeInputEnterEventContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 回车键按下时触发
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputEnterEventContextE(InputEvent, MouseEvent)
 {
 }
 
+/// <summary>
+/// 范围输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputFocusEventContext : VueProps
 {
@@ -12466,16 +16823,27 @@ public record TRangeInputFocusEventContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 指定输入框展示值的格式
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputFormatValue(TInputFormatType, TInputFormatType[])
 {
 }
 
+/// <summary>
+/// 透传 Input 输入框组件全部属性，数组第一项表示第一个输入框属性，第二项表示第二个输入框属性。示例：`[{ label: 'A', name: 'A-name' }, { label: 'B',  name: 'B-name' }]`
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputInputPropsValue(TdInputProps<TInputValue>, TdInputProps<TInputValue>[])
 {
 }
 
+/// <summary>
+/// trigger on mouseenter
+///
+/// 进入输入框时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputMouseenterEventContext : VueProps
 {
@@ -12484,6 +16852,9 @@ public record TRangeInputMouseenterEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 离开输入框时触发
+/// </summary>
 [ECMAScript]
 public record TRangeInputMouseleaveEventContext : VueProps
 {
@@ -12492,68 +16863,131 @@ public record TRangeInputMouseleaveEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 占位符，示例：'请输入' 或者 ['开始日期', '结束日期']
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputPlaceholderValue(string, string[])
 {
 }
 
+/// <summary>
+/// 是否禁用范围输入框，值为数组表示可分别控制某一个输入框是否禁用
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputPopupDisabledValue(bool, bool[])
 {
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRangeInputPopupStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRangeInputPosition
 {
+    /// <summary>
+    /// JavaScript value: first.
+    /// </summary>
     [Description("@#first")]
     First,
+    /// <summary>
+    /// JavaScript value: second.
+    /// </summary>
     [Description("@#second")]
     Second,
+    /// <summary>
+    /// JavaScript value: all.
+    /// </summary>
     [Description("@#all")]
     All,
 }
 
+/// <summary>
+/// 输入框尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRangeInputSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRangeInputStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
+/// </summary>
 [ECMAScript]
 public record TRangeInputValueChangeContext : VueProps
 {
@@ -12567,26 +17001,46 @@ public record TRangeInputValueChangeContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
+/// </summary>
 [ECMAScript]
 public readonly union TRangeInputValueChangeContextE(InputEvent, MouseEvent)
 {
 }
 
+/// <summary>
+/// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRangeInputValueChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// 评分图标的颜色，样式中默认为 #ED7B2F。一个值表示设置选中高亮的五角星颜色，示例：[选中颜色]。数组则表示分别设置 选中高亮的五角星颜色 和 未选中暗灰的五角星颜色，[选中颜色，未选中颜色]。示例：['#ED7B2F', '#E3E6EB']
+/// </summary>
 [ECMAScript]
 public readonly union TRateColorValue(string, string[])
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TRateConfig : VueProps
 {
@@ -12594,6 +17048,9 @@ public record TRateConfig : VueProps
     public string[]? RateText { get; init; }
 }
 
+/// <summary>
+/// 多选模式下，选中数据被移除时触发
+/// </summary>
 [ECMAScript]
 public record TRemoveContext<T> : VueProps
 {
@@ -12605,6 +17062,9 @@ public record TRemoveContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 多选模式下，选中数据被移除时触发
+/// </summary>
 [ECMAScript]
 public record TRemoveOptions<T> : VueProps
 {
@@ -12618,21 +17078,38 @@ public record TRemoveOptions<T> : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 多选模式下，选中数据被移除时触发
+/// </summary>
 [ECMAScript]
 public readonly union TRemoveOptionsValue<T>(string, Number, TJsonObject)
 {
 }
 
+/// <summary>
+/// TDesign binding type TRenderType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRenderType
 {
+    /// <summary>
+    /// JavaScript value: cell.
+    /// </summary>
     [Description("@#cell")]
     Cell,
+    /// <summary>
+    /// JavaScript value: title.
+    /// </summary>
     [Description("@#title")]
     Title,
 }
 
+/// <summary>
+/// custom upload request method
+///
+/// 自定义上传方法。返回值 `status` 表示上传成功或失败；`error` 或 `response.error` 表示上传失败的原因；&lt;br/&gt;`response` 表示请求上传成功后的返回数据，`response.url` 表示上传成功后的图片/文件地址，`response.files` 表示一个请求上传多个文件/图片后的返回值。&lt;br/&gt;示例一：`{ status: 'fail', error: '上传失败', response }`。&lt;br/&gt;示例二：`{ status: 'success', response: { url: 'https://tdesign.gtimg.com/site/avatar.jpg' } }`。&lt;br/&gt; 示例三：`{ status: 'success', files: [{ url: 'https://xxx.png', name: 'xxx.png' }]}`
+/// </summary>
 [ECMAScript]
 public record TRequestMethodResponse : VueProps
 {
@@ -12647,6 +17124,11 @@ public record TRequestMethodResponse : VueProps
     public TRequestMethodResponseResponse Response { get; init; } = default!;
 }
 
+/// <summary>
+/// custom upload request method
+///
+/// 自定义上传方法。返回值 `status` 表示上传成功或失败；`error` 或 `response.error` 表示上传失败的原因；&lt;br/&gt;`response` 表示请求上传成功后的返回数据，`response.url` 表示上传成功后的图片/文件地址，`response.files` 表示一个请求上传多个文件/图片后的返回值。&lt;br/&gt;示例一：`{ status: 'fail', error: '上传失败', response }`。&lt;br/&gt;示例二：`{ status: 'success', response: { url: 'https://tdesign.gtimg.com/site/avatar.jpg' } }`。&lt;br/&gt; 示例三：`{ status: 'success', files: [{ url: 'https://xxx.png', name: 'xxx.png' }]}`
+/// </summary>
 [ECMAScript]
 public record TRequestMethodResponseResponse : VueProps
 {
@@ -12657,16 +17139,32 @@ public record TRequestMethodResponseResponse : VueProps
     public TUploadFile[]? Files { get; init; }
 }
 
+/// <summary>
+/// custom upload request method
+///
+/// 自定义上传方法。返回值 `status` 表示上传成功或失败；`error` 或 `response.error` 表示上传失败的原因；&lt;br/&gt;`response` 表示请求上传成功后的返回数据，`response.url` 表示上传成功后的图片/文件地址，`response.files` 表示一个请求上传多个文件/图片后的返回值。&lt;br/&gt;示例一：`{ status: 'fail', error: '上传失败', response }`。&lt;br/&gt;示例二：`{ status: 'success', response: { url: 'https://tdesign.gtimg.com/site/avatar.jpg' } }`。&lt;br/&gt; 示例三：`{ status: 'success', files: [{ url: 'https://xxx.png', name: 'xxx.png' }]}`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRequestMethodResponseStatus
 {
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: fail.
+    /// </summary>
     [Description("@#fail")]
     Fail,
 }
 
+/// <summary>
+/// redefine response data structure
+///
+/// 用于格式化文件上传后的接口响应数据，`response` 便是接口响应的原始数据。`action` 存在时有效。&lt;br/&gt; 示例返回值：`{ error, url, status, files }` &lt;br/&gt; 此函数的返回值 `error` 会作为错误文本提醒，表示上传失败的原因，如果存在会判定为本次上传失败。&lt;br/&gt; 此函数的返回值 `url` 会作为单个文件上传成功后的链接。&lt;br/&gt; `files` 表示一个请求同时上传多个文件后的文件列表
+/// </summary>
 [ECMAScript]
 public record TResponseType : VueProps
 {
@@ -12683,16 +17181,30 @@ public record TResponseType : VueProps
     public TUploadFile[]? Files { get; init; }
 }
 
+/// <summary>
+/// redefine response data structure
+///
+/// 用于格式化文件上传后的接口响应数据，`response` 便是接口响应的原始数据。`action` 存在时有效。&lt;br/&gt; 示例返回值：`{ error, url, status, files }` &lt;br/&gt; 此函数的返回值 `error` 会作为错误文本提醒，表示上传失败的原因，如果存在会判定为本次上传失败。&lt;br/&gt; 此函数的返回值 `url` 会作为单个文件上传成功后的链接。&lt;br/&gt; `files` 表示一个请求同时上传多个文件后的文件列表
+/// </summary>
 [ECMAScript]
 [String]
 public enum TResponseTypeStatus
 {
+    /// <summary>
+    /// JavaScript value: fail.
+    /// </summary>
     [Description("@#fail")]
     Fail,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// TDesign binding type TRoute.
+/// </summary>
 [ECMAScript]
 public record TRoute : VueProps
 {
@@ -12712,38 +17224,76 @@ public record TRoute : VueProps
     public TRouteData? Params { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TRouteData.
+/// </summary>
 [ECMAScript]
 public record TRouteData : VueDictionary<TRouteDataIndex>
 {
 }
 
+/// <summary>
+/// TDesign binding type TRouteDataIndex.
+/// </summary>
 [ECMAScript]
 public readonly union TRouteDataIndex(string, string[])
 {
 }
 
+/// <summary>
+/// 纵向对齐方式，CSS 属性 `align-items` 值。其中 `top` 和 `start` 等效；`middle` 和 `center` 等效；`bottom` 和 `end` 等效
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRowAlignValue
 {
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: stretch.
+    /// </summary>
     [Description("@#stretch")]
     Stretch,
+    /// <summary>
+    /// JavaScript value: baseline.
+    /// </summary>
     [Description("@#baseline")]
     Baseline,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: middle.
+    /// </summary>
     [Description("@#middle")]
     Middle,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public record TRowClassNameParams<T> : VueProps
 {
@@ -12760,16 +17310,32 @@ public record TRowClassNameParams<T> : VueProps
     public TRowClassNameParamsType? Type { get; init; }
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRowClassNameParamsType
 {
+    /// <summary>
+    /// JavaScript value: body.
+    /// </summary>
     [Description("@#body")]
     Body,
+    /// <summary>
+    /// JavaScript value: foot.
+    /// </summary>
     [Description("@#foot")]
     Foot,
 }
 
+/// <summary>
+/// trigger on row click
+///
+/// 行点击时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public record TRowEventContext<T> : VueProps
 {
@@ -12783,37 +17349,71 @@ public record TRowEventContext<T> : VueProps
     public TRowEventContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// trigger on row click
+///
+/// 行点击时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public readonly union TRowEventContextE<T>(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 栅格间隔，示例：`{ xs: 8, sm: 16, md: 24, lg: 32, xl: 32, xxl: 40 }`。当数据类型为 Number 和 Object 时，用于指定横向间隔。当数据类型为数组时，第一个参数为横向间隔，第二个参数为纵向间隔， [水平间隔, 垂直间隔]
+/// </summary>
 [ECMAScript]
 public readonly union TRowGutterValue(Number, TGutterObject, TRowGutterValueOption3Item[])
 {
 }
 
+/// <summary>
+/// 栅格间隔，示例：`{ xs: 8, sm: 16, md: 24, lg: 32, xl: 32, xxl: 40 }`。当数据类型为 Number 和 Object 时，用于指定横向间隔。当数据类型为数组时，第一个参数为横向间隔，第二个参数为纵向间隔， [水平间隔, 垂直间隔]
+/// </summary>
 [ECMAScript]
 public readonly union TRowGutterValueOption3Item(TGutterObject, Number)
 {
 }
 
+/// <summary>
+/// flex 布局下的水平排列方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TRowJustifyValue
 {
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: space-around.
+    /// </summary>
     [Description("@#space-around")]
     SpaceAround,
+    /// <summary>
+    /// JavaScript value: space-between.
+    /// </summary>
     [Description("@#space-between")]
     SpaceBetween,
 }
 
+/// <summary>
+/// rowspan and colspan
+///
+/// 用于自定义合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+/// </summary>
 [ECMAScript]
 public record TRowspanColspan : VueProps
 {
@@ -12824,6 +17424,11 @@ public record TRowspanColspan : VueProps
     public Number? Rowspan { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TScroll : VueProps
 {
@@ -12843,29 +17448,52 @@ public record TScroll : VueProps
     public TScrollType Type { get; init; }
 }
 
+/// <summary>
+/// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+/// </summary>
 [ECMAScript]
 public readonly union TScrollContainer(TScrollContainerOption1, string)
 {
 }
 
+/// <summary>
+/// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+/// </summary>
 [ECMAScript]
 public readonly union TScrollContainerElement(WindowRef, HTMLElement)
 {
 }
 
+/// <summary>
+/// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+/// </summary>
 [ECMAScript]
 public delegate TScrollContainerElement TScrollContainerOption1();
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TScrollType
 {
+    /// <summary>
+    /// JavaScript value: lazy.
+    /// </summary>
     [Description("@#lazy")]
     Lazy,
+    /// <summary>
+    /// JavaScript value: virtual.
+    /// </summary>
     [Description("@#virtual")]
     Virtual,
 }
 
+/// <summary>
+/// 搜索时触发，options.query 表示用户输入的内容
+/// </summary>
 [ECMAScript]
 public record TSearchContext : VueProps
 {
@@ -12883,26 +17511,44 @@ public record TSearchContext : VueProps
     public TSearchContextE E { get; init; }
 }
 
+/// <summary>
+/// 搜索时触发，options.query 表示用户输入的内容
+/// </summary>
 [ECMAScript]
 public readonly union TSearchContextE(InputEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 搜索时触发，options.query 表示用户输入的内容
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSearchContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: enter.
+    /// </summary>
     [Description("@#enter")]
     Enter,
 }
 
+/// <summary>
+/// 搜索框配置，值为 false 表示不显示搜索框；值为 true 表示显示默认搜索框；值类型为对象，用于透传 Props 到 Input 组件；值类型为数组，则分别表示控制两侧搜索框
+/// </summary>
 [ECMAScript]
 public readonly union TSearchOption(bool, TdInputProps<TInputValue>)
 {
 }
 
+/// <summary>
+/// 输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TSelectBlurEventContext<T> : VueProps
 {
@@ -12913,11 +17559,17 @@ public record TSelectBlurEventContext<T> : VueProps
     public TSelectBlurEventContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// 输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public readonly union TSelectBlurEventContextE<T>(FocusEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 选中值变化时触发。`context.trigger` 表示触发变化的来源；`context.selectedOptions` 表示选中值的完整对象，数组长度一定和 `value` 相同；`context.option` 表示当前操作的选项，不一定存在
+/// </summary>
 [ECMAScript]
 public record TSelectChangeEventContext<T> : VueProps
 {
@@ -12935,11 +17587,17 @@ public record TSelectChangeEventContext<T> : VueProps
     public TSelectChangeEventContextE<T>? E { get; init; }
 }
 
+/// <summary>
+/// 选中值变化时触发。`context.trigger` 表示触发变化的来源；`context.selectedOptions` 表示选中值的完整对象，数组长度一定和 `value` 相同；`context.option` 表示当前操作的选项，不一定存在
+/// </summary>
 [ECMAScript]
 public readonly union TSelectChangeEventContextE<T>(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 点击清除按钮时触发
+/// </summary>
 [ECMAScript]
 public record TSelectClearEventContext<T> : VueProps
 {
@@ -12948,6 +17606,9 @@ public record TSelectClearEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSelectCollapsedItemsSlotContext.
+/// </summary>
 [ECMAScript]
 public record TSelectCollapsedItemsSlotContext<T> : VueProps
 {
@@ -12967,9 +17628,15 @@ public record TSelectCollapsedItemsSlotContext<T> : VueProps
     public TSelectCollapsedItemsSlotContextOnClose<T> OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSelectCollapsedItemsSlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TSelectCollapsedItemsSlotContextOnClose<T>(TSelectCollapsedItemsSlotContextOnCloseContext<T> context);
 
+/// <summary>
+/// TDesign binding type TSelectCollapsedItemsSlotContextOnCloseContext.
+/// </summary>
 [ECMAScript]
 public record TSelectCollapsedItemsSlotContextOnCloseContext<T> : VueProps
 {
@@ -12980,6 +17647,11 @@ public record TSelectCollapsedItemsSlotContextOnCloseContext<T> : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TSelectConfig : VueProps
 {
@@ -12999,11 +17671,17 @@ public record TSelectConfig : VueProps
     public string? Placeholder { get; init; }
 }
 
+/// <summary>
+/// 当选择新创建的条目时触发
+/// </summary>
 [ECMAScript]
 public readonly union TSelectCreateEventValue<T>(string, Number, bool, BigInt)
 {
 }
 
+/// <summary>
+/// 回车键按下时触发。`inputValue` 表示输入框的值，`value` 表示选中值
+/// </summary>
 [ECMAScript]
 public record TSelectEnterEventContext<T> : VueProps
 {
@@ -13019,14 +17697,23 @@ public record TSelectEnterEventContext<T> : VueProps
     public TSelectValue<TSelectOption> Value { get; init; }
 }
 
+/// <summary>
+/// 自定义搜索规则，用于对现有数据进行搜索，判断是否过滤某一项数据。参数 `filterWords` 表示搜索词，`option`表示单个选项内容，返回值为 `true` 保留该选项，返回值为 `false` 则隐藏该选项。使用该方法时无需设置 `filterable`
+/// </summary>
 [ECMAScript]
 public delegate TSelectFilterValueResult<T> TSelectFilterValue<T>(string filterWords, T option);
 
+/// <summary>
+/// 自定义搜索规则，用于对现有数据进行搜索，判断是否过滤某一项数据。参数 `filterWords` 表示搜索词，`option`表示单个选项内容，返回值为 `true` 保留该选项，返回值为 `false` 则隐藏该选项。使用该方法时无需设置 `filterable`
+/// </summary>
 [ECMAScript]
 public readonly union TSelectFilterValueResult<T>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// 输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TSelectFocusEventContext<T> : VueProps
 {
@@ -13037,11 +17724,19 @@ public record TSelectFocusEventContext<T> : VueProps
     public TSelectFocusEventContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// 输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public readonly union TSelectFocusEventContextE<T>(FocusEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TSelectInputBlurContext : VueProps
 {
@@ -13059,6 +17754,9 @@ public record TSelectInputBlurContext : VueProps
     public TTagInputValueItem[]? TagInputValue { get; init; }
 }
 
+/// <summary>
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TSelectInputClearEventContext : VueProps
 {
@@ -13067,6 +17765,9 @@ public record TSelectInputClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSelectInputCollapsedItemsSlotContext.
+/// </summary>
 [ECMAScript]
 public record TSelectInputCollapsedItemsSlotContext : VueProps
 {
@@ -13084,9 +17785,15 @@ public record TSelectInputCollapsedItemsSlotContext : VueProps
     public TSelectInputCollapsedItemsSlotContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSelectInputCollapsedItemsSlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TSelectInputCollapsedItemsSlotContextOnClose(TSelectInputCollapsedItemsSlotContextOnCloseContext context);
 
+/// <summary>
+/// TDesign binding type TSelectInputCollapsedItemsSlotContextOnCloseContext.
+/// </summary>
 [ECMAScript]
 public record TSelectInputCollapsedItemsSlotContextOnCloseContext : VueProps
 {
@@ -13097,6 +17804,9 @@ public record TSelectInputCollapsedItemsSlotContextOnCloseContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 按键按下 Enter 时触发
+/// </summary>
 [ECMAScript]
 public record TSelectInputEnterEventContext : VueProps
 {
@@ -13112,6 +17822,11 @@ public record TSelectInputEnterEventContext : VueProps
     public TTagInputValueItem[]? TagInputValue { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TSelectInputFocusContext : VueProps
 {
@@ -13127,6 +17842,11 @@ public record TSelectInputFocusContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TSelectInputKeys : VueProps
 {
@@ -13140,6 +17860,11 @@ public record TSelectInputKeys : VueProps
     public string? Children { get; init; }
 }
 
+/// <summary>
+/// trigger on mouseenter
+///
+/// 进入输入框时触发
+/// </summary>
 [ECMAScript]
 public record TSelectInputMouseenterEventContext : VueProps
 {
@@ -13148,6 +17873,11 @@ public record TSelectInputMouseenterEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on mouseleave
+///
+/// 离开输入框时触发
+/// </summary>
 [ECMAScript]
 public record TSelectInputMouseleaveEventContext : VueProps
 {
@@ -13156,6 +17886,9 @@ public record TSelectInputMouseleaveEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 粘贴事件，`pasteValue` 表示粘贴板的内容
+/// </summary>
 [ECMAScript]
 public record TSelectInputPasteEventContext : VueProps
 {
@@ -13168,20 +17901,38 @@ public record TSelectInputPasteEventContext : VueProps
     public string PasteValue { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectInputStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// TDesign binding type TSelectInputTagSlotContext.
+/// </summary>
 [ECMAScript]
 public record TSelectInputTagSlotContext : VueProps
 {
@@ -13189,16 +17940,29 @@ public record TSelectInputTagSlotContext : VueProps
     public TSelectInputTagSlotContextValue Value { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TSelectInputTagSlotContextValue.
+/// </summary>
 [ECMAScript]
 public readonly union TSelectInputTagSlotContextValue(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TSelectInputValue(string, Number, bool, Date, TJsonObject, TJsonValue[], TSelectInputValue[])
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TSelectInputValueChangeContext : VueProps
 {
@@ -13209,6 +17973,11 @@ public record TSelectInputValueChangeContext : VueProps
     public TSelectInputValueChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [Union]
 public readonly struct TSelectInputValueChangeContextE : IUnion
@@ -13327,24 +18096,50 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
 
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectInputValueChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: blur.
+    /// </summary>
     [Description("@#blur")]
     Blur,
+    /// <summary>
+    /// JavaScript value: focus.
+    /// </summary>
     [Description("@#focus")]
     Focus,
+    /// <summary>
+    /// JavaScript value: initial.
+    /// </summary>
     [Description("@#initial")]
     Initial,
+    /// <summary>
+    /// JavaScript value: change.
+    /// </summary>
     [Description("@#change")]
     Change,
 }
 
+/// <summary>
+/// TDesign binding type TSelectInputValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TSelectInputValueDisplaySlotContext : VueProps
 {
@@ -13357,14 +18152,27 @@ public record TSelectInputValueDisplaySlotContext : VueProps
     public TSelectInputValueDisplaySlotContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSelectInputValueDisplaySlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TSelectInputValueDisplaySlotContextOnClose(Number index, TJsonValue? item = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TSelectOption(TdOptionProps, TSelectOptionGroup, TJsonObject)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TSelectOptionGroup : VueProps
 {
@@ -13383,6 +18191,9 @@ public record TSelectOptionGroup : VueProps
     public TdOptionProps[] Children { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSelectOptions.
+/// </summary>
 [ECMAScript]
 public record TSelectOptions<T> : VueProps
 {
@@ -13400,26 +18211,51 @@ public record TSelectOptions<T> : VueProps
     public T? CurrentRowData { get; init; }
 }
 
+/// <summary>
+/// layout of options in popup
+///
+/// 下拉选项布局方式，有纵向排列和横向排列两种，默认纵向排列
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectOptionsLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
 }
 
+/// <summary>
+/// TDesign binding type TSelectOptionsType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectOptionsType
 {
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TSelectRemoveContext<T> : VueProps
 {
@@ -13433,16 +18269,29 @@ public record TSelectRemoveContext<T> : VueProps
     public TSelectRemoveContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TSelectRemoveContextE<T>(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TSelectRemoveContextValue<T>(string, Number, BigInt)
 {
 }
 
+/// <summary>
+/// 输入值变化时，触发搜索事件。主要用于远程搜索新数据
+/// </summary>
 [ECMAScript]
 public record TSelectSearchEventContext<T> : VueProps
 {
@@ -13451,43 +18300,89 @@ public record TSelectSearchEventContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TSelectValue<T>(string, Number, bool, BigInt, T, TSelectValue<T>[])
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectValueChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: tag-remove.
+    /// </summary>
     [Description("@#tag-remove")]
     TagRemove,
+    /// <summary>
+    /// JavaScript value: backspace.
+    /// </summary>
     [Description("@#backspace")]
     Backspace,
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
 }
 
+/// <summary>
+/// TDesign binding type TSelectValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TSelectValueDisplaySlotContext<T> : VueProps
 {
@@ -13502,34 +18397,67 @@ public record TSelectValueDisplaySlotContext<T> : VueProps
     public TSelectValue<TSelectOption>? DisplayValue { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TSelectValueDisplaySlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TSelectValueDisplaySlotContextOnClose<T>(Number index);
 
+/// <summary>
+/// `MouseEvent&lt;SVGElement&gt;`
+///
+/// 自定义选中项呈现的内容
+/// </summary>
 [ECMAScript]
 public readonly union TSelectValueDisplayValue<T>(string, TSelectValue<TSelectOption>)
 {
 }
 
+/// <summary>
+/// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSelectValueTypeValue
 {
+    /// <summary>
+    /// JavaScript value: value.
+    /// </summary>
     [Description("@#value")]
     Value,
+    /// <summary>
+    /// JavaScript value: object.
+    /// </summary>
     [Description("@#object")]
     Object,
 }
 
+/// <summary>
+/// shape
+///
+/// 形状。优先级高于 AvatarGroup.shape 。Avatar 单独存在时，默认值为 circle。如果父组件 AvatarGroup 存在，默认值便由 AvatarGroup.shape 决定
+/// </summary>
 [ECMAScript]
 [String]
 public enum TShapeEnum
 {
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
 }
 
+/// <summary>
+/// allow resizing drawer width/height, set `max` or `min` to limit size
+///
+/// 抽屉大小可拖拽调整，横向抽屉调整宽度，纵向抽屉调整高度。`sizeDraggable.max` 和 `sizeDraggable.min` 用于控制拖拽尺寸大小限制
+/// </summary>
 [ECMAScript]
 public record TSizeDragLimit : VueProps
 {
@@ -13540,18 +18468,35 @@ public record TSizeDragLimit : VueProps
     public Number Min { get; init; }
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSizeEnum
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// files size limit
+///
+/// 图片文件大小限制，默认单位 KB。可选单位有：`'B' | 'KB' | 'MB' | 'GB'`。示例一：`1000`。示例二：`{ size: 2, unit: 'MB', message: '图片大小不超过 {sizeLimit} MB' }`
+/// </summary>
 [ECMAScript]
 public record TSizeLimitObj : VueProps
 {
@@ -13565,37 +18510,72 @@ public record TSizeLimitObj : VueProps
     public string? Message { get; init; }
 }
 
+/// <summary>
+/// files size limit
+///
+/// 图片文件大小限制，默认单位 KB。可选单位有：`'B' | 'KB' | 'MB' | 'GB'`。示例一：`1000`。示例二：`{ size: 2, unit: 'MB', message: '图片大小不超过 {sizeLimit} MB' }`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSizeUnit
 {
+    /// <summary>
+    /// JavaScript value: B.
+    /// </summary>
     [Description("@#B")]
     B,
+    /// <summary>
+    /// JavaScript value: KB.
+    /// </summary>
     [Description("@#KB")]
     KB,
+    /// <summary>
+    /// JavaScript value: MB.
+    /// </summary>
     [Description("@#MB")]
     MB,
+    /// <summary>
+    /// JavaScript value: GB.
+    /// </summary>
     [Description("@#GB")]
     GB,
 }
 
+/// <summary>
+/// 动画效果，有「渐变加载动画」和「闪烁加载动画」两种。值为 'none' 则表示没有动画
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSkeletonAnimationValue
 {
+    /// <summary>
+    /// JavaScript value: gradient.
+    /// </summary>
     [Description("@#gradient")]
     Gradient,
+    /// <summary>
+    /// JavaScript value: flashed.
+    /// </summary>
     [Description("@#flashed")]
     Flashed,
+    /// <summary>
+    /// JavaScript value: none.
+    /// </summary>
     [Description("@#none")]
     None,
 }
 
+/// <summary>
+/// 高级设置，用于自定义行列数量、宽度高度、间距等。【示例一】，`[1, 1, 2]` 表示输出三行骨架图，第一行一列，第二行一列，第三行两列。【示例二】，`[1, 1, { width: '100px' }]` 表示自定义第三行的宽度为 `100px`。【示例三】，`[1, 2, [{ width, height }, { width, height, marginLeft }]]` 表示第三行有两列，且自定义宽度、高度、尺寸（圆形或方形使用）、间距、内容等
+/// </summary>
 [ECMAScript]
 public readonly union TSkeletonRowColItem(Number, TSkeletonRowColObj, TSkeletonRowColObj[])
 {
 }
 
+/// <summary>
+/// 高级设置，用于自定义行列数量、宽度高度、间距等。【示例一】，`[1, 1, 2]` 表示输出三行骨架图，第一行一列，第二行一列，第三行两列。【示例二】，`[1, 1, { width: '100px' }]` 表示自定义第三行的宽度为 `100px`。【示例三】，`[1, 2, [{ width, height }, { width, height, marginLeft }]]` 表示第三行有两列，且自定义宽度、高度、尺寸（圆形或方形使用）、间距、内容等
+/// </summary>
 [ECMAScript]
 public record TSkeletonRowColObj : VueProps
 {
@@ -13624,46 +18604,88 @@ public record TSkeletonRowColObj : VueProps
     public TSkeletonRowColObjType? Type { get; init; }
 }
 
+/// <summary>
+/// 高级设置，用于自定义行列数量、宽度高度、间距等。【示例一】，`[1, 1, 2]` 表示输出三行骨架图，第一行一列，第二行一列，第三行两列。【示例二】，`[1, 1, { width: '100px' }]` 表示自定义第三行的宽度为 `100px`。【示例三】，`[1, 2, [{ width, height }, { width, height, marginLeft }]]` 表示第三行有两列，且自定义宽度、高度、尺寸（圆形或方形使用）、间距、内容等
+/// </summary>
 [ECMAScript]
 public readonly union TSkeletonRowColObjContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 高级设置，用于自定义行列数量、宽度高度、间距等。【示例一】，`[1, 1, 2]` 表示输出三行骨架图，第一行一列，第二行一列，第三行两列。【示例二】，`[1, 1, { width: '100px' }]` 表示自定义第三行的宽度为 `100px`。【示例三】，`[1, 2, [{ width, height }, { width, height, marginLeft }]]` 表示第三行有两列，且自定义宽度、高度、尺寸（圆形或方形使用）、间距、内容等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSkeletonRowColObjType
 {
+    /// <summary>
+    /// JavaScript value: rect.
+    /// </summary>
     [Description("@#rect")]
     Rect,
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
 }
 
+/// <summary>
+/// 快捷定义骨架图风格，有基础、头像组合等，具体参看代码示例
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSkeletonThemeValue
 {
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
+    /// <summary>
+    /// JavaScript value: avatar.
+    /// </summary>
     [Description("@#avatar")]
     Avatar,
+    /// <summary>
+    /// JavaScript value: paragraph.
+    /// </summary>
     [Description("@#paragraph")]
     Paragraph,
+    /// <summary>
+    /// JavaScript value: avatar-text.
+    /// </summary>
     [Description("@#avatar-text")]
     AvatarText,
+    /// <summary>
+    /// JavaScript value: tab.
+    /// </summary>
     [Description("@#tab")]
     Tab,
+    /// <summary>
+    /// JavaScript value: article.
+    /// </summary>
     [Description("@#article")]
     Article,
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public readonly union TSliderInputNumberPropsValue(bool, TdInputNumberProps<TInputNumberValue>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TSliderLabelSlotContext.
+/// </summary>
 [ECMAScript]
 public record TSliderLabelSlotContext : VueProps
 {
@@ -13674,41 +18696,71 @@ public record TSliderLabelSlotContext : VueProps
     public TSliderLabelSlotContextPosition? Position { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TSliderLabelSlotContextPosition.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSliderLabelSlotContextPosition
 {
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
 }
 
+/// <summary>
+/// 滑块当前值文本。&lt;br /&gt;值为 true 显示默认文案；值为 false 不显示滑块当前值文本；&lt;br /&gt;值为 `${value}%` 则表示组件会根据占位符渲染文案；&lt;br /&gt;值类型为函数时，参数 `value` 标识滑块值，参数 `position=start` 表示范围滑块的起始值，参数 `position=end` 表示范围滑块的终点值
+/// </summary>
 [ECMAScript]
 public readonly union TSliderLabelValue(string, bool)
 {
 }
 
+/// <summary>
+/// 滑块布局方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSliderLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
 }
 
+/// <summary>
+/// 刻度标记，示例：[0, 10, 40, 200] 或者 `{ 10: (val) =&gt; val + '%', 50: (h) =&gt; &lt;button&gt;50&lt;/button&gt; }`
+/// </summary>
 [ECMAScript]
 public record TSliderMarks : VueDictionary<TSliderMarksIndex>
 {
 }
 
+/// <summary>
+/// 刻度标记，示例：[0, 10, 40, 200] 或者 `{ 10: (val) =&gt; val + '%', 50: (h) =&gt; &lt;button&gt;50&lt;/button&gt; }`
+/// </summary>
 [ECMAScript]
 public readonly union TSliderMarksIndex(string, RenderFragment<TSliderMarksIndexOption2Context>)
 {
 }
 
+/// <summary>
+/// 刻度标记，示例：[0, 10, 40, 200] 或者 `{ 10: (val) =&gt; val + '%', 50: (h) =&gt; &lt;button&gt;50&lt;/button&gt; }`
+/// </summary>
 [ECMAScript]
 public record TSliderMarksIndexOption2Context : VueProps
 {
@@ -13716,16 +18768,25 @@ public record TSliderMarksIndexOption2Context : VueProps
     public Number Value { get; init; }
 }
 
+/// <summary>
+/// 刻度标记，示例：[0, 10, 40, 200] 或者 `{ 10: (val) =&gt; val + '%', 50: (h) =&gt; &lt;button&gt;50&lt;/button&gt; }`
+/// </summary>
 [ECMAScript]
 public readonly union TSliderMarksValue(Number[], TSliderMarks)
 {
 }
 
+/// <summary>
+/// TDesign binding type TSliderValue.
+/// </summary>
 [ECMAScript]
 public readonly union TSliderValue(Number, Number[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TSortInfo.
+/// </summary>
 [ECMAScript]
 public record TSortInfo : VueProps
 {
@@ -13737,6 +18798,9 @@ public record TSortInfo : VueProps
     public bool Descending { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TSortOptions.
+/// </summary>
 [ECMAScript]
 public record TSortOptions<T> : VueProps
 {
@@ -13748,23 +18812,45 @@ public record TSortOptions<T> : VueProps
     public TPrimaryTableCol<TTableRowData> Col { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSortType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSortType
 {
+    /// <summary>
+    /// JavaScript value: desc.
+    /// </summary>
     [Description("@#desc")]
     Desc,
+    /// <summary>
+    /// JavaScript value: asc.
+    /// </summary>
     [Description("@#asc")]
     Asc,
+    /// <summary>
+    /// JavaScript value: all.
+    /// </summary>
     [Description("@#all")]
     All,
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public sealed record TSortable : VueProps
 {
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 public record TSortableEvent : VueProps
 {
@@ -13819,6 +18905,11 @@ public record TSortableEvent : VueProps
     public HTMLElement? SwapItem { get; init; }
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 public record TSortableEventNewIndiciesItem : VueProps
 {
@@ -13830,6 +18921,11 @@ public record TSortableEventNewIndiciesItem : VueProps
     public Number Index { get; init; }
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 public record TSortableEventOldIndiciesItem : VueProps
 {
@@ -13841,19 +18937,37 @@ public record TSortableEventOldIndiciesItem : VueProps
     public Number Index { get; init; }
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 public readonly union TSortableEventPullMode(TSortableEventPullModeOption1, bool)
 {
 }
 
+/// <summary>
+/// stop to drag sort
+///
+/// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSortableEventPullModeOption1
 {
+    /// <summary>
+    /// JavaScript value: clone.
+    /// </summary>
     [Description("@#clone")]
     CloneElement,
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public record TSortableOptions : VueProps
 {
@@ -13990,14 +19104,29 @@ public record TSortableOptions : VueProps
     public TSortableOptionsOnChangeOption1? OnChange { get; init; }
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TSortableOptionsDirection(TSortableOptionsDirectionOption1, TDirection)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate TDirection TSortableOptionsDirectionOption1(TSortableEvent evt, HTMLElement target, HTMLElement dragEl);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public record TSortableOptionsFallbackOffsetOption1 : VueProps
 {
@@ -14008,14 +19137,29 @@ public record TSortableOptionsFallbackOffsetOption1 : VueProps
     public Number Y { get; init; }
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TSortableOptionsFilter(string, TSortableOptionsFilterOption2)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate bool TSortableOptionsFilterOption2(TSortableOptionsFilterOption2Event @event, HTMLElement target, TSortable sortable);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 [Union]
 public readonly struct TSortableOptionsFilterOption2Event : IUnion
@@ -14058,55 +19202,135 @@ public readonly struct TSortableOptionsFilterOption2Event : IUnion
 
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TSortableOptionsGroup(string, TGroupOptions)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnAddOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnChangeOption1(TSortableEvent evt);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnChooseOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnCloneOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnEndOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnFilterOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate TSortableOptionsOnMoveOption1Result? TSortableOptionsOnMoveOption1(TMoveEvent evt, EventRef originalEvent);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public readonly union TSortableOptionsOnMoveOption1Result(bool, Number)
 {
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnRemoveOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnSortOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnStartOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnUnchooseOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsOnUpdateOption1(TSortableEvent @event);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsSetDataOption1(DataTransfer dataTransfer, HTMLElement draggedElement);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public record TSortableOptionsStoreOption1 : VueProps
 {
@@ -14119,72 +19343,153 @@ public record TSortableOptionsStoreOption1 : VueProps
     public TSortableOptionsStoreOption1Set Set { get; init; } = default!;
 }
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate string[] TSortableOptionsStoreOption1Get(TSortable sortable);
 
+/// <summary>
+/// drag sort params
+///
+/// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+/// </summary>
 [ECMAScript]
 public delegate void TSortableOptionsStoreOption1Set(TSortable sortable);
 
+/// <summary>
+/// TDesign binding type TSorterFun.
+/// </summary>
 [ECMAScript]
 public delegate Number TSorterFun<T>(T a, T b);
 
+/// <summary>
+/// alignment
+///
+/// 对齐方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSpaceAlignValue
 {
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: baseline.
+    /// </summary>
     [Description("@#baseline")]
     Baseline,
 }
 
+/// <summary>
+/// Spacing direction
+///
+/// 间距方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSpaceDirectionValue
 {
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
 }
 
+/// <summary>
+/// Spacing
+///
+/// 间距大小
+/// </summary>
 [ECMAScript]
 public readonly union TSpaceSize(Number, string, TSizeEnum)
 {
 }
 
+/// <summary>
+/// Spacing
+///
+/// 间距大小
+/// </summary>
 [ECMAScript]
 public readonly union TSpaceSizeValue(TSpaceSize, TSpaceSize[])
 {
 }
 
+/// <summary>
+/// Format numeric display value
+///
+/// 格式化数值显示值
+/// </summary>
 [ECMAScript]
 public delegate Number TStatisticFormatValue(Number @value);
 
+/// <summary>
+/// Position of trending placements
+///
+/// 趋势展示位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStatisticTrendPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// trend
+///
+/// 趋势
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStatisticTrendValue
 {
+    /// <summary>
+    /// JavaScript value: increase.
+    /// </summary>
     [Description("@#increase")]
     Increase,
+    /// <summary>
+    /// JavaScript value: decrease.
+    /// </summary>
     [Description("@#decrease")]
     Decrease,
 }
 
+/// <summary>
+/// TDesign binding type TStatusRenderInfo.
+/// </summary>
 [ECMAScript]
 public record TStatusRenderInfo : VueProps
 {
@@ -14195,68 +19500,140 @@ public record TStatusRenderInfo : VueProps
     public TStatusRenderInfoOnRefresh? OnRefresh { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TStatusRenderInfoOnRefresh.
+/// </summary>
 [ECMAScript]
 public delegate void TStatusRenderInfoOnRefresh();
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepDialogPlacement
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
 }
 
+/// <summary>
+/// 当前步骤标识
+/// </summary>
 [ECMAScript]
 public readonly union TStepItemValueValue(string, Number)
 {
 }
 
+/// <summary>
+/// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepPopupPlacement
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
+    /// <summary>
+    /// JavaScript value: top-left.
+    /// </summary>
     [Description("@#top-left")]
     TopLeft,
+    /// <summary>
+    /// JavaScript value: top-right.
+    /// </summary>
     [Description("@#top-right")]
     TopRight,
+    /// <summary>
+    /// JavaScript value: bottom-left.
+    /// </summary>
     [Description("@#bottom-left")]
     BottomLeft,
+    /// <summary>
+    /// JavaScript value: bottom-right.
+    /// </summary>
     [Description("@#bottom-right")]
     BottomRight,
+    /// <summary>
+    /// JavaScript value: left-top.
+    /// </summary>
     [Description("@#left-top")]
     LeftTop,
+    /// <summary>
+    /// JavaScript value: left-bottom.
+    /// </summary>
     [Description("@#left-bottom")]
     LeftBottom,
+    /// <summary>
+    /// JavaScript value: right-top.
+    /// </summary>
     [Description("@#right-top")]
     RightTop,
+    /// <summary>
+    /// JavaScript value: right-bottom.
+    /// </summary>
     [Description("@#right-bottom")]
     RightBottom,
 }
 
+/// <summary>
+/// 当前步骤的状态：默认状态（未开始）、进行中状态、完成状态、错误状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: process.
+    /// </summary>
     [Description("@#process")]
     Process,
+    /// <summary>
+    /// JavaScript value: finish.
+    /// </summary>
     [Description("@#finish")]
     Finish,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 当前步骤发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TStepsChangeEventContext : VueProps
 {
@@ -14264,16 +19641,27 @@ public record TStepsChangeEventContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// 当前步骤发生变化时触发
+/// </summary>
 [ECMAScript]
 public readonly union TStepsChangeEventCurrent(string, Number)
 {
 }
 
+/// <summary>
+/// 当前步骤发生变化时触发
+/// </summary>
 [ECMAScript]
 public readonly union TStepsChangeEventPrevious(string, Number)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TStepsConfig : VueProps
 {
@@ -14284,63 +19672,117 @@ public record TStepsConfig : VueProps
     public RenderFragment? ErrorIcon { get; init; }
 }
 
+/// <summary>
+/// 当前步骤，即整个步骤条进度。默认根据步骤下标判断步骤的完成状态，当前步骤为进行中，当前步骤之前的步骤为已完成，当前步骤之后的步骤为未开始。如果每个步骤没有设置 value，current 值为步骤长度则表示所有步骤已完成。如果每个步骤设置了自定义 value，则 current = 'FINISH' 表示所有状态完成
+/// </summary>
 [ECMAScript]
 public readonly union TStepsCurrentValue(string, Number)
 {
 }
 
+/// <summary>
+/// 步骤条方向，有两种：横向和纵向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepsLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 步骤条分割符
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepsSeparatorValue
 {
+    /// <summary>
+    /// JavaScript value: line.
+    /// </summary>
     [Description("@#line")]
     Line,
+    /// <summary>
+    /// JavaScript value: dashed.
+    /// </summary>
     [Description("@#dashed")]
     Dashed,
+    /// <summary>
+    /// JavaScript value: arrow.
+    /// </summary>
     [Description("@#arrow")]
     Arrow,
 }
 
+/// <summary>
+/// 步骤条顺序
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepsSequenceValue
 {
+    /// <summary>
+    /// JavaScript value: positive.
+    /// </summary>
     [Description("@#positive")]
     Positive,
+    /// <summary>
+    /// JavaScript value: reverse.
+    /// </summary>
     [Description("@#reverse")]
     Reverse,
 }
 
+/// <summary>
+/// 步骤条风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStepsThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: dot.
+    /// </summary>
     [Description("@#dot")]
     Dot,
 }
 
+/// <summary>
+/// 触发浮层显示的方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStickyItemTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
 }
 
+/// <summary>
+/// 点击某一项时触发
+/// </summary>
 [ECMAScript]
 public record TStickyToolClickEventContext : VueProps
 {
@@ -14353,6 +19795,9 @@ public record TStickyToolClickEventContext : VueProps
     public TdStickyItemProps Item { get; init; } = default!;
 }
 
+/// <summary>
+/// 悬浮到某一项时触发
+/// </summary>
 [ECMAScript]
 public record TStickyToolHoverEventContext : VueProps
 {
@@ -14365,64 +19810,122 @@ public record TStickyToolHoverEventContext : VueProps
     public TdStickyItemProps Item { get; init; } = default!;
 }
 
+/// <summary>
+/// 相对于 placement 的偏移量，示例：[-10, 20] 或 ['10em', '8rem']
+/// </summary>
 [ECMAScript]
 public readonly union TStickyToolOffsetValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// 固定位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStickyToolPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: right-top.
+    /// </summary>
     [Description("@#right-top")]
     RightTop,
+    /// <summary>
+    /// JavaScript value: right-center.
+    /// </summary>
     [Description("@#right-center")]
     RightCenter,
+    /// <summary>
+    /// JavaScript value: right-bottom.
+    /// </summary>
     [Description("@#right-bottom")]
     RightBottom,
+    /// <summary>
+    /// JavaScript value: left-top.
+    /// </summary>
     [Description("@#left-top")]
     LeftTop,
+    /// <summary>
+    /// JavaScript value: left-center.
+    /// </summary>
     [Description("@#left-center")]
     LeftCenter,
+    /// <summary>
+    /// JavaScript value: left-bottom.
+    /// </summary>
     [Description("@#left-bottom")]
     LeftBottom,
 }
 
+/// <summary>
+/// stickytool shape
+///
+/// 侧边栏菜单形状，有 2 种：方形、圆形
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStickyToolShapeValue
 {
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
 }
 
+/// <summary>
+/// stickytool type
+///
+/// 侧边栏菜单类型，有 2 种：常规型和紧凑型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TStickyToolTypeValue
 {
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: compact.
+    /// </summary>
     [Description("@#compact")]
     Compact,
 }
 
+/// <summary>
+/// 宽度
+/// </summary>
 [ECMAScript]
 public readonly union TStickyToolWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public record TStyles : VueDictionary<TStylesIndex>
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TStylesIndex(string, Number)
 {
 }
 
+/// <summary>
+/// 表单提交时触发。其中 `context.validateResult` 表示校验结果，`context.firstError` 表示校验不通过的第一个规则提醒。`context.validateResult` 值为 `true` 表示校验通过；如果校验不通过，`context.validateResult` 值为校验结果列表。&lt;br /&gt;【注意】⚠️ 默认情况，输入框按下 Enter 键会自动触发提交事件，如果希望禁用这个默认行为，可以给输入框添加  enter 事件，并在事件中设置 `e.preventDefault()`
+/// </summary>
 [ECMAScript]
 public record TSubmitContext<T> : VueProps
 {
@@ -14439,6 +19942,11 @@ public record TSubmitContext<T> : VueProps
     public TJsonValue? Fields { get; init; }
 }
 
+/// <summary>
+/// trigger on file uploaded successfully
+///
+/// 单个文件上传成功后触发，在多文件场景下会触发多次。`context.file` 表示当前上传成功的单个文件，`context.response` 表示上传请求的返回数据
+/// </summary>
 [ECMAScript]
 public record TSuccessContext : VueProps
 {
@@ -14463,16 +19971,28 @@ public record TSuccessContext : VueProps
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
+/// <summary>
+/// 轮播切换动画效果类型：滑动、淡入淡出等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperAnimationValue
 {
+    /// <summary>
+    /// JavaScript value: slide.
+    /// </summary>
     [Description("@#slide")]
     Slide,
+    /// <summary>
+    /// JavaScript value: fade.
+    /// </summary>
     [Description("@#fade")]
     Fade,
 }
 
+/// <summary>
+/// 轮播切换时触发
+/// </summary>
 [ECMAScript]
 public record TSwiperChangeEventContext : VueProps
 {
@@ -14480,38 +20000,71 @@ public record TSwiperChangeEventContext : VueProps
     public TSwiperChangeSource Source { get; init; }
 }
 
+/// <summary>
+/// 轮播切换时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperChangeSource
 {
+    /// <summary>
+    /// JavaScript value: autoplay.
+    /// </summary>
     [Description("@#autoplay")]
     Autoplay,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
 }
 
+/// <summary>
+/// 轮播滑动方向，包括横向滑动和纵向滑动两个方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperDirectionValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 轮播切换动画效果类型：滑动、淡入淡出等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperItemAnimationValue
 {
+    /// <summary>
+    /// JavaScript value: slide.
+    /// </summary>
     [Description("@#slide")]
     Slide,
+    /// <summary>
+    /// JavaScript value: fade.
+    /// </summary>
     [Description("@#fade")]
     Fade,
 }
 
+/// <summary>
+/// 轮播切换时触发
+/// </summary>
 [ECMAScript]
 public record TSwiperItemChangeEventContext : VueProps
 {
@@ -14519,46 +20072,85 @@ public record TSwiperItemChangeEventContext : VueProps
     public TSwiperChangeSource Source { get; init; }
 }
 
+/// <summary>
+/// 轮播滑动方向，包括横向滑动和纵向滑动两个方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperItemDirectionValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 深色模式和浅色模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperItemThemeValue
 {
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
 }
 
+/// <summary>
+/// 触发切换的方式：悬浮、点击等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperItemTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
 }
 
+/// <summary>
+/// 样式类型：默认样式、卡片样式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperItemTypeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: card.
+    /// </summary>
     [Description("@#card")]
     Card,
 }
 
+/// <summary>
+/// 导航器全部配置
+/// </summary>
 [ECMAScript]
 public record TSwiperNavigation : VueProps
 {
@@ -14575,92 +20167,176 @@ public record TSwiperNavigation : VueProps
     public TSwiperNavigationType? Type { get; init; }
 }
 
+/// <summary>
+/// 导航器全部配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperNavigationPlacement
 {
+    /// <summary>
+    /// JavaScript value: inside.
+    /// </summary>
     [Description("@#inside")]
     Inside,
+    /// <summary>
+    /// JavaScript value: outside.
+    /// </summary>
     [Description("@#outside")]
     Outside,
 }
 
+/// <summary>
+/// 导航器全部配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperNavigationShowSlideBtn
 {
+    /// <summary>
+    /// JavaScript value: always.
+    /// </summary>
     [Description("@#always")]
     Always,
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: never.
+    /// </summary>
     [Description("@#never")]
     Never,
 }
 
+/// <summary>
+/// 导航器全部配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperNavigationSize
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 导航器全部配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperNavigationType
 {
+    /// <summary>
+    /// JavaScript value: dots.
+    /// </summary>
     [Description("@#dots")]
     Dots,
+    /// <summary>
+    /// JavaScript value: dots-bar.
+    /// </summary>
     [Description("@#dots-bar")]
     DotsBar,
+    /// <summary>
+    /// JavaScript value: bars.
+    /// </summary>
     [Description("@#bars")]
     Bars,
+    /// <summary>
+    /// JavaScript value: fraction.
+    /// </summary>
     [Description("@#fraction")]
     Fraction,
 }
 
+/// <summary>
+/// 深色模式和浅色模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperThemeValue
 {
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
 }
 
+/// <summary>
+/// 触发切换的方式：悬浮、点击等
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
 }
 
+/// <summary>
+/// 样式类型：默认样式、卡片样式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwiperTypeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: card.
+    /// </summary>
     [Description("@#card")]
     Card,
 }
 
+/// <summary>
+/// Switch 切换状态前的回调方法，常用于需要发起异步请求的场景，回调返回值支持布尔和 Promise 类型，返回`false`或 Promise reject不继续执行change，否则则继续执行
+/// </summary>
 [ECMAScript]
 public delegate TSwitchBeforeChangeValueResult<T> TSwitchBeforeChangeValue<T>();
 
+/// <summary>
+/// Switch 切换状态前的回调方法，常用于需要发起异步请求的场景，回调返回值支持布尔和 Promise 类型，返回`false`或 Promise reject不继续执行change，否则则继续执行
+/// </summary>
 [ECMAScript]
 public readonly union TSwitchBeforeChangeValueResult<T>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// 数据发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TSwitchChangeEventContext<T> : VueProps
 {
@@ -14669,6 +20345,9 @@ public record TSwitchChangeEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TSwitchLabelSlotContext.
+/// </summary>
 [ECMAScript]
 public record TSwitchLabelSlotContext<T> : VueProps
 {
@@ -14676,28 +20355,49 @@ public record TSwitchLabelSlotContext<T> : VueProps
     public TSwitchValue Value { get; init; }
 }
 
+/// <summary>
+/// 开关内容，[开启时内容，关闭时内容]。示例：['开', '关'] 或 (value) =&gt; value ? '开' : '关'
+/// </summary>
 [ECMAScript]
 public readonly union TSwitchLabelValueItem<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 开关尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TSwitchSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 用于自定义开关的值，[打开时的值，关闭时的值]。默认为 [true, false]。示例：[1, 0]、['open', 'close']
+/// </summary>
 [ECMAScript]
 public readonly union TSwitchValue(string, Number, bool)
 {
 }
 
+/// <summary>
+/// 点击删除按钮时触发
+/// </summary>
 [ECMAScript]
 public record TTabPanelRemoveEventOptions : VueProps
 {
@@ -14709,11 +20409,17 @@ public record TTabPanelRemoveEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选项卡的值，唯一标识
+/// </summary>
 [ECMAScript]
 public readonly union TTabValue(string, Number)
 {
 }
 
+/// <summary>
+/// 异常拖拽排序时触发，如：树形结构中，非同层级之间的交换。`context.code` 指交换异常错误码，固定值；`context.reason` 指交换异常的原因
+/// </summary>
 [ECMAScript]
 public record TTableAbnormalDragSortContext<T> : VueProps
 {
@@ -14725,26 +20431,52 @@ public record TTableAbnormalDragSortContext<T> : VueProps
     public string Reason { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on row active change
+///
+/// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+/// </summary>
 [ECMAScript]
 public readonly union TTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// keys of highlight rows, used to mock area selection behavior, just like macOS or windows area selection
+///
+/// 高亮行，支持鼠标键盘操作(Shift)连续高亮行，可用于处理行选中等批量操作，模拟操作系统区域选择行为
+/// </summary>
 [ECMAScript]
 public readonly union TTableActiveRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// make nodes can be highlight on clicked
+///
+/// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableActiveRowTypeValue
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// trigger on async loading text clicked
+///
+/// 异步加载区域被点击时触发
+/// </summary>
 [ECMAScript]
 public record TTableAsyncLoadingClickEventContext<T> : VueProps
 {
@@ -14752,26 +20484,51 @@ public record TTableAsyncLoadingClickEventContext<T> : VueProps
     public TTableAsyncLoadingClickEventContextStatus Status { get; init; }
 }
 
+/// <summary>
+/// trigger on async loading text clicked
+///
+/// 异步加载区域被点击时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableAsyncLoadingClickEventContextStatus
 {
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
+    /// <summary>
+    /// JavaScript value: load-more.
+    /// </summary>
     [Description("@#load-more")]
     LoadMore,
 }
 
+/// <summary>
+/// async loading state
+///
+/// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableAsyncLoadingValue
 {
+    /// <summary>
+    /// JavaScript value: loading.
+    /// </summary>
     [Description("@#loading")]
     Loading,
+    /// <summary>
+    /// JavaScript value: load-more.
+    /// </summary>
     [Description("@#load-more")]
     LoadMore,
 }
 
+/// <summary>
+/// TDesign binding type TTableChangeContext.
+/// </summary>
 [ECMAScript]
 public record TTableChangeContext<T> : VueProps
 {
@@ -14782,6 +20539,9 @@ public record TTableChangeContext<T> : VueProps
     public T[]? CurrentData { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableChangeData.
+/// </summary>
 [ECMAScript]
 public record TTableChangeData : VueProps
 {
@@ -14795,26 +20555,47 @@ public record TTableChangeData : VueProps
     public TdPaginationProps? Pagination { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableChangeTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: filter.
+    /// </summary>
     [Description("@#filter")]
     Filter,
+    /// <summary>
+    /// JavaScript value: sorter.
+    /// </summary>
     [Description("@#sorter")]
     Sorter,
+    /// <summary>
+    /// JavaScript value: pagination.
+    /// </summary>
     [Description("@#pagination")]
     Pagination,
 }
 
+/// <summary>
+/// TDesign binding type TTableColumnClassName.
+/// </summary>
 [ECMAScript]
 public readonly union TTableColumnClassName<T>(TClassName, TTableColumnClassNameOption2<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableColumnClassNameOption2.
+/// </summary>
 [ECMAScript]
 public delegate TClassName TTableColumnClassNameOption2<T>(TCellData<T> context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TTableColumnController : VueProps
 {
@@ -14849,30 +20630,57 @@ public record TTableColumnController : VueProps
     public TTableColumnControllerPlacement? Placement { get; init; }
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableColumnControllerDisplayType
 {
+    /// <summary>
+    /// JavaScript value: fixed-width.
+    /// </summary>
     [Description("@#fixed-width")]
     FixedWidth,
+    /// <summary>
+    /// JavaScript value: auto-width.
+    /// </summary>
     [Description("@#auto-width")]
     AutoWidth,
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableColumnControllerPlacement
 {
+    /// <summary>
+    /// JavaScript value: top-left.
+    /// </summary>
     [Description("@#top-left")]
     TopLeft,
+    /// <summary>
+    /// JavaScript value: top-right.
+    /// </summary>
     [Description("@#top-right")]
     TopRight,
+    /// <summary>
+    /// JavaScript value: bottom-left.
+    /// </summary>
     [Description("@#bottom-left")]
     BottomLeft,
+    /// <summary>
+    /// JavaScript value: bottom-right.
+    /// </summary>
     [Description("@#bottom-right")]
     BottomRight,
 }
 
+/// <summary>
+/// 列配置弹窗显示或隐藏变化时触发
+/// </summary>
 [ECMAScript]
 public record TTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
@@ -14880,18 +20688,33 @@ public record TTableColumnControllerVisibleChangeEventContext<T> : VueProps
     public TTableColumnControllerVisibleChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 列配置弹窗显示或隐藏变化时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableColumnControllerVisibleChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: cancel.
+    /// </summary>
     [Description("@#cancel")]
     Cancel,
+    /// <summary>
+    /// JavaScript value: confirm.
+    /// </summary>
     [Description("@#confirm")]
     Confirm,
+    /// <summary>
+    /// JavaScript value: open.
+    /// </summary>
     [Description("@#open")]
     Open,
 }
 
+/// <summary>
+/// TDesign binding type TTableColumnFilter.
+/// </summary>
 [ECMAScript]
 public record TTableColumnFilter : VueProps
 {
@@ -14932,11 +20755,17 @@ public record TTableColumnFilter : VueProps
     public TFilterType? Type { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableColumnFilterLabel.
+/// </summary>
 [ECMAScript]
 public readonly union TTableColumnFilterLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TTableColumnGroup : VueProps
 {
@@ -14952,11 +20781,17 @@ public record TTableColumnGroup : VueProps
     public string[] Columns { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TTableColumnGroupValue(string, Number)
 {
 }
 
+/// <summary>
+/// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+/// </summary>
 [ECMAScript]
 public record TTableColumnResizeChangeEventContext<T> : VueProps
 {
@@ -14965,11 +20800,17 @@ public record TTableColumnResizeChangeEventContext<T> : VueProps
     public TTableColumnResizeChangeEventContextColumnsWidth<T> ColumnsWidth { get; init; } = default!;
 }
 
+/// <summary>
+/// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+/// </summary>
 [ECMAScript]
 public record TTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionary<Number>
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableColumnResizeConfig.
+/// </summary>
 [ECMAScript]
 public record TTableColumnResizeConfig : VueProps
 {
@@ -14980,6 +20821,11 @@ public record TTableColumnResizeConfig : VueProps
     public Number MaxWidth { get; init; }
 }
 
+/// <summary>
+/// table locale config
+///
+/// 语言配置
+/// </summary>
 [ECMAScript]
 public record TTableConfig : VueProps
 {
@@ -15047,11 +20893,21 @@ public record TTableConfig : VueProps
     public RenderFragment<TTableConfigTreeExpandAndFoldIconContext>? TreeExpandAndFoldIcon { get; init; }
 }
 
+/// <summary>
+/// table locale config
+///
+/// 语言配置
+/// </summary>
 [ECMAScript]
 public readonly union TTableConfigEmpty(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// table locale config
+///
+/// 语言配置
+/// </summary>
 [ECMAScript]
 public record TTableConfigTreeExpandAndFoldIconContext : VueProps
 {
@@ -15059,16 +20915,30 @@ public record TTableConfigTreeExpandAndFoldIconContext : VueProps
     public TTableConfigTreeExpandAndFoldIconContextType Type { get; init; }
 }
 
+/// <summary>
+/// table locale config
+///
+/// 语言配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableConfigTreeExpandAndFoldIconContextType
 {
+    /// <summary>
+    /// JavaScript value: expand.
+    /// </summary>
     [Description("@#expand")]
     Expand,
+    /// <summary>
+    /// JavaScript value: fold.
+    /// </summary>
     [Description("@#fold")]
     Fold,
 }
 
+/// <summary>
+/// TDesign binding type TTableDataChangeContext.
+/// </summary>
 [ECMAScript]
 public record TTableDataChangeContext : VueProps
 {
@@ -15076,30 +20946,59 @@ public record TTableDataChangeContext : VueProps
     public TTableDataChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableDataChangeContextTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableDataChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: sort.
+    /// </summary>
     [Description("@#sort")]
     Sort,
 }
 
+/// <summary>
+/// dag sort
+///
+/// 拖拽排序方式，值为 `row` 表示行拖拽排序，这种方式无法进行文本复制，慎用。值为`row-handler` 表示通过拖拽手柄进行行拖拽排序。值为 `col` 表示列顺序拖拽。值为 `row-handler-col` 表示同时支持行拖拽和列拖拽。⚠️`drag-col` 已废弃，请勿使用
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableDragSortValue
 {
+    /// <summary>
+    /// JavaScript value: row.
+    /// </summary>
     [Description("@#row")]
     Row,
+    /// <summary>
+    /// JavaScript value: row-handler.
+    /// </summary>
     [Description("@#row-handler")]
     RowHandler,
+    /// <summary>
+    /// JavaScript value: col.
+    /// </summary>
     [Description("@#col")]
     Col,
+    /// <summary>
+    /// JavaScript value: row-handler-col.
+    /// </summary>
     [Description("@#row-handler-col")]
     RowHandlerCol,
+    /// <summary>
+    /// JavaScript value: drag-col.
+    /// </summary>
     [Description("@#drag-col")]
     DragCol,
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellConfig.
+/// </summary>
 [ECMAScript]
 public record TTableEditableCellConfig<T> : VueProps
 {
@@ -15134,35 +21033,62 @@ public record TTableEditableCellConfig<T> : VueProps
     public TTableEditableCellConfigValidateTrigger? ValidateTrigger { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellConfigOn.
+/// </summary>
 [ECMAScript]
 public delegate TTableEditableCellConfigOnResult<T> TTableEditableCellConfigOn<T>(TTableEditableCellPropsParams<T> context);
 
+/// <summary>
+/// TDesign binding type TTableEditableCellConfigOnEdited.
+/// </summary>
 [ECMAScript]
 public delegate void TTableEditableCellConfigOnEdited<T>(TPrimaryTableOnEditedContext<T> context);
 
+/// <summary>
+/// TDesign binding type TTableEditableCellConfigOnResult.
+/// </summary>
 [ECMAScript]
 public record TTableEditableCellConfigOnResult<T> : VueDictionary<TCallback>
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellConfigValidateTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableEditableCellConfigValidateTrigger
 {
+    /// <summary>
+    /// JavaScript value: exit.
+    /// </summary>
     [Description("@#exit")]
     Exit,
+    /// <summary>
+    /// JavaScript value: change.
+    /// </summary>
     [Description("@#change")]
     Change,
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellProps.
+/// </summary>
 [ECMAScript]
 public readonly union TTableEditableCellProps<T>(TJsonObject, TTableEditableCellPropsOption2<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellPropsOption2.
+/// </summary>
 [ECMAScript]
 public delegate TJsonObject TTableEditableCellPropsOption2<T>(TTableEditableCellPropsParams<T> @params);
 
+/// <summary>
+/// TDesign binding type TTableEditableCellPropsParams.
+/// </summary>
 [ECMAScript]
 public record TTableEditableCellPropsParams<T> : VueProps
 {
@@ -15187,14 +21113,23 @@ public record TTableEditableCellPropsParams<T> : VueProps
     public TTableEditableCellPropsParamsUpdateEditedCellValue<T> UpdateEditedCellValue { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellPropsParamsUpdateEditedCellValue.
+/// </summary>
 [ECMAScript]
 public delegate void TTableEditableCellPropsParamsUpdateEditedCellValue<T>(TTableEditableCellPropsParamsUpdateEditedCellValueVal<T> val);
 
+/// <summary>
+/// TDesign binding type TTableEditableCellPropsParamsUpdateEditedCellValueVal.
+/// </summary>
 [ECMAScript]
 public readonly union TTableEditableCellPropsParamsUpdateEditedCellValueVal<T>(TJsonValue, TTableEditableCellPropsParamsUpdateEditedCellValueValOption2<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellPropsParamsUpdateEditedCellValueValOption2.
+/// </summary>
 [ECMAScript]
 public record TTableEditableCellPropsParamsUpdateEditedCellValueValOption2<T> : VueProps
 {
@@ -15205,39 +21140,69 @@ public record TTableEditableCellPropsParamsUpdateEditedCellValueValOption2<T> : 
     public bool? IsUpdateCurrentRow { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue.
+/// </summary>
 [ECMAScript]
 public readonly union TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellRules.
+/// </summary>
 [ECMAScript]
 public readonly union TTableEditableCellRules<T>(TFormRule[], TTableEditableCellRulesOption2<T>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableEditableCellRulesOption2.
+/// </summary>
 [ECMAScript]
 public delegate TFormRule[] TTableEditableCellRulesOption2<T>(TPrimaryTableCellParams<T> @params);
 
+/// <summary>
+/// editable row keys, row key value is from data[rowKey]
+///
+/// 处于编辑状态的行
+/// </summary>
 [ECMAScript]
 public readonly union TTableEditableRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableErrorListMap.
+/// </summary>
 [ECMAScript]
 public record TTableErrorListMap : VueDictionary<TAllValidateResult[]>
 {
 }
 
+/// <summary>
+/// trigger on expand row keys changing
+///
+/// 展开行发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public readonly union TTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// expanded row keys, row key value is from data[rowKey]
+///
+/// 展开行
+/// </summary>
 [ECMAScript]
 public readonly union TTableExpandedRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableExpandedRowParams.
+/// </summary>
 [ECMAScript]
 public record TTableExpandedRowParams<T> : VueProps
 {
@@ -15251,11 +21216,17 @@ public record TTableExpandedRowParams<T> : VueProps
     public TTableExpandedRowParamsColumns<T> Columns { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableExpandedRowParamsColumns.
+/// </summary>
 [ECMAScript]
 public readonly union TTableExpandedRowParamsColumns<T>(TPrimaryTableCol<T>[], TBaseTableCol<T>[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableFilterChangeContext.
+/// </summary>
 [ECMAScript]
 public record TTableFilterChangeContext<T> : VueProps
 {
@@ -15266,20 +21237,38 @@ public record TTableFilterChangeContext<T> : VueProps
     public TTableFilterChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTableFilterChangeContextTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableFilterChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: filter-change.
+    /// </summary>
     [Description("@#filter-change")]
     FilterChange,
+    /// <summary>
+    /// JavaScript value: confirm.
+    /// </summary>
     [Description("@#confirm")]
     Confirm,
+    /// <summary>
+    /// JavaScript value: reset.
+    /// </summary>
     [Description("@#reset")]
     Reset,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// TDesign binding type TTableFilterIconSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTableFilterIconSlotContext<T> : VueProps
 {
@@ -15291,49 +21280,99 @@ public record TTableFilterIconSlotContext<T> : VueProps
     public Number ColIndex { get; init; }
 }
 
+/// <summary>
+/// affix foot to viewport bottom
+///
+/// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TTableFooterAffixedBottomValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// affix header to viewport top
+///
+/// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TTableHeaderAffixedTopValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// table height
+///
+/// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
+/// </summary>
 [ECMAScript]
 public readonly union TTableHeightValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// affix props
+///
+/// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TTableHorizontalScrollAffixedBottomValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// indeterminate selected row keys, row key is from data[rowKey]
+///
+/// 半选状态行。选中行请更为使用 `selectedRowKeys` 控制
+/// </summary>
 [ECMAScript]
 public readonly union TTableIndeterminateSelectedRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// table max height
+///
+/// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+/// </summary>
 [ECMAScript]
 public readonly union TTableMaxHeightValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// affix props
+///
+/// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TTablePaginationAffixedBottomValue<T>(bool, TdAffixProps)
 {
 }
 
+/// <summary>
+/// `tr` attributes
+///
+/// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+/// </summary>
 [ECMAScript]
 public readonly union TTableRowAttributes<T>(THTMLElementAttributes, TTableRowAttributesOption2<T>, TTableRowAttributes<T>[])
 {
 }
 
+/// <summary>
+/// `tr` attributes
+///
+/// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+/// </summary>
 [ECMAScript]
 public delegate THTMLElementAttributes TTableRowAttributesOption2<T>(TTableRowAttributesOption2Params<T> @params);
 
+/// <summary>
+/// `tr` attributes
+///
+/// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+/// </summary>
 [ECMAScript]
 public record TTableRowAttributesOption2Params<T> : VueProps
 {
@@ -15347,24 +21386,48 @@ public record TTableRowAttributesOption2Params<T> : VueProps
     public TTableRowAttributesOption2ParamsType Type { get; init; }
 }
 
+/// <summary>
+/// `tr` attributes
+///
+/// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableRowAttributesOption2ParamsType
 {
+    /// <summary>
+    /// JavaScript value: body.
+    /// </summary>
     [Description("@#body")]
     Body,
+    /// <summary>
+    /// JavaScript value: foot.
+    /// </summary>
     [Description("@#foot")]
     Foot,
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public readonly union TTableRowClassNameValue<T>(TClassName, TTableRowClassNameValueOption2<T>)
 {
 }
 
+/// <summary>
+/// table `th` classname
+///
+/// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+/// </summary>
 [ECMAScript]
 public delegate TClassName TTableRowClassNameValueOption2<T>(TRowClassNameParams<T> @params);
 
+/// <summary>
+/// TDesign binding type TTableRowData.
+/// </summary>
 [ECMAScript]
 public record TTableRowData : VueProps
 {
@@ -15372,16 +21435,32 @@ public record TTableRowData : VueProps
     public TTableRowData[]? Children { get; init; }
 }
 
+/// <summary>
+/// single row selection, or multiple row selection
+///
+/// 行选中类型，单选或多选。效果和 `columns` 中配置的 `{ colKey: 'row-select', type: 'single' }` 一样
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableRowSelectionTypeValue
 {
+    /// <summary>
+    /// JavaScript value: single.
+    /// </summary>
     [Description("@#single")]
     Single,
+    /// <summary>
+    /// JavaScript value: multiple.
+    /// </summary>
     [Description("@#multiple")]
     Multiple,
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded
+///
+/// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public record TTableRowState<T> : VueProps
 {
@@ -15413,11 +21492,19 @@ public record TTableRowState<T> : VueProps
     public Number RowIndex { get; init; }
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded
+///
+/// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public readonly union TTableRowStateId<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableRowValidateResult.
+/// </summary>
 [ECMAScript]
 public record TTableRowValidateResult<T> : VueProps
 {
@@ -15442,9 +21529,19 @@ public record TTableRowValidateResult<T> : VueProps
     public TJsonValue Value { get; init; }
 }
 
+/// <summary>
+/// rowspan and colspan
+///
+/// 用于自定义合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+/// </summary>
 [ECMAScript]
 public delegate TRowspanColspan TTableRowspanAndColspanFunc<T>(TBaseTableCellParams<T> @params);
 
+/// <summary>
+/// trigger on table content scroll
+///
+/// 表格内容滚动时触发
+/// </summary>
 [ECMAScript]
 public record TTableScrollEventParams<T> : VueProps
 {
@@ -15453,6 +21550,11 @@ public record TTableScrollEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on scroll horizontal
+///
+/// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
+/// </summary>
 [ECMAScript]
 public record TTableScrollXEventParams<T> : VueProps
 {
@@ -15461,6 +21563,11 @@ public record TTableScrollXEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on scroll vertical
+///
+/// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
+/// </summary>
 [ECMAScript]
 public record TTableScrollYEventParams<T> : VueProps
 {
@@ -15469,31 +21576,60 @@ public record TTableScrollYEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on select changing
+///
+/// 选中行发生变化时触发，泛型 T 指表格数据类型。两个参数，第一个参数为选中行 keys，第二个参数为更多参数，具体如下：`type = uncheck` 表示当前行操作为「取消行选中」；`type = check` 表示当前行操作为「行选中」； `currentRowKey` 表示当前操作行的 rowKey 值； `currentRowData` 表示当前操作行的行数据
+/// </summary>
 [ECMAScript]
 public readonly union TTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// selected row keys, row key is from data[rowKey]
+///
+/// 选中行。半选状态行请更为使用 `indeterminateSelectedRowKeys` 控制
+/// </summary>
 [ECMAScript]
 public readonly union TTableSelectedRowKeysValueItem<T>(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTableSort.
+/// </summary>
 [ECMAScript]
 public readonly union TTableSort(TSortInfo, TSortInfo[])
 {
 }
 
+/// <summary>
+/// table-layout css properties, [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout). set value to be `fixed` on `resizable=true` please
+///
+/// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableTableLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: auto.
+    /// </summary>
     [Description("@#auto")]
     Auto,
+    /// <summary>
+    /// JavaScript value: fixed.
+    /// </summary>
     [Description("@#fixed")]
     Fixed,
 }
 
+/// <summary>
+/// tree data configs
+///
+/// 树形结构相关配置。具体属性文档查看 `TableTreeConfig` 相关描述
+/// </summary>
 [ECMAScript]
 public record TTableTreeConfig : VueProps
 {
@@ -15516,6 +21652,11 @@ public record TTableTreeConfig : VueProps
     public Number? TreeNodeColumnIndex { get; init; }
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded, use `expandedTreeNodesChange` please
+///
+/// 树形结构，用户操作引起节点展开或收起时触发。请更为使用 `onExpandedTreeNodesChange`
+/// </summary>
 [ECMAScript]
 public record TTableTreeExpandChangeContext<T> : VueProps
 {
@@ -15533,16 +21674,32 @@ public record TTableTreeExpandChangeContext<T> : VueProps
     public TTableTreeExpandChangeContextTrigger? Trigger { get; init; }
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded, use `expandedTreeNodesChange` please
+///
+/// 树形结构，用户操作引起节点展开或收起时触发。请更为使用 `onExpandedTreeNodesChange`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableTreeExpandChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: expand-fold-icon.
+    /// </summary>
     [Description("@#expand-fold-icon")]
     ExpandFoldIcon,
+    /// <summary>
+    /// JavaScript value: row-click.
+    /// </summary>
     [Description("@#row-click")]
     RowClick,
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded
+///
+/// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 public record TTableTreeNodeExpandOptions<T> : VueProps
 {
@@ -15563,54 +21720,111 @@ public record TTableTreeNodeExpandOptions<T> : VueProps
     public TTableTreeNodeExpandOptionsTrigger? Trigger { get; init; }
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded
+///
+/// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableTreeNodeExpandOptionsTrigger
 {
+    /// <summary>
+    /// JavaScript value: expand-fold-icon.
+    /// </summary>
     [Description("@#expand-fold-icon")]
     ExpandFoldIcon,
+    /// <summary>
+    /// JavaScript value: row-click.
+    /// </summary>
     [Description("@#row-click")]
     RowClick,
+    /// <summary>
+    /// JavaScript value: default-expand-all.
+    /// </summary>
     [Description("@#default-expand-all")]
     DefaultExpandAll,
+    /// <summary>
+    /// JavaScript value: expand-all.
+    /// </summary>
     [Description("@#expand-all")]
     ExpandAll,
+    /// <summary>
+    /// JavaScript value: fold-all.
+    /// </summary>
     [Description("@#fold-all")]
     FoldAll,
 }
 
+/// <summary>
+/// trigger on tree node expanded or folded
+///
+/// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableTreeNodeExpandOptionsType
 {
+    /// <summary>
+    /// JavaScript value: fold.
+    /// </summary>
     [Description("@#fold")]
     Fold,
+    /// <summary>
+    /// JavaScript value: expand.
+    /// </summary>
     [Description("@#expand")]
     Expand,
 }
 
+/// <summary>
+/// TDesign binding type TTableValidateTrigger.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableValidateTrigger
 {
+    /// <summary>
+    /// JavaScript value: self.
+    /// </summary>
     [Description("@#self")]
     Self,
+    /// <summary>
+    /// JavaScript value: parent.
+    /// </summary>
     [Description("@#parent")]
     Parent,
 }
 
+/// <summary>
+/// vertical align
+///
+/// 行内容上下方向对齐
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTableVerticalAlignValue
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: middle.
+    /// </summary>
     [Description("@#middle")]
     Middle,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// 添加选项卡时触发
+/// </summary>
 [ECMAScript]
 public record TTabsAddEventContext : VueProps
 {
@@ -15619,6 +21833,11 @@ public record TTabsAddEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on drag sort
+///
+/// 拖拽排序时触发
+/// </summary>
 [ECMAScript]
 public record TTabsDragSortContext : VueProps
 {
@@ -15635,20 +21854,38 @@ public record TTabsDragSortContext : VueProps
     public TTabValue Target { get; init; }
 }
 
+/// <summary>
+/// 选项卡位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTabsPlacementValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 删除选项卡时触发
+/// </summary>
 [ECMAScript]
 public record TTabsRemoveEventOptions : VueProps
 {
@@ -15663,40 +21900,78 @@ public record TTabsRemoveEventOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// The final position where the tab item stops scrolling after being selected
+///
+/// Tab较多的时候，选中滑块滚动最终停留的位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTabsScrollPositionValue
 {
+    /// <summary>
+    /// JavaScript value: auto.
+    /// </summary>
     [Description("@#auto")]
     Auto,
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
 }
 
+/// <summary>
+/// 组件尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTabsSizeValue
 {
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 选项卡风格，包含 默认风格 和 卡片风格两种
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTabsThemeValue
 {
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: card.
+    /// </summary>
     [Description("@#card")]
     Card,
 }
 
+/// <summary>
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TTagClickEventContext : VueProps
 {
@@ -15705,6 +21980,9 @@ public record TTagClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 如果关闭按钮存在，点击关闭按钮时触发
+/// </summary>
 [ECMAScript]
 public record TTagCloseEventContext : VueProps
 {
@@ -15713,6 +21991,11 @@ public record TTagCloseEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TTagConfig : VueProps
 {
@@ -15720,6 +22003,11 @@ public record TTagConfig : VueProps
     public RenderFragment? CloseIcon { get; init; }
 }
 
+/// <summary>
+/// trigger on blur
+///
+/// 失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputBlurEventContext : VueProps
 {
@@ -15732,6 +22020,11 @@ public record TTagInputBlurEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TTagInputChangeContext : VueProps
 {
@@ -15748,16 +22041,29 @@ public record TTagInputChangeContext : VueProps
     public TTagInputChangeContextE? E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputChangeContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputChangeContextItem(string, Number)
 {
 }
 
+/// <summary>
+/// 清空按钮点击时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputClearEventContext : VueProps
 {
@@ -15766,6 +22072,9 @@ public record TTagInputClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 点击组件时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputClickEventContext : VueProps
 {
@@ -15774,6 +22083,9 @@ public record TTagInputClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTagInputCollapsedItemsSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTagInputCollapsedItemsSlotContext : VueProps
 {
@@ -15793,9 +22105,15 @@ public record TTagInputCollapsedItemsSlotContext : VueProps
     public TTagInputCollapsedItemsSlotContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTagInputCollapsedItemsSlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TTagInputCollapsedItemsSlotContextOnClose(TTagInputCollapsedItemsSlotContextOnCloseContext context);
 
+/// <summary>
+/// TDesign binding type TTagInputCollapsedItemsSlotContextOnCloseContext.
+/// </summary>
 [ECMAScript]
 public record TTagInputCollapsedItemsSlotContextOnCloseContext : VueProps
 {
@@ -15806,6 +22124,11 @@ public record TTagInputCollapsedItemsSlotContextOnCloseContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TTagInputDragSortContext : VueProps
 {
@@ -15826,16 +22149,29 @@ public record TTagInputDragSortContext : VueProps
     public TTagInputDragSortContextTarget Target { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputDragSortContextCurrent(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputDragSortContextTarget(string, Number)
 {
 }
 
+/// <summary>
+/// 按键按下 Enter 时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputEnterEventContext : VueProps
 {
@@ -15848,16 +22184,30 @@ public record TTagInputEnterEventContext : VueProps
     public string InputValue { get; init; } = default!;
 }
 
+/// <summary>
+/// 标签超出时的呈现方式，有两种：横向滚动显示 和 换行显示
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagInputExcessTagsDisplayTypeValue
 {
+    /// <summary>
+    /// JavaScript value: scroll.
+    /// </summary>
     [Description("@#scroll")]
     Scroll,
+    /// <summary>
+    /// JavaScript value: break-line.
+    /// </summary>
     [Description("@#break-line")]
     BreakLine,
 }
 
+/// <summary>
+/// trigger on focus
+///
+/// 聚焦时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputFocusEventContext : VueProps
 {
@@ -15870,6 +22220,11 @@ public record TTagInputFocusEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on mouseenter
+///
+/// 进入输入框时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputMouseenterEventContext : VueProps
 {
@@ -15878,6 +22233,11 @@ public record TTagInputMouseenterEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on mouseleave
+///
+/// 离开输入框时触发
+/// </summary>
 [ECMAScript]
 public record TTagInputMouseleaveEventContext : VueProps
 {
@@ -15886,6 +22246,9 @@ public record TTagInputMouseleaveEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 粘贴事件，`pasteValue` 表示粘贴板的内容
+/// </summary>
 [ECMAScript]
 public record TTagInputPasteEventContext : VueProps
 {
@@ -15898,6 +22261,11 @@ public record TTagInputPasteEventContext : VueProps
     public string PasteValue { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TTagInputRemoveContext : VueProps
 {
@@ -15918,40 +22286,79 @@ public record TTagInputRemoveContext : VueProps
     public TTagInputRemoveTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputRemoveContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputRemoveContextItem(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagInputRemoveTrigger
 {
+    /// <summary>
+    /// JavaScript value: tag-remove.
+    /// </summary>
     [Description("@#tag-remove")]
     TagRemove,
+    /// <summary>
+    /// JavaScript value: backspace.
+    /// </summary>
     [Description("@#backspace")]
     Backspace,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagInputStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// TDesign binding type TTagInputTagSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTagInputTagSlotContext : VueProps
 {
@@ -15959,25 +22366,48 @@ public record TTagInputTagSlotContext : VueProps
     public TTagInputTagSlotContextValue Value { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTagInputTagSlotContextValue.
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputTagSlotContextValue(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagInputTriggerSource
 {
+    /// <summary>
+    /// JavaScript value: enter.
+    /// </summary>
     [Description("@#enter")]
     Enter,
+    /// <summary>
+    /// JavaScript value: tag-remove.
+    /// </summary>
     [Description("@#tag-remove")]
     TagRemove,
+    /// <summary>
+    /// JavaScript value: backspace.
+    /// </summary>
     [Description("@#backspace")]
     Backspace,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// TDesign binding type TTagInputValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TTagInputValueDisplaySlotContext : VueProps
 {
@@ -15990,66 +22420,130 @@ public record TTagInputValueDisplaySlotContext : VueProps
     public TTagInputValueDisplaySlotContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTagInputValueDisplaySlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TTagInputValueDisplaySlotContextOnClose(Number index, TJsonValue? item = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TTagInputValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// 标签最大宽度，宽度超出后会出现省略号。示例：'50px' / 80
+/// </summary>
 [ECMAScript]
 public readonly union TTagMaxWidthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 标签类型，有三种：方形、圆角方形、标记型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagShapeValue
 {
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
+    /// <summary>
+    /// JavaScript value: mark.
+    /// </summary>
     [Description("@#mark")]
     Mark,
 }
 
+/// <summary>
+/// 组件风格，用于描述组件不同的应用场景
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// title of tag
+///
+/// 标签标题，在标签hover时展示，默认为标签内容
+/// </summary>
 [ECMAScript]
 public readonly union TTagTitleValue(string, bool)
 {
 }
 
+/// <summary>
+/// 标签风格变体
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTagVariantValue
 {
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
+    /// <summary>
+    /// JavaScript value: light-outline.
+    /// </summary>
     [Description("@#light-outline")]
     LightOutline,
 }
 
+/// <summary>
+/// 数据列表发生变化时触发，`type` 表示移动的目标列表，值为 `target` 表示源列表移动到目标列表，值为 `source` 表示目标列表移动到源列表，movedValue 则表示被移动的选项
+/// </summary>
 [ECMAScript]
 public record TTargetParams : VueProps
 {
@@ -16061,42 +22555,83 @@ public record TTargetParams : VueProps
     public TTransferValue[] MovedValue { get; init; } = default!;
 }
 
+/// <summary>
+/// add copyable style
+///
+/// 是否可复制，可通过配置参数自定义复制操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public readonly union TTextCopyableValue(bool, TTypographyCopyable)
 {
 }
 
+/// <summary>
+/// add ellipsis style
+///
+/// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public readonly union TTextEllipsisValue(bool, TTypographyEllipsis)
 {
 }
 
+/// <summary>
+/// add mark style
+///
+/// 是否添加标记样式，默认为黄色，可通过配置颜色修改标记样式，如#0052D9
+/// </summary>
 [ECMAScript]
 public readonly union TTextMarkValue(string, bool)
 {
 }
 
+/// <summary>
+/// theme of text
+///
+/// 主题
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTextThemeValue
 {
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: secondary.
+    /// </summary>
     [Description("@#secondary")]
     Secondary,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 高度自动撑开。 autosize = true 表示组件高度自动撑开，同时，依旧允许手动拖高度。如果设置了 autosize.maxRows 或者 autosize.minRows 则不允许手动调整高度
+/// </summary>
 [ECMAScript]
 public readonly union TTextareaAutosizeValue(bool, TTextareaAutosizeValueOption2)
 {
 }
 
+/// <summary>
+/// 高度自动撑开。 autosize = true 表示组件高度自动撑开，同时，依旧允许手动拖高度。如果设置了 autosize.maxRows 或者 autosize.minRows 则不允许手动调整高度
+/// </summary>
 [ECMAScript]
 public record TTextareaAutosizeValueOption2 : VueProps
 {
@@ -16107,6 +22642,9 @@ public record TTextareaAutosizeValueOption2 : VueProps
     public Number? MaxRows { get; init; }
 }
 
+/// <summary>
+/// 失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTextareaBlurEventContext : VueProps
 {
@@ -16115,6 +22653,9 @@ public record TTextareaBlurEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入内容变化时触发
+/// </summary>
 [ECMAScript]
 public record TTextareaChangeEventContext : VueProps
 {
@@ -16122,6 +22663,9 @@ public record TTextareaChangeEventContext : VueProps
     public InputEvent? E { get; init; }
 }
 
+/// <summary>
+/// 获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTextareaFocusEventContext : VueProps
 {
@@ -16130,6 +22674,9 @@ public record TTextareaFocusEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 键盘按下时触发
+/// </summary>
 [ECMAScript]
 public record TTextareaKeydownEventContext : VueProps
 {
@@ -16138,6 +22685,9 @@ public record TTextareaKeydownEventContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
+/// </summary>
 [ECMAScript]
 public record TTextareaKeypressEventContext : VueProps
 {
@@ -16146,6 +22696,9 @@ public record TTextareaKeypressEventContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 释放键盘时触发
+/// </summary>
 [ECMAScript]
 public record TTextareaKeyupEventContext : VueProps
 {
@@ -16154,25 +22707,46 @@ public record TTextareaKeyupEventContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用户最多可以输入的字符个数
+/// </summary>
 [ECMAScript]
 public readonly union TTextareaMaxlengthValue(string, Number)
 {
 }
 
+/// <summary>
+/// 文本框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTextareaStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 字数超出限制时触发
+/// </summary>
 [ECMAScript]
 public record TTextareaValidateEventContext : VueProps
 {
@@ -16180,21 +22754,36 @@ public record TTextareaValidateEventContext : VueProps
     public TTextareaValidateEventContextError? Error { get; init; }
 }
 
+/// <summary>
+/// 字数超出限制时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTextareaValidateEventContextError
 {
+    /// <summary>
+    /// JavaScript value: exceed-maximum.
+    /// </summary>
     [Description("@#exceed-maximum")]
     ExceedMaximum,
+    /// <summary>
+    /// JavaScript value: below-minimum.
+    /// </summary>
     [Description("@#below-minimum")]
     BelowMinimum,
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TTextareaValue(string, Number)
 {
 }
 
+/// <summary>
+/// 当输入框失去焦点时触发，value 表示组件当前有效值
+/// </summary>
 [ECMAScript]
 public record TTimePickerBlurEventContext : VueProps
 {
@@ -16216,6 +22805,11 @@ public record TTimePickerBlurEventContext : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// Triggered when the clear button is clicked
+///
+/// 点击清空按钮时触发
+/// </summary>
 [ECMAScript]
 public record TTimePickerClearEventContext : VueProps
 {
@@ -16224,6 +22818,9 @@ public record TTimePickerClearEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 面板关闭时触发
+/// </summary>
 [ECMAScript]
 public record TTimePickerCloseEventContext : VueProps
 {
@@ -16232,6 +22829,11 @@ public record TTimePickerCloseEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TTimePickerConfig : VueProps
 {
@@ -16251,6 +22853,9 @@ public record TTimePickerConfig : VueProps
     public string? PostMeridiem { get; init; }
 }
 
+/// <summary>
+/// 点击确认按钮时触发
+/// </summary>
 [ECMAScript]
 public record TTimePickerConfirmEventContext : VueProps
 {
@@ -16259,9 +22864,19 @@ public record TTimePickerConfirmEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数
+/// </summary>
 [ECMAScript]
 public delegate TTimePickerDisableTimeValueResultPartial TTimePickerDisableTimeValue(Number h, Number m, Number s, Number ms);
 
+/// <summary>
+/// disable time config function
+///
+/// 禁用时间项的配置函数
+/// </summary>
 [ECMAScript]
 public record TTimePickerDisableTimeValueResultPartial : VueProps
 {
@@ -16282,6 +22897,9 @@ public record TTimePickerDisableTimeValueResultPartial : VueProps
     public Number[] Millisecond { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框获得焦点时触发，value 表示组件当前有效值
+/// </summary>
 [ECMAScript]
 public record TTimePickerFocusEventContext : VueProps
 {
@@ -16294,6 +22912,9 @@ public record TTimePickerFocusEventContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 当输入框内容发生变化时触发，参数 value 表示组件当前有效值
+/// </summary>
 [ECMAScript]
 public record TTimePickerInputEventContext : VueProps
 {
@@ -16306,6 +22927,9 @@ public record TTimePickerInputEventContext : VueProps
     public InputEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 面板打开时触发
+/// </summary>
 [ECMAScript]
 public record TTimePickerOpenEventContext : VueProps
 {
@@ -16314,6 +22938,9 @@ public record TTimePickerOpenEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 面板选中值后触发
+/// </summary>
 [ECMAScript]
 public record TTimePickerPickEventContext : VueProps
 {
@@ -16322,37 +22949,70 @@ public record TTimePickerPickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimePickerSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimePickerStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 时间间隔步数，数组排列 [小时, 分钟, 秒]，示例：[2, 1, 1] 或者 ['2', '1', '1']
+/// </summary>
 [ECMAScript]
 public readonly union TTimePickerStepsValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTimePickerValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TTimePickerValueDisplaySlotContext : VueProps
 {
@@ -16361,6 +23021,9 @@ public record TTimePickerValueDisplaySlotContext : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// 当输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTimeRangePickerBlurEventContext : VueProps
 {
@@ -16375,9 +23038,15 @@ public record TTimeRangePickerBlurEventContext : VueProps
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
+/// <summary>
+/// 禁用时间项
+/// </summary>
 [ECMAScript]
 public delegate TTimeRangePickerDisableTimeValueResultPartial TTimeRangePickerDisableTimeValue(Number h, Number m, Number s, Number ms, TTimeRangePickerDisableTimeValueContext context);
 
+/// <summary>
+/// 禁用时间项
+/// </summary>
 [ECMAScript]
 public record TTimeRangePickerDisableTimeValueContext : VueProps
 {
@@ -16385,6 +23054,9 @@ public record TTimeRangePickerDisableTimeValueContext : VueProps
     public TTimeRangePickerPartial Partial { get; init; }
 }
 
+/// <summary>
+/// 禁用时间项
+/// </summary>
 [ECMAScript]
 public record TTimeRangePickerDisableTimeValueResultPartial : VueProps
 {
@@ -16401,11 +23073,17 @@ public record TTimeRangePickerDisableTimeValueResultPartial : VueProps
     public Number[] Second { get; init; } = default!;
 }
 
+/// <summary>
+/// 是否禁用组件，值为数组表示可分别控制开始日期和结束日期是否禁用
+/// </summary>
 [ECMAScript]
 public readonly union TTimeRangePickerDisabledValue(bool, bool[])
 {
 }
 
+/// <summary>
+/// 范围输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTimeRangePickerFocusEventContext : VueProps
 {
@@ -16420,6 +23098,9 @@ public record TTimeRangePickerFocusEventContext : VueProps
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
+/// <summary>
+/// 当输入框内容发生变化时触发，参数 input 表示输入内容，value 表示组件当前有效值
+/// </summary>
 [ECMAScript]
 public record TTimeRangePickerInputEventContext : VueProps
 {
@@ -16434,16 +23115,28 @@ public record TTimeRangePickerInputEventContext : VueProps
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
+/// <summary>
+/// 禁用时间项
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimeRangePickerPartial
 {
+    /// <summary>
+    /// JavaScript value: start.
+    /// </summary>
     [Description("@#start")]
     Start,
+    /// <summary>
+    /// JavaScript value: end.
+    /// </summary>
     [Description("@#end")]
     End,
 }
 
+/// <summary>
+/// 面板选中值后触发
+/// </summary>
 [ECMAScript]
 public record TTimeRangePickerPickEventContext : VueProps
 {
@@ -16455,42 +23148,80 @@ public record TTimeRangePickerPickEventContext : VueProps
     public TTimeRangePickerPartial? Position { get; init; }
 }
 
+/// <summary>
+/// 占位符，值为数组表示可分别为开始日期和结束日期设置占位符
+/// </summary>
 [ECMAScript]
 public readonly union TTimeRangePickerPlaceholderValue(string, string[])
 {
 }
 
+/// <summary>
+/// 尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimeRangePickerSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimeRangePickerStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 时间间隔步数，数组排列 [小时, 分钟, 秒]，示例：[2, 1, 1] 或者 ['2', '1', '1']
+/// </summary>
 [ECMAScript]
 public readonly union TTimeRangePickerStepsValueItem(string, Number)
 {
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TTimelineItemClickEventContext : VueProps
 {
@@ -16503,94 +23234,196 @@ public record TTimelineItemClickEventContext : VueProps
     public TdTimelineItemProps Item { get; init; } = default!;
 }
 
+/// <summary>
+/// 标签信息相对于时间轴的位置，在 `mode='alternate'` 时生效，优先级高于 `Timeline.labelAlign`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimelineItemLabelAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// label info placement
+///
+/// 标签信息放在时间轴的位置，`mode='alternate'` 时生效。纵向时间轴信息位置：左侧、右侧或两侧，默认信息在时间轴右侧。横向时间轴信息位置：上方、下方、两侧
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimelineLabelAlignValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: alternate.
+    /// </summary>
     [Description("@#alternate")]
     Alternate,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// time line layout
+///
+/// 时间轴方向：水平方向、垂直方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimelineLayoutValue
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// The position relationship between the label and the content text, 'alternate' is displayed on both sides of the axis, and 'same' is displayed on the same side
+///
+/// 标签与内容文本的位置关系，`alternate` 为展示在轴两侧，`same` 为展示在同一侧
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimelineModeValue
 {
+    /// <summary>
+    /// JavaScript value: alternate.
+    /// </summary>
     [Description("@#alternate")]
     Alternate,
+    /// <summary>
+    /// JavaScript value: same.
+    /// </summary>
     [Description("@#same")]
     Same,
 }
 
+/// <summary>
+/// 时间轴风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTimelineThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: dot.
+    /// </summary>
     [Description("@#dot")]
     Dot,
 }
 
+/// <summary>
+/// add ellipsis style
+///
+/// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public readonly union TTitleEllipsisValue(bool, TTypographyEllipsis)
 {
 }
 
+/// <summary>
+/// level of title
+///
+/// 标题等级
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTitleLevelValue
 {
+    /// <summary>
+    /// JavaScript value: h1.
+    /// </summary>
     [Description("@#h1")]
     H1,
+    /// <summary>
+    /// JavaScript value: h2.
+    /// </summary>
     [Description("@#h2")]
     H2,
+    /// <summary>
+    /// JavaScript value: h3.
+    /// </summary>
     [Description("@#h3")]
     H3,
+    /// <summary>
+    /// JavaScript value: h4.
+    /// </summary>
     [Description("@#h4")]
     H4,
+    /// <summary>
+    /// JavaScript value: h5.
+    /// </summary>
     [Description("@#h5")]
     H5,
+    /// <summary>
+    /// JavaScript value: h6.
+    /// </summary>
     [Description("@#h6")]
     H6,
 }
 
+/// <summary>
+/// 穿梭框标题，示例：['源列表', '目标列表'] 或者 `[() =&gt; 'A', () =&gt; 'B']` 或者 `({ type }) =&gt; type === 'source' ? '源' : '目标'`
+/// </summary>
 [ECMAScript]
 public readonly union TTitleType(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// trigger on popup content click
+///
+/// 内容面板点击时触发
+/// </summary>
 [ECMAScript]
 public record TTooltipOverlayClickEventContext : VueProps
 {
@@ -16599,35 +23432,59 @@ public record TTooltipOverlayClickEventContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public readonly union TTooltipOverlayInnerStyleValue(TStyles, TTooltipOverlayInnerStyleValueOption2)
 {
 }
 
+/// <summary>
+/// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public delegate TStyles TTooltipOverlayInnerStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
+/// <summary>
+/// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public readonly union TTooltipOverlayStyleValue(TStyles, TTooltipOverlayStyleValueOption2)
 {
 }
 
+/// <summary>
+/// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+/// </summary>
 [ECMAScript]
 public delegate TStyles TTooltipOverlayStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
+/// <summary>
+/// 浮层出现位置
+/// </summary>
 [ECMAScript]
 public readonly union TTooltipPlacementValue(TTooltipPlacementValueOption1, TPopupPlacement)
 {
 }
 
+/// <summary>
+/// 浮层出现位置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTooltipPlacementValueOption1
 {
+    /// <summary>
+    /// JavaScript value: mouse.
+    /// </summary>
     [Description("@#mouse")]
     Mouse,
 }
 
+/// <summary>
+/// 下拉选项滚动事件
+/// </summary>
 [ECMAScript]
 public record TTooltipScrollEventContext : VueProps
 {
@@ -16636,6 +23493,9 @@ public record TTooltipScrollEventContext : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
+/// </summary>
 [ECMAScript]
 public record TTooltipScrollToBottomEventContext : VueProps
 {
@@ -16644,40 +23504,84 @@ public record TTooltipScrollToBottomEventContext : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 文字提示风格
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTooltipThemeValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
 }
 
+/// <summary>
+/// 触发浮层出现的方式
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTooltipTriggerValue
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
+    /// <summary>
+    /// JavaScript value: focus.
+    /// </summary>
     [Description("@#focus")]
     Focus,
+    /// <summary>
+    /// JavaScript value: mousedown.
+    /// </summary>
     [Description("@#mousedown")]
     Mousedown,
+    /// <summary>
+    /// JavaScript value: context-menu.
+    /// </summary>
     [Description("@#context-menu")]
     ContextMenu,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TTransferConfig : VueProps
 {
@@ -16691,28 +23595,49 @@ public record TTransferConfig : VueProps
     public string? Title { get; init; }
 }
 
+/// <summary>
+/// 穿梭框可操作方向
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTransferDirectionValue
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: both.
+    /// </summary>
     [Description("@#both")]
     Both,
 }
 
+/// <summary>
+/// 禁用全部操作：搜索、选中、移动、分页等。[源列表, 目标列表]，示例：[true, false] 或者 true
+/// </summary>
 [ECMAScript]
 public readonly union TTransferDisabledValue<T>(bool, bool[])
 {
 }
 
+/// <summary>
+/// 列表为空时呈现的内容。值类型为数组，则表示分别控制源列表和目标列表数据为空的呈现内容
+/// </summary>
 [ECMAScript]
 public readonly union TTransferEmptyValue<T>(TEmptyType, TEmptyType[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TTransferFooterSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTransferFooterSlotContext<T> : VueProps
 {
@@ -16720,11 +23645,17 @@ public record TTransferFooterSlotContext<T> : VueProps
     public TTransferListType Type { get; init; }
 }
 
+/// <summary>
+/// 穿梭框底部内容
+/// </summary>
 [ECMAScript]
 public readonly union TTransferFooterValueItem<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TTransferItem.
+/// </summary>
 [ECMAScript]
 public record TTransferItem<T> : VueProps
 {
@@ -16738,16 +23669,28 @@ public record TTransferItem<T> : VueProps
     public TTransferListType Type { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTransferListType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTransferListType
 {
+    /// <summary>
+    /// JavaScript value: source.
+    /// </summary>
     [Description("@#source")]
     Source,
+    /// <summary>
+    /// JavaScript value: target.
+    /// </summary>
     [Description("@#target")]
     Target,
 }
 
+/// <summary>
+/// TDesign binding type TTransferOperationSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTransferOperationSlotContext<T> : VueProps
 {
@@ -16755,21 +23698,36 @@ public record TTransferOperationSlotContext<T> : VueProps
     public TTransferOperationSlotContextDirection Direction { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTransferOperationSlotContextDirection.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTransferOperationSlotContextDirection
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 方向操作按钮。默认显示组件内置操作图标。自定义操作图标示例：['向左', '向右'] 或者 `[() =&gt; &lt;i class='left' /&gt;, () =&gt; &lt;i class='left' /&gt;]` 或者 `(h, direction) =&gt; direction === 'left' ? '《' : '》'`
+/// </summary>
 [ECMAScript]
 public readonly union TTransferOperationValueItem<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 分页发生变化时触发
+/// </summary>
 [ECMAScript]
 public record TTransferPageChangeEventContext<T> : VueProps
 {
@@ -16777,11 +23735,17 @@ public record TTransferPageChangeEventContext<T> : VueProps
     public TTransferListType Type { get; init; }
 }
 
+/// <summary>
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。值类型为数组，表示可分别控制源列表和目标列表分页组件
+/// </summary>
 [ECMAScript]
 public readonly union TTransferPaginationValue<T>(TdPaginationProps, TdPaginationProps[])
 {
 }
 
+/// <summary>
+/// 列表滚动时触发，bottomDistance 表示元素滚动到底部的距离
+/// </summary>
 [ECMAScript]
 public record TTransferScrollEventOptions<T> : VueProps
 {
@@ -16796,28 +23760,49 @@ public record TTransferScrollEventOptions<T> : VueProps
     public TTransferListType Type { get; init; }
 }
 
+/// <summary>
+/// 搜索框配置，值为 false 表示不显示搜索框；值为 true 表示显示默认搜索框；值类型为对象，用于透传 Props 到 Input 组件；值类型为数组，则分别表示控制两侧搜索框
+/// </summary>
 [ECMAScript]
 public readonly union TTransferSearchValue<T>(TSearchOption, TSearchOption[])
 {
 }
 
+/// <summary>
+/// 是否显示全选，值类型为数组则表示分别控制源列表和目标列表
+/// </summary>
 [ECMAScript]
 public readonly union TTransferShowCheckAllValue<T>(bool, bool[])
 {
 }
 
+/// <summary>
+/// 目标数据列表排列顺序
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTransferTargetSortValue
 {
+    /// <summary>
+    /// JavaScript value: original.
+    /// </summary>
     [Description("@#original")]
     Original,
+    /// <summary>
+    /// JavaScript value: push.
+    /// </summary>
     [Description("@#push")]
     Push,
+    /// <summary>
+    /// JavaScript value: unshift.
+    /// </summary>
     [Description("@#unshift")]
     Unshift,
 }
 
+/// <summary>
+/// TDesign binding type TTransferTitleSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTransferTitleSlotContext<T> : VueProps
 {
@@ -16825,14 +23810,23 @@ public record TTransferTitleSlotContext<T> : VueProps
     public TTransferListType Type { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate RenderFragment TTransferTreeValue<T>(TTreeProps<TTreeOptionData<TTypeTreeOptionDataTDefault>> tree);
 
+/// <summary>
+/// 数据列表选中项
+/// </summary>
 [ECMAScript]
 public readonly union TTransferValue(string, Number)
 {
 }
 
+/// <summary>
+/// 节点激活时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeActiveEventContext<T> : VueProps
 {
@@ -16847,19 +23841,38 @@ public record TTreeActiveEventContext<T> : VueProps
     public TTreeActiveEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 节点激活时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeActiveEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: node-click.
+    /// </summary>
     [Description("@#node-click")]
     NodeClick,
+    /// <summary>
+    /// JavaScript value: setItem.
+    /// </summary>
     [Description("@#setItem")]
     SetItem,
 }
 
+/// <summary>
+/// Determine whether the node can execute the drop operation
+///
+/// 判断节点是否可以执行 drop 操作，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeAllowDropValue<T>(TTreeAllowDropValueContext<T> context);
 
+/// <summary>
+/// Determine whether the node can execute the drop operation
+///
+/// 判断节点是否可以执行 drop 操作，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeAllowDropValueContext<T> : VueProps
 {
@@ -16879,6 +23892,9 @@ public record TTreeAllowDropValueContext<T> : VueProps
     public Number DropPosition { get; init; }
 }
 
+/// <summary>
+/// 节点选中状态变化时触发，context.node 表示当前变化的选项，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeChangeEventContext<T> : VueProps
 {
@@ -16893,16 +23909,28 @@ public record TTreeChangeEventContext<T> : VueProps
     public TTreeChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 节点选中状态变化时触发，context.node 表示当前变化的选项，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: node-click.
+    /// </summary>
     [Description("@#node-click")]
     NodeClick,
+    /// <summary>
+    /// JavaScript value: setItem.
+    /// </summary>
     [Description("@#setItem")]
     SetItem,
 }
 
+/// <summary>
+/// 节点点击时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeClickEventContext<T> : VueProps
 {
@@ -16915,6 +23943,11 @@ public record TTreeClickEventContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TTreeConfig : VueProps
 {
@@ -16925,14 +23958,23 @@ public record TTreeConfig : VueProps
     public RenderFragment? FolderIcon { get; init; }
 }
 
+/// <summary>
+/// 禁用复选框，可支持禁用不同的行
+/// </summary>
 [ECMAScript]
 public readonly union TTreeDisableCheckValue<T>(bool, TTreeDisableCheckValueOption2<T>)
 {
 }
 
+/// <summary>
+/// 禁用复选框，可支持禁用不同的行
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeDisableCheckValueOption2<T>(TTreeNodeModel<T> node);
 
+/// <summary>
+/// 节点结束拖拽时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeDragEndEventContext<T> : VueProps
 {
@@ -16945,6 +23987,9 @@ public record TTreeDragEndEventContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 节点拖拽时离开目标元素时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeDragLeaveEventContext<T> : VueProps
 {
@@ -16957,6 +24002,9 @@ public record TTreeDragLeaveEventContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 节点拖拽到目标元素时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeDragOverEventContext<T> : VueProps
 {
@@ -16969,6 +24017,9 @@ public record TTreeDragOverEventContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 节点开始拖拽时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeDragStartEventContext<T> : VueProps
 {
@@ -16981,6 +24032,9 @@ public record TTreeDragStartEventContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 节点在目标元素上释放时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeDropEventContext<T> : VueProps
 {
@@ -17000,6 +24054,9 @@ public record TTreeDropEventContext<T> : VueProps
     public Number DropPosition { get; init; }
 }
 
+/// <summary>
+/// 节点展开或收起时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeExpandEventContext<T> : VueProps
 {
@@ -17014,26 +24071,49 @@ public record TTreeExpandEventContext<T> : VueProps
     public TTreeExpandEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 节点展开或收起时触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeExpandEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: node-click.
+    /// </summary>
     [Description("@#node-click")]
     NodeClick,
+    /// <summary>
+    /// JavaScript value: icon-click.
+    /// </summary>
     [Description("@#icon-click")]
     IconClick,
+    /// <summary>
+    /// JavaScript value: setItem.
+    /// </summary>
     [Description("@#setItem")]
     SetItem,
 }
 
+/// <summary>
+/// 节点过滤方法，只呈现返回值为 true 的节点，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeFilterValue<T>(TTreeNodeModel<T> node);
 
+/// <summary>
+/// The height of tree. Scrollbar will appear after the content is overflow. Examples: 100, '30%', '300'. The value should be a number and will automatically be converted to a pixel value. If the tree height is not fixed, it is recommended to use `maxHeight`
+///
+/// 树的高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定树的高度，建议使用 `maxHeight`
+/// </summary>
 [ECMAScript]
 public readonly union TTreeHeightValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// 用来定义 value / label / children / disabled 在 `options` 中对应的字段别名
+/// </summary>
 [ECMAScript]
 public record TTreeKeysType : VueProps
 {
@@ -17050,11 +24130,17 @@ public record TTreeKeysType : VueProps
     public string? Children { get; init; }
 }
 
+/// <summary>
+/// 自定义节点内容，值为 `false` 不显示，值为 `true` 显示默认 label，值为字符串直接输出该字符串。泛型 `T` 表示树节点 TS 类型。&lt;br/&gt;如果期望只有点击复选框才选中，而点击节点不选中，可以使用 `label` 自定义节点，然后加上点击事件 `e.preventDefault()`，通过调整自定义节点的宽度和高度决定禁止点击选中的范围
+/// </summary>
 [ECMAScript]
 public readonly union TTreeLabelValue<T>(string, bool)
 {
 }
 
+/// <summary>
+/// 异步加载后触发，泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public record TTreeLoadEventContext<T> : VueProps
 {
@@ -17063,14 +24149,25 @@ public record TTreeLoadEventContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 加载子数据的方法，在展开节点时调用（仅当节点 children 为 true 时生效），泛型 `T` 表示树节点 TS 类型
+/// </summary>
 [ECMAScript]
 public delegate IPromise<T[]> TTreeLoadValue<T>(TTreeNodeModel<T> node);
 
+/// <summary>
+/// The max height of tree. Scrollbar will appear after the content is overflow. Examples: 100, '30%', '300'.
+///
+/// 树的最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+/// </summary>
 [ECMAScript]
 public readonly union TTreeMaxHeightValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public record TTreeNodeModel<T> : VueProps
 {
@@ -17181,74 +24278,137 @@ public record TTreeNodeModel<T> : VueProps
     public TTreeNodeModelSetData<T> SetData { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate void TTreeNodeModelAppendData<T>(TTreeNodeModelAppendDataData<T> data);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeNodeModelAppendDataData<T>(T, T[])
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TTreeNodeModelGetChildrenResult<T> TTreeNodeModelGetChildren<T>(bool deep);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeNodeModelGetChildrenResult<T>(TTreeNodeModel<T>[], bool)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate Number TTreeNodeModelGetIndex<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate Number TTreeNodeModelGetLevel<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TTreeNodeModel<T> TTreeNodeModelGetParent<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TTreeNodeModel<T>[] TTreeNodeModelGetParents<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TTreeNodeModel<T>[] TTreeNodeModelGetPath<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TTreeNodeModel<T> TTreeNodeModelGetRoot<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate TTreeNodeModel<T>[] TTreeNodeModelGetSiblings<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate void TTreeNodeModelInsertAfter<T>(T newData);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate void TTreeNodeModelInsertBefore<T>(T newData);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeNodeModelIsFirst<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeNodeModelIsLast<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeNodeModelIsLeaf<T>();
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate void TTreeNodeModelRemove<T>(TTreeNodeValue? @value = default);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate void TTreeNodeModelSetData<T>(T data);
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeNodeModelValue<T>(string, Number)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeNodeValue(string, Number)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public record TTreeOptionData<T> : VueProps
 {
@@ -17268,21 +24428,33 @@ public record TTreeOptionData<T> : VueProps
     public TTreeOptionDataContent<T>? Content { get; init; }
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeOptionDataChildren<T>(TTreeOptionData<T>[], bool)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeOptionDataContent<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public readonly union TTreeOptionDataLabel<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TTreeProps<T> : VueProps
 {
@@ -17437,6 +24609,11 @@ public record TTreeProps<T> : VueProps
     public TTreeStore? TreeStore { get; init; }
 }
 
+/// <summary>
+/// trigger on content scroll
+///
+/// 滚动事件
+/// </summary>
 [ECMAScript]
 public record TTreeScrollEventParams<T> : VueProps
 {
@@ -17445,6 +24622,9 @@ public record TTreeScrollEventParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 输入框失去焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTreeSelectBlurEventContext<DataOption, TreeValueType> : VueProps
 {
@@ -17456,6 +24636,9 @@ public record TTreeSelectBlurEventContext<DataOption, TreeValueType> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 节点选中状态变化时触发，`context.node` 表示当前变化的选项，`context. trigger` 表示触发变化的来源。泛型 `TreeValueType` 继承自 `TreeSelectValue`
+/// </summary>
 [ECMAScript]
 public record TTreeSelectChangeContext<DataOption> : VueProps
 {
@@ -17475,6 +24658,9 @@ public record TTreeSelectChangeContext<DataOption> : VueProps
     public TTreeSelectChangeContextE<DataOption>? E { get; init; }
 }
 
+/// <summary>
+/// 节点选中状态变化时触发，`context.node` 表示当前变化的选项，`context. trigger` 表示触发变化的来源。泛型 `TreeValueType` 继承自 `TreeSelectValue`
+/// </summary>
 [ECMAScript]
 [Union]
 public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
@@ -17533,6 +24719,9 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
 
 }
 
+/// <summary>
+/// 点击清除按钮时触发
+/// </summary>
 [ECMAScript]
 public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
 {
@@ -17541,6 +24730,9 @@ public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTreeSelectCollapsedItemsSlotContext.
+/// </summary>
 [ECMAScript]
 public record TTreeSelectCollapsedItemsSlotContext<DataOption, TreeValueType> : VueProps
 {
@@ -17560,9 +24752,15 @@ public record TTreeSelectCollapsedItemsSlotContext<DataOption, TreeValueType> : 
     public TTreeSelectCollapsedItemsSlotContextOnClose<DataOption, TreeValueType> OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTreeSelectCollapsedItemsSlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TTreeSelectCollapsedItemsSlotContextOnClose<DataOption, TreeValueType>(TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, TreeValueType> context);
 
+/// <summary>
+/// TDesign binding type TTreeSelectCollapsedItemsSlotContextOnCloseContext.
+/// </summary>
 [ECMAScript]
 public record TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, TreeValueType> : VueProps
 {
@@ -17573,6 +24771,11 @@ public record TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, Tre
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TTreeSelectConfig : VueProps
 {
@@ -17586,14 +24789,23 @@ public record TTreeSelectConfig : VueProps
     public string? Placeholder { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTreeSelectDataOptionDefaultTDefault.
+/// </summary>
 [ECMAScript]
 public readonly union TTreeSelectDataOptionDefaultTDefault(string, Number)
 {
 }
 
+/// <summary>
+/// 过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+/// </summary>
 [ECMAScript]
 public delegate bool TTreeSelectFilterValue<DataOption, TreeValueType>(string filterWords, DataOption option);
 
+/// <summary>
+/// 输入框获得焦点时触发
+/// </summary>
 [ECMAScript]
 public record TTreeSelectFocusEventContext<DataOption, TreeValueType> : VueProps
 {
@@ -17605,53 +24817,104 @@ public record TTreeSelectFocusEventContext<DataOption, TreeValueType> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 尺寸
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeSelectSizeValue
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 输入框状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeSelectStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 选中值，泛型 `TreeValueType` 继承自 `TreeSelectValue`
+/// </summary>
 [ECMAScript]
 public readonly union TTreeSelectValue(string, Number, TJsonObject, TTreeSelectValue[])
 {
 }
 
+/// <summary>
+/// 节点选中状态变化时触发，`context.node` 表示当前变化的选项，`context. trigger` 表示触发变化的来源。泛型 `TreeValueType` 继承自 `TreeSelectValue`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeSelectValueChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
+    /// <summary>
+    /// JavaScript value: tag-remove.
+    /// </summary>
     [Description("@#tag-remove")]
     TagRemove,
+    /// <summary>
+    /// JavaScript value: backspace.
+    /// </summary>
     [Description("@#backspace")]
     Backspace,
+    /// <summary>
+    /// JavaScript value: check.
+    /// </summary>
     [Description("@#check")]
     Check,
+    /// <summary>
+    /// JavaScript value: uncheck.
+    /// </summary>
     [Description("@#uncheck")]
     Uncheck,
 }
 
+/// <summary>
+/// TDesign binding type TTreeSelectValueDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType> : VueProps
 {
@@ -17664,41 +24927,74 @@ public record TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType> : Vu
     public TTreeSelectValueDisplaySlotContextOnClose<DataOption, TreeValueType> OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TTreeSelectValueDisplaySlotContextOnClose.
+/// </summary>
 [ECMAScript]
 public delegate void TTreeSelectValueDisplaySlotContextOnClose<DataOption, TreeValueType>();
 
+/// <summary>
+/// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeSelectValueTypeValue
 {
+    /// <summary>
+    /// JavaScript value: value.
+    /// </summary>
     [Description("@#value")]
     Value,
+    /// <summary>
+    /// JavaScript value: object.
+    /// </summary>
     [Description("@#object")]
     Object,
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public sealed record TTreeStore : VueProps
 {
 }
 
+/// <summary>
+/// TDesign binding type TTreeTDefaultTDefault.
+/// </summary>
 [ECMAScript]
 public readonly union TTreeTDefaultTDefault(string, Number)
 {
 }
 
+/// <summary>
+/// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTreeValueModeValue
 {
+    /// <summary>
+    /// JavaScript value: onlyLeaf.
+    /// </summary>
     [Description("@#onlyLeaf")]
     OnlyLeaf,
+    /// <summary>
+    /// JavaScript value: parentFirst.
+    /// </summary>
     [Description("@#parentFirst")]
     ParentFirst,
+    /// <summary>
+    /// JavaScript value: all.
+    /// </summary>
     [Description("@#all")]
     All,
 }
 
+/// <summary>
+/// TDesign binding type TTriggerContext.
+/// </summary>
 [ECMAScript]
 public record TTriggerContext : VueProps
 {
@@ -17713,28 +25009,54 @@ public record TTriggerContext : VueProps
     public TTriggerContextTriggerUpload? TriggerUpload { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TTriggerContextTriggerUpload.
+/// </summary>
 [ECMAScript]
 public delegate void TTriggerContextTriggerUpload(MouseEvent e);
 
+/// <summary>
+/// 确认框显示或隐藏时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TTriggerSource
 {
+    /// <summary>
+    /// JavaScript value: cancel.
+    /// </summary>
     [Description("@#cancel")]
     Cancel,
+    /// <summary>
+    /// JavaScript value: confirm.
+    /// </summary>
     [Description("@#confirm")]
     Confirm,
+    /// <summary>
+    /// JavaScript value: document.
+    /// </summary>
     [Description("@#document")]
     Document,
+    /// <summary>
+    /// JavaScript value: trigger-element-click.
+    /// </summary>
     [Description("@#trigger-element-click")]
     TriggerElementClick,
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TTypeTreeOptionDataTDefault(string, Number)
 {
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TTypographyConfig : VueProps
 {
@@ -17748,6 +25070,11 @@ public record TTypographyConfig : VueProps
     public string? ExpandText { get; init; }
 }
 
+/// <summary>
+/// add copyable style
+///
+/// 是否可复制，可通过配置参数自定义复制操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public record TTypographyCopyable : VueProps
 {
@@ -17764,9 +25091,19 @@ public record TTypographyCopyable : VueProps
     public TTypographyCopyableOnCopy? OnCopy { get; init; }
 }
 
+/// <summary>
+/// add copyable style
+///
+/// 是否可复制，可通过配置参数自定义复制操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public delegate void TTypographyCopyableOnCopy();
 
+/// <summary>
+/// add copyable style
+///
+/// 是否可复制，可通过配置参数自定义复制操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public record TTypographyCopyableSuffixContext : VueProps
 {
@@ -17774,6 +25111,11 @@ public record TTypographyCopyableSuffixContext : VueProps
     public bool Copied { get; init; }
 }
 
+/// <summary>
+/// add ellipsis style
+///
+/// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public record TTypographyEllipsis : VueProps
 {
@@ -17796,9 +25138,19 @@ public record TTypographyEllipsis : VueProps
     public TTypographyEllipsisOnExpand? OnExpand { get; init; }
 }
 
+/// <summary>
+/// add ellipsis style
+///
+/// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public delegate void TTypographyEllipsisOnExpand(bool expanded);
 
+/// <summary>
+/// add ellipsis style
+///
+/// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+/// </summary>
 [ECMAScript]
 public record TTypographyEllipsisSuffixContext : VueProps
 {
@@ -17806,22 +25158,45 @@ public record TTypographyEllipsisSuffixContext : VueProps
     public bool Expanded { get; init; }
 }
 
+/// <summary>
+/// before all files upload, return false can stop uploading file
+///
+/// 如果是自动上传模式 `autoUpload=true`，表示全部文件上传之前的钩子函数，函数参数为上传的文件，函数返回值决定是否继续上传，若返回值为 `false` 则终止上传。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，则函数返回值为 `false` 时表示本次选中的文件不会加入到文件列表中，即不触发 `onChange` 事件
+/// </summary>
 [ECMAScript]
 public delegate TUploadBeforeAllFilesUploadValueResult<T> TUploadBeforeAllFilesUploadValue<T>(TUploadFile[] @file);
 
+/// <summary>
+/// before all files upload, return false can stop uploading file
+///
+/// 如果是自动上传模式 `autoUpload=true`，表示全部文件上传之前的钩子函数，函数参数为上传的文件，函数返回值决定是否继续上传，若返回值为 `false` 则终止上传。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，则函数返回值为 `false` 时表示本次选中的文件不会加入到文件列表中，即不触发 `onChange` 事件
+/// </summary>
 [ECMAScript]
 public readonly union TUploadBeforeAllFilesUploadValueResult<T>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// stop one of files to upload
+///
+/// 如果是自动上传模式 `autoUpload=true`，表示单个文件上传之前的钩子函数，若函数返回值为 `false` 则表示不上传当前文件。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，函数返回值为 `false` 时表示从上传文件中剔除当前文件
+/// </summary>
 [ECMAScript]
 public delegate TUploadBeforeUploadValueResult<T> TUploadBeforeUploadValue<T>(TUploadFile @file);
 
+/// <summary>
+/// stop one of files to upload
+///
+/// 如果是自动上传模式 `autoUpload=true`，表示单个文件上传之前的钩子函数，若函数返回值为 `false` 则表示不上传当前文件。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，函数返回值为 `false` 时表示从上传文件中剔除当前文件
+/// </summary>
 [ECMAScript]
 public readonly union TUploadBeforeUploadValueResult<T>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// TDesign binding type TUploadCancelUploadButtonSlotContext.
+/// </summary>
 [ECMAScript]
 public record TUploadCancelUploadButtonSlotContext<T> : VueProps
 {
@@ -17837,9 +25212,15 @@ public record TUploadCancelUploadButtonSlotContext<T> : VueProps
     public TUploadCancelUploadButtonSlotContextCancelUpload<T> CancelUpload { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TUploadCancelUploadButtonSlotContextCancelUpload.
+/// </summary>
 [ECMAScript]
 public delegate void TUploadCancelUploadButtonSlotContextCancelUpload<T>(TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> ctx);
 
+/// <summary>
+/// TDesign binding type TUploadCancelUploadButtonSlotContextCancelUploadCtx.
+/// </summary>
 [ECMAScript]
 public record TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> : VueProps
 {
@@ -17848,6 +25229,11 @@ public record TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on uploaded files change
+///
+/// 已上传文件列表发生变化时触发，`trigger` 表示触发本次的来源
+/// </summary>
 [ECMAScript]
 public record TUploadChangeContext : VueProps
 {
@@ -17870,29 +25256,62 @@ public record TUploadChangeContext : VueProps
     public TUploadFile[]? Files { get; init; }
 }
 
+/// <summary>
+/// trigger on uploaded files change
+///
+/// 已上传文件列表发生变化时触发，`trigger` 表示触发本次的来源
+/// </summary>
 [ECMAScript]
 public readonly union TUploadChangeContextE(MouseEvent, ProgressEvent)
 {
 }
 
+/// <summary>
+/// trigger on uploaded files change
+///
+/// 已上传文件列表发生变化时触发，`trigger` 表示触发本次的来源
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadChangeTrigger
 {
+    /// <summary>
+    /// JavaScript value: add.
+    /// </summary>
     [Description("@#add")]
     Add,
+    /// <summary>
+    /// JavaScript value: remove.
+    /// </summary>
     [Description("@#remove")]
     Remove,
+    /// <summary>
+    /// JavaScript value: abort.
+    /// </summary>
     [Description("@#abort")]
     Abort,
+    /// <summary>
+    /// JavaScript value: progress-success.
+    /// </summary>
     [Description("@#progress-success")]
     ProgressSuccess,
+    /// <summary>
+    /// JavaScript value: progress.
+    /// </summary>
     [Description("@#progress")]
     Progress,
+    /// <summary>
+    /// JavaScript value: progress-fail.
+    /// </summary>
     [Description("@#progress-fail")]
     ProgressFail,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TUploadConfig : VueProps
 {
@@ -17915,6 +25334,11 @@ public record TUploadConfig : VueProps
     public TUploadTriggerUploadText? TriggerUploadText { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TUploadConfigDragger : VueProps
 {
@@ -17928,6 +25352,11 @@ public record TUploadConfigDragger : VueProps
     public string? DraggingText { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TUploadConfigFileList : VueProps
 {
@@ -17947,6 +25376,11 @@ public record TUploadConfigFileList : VueProps
     public string? FileStatusText { get; init; }
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TUploadConfigProgress : VueProps
 {
@@ -17963,14 +25397,27 @@ public record TUploadConfigProgress : VueProps
     public string? WaitingText { get; init; }
 }
 
+/// <summary>
+/// extra request data of uploading. `formatRequest` can redefine all request data
+///
+/// 上传请求所需的额外字段，默认字段有 `file`，表示文件信息。可以添加额外的文件名字段，如：`{file_name: &quot;custom-file-name.txt&quot;}`。`autoUpload=true` 时有效。也可以使用 `formatRequest` 完全自定义上传请求的字段
+/// </summary>
 [ECMAScript]
 public readonly union TUploadDataValue<T>(VueDictionary<TJsonValue>, TUploadDataValueOption2<T>)
 {
 }
 
+/// <summary>
+/// extra request data of uploading. `formatRequest` can redefine all request data
+///
+/// 上传请求所需的额外字段，默认字段有 `file`，表示文件信息。可以添加额外的文件名字段，如：`{file_name: &quot;custom-file-name.txt&quot;}`。`autoUpload=true` 时有效。也可以使用 `formatRequest` 完全自定义上传请求的字段
+/// </summary>
 [ECMAScript]
 public delegate VueDictionary<TJsonValue> TUploadDataValueOption2<T>(TUploadFile[] files);
 
+/// <summary>
+/// TDesign binding type TUploadDisplayDragEvents.
+/// </summary>
 [ECMAScript]
 public record TUploadDisplayDragEvents : VueProps
 {
@@ -17987,18 +25434,35 @@ public record TUploadDisplayDragEvents : VueProps
     public TUploadDisplayDragEventsOnDragleave? OnDragleave { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TUploadDisplayDragEventsOnDragenter.
+/// </summary>
 [ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDragenter(DragEvent @event);
 
+/// <summary>
+/// TDesign binding type TUploadDisplayDragEventsOnDragleave.
+/// </summary>
 [ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDragleave(DragEvent @event);
 
+/// <summary>
+/// TDesign binding type TUploadDisplayDragEventsOnDragover.
+/// </summary>
 [ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDragover(DragEvent @event);
 
+/// <summary>
+/// TDesign binding type TUploadDisplayDragEventsOnDrop.
+/// </summary>
 [ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDrop(DragEvent @event);
 
+/// <summary>
+/// trigger on file dragged into drag elements
+///
+/// 进入拖拽区域时触发
+/// </summary>
 [ECMAScript]
 public record TUploadDragenterEventContext<T> : VueProps
 {
@@ -18007,6 +25471,11 @@ public record TUploadDragenterEventContext<T> : VueProps
     public DragEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on file dragged leave drag elements
+///
+/// 离开拖拽区域时触发
+/// </summary>
 [ECMAScript]
 public record TUploadDragleaveEventContext<T> : VueProps
 {
@@ -18015,6 +25484,11 @@ public record TUploadDragleaveEventContext<T> : VueProps
     public DragEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on file dropped
+///
+/// 拖拽结束时触发
+/// </summary>
 [ECMAScript]
 public record TUploadDropEventContext<T> : VueProps
 {
@@ -18023,6 +25497,11 @@ public record TUploadDropEventContext<T> : VueProps
     public DragEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// `response.error` used for error tips, `formatResponse` can format `response`
+///
+/// 上传失败后触发。`response` 指接口响应结果，`response.error` 会作为错误文本提醒。如果希望判定为上传失败，但接口响应数据不包含 `error` 字段，可以使用 `formatResponse` 格式化 `response` 数据结构。如果是多文件多请求上传场景，请到事件 `onOneFileFail` 中查看 `response`
+/// </summary>
 [ECMAScript]
 public record TUploadFailContext : VueProps
 {
@@ -18047,6 +25526,11 @@ public record TUploadFailContext : VueProps
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
+/// <summary>
+/// before all files upload, return false can stop uploading file
+///
+/// 如果是自动上传模式 `autoUpload=true`，表示全部文件上传之前的钩子函数，函数参数为上传的文件，函数返回值决定是否继续上传，若返回值为 `false` 则终止上传。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，则函数返回值为 `false` 时表示本次选中的文件不会加入到文件列表中，即不触发 `onChange` 事件
+/// </summary>
 [ECMAScript]
 public record TUploadFile : VueProps
 {
@@ -18081,6 +25565,9 @@ public record TUploadFile : VueProps
     public string? Url { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TUploadFileListDisplaySlotContext.
+/// </summary>
 [ECMAScript]
 public record TUploadFileListDisplaySlotContext<T> : VueProps
 {
@@ -18092,60 +25579,137 @@ public record TUploadFileListDisplaySlotContext<T> : VueProps
     public TUploadDisplayDragEvents? DragEvents { get; init; }
 }
 
+/// <summary>
+/// before all files upload, return false can stop uploading file
+///
+/// 如果是自动上传模式 `autoUpload=true`，表示全部文件上传之前的钩子函数，函数参数为上传的文件，函数返回值决定是否继续上传，若返回值为 `false` 则终止上传。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，则函数返回值为 `false` 时表示本次选中的文件不会加入到文件列表中，即不触发 `onChange` 事件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadFileStatus
 {
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: fail.
+    /// </summary>
     [Description("@#fail")]
     Fail,
+    /// <summary>
+    /// JavaScript value: progress.
+    /// </summary>
     [Description("@#progress")]
     Progress,
+    /// <summary>
+    /// JavaScript value: waiting.
+    /// </summary>
     [Description("@#waiting")]
     Waiting,
 }
 
+/// <summary>
+/// redefine request data
+///
+/// 用于新增或修改文件上传请求 参数。`action` 存在时有效。一个请求上传一个文件时，默认请求字段有 `file`。&lt;br/&gt;一个请求上传多个文件时，默认字段有 `file[0]/file[1]/file[2]/.../length`，其中 `length` 表示本次上传的文件数量。&lt;br/&gt;⚠️非常注意，此处的 `file[0]/file[1]` 仅仅是一个字段名，并非表示 `file` 是一个数组，接口获取字段时注意区分。&lt;br/&gt;可以使用 `name` 定义 `file` 字段的别名。&lt;br/&gt;也可以使用 `formatRequest` 自定义任意字段，如添加一个字段 `fileList` ，存储文件数组
+/// </summary>
 [ECMAScript]
 public delegate TJsonObject TUploadFormatRequestValue<T>(TJsonObject requestData);
 
+/// <summary>
+/// redefine response data structure
+///
+/// 用于格式化文件上传后的接口响应数据，`response` 便是接口响应的原始数据。`action` 存在时有效。&lt;br/&gt; 示例返回值：`{ error, url, status, files }` &lt;br/&gt; 此函数的返回值 `error` 会作为错误文本提醒，表示上传失败的原因，如果存在会判定为本次上传失败。&lt;br/&gt; 此函数的返回值 `url` 会作为单个文件上传成功后的链接。&lt;br/&gt; `files` 表示一个请求同时上传多个文件后的文件列表
+/// </summary>
 [ECMAScript]
 public delegate TResponseType TUploadFormatResponseValue<T>(TJsonValue response, TFormatResponseContext context);
 
+/// <summary>
+/// to redefine  `UploadFile` data structure
+///
+/// 转换文件 `UploadFile` 的数据结构，可新增或修改 `UploadFile` 的属性，注意不能删除 `UploadFile` 属性。`action` 存在时有效
+/// </summary>
 [ECMAScript]
 public delegate TUploadFile TUploadFormatValue<T>(FileRef @file);
 
+/// <summary>
+/// HTTP Request Header
+///
+/// 设置上传的请求头部，`action` 存在时有效
+/// </summary>
 [ECMAScript]
 public record TUploadHeadersValue<T> : VueDictionary<string>
 {
 }
 
+/// <summary>
+/// HTTP request method
+///
+/// HTTP 请求类型
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadMethodValue
 {
+    /// <summary>
+    /// JavaScript value: POST.
+    /// </summary>
     [Description("@#POST")]
     POST,
+    /// <summary>
+    /// JavaScript value: GET.
+    /// </summary>
     [Description("@#GET")]
     GET,
+    /// <summary>
+    /// JavaScript value: PUT.
+    /// </summary>
     [Description("@#PUT")]
     PUT,
+    /// <summary>
+    /// JavaScript value: OPTIONS.
+    /// </summary>
     [Description("@#OPTIONS")]
     OPTIONS,
+    /// <summary>
+    /// JavaScript value: PATCH.
+    /// </summary>
     [Description("@#PATCH")]
     PATCH,
+    /// <summary>
+    /// JavaScript value: post.
+    /// </summary>
     [Description("@#post")]
     Post,
+    /// <summary>
+    /// JavaScript value: get.
+    /// </summary>
     [Description("@#get")]
     Get,
+    /// <summary>
+    /// JavaScript value: put.
+    /// </summary>
     [Description("@#put")]
     Put,
+    /// <summary>
+    /// JavaScript value: options.
+    /// </summary>
     [Description("@#options")]
     Options,
+    /// <summary>
+    /// JavaScript value: patch.
+    /// </summary>
     [Description("@#patch")]
     Patch,
 }
 
+/// <summary>
+/// trigger on file uploaded successfully
+///
+/// 单个文件上传成功后触发，在多文件场景下会触发多次。`context.file` 表示当前上传成功的单个文件，`context.response` 表示上传请求的返回数据
+/// </summary>
 [ECMAScript]
 public sealed record TUploadOneFileSuccessEventContext<T> : VueProps
 {
@@ -18161,6 +25725,11 @@ public sealed record TUploadOneFileSuccessEventContext<T> : VueProps
     public XMLHttpRequest? XMLHttpRequest { get; init; }
 }
 
+/// <summary>
+/// trigger on preview elements click
+///
+/// 点击图片预览时触发，文件没有预览
+/// </summary>
 [ECMAScript]
 public record TUploadPreviewEventOptions<T> : VueProps
 {
@@ -18176,16 +25745,32 @@ public record TUploadPreviewEventOptions<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// uploading request progress event
+///
+/// 上传进度变化时触发，真实进度和模拟进度都会触发。&lt;br/&gt;⚠️ 原始上传请求，小文件的上传进度只有 0 和 100，故而不会触发 `progress` 事件；只有大文件才有真实的中间进度。如果你希望很小的文件也显示上传进度，保证 `useMockProgress=true` 的情况下，设置 `mockProgressDuration` 为更小的值。&lt;br/&gt;参数 `options.type=real` 表示真实上传进度，`options.type=mock` 表示模拟上传进度
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadProgressType
 {
+    /// <summary>
+    /// JavaScript value: real.
+    /// </summary>
     [Description("@#real")]
     Real,
+    /// <summary>
+    /// JavaScript value: mock.
+    /// </summary>
     [Description("@#mock")]
     Mock,
 }
 
+/// <summary>
+/// trigger on file removed
+///
+/// 移除文件时触发
+/// </summary>
 [ECMAScript]
 public record TUploadRemoveContext : VueProps
 {
@@ -18200,14 +25785,29 @@ public record TUploadRemoveContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// custom upload request method
+///
+/// 自定义上传方法。返回值 `status` 表示上传成功或失败；`error` 或 `response.error` 表示上传失败的原因；&lt;br/&gt;`response` 表示请求上传成功后的返回数据，`response.url` 表示上传成功后的图片/文件地址，`response.files` 表示一个请求上传多个文件/图片后的返回值。&lt;br/&gt;示例一：`{ status: 'fail', error: '上传失败', response }`。&lt;br/&gt;示例二：`{ status: 'success', response: { url: 'https://tdesign.gtimg.com/site/avatar.jpg' } }`。&lt;br/&gt; 示例三：`{ status: 'success', files: [{ url: 'https://xxx.png', name: 'xxx.png' }]}`
+/// </summary>
 [ECMAScript]
 public delegate IPromise<TRequestMethodResponse> TUploadRequestMethodValue<T>(TUploadRequestMethodValueFiles<T> files);
 
+/// <summary>
+/// custom upload request method
+///
+/// 自定义上传方法。返回值 `status` 表示上传成功或失败；`error` 或 `response.error` 表示上传失败的原因；&lt;br/&gt;`response` 表示请求上传成功后的返回数据，`response.url` 表示上传成功后的图片/文件地址，`response.files` 表示一个请求上传多个文件/图片后的返回值。&lt;br/&gt;示例一：`{ status: 'fail', error: '上传失败', response }`。&lt;br/&gt;示例二：`{ status: 'success', response: { url: 'https://tdesign.gtimg.com/site/avatar.jpg' } }`。&lt;br/&gt; 示例三：`{ status: 'success', files: [{ url: 'https://xxx.png', name: 'xxx.png' }]}`
+/// </summary>
 [ECMAScript]
 public readonly union TUploadRequestMethodValueFiles<T>(TUploadFile, TUploadFile[])
 {
 }
 
+/// <summary>
+/// trigger after file choose and before upload
+///
+/// 选择文件或图片之后，上传之前，触发该事件
+/// </summary>
 [ECMAScript]
 public record TUploadSelectChangeContext : VueProps
 {
@@ -18216,43 +25816,93 @@ public record TUploadSelectChangeContext : VueProps
     public TUploadFile[] CurrentSelectedFiles { get; init; } = default!;
 }
 
+/// <summary>
+/// files size limit
+///
+/// 图片文件大小限制，默认单位 KB。可选单位有：`'B' | 'KB' | 'MB' | 'GB'`。示例一：`1000`。示例二：`{ size: 2, unit: 'MB', message: '图片大小不超过 {sizeLimit} MB' }`
+/// </summary>
 [ECMAScript]
 public readonly union TUploadSizeLimitValue<T>(Number, TSizeLimitObj)
 {
 }
 
+/// <summary>
+/// tips status
+///
+/// 文件上传提示文本状态
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadStatusValue
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// different upload UI styles
+///
+/// 组件风格。custom 表示完全自定义风格；file 表示默认文件上传风格；file-input 表示输入框形式的文件上传；file-flow 表示文件批量上传；image 表示默认图片上传风格；image-flow 表示图片批量上传
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadThemeValue
 {
+    /// <summary>
+    /// JavaScript value: custom.
+    /// </summary>
     [Description("@#custom")]
     Custom,
+    /// <summary>
+    /// JavaScript value: file.
+    /// </summary>
     [Description("@#file")]
     File,
+    /// <summary>
+    /// JavaScript value: file-input.
+    /// </summary>
     [Description("@#file-input")]
     FileInput,
+    /// <summary>
+    /// JavaScript value: file-flow.
+    /// </summary>
     [Description("@#file-flow")]
     FileFlow,
+    /// <summary>
+    /// JavaScript value: image.
+    /// </summary>
     [Description("@#image")]
     Image,
+    /// <summary>
+    /// JavaScript value: image-flow.
+    /// </summary>
     [Description("@#image-flow")]
     ImageFlow,
 }
 
+/// <summary>
+/// global config
+///
+/// 全局配置
+/// </summary>
 [ECMAScript]
 public record TUploadTriggerUploadText : VueProps
 {
@@ -18275,6 +25925,9 @@ public record TUploadTriggerUploadText : VueProps
     public string? Delete { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TUploadUploadButtonSlotContext.
+/// </summary>
 [ECMAScript]
 public record TUploadUploadButtonSlotContext<T> : VueProps
 {
@@ -18293,9 +25946,17 @@ public record TUploadUploadButtonSlotContext<T> : VueProps
     public string UploadText { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TUploadUploadButtonSlotContextUploadFiles.
+/// </summary>
 [ECMAScript]
 public delegate void TUploadUploadButtonSlotContextUploadFiles<T>();
 
+/// <summary>
+/// trigger on length over limit, or trigger on file size over limit
+///
+/// 文件上传校验结束事件，文件数量超出、文件大小超出限制、文件同名、`beforeAllFilesUpload` 返回值为假、`beforeUpload` 返回值为假等场景会触发。&lt;br/&gt;注意：如果设置允许上传同名文件，即 `allowUploadDuplicateFile=true`，则不会因为文件重名触发该事件。&lt;br/&gt;结合 `status` 和 `tips` 可以在组件中呈现不同类型的错误（或告警）提示
+/// </summary>
 [ECMAScript]
 public record TUploadValidateEventContext<T> : VueProps
 {
@@ -18307,22 +25968,47 @@ public record TUploadValidateEventContext<T> : VueProps
     public TUploadFile[] Files { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on length over limit, or trigger on file size over limit
+///
+/// 文件上传校验结束事件，文件数量超出、文件大小超出限制、文件同名、`beforeAllFilesUpload` 返回值为假、`beforeUpload` 返回值为假等场景会触发。&lt;br/&gt;注意：如果设置允许上传同名文件，即 `allowUploadDuplicateFile=true`，则不会因为文件重名触发该事件。&lt;br/&gt;结合 `status` 和 `tips` 可以在组件中呈现不同类型的错误（或告警）提示
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadValidateType
 {
+    /// <summary>
+    /// JavaScript value: FILE_OVER_SIZE_LIMIT.
+    /// </summary>
     [Description("@#FILE_OVER_SIZE_LIMIT")]
     FILEOVERSIZELIMIT,
+    /// <summary>
+    /// JavaScript value: FILES_OVER_LENGTH_LIMIT.
+    /// </summary>
     [Description("@#FILES_OVER_LENGTH_LIMIT")]
     FILESOVERLENGTHLIMIT,
+    /// <summary>
+    /// JavaScript value: FILTER_FILE_SAME_NAME.
+    /// </summary>
     [Description("@#FILTER_FILE_SAME_NAME")]
     FILTERFILESAMENAME,
+    /// <summary>
+    /// JavaScript value: BEFORE_ALL_FILES_UPLOAD.
+    /// </summary>
     [Description("@#BEFORE_ALL_FILES_UPLOAD")]
     BEFOREALLFILESUPLOAD,
+    /// <summary>
+    /// JavaScript value: CUSTOM_BEFORE_UPLOAD.
+    /// </summary>
     [Description("@#CUSTOM_BEFORE_UPLOAD")]
     CUSTOMBEFOREUPLOAD,
 }
 
+/// <summary>
+/// trigger on waiting upload files changed
+///
+/// 待上传文件列表发生变化时触发。`context.files` 表示事件参数为待上传文件，`context.trigger` 引起此次变化的触发来源
+/// </summary>
 [ECMAScript]
 public record TUploadWaitingUploadFilesChangeEventContext<T> : VueProps
 {
@@ -18334,18 +26020,35 @@ public record TUploadWaitingUploadFilesChangeEventContext<T> : VueProps
     public TUploadWaitingUploadFilesChangeEventContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// trigger on waiting upload files changed
+///
+/// 待上传文件列表发生变化时触发。`context.files` 表示事件参数为待上传文件，`context.trigger` 引起此次变化的触发来源
+/// </summary>
 [ECMAScript]
 [String]
 public enum TUploadWaitingUploadFilesChangeEventContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: validate.
+    /// </summary>
     [Description("@#validate")]
     Validate,
+    /// <summary>
+    /// JavaScript value: remove.
+    /// </summary>
     [Description("@#remove")]
     Remove,
+    /// <summary>
+    /// JavaScript value: uploaded.
+    /// </summary>
     [Description("@#uploaded")]
     Uploaded,
 }
 
+/// <summary>
+/// 校验结束后触发，result 值为 true 表示校验通过；如果校验不通过，result 值为校验结果列表
+/// </summary>
 [ECMAScript]
 public sealed record TValidateResultContext<T> : VueProps
 {
@@ -18359,16 +26062,25 @@ public sealed record TValidateResultContext<T> : VueProps
     public TJsonValue? Fields { get; init; }
 }
 
+/// <summary>
+/// 表单提交时触发。其中 `context.validateResult` 表示校验结果，`context.firstError` 表示校验不通过的第一个规则提醒。`context.validateResult` 值为 `true` 表示校验通过；如果校验不通过，`context.validateResult` 值为校验结果列表。&lt;br /&gt;【注意】⚠️ 默认情况，输入框按下 Enter 键会自动触发提交事件，如果希望禁用这个默认行为，可以给输入框添加  enter 事件，并在事件中设置 `e.preventDefault()`
+/// </summary>
 [ECMAScript]
 public record TValidateResultObj<T> : VueDictionary<TValidateResultObjIndex<T>>
 {
 }
 
+/// <summary>
+/// 表单提交时触发。其中 `context.validateResult` 表示校验结果，`context.firstError` 表示校验不通过的第一个规则提醒。`context.validateResult` 值为 `true` 表示校验通过；如果校验不通过，`context.validateResult` 值为校验结果列表。&lt;br /&gt;【注意】⚠️ 默认情况，输入框按下 Enter 键会自动触发提交事件，如果希望禁用这个默认行为，可以给输入框添加  enter 事件，并在事件中设置 `e.preventDefault()`
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultObjIndex<T>(bool, TAllValidateResult[])
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultType.
+/// </summary>
 [ECMAScript]
 public record TValidateResultType : VueProps
 {
@@ -18430,65 +26142,113 @@ public record TValidateResultType : VueProps
     public bool Result { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeDate.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypeDate(bool, TIsDateOptions)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeEmail.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypeEmail(bool, TIsEmailOptions)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeLen.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypeLen(Number, bool)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeMax.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypeMax(Number, bool)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeMin.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypeMin(Number, bool)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypePattern.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypePattern(RegExp, string)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TValidateResultTypeType
 {
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
 }
 
+/// <summary>
+/// TDesign binding type TValidateResultTypeUrl.
+/// </summary>
 [ECMAScript]
 public readonly union TValidateResultTypeUrl(bool, TIsURLOptions)
 {
 }
 
+/// <summary>
+/// TDesign binding type TValidateTriggerType.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TValidateTriggerType
 {
+    /// <summary>
+    /// JavaScript value: blur.
+    /// </summary>
     [Description("@#blur")]
     Blur,
+    /// <summary>
+    /// JavaScript value: change.
+    /// </summary>
     [Description("@#change")]
     Change,
+    /// <summary>
+    /// JavaScript value: submit.
+    /// </summary>
     [Description("@#submit")]
     Submit,
+    /// <summary>
+    /// JavaScript value: all.
+    /// </summary>
     [Description("@#all")]
     All,
 }
 
+/// <summary>
+/// 水印内容，需要显示多行情况下可配置为数组
+/// </summary>
 [ECMAScript]
 public record TWatermarkImage : VueProps
 {
@@ -18499,6 +26259,9 @@ public record TWatermarkImage : VueProps
     public string? Url { get; init; }
 }
 
+/// <summary>
+/// 水印内容，需要显示多行情况下可配置为数组
+/// </summary>
 [ECMAScript]
 public record TWatermarkText : VueProps
 {
@@ -18518,30 +26281,56 @@ public record TWatermarkText : VueProps
     public string? Text { get; init; }
 }
 
+/// <summary>
+/// 水印内容，需要显示多行情况下可配置为数组
+/// </summary>
 [ECMAScript]
 [String]
 public enum TWatermarkTextFontWeight
 {
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: lighter.
+    /// </summary>
     [Description("@#lighter")]
     Lighter,
+    /// <summary>
+    /// JavaScript value: bold.
+    /// </summary>
     [Description("@#bold")]
     Bold,
+    /// <summary>
+    /// JavaScript value: bolder.
+    /// </summary>
     [Description("@#bolder")]
     Bolder,
 }
 
+/// <summary>
+/// 水印内容，需要显示多行情况下可配置为数组
+/// </summary>
 [ECMAScript]
 public readonly union TWatermarkWatermarkContentValue(TWatermarkText, TWatermarkImage, TWatermarkWatermarkContentValueOption3Item[])
 {
 }
 
+/// <summary>
+/// 水印内容，需要显示多行情况下可配置为数组
+/// </summary>
 [ECMAScript]
 public readonly union TWatermarkWatermarkContentValueOption3Item(TWatermarkText, TWatermarkImage)
 {
 }
 
+/// <summary>
+/// Animation effect control, `duration` refers to the transition time of the animation `unit: millisecond`, `valueFrom` refers to the initial value of the animation. `{ duration, valueFrom }`
+///
+/// 动画效果控制，`duration` 指动画的过渡时间`单位：毫秒`，`valueFrom` 指动画的起始数值。`{ duration, valueFrom }`
+/// </summary>
 [ECMAScript]
 public record Tanimation : VueProps
 {
@@ -18552,6 +26341,9 @@ public record Tanimation : VueProps
     public Number ValueFrom { get; init; }
 }
 
+/// <summary>
+/// 透传 Affix 组件属性，即让 Anchor 组件支持所有 Affix 组件特性
+/// </summary>
 [ECMAScript]
 public record TdAffixProps : VueProps
 {
@@ -18577,19 +26369,31 @@ public record TdAffixProps : VueProps
     public TdAffixPropsOnFixedChange? OnFixedChange { get; init; }
 }
 
+/// <summary>
+/// 透传 Affix 组件属性，即让 Anchor 组件支持所有 Affix 组件特性
+/// </summary>
 [ECMAScript]
 public readonly union TdAffixPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Affix 组件属性，即让 Anchor 组件支持所有 Affix 组件特性
+/// </summary>
 [ECMAScript]
 public readonly union TdAffixPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Affix 组件属性，即让 Anchor 组件支持所有 Affix 组件特性
+/// </summary>
 [ECMAScript]
 public delegate void TdAffixPropsOnFixedChange(bool affixed, TdAffixPropsOnFixedChangeContext context);
 
+/// <summary>
+/// 透传 Affix 组件属性，即让 Anchor 组件支持所有 Affix 组件特性
+/// </summary>
 [ECMAScript]
 public record TdAffixPropsOnFixedChangeContext : VueProps
 {
@@ -18597,6 +26401,9 @@ public record TdAffixPropsOnFixedChangeContext : VueProps
     public Number Top { get; init; }
 }
 
+/// <summary>
+/// 头像
+/// </summary>
 [ECMAScript]
 public record TdAvatarProps : VueProps
 {
@@ -18631,19 +26438,31 @@ public record TdAvatarProps : VueProps
     public TdAvatarPropsOnError? OnError { get; init; }
 }
 
+/// <summary>
+/// 头像
+/// </summary>
 [ECMAScript]
 public readonly union TdAvatarPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 头像
+/// </summary>
 [ECMAScript]
 public readonly union TdAvatarPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 头像
+/// </summary>
 [ECMAScript]
 public delegate void TdAvatarPropsOnError(TdAvatarPropsOnErrorContext context);
 
+/// <summary>
+/// 头像
+/// </summary>
 [ECMAScript]
 public record TdAvatarPropsOnErrorContext : VueProps
 {
@@ -18652,6 +26471,9 @@ public record TdAvatarPropsOnErrorContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TdBreadcrumbItemProps.
+/// </summary>
 [ECMAScript]
 public record TdBreadcrumbItemProps : VueProps
 {
@@ -18689,38 +26511,68 @@ public record TdBreadcrumbItemProps : VueProps
     public TdBreadcrumbItemPropsOnClick? OnClick { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TdBreadcrumbItemPropsContent.
+/// </summary>
 [ECMAScript]
 public readonly union TdBreadcrumbItemPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdBreadcrumbItemPropsDefault.
+/// </summary>
 [ECMAScript]
 public readonly union TdBreadcrumbItemPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdBreadcrumbItemPropsOnClick.
+/// </summary>
 [ECMAScript]
 public delegate void TdBreadcrumbItemPropsOnClick(MouseEvent e);
 
+/// <summary>
+/// TDesign binding type TdBreadcrumbItemPropsTarget.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdBreadcrumbItemPropsTarget
 {
+    /// <summary>
+    /// JavaScript value: _blank.
+    /// </summary>
     [Description("@#_blank")]
     Blank,
+    /// <summary>
+    /// JavaScript value: _self.
+    /// </summary>
     [Description("@#_self")]
     Self,
+    /// <summary>
+    /// JavaScript value: _parent.
+    /// </summary>
     [Description("@#_parent")]
     Parent,
+    /// <summary>
+    /// JavaScript value: _top.
+    /// </summary>
     [Description("@#_top")]
     Top,
 }
 
+/// <summary>
+/// TDesign binding type TdBreadcrumbItemPropsTo.
+/// </summary>
 [ECMAScript]
 public readonly union TdBreadcrumbItemPropsTo(string, TRoute)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TdButtonProps : VueProps
 {
@@ -18779,87 +26631,171 @@ public record TdButtonProps : VueProps
     public TdButtonPropsOnClick? OnClick { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TdButtonPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TdButtonPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public delegate void TdButtonPropsOnClick(MouseEvent e);
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdButtonPropsShape
 {
+    /// <summary>
+    /// JavaScript value: rectangle.
+    /// </summary>
     [Description("@#rectangle")]
     Rectangle,
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdButtonPropsTag
 {
+    /// <summary>
+    /// JavaScript value: button.
+    /// </summary>
     [Description("@#button")]
     Button,
+    /// <summary>
+    /// JavaScript value: a.
+    /// </summary>
     [Description("@#a")]
     A,
+    /// <summary>
+    /// JavaScript value: div.
+    /// </summary>
     [Description("@#div")]
     Div,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdButtonPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdButtonPropsType
 {
+    /// <summary>
+    /// JavaScript value: submit.
+    /// </summary>
     [Description("@#submit")]
     Submit,
+    /// <summary>
+    /// JavaScript value: reset.
+    /// </summary>
     [Description("@#reset")]
     Reset,
+    /// <summary>
+    /// JavaScript value: button.
+    /// </summary>
     [Description("@#button")]
     Button,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdButtonPropsVariant
 {
+    /// <summary>
+    /// JavaScript value: base.
+    /// </summary>
     [Description("@#base")]
     Base,
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
+    /// <summary>
+    /// JavaScript value: dashed.
+    /// </summary>
     [Description("@#dashed")]
     Dashed,
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TdCheckTagProps : VueProps
 {
@@ -18900,22 +26836,37 @@ public record TdCheckTagProps : VueProps
     public TdCheckTagPropsOnClick? OnClick { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TdCheckTagPropsContent(string, Number, string[], RenderFragment)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TdCheckTagPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public delegate void TdCheckTagPropsOnChange(bool @checked, TCheckTagChangeContext context);
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public delegate void TdCheckTagPropsOnClick(TdCheckTagPropsOnClickContext context);
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TdCheckTagPropsOnClickContext : VueProps
 {
@@ -18924,11 +26875,17 @@ public record TdCheckTagPropsOnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public readonly union TdCheckTagPropsValue(string, Number)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdCheckboxGroupProps<T> : VueProps
 {
@@ -18963,9 +26920,15 @@ public record TdCheckboxGroupProps<T> : VueProps
     public TdCheckboxGroupPropsOnChange<T>? OnChange { get; init; }
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdCheckboxGroupPropsOnChange<T>(T @value, TCheckboxGroupChangeContext context);
 
+/// <summary>
+/// 参考 checkbox 组件 API
+/// </summary>
 [ECMAScript]
 public record TdCheckboxProps : VueProps
 {
@@ -19012,19 +26975,31 @@ public record TdCheckboxProps : VueProps
     public TdCheckboxPropsOnChange? OnChange { get; init; }
 }
 
+/// <summary>
+/// 参考 checkbox 组件 API
+/// </summary>
 [ECMAScript]
 public readonly union TdCheckboxPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 参考 checkbox 组件 API
+/// </summary>
 [ECMAScript]
 public readonly union TdCheckboxPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 参考 checkbox 组件 API
+/// </summary>
 [ECMAScript]
 public delegate void TdCheckboxPropsOnChange(bool @checked, TdCheckboxPropsOnChangeContext context);
 
+/// <summary>
+/// 参考 checkbox 组件 API
+/// </summary>
 [ECMAScript]
 public record TdCheckboxPropsOnChangeContext : VueProps
 {
@@ -19033,11 +27008,19 @@ public record TdCheckboxPropsOnChangeContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 参考 checkbox 组件 API
+/// </summary>
 [ECMAScript]
 public readonly union TdCheckboxPropsValue(string, Number, bool)
 {
 }
 
+/// <summary>
+/// list of descriptions items
+///
+/// 描述项的列表
+/// </summary>
 [ECMAScript]
 public record TdDescriptionsItemProps : VueProps
 {
@@ -19054,21 +27037,39 @@ public record TdDescriptionsItemProps : VueProps
     public Number? Span { get; init; }
 }
 
+/// <summary>
+/// list of descriptions items
+///
+/// 描述项的列表
+/// </summary>
 [ECMAScript]
 public readonly union TdDescriptionsItemPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// list of descriptions items
+///
+/// 描述项的列表
+/// </summary>
 [ECMAScript]
 public readonly union TdDescriptionsItemPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// list of descriptions items
+///
+/// 描述项的列表
+/// </summary>
 [ECMAScript]
 public readonly union TdDescriptionsItemPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdDialogProps : VueProps
 {
@@ -19184,64 +27185,112 @@ public record TdDialogProps : VueProps
     public TdDialogPropsOnOverlayClick? OnOverlayClick { get; init; }
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsBody(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsCancelBtn(string, TdButtonProps, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsCloseBtn(string, bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsConfirmBtn(string, TdButtonProps, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsFooter(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsHeader(string, bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdDialogPropsMode
 {
+    /// <summary>
+    /// JavaScript value: modal.
+    /// </summary>
     [Description("@#modal")]
     Modal,
+    /// <summary>
+    /// JavaScript value: modeless.
+    /// </summary>
     [Description("@#modeless")]
     Modeless,
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
+    /// <summary>
+    /// JavaScript value: full-screen.
+    /// </summary>
     [Description("@#full-screen")]
     FullScreen,
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnBeforeClose();
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnBeforeOpen();
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnCancel(TdDialogPropsOnCancelContext context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdDialogPropsOnCancelContext : VueProps
 {
@@ -19250,12 +27299,21 @@ public record TdDialogPropsOnCancelContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnClose(TDialogCloseContext context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnCloseBtnClick(TdDialogPropsOnCloseBtnClickContext context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdDialogPropsOnCloseBtnClickContext : VueProps
 {
@@ -19264,12 +27322,21 @@ public record TdDialogPropsOnCloseBtnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnClosed();
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnConfirm(TdDialogPropsOnConfirmContext context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdDialogPropsOnConfirmContext : VueProps
 {
@@ -19277,14 +27344,23 @@ public record TdDialogPropsOnConfirmContext : VueProps
     public TdDialogPropsOnConfirmContextE E { get; init; }
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsOnConfirmContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnEscKeydown(TdDialogPropsOnEscKeydownContext context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdDialogPropsOnEscKeydownContext : VueProps
 {
@@ -19293,12 +27369,21 @@ public record TdDialogPropsOnEscKeydownContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnOpened();
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public delegate void TdDialogPropsOnOverlayClick(TdDialogPropsOnOverlayClickContext context);
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public record TdDialogPropsOnOverlayClickContext : VueProps
 {
@@ -19307,42 +27392,78 @@ public record TdDialogPropsOnOverlayClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdDialogPropsPlacement
 {
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdDialogPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: info.
+    /// </summary>
     [Description("@#info")]
     Info,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsTop(string, Number)
 {
 }
 
+/// <summary>
+/// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+/// </summary>
 [ECMAScript]
 public readonly union TdDialogPropsWidth(string, Number)
 {
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public record TdDropdownItemProps : VueProps
 {
@@ -19371,14 +27492,23 @@ public record TdDropdownItemProps : VueProps
     public TdDropdownItemPropsOnClick? OnClick { get; init; }
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public readonly union TdDropdownItemPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public delegate void TdDropdownItemPropsOnClick(TdDropdownItemPropsOnClickDropdownItem dropdownItem, TdDropdownItemPropsOnClickContext context);
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public record TdDropdownItemPropsOnClickContext : VueProps
 {
@@ -19387,16 +27517,25 @@ public record TdDropdownItemPropsOnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public readonly union TdDropdownItemPropsOnClickDropdownItem(string, Number, TJsonObject)
 {
 }
 
+/// <summary>
+/// 下拉操作项
+/// </summary>
 [ECMAScript]
 public readonly union TdDropdownItemPropsValue(string, Number, TJsonObject)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemProps.
+/// </summary>
 [ECMAScript]
 public record TdFormItemProps : VueProps
 {
@@ -19440,55 +27579,97 @@ public record TdFormItemProps : VueProps
     public TdFormItemPropsTips? Tips { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsHelp.
+/// </summary>
 [ECMAScript]
 public readonly union TdFormItemPropsHelp(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsLabel.
+/// </summary>
 [ECMAScript]
 public readonly union TdFormItemPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsLabelAlign.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdFormItemPropsLabelAlign
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsLabelWidth.
+/// </summary>
 [ECMAScript]
 public readonly union TdFormItemPropsLabelWidth(string, Number)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsStatus.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdFormItemPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsStatusIcon.
+/// </summary>
 [ECMAScript]
 public readonly union TdFormItemPropsStatusIcon(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdFormItemPropsTips.
+/// </summary>
 [ECMAScript]
 public readonly union TdFormItemPropsTips(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public record TdImageProps : VueProps
 {
@@ -19544,35 +27725,65 @@ public record TdImageProps : VueProps
     public TdImagePropsOnLoad? OnLoad { get; init; }
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public readonly union TdImagePropsError(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImagePropsFit
 {
+    /// <summary>
+    /// JavaScript value: contain.
+    /// </summary>
     [Description("@#contain")]
     Contain,
+    /// <summary>
+    /// JavaScript value: cover.
+    /// </summary>
     [Description("@#cover")]
     Cover,
+    /// <summary>
+    /// JavaScript value: fill.
+    /// </summary>
     [Description("@#fill")]
     Fill,
+    /// <summary>
+    /// JavaScript value: none.
+    /// </summary>
     [Description("@#none")]
     None,
+    /// <summary>
+    /// JavaScript value: scale-down.
+    /// </summary>
     [Description("@#scale-down")]
     ScaleDown,
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public readonly union TdImagePropsLoading(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public delegate void TdImagePropsOnError(TdImagePropsOnErrorContext context);
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public record TdImagePropsOnErrorContext : VueProps
 {
@@ -19581,9 +27792,15 @@ public record TdImagePropsOnErrorContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public delegate void TdImagePropsOnLoad(TdImagePropsOnLoadContext context);
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public record TdImagePropsOnLoadContext : VueProps
 {
@@ -19592,65 +27809,127 @@ public record TdImagePropsOnLoadContext : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public readonly union TdImagePropsOverlayContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImagePropsOverlayTrigger
 {
+    /// <summary>
+    /// JavaScript value: always.
+    /// </summary>
     [Description("@#always")]
     Always,
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public readonly union TdImagePropsPlaceholder(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImagePropsReferrerpolicy
 {
+    /// <summary>
+    /// JavaScript value: no-referrer.
+    /// </summary>
     [Description("@#no-referrer")]
     NoReferrer,
+    /// <summary>
+    /// JavaScript value: no-referrer-when-downgrade.
+    /// </summary>
     [Description("@#no-referrer-when-downgrade")]
     NoReferrerWhenDowngrade,
+    /// <summary>
+    /// JavaScript value: origin.
+    /// </summary>
     [Description("@#origin")]
     Origin,
+    /// <summary>
+    /// JavaScript value: origin-when-cross-origin.
+    /// </summary>
     [Description("@#origin-when-cross-origin")]
     OriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: same-origin.
+    /// </summary>
     [Description("@#same-origin")]
     SameOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin.
+    /// </summary>
     [Description("@#strict-origin")]
     StrictOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin-when-cross-origin.
+    /// </summary>
     [Description("@#strict-origin-when-cross-origin")]
     StrictOriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: unsafe-url.
+    /// </summary>
     [Description("@#unsafe-url")]
     UnsafeUrl,
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImagePropsShape
 {
+    /// <summary>
+    /// JavaScript value: circle.
+    /// </summary>
     [Description("@#circle")]
     Circle,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
 }
 
+/// <summary>
+/// 透传至 Image 组件
+/// </summary>
 [ECMAScript]
 public readonly union TdImagePropsSrc(string, FileRef)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdImageViewerProps : VueProps
 {
@@ -19724,56 +28003,121 @@ public record TdImageViewerProps : VueProps
     public TdImageViewerPropsOnIndexChange? OnIndexChange { get; init; }
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsCloseBtn(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImageViewerPropsImageReferrerpolicy
 {
+    /// <summary>
+    /// JavaScript value: no-referrer.
+    /// </summary>
     [Description("@#no-referrer")]
     NoReferrer,
+    /// <summary>
+    /// JavaScript value: no-referrer-when-downgrade.
+    /// </summary>
     [Description("@#no-referrer-when-downgrade")]
     NoReferrerWhenDowngrade,
+    /// <summary>
+    /// JavaScript value: origin.
+    /// </summary>
     [Description("@#origin")]
     Origin,
+    /// <summary>
+    /// JavaScript value: origin-when-cross-origin.
+    /// </summary>
     [Description("@#origin-when-cross-origin")]
     OriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: same-origin.
+    /// </summary>
     [Description("@#same-origin")]
     SameOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin.
+    /// </summary>
     [Description("@#strict-origin")]
     StrictOrigin,
+    /// <summary>
+    /// JavaScript value: strict-origin-when-cross-origin.
+    /// </summary>
     [Description("@#strict-origin-when-cross-origin")]
     StrictOriginWhenCrossOrigin,
+    /// <summary>
+    /// JavaScript value: unsafe-url.
+    /// </summary>
     [Description("@#unsafe-url")]
     UnsafeUrl,
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsImagesItem(string, FileRef, TImageInfo)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImageViewerPropsMode
 {
+    /// <summary>
+    /// JavaScript value: modal.
+    /// </summary>
     [Description("@#modal")]
     Modal,
+    /// <summary>
+    /// JavaScript value: modeless.
+    /// </summary>
     [Description("@#modeless")]
     Modeless,
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsNavigationArrow(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdImageViewerPropsOnClose(TdImageViewerPropsOnCloseContext context);
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdImageViewerPropsOnCloseContext : VueProps
 {
@@ -19784,34 +28128,73 @@ public record TdImageViewerPropsOnCloseContext : VueProps
     public TdImageViewerPropsOnCloseContextE E { get; init; }
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsOnCloseContextE(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImageViewerPropsOnCloseContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: close-btn.
+    /// </summary>
     [Description("@#close-btn")]
     CloseBtn,
+    /// <summary>
+    /// JavaScript value: overlay.
+    /// </summary>
     [Description("@#overlay")]
     Overlay,
+    /// <summary>
+    /// JavaScript value: esc.
+    /// </summary>
     [Description("@#esc")]
     Esc,
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdImageViewerPropsOnDownload(TdImageViewerPropsOnDownloadUrl url);
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsOnDownloadUrl(string, FileRef)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdImageViewerPropsOnIndexChange(Number index, TdImageViewerPropsOnIndexChangeContext context);
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdImageViewerPropsOnIndexChangeContext : VueProps
 {
@@ -19819,28 +28202,57 @@ public record TdImageViewerPropsOnIndexChangeContext : VueProps
     public TdImageViewerPropsOnIndexChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdImageViewerPropsOnIndexChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: prev.
+    /// </summary>
     [Description("@#prev")]
     Prev,
+    /// <summary>
+    /// JavaScript value: next.
+    /// </summary>
     [Description("@#next")]
     Next,
+    /// <summary>
+    /// JavaScript value: current.
+    /// </summary>
     [Description("@#current")]
     Current,
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsTitle(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdImageViewerPropsTrigger(RenderFragment, RenderFragment<TdImageViewerPropsTriggerOption2Context>)
 {
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdImageViewerPropsTriggerOption2Context : VueProps
 {
@@ -19849,9 +28261,17 @@ public record TdImageViewerPropsTriggerOption2Context : VueProps
     public TdImageViewerPropsTriggerOption2ContextOpen Open { get; init; } = default!;
 }
 
+/// <summary>
+/// ImageViewer Component Props
+///
+/// 透传图片预览组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdImageViewerPropsTriggerOption2ContextOpen(Number? index = default);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberProps<T> : VueProps
 {
@@ -19949,21 +28369,39 @@ public record TdInputNumberProps<T> : VueProps
     public TdInputNumberPropsOnValidate<T>? OnValidate { get; init; }
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputNumberPropsAlign
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate TInputNumberValue TdInputNumberPropsFormat<T>(TInputNumberValue @value, TdInputNumberPropsFormatContext<T>? context = default);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsFormatContext<T> : VueProps
 {
@@ -19971,14 +28409,23 @@ public record TdInputNumberPropsFormatContext<T> : VueProps
     public TInputNumberValue? FixedNumber { get; init; }
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public readonly union TdInputNumberPropsLabel<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnBlur<T>(TInputNumberValue @value, TdInputNumberPropsOnBlurContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnBlurContext<T> : VueProps
 {
@@ -19987,12 +28434,21 @@ public record TdInputNumberPropsOnBlurContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnChange<T>(T @value, TChangeContext context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnEnter<T>(TInputNumberValue @value, TdInputNumberPropsOnEnterContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnEnterContext<T> : VueProps
 {
@@ -20001,9 +28457,15 @@ public record TdInputNumberPropsOnEnterContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnFocus<T>(TInputNumberValue @value, TdInputNumberPropsOnFocusContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnFocusContext<T> : VueProps
 {
@@ -20012,9 +28474,15 @@ public record TdInputNumberPropsOnFocusContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnKeydown<T>(TInputNumberValue @value, TdInputNumberPropsOnKeydownContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnKeydownContext<T> : VueProps
 {
@@ -20023,9 +28491,15 @@ public record TdInputNumberPropsOnKeydownContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnKeypress<T>(TInputNumberValue @value, TdInputNumberPropsOnKeypressContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnKeypressContext<T> : VueProps
 {
@@ -20034,9 +28508,15 @@ public record TdInputNumberPropsOnKeypressContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnKeyup<T>(TInputNumberValue @value, TdInputNumberPropsOnKeyupContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnKeyupContext<T> : VueProps
 {
@@ -20045,9 +28525,15 @@ public record TdInputNumberPropsOnKeyupContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public delegate void TdInputNumberPropsOnValidate<T>(TdInputNumberPropsOnValidateContext<T> context);
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public record TdInputNumberPropsOnValidateContext<T> : VueProps
 {
@@ -20055,64 +28541,121 @@ public record TdInputNumberPropsOnValidateContext<T> : VueProps
     public TdInputNumberPropsOnValidateContextError? Error { get; init; }
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputNumberPropsOnValidateContextError
 {
+    /// <summary>
+    /// JavaScript value: exceed-maximum.
+    /// </summary>
     [Description("@#exceed-maximum")]
     ExceedMaximum,
+    /// <summary>
+    /// JavaScript value: below-minimum.
+    /// </summary>
     [Description("@#below-minimum")]
     BelowMinimum,
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputNumberPropsSize
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputNumberPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public readonly union TdInputNumberPropsSuffix<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputNumberPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: column.
+    /// </summary>
     [Description("@#column")]
     Column,
+    /// <summary>
+    /// JavaScript value: row.
+    /// </summary>
     [Description("@#row")]
     Row,
+    /// <summary>
+    /// JavaScript value: normal.
+    /// </summary>
     [Description("@#normal")]
     Normal,
 }
 
+/// <summary>
+/// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+/// </summary>
 [ECMAScript]
 public readonly union TdInputNumberPropsTips<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputProps<T> : VueProps
 {
@@ -20252,31 +28795,55 @@ public record TdInputProps<T> : VueProps
     public TdInputPropsOnWheel<T>? OnWheel { get; init; }
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputPropsAlign
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: center.
+    /// </summary>
     [Description("@#center")]
     Center,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdInputPropsLabel<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdInputPropsMaxlength<T>(string, Number)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnBlur<T>(T @value, TdInputPropsOnBlurContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnBlurContext<T> : VueProps
 {
@@ -20285,9 +28852,15 @@ public record TdInputPropsOnBlurContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnChange<T>(T @value, TdInputPropsOnChangeContext<T>? context = default);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnChangeContext<T> : VueProps
 {
@@ -20298,26 +28871,47 @@ public record TdInputPropsOnChangeContext<T> : VueProps
     public TdInputPropsOnChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdInputPropsOnChangeContextE<T>(InputEvent, MouseEvent, CompositionEvent)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputPropsOnChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: initial.
+    /// </summary>
     [Description("@#initial")]
     Initial,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnClear<T>(TdInputPropsOnClearContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnClearContext<T> : VueProps
 {
@@ -20326,9 +28920,15 @@ public record TdInputPropsOnClearContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnClick<T>(TdInputPropsOnClickContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnClickContext<T> : VueProps
 {
@@ -20337,9 +28937,15 @@ public record TdInputPropsOnClickContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnCompositionend<T>(string @value, TdInputPropsOnCompositionendContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnCompositionendContext<T> : VueProps
 {
@@ -20348,9 +28954,15 @@ public record TdInputPropsOnCompositionendContext<T> : VueProps
     public CompositionEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnCompositionstart<T>(string @value, TdInputPropsOnCompositionstartContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnCompositionstartContext<T> : VueProps
 {
@@ -20359,9 +28971,15 @@ public record TdInputPropsOnCompositionstartContext<T> : VueProps
     public CompositionEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnEnter<T>(T @value, TdInputPropsOnEnterContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnEnterContext<T> : VueProps
 {
@@ -20370,9 +28988,15 @@ public record TdInputPropsOnEnterContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnFocus<T>(T @value, TdInputPropsOnFocusContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnFocusContext<T> : VueProps
 {
@@ -20381,9 +29005,15 @@ public record TdInputPropsOnFocusContext<T> : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnKeydown<T>(T @value, TdInputPropsOnKeydownContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnKeydownContext<T> : VueProps
 {
@@ -20392,9 +29022,15 @@ public record TdInputPropsOnKeydownContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnKeypress<T>(T @value, TdInputPropsOnKeypressContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnKeypressContext<T> : VueProps
 {
@@ -20403,9 +29039,15 @@ public record TdInputPropsOnKeypressContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnKeyup<T>(T @value, TdInputPropsOnKeyupContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnKeyupContext<T> : VueProps
 {
@@ -20414,9 +29056,15 @@ public record TdInputPropsOnKeyupContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnMouseenter<T>(TdInputPropsOnMouseenterContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnMouseenterContext<T> : VueProps
 {
@@ -20425,9 +29073,15 @@ public record TdInputPropsOnMouseenterContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnMouseleave<T>(TdInputPropsOnMouseleaveContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnMouseleaveContext<T> : VueProps
 {
@@ -20436,9 +29090,15 @@ public record TdInputPropsOnMouseleaveContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnPaste<T>(TdInputPropsOnPasteContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnPasteContext<T> : VueProps
 {
@@ -20451,9 +29111,15 @@ public record TdInputPropsOnPasteContext<T> : VueProps
     public string PasteValue { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnValidate<T>(TdInputPropsOnValidateContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnValidateContext<T> : VueProps
 {
@@ -20461,19 +29127,34 @@ public record TdInputPropsOnValidateContext<T> : VueProps
     public TdInputPropsOnValidateContextError? Error { get; init; }
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputPropsOnValidateContextError
 {
+    /// <summary>
+    /// JavaScript value: exceed-maximum.
+    /// </summary>
     [Description("@#exceed-maximum")]
     ExceedMaximum,
+    /// <summary>
+    /// JavaScript value: below-minimum.
+    /// </summary>
     [Description("@#below-minimum")]
     BelowMinimum,
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdInputPropsOnWheel<T>(TdInputPropsOnWheelContext<T> context);
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdInputPropsOnWheelContext<T> : VueProps
 {
@@ -20482,52 +29163,103 @@ public record TdInputPropsOnWheelContext<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdInputPropsSuffix<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdInputPropsTips<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Input 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdInputPropsType
 {
+    /// <summary>
+    /// JavaScript value: text.
+    /// </summary>
     [Description("@#text")]
     Text,
+    /// <summary>
+    /// JavaScript value: number.
+    /// </summary>
     [Description("@#number")]
     Number,
+    /// <summary>
+    /// JavaScript value: url.
+    /// </summary>
     [Description("@#url")]
     Url,
+    /// <summary>
+    /// JavaScript value: tel.
+    /// </summary>
     [Description("@#tel")]
     Tel,
+    /// <summary>
+    /// JavaScript value: password.
+    /// </summary>
     [Description("@#password")]
     Password,
+    /// <summary>
+    /// JavaScript value: search.
+    /// </summary>
     [Description("@#search")]
     Search,
+    /// <summary>
+    /// JavaScript value: submit.
+    /// </summary>
     [Description("@#submit")]
     Submit,
+    /// <summary>
+    /// JavaScript value: hidden.
+    /// </summary>
     [Description("@#hidden")]
     Hidden,
 }
 
+/// <summary>
+/// 透传加载组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdLoadingProps : VueProps
 {
@@ -20571,26 +29303,43 @@ public record TdLoadingProps : VueProps
     public Number? ZIndex { get; init; }
 }
 
+/// <summary>
+/// 透传加载组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdLoadingPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传加载组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdLoadingPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传加载组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdLoadingPropsIndicator(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传加载组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdLoadingPropsText(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdOptionProps : VueProps
 {
@@ -20616,21 +29365,41 @@ public record TdOptionProps : VueProps
     public TdOptionPropsValue? Value { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdOptionPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdOptionPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdOptionPropsValue(string, Number, bool, BigInt)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdPaginationProps : VueProps
 {
@@ -20704,30 +29473,66 @@ public record TdPaginationProps : VueProps
     public TdPaginationPropsOnPageSizeChange? OnPageSizeChange { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdPaginationPropsOnChange(TPageInfo pageInfo);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdPaginationPropsOnCurrentChange(Number current, TPageInfo pageInfo);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdPaginationPropsOnPageSizeChange(Number pageSize, TPageInfo pageInfo);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdPaginationPropsPageEllipsisMode
 {
+    /// <summary>
+    /// JavaScript value: mid.
+    /// </summary>
     [Description("@#mid")]
     Mid,
+    /// <summary>
+    /// JavaScript value: both-ends.
+    /// </summary>
     [Description("@#both-ends")]
     BothEnds,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdPaginationPropsPageSizeOptionsItem(Number, TdPaginationPropsPageSizeOptionsItemOption2)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdPaginationPropsPageSizeOptionsItemOption2 : VueProps
 {
@@ -20739,31 +29544,61 @@ public record TdPaginationPropsPageSizeOptionsItemOption2 : VueProps
     public Number Value { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdPaginationPropsSize
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdPaginationPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: simple.
+    /// </summary>
     [Description("@#simple")]
     Simple,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdPaginationPropsTotalContent(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdPopupProps : VueProps
 {
@@ -20840,24 +29675,39 @@ public record TdPopupProps : VueProps
     public TdPopupPropsOnVisibleChange? OnVisibleChange { get; init; }
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdPopupPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdPopupPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdPopupPropsDelay(Number, Number[])
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdPopupPropsOnOverlayClick(TdPopupPropsOnOverlayClickContext context);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdPopupPropsOnOverlayClickContext : VueProps
 {
@@ -20866,9 +29716,15 @@ public record TdPopupPropsOnOverlayClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdPopupPropsOnScroll(TdPopupPropsOnScrollContext context);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdPopupPropsOnScrollContext : VueProps
 {
@@ -20877,9 +29733,15 @@ public record TdPopupPropsOnScrollContext : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdPopupPropsOnScrollToBottom(TdPopupPropsOnScrollToBottomContext context);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public record TdPopupPropsOnScrollToBottomContext : VueProps
 {
@@ -20888,46 +29750,85 @@ public record TdPopupPropsOnScrollToBottomContext : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate void TdPopupPropsOnVisibleChange(bool visible, TPopupVisibleChangeContext context);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdPopupPropsOverlayInnerStyle(TStyles, TdPopupPropsOverlayInnerStyleOption2)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate TStyles TdPopupPropsOverlayInnerStyleOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdPopupPropsOverlayStyle(TStyles, TdPopupPropsOverlayStyleOption2)
 {
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public delegate TStyles TdPopupPropsOverlayStyleOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdPopupPropsTrigger
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
+    /// <summary>
+    /// JavaScript value: focus.
+    /// </summary>
     [Description("@#focus")]
     Focus,
+    /// <summary>
+    /// JavaScript value: mousedown.
+    /// </summary>
     [Description("@#mousedown")]
     Mousedown,
+    /// <summary>
+    /// JavaScript value: context-menu.
+    /// </summary>
     [Description("@#context-menu")]
     ContextMenu,
 }
 
+/// <summary>
+/// 透传 Popup 组件全部属性
+/// </summary>
 [ECMAScript]
 public readonly union TdPopupPropsTriggerElement(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TdRadioGroupProps<T> : VueProps
 {
@@ -20971,19 +29872,34 @@ public record TdRadioGroupProps<T> : VueProps
     public TdRadioGroupPropsOnChange<T>? OnChange { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdRadioGroupPropsDirection
 {
+    /// <summary>
+    /// JavaScript value: horizontal.
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal,
+    /// <summary>
+    /// JavaScript value: vertical.
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public delegate void TdRadioGroupPropsOnChange<T>(T @value, TdRadioGroupPropsOnChangeContext<T> context);
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 public record TdRadioGroupPropsOnChangeContext<T> : VueProps
 {
@@ -20995,28 +29911,52 @@ public record TdRadioGroupPropsOnChangeContext<T> : VueProps
     public string? Name { get; init; }
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdRadioGroupPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: radio.
+    /// </summary>
     [Description("@#radio")]
     Radio,
+    /// <summary>
+    /// JavaScript value: button.
+    /// </summary>
     [Description("@#button")]
     Button,
 }
 
+/// <summary>
+/// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdRadioGroupPropsVariant
 {
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
+    /// <summary>
+    /// JavaScript value: primary-filled.
+    /// </summary>
     [Description("@#primary-filled")]
     PrimaryFilled,
+    /// <summary>
+    /// JavaScript value: default-filled.
+    /// </summary>
     [Description("@#default-filled")]
     DefaultFilled,
 }
 
+/// <summary>
+/// TDesign binding type TdRadioProps.
+/// </summary>
 [ECMAScript]
 public record TdRadioProps<T> : VueProps
 {
@@ -21057,19 +29997,31 @@ public record TdRadioProps<T> : VueProps
     public TdRadioPropsOnClick<T>? OnClick { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TdRadioPropsDefault.
+/// </summary>
 [ECMAScript]
 public readonly union TdRadioPropsDefault<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdRadioPropsLabel.
+/// </summary>
 [ECMAScript]
 public readonly union TdRadioPropsLabel<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdRadioPropsOnChange.
+/// </summary>
 [ECMAScript]
 public delegate void TdRadioPropsOnChange<T>(bool @checked, TdRadioPropsOnChangeContext<T> context);
 
+/// <summary>
+/// TDesign binding type TdRadioPropsOnChangeContext.
+/// </summary>
 [ECMAScript]
 public record TdRadioPropsOnChangeContext<T> : VueProps
 {
@@ -21078,9 +30030,15 @@ public record TdRadioPropsOnChangeContext<T> : VueProps
     public EventRef E { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TdRadioPropsOnClick.
+/// </summary>
 [ECMAScript]
 public delegate void TdRadioPropsOnClick<T>(TdRadioPropsOnClickContext<T> context);
 
+/// <summary>
+/// TDesign binding type TdRadioPropsOnClickContext.
+/// </summary>
 [ECMAScript]
 public record TdRadioPropsOnClickContext<T> : VueProps
 {
@@ -21089,6 +30047,9 @@ public record TdRadioPropsOnClickContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputProps : VueProps
 {
@@ -21177,29 +30138,47 @@ public record TdRangeInputProps : VueProps
     public TdRangeInputPropsOnMouseleave? OnMouseleave { get; init; }
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsDisabled(bool, bool[])
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsFormat(TInputFormatType, TInputFormatType[])
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsInputProps(TdInputProps<TInputValue>, TdInputProps<TInputValue>[])
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnBlur(TInputValue[] @value, TdRangeInputPropsOnBlurContext? context = default);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnBlurContext : VueProps
 {
@@ -21210,9 +30189,15 @@ public record TdRangeInputPropsOnBlurContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnChange(TInputValue[] @value, TdRangeInputPropsOnChangeContext? context = default);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnChangeContext : VueProps
 {
@@ -21226,26 +30211,47 @@ public record TdRangeInputPropsOnChangeContext : VueProps
     public TdRangeInputPropsOnChangeContextTrigger? Trigger { get; init; }
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsOnChangeContextE(InputEvent, MouseEvent, CompositionEvent)
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdRangeInputPropsOnChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: input.
+    /// </summary>
     [Description("@#input")]
     Input,
+    /// <summary>
+    /// JavaScript value: initial.
+    /// </summary>
     [Description("@#initial")]
     Initial,
+    /// <summary>
+    /// JavaScript value: clear.
+    /// </summary>
     [Description("@#clear")]
     Clear,
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnClear(TdRangeInputPropsOnClearContext context);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnClearContext : VueProps
 {
@@ -21254,9 +30260,15 @@ public record TdRangeInputPropsOnClearContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnClick(TdRangeInputPropsOnClickContext? context = default);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnClickContext : VueProps
 {
@@ -21267,9 +30279,15 @@ public record TdRangeInputPropsOnClickContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnEnter(TInputValue[] @value, TdRangeInputPropsOnEnterContext? context = default);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnEnterContext : VueProps
 {
@@ -21280,14 +30298,23 @@ public record TdRangeInputPropsOnEnterContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsOnEnterContextE(InputEvent, MouseEvent)
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnFocus(TInputValue[] @value, TdRangeInputPropsOnFocusContext? context = default);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnFocusContext : VueProps
 {
@@ -21298,9 +30325,15 @@ public record TdRangeInputPropsOnFocusContext : VueProps
     public TRangeInputPosition? Position { get; init; }
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnMouseenter(TdRangeInputPropsOnMouseenterContext context);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnMouseenterContext : VueProps
 {
@@ -21309,9 +30342,15 @@ public record TdRangeInputPropsOnMouseenterContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public delegate void TdRangeInputPropsOnMouseleave(TdRangeInputPropsOnMouseleaveContext context);
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public record TdRangeInputPropsOnMouseleaveContext : VueProps
 {
@@ -21320,52 +30359,96 @@ public record TdRangeInputPropsOnMouseleaveContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsPlaceholder(string, string[])
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsSeparator(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdRangeInputPropsSize
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdRangeInputPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsSuffix(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传给范围输入框 RangeInput 组件的参数
+/// </summary>
 [ECMAScript]
 public readonly union TdRangeInputPropsTips(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputProps : VueProps
 {
@@ -21499,6 +30582,11 @@ public record TdSelectInputProps : VueProps
     public TdSelectInputPropsOnTagChange? OnTagChange { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsCollapsedItemsContext : VueProps
 {
@@ -21516,9 +30604,19 @@ public record TdSelectInputPropsCollapsedItemsContext : VueProps
     public TdSelectInputPropsCollapsedItemsContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsCollapsedItemsContextOnClose(TdSelectInputPropsCollapsedItemsContextOnCloseContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsCollapsedItemsContextOnCloseContext : VueProps
 {
@@ -21529,17 +30627,37 @@ public record TdSelectInputPropsCollapsedItemsContextOnCloseContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnBlur(TSelectInputValue @value, TSelectInputBlurContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnClear(TdSelectInputPropsOnClearContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsOnClearContext : VueProps
 {
@@ -21548,9 +30666,19 @@ public record TdSelectInputPropsOnClearContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnEnter(TSelectInputValue @value, TdSelectInputPropsOnEnterContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsOnEnterContext : VueProps
 {
@@ -21566,15 +30694,35 @@ public record TdSelectInputPropsOnEnterContext : VueProps
     public TTagInputValueItem[]? TagInputValue { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnFocus(TSelectInputValue @value, TSelectInputFocusContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnInputChange(string @value, TSelectInputValueChangeContext? context = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnMouseenter(TdSelectInputPropsOnMouseenterContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsOnMouseenterContext : VueProps
 {
@@ -21583,9 +30731,19 @@ public record TdSelectInputPropsOnMouseenterContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnMouseleave(TdSelectInputPropsOnMouseleaveContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsOnMouseleaveContext : VueProps
 {
@@ -21594,9 +30752,19 @@ public record TdSelectInputPropsOnMouseleaveContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnPaste(TdSelectInputPropsOnPasteContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsOnPasteContext : VueProps
 {
@@ -21609,41 +30777,88 @@ public record TdSelectInputPropsOnPasteContext : VueProps
     public string PasteValue { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnPopupVisibleChange(bool visible, TPopupVisibleChangeContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsOnTagChange(TTagInputValueItem[] @value, TTagInputChangeContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsPanel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdSelectInputPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsSuffix(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsTag(string, RenderFragment<TdSelectInputPropsTagOption2Context>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsTagOption2Context : VueProps
 {
@@ -21651,21 +30866,41 @@ public record TdSelectInputPropsTagOption2Context : VueProps
     public TdSelectInputPropsTagOption2ContextValue Value { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsTagOption2ContextValue(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsTips(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectInputPropsValueDisplay(string, RenderFragment<TdSelectInputPropsValueDisplayOption2Context>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectInputPropsValueDisplayOption2Context : VueProps
 {
@@ -21678,9 +30913,19 @@ public record TdSelectInputPropsValueDisplayOption2Context : VueProps
     public TdSelectInputPropsValueDisplayOption2ContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectInputPropsValueDisplayOption2ContextOnClose(Number index, TJsonValue? item = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectProps<T> : VueProps
 {
@@ -21850,6 +31095,11 @@ public record TdSelectProps<T> : VueProps
     public TdSelectPropsOnSearch<T>? OnSearch { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsCollapsedItemsContext<T> : VueProps
 {
@@ -21869,9 +31119,19 @@ public record TdSelectPropsCollapsedItemsContext<T> : VueProps
     public TdSelectPropsCollapsedItemsContextOnClose<T> OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsCollapsedItemsContextOnClose<T>(TdSelectPropsCollapsedItemsContextOnCloseContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsCollapsedItemsContextOnCloseContext<T> : VueProps
 {
@@ -21882,32 +31142,67 @@ public record TdSelectPropsCollapsedItemsContextOnCloseContext<T> : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsEmpty<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate TdSelectPropsFilterResult<T> TdSelectPropsFilter<T>(string filterWords, T option);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsFilterResult<T>(bool, IPromise<bool>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsLabel<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsLoadingText<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnBlur<T>(TdSelectPropsOnBlurContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsOnBlurContext<T> : VueProps
 {
@@ -21918,14 +31213,29 @@ public record TdSelectPropsOnBlurContext<T> : VueProps
     public TdSelectPropsOnBlurContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsOnBlurContextE<T>(FocusEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnChange<T>(TSelectValue<TSelectOption> @value, TdSelectPropsOnChangeContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsOnChangeContext<T> : VueProps
 {
@@ -21943,14 +31253,29 @@ public record TdSelectPropsOnChangeContext<T> : VueProps
     public TdSelectPropsOnChangeContextE<T>? E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsOnChangeContextE<T>(MouseEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnClear<T>(TdSelectPropsOnClearContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsOnClearContext<T> : VueProps
 {
@@ -21959,17 +31284,37 @@ public record TdSelectPropsOnClearContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnCreate<T>(TdSelectPropsOnCreateValue<T> @value);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsOnCreateValue<T>(string, Number, bool, BigInt)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnEnter<T>(TdSelectPropsOnEnterContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsOnEnterContext<T> : VueProps
 {
@@ -21985,9 +31330,19 @@ public record TdSelectPropsOnEnterContext<T> : VueProps
     public TSelectValue<TSelectOption> Value { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnFocus<T>(TdSelectPropsOnFocusContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsOnFocusContext<T> : VueProps
 {
@@ -21998,23 +31353,53 @@ public record TdSelectPropsOnFocusContext<T> : VueProps
     public TdSelectPropsOnFocusContextE<T> E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsOnFocusContextE<T>(FocusEvent, KeyboardEvent)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnInputChange<T>(string @value, TSelectInputValueChangeContext? context = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnPopupVisibleChange<T>(bool visible, TPopupVisibleChangeContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnRemove<T>(TSelectRemoveContext<T> options);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsOnSearch<T>(string filterWords, TdSelectPropsOnSearchContext<T> context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsOnSearchContext<T> : VueProps
 {
@@ -22023,50 +31408,102 @@ public record TdSelectPropsOnSearchContext<T> : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsPanelBottomContent<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsPanelTopContent<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdSelectPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsSuffix<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsTips<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsValueDisplay<T>(string, RenderFragment<TdSelectPropsValueDisplayOption2Context<T>>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdSelectPropsValueDisplayOption2Context<T>(TdSelectPropsValueDisplayOption2ContextOption1<T>, TSelectValue<TSelectOption>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdSelectPropsValueDisplayOption2ContextOption1<T> : VueProps
 {
@@ -22081,19 +31518,38 @@ public record TdSelectPropsValueDisplayOption2ContextOption1<T> : VueProps
     public TSelectValue<TSelectOption>? DisplayValue { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdSelectPropsValueDisplayOption2ContextOption1OnClose<T>(Number index);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdSelectPropsValueType
 {
+    /// <summary>
+    /// JavaScript value: value.
+    /// </summary>
     [Description("@#value")]
     Value,
+    /// <summary>
+    /// JavaScript value: object.
+    /// </summary>
     [Description("@#object")]
     Object,
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public record TdStepItemProps : VueProps
 {
@@ -22119,36 +31575,57 @@ public record TdStepItemProps : VueProps
     public TdStepItemPropsValue? Value { get; init; }
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public readonly union TdStepItemPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public readonly union TdStepItemPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public readonly union TdStepItemPropsExtra(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public readonly union TdStepItemPropsIcon(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public readonly union TdStepItemPropsTitle(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 步骤条数据列表（作用和 StepItem 效果一样）
+/// </summary>
 [ECMAScript]
 public readonly union TdStepItemPropsValue(string, Number)
 {
 }
 
+/// <summary>
+/// 列表
+/// </summary>
 [ECMAScript]
 public record TdStickyItemProps : VueProps
 {
@@ -22168,26 +31645,44 @@ public record TdStickyItemProps : VueProps
     public TdStickyItemPropsTrigger? Trigger { get; init; }
 }
 
+/// <summary>
+/// 列表
+/// </summary>
 [ECMAScript]
 public readonly union TdStickyItemPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 列表
+/// </summary>
 [ECMAScript]
 public readonly union TdStickyItemPropsPopup(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 列表
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdStickyItemPropsTrigger
 {
+    /// <summary>
+    /// JavaScript value: hover.
+    /// </summary>
     [Description("@#hover")]
     Hover,
+    /// <summary>
+    /// JavaScript value: click.
+    /// </summary>
     [Description("@#click")]
     Click,
 }
 
+/// <summary>
+/// 选项卡列表
+/// </summary>
 [ECMAScript]
 public record TdTabPanelProps : VueProps
 {
@@ -22222,14 +31717,23 @@ public record TdTabPanelProps : VueProps
     public TdTabPanelPropsOnRemove? OnRemove { get; init; }
 }
 
+/// <summary>
+/// 选项卡列表
+/// </summary>
 [ECMAScript]
 public readonly union TdTabPanelPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 选项卡列表
+/// </summary>
 [ECMAScript]
 public delegate void TdTabPanelPropsOnRemove(TdTabPanelPropsOnRemoveOptions options);
 
+/// <summary>
+/// 选项卡列表
+/// </summary>
 [ECMAScript]
 public record TdTabPanelPropsOnRemoveOptions : VueProps
 {
@@ -22241,11 +31745,19 @@ public record TdTabPanelPropsOnRemoveOptions : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 选项卡列表
+/// </summary>
 [ECMAScript]
 public readonly union TdTabPanelPropsPanel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputProps : VueProps
 {
@@ -22367,6 +31879,11 @@ public record TdTagInputProps : VueProps
     public TdTagInputPropsOnRemove? OnRemove { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsCollapsedItemsContext : VueProps
 {
@@ -22386,9 +31903,19 @@ public record TdTagInputPropsCollapsedItemsContext : VueProps
     public TdTagInputPropsCollapsedItemsContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsCollapsedItemsContextOnClose(TdTagInputPropsCollapsedItemsContextOnCloseContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsCollapsedItemsContextOnCloseContext : VueProps
 {
@@ -22399,24 +31926,50 @@ public record TdTagInputPropsCollapsedItemsContextOnCloseContext : VueProps
     public MouseEvent? E { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTagInputPropsExcessTagsDisplayType
 {
+    /// <summary>
+    /// JavaScript value: scroll.
+    /// </summary>
     [Description("@#scroll")]
     Scroll,
+    /// <summary>
+    /// JavaScript value: break-line.
+    /// </summary>
     [Description("@#break-line")]
     BreakLine,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagInputPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnBlur(TTagInputValueItem[] @value, TdTagInputPropsOnBlurContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnBlurContext : VueProps
 {
@@ -22429,12 +31982,27 @@ public record TdTagInputPropsOnBlurContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnChange(TTagInputValueItem[] @value, TTagInputChangeContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnClear(TdTagInputPropsOnClearContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnClearContext : VueProps
 {
@@ -22443,9 +32011,19 @@ public record TdTagInputPropsOnClearContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnClick(TdTagInputPropsOnClickContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnClickContext : VueProps
 {
@@ -22454,12 +32032,27 @@ public record TdTagInputPropsOnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnDragSort(TTagInputDragSortContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnEnter(TTagInputValueItem[] @value, TdTagInputPropsOnEnterContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnEnterContext : VueProps
 {
@@ -22472,9 +32065,19 @@ public record TdTagInputPropsOnEnterContext : VueProps
     public string InputValue { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnFocus(TTagInputValueItem[] @value, TdTagInputPropsOnFocusContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnFocusContext : VueProps
 {
@@ -22487,12 +32090,27 @@ public record TdTagInputPropsOnFocusContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnInputChange(string @value, TInputValueChangeContext? context = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnMouseenter(TdTagInputPropsOnMouseenterContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnMouseenterContext : VueProps
 {
@@ -22501,9 +32119,19 @@ public record TdTagInputPropsOnMouseenterContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnMouseleave(TdTagInputPropsOnMouseleaveContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnMouseleaveContext : VueProps
 {
@@ -22512,9 +32140,19 @@ public record TdTagInputPropsOnMouseleaveContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnPaste(TdTagInputPropsOnPasteContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsOnPasteContext : VueProps
 {
@@ -22527,33 +32165,70 @@ public record TdTagInputPropsOnPasteContext : VueProps
     public string PasteValue { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsOnRemove(TTagInputRemoveContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTagInputPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagInputPropsSuffix(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagInputPropsTag(string, RenderFragment<TdTagInputPropsTagOption2Context>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsTagOption2Context : VueProps
 {
@@ -22561,21 +32236,41 @@ public record TdTagInputPropsTagOption2Context : VueProps
     public TdTagInputPropsTagOption2ContextValue Value { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagInputPropsTagOption2ContextValue(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagInputPropsTips(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagInputPropsValueDisplay(string, RenderFragment<TdTagInputPropsValueDisplayOption2Context>)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagInputPropsValueDisplayOption2Context : VueProps
 {
@@ -22588,9 +32283,19 @@ public record TdTagInputPropsValueDisplayOption2Context : VueProps
     public TdTagInputPropsValueDisplayOption2ContextOnClose OnClose { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagInputPropsValueDisplayOption2ContextOnClose(Number index, TJsonValue? item = default);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagProps : VueProps
 {
@@ -22637,24 +32342,49 @@ public record TdTagProps : VueProps
     public TdTagPropsOnClose? OnClose { get; init; }
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagPropsDefault(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagPropsMaxWidth(string, Number)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagPropsOnClick(TdTagPropsOnClickContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagPropsOnClickContext : VueProps
 {
@@ -22663,9 +32393,19 @@ public record TdTagPropsOnClickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public delegate void TdTagPropsOnClose(TdTagPropsOnCloseContext context);
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public record TdTagPropsOnCloseContext : VueProps
 {
@@ -22674,53 +32414,112 @@ public record TdTagPropsOnCloseContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTagPropsShape
 {
+    /// <summary>
+    /// JavaScript value: square.
+    /// </summary>
     [Description("@#square")]
     Square,
+    /// <summary>
+    /// JavaScript value: round.
+    /// </summary>
     [Description("@#round")]
     Round,
+    /// <summary>
+    /// JavaScript value: mark.
+    /// </summary>
     [Description("@#mark")]
     Mark,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTagPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 public readonly union TdTagPropsTitle(string, bool)
 {
 }
 
+/// <summary>
+/// you can use all props of pagination component with paginationProps
+///
+/// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTagPropsVariant
 {
+    /// <summary>
+    /// JavaScript value: dark.
+    /// </summary>
     [Description("@#dark")]
     Dark,
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
+    /// <summary>
+    /// JavaScript value: outline.
+    /// </summary>
     [Description("@#outline")]
     Outline,
+    /// <summary>
+    /// JavaScript value: light-outline.
+    /// </summary>
     [Description("@#light-outline")]
     LightOutline,
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaProps : VueProps
 {
@@ -22788,11 +32587,17 @@ public record TdTextareaProps : VueProps
     public TdTextareaPropsOnValidate? OnValidate { get; init; }
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdTextareaPropsAutosize(bool, TdTextareaPropsAutosizeOption2)
 {
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsAutosizeOption2 : VueProps
 {
@@ -22803,14 +32608,23 @@ public record TdTextareaPropsAutosizeOption2 : VueProps
     public Number? MaxRows { get; init; }
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdTextareaPropsMaxlength(string, Number)
 {
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnBlur(TTextareaValue @value, TdTextareaPropsOnBlurContext context);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnBlurContext : VueProps
 {
@@ -22819,9 +32633,15 @@ public record TdTextareaPropsOnBlurContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnChange(TTextareaValue @value, TdTextareaPropsOnChangeContext? context = default);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnChangeContext : VueProps
 {
@@ -22829,9 +32649,15 @@ public record TdTextareaPropsOnChangeContext : VueProps
     public InputEvent? E { get; init; }
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnFocus(TTextareaValue @value, TdTextareaPropsOnFocusContext context);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnFocusContext : VueProps
 {
@@ -22840,9 +32666,15 @@ public record TdTextareaPropsOnFocusContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnKeydown(TTextareaValue @value, TdTextareaPropsOnKeydownContext context);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnKeydownContext : VueProps
 {
@@ -22851,9 +32683,15 @@ public record TdTextareaPropsOnKeydownContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnKeypress(TTextareaValue @value, TdTextareaPropsOnKeypressContext context);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnKeypressContext : VueProps
 {
@@ -22862,9 +32700,15 @@ public record TdTextareaPropsOnKeypressContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnKeyup(TTextareaValue @value, TdTextareaPropsOnKeyupContext context);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnKeyupContext : VueProps
 {
@@ -22873,9 +32717,15 @@ public record TdTextareaPropsOnKeyupContext : VueProps
     public KeyboardEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public delegate void TdTextareaPropsOnValidate(TdTextareaPropsOnValidateContext context);
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public record TdTextareaPropsOnValidateContext : VueProps
 {
@@ -22883,35 +32733,65 @@ public record TdTextareaPropsOnValidateContext : VueProps
     public TdTextareaPropsOnValidateContextError? Error { get; init; }
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTextareaPropsOnValidateContextError
 {
+    /// <summary>
+    /// JavaScript value: exceed-maximum.
+    /// </summary>
     [Description("@#exceed-maximum")]
     ExceedMaximum,
+    /// <summary>
+    /// JavaScript value: below-minimum.
+    /// </summary>
     [Description("@#below-minimum")]
     BelowMinimum,
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTextareaPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 透传 Textarea 组件全部特性
+/// </summary>
 [ECMAScript]
 public readonly union TdTextareaPropsTips(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerProps : VueProps
 {
@@ -23015,9 +32895,15 @@ public record TdTimePickerProps : VueProps
     public TdTimePickerPropsOnPick? OnPick { get; init; }
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate TdTimePickerPropsDisableTimeResultPartial TdTimePickerPropsDisableTime(Number h, Number m, Number s, Number ms);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsDisableTimeResultPartial : VueProps
 {
@@ -23038,14 +32924,23 @@ public record TdTimePickerPropsDisableTimeResultPartial : VueProps
     public Number[] Millisecond { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TdTimePickerPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnBlur(TdTimePickerPropsOnBlurContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnBlurContext : VueProps
 {
@@ -23067,12 +32962,21 @@ public record TdTimePickerPropsOnBlurContext : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnChange(string @value);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnClear(TdTimePickerPropsOnClearContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnClearContext : VueProps
 {
@@ -23081,9 +32985,15 @@ public record TdTimePickerPropsOnClearContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnClose(TdTimePickerPropsOnCloseContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnCloseContext : VueProps
 {
@@ -23092,9 +33002,15 @@ public record TdTimePickerPropsOnCloseContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnConfirm(TdTimePickerPropsOnConfirmContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnConfirmContext : VueProps
 {
@@ -23103,9 +33019,15 @@ public record TdTimePickerPropsOnConfirmContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnFocus(TdTimePickerPropsOnFocusContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnFocusContext : VueProps
 {
@@ -23118,9 +33040,15 @@ public record TdTimePickerPropsOnFocusContext : VueProps
     public FocusEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnInput(TdTimePickerPropsOnInputContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnInputContext : VueProps
 {
@@ -23133,9 +33061,15 @@ public record TdTimePickerPropsOnInputContext : VueProps
     public InputEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnOpen(TdTimePickerPropsOnOpenContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnOpenContext : VueProps
 {
@@ -23144,9 +33078,15 @@ public record TdTimePickerPropsOnOpenContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public delegate void TdTimePickerPropsOnPick(string @value, TdTimePickerPropsOnPickContext context);
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsOnPickContext : VueProps
 {
@@ -23155,47 +33095,86 @@ public record TdTimePickerPropsOnPickContext : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTimePickerPropsSize
 {
+    /// <summary>
+    /// JavaScript value: small.
+    /// </summary>
     [Description("@#small")]
     Small,
+    /// <summary>
+    /// JavaScript value: medium.
+    /// </summary>
     [Description("@#medium")]
     Medium,
+    /// <summary>
+    /// JavaScript value: large.
+    /// </summary>
     [Description("@#large")]
     Large,
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTimePickerPropsStatus
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: error.
+    /// </summary>
     [Description("@#error")]
     Error,
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TdTimePickerPropsStepsItem(string, Number)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TdTimePickerPropsTips(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public readonly union TdTimePickerPropsValueDisplay(string, RenderFragment<TdTimePickerPropsValueDisplayOption2Context>)
 {
 }
 
+/// <summary>
+/// 透传 TimePicker 组件属性
+/// </summary>
 [ECMAScript]
 public record TdTimePickerPropsValueDisplayOption2Context : VueProps
 {
@@ -23204,6 +33183,11 @@ public record TdTimePickerPropsValueDisplayOption2Context : VueProps
     public string Value { get; init; } = default!;
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TdTimelineItemProps : VueProps
 {
@@ -23229,33 +33213,70 @@ public record TdTimelineItemProps : VueProps
     public TdTimelineItemPropsOnClick? OnClick { get; init; }
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public readonly union TdTimelineItemPropsContent(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public readonly union TdTimelineItemPropsLabel(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTimelineItemPropsLabelAlign
 {
+    /// <summary>
+    /// JavaScript value: left.
+    /// </summary>
     [Description("@#left")]
     Left,
+    /// <summary>
+    /// JavaScript value: right.
+    /// </summary>
     [Description("@#right")]
     Right,
+    /// <summary>
+    /// JavaScript value: top.
+    /// </summary>
     [Description("@#top")]
     Top,
+    /// <summary>
+    /// JavaScript value: bottom.
+    /// </summary>
     [Description("@#bottom")]
     Bottom,
 }
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public delegate void TdTimelineItemPropsOnClick(TdTimelineItemPropsOnClickContext context);
 
+/// <summary>
+/// trigger on click
+///
+/// 点击时触发
+/// </summary>
 [ECMAScript]
 public record TdTimelineItemPropsOnClickContext : VueProps
 {
@@ -23268,6 +33289,9 @@ public record TdTimelineItemPropsOnClickContext : VueProps
     public TdTimelineItemProps Item { get; init; } = default!;
 }
 
+/// <summary>
+/// TDesign binding type TdTooltipProps.
+/// </summary>
 [ECMAScript]
 public record TdTooltipProps : VueProps
 {
@@ -23350,6 +33374,9 @@ public record TdTooltipProps : VueProps
     public TdTooltipPropsTheme? Theme { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TdTooltipPropsBase1.
+/// </summary>
 [ECMAScript]
 public sealed record TdTooltipPropsBase1 : VueProps
 {
@@ -23423,37 +33450,70 @@ public sealed record TdTooltipPropsBase1 : VueProps
     public TdPopupPropsOnVisibleChange? OnVisibleChange { get; init; }
 }
 
+/// <summary>
+/// TDesign binding type TdTooltipPropsPlacement.
+/// </summary>
 [ECMAScript]
 public readonly union TdTooltipPropsPlacement(TdTooltipPropsPlacementOption1, TPopupPlacement)
 {
 }
 
+/// <summary>
+/// TDesign binding type TdTooltipPropsPlacementOption1.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTooltipPropsPlacementOption1
 {
+    /// <summary>
+    /// JavaScript value: mouse.
+    /// </summary>
     [Description("@#mouse")]
     Mouse,
 }
 
+/// <summary>
+/// TDesign binding type TdTooltipPropsTheme.
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTooltipPropsTheme
 {
+    /// <summary>
+    /// JavaScript value: default.
+    /// </summary>
     [Description("@#default")]
     Default,
+    /// <summary>
+    /// JavaScript value: primary.
+    /// </summary>
     [Description("@#primary")]
     Primary,
+    /// <summary>
+    /// JavaScript value: success.
+    /// </summary>
     [Description("@#success")]
     Success,
+    /// <summary>
+    /// JavaScript value: danger.
+    /// </summary>
     [Description("@#danger")]
     Danger,
+    /// <summary>
+    /// JavaScript value: warning.
+    /// </summary>
     [Description("@#warning")]
     Warning,
+    /// <summary>
+    /// JavaScript value: light.
+    /// </summary>
     [Description("@#light")]
     Light,
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreeProps<T> : VueProps
 {
@@ -23605,9 +33665,15 @@ public record TdTreeProps<T> : VueProps
     public TdTreePropsOnScroll<T>? OnScroll { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate bool TdTreePropsAllowDrop<T>(TdTreePropsAllowDropContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsAllowDropContext<T> : VueProps
 {
@@ -23627,53 +33693,89 @@ public record TdTreePropsAllowDropContext<T> : VueProps
     public Number DropPosition { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsDisableCheck<T>(bool, TdTreePropsDisableCheckOption2<T>)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate bool TdTreePropsDisableCheckOption2<T>(TTreeNodeModel<T> node);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsEmpty<T>(string, RenderFragment)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate bool TdTreePropsFilter<T>(TTreeNodeModel<T> node);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsHeight<T>(string, Number)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsIcon<T>(bool, RenderFragment<TTreeNodeModel<T>>)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsLabel<T>(string, bool, RenderFragment<TTreeNodeModel<T>>)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsLine<T>(bool, RenderFragment)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate IPromise<T[]> TdTreePropsLoad<T>(TTreeNodeModel<T> node);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public readonly union TdTreePropsMaxHeight<T>(string, Number)
 {
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnActive<T>(TTreeNodeValue[] @value, TdTreePropsOnActiveContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnActiveContext<T> : VueProps
 {
@@ -23688,19 +33790,34 @@ public record TdTreePropsOnActiveContext<T> : VueProps
     public TdTreePropsOnActiveContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTreePropsOnActiveContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: node-click.
+    /// </summary>
     [Description("@#node-click")]
     NodeClick,
+    /// <summary>
+    /// JavaScript value: setItem.
+    /// </summary>
     [Description("@#setItem")]
     SetItem,
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnChange<T>(TTreeNodeValue[] @value, TdTreePropsOnChangeContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnChangeContext<T> : VueProps
 {
@@ -23715,19 +33832,34 @@ public record TdTreePropsOnChangeContext<T> : VueProps
     public TdTreePropsOnChangeContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTreePropsOnChangeContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: node-click.
+    /// </summary>
     [Description("@#node-click")]
     NodeClick,
+    /// <summary>
+    /// JavaScript value: setItem.
+    /// </summary>
     [Description("@#setItem")]
     SetItem,
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnClick<T>(TdTreePropsOnClickContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnClickContext<T> : VueProps
 {
@@ -23740,9 +33872,15 @@ public record TdTreePropsOnClickContext<T> : VueProps
     public MouseEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnDragEnd<T>(TdTreePropsOnDragEndContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnDragEndContext<T> : VueProps
 {
@@ -23755,9 +33893,15 @@ public record TdTreePropsOnDragEndContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnDragLeave<T>(TdTreePropsOnDragLeaveContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnDragLeaveContext<T> : VueProps
 {
@@ -23770,9 +33914,15 @@ public record TdTreePropsOnDragLeaveContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnDragOver<T>(TdTreePropsOnDragOverContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnDragOverContext<T> : VueProps
 {
@@ -23785,9 +33935,15 @@ public record TdTreePropsOnDragOverContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnDragStart<T>(TdTreePropsOnDragStartContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnDragStartContext<T> : VueProps
 {
@@ -23800,9 +33956,15 @@ public record TdTreePropsOnDragStartContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnDrop<T>(TdTreePropsOnDropContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnDropContext<T> : VueProps
 {
@@ -23822,9 +33984,15 @@ public record TdTreePropsOnDropContext<T> : VueProps
     public Number DropPosition { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnExpand<T>(TTreeNodeValue[] @value, TdTreePropsOnExpandContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnExpandContext<T> : VueProps
 {
@@ -23839,21 +34007,39 @@ public record TdTreePropsOnExpandContext<T> : VueProps
     public TdTreePropsOnExpandContextTrigger Trigger { get; init; }
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTreePropsOnExpandContextTrigger
 {
+    /// <summary>
+    /// JavaScript value: node-click.
+    /// </summary>
     [Description("@#node-click")]
     NodeClick,
+    /// <summary>
+    /// JavaScript value: icon-click.
+    /// </summary>
     [Description("@#icon-click")]
     IconClick,
+    /// <summary>
+    /// JavaScript value: setItem.
+    /// </summary>
     [Description("@#setItem")]
     SetItem,
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnLoad<T>(TdTreePropsOnLoadContext<T> context);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnLoadContext<T> : VueProps
 {
@@ -23862,9 +34048,15 @@ public record TdTreePropsOnLoadContext<T> : VueProps
     public TTreeNodeModel<T> Node { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public delegate void TdTreePropsOnScroll<T>(TdTreePropsOnScrollParams<T> @params);
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 public record TdTreePropsOnScrollParams<T> : VueProps
 {
@@ -23873,14 +34065,26 @@ public record TdTreePropsOnScrollParams<T> : VueProps
     public WheelEvent E { get; init; } = default!;
 }
 
+/// <summary>
+/// 传入 Tree 组件定义树形结构
+/// </summary>
 [ECMAScript]
 [String]
 public enum TdTreePropsValueMode
 {
+    /// <summary>
+    /// JavaScript value: onlyLeaf.
+    /// </summary>
     [Description("@#onlyLeaf")]
     OnlyLeaf,
+    /// <summary>
+    /// JavaScript value: parentFirst.
+    /// </summary>
     [Description("@#parentFirst")]
     ParentFirst,
+    /// <summary>
+    /// JavaScript value: all.
+    /// </summary>
     [Description("@#all")]
     All,
 }
@@ -41218,714 +51422,1894 @@ public sealed class TWatermark : TContentComponentBase
 
 public static partial class TComponents
 {
+    /// <summary>
+    /// Affix
+    ///
+    /// 固钉
+    /// </summary>
     [ECMAScriptName("Affix")]
     public extern static ITDesignComponent TAffix { get; }
 
+    /// <summary>
+    /// Alert
+    ///
+    /// 警告提示
+    /// </summary>
     [ECMAScriptName("Alert")]
     public extern static ITDesignComponent TAlert { get; }
 
+    /// <summary>
+    /// Anchor
+    ///
+    /// 锚点
+    /// </summary>
     [ECMAScriptName("Anchor")]
     public extern static ITDesignComponent TAnchor { get; }
 
+    /// <summary>
+    /// AnchorItem
+    ///
+    /// 锚点项
+    /// </summary>
     [ECMAScriptName("AnchorItem")]
     public extern static ITDesignComponent TAnchorItem { get; }
 
+    /// <summary>
+    /// AnchorTarget
+    ///
+    /// 锚点目标
+    /// </summary>
     [ECMAScriptName("AnchorTarget")]
     public extern static ITDesignComponent TAnchorTarget { get; }
 
+    /// <summary>
+    /// Aside
+    ///
+    /// 布局-侧边栏
+    /// </summary>
     [ECMAScriptName("Aside")]
     public extern static ITDesignComponent TAside { get; }
 
+    /// <summary>
+    /// AutoComplete
+    ///
+    /// 自动填充
+    /// </summary>
     [ECMAScriptName("AutoComplete")]
     public extern static ITDesignComponent TAutoComplete { get; }
 
+    /// <summary>
+    /// Avatar
+    ///
+    /// 头像
+    /// </summary>
     [ECMAScriptName("Avatar")]
     public extern static ITDesignComponent TAvatar { get; }
 
+    /// <summary>
+    /// AvatarGroup
+    ///
+    /// 头像组
+    /// </summary>
     [ECMAScriptName("AvatarGroup")]
     public extern static ITDesignComponent TAvatarGroup { get; }
 
+    /// <summary>
+    /// BackTop
+    ///
+    /// 回到顶部
+    /// </summary>
     [ECMAScriptName("BackTop")]
     public extern static ITDesignComponent TBackTop { get; }
 
+    /// <summary>
+    /// Badge
+    ///
+    /// 徽标数
+    /// </summary>
     [ECMAScriptName("Badge")]
     public extern static ITDesignComponent TBadge { get; }
 
+    /// <summary>
+    /// BaseTable
+    ///
+    /// 基础表格
+    /// </summary>
     [ECMAScriptName("BaseTable")]
     public extern static ITDesignComponent TBaseTable { get; }
 
+    /// <summary>
+    /// Breadcrumb
+    ///
+    /// 面包屑
+    /// </summary>
     [ECMAScriptName("Breadcrumb")]
     public extern static ITDesignComponent TBreadcrumb { get; }
 
+    /// <summary>
+    /// BreadcrumbItem
+    ///
+    /// 面包屑项
+    /// </summary>
     [ECMAScriptName("BreadcrumbItem")]
     public extern static ITDesignComponent TBreadcrumbItem { get; }
 
+    /// <summary>
+    /// Button
+    ///
+    /// 按钮
+    /// </summary>
     [ECMAScriptName("Button")]
     public extern static ITDesignComponent TButton { get; }
 
+    /// <summary>
+    /// Calendar
+    ///
+    /// 日历
+    /// </summary>
     [ECMAScriptName("Calendar")]
     public extern static ITDesignComponent TCalendar { get; }
 
+    /// <summary>
+    /// Card
+    ///
+    /// 卡片
+    /// </summary>
     [ECMAScriptName("Card")]
     public extern static ITDesignComponent TCard { get; }
 
+    /// <summary>
+    /// Cascader
+    ///
+    /// 级联选择
+    /// </summary>
     [ECMAScriptName("Cascader")]
     public extern static ITDesignComponent TCascader { get; }
 
+    /// <summary>
+    /// CheckTag
+    ///
+    /// 可选标签
+    /// </summary>
     [ECMAScriptName("CheckTag")]
     public extern static ITDesignComponent TCheckTag { get; }
 
+    /// <summary>
+    /// CheckTagGroup
+    ///
+    /// 可选标签组
+    /// </summary>
     [ECMAScriptName("CheckTagGroup")]
     public extern static ITDesignComponent TCheckTagGroup { get; }
 
+    /// <summary>
+    /// Checkbox
+    ///
+    /// 多选框
+    /// </summary>
     [ECMAScriptName("Checkbox")]
     public extern static ITDesignComponent TCheckbox { get; }
 
+    /// <summary>
+    /// CheckboxGroup
+    ///
+    /// 多选框组
+    /// </summary>
     [ECMAScriptName("CheckboxGroup")]
     public extern static ITDesignComponent TCheckboxGroup { get; }
 
+    /// <summary>
+    /// Col
+    ///
+    /// 栅格-纵向
+    /// </summary>
     [ECMAScriptName("Col")]
     public extern static ITDesignComponent TCol { get; }
 
+    /// <summary>
+    /// Collapse
+    ///
+    /// 折叠
+    /// </summary>
     [ECMAScriptName("Collapse")]
     public extern static ITDesignComponent TCollapse { get; }
 
+    /// <summary>
+    /// CollapsePanel
+    ///
+    /// 折叠面板
+    /// </summary>
     [ECMAScriptName("CollapsePanel")]
     public extern static ITDesignComponent TCollapsePanel { get; }
 
+    /// <summary>
+    /// ColorPicker
+    ///
+    /// 颜色选择器
+    /// </summary>
     [ECMAScriptName("ColorPicker")]
     public extern static ITDesignComponent TColorPicker { get; }
 
+    /// <summary>
+    /// ColorPickerPanel
+    ///
+    /// 颜色选择器面板
+    /// </summary>
     [ECMAScriptName("ColorPickerPanel")]
     public extern static ITDesignComponent TColorPickerPanel { get; }
 
+    /// <summary>
+    /// Comment
+    ///
+    /// 评论
+    /// </summary>
     [ECMAScriptName("Comment")]
     public extern static ITDesignComponent TComment { get; }
 
+    /// <summary>
+    /// ConfigProvider
+    ///
+    /// 全局特性配置
+    /// </summary>
     [ECMAScriptName("ConfigProvider")]
     public extern static ITDesignComponent TConfigProvider { get; }
 
+    /// <summary>
+    /// Content
+    ///
+    /// 布局-内容
+    /// </summary>
     [ECMAScriptName("Content")]
     public extern static ITDesignComponent TContent { get; }
 
+    /// <summary>
+    /// DatePicker
+    ///
+    /// 日期选择器
+    /// </summary>
     [ECMAScriptName("DatePicker")]
     public extern static ITDesignComponent TDatePicker { get; }
 
+    /// <summary>
+    /// DatePickerPanel
+    ///
+    /// 日期选择器面板
+    /// </summary>
     [ECMAScriptName("DatePickerPanel")]
     public extern static ITDesignComponent TDatePickerPanel { get; }
 
+    /// <summary>
+    /// DateRangePicker
+    ///
+    /// 日期范围选择器
+    /// </summary>
     [ECMAScriptName("DateRangePicker")]
     public extern static ITDesignComponent TDateRangePicker { get; }
 
+    /// <summary>
+    /// DateRangePickerPanel
+    ///
+    /// 日期范围选择器面板
+    /// </summary>
     [ECMAScriptName("DateRangePickerPanel")]
     public extern static ITDesignComponent TDateRangePickerPanel { get; }
 
+    /// <summary>
+    /// Descriptions
+    ///
+    /// 描述列表
+    /// </summary>
     [ECMAScriptName("Descriptions")]
     public extern static ITDesignComponent TDescriptions { get; }
 
+    /// <summary>
+    /// DescriptionsItem
+    ///
+    /// 描述项
+    /// </summary>
     [ECMAScriptName("DescriptionsItem")]
     public extern static ITDesignComponent TDescriptionsItem { get; }
 
+    /// <summary>
+    /// Dialog
+    ///
+    /// 对话框
+    /// </summary>
     [ECMAScriptName("Dialog")]
     public extern static ITDesignComponent TDialog { get; }
 
+    /// <summary>
+    /// DialogCard
+    ///
+    /// 对话框卡片
+    /// </summary>
     [ECMAScriptName("DialogCard")]
     public extern static ITDesignComponent TDialogCard { get; }
 
+    /// <summary>
+    /// Divider
+    ///
+    /// 分割线
+    /// </summary>
     [ECMAScriptName("Divider")]
     public extern static ITDesignComponent TDivider { get; }
 
+    /// <summary>
+    /// Drawer
+    ///
+    /// 模态抽屉
+    /// </summary>
     [ECMAScriptName("Drawer")]
     public extern static ITDesignComponent TDrawer { get; }
 
+    /// <summary>
+    /// Dropdown
+    ///
+    /// 下拉菜单
+    /// </summary>
     [ECMAScriptName("Dropdown")]
     public extern static ITDesignComponent TDropdown { get; }
 
+    /// <summary>
+    /// DropdownItem
+    ///
+    /// 下拉菜单选项
+    /// </summary>
     [ECMAScriptName("DropdownItem")]
     public extern static ITDesignComponent TDropdownItem { get; }
 
+    /// <summary>
+    /// Empty
+    ///
+    /// 空状态
+    /// </summary>
     [ECMAScriptName("Empty")]
     public extern static ITDesignComponent TEmpty { get; }
 
+    /// <summary>
+    /// EnhancedTable
+    ///
+    /// 增强表格
+    /// </summary>
     [ECMAScriptName("EnhancedTable")]
     public extern static ITDesignComponent TEnhancedTable { get; }
 
+    /// <summary>
+    /// Footer
+    ///
+    /// 布局-底部内容
+    /// </summary>
     [ECMAScriptName("Footer")]
     public extern static ITDesignComponent TFooter { get; }
 
+    /// <summary>
+    /// Form
+    ///
+    /// 表单
+    /// </summary>
     [ECMAScriptName("Form")]
     public extern static ITDesignComponent TForm { get; }
 
+    /// <summary>
+    /// FormItem
+    ///
+    /// 表单元素
+    /// </summary>
     [ECMAScriptName("FormItem")]
     public extern static ITDesignComponent TFormItem { get; }
 
+    /// <summary>
+    /// Guide
+    ///
+    /// 引导
+    /// </summary>
     [ECMAScriptName("Guide")]
     public extern static ITDesignComponent TGuide { get; }
 
+    /// <summary>
+    /// HeadMenu
+    ///
+    /// 顶部导航菜单
+    /// </summary>
     [ECMAScriptName("HeadMenu")]
     public extern static ITDesignComponent THeadMenu { get; }
 
+    /// <summary>
+    /// Header
+    ///
+    /// 布局-头部
+    /// </summary>
     [ECMAScriptName("Header")]
     public extern static ITDesignComponent THeader { get; }
 
+    /// <summary>
+    /// IconSVG
+    ///
+    /// 图标（IconSVG）
+    /// </summary>
     [ECMAScriptName("Icon")]
     public extern static ITDesignComponent TIcon { get; }
 
+    /// <summary>
+    /// Image
+    ///
+    /// 图片
+    /// </summary>
     [ECMAScriptName("Image")]
     public extern static ITDesignComponent TImage { get; }
 
+    /// <summary>
+    /// ImageViewer
+    ///
+    /// 图片预览
+    /// </summary>
     [ECMAScriptName("ImageViewer")]
     public extern static ITDesignComponent TImageViewer { get; }
 
+    /// <summary>
+    /// Input
+    ///
+    /// 输入框
+    /// </summary>
     [ECMAScriptName("Input")]
     public extern static ITDesignComponent TInput { get; }
 
+    /// <summary>
+    /// InputAdornment
+    ///
+    /// 输入装饰器
+    /// </summary>
     [ECMAScriptName("InputAdornment")]
     public extern static ITDesignComponent TInputAdornment { get; }
 
+    /// <summary>
+    /// InputGroup
+    ///
+    /// 输入框组
+    /// </summary>
     [ECMAScriptName("InputGroup")]
     public extern static ITDesignComponent TInputGroup { get; }
 
+    /// <summary>
+    /// InputNumber
+    ///
+    /// 数字输入框
+    /// </summary>
     [ECMAScriptName("InputNumber")]
     public extern static ITDesignComponent TInputNumber { get; }
 
+    /// <summary>
+    /// Layout
+    ///
+    /// 布局
+    /// </summary>
     [ECMAScriptName("Layout")]
     public extern static ITDesignComponent TLayout { get; }
 
+    /// <summary>
+    /// Link
+    ///
+    /// 链接
+    /// </summary>
     [ECMAScriptName("Link")]
     public extern static ITDesignComponent TLink { get; }
 
+    /// <summary>
+    /// List
+    ///
+    /// 列表
+    /// </summary>
     [ECMAScriptName("List")]
     public extern static ITDesignComponent TList { get; }
 
+    /// <summary>
+    /// ListItem
+    ///
+    /// 列表项
+    /// </summary>
     [ECMAScriptName("ListItem")]
     public extern static ITDesignComponent TListItem { get; }
 
+    /// <summary>
+    /// ListItemMeta
+    ///
+    /// 带图片的列表项
+    /// </summary>
     [ECMAScriptName("ListItemMeta")]
     public extern static ITDesignComponent TListItemMeta { get; }
 
+    /// <summary>
+    /// Loading
+    ///
+    /// 加载中
+    /// </summary>
     [ECMAScriptName("Loading")]
     public extern static ITDesignComponent TLoading { get; }
 
+    /// <summary>
+    /// Menu
+    ///
+    /// 侧边导航菜单
+    /// </summary>
     [ECMAScriptName("Menu")]
     public extern static ITDesignComponent TMenu { get; }
 
+    /// <summary>
+    /// MenuGroup
+    ///
+    /// 导航菜单组
+    /// </summary>
     [ECMAScriptName("MenuGroup")]
     public extern static ITDesignComponent TMenuGroup { get; }
 
+    /// <summary>
+    /// MenuItem
+    ///
+    /// 导航菜单选项
+    /// </summary>
     [ECMAScriptName("MenuItem")]
     public extern static ITDesignComponent TMenuItem { get; }
 
+    /// <summary>
+    /// Message
+    ///
+    /// 全局提醒
+    /// </summary>
     [ECMAScriptName("Message")]
     public extern static ITDesignComponent TMessage { get; }
 
+    /// <summary>
+    /// Notification
+    ///
+    /// 消息通知
+    /// </summary>
     [ECMAScriptName("Notification")]
     public extern static ITDesignComponent TNotification { get; }
 
+    /// <summary>
+    /// Option
+    ///
+    /// 选择器选项
+    /// </summary>
     [ECMAScriptName("Option")]
     public extern static ITDesignComponent TOption { get; }
 
+    /// <summary>
+    /// OptionGroup
+    ///
+    /// 选择器选项组
+    /// </summary>
     [ECMAScriptName("OptionGroup")]
     public extern static ITDesignComponent TOptionGroup { get; }
 
+    /// <summary>
+    /// Pagination
+    ///
+    /// 分页
+    /// </summary>
     [ECMAScriptName("Pagination")]
     public extern static ITDesignComponent TPagination { get; }
 
+    /// <summary>
+    /// PaginationMini
+    ///
+    /// 迷你分页
+    /// </summary>
     [ECMAScriptName("PaginationMini")]
     public extern static ITDesignComponent TPaginationMini { get; }
 
+    /// <summary>
+    /// Paragraph
+    ///
+    /// 段落
+    /// </summary>
     [ECMAScriptName("Paragraph")]
     public extern static ITDesignComponent TParagraph { get; }
 
+    /// <summary>
+    /// Popconfirm
+    ///
+    /// 气泡确认框
+    /// </summary>
     [ECMAScriptName("Popconfirm")]
     public extern static ITDesignComponent TPopconfirm { get; }
 
+    /// <summary>
+    /// Popup
+    ///
+    /// 气泡框
+    /// </summary>
     [ECMAScriptName("Popup")]
     public extern static ITDesignComponent TPopup { get; }
 
+    /// <summary>
+    /// PrimaryTable
+    ///
+    /// 主表格
+    /// </summary>
     [ECMAScriptName("PrimaryTable")]
     public extern static ITDesignComponent TPrimaryTable { get; }
 
+    /// <summary>
+    /// Progress
+    ///
+    /// 进度条
+    /// </summary>
     [ECMAScriptName("Progress")]
     public extern static ITDesignComponent TProgress { get; }
 
+    /// <summary>
+    /// QRCode
+    ///
+    /// 二维码
+    /// </summary>
     [ECMAScriptName("QRCode")]
     public extern static ITDesignComponent TQRCode { get; }
 
+    /// <summary>
+    /// Radio
+    ///
+    /// 单选框
+    /// </summary>
     [ECMAScriptName("Radio")]
     public extern static ITDesignComponent TRadio { get; }
 
+    /// <summary>
+    /// Radio
+    ///
+    /// 单选框
+    /// </summary>
     [ECMAScriptName("RadioButton")]
     public extern static ITDesignComponent TRadioButton { get; }
 
+    /// <summary>
+    /// RadioGroup
+    ///
+    /// 单选框组
+    /// </summary>
     [ECMAScriptName("RadioGroup")]
     public extern static ITDesignComponent TRadioGroup { get; }
 
+    /// <summary>
+    /// RangeInput
+    ///
+    /// 范围输入框
+    /// </summary>
     [ECMAScriptName("RangeInput")]
     public extern static ITDesignComponent TRangeInput { get; }
 
+    /// <summary>
+    /// RangeInputPopup
+    ///
+    /// 范围输入框触发器
+    /// </summary>
     [ECMAScriptName("RangeInputPopup")]
     public extern static ITDesignComponent TRangeInputPopup { get; }
 
+    /// <summary>
+    /// Rate
+    ///
+    /// 评分
+    /// </summary>
     [ECMAScriptName("Rate")]
     public extern static ITDesignComponent TRate { get; }
 
+    /// <summary>
+    /// Row
+    ///
+    /// 栅格-横向
+    /// </summary>
     [ECMAScriptName("Row")]
     public extern static ITDesignComponent TRow { get; }
 
+    /// <summary>
+    /// Select
+    ///
+    /// 选择器
+    /// </summary>
     [ECMAScriptName("Select")]
     public extern static ITDesignComponent TSelect { get; }
 
+    /// <summary>
+    /// SelectInput
+    ///
+    /// 筛选器输入框
+    /// </summary>
     [ECMAScriptName("SelectInput")]
     public extern static ITDesignComponent TSelectInput { get; }
 
+    /// <summary>
+    /// Skeleton
+    ///
+    /// 骨架屏
+    /// </summary>
     [ECMAScriptName("Skeleton")]
     public extern static ITDesignComponent TSkeleton { get; }
 
+    /// <summary>
+    /// Slider
+    ///
+    /// 滑块
+    /// </summary>
     [ECMAScriptName("Slider")]
     public extern static ITDesignComponent TSlider { get; }
 
+    /// <summary>
+    /// Space
+    ///
+    /// 间距
+    /// </summary>
     [ECMAScriptName("Space")]
     public extern static ITDesignComponent TSpace { get; }
 
+    /// <summary>
+    /// Statistic
+    ///
+    /// 统计数值
+    /// </summary>
     [ECMAScriptName("Statistic")]
     public extern static ITDesignComponent TStatistic { get; }
 
+    /// <summary>
+    /// StepItem
+    ///
+    /// 步骤
+    /// </summary>
     [ECMAScriptName("StepItem")]
     public extern static ITDesignComponent TStepItem { get; }
 
+    /// <summary>
+    /// Steps
+    ///
+    /// 步骤条
+    /// </summary>
     [ECMAScriptName("Steps")]
     public extern static ITDesignComponent TSteps { get; }
 
+    /// <summary>
+    /// StickyItem
+    ///
+    /// 侧边固钉项
+    /// </summary>
     [ECMAScriptName("StickyItem")]
     public extern static ITDesignComponent TStickyItem { get; }
 
+    /// <summary>
+    /// StickyTool
+    ///
+    /// 侧边固钉
+    /// </summary>
     [ECMAScriptName("StickyTool")]
     public extern static ITDesignComponent TStickyTool { get; }
 
+    /// <summary>
+    /// Submenu
+    ///
+    /// 二级导航
+    /// </summary>
     [ECMAScriptName("Submenu")]
     public extern static ITDesignComponent TSubmenu { get; }
 
+    /// <summary>
+    /// Swiper
+    ///
+    /// 轮播
+    /// </summary>
     [ECMAScriptName("Swiper")]
     public extern static ITDesignComponent TSwiper { get; }
 
+    /// <summary>
+    /// Swiper
+    ///
+    /// 轮播
+    /// </summary>
     [ECMAScriptName("SwiperItem")]
     public extern static ITDesignComponent TSwiperItem { get; }
 
+    /// <summary>
+    /// Switch
+    ///
+    /// 开关
+    /// </summary>
     [ECMAScriptName("Switch")]
     public extern static ITDesignComponent TSwitch { get; }
 
+    /// <summary>
+    /// TabPanel
+    ///
+    /// 选项卡面板
+    /// </summary>
     [ECMAScriptName("TabPanel")]
     public extern static ITDesignComponent TTabPanel { get; }
 
+    /// <summary>
+    /// PrimaryTable
+    ///
+    /// 主表格
+    /// </summary>
     [ECMAScriptName("Table")]
     public extern static ITDesignComponent TTable { get; }
 
+    /// <summary>
+    /// Tabs
+    ///
+    /// 选项卡
+    /// </summary>
     [ECMAScriptName("Tabs")]
     public extern static ITDesignComponent TTabs { get; }
 
+    /// <summary>
+    /// Tag
+    ///
+    /// 标签
+    /// </summary>
     [ECMAScriptName("Tag")]
     public extern static ITDesignComponent TTag { get; }
 
+    /// <summary>
+    /// TagInput
+    ///
+    /// 标签输入框
+    /// </summary>
     [ECMAScriptName("TagInput")]
     public extern static ITDesignComponent TTagInput { get; }
 
+    /// <summary>
+    /// Text
+    ///
+    /// 文本
+    /// </summary>
     [ECMAScriptName("Text")]
     public extern static ITDesignComponent TText { get; }
 
+    /// <summary>
+    /// Textarea
+    ///
+    /// 文本输入框
+    /// </summary>
     [ECMAScriptName("Textarea")]
     public extern static ITDesignComponent TTextarea { get; }
 
+    /// <summary>
+    /// TimePicker
+    ///
+    /// 时间选择器
+    /// </summary>
     [ECMAScriptName("TimePicker")]
     public extern static ITDesignComponent TTimePicker { get; }
 
+    /// <summary>
+    /// TimeRangePicker
+    ///
+    /// 时间范围选择器
+    /// </summary>
     [ECMAScriptName("TimeRangePicker")]
     public extern static ITDesignComponent TTimeRangePicker { get; }
 
+    /// <summary>
+    /// Timeline
+    ///
+    /// 时间轴
+    /// </summary>
     [ECMAScriptName("Timeline")]
     public extern static ITDesignComponent TTimeline { get; }
 
+    /// <summary>
+    /// TimelineItem
+    ///
+    /// 时间轴
+    /// </summary>
     [ECMAScriptName("TimelineItem")]
     public extern static ITDesignComponent TTimelineItem { get; }
 
+    /// <summary>
+    /// Title
+    ///
+    /// 标题
+    /// </summary>
     [ECMAScriptName("Title")]
     public extern static ITDesignComponent TTitle { get; }
 
+    /// <summary>
+    /// Tooltip
+    ///
+    /// 文字提示
+    /// </summary>
     [ECMAScriptName("Tooltip")]
     public extern static ITDesignComponent TTooltip { get; }
 
+    /// <summary>
+    /// Transfer
+    ///
+    /// 穿梭框
+    /// </summary>
     [ECMAScriptName("Transfer")]
     public extern static ITDesignComponent TTransfer { get; }
 
+    /// <summary>
+    /// Tree
+    ///
+    /// 树
+    /// </summary>
     [ECMAScriptName("Tree")]
     public extern static ITDesignComponent TTree { get; }
 
+    /// <summary>
+    /// TreeSelect
+    ///
+    /// 树选择
+    /// </summary>
     [ECMAScriptName("TreeSelect")]
     public extern static ITDesignComponent TTreeSelect { get; }
 
+    /// <summary>
+    /// Typography
+    ///
+    /// 排版
+    /// </summary>
     [ECMAScriptName("Typography")]
     public extern static ITDesignComponent TTypography { get; }
 
+    /// <summary>
+    /// Upload
+    ///
+    /// 上传
+    /// </summary>
     [ECMAScriptName("Upload")]
     public extern static ITDesignComponent TUpload { get; }
 
+    /// <summary>
+    /// Watermark
+    ///
+    /// 水印
+    /// </summary>
     [ECMAScriptName("Watermark")]
     public extern static ITDesignComponent TWatermark { get; }
 }
 
 public sealed partial record TComponentRegistry
 {
+    /// <summary>
+    /// Affix
+    ///
+    /// 固钉
+    /// </summary>
     [Description("@#Affix")]
     public ITDesignComponent? TAffix { get; init; }
 
+    /// <summary>
+    /// Alert
+    ///
+    /// 警告提示
+    /// </summary>
     [Description("@#Alert")]
     public ITDesignComponent? TAlert { get; init; }
 
+    /// <summary>
+    /// Anchor
+    ///
+    /// 锚点
+    /// </summary>
     [Description("@#Anchor")]
     public ITDesignComponent? TAnchor { get; init; }
 
+    /// <summary>
+    /// AnchorItem
+    ///
+    /// 锚点项
+    /// </summary>
     [Description("@#AnchorItem")]
     public ITDesignComponent? TAnchorItem { get; init; }
 
+    /// <summary>
+    /// AnchorTarget
+    ///
+    /// 锚点目标
+    /// </summary>
     [Description("@#AnchorTarget")]
     public ITDesignComponent? TAnchorTarget { get; init; }
 
+    /// <summary>
+    /// Aside
+    ///
+    /// 布局-侧边栏
+    /// </summary>
     [Description("@#Aside")]
     public ITDesignComponent? TAside { get; init; }
 
+    /// <summary>
+    /// AutoComplete
+    ///
+    /// 自动填充
+    /// </summary>
     [Description("@#AutoComplete")]
     public ITDesignComponent? TAutoComplete { get; init; }
 
+    /// <summary>
+    /// Avatar
+    ///
+    /// 头像
+    /// </summary>
     [Description("@#Avatar")]
     public ITDesignComponent? TAvatar { get; init; }
 
+    /// <summary>
+    /// AvatarGroup
+    ///
+    /// 头像组
+    /// </summary>
     [Description("@#AvatarGroup")]
     public ITDesignComponent? TAvatarGroup { get; init; }
 
+    /// <summary>
+    /// BackTop
+    ///
+    /// 回到顶部
+    /// </summary>
     [Description("@#BackTop")]
     public ITDesignComponent? TBackTop { get; init; }
 
+    /// <summary>
+    /// Badge
+    ///
+    /// 徽标数
+    /// </summary>
     [Description("@#Badge")]
     public ITDesignComponent? TBadge { get; init; }
 
+    /// <summary>
+    /// BaseTable
+    ///
+    /// 基础表格
+    /// </summary>
     [Description("@#BaseTable")]
     public ITDesignComponent? TBaseTable { get; init; }
 
+    /// <summary>
+    /// Breadcrumb
+    ///
+    /// 面包屑
+    /// </summary>
     [Description("@#Breadcrumb")]
     public ITDesignComponent? TBreadcrumb { get; init; }
 
+    /// <summary>
+    /// BreadcrumbItem
+    ///
+    /// 面包屑项
+    /// </summary>
     [Description("@#BreadcrumbItem")]
     public ITDesignComponent? TBreadcrumbItem { get; init; }
 
+    /// <summary>
+    /// Button
+    ///
+    /// 按钮
+    /// </summary>
     [Description("@#Button")]
     public ITDesignComponent? TButton { get; init; }
 
+    /// <summary>
+    /// Calendar
+    ///
+    /// 日历
+    /// </summary>
     [Description("@#Calendar")]
     public ITDesignComponent? TCalendar { get; init; }
 
+    /// <summary>
+    /// Card
+    ///
+    /// 卡片
+    /// </summary>
     [Description("@#Card")]
     public ITDesignComponent? TCard { get; init; }
 
+    /// <summary>
+    /// Cascader
+    ///
+    /// 级联选择
+    /// </summary>
     [Description("@#Cascader")]
     public ITDesignComponent? TCascader { get; init; }
 
+    /// <summary>
+    /// CheckTag
+    ///
+    /// 可选标签
+    /// </summary>
     [Description("@#CheckTag")]
     public ITDesignComponent? TCheckTag { get; init; }
 
+    /// <summary>
+    /// CheckTagGroup
+    ///
+    /// 可选标签组
+    /// </summary>
     [Description("@#CheckTagGroup")]
     public ITDesignComponent? TCheckTagGroup { get; init; }
 
+    /// <summary>
+    /// Checkbox
+    ///
+    /// 多选框
+    /// </summary>
     [Description("@#Checkbox")]
     public ITDesignComponent? TCheckbox { get; init; }
 
+    /// <summary>
+    /// CheckboxGroup
+    ///
+    /// 多选框组
+    /// </summary>
     [Description("@#CheckboxGroup")]
     public ITDesignComponent? TCheckboxGroup { get; init; }
 
+    /// <summary>
+    /// Col
+    ///
+    /// 栅格-纵向
+    /// </summary>
     [Description("@#Col")]
     public ITDesignComponent? TCol { get; init; }
 
+    /// <summary>
+    /// Collapse
+    ///
+    /// 折叠
+    /// </summary>
     [Description("@#Collapse")]
     public ITDesignComponent? TCollapse { get; init; }
 
+    /// <summary>
+    /// CollapsePanel
+    ///
+    /// 折叠面板
+    /// </summary>
     [Description("@#CollapsePanel")]
     public ITDesignComponent? TCollapsePanel { get; init; }
 
+    /// <summary>
+    /// ColorPicker
+    ///
+    /// 颜色选择器
+    /// </summary>
     [Description("@#ColorPicker")]
     public ITDesignComponent? TColorPicker { get; init; }
 
+    /// <summary>
+    /// ColorPickerPanel
+    ///
+    /// 颜色选择器面板
+    /// </summary>
     [Description("@#ColorPickerPanel")]
     public ITDesignComponent? TColorPickerPanel { get; init; }
 
+    /// <summary>
+    /// Comment
+    ///
+    /// 评论
+    /// </summary>
     [Description("@#Comment")]
     public ITDesignComponent? TComment { get; init; }
 
+    /// <summary>
+    /// ConfigProvider
+    ///
+    /// 全局特性配置
+    /// </summary>
     [Description("@#ConfigProvider")]
     public ITDesignComponent? TConfigProvider { get; init; }
 
+    /// <summary>
+    /// Content
+    ///
+    /// 布局-内容
+    /// </summary>
     [Description("@#Content")]
     public ITDesignComponent? TContent { get; init; }
 
+    /// <summary>
+    /// DatePicker
+    ///
+    /// 日期选择器
+    /// </summary>
     [Description("@#DatePicker")]
     public ITDesignComponent? TDatePicker { get; init; }
 
+    /// <summary>
+    /// DatePickerPanel
+    ///
+    /// 日期选择器面板
+    /// </summary>
     [Description("@#DatePickerPanel")]
     public ITDesignComponent? TDatePickerPanel { get; init; }
 
+    /// <summary>
+    /// DateRangePicker
+    ///
+    /// 日期范围选择器
+    /// </summary>
     [Description("@#DateRangePicker")]
     public ITDesignComponent? TDateRangePicker { get; init; }
 
+    /// <summary>
+    /// DateRangePickerPanel
+    ///
+    /// 日期范围选择器面板
+    /// </summary>
     [Description("@#DateRangePickerPanel")]
     public ITDesignComponent? TDateRangePickerPanel { get; init; }
 
+    /// <summary>
+    /// Descriptions
+    ///
+    /// 描述列表
+    /// </summary>
     [Description("@#Descriptions")]
     public ITDesignComponent? TDescriptions { get; init; }
 
+    /// <summary>
+    /// DescriptionsItem
+    ///
+    /// 描述项
+    /// </summary>
     [Description("@#DescriptionsItem")]
     public ITDesignComponent? TDescriptionsItem { get; init; }
 
+    /// <summary>
+    /// Dialog
+    ///
+    /// 对话框
+    /// </summary>
     [Description("@#Dialog")]
     public ITDesignComponent? TDialog { get; init; }
 
+    /// <summary>
+    /// DialogCard
+    ///
+    /// 对话框卡片
+    /// </summary>
     [Description("@#DialogCard")]
     public ITDesignComponent? TDialogCard { get; init; }
 
+    /// <summary>
+    /// Divider
+    ///
+    /// 分割线
+    /// </summary>
     [Description("@#Divider")]
     public ITDesignComponent? TDivider { get; init; }
 
+    /// <summary>
+    /// Drawer
+    ///
+    /// 模态抽屉
+    /// </summary>
     [Description("@#Drawer")]
     public ITDesignComponent? TDrawer { get; init; }
 
+    /// <summary>
+    /// Dropdown
+    ///
+    /// 下拉菜单
+    /// </summary>
     [Description("@#Dropdown")]
     public ITDesignComponent? TDropdown { get; init; }
 
+    /// <summary>
+    /// DropdownItem
+    ///
+    /// 下拉菜单选项
+    /// </summary>
     [Description("@#DropdownItem")]
     public ITDesignComponent? TDropdownItem { get; init; }
 
+    /// <summary>
+    /// Empty
+    ///
+    /// 空状态
+    /// </summary>
     [Description("@#Empty")]
     public ITDesignComponent? TEmpty { get; init; }
 
+    /// <summary>
+    /// EnhancedTable
+    ///
+    /// 增强表格
+    /// </summary>
     [Description("@#EnhancedTable")]
     public ITDesignComponent? TEnhancedTable { get; init; }
 
+    /// <summary>
+    /// Footer
+    ///
+    /// 布局-底部内容
+    /// </summary>
     [Description("@#Footer")]
     public ITDesignComponent? TFooter { get; init; }
 
+    /// <summary>
+    /// Form
+    ///
+    /// 表单
+    /// </summary>
     [Description("@#Form")]
     public ITDesignComponent? TForm { get; init; }
 
+    /// <summary>
+    /// FormItem
+    ///
+    /// 表单元素
+    /// </summary>
     [Description("@#FormItem")]
     public ITDesignComponent? TFormItem { get; init; }
 
+    /// <summary>
+    /// Guide
+    ///
+    /// 引导
+    /// </summary>
     [Description("@#Guide")]
     public ITDesignComponent? TGuide { get; init; }
 
+    /// <summary>
+    /// HeadMenu
+    ///
+    /// 顶部导航菜单
+    /// </summary>
     [Description("@#HeadMenu")]
     public ITDesignComponent? THeadMenu { get; init; }
 
+    /// <summary>
+    /// Header
+    ///
+    /// 布局-头部
+    /// </summary>
     [Description("@#Header")]
     public ITDesignComponent? THeader { get; init; }
 
+    /// <summary>
+    /// IconSVG
+    ///
+    /// 图标（IconSVG）
+    /// </summary>
     [Description("@#Icon")]
     public ITDesignComponent? TIcon { get; init; }
 
+    /// <summary>
+    /// Image
+    ///
+    /// 图片
+    /// </summary>
     [Description("@#Image")]
     public ITDesignComponent? TImage { get; init; }
 
+    /// <summary>
+    /// ImageViewer
+    ///
+    /// 图片预览
+    /// </summary>
     [Description("@#ImageViewer")]
     public ITDesignComponent? TImageViewer { get; init; }
 
+    /// <summary>
+    /// Input
+    ///
+    /// 输入框
+    /// </summary>
     [Description("@#Input")]
     public ITDesignComponent? TInput { get; init; }
 
+    /// <summary>
+    /// InputAdornment
+    ///
+    /// 输入装饰器
+    /// </summary>
     [Description("@#InputAdornment")]
     public ITDesignComponent? TInputAdornment { get; init; }
 
+    /// <summary>
+    /// InputGroup
+    ///
+    /// 输入框组
+    /// </summary>
     [Description("@#InputGroup")]
     public ITDesignComponent? TInputGroup { get; init; }
 
+    /// <summary>
+    /// InputNumber
+    ///
+    /// 数字输入框
+    /// </summary>
     [Description("@#InputNumber")]
     public ITDesignComponent? TInputNumber { get; init; }
 
+    /// <summary>
+    /// Layout
+    ///
+    /// 布局
+    /// </summary>
     [Description("@#Layout")]
     public ITDesignComponent? TLayout { get; init; }
 
+    /// <summary>
+    /// Link
+    ///
+    /// 链接
+    /// </summary>
     [Description("@#Link")]
     public ITDesignComponent? TLink { get; init; }
 
+    /// <summary>
+    /// List
+    ///
+    /// 列表
+    /// </summary>
     [Description("@#List")]
     public ITDesignComponent? TList { get; init; }
 
+    /// <summary>
+    /// ListItem
+    ///
+    /// 列表项
+    /// </summary>
     [Description("@#ListItem")]
     public ITDesignComponent? TListItem { get; init; }
 
+    /// <summary>
+    /// ListItemMeta
+    ///
+    /// 带图片的列表项
+    /// </summary>
     [Description("@#ListItemMeta")]
     public ITDesignComponent? TListItemMeta { get; init; }
 
+    /// <summary>
+    /// Loading
+    ///
+    /// 加载中
+    /// </summary>
     [Description("@#Loading")]
     public ITDesignComponent? TLoading { get; init; }
 
+    /// <summary>
+    /// Menu
+    ///
+    /// 侧边导航菜单
+    /// </summary>
     [Description("@#Menu")]
     public ITDesignComponent? TMenu { get; init; }
 
+    /// <summary>
+    /// MenuGroup
+    ///
+    /// 导航菜单组
+    /// </summary>
     [Description("@#MenuGroup")]
     public ITDesignComponent? TMenuGroup { get; init; }
 
+    /// <summary>
+    /// MenuItem
+    ///
+    /// 导航菜单选项
+    /// </summary>
     [Description("@#MenuItem")]
     public ITDesignComponent? TMenuItem { get; init; }
 
+    /// <summary>
+    /// Message
+    ///
+    /// 全局提醒
+    /// </summary>
     [Description("@#Message")]
     public ITDesignComponent? TMessage { get; init; }
 
+    /// <summary>
+    /// Notification
+    ///
+    /// 消息通知
+    /// </summary>
     [Description("@#Notification")]
     public ITDesignComponent? TNotification { get; init; }
 
+    /// <summary>
+    /// Option
+    ///
+    /// 选择器选项
+    /// </summary>
     [Description("@#Option")]
     public ITDesignComponent? TOption { get; init; }
 
+    /// <summary>
+    /// OptionGroup
+    ///
+    /// 选择器选项组
+    /// </summary>
     [Description("@#OptionGroup")]
     public ITDesignComponent? TOptionGroup { get; init; }
 
+    /// <summary>
+    /// Pagination
+    ///
+    /// 分页
+    /// </summary>
     [Description("@#Pagination")]
     public ITDesignComponent? TPagination { get; init; }
 
+    /// <summary>
+    /// PaginationMini
+    ///
+    /// 迷你分页
+    /// </summary>
     [Description("@#PaginationMini")]
     public ITDesignComponent? TPaginationMini { get; init; }
 
+    /// <summary>
+    /// Paragraph
+    ///
+    /// 段落
+    /// </summary>
     [Description("@#Paragraph")]
     public ITDesignComponent? TParagraph { get; init; }
 
+    /// <summary>
+    /// Popconfirm
+    ///
+    /// 气泡确认框
+    /// </summary>
     [Description("@#Popconfirm")]
     public ITDesignComponent? TPopconfirm { get; init; }
 
+    /// <summary>
+    /// Popup
+    ///
+    /// 气泡框
+    /// </summary>
     [Description("@#Popup")]
     public ITDesignComponent? TPopup { get; init; }
 
+    /// <summary>
+    /// PrimaryTable
+    ///
+    /// 主表格
+    /// </summary>
     [Description("@#PrimaryTable")]
     public ITDesignComponent? TPrimaryTable { get; init; }
 
+    /// <summary>
+    /// Progress
+    ///
+    /// 进度条
+    /// </summary>
     [Description("@#Progress")]
     public ITDesignComponent? TProgress { get; init; }
 
+    /// <summary>
+    /// QRCode
+    ///
+    /// 二维码
+    /// </summary>
     [Description("@#QRCode")]
     public ITDesignComponent? TQRCode { get; init; }
 
+    /// <summary>
+    /// Radio
+    ///
+    /// 单选框
+    /// </summary>
     [Description("@#Radio")]
     public ITDesignComponent? TRadio { get; init; }
 
+    /// <summary>
+    /// Radio
+    ///
+    /// 单选框
+    /// </summary>
     [Description("@#RadioButton")]
     public ITDesignComponent? TRadioButton { get; init; }
 
+    /// <summary>
+    /// RadioGroup
+    ///
+    /// 单选框组
+    /// </summary>
     [Description("@#RadioGroup")]
     public ITDesignComponent? TRadioGroup { get; init; }
 
+    /// <summary>
+    /// RangeInput
+    ///
+    /// 范围输入框
+    /// </summary>
     [Description("@#RangeInput")]
     public ITDesignComponent? TRangeInput { get; init; }
 
+    /// <summary>
+    /// RangeInputPopup
+    ///
+    /// 范围输入框触发器
+    /// </summary>
     [Description("@#RangeInputPopup")]
     public ITDesignComponent? TRangeInputPopup { get; init; }
 
+    /// <summary>
+    /// Rate
+    ///
+    /// 评分
+    /// </summary>
     [Description("@#Rate")]
     public ITDesignComponent? TRate { get; init; }
 
+    /// <summary>
+    /// Row
+    ///
+    /// 栅格-横向
+    /// </summary>
     [Description("@#Row")]
     public ITDesignComponent? TRow { get; init; }
 
+    /// <summary>
+    /// Select
+    ///
+    /// 选择器
+    /// </summary>
     [Description("@#Select")]
     public ITDesignComponent? TSelect { get; init; }
 
+    /// <summary>
+    /// SelectInput
+    ///
+    /// 筛选器输入框
+    /// </summary>
     [Description("@#SelectInput")]
     public ITDesignComponent? TSelectInput { get; init; }
 
+    /// <summary>
+    /// Skeleton
+    ///
+    /// 骨架屏
+    /// </summary>
     [Description("@#Skeleton")]
     public ITDesignComponent? TSkeleton { get; init; }
 
+    /// <summary>
+    /// Slider
+    ///
+    /// 滑块
+    /// </summary>
     [Description("@#Slider")]
     public ITDesignComponent? TSlider { get; init; }
 
+    /// <summary>
+    /// Space
+    ///
+    /// 间距
+    /// </summary>
     [Description("@#Space")]
     public ITDesignComponent? TSpace { get; init; }
 
+    /// <summary>
+    /// Statistic
+    ///
+    /// 统计数值
+    /// </summary>
     [Description("@#Statistic")]
     public ITDesignComponent? TStatistic { get; init; }
 
+    /// <summary>
+    /// StepItem
+    ///
+    /// 步骤
+    /// </summary>
     [Description("@#StepItem")]
     public ITDesignComponent? TStepItem { get; init; }
 
+    /// <summary>
+    /// Steps
+    ///
+    /// 步骤条
+    /// </summary>
     [Description("@#Steps")]
     public ITDesignComponent? TSteps { get; init; }
 
+    /// <summary>
+    /// StickyItem
+    ///
+    /// 侧边固钉项
+    /// </summary>
     [Description("@#StickyItem")]
     public ITDesignComponent? TStickyItem { get; init; }
 
+    /// <summary>
+    /// StickyTool
+    ///
+    /// 侧边固钉
+    /// </summary>
     [Description("@#StickyTool")]
     public ITDesignComponent? TStickyTool { get; init; }
 
+    /// <summary>
+    /// Submenu
+    ///
+    /// 二级导航
+    /// </summary>
     [Description("@#Submenu")]
     public ITDesignComponent? TSubmenu { get; init; }
 
+    /// <summary>
+    /// Swiper
+    ///
+    /// 轮播
+    /// </summary>
     [Description("@#Swiper")]
     public ITDesignComponent? TSwiper { get; init; }
 
+    /// <summary>
+    /// Swiper
+    ///
+    /// 轮播
+    /// </summary>
     [Description("@#SwiperItem")]
     public ITDesignComponent? TSwiperItem { get; init; }
 
+    /// <summary>
+    /// Switch
+    ///
+    /// 开关
+    /// </summary>
     [Description("@#Switch")]
     public ITDesignComponent? TSwitch { get; init; }
 
+    /// <summary>
+    /// TabPanel
+    ///
+    /// 选项卡面板
+    /// </summary>
     [Description("@#TabPanel")]
     public ITDesignComponent? TTabPanel { get; init; }
 
+    /// <summary>
+    /// PrimaryTable
+    ///
+    /// 主表格
+    /// </summary>
     [Description("@#Table")]
     public ITDesignComponent? TTable { get; init; }
 
+    /// <summary>
+    /// Tabs
+    ///
+    /// 选项卡
+    /// </summary>
     [Description("@#Tabs")]
     public ITDesignComponent? TTabs { get; init; }
 
+    /// <summary>
+    /// Tag
+    ///
+    /// 标签
+    /// </summary>
     [Description("@#Tag")]
     public ITDesignComponent? TTag { get; init; }
 
+    /// <summary>
+    /// TagInput
+    ///
+    /// 标签输入框
+    /// </summary>
     [Description("@#TagInput")]
     public ITDesignComponent? TTagInput { get; init; }
 
+    /// <summary>
+    /// Text
+    ///
+    /// 文本
+    /// </summary>
     [Description("@#Text")]
     public ITDesignComponent? TText { get; init; }
 
+    /// <summary>
+    /// Textarea
+    ///
+    /// 文本输入框
+    /// </summary>
     [Description("@#Textarea")]
     public ITDesignComponent? TTextarea { get; init; }
 
+    /// <summary>
+    /// TimePicker
+    ///
+    /// 时间选择器
+    /// </summary>
     [Description("@#TimePicker")]
     public ITDesignComponent? TTimePicker { get; init; }
 
+    /// <summary>
+    /// TimeRangePicker
+    ///
+    /// 时间范围选择器
+    /// </summary>
     [Description("@#TimeRangePicker")]
     public ITDesignComponent? TTimeRangePicker { get; init; }
 
+    /// <summary>
+    /// Timeline
+    ///
+    /// 时间轴
+    /// </summary>
     [Description("@#Timeline")]
     public ITDesignComponent? TTimeline { get; init; }
 
+    /// <summary>
+    /// TimelineItem
+    ///
+    /// 时间轴
+    /// </summary>
     [Description("@#TimelineItem")]
     public ITDesignComponent? TTimelineItem { get; init; }
 
+    /// <summary>
+    /// Title
+    ///
+    /// 标题
+    /// </summary>
     [Description("@#Title")]
     public ITDesignComponent? TTitle { get; init; }
 
+    /// <summary>
+    /// Tooltip
+    ///
+    /// 文字提示
+    /// </summary>
     [Description("@#Tooltip")]
     public ITDesignComponent? TTooltip { get; init; }
 
+    /// <summary>
+    /// Transfer
+    ///
+    /// 穿梭框
+    /// </summary>
     [Description("@#Transfer")]
     public ITDesignComponent? TTransfer { get; init; }
 
+    /// <summary>
+    /// Tree
+    ///
+    /// 树
+    /// </summary>
     [Description("@#Tree")]
     public ITDesignComponent? TTree { get; init; }
 
+    /// <summary>
+    /// TreeSelect
+    ///
+    /// 树选择
+    /// </summary>
     [Description("@#TreeSelect")]
     public ITDesignComponent? TTreeSelect { get; init; }
 
+    /// <summary>
+    /// Typography
+    ///
+    /// 排版
+    /// </summary>
     [Description("@#Typography")]
     public ITDesignComponent? TTypography { get; init; }
 
+    /// <summary>
+    /// Upload
+    ///
+    /// 上传
+    /// </summary>
     [Description("@#Upload")]
     public ITDesignComponent? TUpload { get; init; }
 
+    /// <summary>
+    /// Watermark
+    ///
+    /// 水印
+    /// </summary>
     [Description("@#Watermark")]
     public ITDesignComponent? TWatermark { get; init; }
 }

@@ -289,6 +289,7 @@ internal static class TDesignComponentGenerator
             builder.AppendLine("{");
             foreach (var component in components)
             {
+                AppendXmlSummary(builder, component.Component.Contract.Description, "    ");
                 builder.AppendLine($"    [ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"    public extern static ITDesignComponent {component.Component.Contract.AuthoringType} {{ get; }}");
                 builder.AppendLine();
@@ -301,6 +302,7 @@ internal static class TDesignComponentGenerator
             builder.AppendLine("{");
             foreach (var component in components)
             {
+                AppendXmlSummary(builder, component.Component.Contract.Description, "    ");
                 builder.AppendLine($"    [Description(\"@#{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"    public ITDesignComponent? {component.Component.Contract.AuthoringType} {{ get; init; }}");
                 builder.AppendLine();
@@ -337,13 +339,26 @@ internal static class TDesignComponentGenerator
         foreach (var definition in components.SelectMany(static component => component.Definitions))
         {
             var name = GetDefinitionName(definition);
-            if (definitions.TryGetValue(name, out var existing) && !string.Equals(existing, definition, StringComparison.Ordinal))
-                throw new InvalidOperationException($"TDesign generated definition '{name}' has incompatible declarations.");
+            if (definitions.TryGetValue(name, out var existing))
+            {
+                if (!string.Equals(
+                        RemoveXmlDocumentation(existing),
+                        RemoveXmlDocumentation(definition),
+                        StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"TDesign generated definition '{name}' has incompatible declarations.");
+                }
+
+                continue;
+            }
             definitions[name] = definition;
         }
 
         return definitions.OrderBy(static pair => pair.Key, StringComparer.Ordinal).Select(static pair => pair.Value).ToArray();
     }
+
+    private static string RemoveXmlDocumentation(string source)
+        => Regex.Replace(source, @"(?m)^\s*///.*(?:\r?\n|$)", string.Empty);
 
     static string GetDefinitionName(string definition)
     {
@@ -499,7 +514,7 @@ internal static class TDesignComponentGenerator
                         slots.Add(slot);
                 }
 
-                if (!mapper.TryMap(sourceType, typeName, property.SourcePath, out var type))
+                if (!mapper.TryMap(sourceType, typeName, property.SourcePath, out var type, property.Description))
                 {
                     generated = default!;
                     failure = $"{property.Name} ({property.SourcePath}): {property.Type} [{mapper.LastFailure}]";
@@ -529,7 +544,7 @@ internal static class TDesignComponentGenerator
             foreach (var @event in component.Contract.Events)
             {
                 var typeName = component.Contract.AuthoringType + ToPascalCase(@event.Property[2..]) + "Event";
-                if (!mapper.TryMapCallbackParameters(@event.Type, typeName, @event.SourcePath, out var parameters))
+                if (!mapper.TryMapCallbackParameters(@event.Type, typeName, @event.SourcePath, out var parameters, @event.Description))
                 {
                     generated = default!;
                     failure = $"event {@event.Property} ({@event.SourcePath}): {@event.Type} [{mapper.LastFailure}]";
@@ -710,7 +725,7 @@ internal static class TDesignComponentGenerator
 
     sealed record MappedType(string Name, bool IsReference, bool IsNullable = false);
     sealed record MappedParameter(string SourceName, string CSharpName, MappedType Type, bool Optional);
-    sealed record MappedShapeProperty(string SourceName, string CSharpName, MappedType Type, bool Optional);
+    sealed record MappedShapeProperty(string SourceName, string CSharpName, MappedType Type, bool Optional, string? Description);
     sealed record MappedShape(string[] TypeParameters, MappedShapeProperty[] Properties);
 
     static class CSharpIdentifier
@@ -747,7 +762,8 @@ internal static class TDesignComponentGenerator
         string Body,
         string Definition,
         string[] BaseTypes,
-        TypeParameter[] TypeParameters);
+        TypeParameter[] TypeParameters,
+        string? Description);
 
     sealed record TypeParameter(string Name, string? DefaultSource);
     sealed record ImportedType(string ExportName, string[] Targets);
@@ -763,12 +779,13 @@ internal static class TDesignComponentGenerator
 
         public TypeCatalog(string snapshotRoot, Language typeScript)
         {
+            var documentation = new TDesignDocumentation(snapshotRoot);
             var declarations = new List<TypeScriptDeclaration>();
             var imports = new Dictionary<(string SourcePath, string Name), ImportedType>();
             foreach (var path in Directory.GetFiles(snapshotRoot, "*.d.ts", SearchOption.AllDirectories))
             {
                 var sourcePath = Path.GetRelativePath(snapshotRoot, path).Replace('\\', '/');
-                var source = File.ReadAllText(path);
+                var source = documentation.Annotate(sourcePath, File.ReadAllText(path), typeScript);
                 foreach (var import in ReadImports(sourcePath, source))
                     imports[import.Key] = import.Value;
                 using var parser = new Parser(typeScript);
@@ -796,7 +813,8 @@ internal static class TDesignComponentGenerator
                         body,
                         definition,
                         declaration.Type == "interface_declaration" ? ReadInterfaceBases(declaration.Text) : [],
-                        ReadTypeParameters(declaration)));
+                        ReadTypeParameters(declaration),
+                        documentation.GetSummary(sourcePath, name)));
                 }
             }
 
@@ -1334,6 +1352,7 @@ internal static class TDesignComponentGenerator
         private readonly Dictionary<string, MappedShape> _shapes = new(StringComparer.Ordinal);
         private readonly Dictionary<(string SourcePath, string Name), MappedType> _openNamedTypes = [];
         private readonly HashSet<(string SourcePath, string Name)> _resolvingNames = [];
+        private string? _definitionDescription;
         private readonly Dictionary<string, MappedType> _typeParameters = rootTypeParameters
             .ToDictionary(
                 static parameter => parameter.Name,
@@ -1348,39 +1367,55 @@ internal static class TDesignComponentGenerator
 
         public string? LastFailure { get; private set; }
 
-        public bool TryMap(string source, string suggestedName, string sourcePath, out MappedType type)
+        public bool TryMap(
+            string source,
+            string suggestedName,
+            string sourcePath,
+            out MappedType type,
+            string? description = null)
         {
             LastFailure = null;
             var previousSourcePath = _sourcePath;
+            var previousDescription = _definitionDescription;
             _sourcePath = sourcePath;
-            using var parser = new Parser(language);
-            using var tree = parser.Parse($"type Probe = {source};");
-            var declaration = tree?.RootNode.NamedChildren.FirstOrDefault(static node => node.Type == "type_alias_declaration");
-            var node = declaration?.NamedChildren.Skip(1).FirstOrDefault();
-            if (node is null)
+            _definitionDescription = description;
+            try
             {
-                LastFailure = "Tree-sitter could not produce a type node";
-                type = default!;
-                _sourcePath = previousSourcePath;
-                return false;
-            }
+                using var parser = new Parser(language);
+                using var tree = parser.Parse($"type Probe = {source};");
+                var declaration = tree?.RootNode.NamedChildren.FirstOrDefault(static node => node.Type == "type_alias_declaration");
+                var node = declaration?.NamedChildren.Skip(1).FirstOrDefault();
+                if (node is null)
+                {
+                    LastFailure = "Tree-sitter could not produce a type node";
+                    type = default!;
+                    return false;
+                }
 
-            var mapped = TryMapNode(node, suggestedName, out type);
-            if (!mapped && LastFailure is null)
-                LastFailure = $"unsupported TypeScript node '{node.Type}' ({node.Text})";
-            _sourcePath = previousSourcePath;
-            return mapped;
+                var mapped = TryMapNode(node, suggestedName, out type);
+                if (!mapped && LastFailure is null)
+                    LastFailure = $"unsupported TypeScript node '{node.Type}' ({node.Text})";
+                return mapped;
+            }
+            finally
+            {
+                _sourcePath = previousSourcePath;
+                _definitionDescription = previousDescription;
+            }
         }
 
         public bool TryMapCallbackParameters(
             string source,
             string suggestedName,
             string sourcePath,
-            out MappedParameter[] mappedParameters)
+            out MappedParameter[] mappedParameters,
+            string? description = null)
         {
             LastFailure = null;
             var previousSourcePath = _sourcePath;
+            var previousDescription = _definitionDescription;
             _sourcePath = sourcePath;
+            _definitionDescription = description;
             try
             {
                 using var parser = new Parser(language);
@@ -1431,6 +1466,7 @@ internal static class TDesignComponentGenerator
             finally
             {
                 _sourcePath = previousSourcePath;
+                _definitionDescription = previousDescription;
             }
         }
 
@@ -1703,7 +1739,10 @@ internal static class TDesignComponentGenerator
                         var source = declaration.Kind == TypeScriptDeclarationKind.Interface
                             ? typeCatalog.GetInterfaceSource(declaration)
                             : declaration.Definition;
-                        if (!TryMap(source, csharpName, declaration.SourcePath, out openType))
+                        // Named helpers own their documentation; a caller's prop/event
+                        // description must not leak into shared types such as SizeEnum.
+                        if (!TryMap(source, csharpName, declaration.SourcePath, out openType,
+                                declaration.Description ?? TDesignDocumentation.TypeSummary(csharpName)))
                         {
                             type = default!;
                             LastFailure ??= $"unable to map declaration '{declaration.Name}' from {declaration.SourcePath}";
@@ -2198,6 +2237,7 @@ internal static class TDesignComponentGenerator
             builder.AppendLine("{");
             foreach (var property in properties)
             {
+                AppendXmlSummary(builder, property.Description, "    ");
                 if (!string.Equals(property.SourceName, property.CSharpName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{property.SourceName}\")]");
                 if (!property.Optional && property.Type.IsReference && !property.Type.IsNullable)
@@ -2246,10 +2286,14 @@ internal static class TDesignComponentGenerator
             var properties = new List<MappedShapeProperty>();
             MappedType? indexValue = null;
             var hasOpenIndex = false;
+            string? memberDescription = null;
             foreach (var property in node.NamedChildren)
             {
                 if (property.Type == "comment")
+                {
+                    memberDescription = TDesignDocumentation.ReadComment(property.Text);
                     continue;
+                }
 
                 if (property.Type == "index_signature")
                 {
@@ -2284,15 +2328,31 @@ internal static class TDesignComponentGenerator
 
                 var sourceName = property.GetChildForField("name")?.Text.Trim('\'', '"');
                 var annotation = GetTypeNode(property);
-                if (string.IsNullOrWhiteSpace(sourceName) || annotation is null ||
-                    !TryMapNode(annotation, suggestedName + ToCSharpName(sourceName), out var propertyType))
+                if (string.IsNullOrWhiteSpace(sourceName) || annotation is null)
                 {
                     type = default!;
                     return false;
                 }
 
+                var description = memberDescription ?? TDesignDocumentation.MemberSummary(sourceName);
+                memberDescription = null;
+                var previousDescription = _definitionDescription;
+                _definitionDescription = description;
+                MappedType propertyType;
+                try
+                {
+                    if (!TryMapNode(annotation, suggestedName + ToCSharpName(sourceName), out propertyType))
+                    {
+                        type = default!;
+                        return false;
+                    }
+                }
+                finally
+                {
+                    _definitionDescription = previousDescription;
+                }
                 var optional = property.Children.Any(static child => child.Type == "?");
-                properties.Add(new MappedShapeProperty(sourceName, ToCSharpName(sourceName), propertyType, optional));
+                properties.Add(new MappedShapeProperty(sourceName, ToCSharpName(sourceName), propertyType, optional, description));
             }
 
             var ownProperties = properties
@@ -2321,6 +2381,7 @@ internal static class TDesignComponentGenerator
             builder.AppendLine("{");
             foreach (var property in declaredProperties)
             {
+                AppendXmlSummary(builder, property.Description, "    ");
                 var requiresInitialization = !property.Optional && !property.Type.IsNullable &&
                     (property.Type.IsReference || _definitionTypeParameters.Contains(property.Type.Name, StringComparer.Ordinal));
                 if (!string.Equals(property.SourceName, property.CSharpName, StringComparison.Ordinal))
@@ -2407,6 +2468,7 @@ internal static class TDesignComponentGenerator
             }
 
             var mappedParameters = new List<string>();
+            var parameterDocumentation = new StringBuilder();
             foreach (var parameter in parameters.NamedChildren)
             {
                 if (parameter.Type is not ("required_parameter" or "optional_parameter"))
@@ -2437,9 +2499,12 @@ internal static class TDesignComponentGenerator
 
                 var optional = parameter.Type == "optional_parameter";
                 mappedParameters.Add($"{parameterType.Name}{(optional || parameterType.IsNullable ? "?" : string.Empty)} {CSharpIdentifier.Escape(name)}{(optional ? " = default" : string.Empty)}");
+                parameterDocumentation.AppendLine($"/// <param name=\"{EscapeXml(name)}\">{EscapeXml(TDesignDocumentation.MemberSummary(name))}</param>");
             }
 
-            AddDefinition(suggestedName, $"[ECMAScript]{Environment.NewLine}public delegate {returnType} {DeclaredName(suggestedName)}({string.Join(", ", mappedParameters)});{Environment.NewLine}");
+            if (returnType != "void")
+                parameterDocumentation.AppendLine($"/// <returns>回调结果，类型为 {EscapeXml(returnType)}。</returns>");
+            AddDefinition(suggestedName, $"{parameterDocumentation}[ECMAScript]{Environment.NewLine}public delegate {returnType} {DeclaredName(suggestedName)}({string.Join(", ", mappedParameters)});{Environment.NewLine}");
             type = new MappedType(DeclaredName(suggestedName), IsReference: true);
             return true;
         }
@@ -2539,6 +2604,8 @@ internal static class TDesignComponentGenerator
 
             foreach (var member in members)
             {
+                AppendXmlSummary(builder, $"使用 {member.Type.Name} 值创建联合值，并保留当前分支。", "    ");
+                builder.AppendLine("    /// <param name=\"value\">该分支的值。</param>");
                 builder.AppendLine($"    public {constructorName}({member.Type.Name} value)");
                 builder.AppendLine("    {");
                 builder.AppendLine($"        _kind = {member.Index};");
@@ -2549,8 +2616,12 @@ internal static class TDesignComponentGenerator
             }
 
             foreach (var member in members)
+            {
+                AppendXmlSummary(builder, $"读取 {member.Type.Name} 分支；当前值属于其他分支时返回 null。", "    ");
                 builder.AppendLine($"    public {member.Type.Name}? As{member.MemberName} => _kind == {member.Index} ? _value{member.Index} : default;");
+            }
             builder.AppendLine();
+            AppendXmlSummary(builder, "读取当前分支的原始值；未初始化时返回 null。", "    ");
             builder.AppendLine("    public object? Value => _kind switch");
             builder.AppendLine("    {");
             foreach (var member in members)
@@ -2561,6 +2632,9 @@ internal static class TDesignComponentGenerator
 
             foreach (var member in members.Where(static member => !IsInterface(member.Type.Name)))
             {
+                AppendXmlSummary(builder, $"将 {member.Type.Name} 值转换为对应的联合分支。", "    ");
+                builder.AppendLine("    /// <param name=\"value\">该分支的值。</param>");
+                builder.AppendLine("    /// <returns>保留当前分支的联合值。</returns>");
                 builder.AppendLine($"    public static implicit operator {typeName}({member.Type.Name} value)");
                 builder.AppendLine("        => new(value);");
                 builder.AppendLine();
@@ -2606,6 +2680,7 @@ internal static class TDesignComponentGenerator
                 var suffix = 2;
                 while (!allocated.Add(member))
                     member = original + suffix++;
+                AppendXmlSummary(builder, TDesignDocumentation.EnumMember(name, value), "    ");
                 builder.AppendLine($"    [Description(\"@#{value}\")]");
                 builder.AppendLine($"    {CSharpIdentifier.Escape(member)},");
             }
@@ -2615,9 +2690,28 @@ internal static class TDesignComponentGenerator
 
         private void AddDefinition(string name, string source)
         {
-            if (_definitions.TryGetValue(name, out var existing) && !string.Equals(existing, source, StringComparison.Ordinal))
-                throw new InvalidOperationException($"TDesign generated type name collision: {name}");
-            _definitions[name] = source;
+            var documented = new StringBuilder();
+            AppendXmlSummary(
+                documented,
+                TDesignDocumentation.SharedTypeSummary(name) ?? _definitionDescription ?? TDesignDocumentation.TypeSummary(name));
+            documented.Append(source);
+            var candidate = documented.ToString();
+            if (_definitions.TryGetValue(name, out var existing))
+            {
+                if (!string.Equals(
+                        RemoveXmlDocumentation(existing),
+                        RemoveXmlDocumentation(candidate),
+                        StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"TDesign generated type name collision: {name}");
+                }
+
+                // Shared declarations can be reached through multiple props. Keep the first
+                // stable description while accepting equivalent bodies.
+                return;
+            }
+
+            _definitions[name] = candidate;
         }
 
         private static bool TryGetStringLiteral(Node node, out string value)

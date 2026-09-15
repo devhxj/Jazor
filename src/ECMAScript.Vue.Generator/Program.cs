@@ -23,8 +23,11 @@ internal static class Program
                 case ["tdesign", "components", .. var commandArgs]:
                     global::TDesignComponentGenerator.Run(commandArgs);
                     return 0;
+                case ["tdesign", "documentation", .. var commandArgs]:
+                    global::TDesignDocumentation.Run(commandArgs);
+                    return 0;
                 default:
-                    Console.Error.WriteLine("Usage: elementplus|vuetify [--check] | tdesign snapshot|bindings|components [--check|--report]");
+                    Console.Error.WriteLine("Usage: elementplus|vuetify [--check] | tdesign snapshot|bindings|components [--check|--report] | tdesign documentation <upstream-source.tar.gz>");
                     return 1;
             }
         }

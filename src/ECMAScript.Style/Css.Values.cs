@@ -2,17 +2,27 @@ namespace ECMAScript.Style;
 
 public static partial class css
 {
+    /// <summary>CSS-wide <c>inherit</c> keyword; uses the parent element's computed value. CSS 全局 <c>inherit</c> 关键字，使用父元素的计算值。</summary>
     public static readonly CssWideKeyword inherit = CssWideKeyword.Inherit;
+    /// <summary>CSS-wide <c>initial</c> keyword; restores the specification-defined initial value. CSS 全局 <c>initial</c> 关键字，恢复规范定义的初始值。</summary>
     public static readonly CssWideKeyword initial = CssWideKeyword.Initial;
+    /// <summary>CSS-wide <c>unset</c> keyword; inherits inherited properties and otherwise uses their initial value. CSS 全局 <c>unset</c> 关键字，继承型属性继承，其他属性恢复初始值。</summary>
     public static readonly CssWideKeyword unset = CssWideKeyword.Unset;
+    /// <summary>CSS-wide <c>revert</c> keyword; rolls the declaration back to an earlier cascade origin. CSS 全局 <c>revert</c> 关键字，回退到更早的层叠来源。</summary>
     public static readonly CssWideKeyword revert = CssWideKeyword.Revert;
+    /// <summary>CSS-wide <c>revert-layer</c> keyword; rolls the declaration back within cascade layers. CSS 全局 <c>revert-layer</c> 关键字，在层叠层内回退声明。</summary>
     [ECMAScriptName("revertLayer")]
     public static readonly CssWideKeyword revert_layer = CssWideKeyword.RevertLayer;
+    /// <summary>CSS <c>auto</c> keyword for a property-defined automatic behavior. CSS <c>auto</c> 关键字，具体行为由接收属性定义。</summary>
     public static readonly CssAutoKeyword auto = CssAutoKeyword.Auto;
+    /// <summary>CSS <c>none</c> keyword that disables the feature described by the receiving property. CSS <c>none</c> 关键字，禁用接收属性描述的功能。</summary>
     public static readonly CssNoneKeyword none = CssNoneKeyword.None;
+    /// <summary>CSS <c>normal</c> keyword for the property-defined default behavior. CSS <c>normal</c> 关键字，使用属性定义的默认行为。</summary>
     public static readonly CssNormalKeyword normal = CssNormalKeyword.Normal;
+    /// <summary>Intrinsic <c>min-content</c> size based on the smallest unwrapped content contribution. 基于最小不换行内容贡献的内在 <c>min-content</c> 尺寸。</summary>
     [ECMAScriptName("minContent")]
     public static readonly CssSizingKeyword min_content = CssSizingKeyword.MinContent;
+    /// <summary>Intrinsic <c>max-content</c> size based on the preferred unwrapped content contribution. 基于首选不换行内容贡献的内在 <c>max-content</c> 尺寸。</summary>
     [ECMAScriptName("maxContent")]
     public static readonly CssSizingKeyword max_content = CssSizingKeyword.MaxContent;
     /// <summary>Intrinsic sizing keyword <c>fit-content</c> without parentheses。内在尺寸关键字 <c>fit-content</c>（无括号形式）。</summary>
@@ -89,112 +99,190 @@ public static partial class css
     /// <summary>Keyword <c>content</c> for <c>flex-basis</c>。<c>flex-basis</c> 的 <c>content</c> 关键字。</summary>
     [ECMAScriptName("flexContent")]
     public static readonly CssFlexBasisKeyword flex_content = CssFlexBasisKeyword.Content;
+    /// <summary>Block-level display mode that creates a block box. 创建块级盒的 <c>display: block</c> 模式。</summary>
     public static readonly CssDisplayKeyword block = CssDisplayKeyword.Block;
+    /// <summary>Inline display mode that participates in inline layout. 参与行内布局的 <c>display: inline</c> 模式。</summary>
     public static readonly CssDisplayKeyword inline = CssDisplayKeyword.Inline;
+    /// <summary>Inline-level box with an internal block formatting context. 具有内部块格式化上下文的行内级盒。</summary>
     [ECMAScriptName("inlineBlock")]
     public static readonly CssDisplayKeyword inline_block = CssDisplayKeyword.InlineBlock;
+    /// <summary>Flex container display mode. 弹性布局容器的显示模式。</summary>
     public static readonly CssDisplayKeyword flex = CssDisplayKeyword.Flex;
+    /// <summary>Inline-level flex container display mode. 行内级弹性布局容器的显示模式。</summary>
     [ECMAScriptName("inlineFlex")]
     public static readonly CssDisplayKeyword inline_flex = CssDisplayKeyword.InlineFlex;
+    /// <summary>Grid container display mode. 网格布局容器的显示模式。</summary>
     public static readonly CssDisplayKeyword grid = CssDisplayKeyword.Grid;
+    /// <summary>Inline-level grid container display mode. 行内级网格布局容器的显示模式。</summary>
     [ECMAScriptName("inlineGrid")]
     public static readonly CssDisplayKeyword inline_grid = CssDisplayKeyword.InlineGrid;
+    /// <summary>Block box that establishes a new block formatting context. 建立新块格式化上下文的块盒。</summary>
     [ECMAScriptName("flowRoot")]
     public static readonly CssDisplayKeyword flow_root = CssDisplayKeyword.FlowRoot;
+    /// <summary>Suppresses the element's principal box while keeping its children in layout. 不生成元素主盒，但保留子元素参与布局。</summary>
     public static readonly CssDisplayKeyword contents = CssDisplayKeyword.Contents;
+    /// <summary>Table formatting display mode. 表格格式化显示模式。</summary>
     public static readonly CssDisplayKeyword table = CssDisplayKeyword.Table;
+    /// <summary>List-item display mode, which creates a marker box where applicable. 列表项显示模式，在适用时创建标记盒。</summary>
     [ECMAScriptName("listItem")]
     public static readonly CssDisplayKeyword list_item = CssDisplayKeyword.ListItem;
+    /// <summary>Normal-flow positioning with no offsets applied. 不应用偏移的常规流定位。</summary>
     [ECMAScriptName("staticPosition")]
     public static readonly CssPositionKeyword static_position = CssPositionKeyword.Static;
+    /// <summary>Normal-flow positioning whose visual box may be offset. 仍参与常规流、但可对视觉盒应用偏移的定位。</summary>
     public static readonly CssPositionKeyword relative = CssPositionKeyword.Relative;
+    /// <summary>Out-of-flow positioning relative to the containing block. 相对于包含块的脱离常规流定位。</summary>
     public static readonly CssPositionKeyword absolute = CssPositionKeyword.Absolute;
+    /// <summary>Viewport-fixed positioning. 相对视口固定的定位。</summary>
     [ECMAScriptName("fixedPosition")]
     public static readonly CssPositionKeyword fixed_position = CssPositionKeyword.Fixed;
+    /// <summary>Hybrid relative/fixed positioning that sticks at scroll thresholds. 在滚动阈值处吸附的相对/固定混合定位。</summary>
     public static readonly CssPositionKeyword sticky = CssPositionKeyword.Sticky;
+    /// <summary>Leaves overflow visible without clipping. 不裁剪溢出内容。</summary>
     public static readonly CssOverflowKeyword visible = CssOverflowKeyword.Visible;
+    /// <summary>Clips overflow while retaining programmatic scrolling where supported. 裁剪溢出内容，并在支持时保留程序化滚动。</summary>
     public static readonly CssOverflowKeyword hidden = CssOverflowKeyword.Hidden;
+    /// <summary>Clips overflow without creating a scroll container. 裁剪溢出内容且不创建滚动容器。</summary>
     public static readonly CssOverflowKeyword clip = CssOverflowKeyword.Clip;
+    /// <summary>Always creates a scroll container and exposes scrollbars as needed. 创建滚动容器，并按需显示滚动条。</summary>
     public static readonly CssOverflowKeyword scroll = CssOverflowKeyword.Scroll;
+    /// <summary>Named thin border width. 具名细边框宽度。</summary>
     public static readonly CssBorderWidth thin = CssBorderWidth.create("thin");
+    /// <summary>Named medium border width. 具名中等边框宽度。</summary>
     public static readonly CssBorderWidth medium = CssBorderWidth.create("medium");
+    /// <summary>Named thick border width. 具名粗边框宽度。</summary>
     public static readonly CssBorderWidth thick = CssBorderWidth.create("thick");
+    /// <summary>Dotted border or outline style. 点状边框或轮廓线型。</summary>
     public static readonly CssBorderStyle dotted = CssBorderStyle.create("dotted");
+    /// <summary>Dashed border or outline style. 虚线边框或轮廓线型。</summary>
     public static readonly CssBorderStyle dashed = CssBorderStyle.create("dashed");
+    /// <summary>Solid border or outline style. 实线边框或轮廓线型。</summary>
     public static readonly CssBorderStyle solid = CssBorderStyle.create("solid");
+    /// <summary>Double-line border or outline style. 双线边框或轮廓线型。</summary>
     [ECMAScriptName("doubleLine")]
     public static readonly CssBorderStyle double_line = CssBorderStyle.create("double");
+    /// <summary>Grooved border style with a carved appearance. 凹槽视觉效果的边框线型。</summary>
     public static readonly CssBorderStyle groove = CssBorderStyle.create("groove");
+    /// <summary>Ridged border style with a raised appearance. 凸起视觉效果的边框线型。</summary>
     public static readonly CssBorderStyle ridge = CssBorderStyle.create("ridge");
+    /// <summary>Inset border style. 内嵌视觉效果的边框线型。</summary>
     public static readonly CssBorderStyle inset = CssBorderStyle.create("inset");
+    /// <summary>Outset border style. 外凸视觉效果的边框线型。</summary>
     public static readonly CssBorderStyle outset = CssBorderStyle.create("outset");
+    /// <summary>Fully transparent color keyword. 完全透明的颜色关键字。</summary>
     public static readonly CssColorKeyword transparent = CssColorKeyword.Transparent;
+    /// <summary>Uses the element's computed <c>color</c> value. 使用元素计算后的 <c>color</c> 值。</summary>
     [ECMAScriptName("currentColor")]
     public static readonly CssColorKeyword current_color = CssColorKeyword.CurrentColor;
+    /// <summary>Aligns to the logical start edge. 对齐到逻辑起始边。</summary>
     public static readonly CssAlignmentKeyword start = CssAlignmentKeyword.Start;
+    /// <summary>Aligns to the logical end edge. 对齐到逻辑结束边。</summary>
     public static readonly CssAlignmentKeyword end = CssAlignmentKeyword.End;
+    /// <summary>Centers along the alignment axis. 沿对齐轴居中。</summary>
     public static readonly CssAlignmentKeyword center = CssAlignmentKeyword.Center;
+    /// <summary>Aligns to the flex container's main-start or cross-start edge. 对齐到弹性容器的起始边。</summary>
     [ECMAScriptName("flexStart")]
     public static readonly CssAlignmentKeyword flex_start = CssAlignmentKeyword.FlexStart;
+    /// <summary>Aligns to the flex container's main-end or cross-end edge. 对齐到弹性容器的结束边。</summary>
     [ECMAScriptName("flexEnd")]
     public static readonly CssAlignmentKeyword flex_end = CssAlignmentKeyword.FlexEnd;
+    /// <summary>Aligns to the item's own logical start edge. 对齐到项目自身的逻辑起始边。</summary>
     [ECMAScriptName("selfStart")]
     public static readonly CssAlignmentKeyword self_start = CssAlignmentKeyword.SelfStart;
+    /// <summary>Aligns to the item's own logical end edge. 对齐到项目自身的逻辑结束边。</summary>
     [ECMAScriptName("selfEnd")]
     public static readonly CssAlignmentKeyword self_end = CssAlignmentKeyword.SelfEnd;
+    /// <summary>Aligns to the physical left edge when the property grammar permits it. 在属性语法允许时对齐到物理左边。</summary>
     public static readonly CssAlignmentKeyword left = CssAlignmentKeyword.Left;
+    /// <summary>Aligns to the physical right edge when the property grammar permits it. 在属性语法允许时对齐到物理右边。</summary>
     public static readonly CssAlignmentKeyword right = CssAlignmentKeyword.Right;
+    /// <summary>Stretches auto-sized items to fill the alignment axis. 将自动尺寸项目拉伸以填满对齐轴。</summary>
     public static readonly CssAlignmentKeyword stretch = CssAlignmentKeyword.Stretch;
+    /// <summary>Aligns items by their baselines. 按项目基线对齐。</summary>
     public static readonly CssAlignmentKeyword baseline = CssAlignmentKeyword.Baseline;
+    /// <summary>Distributes free space only between items. 仅在项目之间分配剩余空间。</summary>
     [ECMAScriptName("spaceBetween")]
     public static readonly CssAlignmentKeyword space_between = CssAlignmentKeyword.SpaceBetween;
+    /// <summary>Distributes free space around items, with half-size outer gaps. 在项目周围分配剩余空间，外侧间隙为内部的一半。</summary>
     [ECMAScriptName("spaceAround")]
     public static readonly CssAlignmentKeyword space_around = CssAlignmentKeyword.SpaceAround;
+    /// <summary>Distributes equal free space between items and at both outer edges. 在项目之间及两端均匀分配剩余空间。</summary>
     [ECMAScriptName("spaceEvenly")]
     public static readonly CssAlignmentKeyword space_evenly = CssAlignmentKeyword.SpaceEvenly;
+    /// <summary>Uses the inline axis as the flex main axis. 使用行内轴作为弹性主轴。</summary>
     public static readonly CssFlexDirectionKeyword row = CssFlexDirectionKeyword.Row;
+    /// <summary>Uses the reversed inline axis as the flex main axis. 使用反向行内轴作为弹性主轴。</summary>
     [ECMAScriptName("rowReverse")]
     public static readonly CssFlexDirectionKeyword row_reverse = CssFlexDirectionKeyword.RowReverse;
+    /// <summary>Uses the block axis as the flex main axis. 使用块轴作为弹性主轴。</summary>
     public static readonly CssFlexDirectionKeyword column = CssFlexDirectionKeyword.Column;
+    /// <summary>Uses the reversed block axis as the flex main axis. 使用反向块轴作为弹性主轴。</summary>
     [ECMAScriptName("columnReverse")]
     public static readonly CssFlexDirectionKeyword column_reverse = CssFlexDirectionKeyword.ColumnReverse;
+    /// <summary>Keeps flex items on one line. 让弹性项目保持单行。</summary>
     [ECMAScriptName("noWrap")]
     public static readonly CssFlexWrapKeyword no_wrap = CssFlexWrapKeyword.NoWrap;
+    /// <summary>Allows flex items to wrap onto additional lines. 允许弹性项目换行到额外行。</summary>
     public static readonly CssFlexWrapKeyword wrap = CssFlexWrapKeyword.Wrap;
+    /// <summary>Allows wrapped flex lines in reverse cross-axis order. 允许换行，并反转交叉轴上的行顺序。</summary>
     [ECMAScriptName("wrapReverse")]
     public static readonly CssFlexWrapKeyword wrap_reverse = CssFlexWrapKeyword.WrapReverse;
+    /// <summary>Scales a background image to cover the positioning area, allowing cropping. 缩放背景图以覆盖定位区域，允许裁切。</summary>
     public static readonly CssBackgroundSizeKeyword cover = CssBackgroundSizeKeyword.Cover;
+    /// <summary>Scales a background image to fit inside the positioning area without cropping. 缩放背景图以完整容纳在定位区域内。</summary>
     public static readonly CssBackgroundSizeKeyword contain = CssBackgroundSizeKeyword.Contain;
+    /// <summary>Includes borders and padding in declared width and height. 声明的宽高包含边框和内边距。</summary>
     [ECMAScriptName("borderBox")]
     public static readonly CssBoxSizingKeyword border_box = CssBoxSizingKeyword.BorderBox;
+    /// <summary>Applies declared width and height to the content box only. 声明的宽高仅作用于内容盒。</summary>
     [ECMAScriptName("contentBox")]
     public static readonly CssBoxSizingKeyword content_box = CssBoxSizingKeyword.ContentBox;
+    /// <summary>Uses the platform default cursor. 使用平台默认鼠标指针。</summary>
     [ECMAScriptName("defaultCursor")]
     public static readonly CssCursorKeyword default_cursor = CssCursorKeyword.Default;
+    /// <summary>Uses the pointer cursor for clickable targets. 为可点击目标使用指针鼠标样式。</summary>
     public static readonly CssCursorKeyword pointer = CssCursorKeyword.Pointer;
+    /// <summary>Uses the prohibited-action cursor. 使用禁止操作鼠标样式。</summary>
     [ECMAScriptName("notAllowed")]
     public static readonly CssCursorKeyword not_allowed = CssCursorKeyword.NotAllowed;
+    /// <summary>Uses the text-selection cursor. 使用文本选择鼠标样式。</summary>
     [ECMAScriptName("textCursor")]
     public static readonly CssCursorKeyword text_cursor = CssCursorKeyword.Text;
+    /// <summary>Capitalizes the first typographic letter of each word where supported. 在支持时将每个词的首个排版字母大写。</summary>
     public static readonly CssTextTransformKeyword capitalize = CssTextTransformKeyword.Capitalize;
+    /// <summary>Converts text to uppercase. 将文本转换为大写。</summary>
     public static readonly CssTextTransformKeyword uppercase = CssTextTransformKeyword.Uppercase;
+    /// <summary>Converts text to lowercase. 将文本转换为小写。</summary>
     public static readonly CssTextTransformKeyword lowercase = CssTextTransformKeyword.Lowercase;
+    /// <summary>Collapses whitespace and prevents line wrapping. 合并空白字符且禁止自动换行。</summary>
     public static readonly CssWhiteSpaceKeyword nowrap = CssWhiteSpaceKeyword.NoWrap;
+    /// <summary>Preserves whitespace and line breaks in preformatted text. 为预格式化文本保留空白和换行。</summary>
     public static readonly CssWhiteSpaceKeyword pre = CssWhiteSpaceKeyword.Pre;
+    /// <summary>Preserves whitespace while allowing wrapping. 保留空白字符，同时允许自动换行。</summary>
     [ECMAScriptName("preWrap")]
     public static readonly CssWhiteSpaceKeyword pre_wrap = CssWhiteSpaceKeyword.PreWrap;
+    /// <summary>Collapses whitespace but preserves newline characters as breaks. 合并空白字符，但保留换行符作为换行。</summary>
     [ECMAScriptName("preLine")]
     public static readonly CssWhiteSpaceKeyword pre_line = CssWhiteSpaceKeyword.PreLine;
+    /// <summary>Uses an ellipsis marker for clipped inline text. 为被裁剪的行内文本显示省略号标记。</summary>
     public static readonly CssTextOverflowKeyword ellipsis = CssTextOverflowKeyword.Ellipsis;
+    /// <summary>Creates a new stacking context for the element. 为元素创建新的堆叠上下文。</summary>
     public static readonly CssIsolationKeyword isolate = CssIsolationKeyword.Isolate;
+    /// <summary>Declares support for a light color scheme. 声明支持浅色配色方案。</summary>
     public static readonly CssColorSchemeKeyword light = CssColorSchemeKeyword.Light;
+    /// <summary>Declares support for a dark color scheme. 声明支持深色配色方案。</summary>
     public static readonly CssColorSchemeKeyword dark = CssColorSchemeKeyword.Dark;
+    /// <summary>Uses constant-rate animation timing. 使用恒定速率的动画时间函数。</summary>
     public static readonly CssTimingFunctionKeyword linear = CssTimingFunctionKeyword.Linear;
+    /// <summary>Uses the default ease timing curve. 使用默认的缓入缓出时间曲线。</summary>
     public static readonly CssTimingFunctionKeyword ease = CssTimingFunctionKeyword.Ease;
+    /// <summary>Uses an ease-in timing curve. 使用缓入时间曲线。</summary>
     [ECMAScriptName("easeIn")]
     public static readonly CssTimingFunctionKeyword ease_in = CssTimingFunctionKeyword.EaseIn;
+    /// <summary>Uses an ease-out timing curve. 使用缓出时间曲线。</summary>
     [ECMAScriptName("easeOut")]
     public static readonly CssTimingFunctionKeyword ease_out = CssTimingFunctionKeyword.EaseOut;
+    /// <summary>Uses an ease-in-out timing curve. 使用缓入缓出时间曲线。</summary>
     [ECMAScriptName("easeInOut")]
     public static readonly CssTimingFunctionKeyword ease_in_out = CssTimingFunctionKeyword.EaseInOut;
 
@@ -447,28 +535,51 @@ public static partial class css
 
     /// <summary>Creates a root-font-relative CSS length。创建相对于根字体大小的 CSS 长度。</summary>
     public static CssLength rem(double value) => CssLength.create(number(value) + "rem");
+    /// <summary>Creates an <c>em</c> length relative to the element's font size. 创建相对于元素字体大小的 <c>em</c> 长度。</summary>
     public static CssLength em(double value) => CssLength.create(number(value) + "em");
+    /// <summary>Creates an <c>ex</c> length relative to the font's x-height. 创建相对于字体 x 高度的 <c>ex</c> 长度。</summary>
     public static CssLength ex(double value) => CssLength.create(number(value) + "ex");
+    /// <summary>Creates a <c>ch</c> length relative to the advance measure of the zero glyph. 创建相对于数字零字形前进宽度的 <c>ch</c> 长度。</summary>
     public static CssLength ch(double value) => CssLength.create(number(value) + "ch");
+    /// <summary>Creates a <c>cap</c> length relative to the font's cap height. 创建相对于字体大写字母高度的 <c>cap</c> 长度。</summary>
     public static CssLength cap(double value) => CssLength.create(number(value) + "cap");
+    /// <summary>Creates an <c>ic</c> length relative to an ideographic character. 创建相对于表意字符尺寸的 <c>ic</c> 长度。</summary>
     public static CssLength ic(double value) => CssLength.create(number(value) + "ic");
+    /// <summary>Creates an <c>lh</c> length relative to the element's computed line height. 创建相对于元素计算行高的 <c>lh</c> 长度。</summary>
     public static CssLength lh(double value) => CssLength.create(number(value) + "lh");
+    /// <summary>Creates an <c>rlh</c> length relative to the root element's line height. 创建相对于根元素行高的 <c>rlh</c> 长度。</summary>
     public static CssLength rlh(double value) => CssLength.create(number(value) + "rlh");
+    /// <summary>Creates a viewport-width-relative <c>vw</c> length. 创建相对于布局视口宽度的 <c>vw</c> 长度。</summary>
     public static CssLength vw(double value) => CssLength.create(number(value) + "vw");
+    /// <summary>Creates a viewport-height-relative <c>vh</c> length. 创建相对于布局视口高度的 <c>vh</c> 长度。</summary>
     public static CssLength vh(double value) => CssLength.create(number(value) + "vh");
+    /// <summary>Creates a length relative to the smaller viewport dimension. 创建相对于较小视口维度的长度。</summary>
     public static CssLength vmin(double value) => CssLength.create(number(value) + "vmin");
+    /// <summary>Creates a length relative to the larger viewport dimension. 创建相对于较大视口维度的长度。</summary>
     public static CssLength vmax(double value) => CssLength.create(number(value) + "vmax");
+    /// <summary>Creates a small-viewport-width-relative <c>svw</c> length. 创建相对于最小视口宽度的 <c>svw</c> 长度。</summary>
     public static CssLength svw(double value) => CssLength.create(number(value) + "svw");
+    /// <summary>Creates a small-viewport-height-relative <c>svh</c> length. 创建相对于最小视口高度的 <c>svh</c> 长度。</summary>
     public static CssLength svh(double value) => CssLength.create(number(value) + "svh");
+    /// <summary>Creates a large-viewport-width-relative <c>lvw</c> length. 创建相对于最大视口宽度的 <c>lvw</c> 长度。</summary>
     public static CssLength lvw(double value) => CssLength.create(number(value) + "lvw");
+    /// <summary>Creates a large-viewport-height-relative <c>lvh</c> length. 创建相对于最大视口高度的 <c>lvh</c> 长度。</summary>
     public static CssLength lvh(double value) => CssLength.create(number(value) + "lvh");
+    /// <summary>Creates a dynamic-viewport-width-relative <c>dvw</c> length. 创建相对于动态视口宽度的 <c>dvw</c> 长度。</summary>
     public static CssLength dvw(double value) => CssLength.create(number(value) + "dvw");
+    /// <summary>Creates a dynamic-viewport-height-relative <c>dvh</c> length. 创建相对于动态视口高度的 <c>dvh</c> 长度。</summary>
     public static CssLength dvh(double value) => CssLength.create(number(value) + "dvh");
+    /// <summary>Creates an absolute centimeter CSS length. 创建绝对厘米 CSS 长度。</summary>
     public static CssLength cm(double value) => CssLength.create(number(value) + "cm");
+    /// <summary>Creates an absolute millimeter CSS length. 创建绝对毫米 CSS 长度。</summary>
     public static CssLength mm(double value) => CssLength.create(number(value) + "mm");
+    /// <summary>Creates a quarter-millimeter <c>Q</c> CSS length. 创建四分之一毫米的 <c>Q</c> CSS 长度。</summary>
     public static CssLength q(double value) => CssLength.create(number(value) + "Q");
+    /// <summary>Creates an absolute inch CSS length. 创建绝对英寸 CSS 长度。</summary>
     public static CssLength inch(double value) => CssLength.create(number(value) + "in");
+    /// <summary>Creates an absolute point CSS length. 创建绝对 point CSS 长度。</summary>
     public static CssLength pt(double value) => CssLength.create(number(value) + "pt");
+    /// <summary>Creates an absolute pica CSS length. 创建绝对 pica CSS 长度。</summary>
     public static CssLength pc(double value) => CssLength.create(number(value) + "pc");
     /// <summary>Creates a CSS percentage, distinct from a unitless number。创建 CSS 百分比，与无单位数值分离。</summary>
     public static CssPercentage percent(double value) => CssPercentage.create(number(value) + "%");
@@ -490,16 +601,27 @@ public static partial class css
     public static CssLength clamp(CssLength minimum, CssLength preferred, CssLength maximum)
         => CssLength.create("clamp(" + StringValue(minimum) + "," + StringValue(preferred) + "," + StringValue(maximum) + ")");
 
+    /// <summary>Creates a CSS angle in degrees. 创建以度为单位的 CSS 角度。</summary>
     public static CssAngle deg(double value) => CssAngle.create(number(value) + "deg");
+    /// <summary>Creates a CSS angle in gradians. 创建以百分度为单位的 CSS 角度。</summary>
     public static CssAngle grad(double value) => CssAngle.create(number(value) + "grad");
+    /// <summary>Creates a CSS angle in radians. 创建以弧度为单位的 CSS 角度。</summary>
     public static CssAngle rad(double value) => CssAngle.create(number(value) + "rad");
+    /// <summary>Creates a CSS angle in complete turns. 创建以完整圈为单位的 CSS 角度。</summary>
     public static CssAngle turn(double value) => CssAngle.create(number(value) + "turn");
+    /// <summary>Creates a CSS time in milliseconds. 创建以毫秒为单位的 CSS 时间。</summary>
     public static CssTime ms(double value) => CssTime.create(number(value) + "ms");
+    /// <summary>Creates a CSS time in seconds. 创建以秒为单位的 CSS 时间。</summary>
     public static CssTime seconds(double value) => CssTime.create(number(value) + "s");
+    /// <summary>Creates a CSS frequency in hertz. 创建以赫兹为单位的 CSS 频率。</summary>
     public static CssFrequency hz(double value) => CssFrequency.create(number(value) + "Hz");
+    /// <summary>Creates a CSS frequency in kilohertz. 创建以千赫兹为单位的 CSS 频率。</summary>
     public static CssFrequency khz(double value) => CssFrequency.create(number(value) + "kHz");
+    /// <summary>Creates a CSS resolution in dots per inch. 创建以每英寸点数为单位的 CSS 分辨率。</summary>
     public static CssResolution dpi(double value) => CssResolution.create(number(value) + "dpi");
+    /// <summary>Creates a CSS resolution in dots per centimeter. 创建以每厘米点数为单位的 CSS 分辨率。</summary>
     public static CssResolution dpcm(double value) => CssResolution.create(number(value) + "dpcm");
+    /// <summary>Creates a CSS resolution in dots per CSS pixel. 创建以每 CSS 像素点数为单位的 CSS 分辨率。</summary>
     public static CssResolution dppx(double value) => CssResolution.create(number(value) + "dppx");
 
     /// <summary>
@@ -642,14 +764,17 @@ public static partial class css
     public static CssPadding padding(CssPaddingPart value)
         => CssPadding.create(StringValue(value.Value));
 
+    /// <summary>Creates <c>padding: vertical horizontal</c>; each value applies to its opposing sides. 创建 <c>padding: vertical horizontal</c>，两个值分别作用于相对边。</summary>
     [ECMAScriptName("padding2")]
     public static CssPadding padding(CssPaddingPart vertical, CssPaddingPart horizontal)
         => CssPadding.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
 
+    /// <summary>Creates <c>padding: top horizontal bottom</c>; the horizontal value applies to both left and right. 创建 <c>padding: top horizontal bottom</c>，中间值同时作用于左右边。</summary>
     [ECMAScriptName("padding3")]
     public static CssPadding padding(CssPaddingPart top, CssPaddingPart horizontal, CssPaddingPart bottom)
         => CssPadding.create(join(StringValue(top.Value), StringValue(horizontal.Value), StringValue(bottom.Value)));
 
+    /// <summary>Creates <c>padding: top right bottom left</c> with four explicit sides. 按上、右、下、左顺序创建四边 <c>padding</c>。</summary>
     [ECMAScriptName("padding4")]
     public static CssPadding padding(CssPaddingPart top, CssPaddingPart right, CssPaddingPart bottom, CssPaddingPart left)
         => CssPadding.create(join(StringValue(top.Value), StringValue(right.Value), StringValue(bottom.Value), StringValue(left.Value)));
@@ -661,14 +786,17 @@ public static partial class css
     public static CssMargin margin(CssMarginPart value)
         => CssMargin.create(StringValue(value.Value));
 
+    /// <summary>Creates <c>margin: vertical horizontal</c>; each value applies to its opposing sides. 创建 <c>margin: vertical horizontal</c>，两个值分别作用于相对边。</summary>
     [ECMAScriptName("margin2")]
     public static CssMargin margin(CssMarginPart vertical, CssMarginPart horizontal)
         => CssMargin.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
 
+    /// <summary>Creates <c>margin: top horizontal bottom</c>; the horizontal value applies to both left and right. 创建 <c>margin: top horizontal bottom</c>，中间值同时作用于左右边。</summary>
     [ECMAScriptName("margin3")]
     public static CssMargin margin(CssMarginPart top, CssMarginPart horizontal, CssMarginPart bottom)
         => CssMargin.create(join(StringValue(top.Value), StringValue(horizontal.Value), StringValue(bottom.Value)));
 
+    /// <summary>Creates <c>margin: top right bottom left</c> with four explicit sides. 按上、右、下、左顺序创建四边 <c>margin</c>。</summary>
     [ECMAScriptName("margin4")]
     public static CssMargin margin(CssMarginPart top, CssMarginPart right, CssMarginPart bottom, CssMarginPart left)
         => CssMargin.create(join(StringValue(top.Value), StringValue(right.Value), StringValue(bottom.Value), StringValue(left.Value)));
@@ -702,6 +830,7 @@ public static partial class css
     public static CssGap gap(CssGapPart value)
         => CssGap.create(StringValue(value.Value));
 
+    /// <summary>Creates <c>gap: row column</c> with independent row and column gaps. 创建行间距和列间距独立的 <c>gap: row column</c>。</summary>
     [ECMAScriptName("gap2")]
     public static CssGap gap(CssGapPart row, CssGapPart column)
         => CssGap.create(join(StringValue(row.Value), StringValue(column.Value)));
@@ -710,6 +839,7 @@ public static partial class css
     public static CssRadius radius(CssRadiusPart value)
         => CssRadius.create(StringValue(value.Value));
 
+    /// <summary>Creates two corner radii; the first applies to top-left/bottom-right and the second to top-right/bottom-left. 创建双值圆角：第一个作用于左上/右下，第二个作用于右上/左下。</summary>
     [ECMAScriptName("radius2")]
     public static CssRadius radius(CssRadiusPart vertical, CssRadiusPart horizontal)
         => CssRadius.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
@@ -719,6 +849,7 @@ public static partial class css
     public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRightAndBottomLeft, CssRadiusPart bottomRight)
         => CssRadius.create(join(StringValue(topLeft.Value), StringValue(topRightAndBottomLeft.Value), StringValue(bottomRight.Value)));
 
+    /// <summary>Creates four corner radii in top-left, top-right, bottom-right, bottom-left order. 按左上、右上、右下、左下顺序创建四个圆角。</summary>
     [ECMAScriptName("radius4")]
     public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRight, CssRadiusPart bottomRight, CssRadiusPart bottomLeft)
         => CssRadius.create(join(StringValue(topLeft.Value), StringValue(topRight.Value), StringValue(bottomRight.Value), StringValue(bottomLeft.Value)));
@@ -738,6 +869,7 @@ public static partial class css
     public static CssGridLine grid_line(int line)
         => CssGridLine.create(StringValue(line));
 
+    /// <summary>Creates a grid line range from its start line to its end line. 根据起始和结束网格线创建网格线区间。</summary>
     [ECMAScriptName("gridLine2")]
     public static CssGridLine grid_line(int start, int end)
         => CssGridLine.create(StringValue(start) + " / " + StringValue(end));
@@ -746,10 +878,12 @@ public static partial class css
     public static CssGradientStop stop(CssColorValue color)
         => new(color);
 
+    /// <summary>Creates a gradient color stop at one length or percentage position. 在一个长度或百分比位置创建渐变颜色 stop。</summary>
     [ECMAScriptName("stopAt")]
     public static CssGradientStop stop(CssColorValue color, CssLengthPercentageValue at)
         => new(color, at);
 
+    /// <summary>Creates a gradient color stop with a start and end position for a hard range. 使用起始和结束位置创建硬边范围渐变颜色 stop。</summary>
     [ECMAScriptName("stopRange")]
     public static CssGradientStop stop(CssColorValue color, CssLengthPercentageValue from, CssLengthPercentageValue to)
         => new(color, from, to);
@@ -812,6 +946,7 @@ public static partial class css
     public static CssTransform scale(double value)
         => CssTransform.create("scale(" + number(value) + ")");
 
+    /// <summary>Creates a non-uniform scale transform with independent X and Y factors. 使用独立 X/Y 系数创建非均匀缩放 transform。</summary>
     [ECMAScriptName("scale2")]
     public static CssTransform scale(double x, double y)
         => CssTransform.create("scale(" + number(x) + "," + number(y) + ")");

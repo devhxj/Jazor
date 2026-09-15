@@ -7,15 +7,27 @@ namespace ECMAScript.TDesign;
 [Description("@#")]
 public static class TDesign
 {
+    /// <summary>
+    /// The TDesign Vue plugin instance.
+    /// </summary>
     [ECMAScriptName("default")]
     public extern static TPlugin Default { get; }
 
+    /// <summary>
+    /// Installs TDesign components and services into a Vue application.
+    /// </summary>
     [Description("@#install")]
     public extern static void Install(VueApp app);
 
+    /// <summary>
+    /// Installs TDesign components and services with global configuration.
+    /// </summary>
     [Description("@#install")]
     public extern static void Install(VueApp app, TInstallOptions options);
 
+    /// <summary>
+    /// Gets the runtime TDesign package version.
+    /// </summary>
     [Description("@#version")]
     public extern static string Version { get; }
 }
