@@ -4,7 +4,7 @@
 
 ## 版本号语义
 
-所有 NuGet 包 lockstep 使用同一版本号。版本号的唯一来源是 `vMAJOR.MINOR.PATCH` 格式的 git tag，由发布工作流注入打包脚本；不在 `.csproj` 中手写版本，各项目中的 `0.1.0` 默认值仅是占位。版本通道的决策发生在打 tag 时，commit message 不承载版本决策。
+所有 NuGet 包 lockstep 使用同一版本号。版本号的唯一来源是 `vMAJOR.MINOR.PATCH` 或带预发布/构建元数据的语义版本 git tag，由发布工作流注入打包脚本；不在 `.csproj` 中手写版本，各项目中的 `0.1.0` 默认值仅是占位。版本通道的决策发生在打 tag 时，commit message 不承载版本决策。
 
 | 通道 | 允许的内容 | 示例 |
 | --- | --- | --- |

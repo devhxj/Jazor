@@ -41,6 +41,7 @@ public sealed class VueRawMarkupTests
         var root = document.RootElement;
         Assert.AreEqual(2, root.GetProperty("schemaVersion").GetInt32());
         Assert.AreEqual("jazor-vue-runtime", root.GetProperty("libraryId").GetString());
+        Assert.AreEqual("1.0.0-preview.1", root.GetProperty("version").GetString());
 
         var imports = root.GetProperty("imports");
         Assert.HasCount(4, imports.EnumerateObject());

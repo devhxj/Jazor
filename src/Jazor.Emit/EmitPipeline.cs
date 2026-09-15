@@ -493,6 +493,8 @@ internal sealed class EmitPipeline
                 ?? throw new InvalidOperationException($"Could not determine output parent for '{_outputRoot}'.");
             var backupRoot = Path.Combine(parent, ".jazor-output-backup-" + Guid.NewGuid().ToString("N"));
             var movedOld = false;
+            var movedStaging = false;
+            var preserveBackup = false;
             try
             {
                 if (Directory.Exists(_outputRoot))
@@ -506,6 +508,7 @@ internal sealed class EmitPipeline
                 }
 
                 DirectoryTransaction.Move(StagingRoot, _outputRoot);
+                movedStaging = true;
                 _committed = true;
                 if (movedOld && Directory.Exists(backupRoot))
                     Directory.Delete(backupRoot, recursive: true);
@@ -513,24 +516,57 @@ internal sealed class EmitPipeline
             }
             catch
             {
-                if (Directory.Exists(_outputRoot) && _committed == false)
-                    Directory.Delete(_outputRoot, recursive: true);
+                // Rollback is best effort. A failed initial move (for example, because the
+                // output directory is a process CWD) must leave the original exception intact.
+                if (movedStaging && _committed == false)
+                    TryDeleteDirectory(_outputRoot);
                 if (movedOld && !Directory.Exists(_outputRoot) && Directory.Exists(backupRoot))
-                    DirectoryTransaction.Move(backupRoot, _outputRoot);
+                    preserveBackup = !TryMoveDirectory(backupRoot, _outputRoot);
                 throw;
             }
             finally
             {
-                if (Directory.Exists(backupRoot))
-                    Directory.Delete(backupRoot, recursive: true);
+                if (!preserveBackup)
+                    TryDeleteDirectory(backupRoot);
             }
         }
 
         public ValueTask DisposeAsync()
         {
             if (!_committed && Directory.Exists(StagingRoot))
-                Directory.Delete(StagingRoot, recursive: true);
+                TryDeleteDirectory(StagingRoot);
             return ValueTask.CompletedTask;
+        }
+
+        private static void TryDeleteDirectory(string path)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                    Directory.Delete(path, recursive: true);
+            }
+            catch (Exception)
+            {
+                // Cleanup must never replace the commit failure that is being reported.
+            }
+        }
+
+        private static bool TryMoveDirectory(string source, string destination)
+        {
+            try
+            {
+                if (Directory.Exists(source))
+                {
+                    DirectoryTransaction.Move(source, destination);
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                // Preserve the original failure when rollback is also blocked by a handle.
+            }
+
+            return false;
         }
 
         private static void CopyDirectory(string sourceRoot, string destinationRoot, CancellationToken cancellationToken)

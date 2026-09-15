@@ -314,7 +314,7 @@ internal static class ClrRuntimeCatalogEmitter
         }
 
         // A nearest tag is not a release source: on a dirty feature branch it silently points at
-        // an older package. Only a clean checkout whose HEAD is exactly a vMAJOR.MINOR.PATCH tag
+        // an older package. Only a clean checkout whose HEAD is exactly a semantic-version tag
         // is safe to infer without an explicit version.
         try
         {
@@ -349,7 +349,6 @@ internal static class ClrRuntimeCatalogEmitter
                         var tag = tagProcess.StandardOutput.ReadToEnd().Trim();
                         tagProcess.WaitForExit();
                         if (tag.StartsWith("v", StringComparison.Ordinal) &&
-                            !tag.Contains('-', StringComparison.Ordinal) &&
                             tagProcess.ExitCode == 0)
                         {
                             return NormalizePackageVersion(tag[1..], "git tag");
@@ -364,21 +363,40 @@ internal static class ClrRuntimeCatalogEmitter
 
         throw new InvalidOperationException(
             "ECMAScript resource generation requires an explicit package version. " +
-            "Pass '--version MAJOR.MINOR.PATCH' (or set JazorPackageVersion) when the checkout " +
+            "Pass '--version MAJOR.MINOR.PATCH[-prerelease][+metadata]' (or set JazorPackageVersion) when the checkout " +
             "is not a clean exact release tag.");
     }
 
     private static string NormalizePackageVersion(string value, string source)
     {
-        if (!Version.TryParse(value.Trim(), out var version) ||
-            version.Build < 0 ||
-            version.Revision >= 0)
+        var original = value.Trim();
+        var text = original;
+        var metadataIndex = text.IndexOf('+', StringComparison.Ordinal);
+        var metadata = metadataIndex >= 0 ? text[(metadataIndex + 1)..] : null;
+        if (metadataIndex >= 0)
+            text = text[..metadataIndex];
+
+        var separatorIndex = text.IndexOf('-', StringComparison.Ordinal);
+        var numeric = separatorIndex >= 0 ? text[..separatorIndex] : text;
+        var prerelease = separatorIndex >= 0 ? text[(separatorIndex + 1)..] : null;
+        var numericParts = numeric.Split('.');
+        var validPrerelease = prerelease is null ||
+            (prerelease.Length > 0 && prerelease.All(static character =>
+                char.IsLetterOrDigit(character) || character is '.' or '-'));
+        var validMetadata = metadata is null ||
+            (metadata.Length > 0 && metadata.All(static character =>
+                char.IsLetterOrDigit(character) || character is '.' or '-'));
+        if (numericParts.Length != 3 ||
+            numericParts.Any(static part =>
+                part.Length == 0 || part.Any(static character => !char.IsDigit(character)) || !int.TryParse(part, out _)) ||
+            !validPrerelease ||
+            !validMetadata)
         {
             throw new InvalidOperationException(
-                $"Package version from {source} must be MAJOR.MINOR.PATCH: '{value}'.");
+                $"Package version from {source} must be MAJOR.MINOR.PATCH with optional prerelease/build metadata: '{value}'.");
         }
 
-        return version.ToString(3);
+        return original;
     }
 
     private static string NormalizeRelativePath(string path)

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "libraryId": "ecmascript",
-  "version": "0.26.3",
+  "version": "1.0.0-preview.1",
   "imports": {
     "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js": {
       "type": "module",

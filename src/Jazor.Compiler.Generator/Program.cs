@@ -28,7 +28,7 @@ static string? ParsePackageVersionArgument(string[] arguments)
     if (arguments.Length != 2 || !string.Equals(arguments[0], "--version", StringComparison.Ordinal))
     {
         throw new ArgumentException(
-            "The generator accepts one optional argument: --version MAJOR.MINOR.PATCH.");
+            "The generator accepts one optional argument: --version MAJOR.MINOR.PATCH[-prerelease][+metadata].");
     }
 
     if (string.IsNullOrWhiteSpace(arguments[1]))

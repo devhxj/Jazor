@@ -452,28 +452,88 @@ internal sealed class LibraryMaterializer
 
     private static bool Satisfies(string versionText, string rangeText)
     {
-        if (!Version.TryParse(versionText, out var version))
+        if (!TryParsePackageVersion(versionText, out var version))
             throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version '{versionText}' is invalid.");
 
         var range = rangeText.Trim();
         if (!range.StartsWith("^", StringComparison.Ordinal))
         {
-            if (!Version.TryParse(range, out var exact))
+            if (!TryParsePackageVersion(range, out var exact))
                 throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version range '{rangeText}' is invalid.");
-            return version == exact;
+            return version.Equals(exact);
         }
 
-        if (!Version.TryParse(range[1..], out var minimum))
+        if (!TryParsePackageVersion(range[1..], out var minimum))
             throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version range '{rangeText}' is invalid.");
-        if (version < minimum)
+        if (version.CompareTo(minimum) < 0)
             return false;
 
         var maximum = minimum.Major > 0
-            ? new Version(minimum.Major + 1, 0, 0)
+            ? new PackageVersion(minimum.Major + 1, 0, 0, null)
             : minimum.Minor > 0
-                ? new Version(0, minimum.Minor + 1, 0)
-                : new Version(0, 0, minimum.Build + 1);
-        return version < maximum;
+                ? new PackageVersion(0, minimum.Minor + 1, 0, null)
+                : new PackageVersion(0, 0, minimum.Patch + 1, null);
+        return version.CompareTo(maximum) < 0;
+    }
+
+    private static bool TryParsePackageVersion(string value, out PackageVersion version)
+    {
+        version = default;
+        var text = value.Trim();
+        if (text.Length == 0)
+            return false;
+
+        var metadataIndex = text.IndexOf('+', StringComparison.Ordinal);
+        var metadata = metadataIndex >= 0 ? text[(metadataIndex + 1)..] : null;
+        if (metadataIndex >= 0)
+            text = text[..metadataIndex];
+
+        var separatorIndex = text.IndexOf('-', StringComparison.Ordinal);
+        var numeric = separatorIndex >= 0 ? text[..separatorIndex] : text;
+        var prerelease = separatorIndex >= 0 ? text[(separatorIndex + 1)..] : null;
+        if (prerelease is not null &&
+            (prerelease.Length == 0 || !prerelease.All(static character =>
+                char.IsLetterOrDigit(character) || character is '.' or '-')))
+            return false;
+        if (metadata is not null &&
+            (metadata.Length == 0 || !metadata.All(static character =>
+                char.IsLetterOrDigit(character) || character is '.' or '-')))
+            return false;
+
+        var parts = numeric.Split('.');
+        if (parts.Length is < 1 or > 3 || parts.Any(static part =>
+                part.Length == 0 || part.Any(static character => !char.IsDigit(character)) || !int.TryParse(part, out _)))
+            return false;
+
+        var numbers = parts.Select(static part => int.Parse(part)).ToArray();
+        version = new PackageVersion(
+            numbers[0],
+            numbers.Length > 1 ? numbers[1] : 0,
+            numbers.Length > 2 ? numbers[2] : 0,
+            prerelease);
+        return true;
+    }
+
+    private readonly record struct PackageVersion(int Major, int Minor, int Patch, string? Prerelease)
+        : IComparable<PackageVersion>
+    {
+        public int CompareTo(PackageVersion other)
+        {
+            var result = Major.CompareTo(other.Major);
+            if (result != 0)
+                return result;
+            result = Minor.CompareTo(other.Minor);
+            if (result != 0)
+                return result;
+            result = Patch.CompareTo(other.Patch);
+            if (result != 0)
+                return result;
+            if (Prerelease is null)
+                return other.Prerelease is null ? 0 : 1;
+            if (other.Prerelease is null)
+                return -1;
+            return StringComparer.Ordinal.Compare(Prerelease, other.Prerelease);
+        }
     }
 
     private static string GetSafePath(string root, string relativePath)

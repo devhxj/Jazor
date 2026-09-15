@@ -515,6 +515,27 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_AcceptsPrereleaseProviderVersion()
+    {
+        using var workspace = new LibraryWorkspace();
+        var vueManifest = workspace.WriteLibrary("vue", "vue3", "1.0.0-preview.1", "vue");
+        var componentManifest = workspace.WriteLibrary(
+            "component",
+            "component",
+            "1.0.0-preview.1",
+            "component",
+            new Dictionary<string, string> { ["vue3"] = "^1.0.0-preview.1" });
+
+        var result = new LibraryMaterializer().Materialize(
+            [vueManifest, componentManifest],
+            Path.Combine(workspace.Root, "out"),
+            BuildMode.Production,
+            ["component"]);
+
+        Assert.AreEqual("vendor/component/1.0.0-preview.1/dist/index.mjs", result.ImportPaths["component"]);
+    }
+
+    [TestMethod]
     public void Materialize_OrdersStylesByDependencyThenManifestOrder()
     {
         using var workspace = new LibraryWorkspace();

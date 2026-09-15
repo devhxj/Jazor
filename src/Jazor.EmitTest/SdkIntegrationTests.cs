@@ -100,6 +100,10 @@ public sealed class SdkIntegrationTests
         var transitiveJazorTarget = ReadPackageEntryText(package.PackagePath, "buildTransitive/Jazor.Resources.targets");
         StringAssert.Contains(directJazorTarget, "analyzers\\*.dll", StringComparison.Ordinal);
         StringAssert.Contains(directJazorTarget, "JazorDebug", StringComparison.Ordinal);
+        Assert.AreEqual(
+            2,
+            directJazorTarget.Split("ConsoleToMSBuild=\"true\"", StringSplitOptions.None).Length - 1,
+            directJazorTarget);
         StringAssert.Contains(transitiveJazorTarget, "JazorLibraryManifest", StringComparison.Ordinal);
         Assert.IsFalse(transitiveJazorTarget.Contains("JazorDebug", StringComparison.Ordinal), transitiveJazorTarget);
         Assert.IsFalse(transitiveJazorTarget.Contains("<Analyzer", StringComparison.Ordinal), transitiveJazorTarget);

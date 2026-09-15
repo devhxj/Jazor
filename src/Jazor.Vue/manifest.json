@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "libraryId": "jazor-vue-runtime",
-  "version": "0.26.0",
+  "version": "1.0.0-preview.1",
   "imports": {
     "@jazor/vue-runtime/blazor-routing.mjs": {
       "type": "module",
@@ -71,7 +71,7 @@
     }
   },
   "requires": {
-    "ecmascript": "^0.26.0",
+    "ecmascript": "^1.0.0-preview.1",
     "vue3": "^3.5.42"
   },
   "styles": [],

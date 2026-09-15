@@ -20,6 +20,9 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void JsResourceManifest_ReadsClrRuntimeModules_FromEcmascriptPackage()
     {
+        using var manifest = JsonDocument.Parse(File.ReadAllText(FindEcmascriptManifest()));
+        Assert.AreEqual("1.0.0-preview.1", manifest.RootElement.GetProperty("version").GetString());
+
         var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
