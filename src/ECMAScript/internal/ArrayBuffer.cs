@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,12 +6,12 @@ using System.Numerics;
 
 namespace ECMAScript;
 
-[ECMAScript]
 /// <summary>
 /// Options for constructing a resizable JavaScript <c>ArrayBuffer</c>.
 /// 构造可调整大小的 JavaScript <c>ArrayBuffer</c> 时使用的选项。
 /// </summary>
 /// <param name="MaxByteLength">Maximum capacity allowed for a resizable buffer. 可调整缓冲区允许的最大字节容量。</param>
+[ECMAScript]
 public record struct ArrayBufferOption(Number? MaxByteLength = null);
 
 /// <summary>
@@ -24,6 +24,9 @@ public interface IBufferSource
 {
 }
 
+/// <summary>
+/// 允许共享缓冲区来源的宿主类型契约；可接受的具体缓冲区或视图由实现类型确定。
+/// </summary>
 [ECMAScript]
 public interface IAllowSharedBufferSource : IBufferSource
 {
@@ -125,9 +128,9 @@ public class ArrayBuffer : IAllowSharedBufferSource
 	/// Returns a copied section of this JavaScript buffer.
 	/// 返回此 JavaScript 缓冲区的一段副本；不返回原缓冲区的视图。
 	/// </summary>
-	/// <param name="begin"></param>
-	/// <param name="end"></param>
-	/// <returns></returns>
+	/// <param name="begin">传给该 JavaScript API 的参数值。</param>
+	/// <param name="end">传给该 JavaScript API 的参数值。</param>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#slice")]
 	public extern virtual ArrayBuffer Slice(Number begin, Number? end = null);
 
@@ -154,12 +157,12 @@ public class ArrayBuffer : IAllowSharedBufferSource
 	public extern virtual ArrayBuffer TransferToFixedLength(Number? newByteLength = null);
 }
 
-[ECMAScript]
-[Description("@#SharedArrayBuffer")]
 /// <summary>
 /// JavaScript shared-memory binary buffer.
 /// JavaScript 共享内存二进制缓冲区，可被多个 agent 访问，通常与 <see cref="Atomics"/> 配合使用。
 /// </summary>
+[ECMAScript]
+[Description("@#SharedArrayBuffer")]
 public class SharedArrayBuffer : ArrayBuffer, IAllowSharedBufferSource
 {
 	/// <summary>
@@ -437,9 +440,8 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <summary>
 	/// Returns a new array from a set of elements.
 	/// 从给定元素创建新的 typed array，不展开其中的 iterable。
-	/// </summary>
-	/// <param name="value">A set of elements to include in the new array object.</param>
-	/// <returns></returns>
+	/// </summary>/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
+	/// <param name="items">用于构造类型化数组的元素，按输入顺序复制。</param>
 	[Description("@#of")]
 	public extern static TArray Of(params T[] items);
 
@@ -448,7 +450,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// 从类数组或 iterable 创建 typed array，并按元素类型转换每一项。
 	/// </summary>
 	/// <param name="arrayLike">An array-like object to convert to an array.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#from")]
 	public extern static TArray From(IEnumerable<T> arrayLike);
 
@@ -459,7 +461,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <param name="arrayLike">An array-like object to convert to an array.</param>
 	/// <param name="mapFn">A mapping function to call on every element of the array.</param>
 	/// <param name="thisArg">Value of 'this' used to invoke the mapfn.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#from")]
 	public extern static TArray From<U>(IEnumerable<U> arrayLike, Func<U, Number, T> mapFn, object? thisArg = null);
 
@@ -500,7 +502,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <param name="target">If target is negative, it is treated as length+target where length is the length of the array.</param>
 	/// <param name="start">If start is negative, it is treated as length+start.If end is negative, it is treated as length+end.</param>
 	/// <param name="end">If not specified, length of the this object is used as its default value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#copyWithin")]
 	public extern TArray CopyWithin(Number target, Number start, Number? end = null);
 
@@ -510,7 +512,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the typed array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#every")]
 	public extern bool Every(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
@@ -521,7 +523,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <param name="value">value to fill array section with</param>
 	/// <param name="start">index to start filling the array at.If start is negative, it is treated as length+start where length is the length of the array.</param>
 	/// <param name="end">index to stop filling the array at. If end is negative, it is treated as length+end.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#fill")]
 	public extern TArray Fill(T value, Number? start = null, Number? end = null);
 
@@ -531,7 +533,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#filter")]
 	public extern TArray Filter(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
@@ -544,7 +546,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="predicate">find calls predicate once for each element of the typed array, in ascending order, until it finds one where predicate returns a truthy value. If such an element is found, find immediately returns that element value. Otherwise, JavaScript returns <c>undefined</c>.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#find")]
 	public extern T? Find(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
@@ -563,7 +565,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>findIndex calls predicate once for each element of the typed array, in ascending order, until it finds one where predicate returns a truthy value. If such an element is found, findIndex immediately returns that element index. Otherwise, findIndex returns -1.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#findIndex")]
 	public extern Number FindIndex(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
@@ -589,7 +591,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="searchElement">The value to locate in the array.</param>
 	/// <param name="fromIndex">The array index at which to begin the search. If negative, it is treated as length + fromIndex.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#indexOf")]
 	public extern Number IndexOf(T searchElement, Number? fromIndex = null);
 
@@ -606,7 +608,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// 使用分隔符连接元素为文本；未提供分隔符时遵循 JavaScript 默认逗号规则。
 	/// </summary>
 	/// <param name="separator">A string used to separate one element of an array from the next in the resulting String.If omitted, the array elements are separated with a comma.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#join")]
 	public extern string Join(string? separator = null);
 
@@ -616,7 +618,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="searchElement">The value to locate in the array.</param>
 	/// <param name="fromIndex">The array index at which to begin the search. If negative, it is treated as length + fromIndex.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#lastIndexOf")]
 	public extern Number LastIndexOf(T searchElement, Number? fromIndex = null);
 
@@ -642,7 +644,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(value: T, index: number, array: this) => T</b></para>A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#map")]
 	public extern TArray Map(Func<T, Number, TArray, T> callbackfn, object? thisArg = null);
 
@@ -651,11 +653,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// 从左向右归约；未提供初始值时首个元素为累加器，空 typed array 会按 JavaScript <c>reduce</c> 语义抛出运行时错误。
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: this) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the first typed-array element as the initial accumulator.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only overload of <c>reduce</c>. 仅接收累加值和当前元素的 <c>reduce</c> 重载。</summary>
 	[Description("@#reduce")]
 	public extern T Reduce(Func<T, T, Number, TArray, T> callbackfn);
 
+	/// <summary>
+	/// The reduce() method of TypedArray instances executes a user-supplied &quot;reducer&quot; callback function on each element of the typed array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the typed array is a single value. This method has the same algorithm as Array.prototype.reduce().
+	/// </summary>
 	[Description("@#reduce")]
 	public extern T Reduce(Func<T, T, T> callbackfn);
 
@@ -665,11 +670,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="callbackfn">(previousValue: number, currentValue: number, currentIndex: number, array: this) => number,A function that accepts up to four arguments.The reduce method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only overload with an initial accumulator. 带初始累加器的仅值 <c>reduce</c> 重载。</summary>
 	[Description("@#reduce")]
 	public extern T Reduce(Func<T, T, Number, TArray, T> callbackfn, T initialValue);
 
+	/// <summary>
+	/// The reduce() method of TypedArray instances executes a user-supplied &quot;reducer&quot; callback function on each element of the typed array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the typed array is a single value. This method has the same algorithm as Array.prototype.reduce().
+	/// </summary>
 	[Description("@#reduce")]
 	public extern T Reduce(Func<T, T, T> callbackfn, T initialValue);
 
@@ -679,11 +687,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <typeparam name="U">Compile-time accumulator type. 累加器的编译期类型。</typeparam>
 	/// <param name="callbackfn"><para><b>(previousValue: U, currentValue: number, currentIndex: number, array: this) => U</b></para>A function that accepts up to four arguments.The reduce method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only generic reduction overload. 仅值的泛型归约重载。</summary>
 	[Description("@#reduce")]
 	public extern U Reduce<U>(Func<U, T, Number, TArray, U> callbackfn, U initialValue);
 
+	/// <summary>
+	/// The reduce() method of TypedArray instances executes a user-supplied &quot;reducer&quot; callback function on each element of the typed array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the typed array is a single value. This method has the same algorithm as Array.prototype.reduce().
+	/// </summary>
 	[Description("@#reduce")]
 	public extern U Reduce<U>(Func<U, T, U> callbackfn, U initialValue);
 
@@ -692,11 +703,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// 从右向左归约；未提供初始值时末个元素为累加器，空 typed array 会按 JavaScript <c>reduceRight</c> 语义抛出运行时错误。
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: this) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the last typed-array element as the initial accumulator.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only overload of <c>reduceRight</c>. 仅接收累加值和当前元素的 <c>reduceRight</c> 重载。</summary>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, Number, TArray, T> callbackfn);
 
+	/// <summary>
+	/// The reduceRight() method of TypedArray instances applies a function against an accumulator and each value of the typed array (from right-to-left) to reduce it to a single value. This method has the same algorithm as Array.prototype.reduceRight().
+	/// </summary>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, T> callbackfn);
 
@@ -706,11 +720,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="callbackfn"><para><b>(previousValue: number, currentValue: number, currentIndex: number, array: this) => number </b></para>A function that accepts up to four arguments.The reduceRight method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only overload with an initial accumulator. 带初始累加器的仅值 <c>reduceRight</c> 重载。</summary>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, Number, TArray, T> callbackfn, T initialValue);
 
+	/// <summary>
+	/// The reduceRight() method of TypedArray instances applies a function against an accumulator and each value of the typed array (from right-to-left) to reduce it to a single value. This method has the same algorithm as Array.prototype.reduceRight().
+	/// </summary>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, T> callbackfn, T initialValue);
 
@@ -720,11 +737,14 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// <typeparam name="U">Compile-time accumulator type. 累加器的编译期类型。</typeparam>
 	/// <param name="callbackfn">(previousValue: U, currentValue: number, currentIndex: number, array: this) => U,A function that accepts up to four arguments.The reduceRight method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only generic reduction overload. 仅值的泛型归约重载。</summary>
 	[Description("@#reduceRight")]
 	public extern U ReduceRight<U>(Func<U, T, Number, TArray, U> callbackfn, U initialValue);
 
+	/// <summary>
+	/// The reduceRight() method of TypedArray instances applies a function against an accumulator and each value of the typed array (from right-to-left) to reduce it to a single value. This method has the same algorithm as Array.prototype.reduceRight().
+	/// </summary>
 	[Description("@#reduceRight")]
 	public extern U ReduceRight<U>(Func<U, T, U> callbackfn, U initialValue);
 
@@ -732,7 +752,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// Reverses the elements in an Array.
 	/// 原地反转 typed array 元素并返回同一实例。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#reverse")]
 	public extern TArray Reverse();
 
@@ -761,7 +781,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="start">The beginning of the specified portion of the array.</param>
 	/// <param name="end">The end of the specified portion of the array. This is exclusive of the element at the index 'end'.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#slice")]
 	public extern TArray Slice(Number? start = null, Number? end = null);
 
@@ -771,7 +791,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="predicate"><para><b>(value: T, index: number, array: this) => unknown</b></para>A function that accepts up to three arguments. The some method calls the predicate function for each element in the typed array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array.</param>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to predicate. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#some")]
 	public extern bool Some(Func<T, Number, TArray, object?> predicate, object? thisArg = null);
 
@@ -780,7 +800,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// 原地排序 typed array 并返回同一实例；未提供比较器时使用 JavaScript typed-array 默认数值排序。
 	/// </summary>
 	/// <param name="compareFn"><para><b>(a: T, b: T) => number</b></para>Function used to determine the order of the elements. It is expected to return a negative value if first argument is less than second argument, zero if they're equal, and a positive value otherwise. If omitted, the elements are sorted in ascending order.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#sort")]
 	public extern TArray Sort(Func<T, T, Number>? compareFn = null);
 
@@ -806,7 +826,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 	/// </summary>
 	/// <param name="begin">The index of the beginning of the array.</param>
 	/// <param name="end">The index of the end of the array.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#subarray")]
 	public extern TArray Subarray(Number? begin = null, Number? end = null);
 

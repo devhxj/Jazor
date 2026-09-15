@@ -29,7 +29,7 @@ public interface IPromise
     /// 当前 Promise 兑现后执行回调并返回新 Promise；调度遵循 JavaScript Promise 微任务语义。
     /// </summary>
     /// <param name="onFulfilled">Action to be invoked on resolution</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Action onFulfilled);
     /// <summary>
@@ -38,7 +38,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled">Action to be invoked when this promise is resolved</param>
     /// <param name="onRejected">Action to be invoked when this promise is rejected</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Action onFulfilled, Action onRejected);
     /// <summary>
@@ -46,7 +46,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled">Action to be invoked when this promise is resolved</param>
     /// <param name="onRejected">Action to be invoked when this promise is rejected</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Action onFulfilled, Action<Error> onRejected);
 
@@ -56,27 +56,25 @@ public interface IPromise
     /// 兑现后执行映射回调，并将返回值按 JavaScript Promise 解析规则包装到新 Promise。
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<T> Then<T>(Func<T> onFulfilled);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
     /// <see cref="Func{TResult}"/>, or <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<T> Then<T>(Func<T> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
     /// <see cref="Func{TResult}"/>, or <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<T> Then<T>(Func<T> onFulfilled, Action<Error> onRejected);
 
@@ -85,7 +83,7 @@ public interface IPromise
     /// <see cref="IPromise{T}"/> returned from the passed in <see cref="Func{TResult}"/>
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled);
     /// <summary>
@@ -93,10 +91,10 @@ public interface IPromise
     /// <see cref="IPromise{T}"/> returned from the passed in <see cref="Func{TResult}"/>, or
     /// <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
+    /// <typeparam name="T">Return type of the <see cref="Func{T}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled, Action onRejected);
     /// <summary>
@@ -104,10 +102,10 @@ public interface IPromise
     /// <see cref="IPromise{T}"/> returned from the passed in <see cref="Func{TResult}"/>, or
     /// <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
+    /// <typeparam name="T">Return type of the <see cref="Func{T}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<T> Then<T>(Func<IPromise<T>> onFulfilled, Action<Error> onRejected);
 
@@ -116,7 +114,7 @@ public interface IPromise
     /// <see cref="IPromise"/> returned from the passed in <see cref="Func{TResult}"/>
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Func<IPromise> onFulfilled);
     /// <summary>
@@ -124,10 +122,9 @@ public interface IPromise
     /// <see cref="IPromise"/> returned from the passed in <see cref="Func{TResult}"/>, or
     /// <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Func<IPromise> onFulfilled, Action onRejected);
     /// <summary>
@@ -135,10 +132,9 @@ public interface IPromise
     /// <see cref="IPromise"/> returned from the passed in <see cref="Func{TResult}"/>, or
     /// <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Func<IPromise> onFulfilled, Action<Error> onRejected);
 
@@ -147,7 +143,7 @@ public interface IPromise
     /// bridge-only <see cref="PromiseResult"/> returned from the passed in <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled);
@@ -158,7 +154,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled, Action onRejected);
@@ -169,7 +165,7 @@ public interface IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<PromiseResult> onFulfilled, Action<Error> onRejected);
@@ -179,7 +175,7 @@ public interface IPromise
     /// bridge-only <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled);
@@ -188,10 +184,10 @@ public interface IPromise
     /// <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>, or
     /// <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
+    /// <typeparam name="T">Return type of the <see cref="Func{T}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action onRejected);
@@ -200,10 +196,10 @@ public interface IPromise
     /// <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>, or
     /// <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
+    /// <typeparam name="T">Return type of the <see cref="Func{T}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action<Error> onRejected);
@@ -227,7 +223,7 @@ public interface IPromise<T> : IPromise
     /// Returns a new promise that will be resolved when the passed in action is finished.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Action{T}"/> to be invoked on resolution</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Action<T> onFulfilled);
     /// <summary>
@@ -235,7 +231,7 @@ public interface IPromise<T> : IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Action{T}"/> to be invoked when this promise is resolved</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Action<T> onFulfilled, Action onRejected);
 
@@ -244,7 +240,7 @@ public interface IPromise<T> : IPromise
     /// </summary>
     /// <param name="onFulfilled"><see cref="Action{T}"/> to be invoked when this promise is resolved</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise Then(Action<T> onFulfilled, Action<Error> onRejected);
 
@@ -254,27 +250,27 @@ public interface IPromise<T> : IPromise
     /// <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
     /// <see cref="Func{TResult}"/>, or <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
+    /// <typeparam name="TResult">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action onRejected);
     /// <summary>
     /// Returns a promise that will be resolved with the return value of the passed in
     /// <see cref="Func{TResult}"/>, or <paramref name="onRejected"/> called when rejected.
     /// </summary>
-    /// <typeparam name="T">Return type of the <see cref="Func{TResult}"/></typeparam>
+    /// <typeparam name="TResult">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action<Error> onRejected);
 
@@ -283,7 +279,7 @@ public interface IPromise<T> : IPromise
     /// bridge-only <see cref="PromiseResult{TResult}"/> returned from the passed in <see cref="Func{TResult}"/>.
     /// </summary>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled);
@@ -295,7 +291,7 @@ public interface IPromise<T> : IPromise
     /// <typeparam name="TResult">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action onRejected);
@@ -307,31 +303,73 @@ public interface IPromise<T> : IPromise
     /// <typeparam name="TResult">Return type of the <see cref="Func{TResult}"/></typeparam>
     /// <param name="onFulfilled"><see cref="Func{T, TResult}"/> to be invoked when this promise is resolved.</param>
     /// <param name="onRejected"><see cref="Action{T}"/> to be invoked when this promise is rejected.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action<Error> onRejected);
 
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onResolve">传给该 API 的参数值。</param>
     [Description("@#then")]
     IPromise Then(Func<T, IPromise> onResolve);
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onResolve">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     IPromise Then(Func<T, IPromise> onResolve, Action onRejected);
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onResolve">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     IPromise Then(Func<T, IPromise> onResolve, Action<Error> onRejected);
 
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled);
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action onRejected);
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action<Error> onRejected);
 
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled);
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled, Action onRejected);
+    /// <summary>
+    /// 注册 Promise 成功与拒绝处理函数；回调在 Promise 完成后异步执行，返回新的 Promise 用于继续链式处理。
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     IPromise Then(Func<T, PromiseResult> onFulfilled, Action<Error> onRejected);
@@ -342,15 +380,15 @@ public interface IPromise<T> : IPromise
 /// This type is not a JavaScript runtime global and its CLR members do not map to JavaScript instance members.
 /// async lowering 和生成绑定使用的桥接占位符；它不是 JavaScript 运行时全局对象，其 CLR 成员也不映射为 JavaScript 实例成员。
 /// </summary>
-[ECMAScript]
-[Description("@#")]
-[EditorBrowsable(EditorBrowsableState.Never)]
 /// <summary>
 /// Awaiter adapter carrier for a non-generic Promise result.
 /// 非泛型 Promise 结果的异步等待适配载体。
 /// </summary>
 /// <remarks>It connects JavaScript Promise values to C# await/awaiter authoring and does not imply synchronous Promise execution.
 /// 它用于把 JavaScript Promise 接入 C# await/awaiter 编写，不代表同步执行 Promise。</remarks>
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromiseResult : IAsyncResult
 {
     /// <summary>CLR async bridge state; not a JavaScript Promise property. CLR 异步桥接状态，不是 JavaScript Promise 属性。</summary>
@@ -382,10 +420,10 @@ public sealed class PromiseResult : IAsyncResult
 /// This type is not a JavaScript runtime global and its CLR members do not map to JavaScript instance members.
 /// async lowering 和生成绑定使用的带结果桥接占位符；它不是 JavaScript 运行时全局对象，其 CLR 成员也不映射为 JavaScript 实例成员。
 /// </summary>
+/// <summary>Awaiter adapter carrier for a typed Promise result. 带结果值的 Promise await 适配载体。</summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-/// <summary>Awaiter adapter carrier for a typed Promise result. 带结果值的 Promise await 适配载体。</summary>
 public sealed class PromiseResult<TResult> : IAsyncResult
 {
 	/// <summary>CLR async bridge state; not a JavaScript Promise property. CLR 异步桥接状态，不是 JavaScript Promise 属性。</summary>
@@ -418,9 +456,9 @@ public sealed class PromiseResult<TResult> : IAsyncResult
 /// JavaScript <c>Promise.allSettled</c> 返回的对象形状。JavaScript 同时允许对象具有 <c>value</c> 与 <c>reason</c> 字段，
 /// 但对于给定 <see cref="Status"/>，只有其中一个具有业务含义。
 /// </summary>
+/// <summary>Fulfilled/rejected union-like result shape returned by <c>Promise.allSettled</c>. Promise.allSettled 返回的 fulfilled/rejected 结果联合形状。</summary>
 [ECMAScript]
 [Description("@#")]
-/// <summary>Fulfilled/rejected union-like result shape returned by <c>Promise.allSettled</c>. Promise.allSettled 返回的 fulfilled/rejected 结果联合形状。</summary>
 public sealed class PromiseSettledResult<T>
 {
 	/// <summary>
@@ -452,9 +490,9 @@ public sealed class PromiseSettledResult<T>
 /// This stays explicit so the C# surface mirrors the runtime object instead of inventing a CLR-only helper abstraction.
 /// JavaScript <c>Promise.withResolvers()</c> 返回的对象形状。保持显式类型，使 C# 表面镜像运行时对象而不发明 CLR 专用辅助抽象。
 /// </summary>
+/// <summary>Promise plus resolve/reject functions returned by <c>Promise.withResolvers</c>. Promise.withResolvers 返回的 Promise 与 resolve/reject 函数集合。</summary>
 [ECMAScript]
 [Description("@#")]
-/// <summary>Promise plus resolve/reject functions returned by <c>Promise.withResolvers</c>. Promise.withResolvers 返回的 Promise 与 resolve/reject 函数集合。</summary>
 public sealed class PromiseWithResolvers
 {
 	/// <summary>
@@ -486,9 +524,9 @@ public sealed class PromiseWithResolvers
 /// Typed JavaScript object shape returned by <c>Promise.withResolvers()</c> when C# wants to preserve the fulfillment type.
 /// 当 C# 需要保留兑现值类型时，JavaScript <c>Promise.withResolvers()</c> 返回的类型化对象形状。
 /// </summary>
+/// <summary>Typed resolver record returned by <c>Promise.withResolvers</c>. 泛型 Promise.withResolvers 返回的结果集合。</summary>
 [ECMAScript]
 [Description("@#")]
-/// <summary>Typed resolver record returned by <c>Promise.withResolvers</c>. 泛型 Promise.withResolvers 返回的结果集合。</summary>
 public sealed class PromiseWithResolvers<T>
 {
 	/// <summary>
@@ -514,8 +552,6 @@ public sealed class PromiseWithResolvers<T>
 	public extern Action<object?> Reject { get; }
 }
 
-[ECMAScript]
-[Description("@#Promise")]
 /// <summary>
 /// Host binding for the JavaScript <c>Promise</c> constructor, static combinators, and instance methods.
 /// JavaScript <c>Promise</c> 构造器、静态组合方法和实例方法的宿主绑定。
@@ -526,6 +562,8 @@ public sealed class PromiseWithResolvers<T>
 /// Promise 的执行、微任务调度和异常传播由 JavaScript runtime 负责；本类型只提供强类型
 /// authoring surface。Task 映射中的延迟启动等 CLR 特殊语义由 Jazor.CLR 另行处理。
 /// </remarks>
+[ECMAScript]
+[Description("@#Promise")]
 public class Promise : IPromise
 {
     /// <summary>
@@ -542,7 +580,7 @@ public class Promise : IPromise
     /// </summary>
     /// <remarks>This is useful for wrapping code in a promise without having to worry if the callback in
     /// the Promise constructor throws an exception.</remarks>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#resolve")]
     public static extern IPromise Resolve();
 
@@ -575,7 +613,7 @@ public class Promise : IPromise
     /// 返回已使用 <see cref="Error"/> 拒绝的 Promise；处理器仍按 JavaScript 微任务语义安排。
     /// </summary>
     /// <param name="e">The exception with which to reject the promise.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#reject")]
     public static extern IPromise Reject(Error e);
 
@@ -648,7 +686,7 @@ public class Promise : IPromise
     /// C# 兼容重载，允许以分散参数调用 <c>Promise.all</c>；JavaScript 本身只接受一个 iterable。非泛型 Promise 可兑现为 <see langword="null"/>，故元素类型可空。
     /// </summary>
     /// <param name="promises">Promises to wait on.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise All(params IPromise[] promises);
@@ -659,7 +697,7 @@ public class Promise : IPromise
     /// JavaScript <c>Promise.all(iterable)</c> 的 C# 投影；任一输入拒绝时立即拒绝最终 Promise，所有输入兑现后才兑现。
     /// </summary>
     /// <param name="promises">Promises to wait on.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#all")]
     public static extern IPromise All(IEnumerable<IPromise> promises);
 
@@ -669,7 +707,7 @@ public class Promise : IPromise
     /// async lowering 专用桥接重载；等待全部 <see cref="PromiseResult"/> 完成，任一拒绝时立即拒绝最终 Promise。
     /// </summary>
     /// <param name="tasks">PromiseResults on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise All(params PromiseResult[] tasks);
@@ -679,8 +717,8 @@ public class Promise : IPromise
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// async lowering 专用 iterable 桥接重载；拒绝短路规则与 JavaScript <c>Promise.all</c> 一致。
     /// </summary>
-    /// <param name="tasks"></param>
-    /// <returns></returns>
+    /// <param name="tasks">传给 Promise 组合操作的可迭代任务或键值。</param>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise All(IEnumerable<PromiseResult> tasks);
@@ -690,8 +728,8 @@ public class Promise : IPromise
     /// JavaScript itself takes a single iterable.
     /// C# 兼容重载，允许以分散参数调用带值 Promise 的 <c>Promise.all</c>；最终兑现值保持为运行时 <see cref="object"/> 数组。
     /// </summary>
-    /// <param name="promises"></param>
-    /// <returns></returns>
+    /// <param name="promises">传给 Promise 组合操作的可迭代任务或键值。</param>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<object?[]> All(params IPromise<object?>[] promises);
@@ -703,8 +741,8 @@ public class Promise : IPromise
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// JavaScript <c>Promise.all(iterable)</c> 的非泛型值承载投影；任一拒绝时立即拒绝，全部兑现时以 <see cref="object"/> 数组兑现。
     /// </summary>
-    /// <param name="promises"></param>
-    /// <returns></returns>
+    /// <param name="promises">传给 Promise 组合操作的可迭代任务或键值。</param>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#all")]
     public static extern IPromise<object?[]> All(IEnumerable<IPromise<object?>> promises);
 
@@ -715,8 +753,8 @@ public class Promise : IPromise
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// async lowering 专用桥接重载；最终兑现值为 <see cref="object"/> 数组，拒绝时短路。
     /// </summary>
-    /// <param name="tasks"></param>
-    /// <returns></returns>
+    /// <param name="tasks">传给 Promise 组合操作的可迭代任务或键值。</param>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<object?[]> All(params PromiseResult<object?>[] tasks);
@@ -729,7 +767,7 @@ public class Promise : IPromise
     /// async lowering 专用 iterable 桥接重载；最终兑现值为 <see cref="object"/> 数组，拒绝时短路。
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<object?[]> All(IEnumerable<PromiseResult<object?>> tasks);
@@ -810,7 +848,7 @@ public class Promise : IPromise
     /// C# 兼容重载，允许以分散参数调用 <c>Promise.any</c>；JavaScript 本身只接受一个 iterable。
     /// </summary>
     /// <param name="promises"><see cref="IPromise"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise Any(params IPromise[] promises);
@@ -821,7 +859,7 @@ public class Promise : IPromise
     /// JavaScript <c>Promise.any(iterable)</c> 的 C# 投影；第一个兑现的输入决定结果，若全部拒绝则以 <c>AggregateError</c> 语义拒绝，而不是使用第一个拒绝原因。
     /// </summary>
     /// <param name="promises"><see cref="IEnumerable{T}"/> of <see cref="IPromise"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#any")]
     public static extern IPromise Any(IEnumerable<IPromise> promises);
 
@@ -831,7 +869,7 @@ public class Promise : IPromise
     /// async lowering 专用桥接重载；第一个兑现结果获胜，全部拒绝时按 JavaScript <c>Promise.any</c> 拒绝语义处理。
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise Any(params PromiseResult[] tasks);
@@ -841,7 +879,7 @@ public class Promise : IPromise
     /// async lowering 专用 iterable 桥接重载；第一个兑现结果获胜。
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise Any(IEnumerable<PromiseResult> tasks);
@@ -850,7 +888,7 @@ public class Promise : IPromise
     /// <summary>Bridge overload of <c>Promise.any</c> for typed async results. 面向类型化异步结果的 <c>Promise.any</c> 桥接重载。</summary>
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult{TResult}"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<object?> Any(params PromiseResult<object?>[] tasks);
@@ -859,7 +897,7 @@ public class Promise : IPromise
     /// <summary>Iterable bridge overload of <c>Promise.any</c> for typed async results. 面向类型化异步结果的 iterable <c>Promise.any</c> 桥接重载。</summary>
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<object?> Any(IEnumerable<PromiseResult<object?>> tasks);
@@ -870,7 +908,7 @@ public class Promise : IPromise
     /// C# 兼容重载，允许以分散带值 Promise 参数调用 <c>Promise.any</c>。
     /// </summary>
     /// <param name="promises"><see cref="IPromise{T}"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
     public static extern IPromise<object?> Any(params IPromise<object?>[] promises);
@@ -881,7 +919,7 @@ public class Promise : IPromise
     /// JavaScript <c>Promise.any(iterable)</c> 的 C# 投影；第一个兑现输入决定结果，全部拒绝时按 AggregateError 语义拒绝。
     /// </summary>
     /// <param name="promises"><see cref="IEnumerable{T}"/> of <see cref="IPromise{T}"/>s on which to wait</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#any")]
     public static extern IPromise<object?> Any(IEnumerable<IPromise<object?>> promises);
 
@@ -904,7 +942,7 @@ public class Promise : IPromise
     /// JavaScript <c>Promise.race(iterable)</c> 的 C# 投影；第一个结算的输入（兑现或拒绝）决定最终 Promise。
     /// </summary>
     /// <param name="promises"><see cref="IEnumerable{T}"/> of <see cref="IPromise"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#race")]
     public static extern IPromise Race(IEnumerable<IPromise> promises);
 
@@ -914,7 +952,7 @@ public class Promise : IPromise
     /// C# 兼容重载，允许以分散参数调用 <c>Promise.race</c>。
     /// </summary>
     /// <param name="promises"><see cref="IPromise"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise Race(params IPromise[] promises);
@@ -924,7 +962,7 @@ public class Promise : IPromise
     /// async lowering 专用 iterable 桥接重载；第一个结算结果（兑现或拒绝）决定最终 Promise。
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise Race(IEnumerable<PromiseResult> tasks);
@@ -934,7 +972,7 @@ public class Promise : IPromise
     /// async lowering 专用分散参数桥接重载；第一个结算结果决定最终 Promise。
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise Race(params PromiseResult[] tasks);
@@ -945,7 +983,7 @@ public class Promise : IPromise
     /// 带值 <c>Promise.race</c> 投影；第一个结算输入决定结果，兑现值可为 <see langword="null"/>。
     /// </summary>
     /// <param name="promises"><see cref="IEnumerable{T}"/> of <see cref="IPromise{T}"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#race")]
     public static extern IPromise<object?> Race(IEnumerable<IPromise<object?>> promises);
 
@@ -955,7 +993,7 @@ public class Promise : IPromise
     /// C# 兼容重载，允许以分散带值 Promise 参数调用 <c>Promise.race</c>。
     /// </summary>
     /// <param name="promises"><see cref="IPromise{T}"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise<object?> Race(params IPromise<object?>[] promises);
@@ -964,7 +1002,7 @@ public class Promise : IPromise
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise<object?> Race(IEnumerable<PromiseResult<object?>> tasks);
@@ -973,11 +1011,14 @@ public class Promise : IPromise
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
     /// </summary>
     /// <param name="tasks"><see cref="PromiseResult{TResult}"/>s on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
     public static extern IPromise<object?> Race(params PromiseResult<object?>[] tasks);
 
+    /// <summary>
+    /// 供派生绑定类型声明 Promise 宿主投影；实际 Promise 使用执行器构造或由 JavaScript API 返回。
+    /// </summary>
     protected extern Promise();
 
     /// <summary>
@@ -1091,14 +1132,30 @@ public class Promise : IPromise
     [Description("@#then")]
     public extern IPromise Then(Func<PromiseResult> onFulfilled, Action<Error> onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <typeparam name="T">Promise 结果的编译期类型。</typeparam>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <typeparam name="T">Promise 结果的编译期类型。</typeparam>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<T> Then<T>(Func<PromiseResult<T>> onFulfilled, Action<Error> onRejected);
@@ -1112,12 +1169,12 @@ public class Promise : IPromise
     public extern IPromise Finally(Action onFinal);
 }
 
-[ECMAScript]
-[Description("@#Promise")]  
 /// <summary>
 /// JavaScript <c>Promise</c> host binding with a compile-time fulfillment type annotation.
 /// 带编译期兑现结果类型标注的 JavaScript <c>Promise</c> 宿主绑定。
 /// </summary>
+[ECMAScript]
+[Description("@#Promise")]
 public sealed class Promise<T> : Promise, IPromise<T>
 {
     /// <summary>
@@ -1125,7 +1182,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// 使用 <paramref name="arg"/> 兑现 Promise；泛型只保留 C# 侧的兑现值类型标注。
     /// </summary>
     /// <param name="arg">Value to use to resolve this promise</param>
-    /// <returns></returns>    
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#resolve")]
     public static extern IPromise<T> Resolve(T arg);
 
@@ -1150,7 +1207,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// 返回以 <paramref name="ex"/> 拒绝的类型化 Promise；拒绝值不会携带 <typeparamref name="T"/>。
     /// </summary>
     /// <param name="ex">Exception used to reject this promise.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#reject")]
     public static extern new IPromise<T> Reject(Error ex);
 
@@ -1197,8 +1254,8 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// JavaScript itself takes a single iterable.
     /// C# 兼容重载，允许以分散参数调用类型化 <c>Promise.all</c>。
     /// </summary>
-    /// <param name="promises"></param>
-    /// <returns></returns>
+    /// <param name="promises">传给 Promise 组合操作的可迭代任务或键值。</param>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#all")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static extern IPromise<T[]> All(params IPromise<T>[] promises);
@@ -1210,12 +1267,11 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// If any is rejected, it will stop waiting and reject the final promise.
     /// JavaScript <c>Promise.all(iterable)</c> 的类型化投影；所有输入兑现时以 <typeparamref name="T"/> 数组兑现，任一拒绝时短路。
     /// </summary>
-    /// <param name="promises"></param>
-    /// <returns></returns>
+    /// <param name="promises">传给 Promise 组合操作的可迭代任务或键值。</param>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#all")]
     public static extern IPromise<T[]> All(IEnumerable<IPromise<T>> promises);
 
-    [Description("@#all")]
     /// <summary>
     /// Compatibility overload used by async lowering. JavaScript itself takes a single iterable.
     /// Returns a promise that will resolve when all passed in tasks are resolved.
@@ -1223,7 +1279,8 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// async lowering 专用类型化桥接重载；任一任务拒绝时短路，全部完成后兑现 <typeparamref name="T"/> 数组。
     /// </summary>
     /// <param name="tasks">PromiseResults on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
+    [Description("@#all")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static extern IPromise<T[]> All(params PromiseResult<T>[] tasks);
 
@@ -1234,7 +1291,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// async lowering 专用类型化 iterable 桥接重载；拒绝短路规则与 JavaScript <c>Promise.all</c> 一致。
     /// </summary>
     /// <param name="tasks"><see cref="IEnumerable{T}"/> of <see cref="PromiseResult{TResult}"/> values on which to wait.</param>
-    /// <returns></returns>
+    /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
     public static extern IPromise<T[]> All(IEnumerable<PromiseResult<T>> tasks);
@@ -1378,51 +1435,117 @@ public sealed class Promise<T> : Promise, IPromise<T>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, TResult> onFulfilled, Action<Error> onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, PromiseResult<TResult>> onFulfilled, Action<Error> onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onResolve">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise Then(Func<T, IPromise> onResolve);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onResolve">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise Then(Func<T, IPromise> onResolve, Action onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onResolve">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise Then(Func<T, IPromise> onResolve, Action<Error> onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<T, PromiseResult> onFulfilled);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<T, PromiseResult> onFulfilled, Action onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#then")]
     public extern IPromise Then(Func<T, PromiseResult> onFulfilled, Action<Error> onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action onRejected);
 
+    /// <summary>
+    /// The then() method of Promise instances takes up to two arguments: callback functions for the fulfilled and rejected cases of the Promise. It stores the callbacks within the promise it is called on and immediately returns another Promise object, allowing you to chain calls to other promise methods.
+    /// </summary>
+    /// <param name="onFulfilled">传给该 API 的参数值。</param>
+    /// <param name="onRejected">传给该 API 的参数值。</param>
     [Description("@#then")]
     public extern IPromise<TResult> Then<TResult>(Func<T, IPromise<TResult>> onFulfilled, Action<Error> onRejected);
 

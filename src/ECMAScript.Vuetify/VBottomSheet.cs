@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VBottomSheet")]
 /// <summary>
 /// Vuetify 底部抽屉组件。
 /// Vuetify bottom sheet component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VBottomSheet")]
 public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
 {
     /// <summary>

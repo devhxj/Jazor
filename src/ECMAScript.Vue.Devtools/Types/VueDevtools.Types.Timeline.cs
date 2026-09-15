@@ -191,6 +191,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class ScreenshotOverlayRenderContext<TData, TMeta>
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected ScreenshotOverlayRenderContext()
         {
         }
@@ -231,6 +234,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class InspectTimelineEventPayload<TData, TMeta>
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected InspectTimelineEventPayload()
         {
         }

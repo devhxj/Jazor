@@ -10,6 +10,7 @@
     <Description>Vue 3 host bindings for ECMAScript runtime authoring.</Description>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
   </PropertyGroup>
 

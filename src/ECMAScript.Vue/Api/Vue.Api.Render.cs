@@ -8,6 +8,8 @@ namespace ECMAScript;
 /// <remarks>该分片只提供最终 render-function 所需的 host contract，不引入中间模板 marker。</remarks>
 public static partial class Vue
 {
+	private const string BindThisInlineTemplate = "((__cb) => function(){ return __cb(this, ...arguments); })(__arg1)";
+
 	/// <summary>
 	/// 将 this 感知数据回调绑定到 Vue Options API <c>data()</c> 运行时形式。
 	/// Binds a this-aware data callback to Vue's Options API <c>data()</c> runtime shape.
@@ -15,8 +17,6 @@ public static partial class Vue
 	/// <typeparam name="TThis">组件公共实例的类型化视图。Typed view of the component public instance.</typeparam>
 	/// <param name="callback">首先接收运行时 <c>this</c> 的回调。The callback that receives runtime <c>this</c> first.</param>
 	/// <returns>标准的 Vue 数据回调。A standard Vue data callback.</returns>
-	private const string BindThisInlineTemplate = "((__cb) => function(){ return __cb(this, ...arguments); })(__arg1)";
-
 	[ECMAScriptInline(BindThisInlineTemplate)]
 	public extern static VueDataCallback BindThis<TThis>(VueThisDataCallback<TThis> callback)
 		where TThis : class;

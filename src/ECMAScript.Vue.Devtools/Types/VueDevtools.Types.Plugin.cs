@@ -66,7 +66,7 @@ public static partial class VueDevtools
 
     /// <summary>
     /// 带 settings 值类型标记的 descriptor。泛型在 JavaScript 发射时擦除，
-    /// 仅让 <see cref="PluginApi{TSettings}.GetSettings"/> 和 settings hook 保持业务类型。
+    /// 仅让 <see cref="PluginApi{TSettings}.GetSettings()"/> 和 settings hook 保持业务类型。
     /// </summary>
     /// <typeparam name="TSettings">应用声明的 settings 值 record。</typeparam>
     [ECMAScript]
@@ -84,7 +84,7 @@ public static partial class VueDevtools
 
     /// <summary>
     /// Devtools 读取到的 settings 值字典。对于固定业务 schema，优先使用
-    /// <see cref="PluginApi{TSettings}.GetSettings"/> 获取具体 record。
+    /// <see cref="PluginApi{TSettings}.GetSettings()"/> 获取具体 record。
     /// </summary>
     [ECMAScript]
     [Description("@#")]
@@ -262,6 +262,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class PluginApi
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected PluginApi()
         {
         }
@@ -364,6 +367,9 @@ public static partial class VueDevtools
     public abstract class PluginApi<TSettings> : PluginApi
         where TSettings : Vue.VueProps
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected PluginApi()
         {
         }
@@ -385,6 +391,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class PluginHooks
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected PluginHooks()
         {
         }

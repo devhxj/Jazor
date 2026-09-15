@@ -5,14 +5,14 @@ namespace ECMAScript;
 /// The surface keeps JavaScript property-key semantics instead of collapsing them to <see cref="string"/>.
 /// JavaScript <c>Reflect</c> 对象投影；表面保留 JavaScript 属性键语义，而不折叠为 <see cref="string"/>。
 /// </summary>
-[ECMAScript]
-[Description("@#Reflect")]
 /// <remarks>
 /// <c>Reflect</c> retains JavaScript property-key, receiver, and return-value rules, so some parameters must retain
 /// <see cref="object"/> or <see cref="PropertyKeyRef"/> shapes. Do not reduce these to string-only or catch-all APIs for superficial C# convenience.
 /// <c>Reflect</c> 保留 JavaScript 的属性键、receiver 和返回值规则，因此部分参数必须保留
 /// <see cref="object"/> 或 <see cref="PropertyKeyRef"/> 形状；不要为表面简洁而改成仅 string 或 catch-all API。
 /// </remarks>
+[ECMAScript]
+[Description("@#Reflect")]
 public static class Reflect
 {
 	/// <summary>
@@ -156,4 +156,3 @@ public static class Reflect
 	[Description("@#preventExtensions")]
 	public extern static bool PreventExtensions(object target);
 }
-

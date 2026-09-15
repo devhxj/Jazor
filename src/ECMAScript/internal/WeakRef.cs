@@ -5,14 +5,14 @@ namespace ECMAScript;
 /// JavaScript allows objects and non-global symbols here; the runtime enforces that rule.
 /// JavaScript <c>WeakRef</c> 可弱引用一个值而不阻止垃圾回收；JavaScript 允许对象和非全局 Symbol，运行时负责强制该规则。
 /// </summary>
-[ECMAScript]
-[Description("@#WeakRef")]
 /// <remarks>
 /// Collection timing cannot be controlled by this C# binding. A <see langword="null"/> <c>Deref</c> result only projects JavaScript <c>undefined</c> as an absent value;
 /// it must not be used to infer a target's exact lifecycle.
 /// 回收时机不能由此 C# binding 控制；<c>Deref</c> 返回 <see langword="null"/> 仅表示 JavaScript <c>undefined</c>
 /// 在投影中的缺失值，不可据此推断目标的精确生命周期。
 /// </remarks>
+[ECMAScript]
+[Description("@#WeakRef")]
 public sealed class WeakRef
 {
 	/// <summary>

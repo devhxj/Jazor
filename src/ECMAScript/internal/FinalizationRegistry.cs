@@ -5,14 +5,14 @@ namespace ECMAScript;
 /// The surface stays non-generic so the C# host shape remains close to the JavaScript runtime object.
 /// JavaScript <c>FinalizationRegistry</c> 构造器宿主投影；表面保持非泛型，使 C# 宿主形状接近 JavaScript 运行时对象。
 /// </summary>
-[ECMAScript]
-[Description("@#FinalizationRegistry")]
 /// <remarks>
 /// Finalization callback timing is decided by the JavaScript garbage collector and cannot provide deterministic resource release.
 /// For <c>using</c>/<c>Dispose</c> semantics, use the compiler explicit-disposal protocol instead.
 /// Finalization 回调执行时机由 JavaScript 垃圾回收器决定，不能用于确定性资源释放；
 /// 需要 <c>using</c>/<c>Dispose</c> 语义时，应使用编译器显式释放协议。
 /// </remarks>
+[ECMAScript]
+[Description("@#FinalizationRegistry")]
 public sealed class FinalizationRegistry
 {
 	/// <summary>

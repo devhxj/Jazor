@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VBanner")]
 /// <summary>
 /// Vuetify 横幅组件。
 /// Vuetify banner component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VBanner")]
 public sealed class VBanner : ComponentBase, IVuetifyComponent
 {
     /// <summary>

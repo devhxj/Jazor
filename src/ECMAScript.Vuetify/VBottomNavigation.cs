@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VBottomNavigation")]
 /// <summary>
 /// Vuetify 底部导航组件。
 /// Vuetify bottom navigation component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VBottomNavigation")]
 public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
 {
     /// <summary>

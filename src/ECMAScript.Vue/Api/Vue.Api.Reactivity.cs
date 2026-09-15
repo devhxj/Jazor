@@ -658,9 +658,9 @@ public static partial class Vue
 
 	/// <summary>
 	/// 立即运行副作用函数，并在其响应式依赖变更时重新运行。
-	/// 与 <see cref="Watch{T}"/> 不同，此函数不接收新旧值——它只是重新执行整个副作用。
+	/// 与 <see cref="Watch{T}(Func{T}, Action{T, T})"/> 不同，此函数不接收新旧值——它只是重新执行整个副作用。
 	/// Runs a side-effect function immediately and re-runs it whenever its reactive
-	/// dependencies change. Unlike <see cref="Watch{T}"/>, this does not receive old/new
+	/// dependencies change. Unlike <see cref="Watch{T}(Func{T}, Action{T, T})"/>, this does not receive old/new
 	/// values — it simply re-executes the entire effect.
 	/// </summary>
 	/// <param name="effect">要运行的副作用函数。内部访问的响应式值被追踪为依赖。The side-effect function to run. Reactive values accessed inside are tracked as dependencies.</param>

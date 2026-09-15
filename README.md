@@ -70,7 +70,7 @@ The badges above show maintained acceptance thresholds rather than a stale one-o
 - Current Razor-to-Vue integration: at least 4,000 passing scenarios, 90% line coverage, and 94% branch coverage while the integration work continues.
 - Vue ecosystem bindings: at least 90% audited public binding-contract coverage per target.
 
-Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).
+Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. Run `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` to verify that public ECMAScript and binding declarations retain XML documentation, upstream source metadata, and package XML delivery. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).
 
 ## Packages
 

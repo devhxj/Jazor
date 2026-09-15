@@ -3,6 +3,7 @@
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>ECMAScript.TDesign</PackageId>
     <Authors>hanxj</Authors>
     <Description>TDesign Vue Next C# bindings and RazorVue contracts backed by package-local manifest.json and dist runtime resources.</Description>

@@ -1,11 +1,11 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
 /// <summary>
 /// JavaScript <c>Error</c> constructor options object binding.
 /// JavaScript <c>Error</c> 构造器可接受的 options 对象绑定。
 /// </summary>
+[ECMAScript]
+[Description("@#")]
 public sealed class ErrorOptions
 {
 	/// <summary>
@@ -16,8 +16,6 @@ public sealed class ErrorOptions
 	public object? Cause { get; set; }
 }
 
-[ECMAScript]
-[Description("@#Error")]
 /// <summary>
 /// JavaScript <c>Error</c> object and its static construction and inspection APIs host binding.
 /// JavaScript <c>Error</c> 对象及其静态构造、判断 API 的宿主绑定。
@@ -28,6 +26,8 @@ public sealed class ErrorOptions
 /// Error 的运行时品牌来自 JavaScript，而非 CLR <see cref="System.Exception"/> 继承关系；异常 lowering
 /// 必须遵守编译器错误协议，不能将所有 Error 都作为普通 C# Exception 匹配。
 /// </remarks>
+[ECMAScript]
+[Description("@#Error")]
 public class Error : System.Exception
 {
 	/// <summary>
@@ -103,9 +103,9 @@ public class Error : System.Exception
 	public extern override string ToString();
 }
 
+/// <summary>JavaScript <c>EvalError</c> host binding. JavaScript <c>EvalError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#EvalError")]
-/// <summary>JavaScript <c>EvalError</c> host binding. JavaScript <c>EvalError</c> 宿主绑定。</summary>
 public class EvalError : Error
 {
 	/// <summary>
@@ -136,9 +136,9 @@ public class EvalError : Error
 	public extern EvalError(string message, ErrorOptions? options);
 }
 
+/// <summary>JavaScript <c>RangeError</c> host binding. JavaScript <c>RangeError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#RangeError")]
-/// <summary>JavaScript <c>RangeError</c> host binding. JavaScript <c>RangeError</c> 宿主绑定。</summary>
 public class RangeError : Error
 {
 	/// <summary>
@@ -169,9 +169,9 @@ public class RangeError : Error
 	public extern RangeError(string message, ErrorOptions? options);
 }
 
+/// <summary>JavaScript <c>ReferenceError</c> host binding. JavaScript <c>ReferenceError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#ReferenceError")]
-/// <summary>JavaScript <c>ReferenceError</c> host binding. JavaScript <c>ReferenceError</c> 宿主绑定。</summary>
 public class ReferenceError : Error
 {
 	/// <summary>
@@ -202,9 +202,9 @@ public class ReferenceError : Error
 	public extern ReferenceError(string message, ErrorOptions? options);
 }
 
+/// <summary>JavaScript <c>SyntaxError</c> host binding. JavaScript <c>SyntaxError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#SyntaxError")]
-/// <summary>JavaScript <c>SyntaxError</c> host binding. JavaScript <c>SyntaxError</c> 宿主绑定。</summary>
 public class SyntaxError : Error
 {
 	/// <summary>
@@ -235,9 +235,9 @@ public class SyntaxError : Error
 	public extern SyntaxError(string message, ErrorOptions? options);
 }
 
+/// <summary>JavaScript <c>TypeError</c> host binding. JavaScript <c>TypeError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#TypeError")]
-/// <summary>JavaScript <c>TypeError</c> host binding. JavaScript <c>TypeError</c> 宿主绑定。</summary>
 public class TypeError : Error
 {
 	/// <summary>
@@ -268,9 +268,9 @@ public class TypeError : Error
 	public extern TypeError(string message, ErrorOptions? options);
 }
 
+/// <summary>JavaScript <c>URIError</c> host binding. JavaScript <c>URIError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#URIError")]
-/// <summary>JavaScript <c>URIError</c> host binding. JavaScript <c>URIError</c> 宿主绑定。</summary>
 public class URIError : Error
 {
 	/// <summary>
@@ -301,9 +301,9 @@ public class URIError : Error
 	public extern URIError(string message, ErrorOptions? options);
 }
 
+/// <summary>JavaScript <c>AggregateError</c> host binding. JavaScript <c>AggregateError</c> 宿主绑定。</summary>
 [ECMAScript]
 [Description("@#AggregateError")]
-/// <summary>JavaScript <c>AggregateError</c> host binding. JavaScript <c>AggregateError</c> 宿主绑定。</summary>
 public class AggregateError : Error
 {
 	/// <summary>

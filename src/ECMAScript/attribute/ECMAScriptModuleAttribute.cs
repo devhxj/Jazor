@@ -16,6 +16,9 @@ public sealed class ECMAScriptModuleAttribute : Attribute
     /// </summary>
     public string? Export { get; }
 
+    /// <summary>
+    /// 创建用于标记 ECMAScript 模块声明的特性。
+    /// </summary>
     public ECMAScriptModuleAttribute()
     {
         Export = null;

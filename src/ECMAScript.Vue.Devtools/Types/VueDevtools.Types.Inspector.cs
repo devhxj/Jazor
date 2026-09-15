@@ -413,6 +413,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class EditStatePayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected EditStatePayload()
         {
         }
@@ -471,6 +474,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class EditComponentStatePayload : EditStatePayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected EditComponentStatePayload()
         {
         }
@@ -481,6 +487,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class EditInspectorStatePayload : EditStatePayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected EditInspectorStatePayload()
         {
         }
@@ -491,6 +500,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class GetInspectorTreePayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected GetInspectorTreePayload()
         {
         }
@@ -517,6 +529,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class GetInspectorStatePayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected GetInspectorStatePayload()
         {
         }
@@ -543,6 +558,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class SetPluginSettingsPayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected SetPluginSettingsPayload()
         {
         }
@@ -579,6 +597,9 @@ public static partial class VueDevtools
     public abstract class SetPluginSettingsPayload<TSettings> : SetPluginSettingsPayload
         where TSettings : Vue.VueProps
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected SetPluginSettingsPayload()
         {
         }

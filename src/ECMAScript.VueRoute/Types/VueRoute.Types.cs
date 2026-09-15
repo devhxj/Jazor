@@ -2778,6 +2778,10 @@ public readonly struct RouterScrollResult : IUnion
 	private readonly ScrollPositionElement? _element;
 	private readonly ScrollPositionNormalized? _normalized;
 
+	/// <summary>
+	/// 保存滚动行为的同步结果或异步 Promise；支持坐标、目标元素和禁用滚动的分支。
+	/// </summary>
+	/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 	public RouterScrollResult(bool value)
 	{
 		_kind = 1;
@@ -2787,6 +2791,10 @@ public readonly struct RouterScrollResult : IUnion
 		_normalized = default;
 	}
 
+	/// <summary>
+	/// 保存滚动行为的同步结果或异步 Promise；支持坐标、目标元素和禁用滚动的分支。
+	/// </summary>
+	/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 	public RouterScrollResult(ScrollPositionCoordinates value)
 	{
 		_kind = 2;
@@ -2796,6 +2804,10 @@ public readonly struct RouterScrollResult : IUnion
 		_normalized = default;
 	}
 
+	/// <summary>
+	/// 保存滚动行为的同步结果或异步 Promise；支持坐标、目标元素和禁用滚动的分支。
+	/// </summary>
+	/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 	public RouterScrollResult(ScrollPositionElement value)
 	{
 		_kind = 3;
@@ -2805,6 +2817,10 @@ public readonly struct RouterScrollResult : IUnion
 		_normalized = default;
 	}
 
+	/// <summary>
+	/// 保存滚动行为的同步结果或异步 Promise；支持坐标、目标元素和禁用滚动的分支。
+	/// </summary>
+	/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 	public RouterScrollResult(ScrollPositionNormalized value)
 	{
 		_kind = 4;

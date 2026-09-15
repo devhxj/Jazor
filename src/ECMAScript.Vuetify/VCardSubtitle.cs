@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VCardSubtitle")]
 /// <summary>
 /// Vuetify 卡片副标题组件。
 /// Vuetify card subtitle component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VCardSubtitle")]
 public sealed class VCardSubtitle : ComponentBase, IVuetifyComponent
 {
     /// <summary>

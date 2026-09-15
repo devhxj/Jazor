@@ -4,352 +4,468 @@
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>供 Vue render/h 调用的组件导出；将所需导出传给渲染函数或应用组件注册表。</summary>
 [ECMAScript("vuetify/components")]
 public static class VuetifyComponents
 {
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VAlert"/>。</summary>
     [ECMAScriptName("VAlert")]
     public extern static IVuetifyComponent VAlert { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VApp"/>。</summary>
     [ECMAScriptName("VApp")]
     public extern static IVuetifyComponent VApp { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VAppBar"/>。</summary>
     [ECMAScriptName("VAppBar")]
     public extern static IVuetifyComponent VAppBar { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VAutocomplete"/>。</summary>
     [ECMAScriptName("VAutocomplete")]
     public extern static IVuetifyComponent VAutocomplete { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VAvatar"/>。</summary>
     [ECMAScriptName("VAvatar")]
     public extern static IVuetifyComponent VAvatar { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBadge"/>。</summary>
     [ECMAScriptName("VBadge")]
     public extern static IVuetifyComponent VBadge { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBanner"/>。</summary>
     [ECMAScriptName("VBanner")]
     public extern static IVuetifyComponent VBanner { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBottomNavigation"/>。</summary>
     [ECMAScriptName("VBottomNavigation")]
     public extern static IVuetifyComponent VBottomNavigation { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBottomSheet"/>。</summary>
     [ECMAScriptName("VBottomSheet")]
     public extern static IVuetifyComponent VBottomSheet { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBreadcrumbs"/>。</summary>
     [ECMAScriptName("VBreadcrumbs")]
     public extern static IVuetifyComponent VBreadcrumbs { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBtn"/>。</summary>
     [ECMAScriptName("VBtn")]
     public extern static IVuetifyComponent VBtn { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBtnGroup"/>。</summary>
     [ECMAScriptName("VBtnGroup")]
     public extern static IVuetifyComponent VBtnGroup { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VBtnToggle"/>。</summary>
     [ECMAScriptName("VBtnToggle")]
     public extern static IVuetifyComponent VBtnToggle { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCard"/>。</summary>
     [ECMAScriptName("VCard")]
     public extern static IVuetifyComponent VCard { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardActions"/>。</summary>
     [ECMAScriptName("VCardActions")]
     public extern static IVuetifyComponent VCardActions { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardItem"/>。</summary>
     [ECMAScriptName("VCardItem")]
     public extern static IVuetifyComponent VCardItem { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardSubtitle"/>。</summary>
     [ECMAScriptName("VCardSubtitle")]
     public extern static IVuetifyComponent VCardSubtitle { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardText"/>。</summary>
     [ECMAScriptName("VCardText")]
     public extern static IVuetifyComponent VCardText { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardTitle"/>。</summary>
     [ECMAScriptName("VCardTitle")]
     public extern static IVuetifyComponent VCardTitle { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCarousel"/>。</summary>
     [ECMAScriptName("VCarousel")]
     public extern static IVuetifyComponent VCarousel { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCheckbox"/>。</summary>
     [ECMAScriptName("VCheckbox")]
     public extern static IVuetifyComponent VCheckbox { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VChip"/>。</summary>
     [ECMAScriptName("VChip")]
     public extern static IVuetifyComponent VChip { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VChipGroup"/>。</summary>
     [ECMAScriptName("VChipGroup")]
     public extern static IVuetifyComponent VChipGroup { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCode"/>。</summary>
     [ECMAScriptName("VCode")]
     public extern static IVuetifyComponent VCode { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCol"/>。</summary>
     [ECMAScriptName("VCol")]
     public extern static IVuetifyComponent VCol { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VColorPicker"/>。</summary>
     [ECMAScriptName("VColorPicker")]
     public extern static IVuetifyComponent VColorPicker { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCombobox"/>。</summary>
     [ECMAScriptName("VCombobox")]
     public extern static IVuetifyComponent VCombobox { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VConfirmEdit"/>。</summary>
     [ECMAScriptName("VConfirmEdit")]
     public extern static IVuetifyComponent VConfirmEdit { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VContainer"/>。</summary>
     [ECMAScriptName("VContainer")]
     public extern static IVuetifyComponent VContainer { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCounter"/>。</summary>
     [ECMAScriptName("VCounter")]
     public extern static IVuetifyComponent VCounter { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDataIterator"/>。</summary>
     [ECMAScriptName("VDataIterator")]
     public extern static IVuetifyComponent VDataIterator { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDataTable"/>。</summary>
     [ECMAScriptName("VDataTable")]
     public extern static IVuetifyComponent VDataTable { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDatePicker"/>。</summary>
     [ECMAScriptName("VDatePicker")]
     public extern static IVuetifyComponent VDatePicker { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDefaultsProvider"/>。</summary>
     [ECMAScriptName("VDefaultsProvider")]
     public extern static IVuetifyComponent VDefaultsProvider { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDialog"/>。</summary>
     [ECMAScriptName("VDialog")]
     public extern static IVuetifyComponent VDialog { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDivider"/>。</summary>
     [ECMAScriptName("VDivider")]
     public extern static IVuetifyComponent VDivider { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VEmptyState"/>。</summary>
     [ECMAScriptName("VEmptyState")]
     public extern static IVuetifyComponent VEmptyState { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VExpansionPanel"/>。</summary>
     [ECMAScriptName("VExpansionPanel")]
     public extern static IVuetifyComponent VExpansionPanel { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VFab"/>。</summary>
     [ECMAScriptName("VFab")]
     public extern static IVuetifyComponent VFab { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VField"/>。</summary>
     [ECMAScriptName("VField")]
     public extern static IVuetifyComponent VField { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VFileInput"/>。</summary>
     [ECMAScriptName("VFileInput")]
     public extern static IVuetifyComponent VFileInput { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VFooter"/>。</summary>
     [ECMAScriptName("VFooter")]
     public extern static IVuetifyComponent VFooter { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VForm"/>。</summary>
     [ECMAScriptName("VForm")]
     public extern static IVuetifyComponent VForm { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VHover"/>。</summary>
     [ECMAScriptName("VHover")]
     public extern static IVuetifyComponent VHover { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VIcon"/>。</summary>
     [ECMAScriptName("VIcon")]
     public extern static IVuetifyComponent VIcon { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VImg"/>。</summary>
     [ECMAScriptName("VImg")]
     public extern static IVuetifyComponent VImg { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VInfiniteScroll"/>。</summary>
     [ECMAScriptName("VInfiniteScroll")]
     public extern static IVuetifyComponent VInfiniteScroll { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VInput"/>。</summary>
     [ECMAScriptName("VInput")]
     public extern static IVuetifyComponent VInput { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VItemGroup"/>。</summary>
     [ECMAScriptName("VItemGroup")]
     public extern static IVuetifyComponent VItemGroup { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VKbd"/>。</summary>
     [ECMAScriptName("VKbd")]
     public extern static IVuetifyComponent VKbd { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VLabel"/>。</summary>
     [ECMAScriptName("VLabel")]
     public extern static IVuetifyComponent VLabel { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VLayout"/>。</summary>
     [ECMAScriptName("VLayout")]
     public extern static IVuetifyComponent VLayout { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VLazy"/>。</summary>
     [ECMAScriptName("VLazy")]
     public extern static IVuetifyComponent VLazy { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VList"/>。</summary>
     [ECMAScriptName("VList")]
     public extern static IVuetifyComponent VList { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VListItem"/>。</summary>
     [ECMAScriptName("VListItem")]
     public extern static IVuetifyComponent VListItem { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VLocaleProvider"/>。</summary>
     [ECMAScriptName("VLocaleProvider")]
     public extern static IVuetifyComponent VLocaleProvider { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VMain"/>。</summary>
     [ECMAScriptName("VMain")]
     public extern static IVuetifyComponent VMain { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VMenu"/>。</summary>
     [ECMAScriptName("VMenu")]
     public extern static IVuetifyComponent VMenu { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VMessages"/>。</summary>
     [ECMAScriptName("VMessages")]
     public extern static IVuetifyComponent VMessages { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VNavigationDrawer"/>。</summary>
     [ECMAScriptName("VNavigationDrawer")]
     public extern static IVuetifyComponent VNavigationDrawer { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VNoSsr"/>。</summary>
     [ECMAScriptName("VNoSsr")]
     public extern static IVuetifyComponent VNoSsr { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VNumberInput"/>。</summary>
     [ECMAScriptName("VNumberInput")]
     public extern static IVuetifyComponent VNumberInput { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VOtpInput"/>。</summary>
     [ECMAScriptName("VOtpInput")]
     public extern static IVuetifyComponent VOtpInput { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VOverlay"/>。</summary>
     [ECMAScriptName("VOverlay")]
     public extern static IVuetifyComponent VOverlay { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VPagination"/>。</summary>
     [ECMAScriptName("VPagination")]
     public extern static IVuetifyComponent VPagination { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VParallax"/>。</summary>
     [ECMAScriptName("VParallax")]
     public extern static IVuetifyComponent VParallax { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VProgressCircular"/>。</summary>
     [ECMAScriptName("VProgressCircular")]
     public extern static IVuetifyComponent VProgressCircular { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VProgressLinear"/>。</summary>
     [ECMAScriptName("VProgressLinear")]
     public extern static IVuetifyComponent VProgressLinear { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VRadio"/>。</summary>
     [ECMAScriptName("VRadio")]
     public extern static IVuetifyComponent VRadio { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VRadioGroup"/>。</summary>
     [ECMAScriptName("VRadioGroup")]
     public extern static IVuetifyComponent VRadioGroup { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VRangeSlider"/>。</summary>
     [ECMAScriptName("VRangeSlider")]
     public extern static IVuetifyComponent VRangeSlider { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VRating"/>。</summary>
     [ECMAScriptName("VRating")]
     public extern static IVuetifyComponent VRating { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VResponsive"/>。</summary>
     [ECMAScriptName("VResponsive")]
     public extern static IVuetifyComponent VResponsive { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VRow"/>。</summary>
     [ECMAScriptName("VRow")]
     public extern static IVuetifyComponent VRow { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSelect"/>。</summary>
     [ECMAScriptName("VSelect")]
     public extern static IVuetifyComponent VSelect { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSelectionControl"/>。</summary>
     [ECMAScriptName("VSelectionControl")]
     public extern static IVuetifyComponent VSelectionControl { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSelectionControlGroup"/>。</summary>
     [ECMAScriptName("VSelectionControlGroup")]
     public extern static IVuetifyComponent VSelectionControlGroup { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSheet"/>。</summary>
     [ECMAScriptName("VSheet")]
     public extern static IVuetifyComponent VSheet { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSkeletonLoader"/>。</summary>
     [ECMAScriptName("VSkeletonLoader")]
     public extern static IVuetifyComponent VSkeletonLoader { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSlideGroup"/>。</summary>
     [ECMAScriptName("VSlideGroup")]
     public extern static IVuetifyComponent VSlideGroup { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSlider"/>。</summary>
     [ECMAScriptName("VSlider")]
     public extern static IVuetifyComponent VSlider { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSnackbar"/>。</summary>
     [ECMAScriptName("VSnackbar")]
     public extern static IVuetifyComponent VSnackbar { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSnackbarQueue"/>。</summary>
     [ECMAScriptName("VSnackbarQueue")]
     public extern static IVuetifyComponent VSnackbarQueue { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSpacer"/>。</summary>
     [ECMAScriptName("VSpacer")]
     public extern static IVuetifyComponent VSpacer { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSparkline"/>。</summary>
     [ECMAScriptName("VSparkline")]
     public extern static IVuetifyComponent VSparkline { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSpeedDial"/>。</summary>
     [ECMAScriptName("VSpeedDial")]
     public extern static IVuetifyComponent VSpeedDial { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VStepper"/>。</summary>
     [ECMAScriptName("VStepper")]
     public extern static IVuetifyComponent VStepper { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSwitch"/>。</summary>
     [ECMAScriptName("VSwitch")]
     public extern static IVuetifyComponent VSwitch { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSystemBar"/>。</summary>
     [ECMAScriptName("VSystemBar")]
     public extern static IVuetifyComponent VSystemBar { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTab"/>。</summary>
     [ECMAScriptName("VTab")]
     public extern static IVuetifyComponent VTab { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTable"/>。</summary>
     [ECMAScriptName("VTable")]
     public extern static IVuetifyComponent VTable { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTabs"/>。</summary>
     [ECMAScriptName("VTabs")]
     public extern static IVuetifyComponent VTabs { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTabsWindow"/>。</summary>
     [ECMAScriptName("VTabsWindow")]
     public extern static IVuetifyComponent VTabsWindow { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTabsWindowItem"/>。</summary>
     [ECMAScriptName("VTabsWindowItem")]
     public extern static IVuetifyComponent VTabsWindowItem { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTextField"/>。</summary>
     [ECMAScriptName("VTextField")]
     public extern static IVuetifyComponent VTextField { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTextarea"/>。</summary>
     [ECMAScriptName("VTextarea")]
     public extern static IVuetifyComponent VTextarea { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VThemeProvider"/>。</summary>
     [ECMAScriptName("VThemeProvider")]
     public extern static IVuetifyComponent VThemeProvider { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTimeline"/>。</summary>
     [ECMAScriptName("VTimeline")]
     public extern static IVuetifyComponent VTimeline { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VToolbar"/>。</summary>
     [ECMAScriptName("VToolbar")]
     public extern static IVuetifyComponent VToolbar { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VToolbarItems"/>。</summary>
     [ECMAScriptName("VToolbarItems")]
     public extern static IVuetifyComponent VToolbarItems { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VToolbarTitle"/>。</summary>
     [ECMAScriptName("VToolbarTitle")]
     public extern static IVuetifyComponent VToolbarTitle { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTooltip"/>。</summary>
     [ECMAScriptName("VTooltip")]
     public extern static IVuetifyComponent VTooltip { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VValidation"/>。</summary>
     [ECMAScriptName("VValidation")]
     public extern static IVuetifyComponent VValidation { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VVirtualScroll"/>。</summary>
     [ECMAScriptName("VVirtualScroll")]
     public extern static IVuetifyComponent VVirtualScroll { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VWindow"/>。</summary>
     [ECMAScriptName("VWindow")]
     public extern static IVuetifyComponent VWindow { get; }
 }
 
+/// <summary>供 Vue render/h 调用的组件导出；将所需导出传给渲染函数或应用组件注册表。</summary>
 [ECMAScript("vuetify/labs/components")]
 public static class VuetifyLabsComponents
 {
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCalendar"/>。</summary>
     [ECMAScriptName("VCalendar")]
     public extern static IVuetifyComponent VCalendar { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDateInput"/>。</summary>
     [ECMAScriptName("VDateInput")]
     public extern static IVuetifyComponent VDateInput { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VFileUpload"/>。</summary>
     [ECMAScriptName("VFileUpload")]
     public extern static IVuetifyComponent VFileUpload { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VIconBtn"/>。</summary>
     [ECMAScriptName("VIconBtn")]
     public extern static IVuetifyComponent VIconBtn { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VPicker"/>。</summary>
     [ECMAScriptName("VPicker")]
     public extern static IVuetifyComponent VPicker { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VPullToRefresh"/>。</summary>
     [ECMAScriptName("VPullToRefresh")]
     public extern static IVuetifyComponent VPullToRefresh { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VStepperVertical"/>。</summary>
     [ECMAScriptName("VStepperVertical")]
     public extern static IVuetifyComponent VStepperVertical { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTimePicker"/>。</summary>
     [ECMAScriptName("VTimePicker")]
     public extern static IVuetifyComponent VTimePicker { get; }
 
+    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTreeview"/>。</summary>
     [ECMAScriptName("VTreeview")]
     public extern static IVuetifyComponent VTreeview { get; }
 }
@@ -361,318 +477,423 @@ public static class VuetifyLabsComponents
 [Description("@#VuetifyComponentRegistry")]
 public sealed record VuetifyComponentRegistry : VueComponentRegistry
 {
+    /// <summary>按名称注册 <see cref="VAlert"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VAlert")]
     public IVuetifyComponent? VAlert { get; init; }
 
+    /// <summary>按名称注册 <see cref="VApp"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VApp")]
     public IVuetifyComponent? VApp { get; init; }
 
+    /// <summary>按名称注册 <see cref="VAppBar"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VAppBar")]
     public IVuetifyComponent? VAppBar { get; init; }
 
+    /// <summary>按名称注册 <see cref="VAutocomplete"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VAutocomplete")]
     public IVuetifyComponent? VAutocomplete { get; init; }
 
+    /// <summary>按名称注册 <see cref="VAvatar"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VAvatar")]
     public IVuetifyComponent? VAvatar { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBadge"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBadge")]
     public IVuetifyComponent? VBadge { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBanner"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBanner")]
     public IVuetifyComponent? VBanner { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBottomNavigation"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBottomNavigation")]
     public IVuetifyComponent? VBottomNavigation { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBottomSheet"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBottomSheet")]
     public IVuetifyComponent? VBottomSheet { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBreadcrumbs"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBreadcrumbs")]
     public IVuetifyComponent? VBreadcrumbs { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBtn"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBtn")]
     public IVuetifyComponent? VBtn { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBtnGroup"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBtnGroup")]
     public IVuetifyComponent? VBtnGroup { get; init; }
 
+    /// <summary>按名称注册 <see cref="VBtnToggle"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VBtnToggle")]
     public IVuetifyComponent? VBtnToggle { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCard"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCard")]
     public IVuetifyComponent? VCard { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCardActions"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCardActions")]
     public IVuetifyComponent? VCardActions { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCardItem"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCardItem")]
     public IVuetifyComponent? VCardItem { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCardSubtitle"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCardSubtitle")]
     public IVuetifyComponent? VCardSubtitle { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCardText"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCardText")]
     public IVuetifyComponent? VCardText { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCardTitle"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCardTitle")]
     public IVuetifyComponent? VCardTitle { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCarousel"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCarousel")]
     public IVuetifyComponent? VCarousel { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCheckbox"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCheckbox")]
     public IVuetifyComponent? VCheckbox { get; init; }
 
+    /// <summary>按名称注册 <see cref="VChip"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VChip")]
     public IVuetifyComponent? VChip { get; init; }
 
+    /// <summary>按名称注册 <see cref="VChipGroup"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VChipGroup")]
     public IVuetifyComponent? VChipGroup { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCode"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCode")]
     public IVuetifyComponent? VCode { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCol"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCol")]
     public IVuetifyComponent? VCol { get; init; }
 
+    /// <summary>按名称注册 <see cref="VColorPicker"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VColorPicker")]
     public IVuetifyComponent? VColorPicker { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCombobox"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCombobox")]
     public IVuetifyComponent? VCombobox { get; init; }
 
+    /// <summary>按名称注册 <see cref="VConfirmEdit"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VConfirmEdit")]
     public IVuetifyComponent? VConfirmEdit { get; init; }
 
+    /// <summary>按名称注册 <see cref="VContainer"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VContainer")]
     public IVuetifyComponent? VContainer { get; init; }
 
+    /// <summary>按名称注册 <see cref="VCounter"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCounter")]
     public IVuetifyComponent? VCounter { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDataIterator"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDataIterator")]
     public IVuetifyComponent? VDataIterator { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDataTable"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDataTable")]
     public IVuetifyComponent? VDataTable { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDatePicker"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDatePicker")]
     public IVuetifyComponent? VDatePicker { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDefaultsProvider"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDefaultsProvider")]
     public IVuetifyComponent? VDefaultsProvider { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDialog"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDialog")]
     public IVuetifyComponent? VDialog { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDivider"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDivider")]
     public IVuetifyComponent? VDivider { get; init; }
 
+    /// <summary>按名称注册 <see cref="VEmptyState"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VEmptyState")]
     public IVuetifyComponent? VEmptyState { get; init; }
 
+    /// <summary>按名称注册 <see cref="VExpansionPanel"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VExpansionPanel")]
     public IVuetifyComponent? VExpansionPanel { get; init; }
 
+    /// <summary>按名称注册 <see cref="VFab"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VFab")]
     public IVuetifyComponent? VFab { get; init; }
 
+    /// <summary>按名称注册 <see cref="VField"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VField")]
     public IVuetifyComponent? VField { get; init; }
 
+    /// <summary>按名称注册 <see cref="VFileInput"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VFileInput")]
     public IVuetifyComponent? VFileInput { get; init; }
 
+    /// <summary>按名称注册 <see cref="VFooter"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VFooter")]
     public IVuetifyComponent? VFooter { get; init; }
 
+    /// <summary>按名称注册 <see cref="VForm"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VForm")]
     public IVuetifyComponent? VForm { get; init; }
 
+    /// <summary>按名称注册 <see cref="VHover"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VHover")]
     public IVuetifyComponent? VHover { get; init; }
 
+    /// <summary>按名称注册 <see cref="VIcon"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VIcon")]
     public IVuetifyComponent? VIcon { get; init; }
 
+    /// <summary>按名称注册 <see cref="VImg"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VImg")]
     public IVuetifyComponent? VImg { get; init; }
 
+    /// <summary>按名称注册 <see cref="VInfiniteScroll"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VInfiniteScroll")]
     public IVuetifyComponent? VInfiniteScroll { get; init; }
 
+    /// <summary>按名称注册 <see cref="VInput"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VInput")]
     public IVuetifyComponent? VInput { get; init; }
 
+    /// <summary>按名称注册 <see cref="VItemGroup"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VItemGroup")]
     public IVuetifyComponent? VItemGroup { get; init; }
 
+    /// <summary>按名称注册 <see cref="VKbd"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VKbd")]
     public IVuetifyComponent? VKbd { get; init; }
 
+    /// <summary>按名称注册 <see cref="VLabel"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VLabel")]
     public IVuetifyComponent? VLabel { get; init; }
 
+    /// <summary>按名称注册 <see cref="VLayout"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VLayout")]
     public IVuetifyComponent? VLayout { get; init; }
 
+    /// <summary>按名称注册 <see cref="VLazy"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VLazy")]
     public IVuetifyComponent? VLazy { get; init; }
 
+    /// <summary>按名称注册 <see cref="VList"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VList")]
     public IVuetifyComponent? VList { get; init; }
 
+    /// <summary>按名称注册 <see cref="VListItem"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VListItem")]
     public IVuetifyComponent? VListItem { get; init; }
 
+    /// <summary>按名称注册 <see cref="VLocaleProvider"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VLocaleProvider")]
     public IVuetifyComponent? VLocaleProvider { get; init; }
 
+    /// <summary>按名称注册 <see cref="VMain"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VMain")]
     public IVuetifyComponent? VMain { get; init; }
 
+    /// <summary>按名称注册 <see cref="VMenu"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VMenu")]
     public IVuetifyComponent? VMenu { get; init; }
 
+    /// <summary>按名称注册 <see cref="VMessages"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VMessages")]
     public IVuetifyComponent? VMessages { get; init; }
 
+    /// <summary>按名称注册 <see cref="VNavigationDrawer"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VNavigationDrawer")]
     public IVuetifyComponent? VNavigationDrawer { get; init; }
 
+    /// <summary>按名称注册 <see cref="VNoSsr"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VNoSsr")]
     public IVuetifyComponent? VNoSsr { get; init; }
 
+    /// <summary>按名称注册 <see cref="VNumberInput"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VNumberInput")]
     public IVuetifyComponent? VNumberInput { get; init; }
 
+    /// <summary>按名称注册 <see cref="VOtpInput"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VOtpInput")]
     public IVuetifyComponent? VOtpInput { get; init; }
 
+    /// <summary>按名称注册 <see cref="VOverlay"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VOverlay")]
     public IVuetifyComponent? VOverlay { get; init; }
 
+    /// <summary>按名称注册 <see cref="VPagination"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VPagination")]
     public IVuetifyComponent? VPagination { get; init; }
 
+    /// <summary>按名称注册 <see cref="VParallax"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VParallax")]
     public IVuetifyComponent? VParallax { get; init; }
 
+    /// <summary>按名称注册 <see cref="VProgressCircular"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VProgressCircular")]
     public IVuetifyComponent? VProgressCircular { get; init; }
 
+    /// <summary>按名称注册 <see cref="VProgressLinear"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VProgressLinear")]
     public IVuetifyComponent? VProgressLinear { get; init; }
 
+    /// <summary>按名称注册 <see cref="VRadio"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VRadio")]
     public IVuetifyComponent? VRadio { get; init; }
 
+    /// <summary>按名称注册 <see cref="VRadioGroup"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VRadioGroup")]
     public IVuetifyComponent? VRadioGroup { get; init; }
 
+    /// <summary>按名称注册 <see cref="VRangeSlider"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VRangeSlider")]
     public IVuetifyComponent? VRangeSlider { get; init; }
 
+    /// <summary>按名称注册 <see cref="VRating"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VRating")]
     public IVuetifyComponent? VRating { get; init; }
 
+    /// <summary>按名称注册 <see cref="VResponsive"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VResponsive")]
     public IVuetifyComponent? VResponsive { get; init; }
 
+    /// <summary>按名称注册 <see cref="VRow"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VRow")]
     public IVuetifyComponent? VRow { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSelect"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSelect")]
     public IVuetifyComponent? VSelect { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSelectionControl"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSelectionControl")]
     public IVuetifyComponent? VSelectionControl { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSelectionControlGroup"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSelectionControlGroup")]
     public IVuetifyComponent? VSelectionControlGroup { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSheet"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSheet")]
     public IVuetifyComponent? VSheet { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSkeletonLoader"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSkeletonLoader")]
     public IVuetifyComponent? VSkeletonLoader { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSlideGroup"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSlideGroup")]
     public IVuetifyComponent? VSlideGroup { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSlider"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSlider")]
     public IVuetifyComponent? VSlider { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSnackbar"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSnackbar")]
     public IVuetifyComponent? VSnackbar { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSnackbarQueue"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSnackbarQueue")]
     public IVuetifyComponent? VSnackbarQueue { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSpacer"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSpacer")]
     public IVuetifyComponent? VSpacer { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSparkline"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSparkline")]
     public IVuetifyComponent? VSparkline { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSpeedDial"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSpeedDial")]
     public IVuetifyComponent? VSpeedDial { get; init; }
 
+    /// <summary>按名称注册 <see cref="VStepper"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VStepper")]
     public IVuetifyComponent? VStepper { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSwitch"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSwitch")]
     public IVuetifyComponent? VSwitch { get; init; }
 
+    /// <summary>按名称注册 <see cref="VSystemBar"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VSystemBar")]
     public IVuetifyComponent? VSystemBar { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTab"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTab")]
     public IVuetifyComponent? VTab { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTable"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTable")]
     public IVuetifyComponent? VTable { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTabs"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTabs")]
     public IVuetifyComponent? VTabs { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTabsWindow"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTabsWindow")]
     public IVuetifyComponent? VTabsWindow { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTabsWindowItem"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTabsWindowItem")]
     public IVuetifyComponent? VTabsWindowItem { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTextField"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTextField")]
     public IVuetifyComponent? VTextField { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTextarea"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTextarea")]
     public IVuetifyComponent? VTextarea { get; init; }
 
+    /// <summary>按名称注册 <see cref="VThemeProvider"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VThemeProvider")]
     public IVuetifyComponent? VThemeProvider { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTimeline"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTimeline")]
     public IVuetifyComponent? VTimeline { get; init; }
 
+    /// <summary>按名称注册 <see cref="VToolbar"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VToolbar")]
     public IVuetifyComponent? VToolbar { get; init; }
 
+    /// <summary>按名称注册 <see cref="VToolbarItems"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VToolbarItems")]
     public IVuetifyComponent? VToolbarItems { get; init; }
 
+    /// <summary>按名称注册 <see cref="VToolbarTitle"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VToolbarTitle")]
     public IVuetifyComponent? VToolbarTitle { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTooltip"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTooltip")]
     public IVuetifyComponent? VTooltip { get; init; }
 
+    /// <summary>按名称注册 <see cref="VValidation"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VValidation")]
     public IVuetifyComponent? VValidation { get; init; }
 
+    /// <summary>按名称注册 <see cref="VVirtualScroll"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VVirtualScroll")]
     public IVuetifyComponent? VVirtualScroll { get; init; }
 
+    /// <summary>按名称注册 <see cref="VWindow"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VWindow")]
     public IVuetifyComponent? VWindow { get; init; }
 }
@@ -684,30 +905,39 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
 [Description("@#VuetifyLabsComponentRegistry")]
 public sealed record VuetifyLabsComponentRegistry : VueComponentRegistry
 {
+    /// <summary>按名称注册 <see cref="VCalendar"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VCalendar")]
     public IVuetifyComponent? VCalendar { get; init; }
 
+    /// <summary>按名称注册 <see cref="VDateInput"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VDateInput")]
     public IVuetifyComponent? VDateInput { get; init; }
 
+    /// <summary>按名称注册 <see cref="VFileUpload"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VFileUpload")]
     public IVuetifyComponent? VFileUpload { get; init; }
 
+    /// <summary>按名称注册 <see cref="VIconBtn"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VIconBtn")]
     public IVuetifyComponent? VIconBtn { get; init; }
 
+    /// <summary>按名称注册 <see cref="VPicker"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VPicker")]
     public IVuetifyComponent? VPicker { get; init; }
 
+    /// <summary>按名称注册 <see cref="VPullToRefresh"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VPullToRefresh")]
     public IVuetifyComponent? VPullToRefresh { get; init; }
 
+    /// <summary>按名称注册 <see cref="VStepperVertical"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VStepperVertical")]
     public IVuetifyComponent? VStepperVertical { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTimePicker"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTimePicker")]
     public IVuetifyComponent? VTimePicker { get; init; }
 
+    /// <summary>按名称注册 <see cref="VTreeview"/> 组件，供 Vue 应用解析。</summary>
     [Description("@#VTreeview")]
     public IVuetifyComponent? VTreeview { get; init; }
 }

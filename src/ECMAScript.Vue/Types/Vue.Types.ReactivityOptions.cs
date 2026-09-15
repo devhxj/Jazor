@@ -176,6 +176,9 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueModelModifiers
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueModelModifiers()
 		{
 		}
@@ -220,6 +223,9 @@ public static partial class Vue
 	/// <typeparam name="TValue">模型值类型。</typeparam>
 	public abstract class VueModelRef<TValue> : IVueRef<TValue>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueModelRef()
 		{
 		}
@@ -304,6 +310,9 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueEffectScope
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueEffectScope()
 		{
 		}
@@ -476,6 +485,9 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueAttributeBag
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueAttributeBag()
 		{
 		}
@@ -587,6 +599,9 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueSlotBag
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueSlotBag()
 		{
 		}
@@ -617,6 +632,9 @@ public static partial class Vue
 	[Description("@#")]
 	public abstract class VueDirectiveModifiers
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveModifiers()
 		{
 		}

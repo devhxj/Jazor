@@ -8,12 +8,21 @@ namespace ECMAScript.Vuetify;
 [Description("@#")]
 public sealed record VSelectItemSlotContext
 {
+    /// <summary>
+    /// 当前渲染或操作的数据项。
+    /// </summary>
     [Description("@#item")]
     public VuetifyListItem? Item { get; init; }
 
+    /// <summary>
+    /// 当前条目在处理后列表中的索引，从 0 开始。
+    /// </summary>
     [Description("@#index")]
     public int Index { get; init; }
 
+    /// <summary>
+    /// 供自定义渲染转发给目标元素或组件的属性，包含上游提供的事件和可访问性绑定。
+    /// </summary>
     [Description("@#props")]
     public VueProps? Props { get; init; }
 }
@@ -26,12 +35,21 @@ public sealed record VSelectItemSlotContext
 [Description("@#")]
 public sealed record VSelectChipSlotContext
 {
+    /// <summary>
+    /// 当前渲染或操作的数据项。
+    /// </summary>
     [Description("@#item")]
     public VuetifyListItem? Item { get; init; }
 
+    /// <summary>
+    /// 当前条目在处理后列表中的索引，从 0 开始。
+    /// </summary>
     [Description("@#index")]
     public int Index { get; init; }
 
+    /// <summary>
+    /// 供自定义渲染转发给目标元素或组件的属性，包含上游提供的事件和可访问性绑定。
+    /// </summary>
     [Description("@#props")]
     public VueProps? Props { get; init; }
 }
@@ -44,9 +62,15 @@ public sealed record VSelectChipSlotContext
 [Description("@#")]
 public sealed record VSelectSelectionSlotContext
 {
+    /// <summary>
+    /// 当前渲染或操作的数据项。
+    /// </summary>
     [Description("@#item")]
     public VuetifyListItem? Item { get; init; }
 
+    /// <summary>
+    /// 当前条目在处理后列表中的索引，从 0 开始。
+    /// </summary>
     [Description("@#index")]
     public int Index { get; init; }
 }

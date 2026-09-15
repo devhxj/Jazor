@@ -1,12 +1,12 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
-[Category("ignore")]
 /// <summary>
 /// Common browser event-name constants for authoring JavaScript event registrations.
 /// 用于编写 JavaScript 事件注册的常用浏览器事件名称常量。
 /// </summary>
+[ECMAScript]
+[Description("@#")]
+[Category("ignore")]
 public static class EventType
 {
 	/// <summary>

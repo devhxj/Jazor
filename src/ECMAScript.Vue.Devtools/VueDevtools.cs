@@ -122,7 +122,7 @@ public delegate void DevtoolsStateSetCallback<TTarget, TValue>(TTarget target, s
 /// </summary>
 /// <typeparam name="TData">timeline event 的业务数据类型。</typeparam>
 /// <typeparam name="TMeta">timeline event 的可选元数据类型。</typeparam>
-/// <param name="@event">当前 overlay 对应的 event。</param>
+/// <param name="event">当前 overlay 对应的 event。</param>
 /// <param name="context">当前截图与 event 序列上下文。</param>
 /// <returns>HTML element、文本或 <c>false</c> 哨兵。</returns>
 public delegate VueDevtools.ScreenshotOverlayRenderResult DevtoolsScreenshotOverlayRenderCallback<TData, TMeta>(
@@ -134,7 +134,7 @@ public delegate VueDevtools.ScreenshotOverlayRenderResult DevtoolsScreenshotOver
 /// </summary>
 /// <typeparam name="TData">timeline event 的业务数据类型。</typeparam>
 /// <typeparam name="TMeta">timeline event 的可选元数据类型。</typeparam>
-/// <param name="@event">当前 overlay 对应的 event。</param>
+/// <param name="event">当前 overlay 对应的 event。</param>
 /// <param name="context">当前截图与 event 序列上下文。</param>
 /// <returns>兑现为 overlay 结果的 JavaScript Promise。</returns>
 public delegate IPromise<VueDevtools.ScreenshotOverlayRenderResult> DevtoolsAsyncScreenshotOverlayRenderCallback<TData, TMeta>(

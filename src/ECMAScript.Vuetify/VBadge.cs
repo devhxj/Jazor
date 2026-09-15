@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VBadge")]
 /// <summary>
 /// Vuetify 徽章组件。
 /// Vuetify badge component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VBadge")]
 public sealed class VBadge : ComponentBase, IVuetifyComponent
 {
     /// <summary>

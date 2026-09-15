@@ -262,12 +262,21 @@ public static partial class Vue
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueDirective directive);
 
+		/// <summary>
+		/// 按指令名称写入指令定义，供组件 directives 选项或应用注册使用；同名键按字典写入语义替换。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add<TValue>(string key, VueDirective<TValue> directive);
 
+		/// <summary>
+		/// 按指令名称写入指令定义，供组件 directives 选项或应用注册使用；同名键按字典写入语义替换。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueDirectiveFunction directive);
 
+		/// <summary>
+		/// 按指令名称写入指令定义，供组件 directives 选项或应用注册使用；同名键按字典写入语义替换。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add<TValue>(string key, VueDirectiveFunction<TValue> directive);
 
@@ -376,16 +385,40 @@ public static partial class Vue
 		{
 		}
 
+		/// <summary>
+		/// 将 string 值转换为 VueWatchEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntry<TValue>(string methodName);
 
+		/// <summary>
+		/// 将 Action&lt;TValue, TValue&gt; 值转换为 VueWatchEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntry<TValue>(Action<TValue, TValue> handler);
 
+		/// <summary>
+		/// 将 VueWatchCleanupCallback&lt;TValue&gt; 值转换为 VueWatchEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntry<TValue>(VueWatchCleanupCallback<TValue> handler);
 
+		/// <summary>
+		/// 将 VueWatchHandlerOptions&lt;TValue&gt; 值转换为 VueWatchEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntry<TValue>(VueWatchHandlerOptions<TValue> options);
 
+		/// <summary>
+		/// 将 VueWatchCleanupHandlerOptions&lt;TValue&gt; 值转换为 VueWatchEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntry<TValue>(VueWatchCleanupHandlerOptions<TValue> options);
 
+		/// <summary>
+		/// 将 VueWatchNamedHandlerOptions 值转换为 VueWatchEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntry<TValue>(VueWatchNamedHandlerOptions options);
 	}
 
@@ -405,18 +438,46 @@ public static partial class Vue
 		{
 		}
 
+		/// <summary>
+		/// 将 string[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(string[] methodNames);
 
+		/// <summary>
+		/// 将 Action&lt;TValue, TValue&gt;[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(Action<TValue, TValue>[] handlers);
 
+		/// <summary>
+		/// 将 VueWatchCleanupCallback&lt;TValue&gt;[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(VueWatchCleanupCallback<TValue>[] handlers);
 
+		/// <summary>
+		/// 将 VueWatchHandlerOptions&lt;TValue&gt;[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(VueWatchHandlerOptions<TValue>[] options);
 
+		/// <summary>
+		/// 将 VueWatchCleanupHandlerOptions&lt;TValue&gt;[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(VueWatchCleanupHandlerOptions<TValue>[] options);
 
+		/// <summary>
+		/// 将 VueWatchNamedHandlerOptions[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(VueWatchNamedHandlerOptions[] options);
 
+		/// <summary>
+		/// 将 VueWatchEntry&lt;TValue&gt;[] 值转换为 VueWatchEntries&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueWatchEntries<TValue>(VueWatchEntry<TValue>[] entries);
 	}
 
@@ -542,16 +603,35 @@ public static partial class Vue
 	[Description("@#")]
 	public class VueInjectEntry<TValue>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueInjectEntry()
 		{
 		}
 
+		/// <summary>
+		/// 将 string 值转换为 VueInjectEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueInjectEntry<TValue>(string from);
 
+		/// <summary>
+		/// 将 VueInjectionKey&lt;TValue&gt; 值转换为 VueInjectEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueInjectEntry<TValue>(VueInjectionKey<TValue> from);
 
+		/// <summary>
+		/// 将 Symbol 值转换为 VueInjectEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueInjectEntry<TValue>(Symbol from);
 
+		/// <summary>
+		/// 将 VueInjectOptions&lt;TValue&gt; 值转换为 VueInjectEntry&lt;TValue&gt;，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueInjectEntry<TValue>(VueInjectOptions<TValue> options);
 	}
 
@@ -579,12 +659,21 @@ public static partial class Vue
 		/// <returns>给定键的声明。The declaration for the given key.</returns>
 		public extern VueInjectEntry<TValue>? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按本地注入名称写入 inject 配置；可指定来源键和默认值。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, string from);
 
+		/// <summary>
+		/// 按本地注入名称写入 inject 配置；可指定来源键和默认值。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueInjectOptions<TValue> options);
 
+		/// <summary>
+		/// 按本地注入名称写入 inject 配置；可指定来源键和默认值。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueInjectEntry<TValue> entry);
 

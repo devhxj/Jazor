@@ -1,11 +1,11 @@
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
 /// <summary>
 /// JavaScript own-property descriptor object shape.
 /// JavaScript 自身属性描述符对象形状。
 /// </summary>
+[ECMAScript]
+[Description("@#")]
 public class PropertyDescriptorRef
 {
 	/// <summary>
@@ -55,11 +55,10 @@ public class PropertyDescriptorRef
 	public Action<object?>? Set { get; set; }
 }
 
-[ECMAScript]
 /// <summary>JavaScript property-keyed descriptor map bridge. JavaScript 属性键描述符映射桥接。</summary>
+[ECMAScript]
 public abstract class PropertyDescriptorMap
 {
 	/// <summary>Gets or sets the descriptor for a string property key. 获取或设置字符串属性键的描述符。</summary>
 	public extern PropertyDescriptorRef this[string key] { get; set; }
 }
-

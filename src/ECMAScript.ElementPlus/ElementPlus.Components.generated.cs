@@ -217,14 +217,23 @@ public sealed class ElAside : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAutoResizer")]
 public sealed class ElAutoResizer : ElContentComponentBase
 {
+    /// <summary>
+    /// 禁用容器宽度的自动测量和更新。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableWidth")]
     public bool? DisableWidth { get; set; }
 
+    /// <summary>
+    /// 禁用容器高度的自动测量和更新。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableHeight")]
     public bool? DisableHeight { get; set; }
 
+    /// <summary>
+    /// 容器尺寸变化后触发，携带最新宽度与高度。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResize")]
     public ElAutoResizerResizeCallback? OnResize { get; set; }
@@ -2621,14 +2630,23 @@ public sealed class ElConfigProvider : ElContentComponentBase
     [ECMAScriptName("table")]
     public ElTableConfig? Table { get; set; }
 
+    /// <summary>
+    /// 是否启用此作用域内组件的可访问性交互支持。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("a11y")]
     public bool? A11y { get; set; }
 
+    /// <summary>
+    /// 此作用域内 Card 组件的全局默认配置。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("card")]
     public ElCardConfig? Card { get; set; }
 
+    /// <summary>
+    /// 是否启用此作用域内组件的键盘导航。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keyboardNavigation")]
     public bool? KeyboardNavigation { get; set; }
@@ -2958,10 +2976,16 @@ public sealed class ElDatePicker : ElContentComponentBase
     [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
+    /// <summary>
+    /// 日期输入区域使用的显示格式；不改变 value-format 指定的绑定值格式。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dateFormat")]
     public string? DateFormat { get; set; }
 
+    /// <summary>
+    /// 时间输入区域使用的显示格式；不改变 value-format 指定的绑定值格式。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
@@ -7102,6 +7126,9 @@ public sealed class ElPopover : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElPopper")]
 public sealed class ElPopper : ElContentComponentBase
 {
+    /// <summary>
+    /// 浮层元素暴露给辅助技术的 ARIA role。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("role")]
     public string? Role { get; set; }
@@ -10316,30 +10343,51 @@ public sealed class ElTableV2 : ElComponentBase
     [ECMAScriptName("sortState")]
     public ElTableV2SortState? SortState { get; set; }
 
+    /// <summary>
+    /// 自定义数据单元格内容的插槽。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cell")]
     public RenderFragment? Cell { get; set; }
 
+    /// <summary>
+    /// 自定义完整表头区域的插槽。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// 自定义表头单元格内容的插槽。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header-cell")]
     public RenderFragment? HeaderCell { get; set; }
 
+    /// <summary>
+    /// 自定义数据行内容的插槽。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("row")]
     public RenderFragment? Row { get; set; }
 
+    /// <summary>
+    /// 表格底部内容插槽。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// 表格无数据时显示的内容。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// 覆盖在表格上方的内容插槽，可用于加载遮罩。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlay")]
     public RenderFragment? Overlay { get; set; }
@@ -10880,14 +10928,23 @@ public sealed class ElTimePicker : ElComponentBase
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// 日期时间选择过程初始化时间部分时使用的默认时间值。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
+    /// <summary>
+    /// 日期输入区域的显示格式，使用上游日期格式化标记。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dateFormat")]
     public string? DateFormat { get; set; }
 
+    /// <summary>
+    /// 时间输入区域的显示格式，使用上游日期格式化标记。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
@@ -11944,10 +12001,16 @@ public sealed class ElTree : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTreeSelect")]
 public sealed class ElTreeSelect : ElContentComponentBase
 {
+    /// <summary>
+    /// 懒加载树的已选节点缓存数据，用于在节点尚未加载时显示其标签。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cacheData")]
     public VueValue[]? CacheData { get; set; }
 
+    /// <summary>
+    /// 已选标签溢出时使用的提示浮层配置。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }

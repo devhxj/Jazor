@@ -1,7 +1,5 @@
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#Map")]
 /// <summary>
 /// Generic C# authoring binding for JavaScript <c>Map</c>.
 /// JavaScript <c>Map</c> 的泛型 C# 编写绑定。
@@ -12,6 +10,8 @@ namespace ECMAScript;
 /// Map 的键相等、缺失值和迭代顺序遵循 JavaScript 运行时；泛型参数只提供编译期约束，
 /// 不会生成 CLR Map 类型。缺失键读取与 <see cref="Has"/> 必须区分，因为已存储的值也可以为 <see langword="null"/>。
 /// </remarks>
+[ECMAScript]
+[Description("@#Map")]
 public sealed class Map<TKey, TValue> : IEnumerable
 {
 	/// <summary>Creates an empty JavaScript map. 创建空的 JavaScript Map。</summary>
@@ -134,9 +134,9 @@ public sealed class Map<TKey, TValue> : IEnumerable
 	public extern Number Size { get; }
 }
 
+/// <summary>Non-generic host binding for JavaScript <c>Map</c>. JavaScript <c>Map</c> 的非泛型宿主绑定。</summary>
 [ECMAScript]
 [Description("@#Map")]
-/// <summary>Non-generic host binding for JavaScript <c>Map</c>. JavaScript <c>Map</c> 的非泛型宿主绑定。</summary>
 public sealed class Map : IEnumerable
 {
 	/// <summary>
@@ -270,11 +270,11 @@ public sealed class Map : IEnumerable
 	public extern Number Size { get; }
 }
 
-[ECMAScript]
-[Description("@#WeakMap")]
 /// <summary>Generic host binding for JavaScript <c>WeakMap</c>. JavaScript <c>WeakMap</c> 的泛型宿主绑定。</summary>
 /// <remarks>Weak-map keys are held weakly and the collection is intentionally non-enumerable. The C# <c>class</c> constraint is only authoring guidance; JavaScript performs the final <c>CanBeHeldWeakly</c> validation.
 /// WeakMap 的 key 为弱持有，且集合刻意不可枚举。C# <c>class</c> 约束仅提供编写指导，JavaScript 负责最终的 <c>CanBeHeldWeakly</c> 校验。</remarks>
+[ECMAScript]
+[Description("@#WeakMap")]
 public sealed class WeakMap<TKey, TValue> where TKey : class
 {
 	/// <summary>Creates an empty JavaScript weak map. 创建空的 JavaScript WeakMap。</summary>
@@ -340,9 +340,9 @@ public sealed class WeakMap<TKey, TValue> where TKey : class
 	public extern bool Delete(TKey key);
 }
 
+/// <summary>Non-generic host binding for JavaScript <c>WeakMap</c>. JavaScript <c>WeakMap</c> 的非泛型宿主绑定。</summary>
 [ECMAScript]
 [Description("@#WeakMap")]
-/// <summary>Non-generic host binding for JavaScript <c>WeakMap</c>. JavaScript <c>WeakMap</c> 的非泛型宿主绑定。</summary>
 public sealed class WeakMap
 {
 	/// <summary>
@@ -406,9 +406,15 @@ public sealed class WeakMap
 	[Description("@#getOrInsertComputed")]
 	public extern object? GetOrInsertComputed(object key, Func<object, object?> callback);
 
+	/// <summary>
+	/// The has() method of WeakMap instances returns a boolean indicating whether an entry with the specified key exists in this WeakMap or not.
+	/// </summary>
 	[Description("@#has")]
 	public extern bool Has(object key);
 
+	/// <summary>
+	/// The delete() method of WeakMap instances removes the entry specified by the key from this WeakMap.
+	/// </summary>
 	[Description("@#delete")]
 	public extern bool Delete(object key);
 }

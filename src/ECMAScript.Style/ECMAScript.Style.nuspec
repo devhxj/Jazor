@@ -18,6 +18,7 @@
   <files>
     <file src="$buildOutputDir$ECMAScript.Style.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Style.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Style.xml" target="lib/net11.0" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
     <file src="$projectDir$..\..\LICENSE.txt" target="" />
     <file src="$projectDir$..\..\NOTICE.txt" target="" />

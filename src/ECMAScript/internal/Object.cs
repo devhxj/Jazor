@@ -2,25 +2,25 @@ using PropertyKey = ECMAScript.PropertyKeyRef;
 
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
 /// <summary>
 /// 表示经过 compiler 擦除后仍保留一个值投影的泛型 host wrapper。
 /// Represents a generic host wrapper whose value projection remains after compiler erasure.
 /// </summary>
 /// <remarks>This interface is an authoring-time type constraint and does not automatically emit a CLR-style wrapper object.
 /// 该接口用于 authoring 类型约束，不会自动发射 CLR 风格包装对象。</remarks>
+[ECMAScript]
+[Description("@#")]
 public interface IReadOnly<T>
 {
 	/// <summary>Gets the projected value. 获取投影后的值。</summary>
 	T Value { get; }
 }
 
-[ECMAScript]
-[Description("@#Object")]
 /// <summary>Host binding contract for JavaScript <c>Object</c>. JavaScript <c>Object</c> 的宿主绑定契约。</summary>
 /// <remarks>Member mapping depends on ECMAScript descriptor metadata and whitelist rules; it is not the <c>System.Object</c> API.
 /// 成员映射依赖 ECMAScript 描述属性和白名单规则，不等同于 <c>System.Object</c> API。</remarks>
+[ECMAScript]
+[Description("@#Object")]
 public interface IObject
 {
 	/// <summary>
@@ -68,7 +68,7 @@ public static partial class Global
 		/// Calls the current object's base constructor; valid only inside a derived constructor.
 		/// 仅能在派生构造函数中使用，用于调用当前对象的父类构造函数。
 		/// </summary>
-		/// <param name="values"></param>
+		/// <param name="values">传给该 JavaScript API 的参数值。</param>
 		[Description("@#super")]
 		public extern void Super(params Array<object?> values);
 
@@ -110,9 +110,9 @@ public static partial class Global
 		/// Unlike loose equality it performs no coercion. Unlike strict equality, it treats <c>NaN</c> as equal to itself and distinguishes <c>+0</c> from <c>-0</c>.
 		/// 使用 JavaScript SameValue 语义比较两个值。它不同于宽松相等，不进行类型强制转换；也不同于严格相等：<c>NaN</c> 与自身相同，<c>+0</c> 与 <c>-0</c> 不同。
 		/// </summary>
-		/// <param name="value1"></param>
-		/// <param name="value2"></param>
-		/// <returns></returns>
+		/// <param name="value1">传给该 JavaScript API 的参数值。</param>
+		/// <param name="value2">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#is")]
 		public extern static bool Is(object? value1, object? value2);	
 
@@ -170,7 +170,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="o">Object that contains the property.</param>
 		/// <param name="p">Name of the property.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#getOwnPropertyDescriptor")]
 		public extern static PropertyDescriptorRef? GetOwnPropertyDescriptor(object o, PropertyKeyRef p);
 
@@ -189,7 +189,7 @@ public static partial class Global
 		/// 返回对象全部自有属性名，包括不可枚举属性，不包括从 prototype 继承的属性。
 		/// </summary>
 		/// <param name="o">Object that contains the own properties.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#getOwnPropertyNames")]
 		public extern static Array<string> GetOwnPropertyNames(object o);
 
@@ -206,7 +206,7 @@ public static partial class Global
 		/// Returns a locale-sensitive string representation of the object.
 		/// 返回对象的本地化字符串表示；普通对象会按 JavaScript <c>Object.prototype.toLocaleString</c> 委托行为处理。
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#toLocaleString")]
 		public extern string ToLocaleString();
 
@@ -243,7 +243,7 @@ public static partial class Global
 		/// 检查对象是否具有指定的自有属性，不遍历 prototype chain。
 		/// </summary>
 		/// <param name="v">A property name.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#hasOwnProperty")]
 		public extern bool HasOwnProperty(PropertyKeyRef v);
 
@@ -252,7 +252,7 @@ public static partial class Global
 		/// 检查当前对象是否位于另一个对象的 prototype chain 中。
 		/// </summary>
 		/// <param name="v">Another object whose prototype chain is to be checked.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#isPrototypeOf")]
 		public extern bool IsPrototypeOf(object? v);
 
@@ -261,7 +261,7 @@ public static partial class Global
 		/// 检查指定自有属性是否可枚举；不存在或继承属性返回 <see langword="false"/>。
 		/// </summary>
 		/// <param name="v">A property name.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#propertyIsEnumerable")]
 		public extern bool PropertyIsEnumerable(PropertyKeyRef v);
 
@@ -353,7 +353,7 @@ public static partial class Global
 		/// 返回对象可枚举的自有字符串 key；不包含 symbol 和继承属性。
 		/// </summary>
 		/// <param name="o">Object that contains the properties and methods.This can be an object that you created or an existing Document Object Model(DOM) object.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#keys")]
 		public extern static Array<string> Keys(object o);
 
@@ -424,7 +424,7 @@ public static partial class Global
 		/// Returns true if existing property attributes cannot be modified in an object and new properties cannot be added to the object.
 		/// </summary>
 		/// <param name="o">Object to test.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#isSealed")]
 		public extern static bool IsSealed(object o);
 
@@ -432,7 +432,7 @@ public static partial class Global
 		/// Returns true if existing property attributes and values cannot be modified in an object, and new properties cannot be added to the object.
 		/// </summary>
 		/// <param name="o">Object to test.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#isFrozen")]
 		public extern static bool IsFrozen(object o);
 
@@ -440,7 +440,7 @@ public static partial class Global
 		/// Returns a value that indicates whether new properties can be added to an object.
 		/// </summary>
 		/// <param name="o">Object to test.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#isExtensible")]
 		public extern static bool IsExtensible(object o);
 
@@ -470,9 +470,8 @@ public static partial class Global
 		/// The original target type is returned so callers keep their static CLR shape.
 		/// </summary>
 		/// <param name="o">Object on which to lock the attributes.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#freeze")]
 		public extern static TTarget Freeze<TTarget>(TTarget o);
 	}
 }
-

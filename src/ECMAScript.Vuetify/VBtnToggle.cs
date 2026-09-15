@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VBtnToggle")]
 /// <summary>
 /// Vuetify 按钮切换组件。
 /// Vuetify button toggle component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VBtnToggle")]
 public sealed class VBtnToggle : ComponentBase, IVuetifyComponent
 {
     /// <summary>

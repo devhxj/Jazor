@@ -8,6 +8,12 @@ internal static class Program
         {
             switch (args)
             {
+                case ["documentation", "snapshot", .. var snapshotArgs]:
+                    global::BindingDocumentationSnapshot.Run(snapshotArgs);
+                    return 0;
+                case ["documentation", .. var commandArgs]:
+                    global::BindingDocumentationGenerator.Run(commandArgs);
+                    return 0;
                 case ["elementplus", .. var commandArgs]:
                     global::ElementPlusGenerator.Run(commandArgs);
                     return 0;

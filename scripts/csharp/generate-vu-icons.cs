@@ -162,6 +162,8 @@ static string GenerateIconNames(string version, IReadOnlyList<Icon> icons)
     for (var index = 0; index < icons.Count; index++)
     {
         var icon = icons[index];
+        builder.Append("    /// <summary>").Append(XmlText(icon.Documentation.Description ?? icon.ComponentName)).AppendLine("</summary>");
+        builder.Append("    /// <remarks>Icon token: <c>").Append(XmlText(icon.IconName)).AppendLine("</c>.</remarks>");
         builder.Append("    [Description(\"@#").Append(icon.IconName).AppendLine("\")]");
         builder.Append("    ").Append(icon.EnumMember);
         builder.AppendLine(index == icons.Count - 1 ? string.Empty : ",");

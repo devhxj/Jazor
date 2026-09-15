@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VAlert")]
 /// <summary>
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VAlert")]
 public sealed class VAlert : ComponentBase, IVuetifyComponent
 {
     /// <summary>

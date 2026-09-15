@@ -2,6 +2,9 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
+/// <summary>
+/// Pinia 测试入口；创建可配置 action 替身、初始状态和插件行为的测试根实例。
+/// </summary>
 public static partial class PiniaTesting
 {
 	private const string IdentityInlineTemplate = "__arg1";
@@ -13,7 +16,6 @@ public static partial class PiniaTesting
 	/// Creates a Pinia root instance configured for component/unit testing.
 	/// This mirrors <c>createTestingPinia(options?)</c> from <c>@pinia/testing</c>.
 	/// </summary>
-	/// <param name="options">可选的测试配置。 / Optional testing configuration.</param>
 	/// <returns>适用于测试时 store 解析的 Pinia 实例。 / A Pinia instance suitable for test-time store resolution.</returns>
 	[Description("@#createTestingPinia")]
 	public extern static TestingPinia CreateTestingPinia();

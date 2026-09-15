@@ -23,6 +23,7 @@
   <files>
     <file src="$buildOutputDir$ECMAScript.Vuetify.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Vuetify.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Vuetify.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.Vuetify.targets" target="buildTransitive\ECMAScript.Vuetify.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vuetify" />
     <file src="$projectDir$dist\**\*" target="jazor\vuetify\dist" />

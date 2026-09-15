@@ -6,14 +6,14 @@ namespace ECMAScript;
 /// as its own runtime object rather than as part of <c>globalThis</c>.
 /// JavaScript <c>JSON</c> 宿主对象的投影；它是独立运行时对象，不属于 <c>globalThis</c> 的普通函数集合。
 /// </summary>
-[ECMAScript]
-[Description("@#JSON")]
 /// <remarks>
 /// JSON.parse/stringify 的回调和缺失值行为由 JavaScript runtime 决定；binding 只提供强类型
 /// authoring 入口，不把 JSON 值域收窄成 CLR 对象图，也不额外引入序列化协议。
 /// JSON.parse/stringify callbacks and missing-value behavior are owned by the JavaScript runtime. This binding only provides typed authoring entry points;
 /// it does not narrow JSON values into a CLR object graph or add a serialization protocol.
 /// </remarks>
+[ECMAScript]
+[Description("@#JSON")]
 public static class JSON
 {
 	/// <summary>

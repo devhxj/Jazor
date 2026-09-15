@@ -562,6 +562,8 @@ internal static class ElementPlusGenerator
 
         foreach (var component in components)
         {
+            builder.AppendLine($"    /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref=\"{component.ClassName}\"/>。</summary>");
+            builder.AppendLine($"    /// <remarks>{EscapeXml(component.Description)}</remarks>");
             builder.AppendLine($"    [ECMAScriptName(\"{component.RuntimeExportName}\")]");
             builder.AppendLine($"    public extern static IElementPlusComponent {component.AuthoringName} {{ get; }}");
             builder.AppendLine();
@@ -588,6 +590,8 @@ internal static class ElementPlusGenerator
 
         foreach (var component in components)
         {
+            builder.AppendLine($"    /// <summary>按名称注册 <see cref=\"{component.ClassName}\"/> 组件，供 Vue 应用解析。</summary>");
+            builder.AppendLine($"    /// <remarks>{EscapeXml(component.Description)}</remarks>");
             builder.AppendLine($"    [Description(\"@#{component.AuthoringName}\")]");
             builder.AppendLine($"    public IElementPlusComponent? {component.ClassName} {{ get; init; }}");
             builder.AppendLine();
@@ -603,6 +607,9 @@ internal static class ElementPlusGenerator
         string attributesPath,
         string componentsIndexPath)
     {
+        var documentation = BindingDocumentationGenerator.ReadReviewedDescriptions();
+        string? Description(string owner, string member, string? original)
+            => string.IsNullOrWhiteSpace(original) ? documentation.GetValueOrDefault("ECMAScript.ElementPlus|" + owner + "." + member) : original;
         var builder = new StringBuilder();
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
@@ -629,7 +636,7 @@ internal static class ElementPlusGenerator
 
             foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
             {
-                AppendXmlSummary(builder, prop.Description);
+                AppendXmlSummary(builder, Description(component.ClassName, prop.PropertyName, prop.Description));
                 builder.AppendLine("    [Parameter]");
                 if (prop.Required)
                     builder.AppendLine("    [EditorRequired]");
@@ -641,7 +648,7 @@ internal static class ElementPlusGenerator
 
             foreach (var slot in component.Slots.Where(static slot => !slot.IsDefault))
             {
-                AppendXmlSummary(builder, slot.Description);
+                AppendXmlSummary(builder, Description(component.ClassName, slot.PropertyName, slot.Description));
                 builder.AppendLine("    [Parameter]");
                 if (RequiresExplicitSlotName(slot))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(slot.RuntimeName)}\")]");
@@ -651,7 +658,7 @@ internal static class ElementPlusGenerator
 
             foreach (var emit in component.Emits)
             {
-                AppendXmlSummary(builder, emit.Description);
+                AppendXmlSummary(builder, Description(component.ClassName, emit.PropertyName, emit.Description));
                 builder.AppendLine("    [Parameter]");
                 if (RequiresExplicitListenerName(emit))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(emit.ListenerRuntimeName)}\")]");
@@ -680,6 +687,7 @@ internal static class ElementPlusGenerator
 
     private static string RenderDirectiveExports(ElementPlusDirectiveMetadata[] directives)
     {
+        var descriptions = BindingDocumentationGenerator.ReadReviewedDescriptions();
         var builder = new StringBuilder();
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
@@ -694,6 +702,7 @@ internal static class ElementPlusGenerator
 
         foreach (var directive in directives)
         {
+            AppendXmlSummary(builder, descriptions[$"ECMAScript.ElementPlus|ElDirectives.{directive.PropertyName}"]);
             builder.AppendLine($"    [ECMAScriptName(\"{directive.ExportName}\")]");
             builder.AppendLine($"    public extern static {directive.TypeName} {directive.PropertyName} {{ get; }}");
             builder.AppendLine();
@@ -705,6 +714,7 @@ internal static class ElementPlusGenerator
 
     private static string RenderDirectiveRegistry(ElementPlusDirectiveMetadata[] directives)
     {
+        var descriptions = BindingDocumentationGenerator.ReadReviewedDescriptions();
         var builder = new StringBuilder();
         builder.AppendLine("#nullable enable");
         builder.AppendLine();
@@ -720,6 +730,7 @@ internal static class ElementPlusGenerator
 
         foreach (var directive in directives)
         {
+            AppendXmlSummary(builder, descriptions[$"ECMAScript.ElementPlus|ElDirectiveRegistry.{directive.PropertyName}"]);
             builder.AppendLine($"    [Description(\"@#{directive.PropertyName}\")]");
             builder.AppendLine($"    public {directive.TypeName}? {directive.PropertyName} {{ get; init; }}");
             builder.AppendLine();
@@ -2544,4 +2555,3 @@ internal static class ElementPlusGenerator
         }
     }
 }
-

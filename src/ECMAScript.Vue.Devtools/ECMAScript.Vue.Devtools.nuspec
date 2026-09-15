@@ -18,6 +18,7 @@
   <files>
     <file src="$buildOutputDir$ECMAScript.Vue.Devtools.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Vue.Devtools.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Vue.Devtools.xml" target="lib/net11.0" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>
 </package>

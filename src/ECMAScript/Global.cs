@@ -1,8 +1,5 @@
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
-[Jazor]
 /// <summary>
 /// Host surface for JavaScript runtime globals as exposed to C#.
 /// The public API aims to stay as close to JavaScript runtime shape as C# allows,
@@ -12,6 +9,9 @@ namespace ECMAScript;
 /// 这是向 C# 暴露的 JavaScript 全局宿主表面。除大小写或 C# 命名冲突导致的必要调整外，
 /// API 应尽量保持 JavaScript 运行时形状；这些调整只是宿主语言适配，不代表另一套运行时模型。
 /// </summary>
+[ECMAScript]
+[Description("@#")]
+[Jazor]
 public static partial class Global
 {
 	/// <summary>
@@ -339,4 +339,3 @@ public static partial class Global
 	[Description("@#structuredClone")]
 	public extern static object? StructuredClone(object? value, StructuredSerializeOptions? options = default);
 }
-

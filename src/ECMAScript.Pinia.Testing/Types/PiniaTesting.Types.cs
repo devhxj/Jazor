@@ -3,6 +3,9 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
+/// <summary>
+/// Pinia 测试入口；创建可配置 action 替身、初始状态和插件行为的测试根实例。
+/// </summary>
 public static partial class PiniaTesting
 {
 	/// <summary>
@@ -16,6 +19,9 @@ public static partial class PiniaTesting
 	[Description("@#")]
 	public abstract record TestingPinia : Pinia.PiniaInstance
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected TestingPinia()
 		{
 		}

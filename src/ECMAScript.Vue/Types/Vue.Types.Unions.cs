@@ -308,27 +308,67 @@ public static partial class Vue
 		/// </summary>
 		public VueStyleValues? AsValues => Value is VueStyleValues value ? value : default(VueStyleValues?);
 
+		/// <summary>
+		/// 将 string 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(string value)
 			=> new(value);
 
+		/// <summary>
+		/// 将 VueProps 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(VueProps value)
 			=> new(value);
 
+		/// <summary>
+		/// 将 VueDictionary 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(VueDictionary value)
 			=> new(value);
 
+		/// <summary>
+		/// 将 VueStyleValues 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(VueStyleValues value)
 			=> new(value);
 
+		/// <summary>
+		/// 将 VueStyleValue[] 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(VueStyleValue[] values)
 			=> new((VueStyleValues)values);
 
+		/// <summary>
+		/// 将 string[] 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(string[] values)
 			=> new((VueStyleValues)values);
 
+		/// <summary>
+		/// 将 VueProps[] 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(VueProps[] values)
 			=> new((VueStyleValues)values);
 
+		/// <summary>
+		/// 将 VueDictionary[] 值转换为 VueStyleValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValue(VueDictionary[] values)
 			=> new((VueStyleValues)values);
 	}
@@ -343,6 +383,9 @@ public static partial class Vue
 	[CollectionBuilder(typeof(VueStyleValuesCollectionBuilder), nameof(VueStyleValuesCollectionBuilder.Create))]
 	public readonly union VueStyleValues(VueStyleValue[]) : IEnumerable<VueStyleValue>
 	{
+		/// <summary>
+		/// 读取当前值的 VueStyleValue[] 分支；不属于该分支时返回 null。
+		/// </summary>
 		public VueStyleValue[]? AsArray => Value as VueStyleValue[];
 
 		IEnumerator<VueStyleValue> IEnumerable<VueStyleValue>.GetEnumerator()
@@ -351,22 +394,49 @@ public static partial class Vue
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 			=> ((IEnumerable<VueStyleValue>)this).GetEnumerator();
 
+		/// <summary>
+		/// 将 VueStyleValue[] 值转换为 VueStyleValues，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValues(VueStyleValue[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 string[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValues(string[] values)
 			=> new(Array.ConvertAll(values, static value => (VueStyleValue)value));
 
+		/// <summary>
+		/// 将 VueProps[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValues(VueProps[] values)
 			=> new(Array.ConvertAll(values, static value => (VueStyleValue)value));
 
+		/// <summary>
+		/// 将 VueDictionary[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStyleValues(VueDictionary[] values)
 			=> new(Array.ConvertAll(values, static value => (VueStyleValue)value));
 	}
 
+	/// <summary>
+	/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class VueStyleValuesCollectionBuilder
 	{
+		/// <summary>
+		/// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public static VueStyleValues Create(ReadOnlySpan<VueStyleValue> values)
 			=> values.ToArray();
 	}
@@ -444,18 +514,43 @@ public static partial class Vue
 		/// </summary>
 		public VueStringNumberValue[]? AsMultiple => Value as VueStringNumberValue[];
 
+		/// <summary>
+		/// 将 double 值转换为 VueStringNumberArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberArrayableValue(double value)
 			=> new((VueStringNumberValue)value);
 
+		/// <summary>
+		/// 将 string 值转换为 VueStringNumberArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberArrayableValue(string value)
 			=> new((VueStringNumberValue)value);
 
+		/// <summary>
+		/// 将 VueStringNumberValue[] 值转换为 VueStringNumberArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberArrayableValue(VueStringNumberValue[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 double[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberArrayableValue(double[] values)
 			=> new(Array.ConvertAll(values, static value => (VueStringNumberValue)value));
 
+		/// <summary>
+		/// 将 string[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberArrayableValue(string[] values)
 			=> new(Array.ConvertAll(values, static value => (VueStringNumberValue)value));
 
@@ -508,24 +603,59 @@ public static partial class Vue
 		/// </summary>
 		public Date[]? AsDates => Value as Date[];
 
+		/// <summary>
+		/// 将 double 值转换为 VueStringNumberDateArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(double value)
 			=> new((VueStringNumberDateValue)value);
 
+		/// <summary>
+		/// 将 string 值转换为 VueStringNumberDateArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(string value)
 			=> new((VueStringNumberDateValue)value);
 
+		/// <summary>
+		/// 将 Date 值转换为 VueStringNumberDateArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(Date value)
 			=> new((VueStringNumberDateValue)value);
 
+		/// <summary>
+		/// 将 Number[] 值转换为 VueStringNumberDateArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(Number[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 double[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(double[] values)
 			=> new(Array.ConvertAll(values, static value => (Number)value));
 
+		/// <summary>
+		/// 将 string[] 值转换为 VueStringNumberDateArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(string[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 Date[] 值转换为 VueStringNumberDateArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(Date[] values)
 			=> new(values);
 	}
@@ -552,9 +682,19 @@ public static partial class Vue
 		/// </summary>
 		public Number[]? AsNumbers => Value is Number[] value ? value : default(Number[]?);
 
+		/// <summary>
+		/// 将 Number[] 值转换为 VueNumberOrNumbersValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueNumberOrNumbersValue(Number[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 double[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueNumberOrNumbersValue(double[] values)
 			=> new(Array.ConvertAll(values, static value => (Number)value));
 
@@ -593,6 +733,11 @@ public static partial class Vue
 		/// </summary>
 		public VueProps? AsProps => Value as VueProps;
 
+		/// <summary>
+		/// 将 VueDictionary 值转换为 VueStringNumberObjectValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberObjectValue(VueDictionary value)
 			=> (VueProps)value;
 	}
@@ -631,6 +776,11 @@ public static partial class Vue
 		/// </summary>
 		public VueProps? AsProps => Value as VueProps;
 
+		/// <summary>
+		/// 将 VueDictionary 值转换为 VueBooleanStringNumberObjectValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectValue(VueDictionary value)
 			=> (VueProps)value;
 	}
@@ -660,40 +810,90 @@ public static partial class Vue
 		/// </summary>
 		public VueBooleanStringNumberObjectValue[]? AsMultiple => Value as VueBooleanStringNumberObjectValue[];
 
+		/// <summary>
+		/// 将 bool 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(bool value)
 			=> new((VueBooleanStringNumberObjectValue)value);
 
+		/// <summary>
+		/// 将 double 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(double value)
 			=> new((VueBooleanStringNumberObjectValue)value);
 
+		/// <summary>
+		/// 将 string 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(string value)
 			=> new((VueBooleanStringNumberObjectValue)value);
 
+		/// <summary>
+		/// 将 VueProps 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueProps value)
 		{
 			VueBooleanStringNumberObjectValue scalar = value;
 			return new(scalar);
 		}
 
+		/// <summary>
+		/// 将 VueDictionary 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueDictionary value)
 		{
 			VueBooleanStringNumberObjectValue scalar = value;
 			return new(scalar);
 		}
 
+		/// <summary>
+		/// 将 VueBooleanStringNumberObjectValue[] 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(
 			VueBooleanStringNumberObjectValue[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 bool[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(bool[] values)
 			=> new(Array.ConvertAll(values, static value => (VueBooleanStringNumberObjectValue)value));
 
+		/// <summary>
+		/// 将 double[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(double[] values)
 			=> new(Array.ConvertAll(values, static value => (VueBooleanStringNumberObjectValue)value));
 
+		/// <summary>
+		/// 将 string[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(string[] values)
 			=> new(Array.ConvertAll(values, static value => (VueBooleanStringNumberObjectValue)value));
 
+		/// <summary>
+		/// 将 VueProps[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueProps[] values)
 			=> new(Array.ConvertAll(values, static value =>
 			{
@@ -701,6 +901,11 @@ public static partial class Vue
 				return scalar;
 			}));
 
+		/// <summary>
+		/// 将 VueDictionary[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueBooleanStringNumberObjectArrayableValue(VueDictionary[] values)
 			=> new(Array.ConvertAll(values, static value =>
 			{
@@ -752,6 +957,10 @@ public static partial class Vue
 	{
 		private readonly Number[]? _values;
 
+		/// <summary>
+		/// 用恰好两个元素的数组构造有序值对；保留数组引用。数组为 null 或长度不是 2 时抛出参数异常。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public VueNumberPair(Number[] values)
 		{
 			ArgumentNullException.ThrowIfNull(values);
@@ -779,14 +988,31 @@ public static partial class Vue
 		/// </summary>
 		public Number? Second => _values is { Length: > 1 } values ? values[1] : default(Number?);
 
+		/// <summary>
+		/// 返回值对使用的原始二元素数组；默认未初始化的值对返回 null。
+		/// </summary>
 		public object? Value => _values;
 
+		/// <summary>
+		/// 将恰好两个元素的数组作为值对传给 JavaScript。调用方必须保证数组长度为 2；编译后保留原数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		[ECMAScriptInline("__arg1")]
 		public extern static VueNumberPair From(Number[] values);
 
+		/// <summary>
+		/// 将 Number[] 值转换为 VueNumberPair，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueNumberPair(Number[] values)
 			=> new(values);
 
+		/// <summary>
+		/// 将 double[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueNumberPair(double[] values)
 			=> new(Array.ConvertAll(values, static value => (Number)value));
 
@@ -797,9 +1023,16 @@ public static partial class Vue
 			=> ((IEnumerable<Number>)this).GetEnumerator();
 	}
 
+	/// <summary>
+	/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class VueNumberPairCollectionBuilder
 	{
+		/// <summary>
+		/// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public static VueNumberPair Create(ReadOnlySpan<Number> values)
 			=> values.ToArray();
 	}
@@ -832,6 +1065,11 @@ public static partial class Vue
 		/// </summary>
 		public IVNode? AsVNode => Value as IVNode;
 
+		/// <summary>
+		/// 将 double 值转换为 VueStringNumberVNodeValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberVNodeValue(double value)
 			=> new((Number)value);
 	}
@@ -918,6 +1156,10 @@ public static partial class Vue
 	{
 		private readonly string[]? _values;
 
+		/// <summary>
+		/// 用恰好两个元素的数组构造有序值对；保留数组引用。数组为 null 或长度不是 2 时抛出参数异常。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public VueStringPair(string[] values)
 		{
 			ArgumentNullException.ThrowIfNull(values);
@@ -945,11 +1187,23 @@ public static partial class Vue
 		/// </summary>
 		public string? Second => _values is { Length: > 1 } values ? values[1] : null;
 
+		/// <summary>
+		/// 返回值对使用的原始二元素数组；默认未初始化的值对返回 null。
+		/// </summary>
 		public object? Value => _values;
 
+		/// <summary>
+		/// 将恰好两个元素的数组作为值对传给 JavaScript。调用方必须保证数组长度为 2；编译后保留原数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		[ECMAScriptInline("__arg1")]
 		public extern static VueStringPair From(string[] values);
 
+		/// <summary>
+		/// 将 string[] 值转换为 VueStringPair，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringPair(string[] values)
 			=> new(values);
 
@@ -960,9 +1214,16 @@ public static partial class Vue
 			=> ((IEnumerable<string>)this).GetEnumerator();
 	}
 
+	/// <summary>
+	/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class VueStringPairCollectionBuilder
 	{
+		/// <summary>
+		/// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public static VueStringPair Create(ReadOnlySpan<string> values)
 			=> values.ToArray();
 	}
@@ -989,6 +1250,11 @@ public static partial class Vue
 		/// </summary>
 		public VueStringPair? AsRange => Value is VueStringPair value ? value : default(VueStringPair?);
 
+		/// <summary>
+		/// 将 string[] 值转换为 VueStringSingleOrRangeValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringSingleOrRangeValue(string[] values)
 			=> new((VueStringPair)values);
 	}
@@ -1008,6 +1274,10 @@ public static partial class Vue
 	{
 		private readonly Date[]? _values;
 
+		/// <summary>
+		/// 用恰好两个元素的数组构造有序值对；保留数组引用。数组为 null 或长度不是 2 时抛出参数异常。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public VueDatePair(Date[] values)
 		{
 			ArgumentNullException.ThrowIfNull(values);
@@ -1035,11 +1305,23 @@ public static partial class Vue
 		/// </summary>
 		public Date? Second => _values is { Length: > 1 } values ? values[1] : null;
 
+		/// <summary>
+		/// 返回值对使用的原始二元素数组；默认未初始化的值对返回 null。
+		/// </summary>
 		public object? Value => _values;
 
+		/// <summary>
+		/// 将恰好两个元素的数组作为值对传给 JavaScript。调用方必须保证数组长度为 2；编译后保留原数组。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		[ECMAScriptInline("__arg1")]
 		public extern static VueDatePair From(Date[] values);
 
+		/// <summary>
+		/// 将 Date[] 值转换为 VueDatePair，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueDatePair(Date[] values)
 			=> new(values);
 
@@ -1050,9 +1332,16 @@ public static partial class Vue
 			=> ((IEnumerable<Date>)this).GetEnumerator();
 	}
 
+	/// <summary>
+	/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class VueDatePairCollectionBuilder
 	{
+		/// <summary>
+		/// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
 		public static VueDatePair Create(ReadOnlySpan<Date> values)
 			=> values.ToArray();
 	}
@@ -1079,6 +1368,11 @@ public static partial class Vue
 		/// </summary>
 		public VueDatePair? AsRange => Value is VueDatePair value ? value : default(VueDatePair?);
 
+		/// <summary>
+		/// 将 Date[] 值转换为 VueDateSingleOrRangeValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="values">按期望顺序排列的元素。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueDateSingleOrRangeValue(Date[] values)
 			=> new((VueDatePair)values);
 	}

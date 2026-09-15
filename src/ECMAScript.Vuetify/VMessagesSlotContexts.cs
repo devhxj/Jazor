@@ -8,6 +8,9 @@ namespace ECMAScript.Vuetify;
 [Description("@#")]
 public sealed record VMessagesMessageSlotContext
 {
+    /// <summary>
+    /// 当前消息的显示文本。
+    /// </summary>
     [Description("@#message")]
     public string? Message { get; init; }
 }

@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VAvatar")]
 /// <summary>
 /// Vuetify 头像组件。
 /// Vuetify avatar component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VAvatar")]
 public sealed class VAvatar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

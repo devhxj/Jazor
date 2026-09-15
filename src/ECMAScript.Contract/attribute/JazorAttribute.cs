@@ -12,10 +12,6 @@ namespace ECMAScript.Contract;
 /// - 这里声明的是“该成员应该如何暴露给编译器”，不是“最终 JS 一定长什么样”
 /// - generated 白名单只能通过 Generator 刷新，不应手改生成文件绕过这里
 /// </summary>
-/// <param name="member">使用 Jazor.Common 格式化后的完整成员签名，例如 <c>string.Length.get</c> 或 <c>static bool.Parse(string)</c></param>
-/// <param name="op">成员处理方式，见 <see cref="Op"/></param>
-/// <param name="value">附加值：Alias 时通常是 JS 名称，Inline 时通常是表达式模板，Import 时是显式 runtime export 名称</param>
-/// <param name="modulePath">Import 的可选 ESM module specifier；未提供时沿用声明类型的模块路径。</param>
 [AttributeUsage(
 	AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method,
 	AllowMultiple = false,
@@ -61,6 +57,10 @@ internal sealed class JazorAttribute : Attribute
 	/// 完整形式，显式指定 producer 侧 Op、成员签名和附加值。
 	/// Jazor.CLR 中应优先使用这个构造器，让生成器输入保持明确和可审查。
 	/// </summary>
+	/// <param name="op">成员处理方式，见 <see cref="Op"/>。</param>
+	/// <param name="member">使用 Jazor.Common 格式化后的完整成员签名，例如 <c>string.Length.get</c> 或 <c>static bool.Parse(string)</c>。</param>
+	/// <param name="value">附加值：Alias 时通常是 JS 名称，Inline 时通常是表达式模板，Import 时是显式 runtime export 名称。</param>
+	/// <param name="modulePath">Import 的可选 ESM module specifier；未提供时沿用声明类型的模块路径。</param>
 	public JazorAttribute(Op op, string member, string? value = null, string? modulePath = null)
 	{
 		Op = op;

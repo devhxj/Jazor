@@ -1,8 +1,5 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#BigInt")]
-[Jazor]
 /// <summary>
 /// Integer-precision host binding for JavaScript <c>BigInt</c>.
 /// JavaScript <c>BigInt</c> 的整数精度宿主绑定。
@@ -13,6 +10,9 @@
 /// BigInt 不能与 Number 混合参与普通算术；调用方和 CLR module 必须在边界显式转换。
 /// 该类型用于表达 JavaScript 整数运行时，不是任意精度 decimal 或 CLR BigInteger 的完整替代品。
 /// </remarks>
+[ECMAScript]
+[Description("@#BigInt")]
+[Jazor]
 public abstract class BigInt
 {
 	/// <summary>
@@ -166,10 +166,19 @@ public abstract class BigInt
 	/// </summary>
 	public extern static bool operator >(Number x, BigInt y);
 
+	/// <summary>
+	/// 使用 JavaScript &gt;= 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator >=(Number x, BigInt y);
 
+	/// <summary>
+	/// 使用 JavaScript &lt; 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator <(Number x, BigInt y);
 
+	/// <summary>
+	/// 使用 JavaScript &lt;= 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator <=(Number x, BigInt y);
 
 	/// <summary>Arithmetic right-shifts a JavaScript bigint. 对 JavaScript bigint 执行算术右移。</summary>

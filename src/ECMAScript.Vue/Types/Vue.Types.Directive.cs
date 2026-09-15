@@ -28,12 +28,21 @@ public static partial class Vue
 	[Description("@#")]
 	public record VueModelModifierBag : VueDictionary<bool>
 	{
+		/// <summary>
+		/// 更新字符串模型值前去除首尾空白。
+		/// </summary>
 		[Description("@#trim")]
 		public bool? Trim { get; init; }
 
+		/// <summary>
+		/// 尝试将输入值转换为数值；无法解析时保留原始字符串。
+		/// </summary>
 		[Description("@#number")]
 		public bool? Number { get; init; }
 
+		/// <summary>
+		/// 使用 change 事件更新原生输入框模型，而不是每次 input 都更新。
+		/// </summary>
 		[Description("@#lazy")]
 		public bool? Lazy { get; init; }
 	}
@@ -48,6 +57,9 @@ public static partial class Vue
 	[Description("@#Array")]
 	public class VueDirectiveArguments
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveArguments()
 		{
 		}
@@ -134,6 +146,9 @@ public static partial class Vue
 	[Description("@#")]
 	public abstract class VueDirectiveBinding
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveBinding()
 		{
 		}
@@ -185,6 +200,9 @@ public static partial class Vue
 	[Description("@#")]
 	public abstract class VueDirectiveBinding<TValue> : VueDirectiveBinding
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveBinding()
 		{
 		}
@@ -212,6 +230,9 @@ public static partial class Vue
 	[Description("@#")]
 	public abstract class VueDirectiveUpdateBinding : VueDirectiveBinding
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveUpdateBinding()
 		{
 		}
@@ -233,6 +254,9 @@ public static partial class Vue
 	[Description("@#")]
 	public abstract class VueDirectiveUpdateBinding<TValue> : VueDirectiveBinding<TValue>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveUpdateBinding()
 		{
 		}
@@ -254,12 +278,25 @@ public static partial class Vue
 	[Description("@#")]
 	public class VueDirectiveValue
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDirectiveValue()
 		{
 		}
 
+		/// <summary>
+		/// 将 VueDirective 值转换为 VueDirectiveValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueDirectiveValue(VueDirective value);
 
+		/// <summary>
+		/// 将 VueDirectiveFunction 值转换为 VueDirectiveValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueDirectiveValue(VueDirectiveFunction value);
 	}
 

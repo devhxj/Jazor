@@ -16,6 +16,7 @@
     <NuspecFile>ECMAScript.VueRoute.nuspec</NuspecFile>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS0618,CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
   </PropertyGroup>
 

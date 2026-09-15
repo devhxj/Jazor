@@ -20,11 +20,30 @@ internal sealed partial class TDesignDocumentation
         "TScroll" => "懒加载或虚拟滚动配置，包括行高、预渲染缓冲和启用阈值。",
         "TActiveChangeContextType" => "表格行高亮的变化方向：激活或取消激活。",
         "TActiveRowActionType" => "触发表格行高亮变化的键盘或批量选择操作。",
+        "TAnimationType" => "全局动画效果：涟漪、展开或淡入淡出。",
+        "TDatePickerValueType" => "日期值的表示格式，可选毫秒时间戳、Date 对象或指定格式的字符串。",
+        "TProgressStatus" => "进度条的状态。",
+        "TProgressTheme" => "进度条的展示形式。",
+        "TQRStatus" => "二维码的有效、过期、加载或已扫描状态。",
+        "TSizeUnit" => "上传文件大小限制使用的单位。",
+        "TSortType" => "排序方向：降序、升序或两种方向均可。",
+        "TUploadFileStatus" => "文件上传生命周期状态。",
+        "TUploadValidateType" => "上传前校验的失败类型或校验阶段。",
+        "TPopupTriggerSource" => "浮层显隐变化的触发来源。",
+        "TDatePickerTriggerSource" => "日期值变化的触发来源。",
+        "TDateRangePickerPartial" or "TTimeRangePickerPartial" => "范围选择器当前操作的是开始端还是结束端。",
+        "TRangeInputPosition" => "范围输入框中触发操作的位置。",
+        "TDirection" => "内容排列方向。",
+        "TBackTopShapeEnum" => "返回顶部按钮的形状。",
+        "TStepStatus" => "步骤项状态：未开始、进行中、完成或错误。",
+        "TFilterType" => "表格筛选器的输入、单选或多选形式。",
+        "TTransferListType" => "穿梭框的源列表或目标列表。",
+        "TValidateTriggerType" => "表单规则的校验触发时机。",
         _ => null
     };
 
     public static string TypeSummary(string name)
-        => SharedTypeSummary(name) ?? $"TDesign {name} 数据契约；成员与同名 JavaScript 字段对应。";
+        => SharedTypeSummary(name) ?? $"TDesign 的 {name} 类型；用于对应上游类型的数据传递。";
 
     public static string MemberSummary(string name) => name switch
     {
@@ -68,15 +87,34 @@ internal sealed partial class TDesignDocumentation
         "id" => "标识符。",
         "key" => "数据项的键。",
         "name" => "名称。",
+        "theme" => "组件的视觉主题。",
+        "activeRowList" => "当前处于高亮状态的行列表，每项包含行数据和行索引。",
+        "currentRowData" => "本次操作对应的行数据。",
+        "action" => "触发本次变化的操作类型。",
+        _ when name.EndsWith("Icon", StringComparison.Ordinal)
+            => $"自定义 {name[..^4]} 图标，用于替换 TDesign 的同名图标。",
         _ when name.StartsWith("on", StringComparison.Ordinal) && name.Length > 2
             => $"{name[2..]} 事件回调；参数和返回值见委托签名。",
         _ => $"对应上游 {name} 字段或参数；数据形状见声明类型。"
+    };
+
+    public static string ComponentMemberSummary(string name) => name switch
+    {
+        "onLeafColumnsChange" => "叶子列集合变化时触发。",
+        "onShowElementChange" => "表格显示元素变化时触发。",
+        "onChange" => "组件值发生变化时触发。",
+        "onClear" => "清空当前值时触发。",
+        "actions" => "操作区域的插槽内容。",
+        "presets" => "预设值区域的插槽内容。",
+        "treeExpandAndFoldIcon" => "自定义树形表格的展开和收起图标。",
+        _ => MemberSummary(name)
     };
 
     public static string EnumMember(string type, string value)
     {
         var meaning = SpecificEnumMeaning(type, value) ?? value switch
         {
+            "" => "空字符串，不指定此选项",
             "_blank" => "在新的浏览上下文中打开链接",
             "_self" => "在当前浏览上下文中打开链接",
             "_parent" => "在父级浏览上下文中打开链接",
@@ -419,6 +457,8 @@ internal sealed partial class TDesignDocumentation
             return value == "push" ? "抽屉推开页面内容" : "抽屉覆盖页面内容";
         if (type.Contains("FormResetType", StringComparison.Ordinal))
             return value == "empty" ? "重置为空值" : "重置为初始值";
+        if (type.Contains("FormScrollToFirstError", StringComparison.Ordinal) && value == "")
+            return "不自动滚动到第一个校验错误";
         if (type.Contains("Image", StringComparison.Ordinal) && type.Contains("Fit", StringComparison.Ordinal) && value == "none")
             return "保持图片原始尺寸，不缩放";
         if (type.Contains("TableLayout", StringComparison.Ordinal))

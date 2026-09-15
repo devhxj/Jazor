@@ -54,6 +54,7 @@ internal sealed class PreviewBindingEmitter
 
     public async Task EmitAsync(WebIdlInventory inventory, CancellationToken cancellationToken)
     {
+        inventory = new BindingDocumentationCatalog(_options.RepositoryRoot).Apply(inventory);
         var previewRoot = Path.Combine(_options.OutputDirectory, "generate");
         if (Directory.Exists(previewRoot))
         {
@@ -473,7 +474,9 @@ internal sealed class PreviewBindingEmitter
             var content = namespaceLine
                 + Environment.NewLine
                 + Environment.NewLine
-                + string.Join(Environment.NewLine + Environment.NewLine, pair.Value.OrderBy(static item => item, StringComparer.Ordinal))
+                // Prose must not control declaration order: upstream wording changes are documentation-only.
+                + string.Join(Environment.NewLine + Environment.NewLine, pair.Value.OrderBy(static item =>
+                    string.Join("\n", item.Split('\n').Where(line => !line.TrimStart().StartsWith("///", StringComparison.Ordinal))), StringComparer.Ordinal))
                 + Environment.NewLine;
             await File.WriteAllTextAsync(Path.Combine(directory, fileName), NormalizeLineEndings(content), cancellationToken);
         }
@@ -579,7 +582,8 @@ internal sealed class PreviewBindingEmitter
     private static void AppendDictionaryParameterDocumentation(
         StringBuilder builder,
         IEnumerable<DictionaryParameterEmission> parameters,
-        int level = 0)
+        int level = 0,
+        bool factory = false)
     {
         var indent = new string(' ', level * 4);
         foreach (var parameter in parameters)
@@ -590,7 +594,7 @@ internal sealed class PreviewBindingEmitter
             }
 
             builder.Append(indent).Append("/// <param name=\"")
-                .Append(EscapeXmlDocumentation(parameter.PascalName))
+                .Append(EscapeXmlDocumentation(factory ? parameter.ArgumentName : parameter.PascalName))
                 .Append("\">");
             if (!string.IsNullOrWhiteSpace(parameter.Documentation.Prose))
             {
@@ -620,7 +624,12 @@ internal sealed class PreviewBindingEmitter
             .Replace("<", "&lt;", StringComparison.Ordinal)
             .Replace(">", "&gt;", StringComparison.Ordinal)
             .Replace("\"", "&quot;", StringComparison.Ordinal)
-            .Replace("'", "&apos;", StringComparison.Ordinal);
+            .Replace("'", "&apos;", StringComparison.Ordinal)
+            // Source prose/default literals can contain line breaks. Keep them inside
+            // the XML node rather than letting an unprefixed line become C# source.
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace("\r", "\n", StringComparison.Ordinal)
+            .Replace("\n", "&#10;", StringComparison.Ordinal);
 
     private string BuildParameterList(IReadOnlyList<JsonElement> arguments, string? namespaceName)
     {
@@ -697,7 +706,11 @@ internal sealed class PreviewBindingEmitter
             var methodNameSuffix = group.Length > 3
                 ? $"{string.Concat(group.Take(3).Select(static item => item.PascalName))}{group.Length}"
                 : string.Concat(group.Select(static item => item.PascalName));
+            AppendBridgeDocumentation(builder, "仅使用本组参数构造 WebIDL 字典。其他扩展组成员保持未指定；运行时按相应 Web API 的默认规则处理。", 1);
+            AppendDictionaryParameterDocumentation(builder, group, 1, factory: true);
+            builder.AppendLine("    /// <returns>包含本组已指定成员的字典对象。</returns>");
             builder.AppendLine("    [Category(\"optional\")]");
+            /// <summary>使用指定参数组构造字典对象；未列出的成员保持未指定并采用 WebIDL 默认值。</summary>
             builder.Append($"    public extern static {recordName} Optional{methodNameSuffix}(");
             if (group.Length == 0)
             {
@@ -759,6 +772,7 @@ internal sealed class PreviewBindingEmitter
 
             return new DictionaryParameterEmission(
                 pascalName,
+                WebIdlNaming.ToCamelCase(memberName).TrimStart('@'),
                 $"[property: Description(\"@#{memberName}\")]{type} {pascalName} = {value}",
                 $"[Description(\"@#{memberName}\")]{type} {WebIdlNaming.ToCamelCase(memberName)} = {value}",
                 documentation);
@@ -767,6 +781,7 @@ internal sealed class PreviewBindingEmitter
         var propertyType = _typeMapper.IsOptionalPrimitive(typeKey) ? typeKey : $"{typeKey}?";
         return new DictionaryParameterEmission(
             pascalName,
+            pascalName.TrimStart('@'),
             $"[property: Description(\"@#{memberName}\")]{propertyType} {pascalName} = default",
             $"[Description(\"@#{memberName}\")]{propertyType} {pascalName} = default",
             documentation);
@@ -1157,6 +1172,8 @@ internal sealed class PreviewBindingEmitter
         AppendDocumentation(builder, documentation?.Documentation);
         AppendParameterDocumentation(builder, parameters);
 
+        if (returnType != "void" && !string.IsNullOrWhiteSpace(documentation?.Returns))
+            builder.Append("/// <returns>").Append(EscapeXmlDocumentation(documentation.Returns)).AppendLine("</returns>");
         builder.AppendLine($"[Description(\"@#{operationName}\")]");
         builder.Append($"public {inheritanceModifier}{(isStatic ? "static " : string.Empty)}extern {returnType} {methodName}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
 
@@ -2014,6 +2031,7 @@ internal sealed class PreviewBindingEmitter
     {
         var supportsNativeUnionSyntax = SupportsNativeUnionSyntax(union.NamespaceName, union.Branches);
         var builder = new StringBuilder();
+        AppendBridgeDocumentation(builder, $"WebIDL 联合值：{string.Join("、", union.Branches.Select(static branch => branch.Type))}。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。");
         builder.AppendLine("[ECMAScript]");
         if (union.SupportsSystemUnionContract)
         {
@@ -2053,12 +2071,14 @@ internal sealed class PreviewBindingEmitter
             foreach (var branch in union.Branches)
             {
                 builder.AppendLine();
+                AppendUnionProjectionDocumentation(builder, branch);
                 builder.AppendLine($"    public {ToOptionalType(branch.Type)} {branch.AccessorName} => Value {BuildNativeUnionAccessorExpression(branch.Type)};");
             }
 
             foreach (var branch in union.Branches)
             {
                 builder.AppendLine();
+                AppendUnionConversionDocumentation(builder, branch.Type);
                 builder.AppendLine($"    public static implicit operator {union.Name}({branch.Type} value)");
                 builder.AppendLine("        => new(value);");
             }
@@ -2082,6 +2102,8 @@ internal sealed class PreviewBindingEmitter
         foreach (var branch in union.Branches)
         {
             builder.AppendLine();
+            if (GetUnionConstructorAccessibility(union) == "public")
+                AppendUnionConversionDocumentation(builder, branch.Type, constructor: true);
             builder.AppendLine($"    {GetUnionConstructorAccessibility(union)} {union.Name}({branch.Type} value)");
             builder.AppendLine("    {");
             builder.AppendLine($"        _kind = {branch.Kind};");
@@ -2096,12 +2118,14 @@ internal sealed class PreviewBindingEmitter
         foreach (var branch in union.Branches)
         {
             builder.AppendLine();
+            AppendUnionProjectionDocumentation(builder, branch);
             builder.AppendLine($"    public {ToOptionalType(branch.Type)} {branch.AccessorName} => _kind == {branch.Kind} ? _value{branch.Kind} : default;");
         }
 
         if (union.SupportsSystemUnionContract)
         {
             builder.AppendLine();
+            AppendBridgeDocumentation(builder, "读取当前分支保存的原始值；未初始化的联合值返回 null。此属性不进行分支转换。", 1);
             builder.AppendLine("    public object? Value => _kind switch");
             builder.AppendLine("    {");
             foreach (var branch in union.Branches)
@@ -2116,6 +2140,7 @@ internal sealed class PreviewBindingEmitter
         foreach (var branch in union.Branches)
         {
             builder.AppendLine();
+            AppendUnionConversionDocumentation(builder, branch.Type);
             if (branch.SupportsImplicitConversion)
             {
                 builder.AppendLine($"    public static implicit operator {union.Name}({branch.Type} value)");
@@ -2129,6 +2154,7 @@ internal sealed class PreviewBindingEmitter
                 foreach (var concreteType in GetForwardingImplicitConversionTypes(branch.Type))
                 {
                     builder.AppendLine();
+                    AppendUnionConversionDocumentation(builder, concreteType);
                     builder.AppendLine($"    public static implicit operator {union.Name}({concreteType} value)");
                     builder.AppendLine("        => new(value);");
                 }
@@ -2161,13 +2187,32 @@ internal sealed class PreviewBindingEmitter
         {
             builder.AppendLine();
             builder.AppendLine();
+            AppendBridgeDocumentation(builder, $"为 {union.Name} 的数组分支提供 C# 集合表达式支持；应用可使用 [item1, item2] 构造该联合值。");
             builder.AppendLine("[EditorBrowsable(EditorBrowsableState.Never)]");
             builder.AppendLine($"public static class {union.Name}CollectionBuilder");
             builder.AppendLine("{");
+            AppendBridgeDocumentation(builder, "按传入顺序复制元素到新数组，并保存为联合值的数组分支。", 1);
+            builder.AppendLine("    /// <param name=\"items\">要复制的有序元素；方法不保留临时 Span。</param>");
+            builder.AppendLine("    /// <returns>包含新数组的联合值。</returns>");
             builder.AppendLine($"    public static {union.Name} Create(ReadOnlySpan<{union.CollectionElementType}> items)");
             builder.AppendLine("        => items.ToArray();");
             builder.Append('}');
         }
+    }
+
+    private static void AppendBridgeDocumentation(StringBuilder builder, string text, int level = 0)
+        => builder.Append(' ', level * 4).Append("/// <summary>")
+            .Append(EscapeXmlDocumentation(text)).AppendLine("</summary>");
+
+    private static void AppendUnionProjectionDocumentation(StringBuilder builder, GeneratedUnionBranch branch)
+        => AppendBridgeDocumentation(builder, $"读取 {branch.Type} 分支；当前值不属于该分支时返回 null，不进行类型强制转换。", 1);
+
+    private static void AppendUnionConversionDocumentation(StringBuilder builder, string type, bool constructor = false)
+    {
+        AppendBridgeDocumentation(builder, $"将 {type} 保存为联合值的对应分支，保留输入值。", 1);
+        builder.AppendLine("    /// <param name=\"value\">要保存到该分支的值。</param>");
+        if (!constructor)
+            builder.AppendLine("    /// <returns>保存该分支值的联合值。</returns>");
     }
 
     private static string BuildNativeUnionAccessorExpression(string type)
@@ -2473,6 +2518,7 @@ internal sealed class PreviewBindingEmitter
 
     private sealed record DictionaryParameterEmission(
         string PascalName,
+        string ArgumentName,
         string Code,
         string ArgumentCode,
         WebIdlDocumentation? Documentation);
@@ -2572,5 +2618,4 @@ internal sealed class PreviewBindingEmitter
         Skip,
     }
 }
-
 

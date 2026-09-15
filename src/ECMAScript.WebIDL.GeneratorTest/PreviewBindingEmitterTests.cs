@@ -997,6 +997,31 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
+    public async Task EmitAsync_DocumentationNewlines_AreEscapedInsideXmlComments()
+    {
+        var output = await EmitInterfacesAsync(
+            Interface("LineBreakDocumentation", """
+                [
+                  {
+                    "type": "attribute",
+                    "name": "value",
+                    "idlType": { "idlType": "DOMString" },
+                    "readonly": true,
+                    "special": ""
+                  }
+                ]
+                """,
+                documentation: Documentation(
+                    "https://example.test/line-break",
+                    "Example specification",
+                    "LineBreakDocumentation",
+                    "First line\nSecond line")));
+
+        StringAssert.Contains(output, "First line&#10;Second line");
+        Assert.IsFalse(output.Contains("/// Second line", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public async Task EmitAsync_UnmatchedDeclarations_DoNotInventDocumentation()
     {
         var output = await EmitInterfacesAsync(
@@ -1588,4 +1613,3 @@ public sealed class PreviewBindingEmitterTests
         return count;
     }
 }
-

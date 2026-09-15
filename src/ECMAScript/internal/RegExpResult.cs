@@ -2,8 +2,6 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
 /// <summary>
 /// Represents the array-like result and named properties returned by JavaScript <c>RegExp.exec</c> or matching APIs.
 /// 表示 JavaScript <c>RegExp.exec</c> 或匹配 API 返回的数组型结果及命名属性。
@@ -14,6 +12,8 @@ namespace ECMAScript;
 /// 此类型同时具有数组索引和 <c>input</c>、<c>index</c>、<c>groups</c> 等附加属性，不能只用普通 <c>string[]</c> 表达；
 /// 它是宿主绑定，不是 C# 正则引擎实现。
 /// </remarks>
+[ECMAScript]
+[Description("@#")]
 public sealed class RegExpResult : IArray<string?>
 {
     ///<summary>

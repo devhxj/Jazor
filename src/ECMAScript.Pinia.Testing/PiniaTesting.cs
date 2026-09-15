@@ -45,6 +45,9 @@ public delegate bool PiniaTestingStubActionPredicate(string actionName, Pinia.St
 public delegate bool PiniaTestingStubActionPredicate<TStore>(string actionName, TStore store)
 	where TStore : class;
 
+/// <summary>
+/// Pinia 测试入口；创建可配置 action 替身、初始状态和插件行为的测试根实例。
+/// </summary>
 [ECMAScript("@pinia/testing")]
 [Description("@#")]
 public static partial class PiniaTesting

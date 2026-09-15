@@ -191,42 +191,137 @@ public static partial class Vue
 		{
 		}
 
+		/// <summary>
+		/// 将 string 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(string value);
 
+		/// <summary>
+		/// 将 bool 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(bool value);
 
+		/// <summary>
+		/// 将 Number 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(Number value);
 
+		/// <summary>
+		/// 将 BigInt 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(BigInt value);
 
+		/// <summary>
+		/// 将 char 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(char value);
 
+		/// <summary>
+		/// 将 double 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(double value);
 
+		/// <summary>
+		/// 将 float 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(float value);
 
+		/// <summary>
+		/// 将 int 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(int value);
 
+		/// <summary>
+		/// 将 long 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(long value);
 
+		/// <summary>
+		/// 将 short 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(short value);
 
+		/// <summary>
+		/// 将 ushort 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(ushort value);
 
+		/// <summary>
+		/// 将 byte 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(byte value);
 
+		/// <summary>
+		/// 将 sbyte 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(sbyte value);
 
+		/// <summary>
+		/// 将 uint 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(uint value);
 
+		/// <summary>
+		/// 将 ulong 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(ulong value);
 
+		/// <summary>
+		/// 将 decimal 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(decimal value);
 
+		/// <summary>
+		/// 将 Action 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(Action value);
 
+		/// <summary>
+		/// 将 VueProps 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(VueProps value);
 
+		/// <summary>
+		/// 将 VueValue[] 值转换为 VueValue，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueValue(VueValue[] value);
 	}
 
@@ -246,34 +341,109 @@ public static partial class Vue
 		{
 		}
 
+		/// <summary>
+		/// 将 string 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(string value);
 
+		/// <summary>
+		/// 将 Number 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(Number value);
 
+		/// <summary>
+		/// 将 byte 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(byte value);
 
+		/// <summary>
+		/// 将 sbyte 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(sbyte value);
 
+		/// <summary>
+		/// 将 short 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(short value);
 
+		/// <summary>
+		/// 将 ushort 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(ushort value);
 
+		/// <summary>
+		/// 将 int 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(int value);
 
+		/// <summary>
+		/// 将 uint 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(uint value);
 
+		/// <summary>
+		/// 将 long 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(long value);
 
+		/// <summary>
+		/// 将 ulong 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(ulong value);
 
+		/// <summary>
+		/// 将 float 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(float value);
 
+		/// <summary>
+		/// 将 double 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(double value);
 
+		/// <summary>
+		/// 将 decimal 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(decimal value);
 
+		/// <summary>
+		/// 将 bool 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(bool value);
 
+		/// <summary>
+		/// 将 IVNode[] 值转换为 VueChild，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueChild(IVNode[] value);
 	}
 
@@ -293,32 +463,102 @@ public static partial class Vue
 		{
 		}
 
+		/// <summary>
+		/// 将 string 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(string value);
 
+		/// <summary>
+		/// 将 Symbol 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(Symbol value);
 
+		/// <summary>
+		/// 将 Number 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(Number value);
 
+		/// <summary>
+		/// 将 byte 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(byte value);
 
+		/// <summary>
+		/// 将 sbyte 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(sbyte value);
 
+		/// <summary>
+		/// 将 short 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(short value);
 
+		/// <summary>
+		/// 将 ushort 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(ushort value);
 
+		/// <summary>
+		/// 将 int 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(int value);
 
+		/// <summary>
+		/// 将 uint 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(uint value);
 
+		/// <summary>
+		/// 将 long 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(long value);
 
+		/// <summary>
+		/// 将 ulong 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(ulong value);
 
+		/// <summary>
+		/// 将 float 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(float value);
 
+		/// <summary>
+		/// 将 double 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(double value);
 
+		/// <summary>
+		/// 将 decimal 值转换为 VueKey，保留输入值供 JavaScript API 使用。
+		/// </summary>
+		/// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+		/// <returns>转换后的强类型值。</returns>
 		public extern static implicit operator VueKey(decimal value);
 	}
 
@@ -337,30 +577,57 @@ public static partial class Vue
 		{
 		}
 
+		/// <summary>
+		/// 使用 JavaScript String 构造函数声明 prop 的运行时类型，期望传入字符串值。
+		/// </summary>
 		[Description("@#String")]
 		public extern static VuePropType String { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Number 构造函数声明 prop 的运行时类型，期望传入数值值。
+		/// </summary>
 		[Description("@#Number")]
 		public extern static VuePropType Number { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Boolean 构造函数声明 prop 的运行时类型，期望传入布尔值。
+		/// </summary>
 		[Description("@#Boolean")]
 		public extern static VuePropType Boolean { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Array 构造函数声明 prop 的运行时类型，期望传入数组值。
+		/// </summary>
 		[Description("@#Array")]
 		public extern static VuePropType Array { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Object 构造函数声明 prop 的运行时类型，期望传入对象值。
+		/// </summary>
 		[Description("@#Object")]
 		public extern static VuePropType Object { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Date 构造函数声明 prop 的运行时类型，期望传入日期对象值。
+		/// </summary>
 		[Description("@#Date")]
 		public extern static VuePropType Date { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Function 构造函数声明 prop 的运行时类型，期望传入函数值。
+		/// </summary>
 		[Description("@#Function")]
 		public extern static VuePropType Function { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Symbol 构造函数声明 prop 的运行时类型，期望传入Symbol值。
+		/// </summary>
 		[Description("@#Symbol")]
 		public extern static VuePropType Symbol { get; }
 
+		/// <summary>
+		/// 使用 JavaScript Error 构造函数声明 prop 的运行时类型，期望传入错误对象值。
+		/// </summary>
 		[Description("@#Error")]
 		public extern static VuePropType Error { get; }
 	}

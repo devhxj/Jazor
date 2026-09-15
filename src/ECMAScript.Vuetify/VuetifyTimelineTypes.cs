@@ -7,9 +7,15 @@ namespace ECMAScript.Vuetify;
 [String]
 public enum VuetifyTimelineAlign
 {
+    /// <summary>
+    /// 居中；上游取值为 “center”。
+    /// </summary>
     [Description("@#center")]
     Center,
 
+    /// <summary>
+    /// 逻辑起始端，方向随 RTL 布局变化；上游取值为 “start”。
+    /// </summary>
     [Description("@#start")]
     Start
 }
@@ -21,9 +27,15 @@ public enum VuetifyTimelineAlign
 [String]
 public enum VuetifyTimelineDirection
 {
+    /// <summary>
+    /// 垂直方向；上游取值为 “vertical”。
+    /// </summary>
     [Description("@#vertical")]
     Vertical,
 
+    /// <summary>
+    /// 水平方向；上游取值为 “horizontal”。
+    /// </summary>
     [Description("@#horizontal")]
     Horizontal
 }
@@ -35,9 +47,15 @@ public enum VuetifyTimelineDirection
 [String]
 public enum VuetifyTimelineJustify
 {
+    /// <summary>
+    /// 自动选择；上游取值为 “auto”。
+    /// </summary>
     [Description("@#auto")]
     Auto,
 
+    /// <summary>
+    /// 居中；上游取值为 “center”。
+    /// </summary>
     [Description("@#center")]
     Center
 }
@@ -49,9 +67,15 @@ public enum VuetifyTimelineJustify
 [String]
 public enum VuetifyTimelineSide
 {
+    /// <summary>
+    /// 逻辑起始端，方向随 RTL 布局变化；上游取值为 “start”。
+    /// </summary>
     [Description("@#start")]
     Start,
 
+    /// <summary>
+    /// 逻辑结束端，方向随 RTL 布局变化；上游取值为 “end”。
+    /// </summary>
     [Description("@#end")]
     End
 }
@@ -63,12 +87,21 @@ public enum VuetifyTimelineSide
 [String]
 public enum VuetifyTimelineTruncateLine
 {
+    /// <summary>
+    /// 逻辑起始端，方向随 RTL 布局变化；上游取值为 “start”。
+    /// </summary>
     [Description("@#start")]
     Start,
 
+    /// <summary>
+    /// 逻辑结束端，方向随 RTL 布局变化；上游取值为 “end”。
+    /// </summary>
     [Description("@#end")]
     End,
 
+    /// <summary>
+    /// 截断时间线起始和结束两端的线条；上游取值为 “both”。
+    /// </summary>
     [Description("@#both")]
     Both
 }

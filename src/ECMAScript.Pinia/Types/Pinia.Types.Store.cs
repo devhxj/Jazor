@@ -3,6 +3,9 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
+/// <summary>
+/// Pinia 状态管理入口；创建并安装根实例后，使用 DefineStore 声明 store，通过订阅和 action 钩子观察变更。
+/// </summary>
 public static partial class Pinia
 {
 	/// <summary>
@@ -116,6 +119,9 @@ public static partial class Pinia
 	/// </summary>
 	public abstract class PiniaPluginContext
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected PiniaPluginContext()
 		{
 		}
@@ -158,6 +164,9 @@ public static partial class Pinia
 	public abstract class PiniaPluginContext<TStore> : PiniaPluginContext
 		where TStore : class
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected PiniaPluginContext()
 		{
 		}
@@ -182,6 +191,9 @@ public static partial class Pinia
 		where TStore : class
 		where TOptions : DefineStoreOptionsInPlugin
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected PiniaPluginContext()
 		{
 		}
@@ -209,6 +221,9 @@ public static partial class Pinia
 		where TOptions : DefineStoreOptionsInPlugin
 		where TCustomProperties : Vue.VueProps
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected PiniaPluginContext()
 		{
 		}
@@ -238,6 +253,9 @@ public static partial class Pinia
 		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected PiniaPluginContext()
 		{
 		}
@@ -257,6 +275,9 @@ public static partial class Pinia
 	/// </summary>
 	public abstract class StoreProperties
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreProperties()
 		{
 		}
@@ -282,6 +303,9 @@ public static partial class Pinia
 	/// </summary>
 	public abstract class StoreGeneric : StoreProperties
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreGeneric()
 		{
 		}
@@ -345,6 +369,9 @@ public static partial class Pinia
 	public abstract class Store<TState> : StoreGeneric
 		where TState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected Store()
 		{
 		}
@@ -439,6 +466,9 @@ public static partial class Pinia
 	public abstract class SubscriptionMutation<TState>
 		where TState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected SubscriptionMutation()
 		{
 		}
@@ -475,6 +505,9 @@ public static partial class Pinia
 	public abstract class SubscriptionMutationDirect<TState> : SubscriptionMutation<TState>
 		where TState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected SubscriptionMutationDirect()
 		{
 		}
@@ -495,6 +528,9 @@ public static partial class Pinia
 	public abstract class SubscriptionMutationPatchFunction<TState> : SubscriptionMutation<TState>
 		where TState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected SubscriptionMutationPatchFunction()
 		{
 		}
@@ -515,6 +551,9 @@ public static partial class Pinia
 	public abstract class SubscriptionMutationPatchObject<TState> : SubscriptionMutation<TState>
 		where TState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected SubscriptionMutationPatchObject()
 		{
 		}
@@ -540,6 +579,9 @@ public static partial class Pinia
 	/// </summary>
 	public abstract class StoreActionListenerContext
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreActionListenerContext()
 		{
 		}
@@ -621,6 +663,9 @@ public static partial class Pinia
 	public abstract class StoreActionListenerContext<TStore> : StoreActionListenerContext
 		where TStore : class
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreActionListenerContext()
 		{
 		}
@@ -651,6 +696,9 @@ public static partial class Pinia
 		where TStore : class
 		where TArgs : class
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ProjectedActionContext()
 		{
 		}
@@ -683,6 +731,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -704,6 +755,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0> : ActionArgsView
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -726,6 +780,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1> : ActionArgsView<TArg0>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -746,6 +803,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2> : ActionArgsView<TArg0, TArg1>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -766,6 +826,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3> : ActionArgsView<TArg0, TArg1, TArg2>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -786,6 +849,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4> : ActionArgsView<TArg0, TArg1, TArg2, TArg3>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -806,6 +872,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -826,6 +895,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -846,6 +918,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -866,6 +941,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -886,6 +964,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -906,6 +987,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -926,6 +1010,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -946,6 +1033,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -966,6 +1056,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -986,6 +1079,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -1006,6 +1102,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ActionArgsView()
 		{
 		}
@@ -1027,6 +1126,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class StoreDefinition
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreDefinition()
 		{
 		}
@@ -1047,6 +1149,9 @@ public static partial class Pinia
 	public abstract class StoreDefinition<TStore> : StoreDefinition
 		where TStore : class
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreDefinition()
 		{
 		}
@@ -1102,6 +1207,9 @@ public static partial class Pinia
 		where TStore : class
 		where TCustomProperties : Vue.VueProps
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ProjectedStore()
 		{
 		}
@@ -1137,6 +1245,9 @@ public static partial class Pinia
 		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ProjectedStore()
 		{
 		}
@@ -1166,6 +1277,9 @@ public static partial class Pinia
 		where TStore : class
 		where TCustomProperties : Vue.VueProps
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ProjectedStoreDefinition()
 		{
 		}
@@ -1194,6 +1308,9 @@ public static partial class Pinia
 		where TCustomProperties : Vue.VueProps
 		where TCustomState : PiniaStateTree
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected ProjectedStoreDefinition()
 		{
 		}

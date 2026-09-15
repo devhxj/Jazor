@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VAutocomplete")]
 /// <summary>
 /// Vuetify 自动补全组件。
 /// Vuetify autocomplete component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VAutocomplete")]
 public sealed class VAutocomplete : VSelectLikeComponentBase, IVuetifyComponent
 {
     /// <summary>

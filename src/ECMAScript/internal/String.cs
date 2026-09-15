@@ -1,12 +1,12 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
-[EditorBrowsable(EditorBrowsableState.Never)]
 /// <summary>
 /// Protocol bridge for JavaScript <c>@@replace</c> pattern objects.
 /// JavaScript <c>@@replace</c> 模式对象的协议桥接；隐藏该接口是因为它表达协议能力，而不是独立运行时宿主。
 /// </summary>
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPattern
 {
 	/// <summary>
@@ -17,10 +17,10 @@ public interface IPattern
 	string SymbolReplace(string value, object? replacement);
 }
 
+/// <summary>Protocol bridge for JavaScript <c>@@match</c>. JavaScript <c>@@match</c> 的协议桥接。</summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-/// <summary>Protocol bridge for JavaScript <c>@@match</c>. JavaScript <c>@@match</c> 的协议桥接。</summary>
 public interface IMatchPattern
 {
 	/// <summary>
@@ -30,10 +30,10 @@ public interface IMatchPattern
 	Array<string?>? SymbolMatch(string value);
 }
 
+/// <summary>Protocol bridge for JavaScript <c>@@matchAll</c>. JavaScript <c>@@matchAll</c> 的协议桥接。</summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-/// <summary>Protocol bridge for JavaScript <c>@@matchAll</c>. JavaScript <c>@@matchAll</c> 的协议桥接。</summary>
 public interface IMatchAllPattern
 {
 	/// <summary>
@@ -43,10 +43,10 @@ public interface IMatchAllPattern
 	IEnumerable<RegExpResult> SymbolMatchAll(string value);
 }
 
+/// <summary>Protocol bridge for JavaScript <c>@@search</c>. JavaScript <c>@@search</c> 的协议桥接。</summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-/// <summary>Protocol bridge for JavaScript <c>@@search</c>. JavaScript <c>@@search</c> 的协议桥接。</summary>
 public interface ISearchPattern
 {
 	/// <summary>
@@ -56,10 +56,10 @@ public interface ISearchPattern
 	Number SymbolSearch(string value);
 }
 
+/// <summary>Protocol bridge for JavaScript <c>@@split</c>. JavaScript <c>@@split</c> 的协议桥接。</summary>
 [ECMAScript]
 [Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-/// <summary>Protocol bridge for JavaScript <c>@@split</c>. JavaScript <c>@@split</c> 的协议桥接。</summary>
 public interface ISplitPattern
 {
 	/// <summary>
@@ -172,6 +172,7 @@ public static partial class Global
 		[Description("@#replace")]
 		public extern string Replace(string pattern, Func<string, string> replacement);
 
+		/// <summary>使用正则表达式替换匹配文本；global 标志决定是否替换全部匹配项。Replaces regular-expression matches.</summary>
 		[Description("@#replace")]
 		public extern string Replace(RegExp pattern, string replacement);
 
@@ -184,10 +185,11 @@ public static partial class Global
 		[Description("@#replace")]
 		public extern string Replace(RegExp pattern, Func<string, string> replacement);
 
+		/// <summary>将替换委托给实现 JavaScript Symbol.replace 协议的模式对象。Delegates to the pattern's JavaScript Symbol.replace protocol.</summary>
 		[Description("@#replace")]
 		public extern string Replace(IPattern pattern, string replacement);
 
-		/// <summary>
+			/// <summary>
 		/// Projection of JavaScript <c>String.prototype.replace</c> for objects that participate in the JavaScript <c>@@replace</c> protocol.
 		/// The replacement callback remains available because JavaScript forwards it to the protocol method unchanged.
 		/// 针对参与 JavaScript <c>@@replace</c> 协议的对象进行替换；回调会原样转交给协议方法。
@@ -288,8 +290,8 @@ public static partial class Global
 
 		/// <summary>
 		/// Legacy projection of JavaScript <c>String.prototype.substr</c>.
-		/// This remains exposed for runtime compatibility even though newer code should generally prefer <see cref="Slice" /> or <see cref="Substring(Number)" />.
-		/// 已废弃的 JavaScript <c>substr</c> 投影；为运行时兼容保留，新代码通常应使用 <see cref="Slice"/> 或 <see cref="Substring(Number)"/>。
+		/// This remains exposed for runtime compatibility even though newer code should generally prefer <see cref="Slice" /> or <c>Substring</c>.
+		/// 已废弃的 JavaScript <c>substr</c> 投影；为运行时兼容保留，新代码通常应使用 <see cref="Slice"/> 或 <c>Substring</c>。
 		/// </summary>
 		[Description("@#substr")]
 		public extern string Substr(Number start, Number? length = null);
@@ -496,6 +498,7 @@ public static partial class Global
 		[Description("@#localeCompare")]
 		public extern Number LocaleCompare(string compareString, IEnumerable<string> locales);
 
+		/// <summary>使用指定语言列表和排序选项比较字符串。Compares strings using the requested locales and collation options.</summary>
 		[Description("@#localeCompare")]
 		public extern Number LocaleCompare(string compareString, IEnumerable<string> locales, Intl.CollatorOptions options);
 

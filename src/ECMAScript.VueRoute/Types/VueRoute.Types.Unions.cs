@@ -632,20 +632,44 @@ public readonly union RouterErrorValue(
     IObject,
     Array<RouterErrorValue?>)
 {
+    /// <summary>
+    /// 读取当前值的 Error 分支；不属于该分支时返回 null。
+    /// </summary>
     public Error? AsError => Value as Error;
 
+    /// <summary>
+    /// 读取当前值的 string 分支；不属于该分支时返回 null。
+    /// </summary>
     public string? AsString => Value as string;
 
+    /// <summary>
+    /// 读取当前值的 Number 分支；不属于该分支时返回 null。
+    /// </summary>
     public Number? AsNumber => Value is Number value ? value : default(Number?);
 
+    /// <summary>
+    /// 读取当前值的 bool 分支；不属于该分支时返回 null。
+    /// </summary>
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
+    /// <summary>
+    /// 读取当前值的 BigInt 分支；不属于该分支时返回 null。
+    /// </summary>
     public BigInt? AsBigInt => Value is BigInt value ? value : default(BigInt?);
 
+    /// <summary>
+    /// 读取当前值的 Symbol 分支；不属于该分支时返回 null。
+    /// </summary>
     public Symbol? AsSymbol => Value as Symbol;
 
+    /// <summary>
+    /// 读取当前值的 IObject 分支；不属于该分支时返回 null。
+    /// </summary>
     public IObject? AsObject => Value as IObject;
 
+    /// <summary>
+    /// 读取当前值的 Array&lt;RouterErrorValue?&gt; 分支；不属于该分支时返回 null。
+    /// </summary>
     public Array<RouterErrorValue?>? AsArray => Value as Array<RouterErrorValue?>;
 
     /// <summary>
@@ -903,11 +927,6 @@ public readonly union NavigationGuardNextArgument(bool, RouteLocationRaw, Naviga
     public static implicit operator NavigationGuardNextArgument(RouteLocationAsRelative value)
         => new(value);
 
-    /// <summary>
-    /// 从 NavigationGuardNextCallback 隐式转换。
-    /// Implicitly converts from a NavigationGuardNextCallback.
-    /// </summary>
-    /// <param name="value">要转换的回调。The callback to convert.</param>
     /// <summary>
     /// 从 NavigationGuardNextCallback 创建联合值。
     /// Creates a union value from a NavigationGuardNextCallback.

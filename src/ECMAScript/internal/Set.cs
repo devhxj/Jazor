@@ -1,12 +1,12 @@
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#")]
-[EditorBrowsable(EditorBrowsableState.Never)]
 /// <summary>
 /// JavaScript set-like protocol consumed by the new <c>Set.prototype</c> relation methods.
 /// 新版 JavaScript <c>Set.prototype</c> 关系方法消费的 set-like 协议。
 /// </summary>
+[ECMAScript]
+[Description("@#")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public interface ISetLike<T>
 {
 	/// <summary>
@@ -33,8 +33,6 @@ public interface ISetLike<T>
 	IEnumerable<T> Keys();
 }
 
-[ECMAScript]
-[Description("@#Set")]
 /// <summary>
 /// Generic C# authoring binding for JavaScript <c>Set</c>.
 /// JavaScript <c>Set</c> 的泛型 C# 编写绑定。
@@ -44,6 +42,8 @@ public interface ISetLike<T>
 /// Set 的唯一性和 NaN/零值比较遵循 JavaScript SameValueZero 规则；<typeparamref name="T"/> 只是编译期标注，
 /// 不代表运行时会进行 CLR 类型检查。
 /// </remarks>
+[ECMAScript]
+[Description("@#Set")]
 public sealed class Set<T> : IEnumerable, ISetLike<T> //where T : class
 {
 	/// <summary>Creates an empty JavaScript set. 创建空的 JavaScript Set。</summary>
@@ -160,8 +160,14 @@ public sealed class Set<T> : IEnumerable, ISetLike<T> //where T : class
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T, T, Set<T>> callbackfn, object? thisArg = null);
+	/// <summary>
+	/// The forEach() method of Set instances executes a provided function once for each value in this set, in insertion order.
+	/// </summary>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T, T> callbackfn, object? thisArg = null);
+	/// <summary>
+	/// The forEach() method of Set instances executes a provided function once for each value in this set, in insertion order.
+	/// </summary>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T> callbackfn, object? thisArg = null);
 
@@ -172,9 +178,9 @@ public sealed class Set<T> : IEnumerable, ISetLike<T> //where T : class
 	extern IEnumerator IEnumerable.GetEnumerator();
 }
 
+/// <summary>Non-generic host binding for JavaScript <c>Set</c>. JavaScript <c>Set</c> 的非泛型宿主绑定。</summary>
 [ECMAScript]
 [Description("@#Set")]
-/// <summary>Non-generic host binding for JavaScript <c>Set</c>. JavaScript <c>Set</c> 的非泛型宿主绑定。</summary>
 public sealed class Set : IEnumerable, ISetLike<object?>
 {
 	/// <summary>
@@ -300,8 +306,14 @@ public sealed class Set : IEnumerable, ISetLike<object?>
 	/// <param name="thisArg">An arbitrary value passed as the JavaScript this argument to callbackfn. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<object?, object?, Set> callbackfn, object? thisArg = null);
+	/// <summary>
+	/// The forEach() method of Set instances executes a provided function once for each value in this set, in insertion order.
+	/// </summary>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<object?, object?> callbackfn, object? thisArg = null);
+	/// <summary>
+	/// The forEach() method of Set instances executes a provided function once for each value in this set, in insertion order.
+	/// </summary>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<object?> callbackfn, object? thisArg = null);
 
@@ -312,11 +324,11 @@ public sealed class Set : IEnumerable, ISetLike<object?>
 	extern IEnumerator IEnumerable.GetEnumerator();
 }
 
-[ECMAScript]
-[Description("@#WeakSet")]
 /// <summary>Generic host binding for JavaScript <c>WeakSet</c>. JavaScript <c>WeakSet</c> 的泛型宿主绑定。</summary>
 /// <remarks>WeakSet is non-enumerable and weakly holds its values. The C# <c>class</c> constraint is only authoring guidance; JavaScript enforces the final <c>CanBeHeldWeakly</c> rule.
 /// WeakSet 不可枚举并弱持有其值。C# <c>class</c> 约束仅提供编写指导，JavaScript 负责最终 <c>CanBeHeldWeakly</c> 校验。</remarks>
+[ECMAScript]
+[Description("@#WeakSet")]
 public sealed class WeakSet<T> where T : class
 {
 	/// <summary>Creates an empty JavaScript weak set. 创建空的 JavaScript WeakSet。</summary>
@@ -346,9 +358,9 @@ public sealed class WeakSet<T> where T : class
 	public extern bool Delete(T value);
 }
 
+/// <summary>Non-generic host binding for JavaScript <c>WeakSet</c>. JavaScript <c>WeakSet</c> 的非泛型宿主绑定。</summary>
 [ECMAScript]
 [Description("@#WeakSet")]
-/// <summary>Non-generic host binding for JavaScript <c>WeakSet</c>. JavaScript <c>WeakSet</c> 的非泛型宿主绑定。</summary>
 public sealed class WeakSet
 {
 	/// <summary>

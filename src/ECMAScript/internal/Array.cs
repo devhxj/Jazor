@@ -1,6 +1,5 @@
 namespace ECMAScript;
 
-[ECMAScript]
 /// <summary>
 /// Non-generic authoring binding for JavaScript <c>Array</c>.
 /// JavaScript Array 的非泛型编写绑定。
@@ -12,6 +11,7 @@ namespace ECMAScript;
 /// Array 是可变、可迭代且按 Number length 管理的 JavaScript 容器；接口只公开编译器可投影的成员，
 /// 不承诺 CLR Array 的固定长度、多维或运行时元素类型检查语义。
 /// </remarks>
+[ECMAScript]
 public interface IArray : IEnumerable
 {
 	/// <summary>Gets the JavaScript array length. 获取 JavaScript 数组的长度。</summary>
@@ -23,11 +23,11 @@ public interface IArray : IEnumerable
 	static extern bool IsArray(object? obj);
 }
 
-[ECMAScript]
 /// <summary>
 /// JavaScript <c>Array</c> binding with a compile-time element type annotation.
 /// 带编译期元素类型标注的 JavaScript <c>Array</c> 绑定。
 /// </summary>
+[ECMAScript]
 public interface IArray<T> : IArray
 {
 	/// <summary>
@@ -149,7 +149,7 @@ public partial class Array<T> : object, IArray<T>
 	/// and does not modify the array.
 	/// 删除并返回末项。空数组时 JavaScript 返回 <c>undefined</c>，本投影以 <see langword="null"/> 表示且不修改数组。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#pop")]
 	public extern T? Pop();
 
@@ -158,7 +158,7 @@ public partial class Array<T> : object, IArray<T>
 	/// 向数组尾部追加元素并返回新长度；该操作原地修改 JavaScript 数组。
 	/// </summary>
 	/// <param name="items">New elements to add to the array.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#push")]
 	public extern Number Push(params T[] items);
 
@@ -168,7 +168,7 @@ public partial class Array<T> : object, IArray<T>
 	/// 合并可迭代值或元素，返回新数组且不修改现有数组。
 	/// </summary>
 	/// <param name="items">Additional arrays and/or items to add to the end of the array.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#concat")]
 	public extern Array<T> Concat(params IEnumerable<T>[] items);
 
@@ -186,7 +186,7 @@ public partial class Array<T> : object, IArray<T>
 	/// 使用指定分隔符连接数组元素；未提供分隔符时遵循 JavaScript 默认逗号规则。
 	/// </summary>
 	/// <param name="separator">A string used to separate one element of the array from the next in the resulting string. If omitted, the array elements are separated with a comma.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#join")]
 	public extern string Join(string? separator = null);
 
@@ -223,7 +223,7 @@ public partial class Array<T> : object, IArray<T>
 	/// This method mutates the array and returns a reference to the same array.
 	/// 原地排序并返回同一数组。未提供比较器时按 JavaScript UTF-16 代码单元顺序排序。
 	/// </summary>
-	/// <param name="compareFn"><para><b>(a: T, b: T) => number</b></para>Function used to determine the order of the elements.It is expected to return</param>
+	/// <param name="compareFn"><para><c>(a: T, b: T) =&gt; number</c></para>Function used to determine the order of the elements.It is expected to return</param>
 	/// <returns>a negative value if the first argument is less than the second argument, zero if they're equal, and a positive value otherwise.If omitted, the elements are sorted in ascending, UTF-16 code unit order.</returns>
 	[Description("@#sort")]
 	public extern Array<T> Sort(Func<T, T, Number>? compareFn = null);
@@ -259,7 +259,7 @@ public partial class Array<T> : object, IArray<T>
 	/// 在数组开头插入元素，原地修改并返回新长度。
 	/// </summary>
 	/// <param name="items">Elements to insert at the start of the array.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#unshift")]
 	public extern Number Unshift(params T[] items);
 
@@ -269,7 +269,7 @@ public partial class Array<T> : object, IArray<T>
 	/// </summary>
 	/// <param name="searchElement">The value to locate in the array.</param>
 	/// <param name="fromIndex">The array index at which to begin the search.If fromIndex is omitted, the search starts at index 0.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#indexOf")]
 	public extern Number IndexOf(T searchElement, Number? fromIndex = null);
 
@@ -287,7 +287,7 @@ public partial class Array<T> : object, IArray<T>
 	/// </summary>
 	/// <param name="searchElement">The value to locate in the array.</param>
 	/// <param name="fromIndex">The array index at which to begin searching backward.If fromIndex is omitted, the search starts at the last index in the array.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#lastIndexOf")]
 	public extern Number LastIndexOf(T searchElement, Number? fromIndex = null);
 
@@ -295,9 +295,9 @@ public partial class Array<T> : object, IArray<T>
 	/// Determines whether all the members of an array satisfy the specified test.
 	/// 判断所有元素是否满足回调；回调返回值按 JavaScript truthy/falsy 规则解释，并在首个 falsy 结果时停止。
 	/// </summary>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
+	/// <param name="predicate"><para><c>(value: T, index: number, array: IEnumerable&lt;T&gt;) =&gt; unknown</c></para>A function that accepts up to three arguments. The every method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value false, or until the end of the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#every")]
 	public extern bool Every(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
 
@@ -322,9 +322,9 @@ public partial class Array<T> : object, IArray<T>
 	/// Determines whether the specified callback function returns true for any element of an array.
 	/// 判断是否存在满足回调的元素；回调结果按 JavaScript truthy/falsy 解释，并在首个 truthy 结果时停止。
 	/// </summary>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments.The some method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array.</param>
+	/// <param name="predicate"><para><c>(value: T, index: number, array: IEnumerable&lt;T&gt;) =&gt; unknown</c></para>A function that accepts up to three arguments.The some method calls the predicate function for each element in the array until the predicate returns a value which is coercible to the Boolean value true, or until the end of the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#some")]
 	public extern bool Some(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
 
@@ -349,7 +349,7 @@ public partial class Array<T> : object, IArray<T>
 	/// Performs the specified action for each element in an array.
 	/// 对每个元素执行回调。回调执行过程中数组变更的可见性遵循 JavaScript <c>forEach</c> 语义。
 	/// </summary>
-	/// <param name="callbackfn"><para><b>(value: T, index: number, array: IEnumerable<T>) => void</b></para>A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.</param>
+	/// <param name="callbackfn"><para><c>(value: T, index: number, array: IEnumerable&lt;T&gt;) =&gt; void</c></para>A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
 	[Description("@#forEach")]
 	public extern void ForEach(Action<T, Number, Array<T>> callbackfn, object? thisArg = null);
@@ -365,9 +365,9 @@ public partial class Array<T> : object, IArray<T>
 	/// 为每个元素执行映射回调并返回新数组；不会修改源数组，空槽处理遵循 JavaScript <c>map</c> 语义。
 	/// </summary>
 	/// <typeparam name="U">Compile-time annotation for mapped elements. 映射后元素的编译期类型标注。</typeparam>
-	/// <param name="callbackfn"><para><b>(value: T, index: number, array: IEnumerable<T>) => U</b></para>A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.</param>
+	/// <param name="callbackfn"><para><c>(value: T, index: number, array: IEnumerable&lt;T&gt;) =&gt; U</c></para>A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the callbackfn function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#map")]
 	public extern Array<U> Map<U>(Func<T, Number, Array<T>, U> callbackfn, object? thisArg = null);
 
@@ -383,13 +383,18 @@ public partial class Array<T> : object, IArray<T>
 	/// Returns the elements of an array that meet the condition specified in a callback function.
 	/// 返回回调结果为 truthy 的元素组成的新数组；不修改源数组。
 	/// </summary>
-	/// <param name="predicate"><para><b>(value: T, index: number, array: IEnumerable<T>) => unknown</b></para>A function that accepts up to three arguments.The filter method calls the predicate function one time for each element in the array.</param>
+	/// <param name="predicate"><para><c>(value: T, index: number, array: IEnumerable&lt;T&gt;) =&gt; unknown</c></para>A function that accepts up to three arguments.The filter method calls the predicate function one time for each element in the array.</param>
 	/// <param name="thisArg">An object to which the this keyword can refer in the predicate function. If omitted, JavaScript uses its default callback receiver; this projection does not expose <c>undefined</c> as a separate public value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Index-aware filtering overload. 带索引的筛选重载。</summary>
 	[Description("@#filter")]
 	public extern Array<T> Filter(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
 
+	/// <summary>
+	/// The filter() method of Array instances creates a shallow copy of a portion of a given array, filtered down to just the elements from the given array that pass the test implemented by the provided function.
+	/// </summary>
+	/// <param name="predicate">传给该 API 的参数值。</param>
+	/// <param name="thisArg">传给该 API 的参数值。</param>
 	[Description("@#filter")]
 	public extern Array<T> Filter(Func<T, Number, object?> predicate, object? thisArg = null);
 
@@ -482,6 +487,11 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#findLast")]
 	public extern T? FindLast(Func<T, Number, Array<T>, object?> predicate, object? thisArg = null);
 
+	/// <summary>
+	/// The findLast() method of Array instances iterates the array in reverse order and returns the value of the first element that satisfies the provided testing function. If no elements satisfy the testing function, undefined is returned. If you need to find: the first element that matches, use find(). the index of the last matching element in the array, use findLastIndex(). the index of a value, use indexOf(). (It's similar to findIndex(), but checks each element for equality with the value instead of using a testing function.) whether a value exists in an array, use includes(). Again, it checks each element for equality with the value instead of using a testing function. if any element satisfies the provided testing function, use some().
+	/// </summary>
+	/// <param name="predicate">传给该 API 的参数值。</param>
+	/// <param name="thisArg">传给该 API 的参数值。</param>
 	[Description("@#findLast")]
 	public extern T? FindLast(Func<T, Number, object?> predicate, object? thisArg = null);
 
@@ -511,12 +521,16 @@ public partial class Array<T> : object, IArray<T>
 	/// Calls the specified callback function for all the elements in an array.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 	/// 从左向右归约数组。未提供初始值时首个元素作为累加器；空数组会遵循 JavaScript <c>reduce</c> 的运行时错误语义。
 	/// </summary>
-	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the first array element as the initial accumulator.</param>
+	/// <param name="callbackfn"><para><c>(previousValue: T, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) =&gt; T</c></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the first array element as the initial accumulator.</param>
 	/// <returns>The accumulated result.</returns>
 	/// <summary>Value-only overload of <c>reduce</c>. 仅接收累加值和当前元素的 <c>reduce</c> 重载。</summary>
 	[Description("@#reduce")]
 	public extern T Reduce(Func<T, T, Number, Array<T>, T> callbackfn);
 
+	/// <summary>
+	/// The reduce() method of Array instances executes a user-supplied &quot;reducer&quot; callback function on each element of the array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the array is a single value. The first time that the callback is run there is no &quot;return value of the previous calculation&quot;. If supplied, an initial value may be used in its place. Otherwise the array element at index 0 is used as the initial value and iteration starts from the next element (index 1 instead of index 0).
+	/// </summary>
+	/// <param name="callbackfn">传给该 API 的参数值。</param>
 	[Description("@#reduce")]
 	public extern T Reduce(Func<T, T, T> callbackfn);
 
@@ -525,13 +539,18 @@ public partial class Array<T> : object, IArray<T>
 	/// 从左向右归约数组，并以 <paramref name="initialValue"/> 作为显式累加器初值。
 	/// </summary>
 	/// <typeparam name="U">Compile-time annotation for the accumulator. 累加器的编译期类型标注。</typeparam>
-	/// <param name="callbackfn"><para><b>(previousValue: U, currentValue: T, currentIndex: number, array: IEnumerable<T>) => U</b></para>A function that accepts up to four arguments.The reduce method calls the callbackfn function one time for each element in the array.</param>
+	/// <param name="callbackfn"><para><c>(previousValue: U, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) =&gt; U</c></para>A function that accepts up to four arguments.The reduce method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only overload with an explicit initial accumulator. 带显式初始累加器的仅值 <c>reduce</c> 重载。</summary>
 	[Description("@#reduce")]
 	public extern U Reduce<U>(Func<U, T, Number, Array<T>, U> callbackfn, U initialValue);
 
+	/// <summary>
+	/// The reduce() method of Array instances executes a user-supplied &quot;reducer&quot; callback function on each element of the array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the array is a single value. The first time that the callback is run there is no &quot;return value of the previous calculation&quot;. If supplied, an initial value may be used in its place. Otherwise the array element at index 0 is used as the initial value and iteration starts from the next element (index 1 instead of index 0).
+	/// </summary>
+	/// <param name="callbackfn">传给该 API 的参数值。</param>
+	/// <param name="initialValue">传给该 API 的参数值。</param>
 	[Description("@#reduce")]
 	public extern U Reduce<U>(Func<U, T, U> callbackfn, U initialValue);
 
@@ -539,12 +558,16 @@ public partial class Array<T> : object, IArray<T>
 	/// Calls the specified callback function for all the elements in an array, in descending order.The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 	/// 从右向左归约数组。未提供初始值时末个元素作为累加器；空数组会遵循 JavaScript <c>reduceRight</c> 的运行时错误语义。
 	/// </summary>
-	/// <param name="callbackfn"><para><b>(previousValue: T, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) => T</b></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the last array element as the initial accumulator.</param>
+	/// <param name="callbackfn"><para><c>(previousValue: T, currentValue: T, currentIndex: number, array: IEnumerable&lt;T&gt;) =&gt; T</c></para>A function that accepts up to four arguments. When no initial value is supplied, JavaScript uses the last array element as the initial accumulator.</param>
 	/// <returns>The accumulated result.</returns>
 	/// <summary>Value-only overload of <c>reduceRight</c>. 仅接收累加值和当前元素的 <c>reduceRight</c> 重载。</summary>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, Number, Array<T>, T> callbackfn);
 
+	/// <summary>
+	/// The reduceRight() method of Array instances applies a function against an accumulator and each value of the array (from right-to-left) to reduce it to a single value. See also Array.prototype.reduce() for left-to-right.
+	/// </summary>
+	/// <param name="callbackfn">传给该 API 的参数值。</param>
 	[Description("@#reduceRight")]
 	public extern T ReduceRight(Func<T, T, T> callbackfn);
 
@@ -555,11 +578,16 @@ public partial class Array<T> : object, IArray<T>
 	/// <typeparam name="U">Compile-time annotation for the accumulator. 累加器的编译期类型标注。</typeparam>
 	/// <param name="callbackfn">A function that accepts up to four arguments.The reduceRight method calls the callbackfn function one time for each element in the array.</param>
 	/// <param name="initialValue">If initialValue is specified, it is used as the initial value to start the accumulation.The first call to the callbackfn function provides this value as an argument instead of an array value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <summary>Value-only overload with an explicit initial accumulator. 带显式初始累加器的仅值 <c>reduceRight</c> 重载。</summary>
 	[Description("@#reduceRight")]
 	public extern U ReduceRight<U>(Func<U, T, Number, Array<T>, U> callbackfn, U initialValue);
 
+	/// <summary>
+	/// The reduceRight() method of Array instances applies a function against an accumulator and each value of the array (from right-to-left) to reduce it to a single value. See also Array.prototype.reduce() for left-to-right.
+	/// </summary>
+	/// <param name="callbackfn">传给该 API 的参数值。</param>
+	/// <param name="initialValue">传给该 API 的参数值。</param>
 	[Description("@#reduceRight")]
 	public extern U ReduceRight<U>(Func<U, T, U> callbackfn, U initialValue);
 
@@ -570,15 +598,15 @@ public partial class Array<T> : object, IArray<T>
 	/// <param name="value">用来填充数组元素的值。注意所有数组中的元素都将是这个确定的值：如果 value 是个对象，那么数组的每一项都会引用这个元素。</param>
 	/// <param name="start">
 	/// 基于零的索引，从此开始填充，转换为整数。
-	/// 负数索引从数组的末端开始计算，如果 start < 0，则使用 start + array.length。
-	/// 如果 start < -array.length 或 start 被省略，则使用 0。
-	/// 如果 start >= array.length，没有索引被填充。
+	/// 负数索引从数组的末端开始计算，如果 start &lt; 0，则使用 start + array.length。
+	/// 如果 start &lt; -array.length 或 start 被省略，则使用 0。
+	/// 如果 start &gt;= array.length，没有索引被填充。
 	/// </param>
 	/// <param name="end">
 	/// 基于零的索引，在此结束填充，转换为整数。fill() 填充到但不包含 end 索引。
-	/// 负数索引从数组的末端开始计算，如果 end < 0，则使用 end + array.length。
-	/// 如果 end < -array.length，则使用 0。
-	/// 如果 end >= array.length 或 end 被省略，则使用 array.length，导致所有索引都被填充。
+	/// 负数索引从数组的末端开始计算，如果 end &lt; 0，则使用 end + array.length。
+	/// 如果 end &lt; -array.length，则使用 0。
+	/// 如果 end &gt;= array.length 或 end 被省略，则使用 array.length，导致所有索引都被填充。
 	/// 如果经标准化后，end 的位置在 start 之前或之上，没有索引被填充。
 	/// </param>
 	/// <returns>经 value 填充修改后的数组。</returns>
@@ -614,6 +642,11 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#findLastIndex")]
 	public extern Number FindLastIndex(Func<T, Number, Array<T>, object?> callbackfn, object? thisArg = null);
 
+	/// <summary>
+	/// The findLastIndex() method of Array instances iterates the array in reverse order and returns the index of the first element that satisfies the provided testing function. If no elements satisfy the testing function, -1 is returned. See also the findLast() method, which returns the value of last element that satisfies the testing function (rather than its index).
+	/// </summary>
+	/// <param name="callbackfn">传给该 API 的参数值。</param>
+	/// <param name="thisArg">传给该 API 的参数值。</param>
 	[Description("@#findLastIndex")]
 	public extern Number FindLastIndex(Func<T, Number, object?> callbackfn, object? thisArg = null);
 
@@ -646,8 +679,8 @@ public partial class Array<T> : object, IArray<T>
 	[Description("@#toSorted")]
 	public extern Array<T> ToSorted(Func<T, T, Number>? compareFn = null);
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	/// <summary>CLR comparison delegate bridge for JavaScript <c>toSorted</c>. 面向 JavaScript <c>toSorted</c> 的 CLR 比较委托桥接重载。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#toSorted")]
 	public extern Array<T> ToSorted(Comparison<T> compareFn);
 
@@ -851,24 +884,24 @@ public partial class Array<T> : object, IArray<T>
 	/// They do not correspond to distinct JavaScript <c>Array.prototype</c> members.
 	/// 这些成员只为集合初始化器与集合式 CLR 互操作保留，不对应独立的 JavaScript <c>Array.prototype</c> 成员。
 	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	/// <summary>Adds an item through the CLR collection-initializer bridge. 通过 CLR 集合初始化器桥接添加元素。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(T item);
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	/// <summary>Clears items through the CLR collection bridge. 通过 CLR 集合桥接清空元素。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern virtual void Clear();
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	/// <summary>Checks an item through the CLR collection bridge. 通过 CLR 集合桥接检查是否包含元素。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern bool Contains(T item);
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	/// <summary>Copies items through the CLR collection bridge. 通过 CLR 集合桥接复制元素。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void CopyTo(T[] array, int arrayIndex);
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
 	/// <summary>Removes an item through the CLR collection bridge. 通过 CLR 集合桥接删除元素。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern bool Remove(T item);
 
 	extern IEnumerator IEnumerable.GetEnumerator();

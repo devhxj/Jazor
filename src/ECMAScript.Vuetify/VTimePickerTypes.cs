@@ -13,9 +13,15 @@ namespace ECMAScript.Vuetify;
 [String]
 public enum VuetifyTimePickerFormat
 {
+    /// <summary>
+    /// 使用带上午/下午标记的 12 小时制；上游取值为 “ampm”。
+    /// </summary>
     [Description("@#ampm")]
     Ampm,
 
+    /// <summary>
+    /// 使用 24 小时制；上游取值为 “24hr”。
+    /// </summary>
     [Description("@#24hr")]
     TwentyFourHour
 }
@@ -27,12 +33,21 @@ public enum VuetifyTimePickerFormat
 [String]
 public enum VuetifyTimePickerViewMode
 {
+    /// <summary>
+    /// 选择小时；上游取值为 “hour”。
+    /// </summary>
     [Description("@#hour")]
     Hour,
 
+    /// <summary>
+    /// 选择分钟；上游取值为 “minute”。
+    /// </summary>
     [Description("@#minute")]
     Minute,
 
+    /// <summary>
+    /// 选择秒；上游取值为 “second”。
+    /// </summary>
     [Description("@#second")]
     Second
 }
@@ -44,9 +59,15 @@ public enum VuetifyTimePickerViewMode
 [String]
 public enum VuetifyTimePickerPeriod
 {
+    /// <summary>
+    /// 上午时段；上游取值为 “am”。
+    /// </summary>
     [Description("@#am")]
     Am,
 
+    /// <summary>
+    /// 下午时段；上游取值为 “pm”。
+    /// </summary>
     [Description("@#pm")]
     Pm
 }
@@ -59,13 +80,29 @@ public enum VuetifyTimePickerPeriod
 [Description("@#")]
 public readonly union VuetifyTimePickerModelValue(string, Date)
 {
+    /// <summary>
+    /// 读取当前值的 string 分支；不属于该分支时返回 null。
+    /// </summary>
     public string? AsString => Value as string;
 
+    /// <summary>
+    /// 读取当前值的 Date 分支；不属于该分支时返回 null。
+    /// </summary>
     public Date? AsDate => Value is Date value ? value : default(Date?);
 
+    /// <summary>
+    /// 将 string 值转换为 VuetifyTimePickerModelValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerModelValue(string value)
         => new(value);
 
+    /// <summary>
+    /// 将 Date 值转换为 VuetifyTimePickerModelValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerModelValue(Date value)
         => new(value);
 }
@@ -85,14 +122,32 @@ public delegate bool VuetifyTimePickerAllowedUnitResolver(Number value);
 [CollectionBuilder(typeof(VuetifyTimePickerAllowedUnitsCollectionBuilder), nameof(VuetifyTimePickerAllowedUnitsCollectionBuilder.Create))]
 public readonly union VuetifyTimePickerAllowedUnits(Number[]) : IEnumerable<Number>
 {
+    /// <summary>
+    /// 读取当前值的 Number[] 分支；不属于该分支时返回 null。
+    /// </summary>
     public Number[]? AsArray => Value as Number[];
 
+    /// <summary>
+    /// 将 Number[] 值转换为 VuetifyTimePickerAllowedUnits，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnits(Number[] values)
         => new(values);
 
+    /// <summary>
+    /// 将 int[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnits(int[] values)
         => new(Array.ConvertAll(values, static value => (Number)value));
 
+    /// <summary>
+    /// 将 double[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnits(double[] values)
         => new(Array.ConvertAll(values, static value => (Number)value));
 
@@ -103,9 +158,16 @@ public readonly union VuetifyTimePickerAllowedUnits(Number[]) : IEnumerable<Numb
         => ((IEnumerable<Number>)this).GetEnumerator();
 }
 
+/// <summary>
+/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class VuetifyTimePickerAllowedUnitsCollectionBuilder
 {
+    /// <summary>
+    /// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
     public static VuetifyTimePickerAllowedUnits Create(ReadOnlySpan<Number> values)
         => values.ToArray();
 }
@@ -120,23 +182,52 @@ public readonly union VuetifyTimePickerAllowedUnitValue(
     VuetifyTimePickerAllowedUnits,
     VuetifyTimePickerAllowedUnitResolver)
 {
+    /// <summary>
+    /// 读取当前值的 VuetifyTimePickerAllowedUnits 分支；不属于该分支时返回 null。
+    /// </summary>
     public VuetifyTimePickerAllowedUnits? AsUnits
         => Value is VuetifyTimePickerAllowedUnits value ? value : default(VuetifyTimePickerAllowedUnits?);
 
+    /// <summary>
+    /// 读取当前值的 VuetifyTimePickerAllowedUnitResolver 分支；不属于该分支时返回 null。
+    /// </summary>
     public VuetifyTimePickerAllowedUnitResolver? AsResolver => Value as VuetifyTimePickerAllowedUnitResolver;
 
+    /// <summary>
+    /// 将 VuetifyTimePickerAllowedUnits 值转换为 VuetifyTimePickerAllowedUnitValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnits units)
         => new(units);
 
+    /// <summary>
+    /// 将 VuetifyTimePickerAllowedUnitResolver 值转换为 VuetifyTimePickerAllowedUnitValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnitValue(VuetifyTimePickerAllowedUnitResolver resolver)
         => new(resolver);
 
+    /// <summary>
+    /// 将 Number[] 值转换为 VuetifyTimePickerAllowedUnitValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnitValue(Number[] values)
         => new((VuetifyTimePickerAllowedUnits)values);
 
+    /// <summary>
+    /// 将 int[] 值转换为 VuetifyTimePickerAllowedUnitValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnitValue(int[] values)
         => new((VuetifyTimePickerAllowedUnits)values);
 
+    /// <summary>
+    /// 将 double[] 值转换为 VuetifyTimePickerAllowedUnitValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="values">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyTimePickerAllowedUnitValue(double[] values)
         => new((VuetifyTimePickerAllowedUnits)values);
 }

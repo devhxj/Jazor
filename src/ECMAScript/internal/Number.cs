@@ -1,7 +1,5 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#Number")]
 /// <summary>
 /// Strongly typed C# authoring binding for JavaScript <c>Number</c>.
 /// JavaScript <c>Number</c> 的强类型 C# 编写绑定。
@@ -12,6 +10,8 @@
 /// Number 表示 IEEE-754 双精度值，不应误认为能够精确承载所有 CLR 整数或 <c>decimal</c> 值。
 /// 具体 CLR 转换行为由 Jazor.CLR 和编译器决定；此类型本身只描述 JavaScript Number 的运算表面。
 /// </remarks>
+[ECMAScript]
+[Description("@#Number")]
 public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Number>, IMinMaxValue<Number>, IFormattable
 {
 	/// <summary>Creates a JavaScript number from an unsigned byte. 从无符号字节创建 JavaScript Number。</summary>
@@ -156,7 +156,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// 按指定进制返回 JavaScript Number 的字符串表示；省略进制时使用十进制。
 	/// </summary>
 	/// <param name="radix">Specifies a radix for converting numeric values to strings.This value is only used for numbers.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toString")]
 	public extern string ToString(Number? radix);
 
@@ -165,7 +165,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// 使用 JavaScript <c>toFixed</c> 的固定小数表示；位数范围错误由 JavaScript 运行时处理。
 	/// </summary>
 	/// <param name="fractionDigits">Number of digits after the decimal point.Must be in the range 0 - 20, inclusive.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toFixed")]
 	public extern string ToFixed(Number? fractionDigits = null);
 
@@ -174,7 +174,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// 使用 JavaScript <c>toExponential</c> 的指数表示。
 	/// </summary>
 	/// <param name="fractionDigits">Number of digits after the decimal point. Must be in the range 0 - 20, inclusive.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toExponential")]
 	public extern string ToExponential(Number? fractionDigits = null);
 
@@ -183,7 +183,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// 按指定有效数字返回指数或定点表示，遵循 JavaScript <c>toPrecision</c> 选择规则。
 	/// </summary>
 	/// <param name="precision">Number of significant digits.Must be in the range 1 - 21, inclusive.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toPrecision")]
 	public extern string ToPrecision(Number? precision = null);
 
@@ -191,7 +191,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// Returns the primitive value of the specified object.
 	/// 返回 JavaScript Number 原始值；该方法主要用于与原生 <c>valueOf()</c> 形状对齐。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#valueOf")]
 	public extern Number ValueOf();
 
@@ -260,7 +260,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleString")]
 	public extern string ToLocaleString(string? locales, Intl.NumberFormatOptions? options = null);
 
@@ -278,7 +278,7 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleString")]
 	public extern string ToLocaleString(IEnumerable<string>? locales, Intl.NumberFormatOptions? options = null);
 

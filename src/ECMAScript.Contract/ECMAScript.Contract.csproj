@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>ECMAScript.Contract</AssemblyName>
     <RootNamespace>ECMAScript.Contract</RootNamespace>
   </PropertyGroup>

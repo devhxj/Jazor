@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VCardTitle")]
 /// <summary>
 /// Vuetify 卡片标题组件。
 /// Vuetify card title component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VCardTitle")]
 public sealed class VCardTitle : ComponentBase, IVuetifyComponent
 {
     /// <summary>

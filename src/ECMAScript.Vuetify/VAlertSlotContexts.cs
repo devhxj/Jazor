@@ -8,6 +8,9 @@ namespace ECMAScript.Vuetify;
 [Description("@#")]
 public sealed record VAlertCloseSlotContext
 {
+    /// <summary>
+    /// 供自定义渲染转发给目标元素或组件的属性，包含上游提供的事件和可访问性绑定。
+    /// </summary>
     [Description("@#props")]
     public VueProps? Props { get; init; }
 }

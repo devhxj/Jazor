@@ -2,6 +2,14 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-15
+
+### 文档与绑定交付
+
+- 为 ECMAScript 基础库及 Vue、Pinia、Vue Router、Element Plus、Vuetify、TDesign、Style、Vu Icons、Vue Data UI 和 Devtools 绑定补齐公开类型、方法、属性、枚举和枚举值的 XML 文档；绑定注释优先采用锁定上游版本的原始说明。
+- NuGet 包现在随程序集交付 XML 文档；新增 `verify-binding-documentation.cs` 门禁检查公开声明覆盖率、上游快照、生成输出和 nuspec 文件，避免后续绑定改动丢失开发者提示。
+- Web IDL 绑定接入带来源、许可证和采集日期的 MDN 文档快照，并增加生成器回归测试，确保原始注释换行安全转换为 XML。
+
 ## 2026-09-14
 
 ### Jazor 1.0.0-preview.1

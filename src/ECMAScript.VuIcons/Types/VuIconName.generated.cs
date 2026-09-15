@@ -5,5466 +5,9108 @@ namespace ECMAScript.VuIcons;
 [String]
 public enum VuIconName
 {
+    /// <summary>Vue 3 &amp; UniApp Icon VuAArrowDown</summary>
+    /// <remarks>Icon token: <c>a-arrow-down</c>.</remarks>
     [Description("@#a-arrow-down")]
     AArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAArrowUp</summary>
+    /// <remarks>Icon token: <c>a-arrow-up</c>.</remarks>
     [Description("@#a-arrow-up")]
     AArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuALargeSmall</summary>
+    /// <remarks>Icon token: <c>a-large-small</c>.</remarks>
     [Description("@#a-large-small")]
     ALargeSmall,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAccessibility</summary>
+    /// <remarks>Icon token: <c>accessibility</c>.</remarks>
     [Description("@#accessibility")]
     Accessibility,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuActive</summary>
+    /// <remarks>Icon token: <c>active</c>.</remarks>
     [Description("@#active")]
     Active,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuActivity</summary>
+    /// <remarks>Icon token: <c>activity</c>.</remarks>
     [Description("@#activity")]
     Activity,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAdd</summary>
+    /// <remarks>Icon token: <c>add</c>.</remarks>
     [Description("@#add")]
     Add,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAirVent</summary>
+    /// <remarks>Icon token: <c>air-vent</c>.</remarks>
     [Description("@#air-vent")]
     AirVent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAirplay</summary>
+    /// <remarks>Icon token: <c>airplay</c>.</remarks>
     [Description("@#airplay")]
     Airplay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarm</summary>
+    /// <remarks>Icon token: <c>alarm</c>.</remarks>
     [Description("@#alarm")]
     Alarm,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClock</summary>
+    /// <remarks>Icon token: <c>alarm-clock</c>.</remarks>
     [Description("@#alarm-clock")]
     AlarmClock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockCheck</summary>
+    /// <remarks>Icon token: <c>alarm-clock-check</c>.</remarks>
     [Description("@#alarm-clock-check")]
     AlarmClockCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockMinus</summary>
+    /// <remarks>Icon token: <c>alarm-clock-minus</c>.</remarks>
     [Description("@#alarm-clock-minus")]
     AlarmClockMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockOff</summary>
+    /// <remarks>Icon token: <c>alarm-clock-off</c>.</remarks>
     [Description("@#alarm-clock-off")]
     AlarmClockOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockPlus</summary>
+    /// <remarks>Icon token: <c>alarm-clock-plus</c>.</remarks>
     [Description("@#alarm-clock-plus")]
     AlarmClockPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlarmSmoke</summary>
+    /// <remarks>Icon token: <c>alarm-smoke</c>.</remarks>
     [Description("@#alarm-smoke")]
     AlarmSmoke,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlbum</summary>
+    /// <remarks>Icon token: <c>album</c>.</remarks>
     [Description("@#album")]
     Album,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignCenter</summary>
+    /// <remarks>Icon token: <c>align-center</c>.</remarks>
     [Description("@#align-center")]
     AlignCenter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignCenterHorizontal</summary>
+    /// <remarks>Icon token: <c>align-center-horizontal</c>.</remarks>
     [Description("@#align-center-horizontal")]
     AlignCenterHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignCenterVertical</summary>
+    /// <remarks>Icon token: <c>align-center-vertical</c>.</remarks>
     [Description("@#align-center-vertical")]
     AlignCenterVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignEndHorizontal</summary>
+    /// <remarks>Icon token: <c>align-end-horizontal</c>.</remarks>
     [Description("@#align-end-horizontal")]
     AlignEndHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignEndVertical</summary>
+    /// <remarks>Icon token: <c>align-end-vertical</c>.</remarks>
     [Description("@#align-end-vertical")]
     AlignEndVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeCenter</summary>
+    /// <remarks>Icon token: <c>align-horizontal-distribute-center</c>.</remarks>
     [Description("@#align-horizontal-distribute-center")]
     AlignHorizontalDistributeCenter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeEnd</summary>
+    /// <remarks>Icon token: <c>align-horizontal-distribute-end</c>.</remarks>
     [Description("@#align-horizontal-distribute-end")]
     AlignHorizontalDistributeEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeStart</summary>
+    /// <remarks>Icon token: <c>align-horizontal-distribute-start</c>.</remarks>
     [Description("@#align-horizontal-distribute-start")]
     AlignHorizontalDistributeStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyCenter</summary>
+    /// <remarks>Icon token: <c>align-horizontal-justify-center</c>.</remarks>
     [Description("@#align-horizontal-justify-center")]
     AlignHorizontalJustifyCenter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyEnd</summary>
+    /// <remarks>Icon token: <c>align-horizontal-justify-end</c>.</remarks>
     [Description("@#align-horizontal-justify-end")]
     AlignHorizontalJustifyEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyStart</summary>
+    /// <remarks>Icon token: <c>align-horizontal-justify-start</c>.</remarks>
     [Description("@#align-horizontal-justify-start")]
     AlignHorizontalJustifyStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalSpaceAround</summary>
+    /// <remarks>Icon token: <c>align-horizontal-space-around</c>.</remarks>
     [Description("@#align-horizontal-space-around")]
     AlignHorizontalSpaceAround,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalSpaceBetween</summary>
+    /// <remarks>Icon token: <c>align-horizontal-space-between</c>.</remarks>
     [Description("@#align-horizontal-space-between")]
     AlignHorizontalSpaceBetween,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignJustify</summary>
+    /// <remarks>Icon token: <c>align-justify</c>.</remarks>
     [Description("@#align-justify")]
     AlignJustify,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignLeft</summary>
+    /// <remarks>Icon token: <c>align-left</c>.</remarks>
     [Description("@#align-left")]
     AlignLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignRight</summary>
+    /// <remarks>Icon token: <c>align-right</c>.</remarks>
     [Description("@#align-right")]
     AlignRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignStartHorizontal</summary>
+    /// <remarks>Icon token: <c>align-start-horizontal</c>.</remarks>
     [Description("@#align-start-horizontal")]
     AlignStartHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignStartVertical</summary>
+    /// <remarks>Icon token: <c>align-start-vertical</c>.</remarks>
     [Description("@#align-start-vertical")]
     AlignStartVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeCenter</summary>
+    /// <remarks>Icon token: <c>align-vertical-distribute-center</c>.</remarks>
     [Description("@#align-vertical-distribute-center")]
     AlignVerticalDistributeCenter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeEnd</summary>
+    /// <remarks>Icon token: <c>align-vertical-distribute-end</c>.</remarks>
     [Description("@#align-vertical-distribute-end")]
     AlignVerticalDistributeEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeStart</summary>
+    /// <remarks>Icon token: <c>align-vertical-distribute-start</c>.</remarks>
     [Description("@#align-vertical-distribute-start")]
     AlignVerticalDistributeStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyCenter</summary>
+    /// <remarks>Icon token: <c>align-vertical-justify-center</c>.</remarks>
     [Description("@#align-vertical-justify-center")]
     AlignVerticalJustifyCenter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyEnd</summary>
+    /// <remarks>Icon token: <c>align-vertical-justify-end</c>.</remarks>
     [Description("@#align-vertical-justify-end")]
     AlignVerticalJustifyEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyStart</summary>
+    /// <remarks>Icon token: <c>align-vertical-justify-start</c>.</remarks>
     [Description("@#align-vertical-justify-start")]
     AlignVerticalJustifyStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalSpaceAround</summary>
+    /// <remarks>Icon token: <c>align-vertical-space-around</c>.</remarks>
     [Description("@#align-vertical-space-around")]
     AlignVerticalSpaceAround,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalSpaceBetween</summary>
+    /// <remarks>Icon token: <c>align-vertical-space-between</c>.</remarks>
     [Description("@#align-vertical-space-between")]
     AlignVerticalSpaceBetween,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAmbulance</summary>
+    /// <remarks>Icon token: <c>ambulance</c>.</remarks>
     [Description("@#ambulance")]
     Ambulance,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAmpersand</summary>
+    /// <remarks>Icon token: <c>ampersand</c>.</remarks>
     [Description("@#ampersand")]
     Ampersand,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAmpersands</summary>
+    /// <remarks>Icon token: <c>ampersands</c>.</remarks>
     [Description("@#ampersands")]
     Ampersands,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAmphora</summary>
+    /// <remarks>Icon token: <c>amphora</c>.</remarks>
     [Description("@#amphora")]
     Amphora,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAnchor</summary>
+    /// <remarks>Icon token: <c>anchor</c>.</remarks>
     [Description("@#anchor")]
     Anchor,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAngry</summary>
+    /// <remarks>Icon token: <c>angry</c>.</remarks>
     [Description("@#angry")]
     Angry,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAnnoyed</summary>
+    /// <remarks>Icon token: <c>annoyed</c>.</remarks>
     [Description("@#annoyed")]
     Annoyed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAntenna</summary>
+    /// <remarks>Icon token: <c>antenna</c>.</remarks>
     [Description("@#antenna")]
     Antenna,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAnvil</summary>
+    /// <remarks>Icon token: <c>anvil</c>.</remarks>
     [Description("@#anvil")]
     Anvil,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAperture</summary>
+    /// <remarks>Icon token: <c>aperture</c>.</remarks>
     [Description("@#aperture")]
     Aperture,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAppWindow</summary>
+    /// <remarks>Icon token: <c>app-window</c>.</remarks>
     [Description("@#app-window")]
     AppWindow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAppWindowMac</summary>
+    /// <remarks>Icon token: <c>app-window-mac</c>.</remarks>
     [Description("@#app-window-mac")]
     AppWindowMac,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuApple</summary>
+    /// <remarks>Icon token: <c>apple</c>.</remarks>
     [Description("@#apple")]
     Apple,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAppointment</summary>
+    /// <remarks>Icon token: <c>appointment</c>.</remarks>
     [Description("@#appointment")]
     Appointment,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArchive</summary>
+    /// <remarks>Icon token: <c>archive</c>.</remarks>
     [Description("@#archive")]
     Archive,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArchiveRestore</summary>
+    /// <remarks>Icon token: <c>archive-restore</c>.</remarks>
     [Description("@#archive-restore")]
     ArchiveRestore,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArchiveX</summary>
+    /// <remarks>Icon token: <c>archive-x</c>.</remarks>
     [Description("@#archive-x")]
     ArchiveX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAreaChart</summary>
+    /// <remarks>Icon token: <c>area-chart</c>.</remarks>
     [Description("@#area-chart")]
     AreaChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArmchair</summary>
+    /// <remarks>Icon token: <c>armchair</c>.</remarks>
     [Description("@#armchair")]
     Armchair,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigDown</summary>
+    /// <remarks>Icon token: <c>arrow-big-down</c>.</remarks>
     [Description("@#arrow-big-down")]
     ArrowBigDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigDownDash</summary>
+    /// <remarks>Icon token: <c>arrow-big-down-dash</c>.</remarks>
     [Description("@#arrow-big-down-dash")]
     ArrowBigDownDash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigLeft</summary>
+    /// <remarks>Icon token: <c>arrow-big-left</c>.</remarks>
     [Description("@#arrow-big-left")]
     ArrowBigLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigLeftDash</summary>
+    /// <remarks>Icon token: <c>arrow-big-left-dash</c>.</remarks>
     [Description("@#arrow-big-left-dash")]
     ArrowBigLeftDash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigRight</summary>
+    /// <remarks>Icon token: <c>arrow-big-right</c>.</remarks>
     [Description("@#arrow-big-right")]
     ArrowBigRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigRightDash</summary>
+    /// <remarks>Icon token: <c>arrow-big-right-dash</c>.</remarks>
     [Description("@#arrow-big-right-dash")]
     ArrowBigRightDash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigUp</summary>
+    /// <remarks>Icon token: <c>arrow-big-up</c>.</remarks>
     [Description("@#arrow-big-up")]
     ArrowBigUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigUpDash</summary>
+    /// <remarks>Icon token: <c>arrow-big-up-dash</c>.</remarks>
     [Description("@#arrow-big-up-dash")]
     ArrowBigUpDash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDown</summary>
+    /// <remarks>Icon token: <c>arrow-down</c>.</remarks>
     [Description("@#arrow-down")]
     ArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDown01</summary>
+    /// <remarks>Icon token: <c>arrow-down-0-1</c>.</remarks>
     [Description("@#arrow-down-0-1")]
     ArrowDown01,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDown10</summary>
+    /// <remarks>Icon token: <c>arrow-down-1-0</c>.</remarks>
     [Description("@#arrow-down-1-0")]
     ArrowDown10,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownAZ</summary>
+    /// <remarks>Icon token: <c>arrow-down-a-z</c>.</remarks>
     [Description("@#arrow-down-a-z")]
     ArrowDownAZ,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownFromLine</summary>
+    /// <remarks>Icon token: <c>arrow-down-from-line</c>.</remarks>
     [Description("@#arrow-down-from-line")]
     ArrowDownFromLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownLeft</summary>
+    /// <remarks>Icon token: <c>arrow-down-left</c>.</remarks>
     [Description("@#arrow-down-left")]
     ArrowDownLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownNarrowWide</summary>
+    /// <remarks>Icon token: <c>arrow-down-narrow-wide</c>.</remarks>
     [Description("@#arrow-down-narrow-wide")]
     ArrowDownNarrowWide,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownRight</summary>
+    /// <remarks>Icon token: <c>arrow-down-right</c>.</remarks>
     [Description("@#arrow-down-right")]
     ArrowDownRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownToDot</summary>
+    /// <remarks>Icon token: <c>arrow-down-to-dot</c>.</remarks>
     [Description("@#arrow-down-to-dot")]
     ArrowDownToDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownToLine</summary>
+    /// <remarks>Icon token: <c>arrow-down-to-line</c>.</remarks>
     [Description("@#arrow-down-to-line")]
     ArrowDownToLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownUp</summary>
+    /// <remarks>Icon token: <c>arrow-down-up</c>.</remarks>
     [Description("@#arrow-down-up")]
     ArrowDownUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownWideNarrow</summary>
+    /// <remarks>Icon token: <c>arrow-down-wide-narrow</c>.</remarks>
     [Description("@#arrow-down-wide-narrow")]
     ArrowDownWideNarrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownZA</summary>
+    /// <remarks>Icon token: <c>arrow-down-z-a</c>.</remarks>
     [Description("@#arrow-down-z-a")]
     ArrowDownZA,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeft</summary>
+    /// <remarks>Icon token: <c>arrow-left</c>.</remarks>
     [Description("@#arrow-left")]
     ArrowLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftFromLine</summary>
+    /// <remarks>Icon token: <c>arrow-left-from-line</c>.</remarks>
     [Description("@#arrow-left-from-line")]
     ArrowLeftFromLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftRight</summary>
+    /// <remarks>Icon token: <c>arrow-left-right</c>.</remarks>
     [Description("@#arrow-left-right")]
     ArrowLeftRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftToLine</summary>
+    /// <remarks>Icon token: <c>arrow-left-to-line</c>.</remarks>
     [Description("@#arrow-left-to-line")]
     ArrowLeftToLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowRight</summary>
+    /// <remarks>Icon token: <c>arrow-right</c>.</remarks>
     [Description("@#arrow-right")]
     ArrowRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowRightFromLine</summary>
+    /// <remarks>Icon token: <c>arrow-right-from-line</c>.</remarks>
     [Description("@#arrow-right-from-line")]
     ArrowRightFromLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowRightLeft</summary>
+    /// <remarks>Icon token: <c>arrow-right-left</c>.</remarks>
     [Description("@#arrow-right-left")]
     ArrowRightLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowRightToLine</summary>
+    /// <remarks>Icon token: <c>arrow-right-to-line</c>.</remarks>
     [Description("@#arrow-right-to-line")]
     ArrowRightToLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUp</summary>
+    /// <remarks>Icon token: <c>arrow-up</c>.</remarks>
     [Description("@#arrow-up")]
     ArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUp01</summary>
+    /// <remarks>Icon token: <c>arrow-up-0-1</c>.</remarks>
     [Description("@#arrow-up-0-1")]
     ArrowUp01,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUp10</summary>
+    /// <remarks>Icon token: <c>arrow-up-1-0</c>.</remarks>
     [Description("@#arrow-up-1-0")]
     ArrowUp10,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpAZ</summary>
+    /// <remarks>Icon token: <c>arrow-up-a-z</c>.</remarks>
     [Description("@#arrow-up-a-z")]
     ArrowUpAZ,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpDown</summary>
+    /// <remarks>Icon token: <c>arrow-up-down</c>.</remarks>
     [Description("@#arrow-up-down")]
     ArrowUpDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpFromDot</summary>
+    /// <remarks>Icon token: <c>arrow-up-from-dot</c>.</remarks>
     [Description("@#arrow-up-from-dot")]
     ArrowUpFromDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpFromLine</summary>
+    /// <remarks>Icon token: <c>arrow-up-from-line</c>.</remarks>
     [Description("@#arrow-up-from-line")]
     ArrowUpFromLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpLeft</summary>
+    /// <remarks>Icon token: <c>arrow-up-left</c>.</remarks>
     [Description("@#arrow-up-left")]
     ArrowUpLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpNarrowWide</summary>
+    /// <remarks>Icon token: <c>arrow-up-narrow-wide</c>.</remarks>
     [Description("@#arrow-up-narrow-wide")]
     ArrowUpNarrowWide,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpRight</summary>
+    /// <remarks>Icon token: <c>arrow-up-right</c>.</remarks>
     [Description("@#arrow-up-right")]
     ArrowUpRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpToLine</summary>
+    /// <remarks>Icon token: <c>arrow-up-to-line</c>.</remarks>
     [Description("@#arrow-up-to-line")]
     ArrowUpToLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpWideNarrow</summary>
+    /// <remarks>Icon token: <c>arrow-up-wide-narrow</c>.</remarks>
     [Description("@#arrow-up-wide-narrow")]
     ArrowUpWideNarrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpZA</summary>
+    /// <remarks>Icon token: <c>arrow-up-z-a</c>.</remarks>
     [Description("@#arrow-up-z-a")]
     ArrowUpZA,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowsExpand</summary>
+    /// <remarks>Icon token: <c>arrows-expand</c>.</remarks>
     [Description("@#arrows-expand")]
     ArrowsExpand,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowsHorizontal</summary>
+    /// <remarks>Icon token: <c>arrows-horizontal</c>.</remarks>
     [Description("@#arrows-horizontal")]
     ArrowsHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuArrowsUpFromLine</summary>
+    /// <remarks>Icon token: <c>arrows-up-from-line</c>.</remarks>
     [Description("@#arrows-up-from-line")]
     ArrowsUpFromLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAsterisk</summary>
+    /// <remarks>Icon token: <c>asterisk</c>.</remarks>
     [Description("@#asterisk")]
     Asterisk,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAt</summary>
+    /// <remarks>Icon token: <c>at</c>.</remarks>
     [Description("@#at")]
     At,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAtSign</summary>
+    /// <remarks>Icon token: <c>at-sign</c>.</remarks>
     [Description("@#at-sign")]
     AtSign,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAtom</summary>
+    /// <remarks>Icon token: <c>atom</c>.</remarks>
     [Description("@#atom")]
     Atom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAudioLines</summary>
+    /// <remarks>Icon token: <c>audio-lines</c>.</remarks>
     [Description("@#audio-lines")]
     AudioLines,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAudioWaveform</summary>
+    /// <remarks>Icon token: <c>audio-waveform</c>.</remarks>
     [Description("@#audio-waveform")]
     AudioWaveform,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAvatar</summary>
+    /// <remarks>Icon token: <c>avatar</c>.</remarks>
     [Description("@#avatar")]
     Avatar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAward</summary>
+    /// <remarks>Icon token: <c>award</c>.</remarks>
     [Description("@#award")]
     Award,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAxe</summary>
+    /// <remarks>Icon token: <c>axe</c>.</remarks>
     [Description("@#axe")]
     Axe,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuAxis3d</summary>
+    /// <remarks>Icon token: <c>axis-3d</c>.</remarks>
     [Description("@#axis-3d")]
     Axis3d,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBaby</summary>
+    /// <remarks>Icon token: <c>baby</c>.</remarks>
     [Description("@#baby")]
     Baby,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBackpack</summary>
+    /// <remarks>Icon token: <c>backpack</c>.</remarks>
     [Description("@#backpack")]
     Backpack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadge</summary>
+    /// <remarks>Icon token: <c>badge</c>.</remarks>
     [Description("@#badge")]
     Badge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeAlert</summary>
+    /// <remarks>Icon token: <c>badge-alert</c>.</remarks>
     [Description("@#badge-alert")]
     BadgeAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeCent</summary>
+    /// <remarks>Icon token: <c>badge-cent</c>.</remarks>
     [Description("@#badge-cent")]
     BadgeCent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeCheck</summary>
+    /// <remarks>Icon token: <c>badge-check</c>.</remarks>
     [Description("@#badge-check")]
     BadgeCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeDollarSign</summary>
+    /// <remarks>Icon token: <c>badge-dollar-sign</c>.</remarks>
     [Description("@#badge-dollar-sign")]
     BadgeDollarSign,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeEuro</summary>
+    /// <remarks>Icon token: <c>badge-euro</c>.</remarks>
     [Description("@#badge-euro")]
     BadgeEuro,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeIndianRupee</summary>
+    /// <remarks>Icon token: <c>badge-indian-rupee</c>.</remarks>
     [Description("@#badge-indian-rupee")]
     BadgeIndianRupee,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeInfo</summary>
+    /// <remarks>Icon token: <c>badge-info</c>.</remarks>
     [Description("@#badge-info")]
     BadgeInfo,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeJapaneseYen</summary>
+    /// <remarks>Icon token: <c>badge-japanese-yen</c>.</remarks>
     [Description("@#badge-japanese-yen")]
     BadgeJapaneseYen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeMinus</summary>
+    /// <remarks>Icon token: <c>badge-minus</c>.</remarks>
     [Description("@#badge-minus")]
     BadgeMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgePercent</summary>
+    /// <remarks>Icon token: <c>badge-percent</c>.</remarks>
     [Description("@#badge-percent")]
     BadgePercent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgePlus</summary>
+    /// <remarks>Icon token: <c>badge-plus</c>.</remarks>
     [Description("@#badge-plus")]
     BadgePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgePoundSterling</summary>
+    /// <remarks>Icon token: <c>badge-pound-sterling</c>.</remarks>
     [Description("@#badge-pound-sterling")]
     BadgePoundSterling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeQuestionMark</summary>
+    /// <remarks>Icon token: <c>badge-question-mark</c>.</remarks>
     [Description("@#badge-question-mark")]
     BadgeQuestionMark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeRussianRuble</summary>
+    /// <remarks>Icon token: <c>badge-russian-ruble</c>.</remarks>
     [Description("@#badge-russian-ruble")]
     BadgeRussianRuble,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeSwissFranc</summary>
+    /// <remarks>Icon token: <c>badge-swiss-franc</c>.</remarks>
     [Description("@#badge-swiss-franc")]
     BadgeSwissFranc,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeTurkishLira</summary>
+    /// <remarks>Icon token: <c>badge-turkish-lira</c>.</remarks>
     [Description("@#badge-turkish-lira")]
     BadgeTurkishLira,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBadgeX</summary>
+    /// <remarks>Icon token: <c>badge-x</c>.</remarks>
     [Description("@#badge-x")]
     BadgeX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBaggageClaim</summary>
+    /// <remarks>Icon token: <c>baggage-claim</c>.</remarks>
     [Description("@#baggage-claim")]
     BaggageClaim,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBalloon</summary>
+    /// <remarks>Icon token: <c>balloon</c>.</remarks>
     [Description("@#balloon")]
     Balloon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBan</summary>
+    /// <remarks>Icon token: <c>ban</c>.</remarks>
     [Description("@#ban")]
     Ban,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBanana</summary>
+    /// <remarks>Icon token: <c>banana</c>.</remarks>
     [Description("@#banana")]
     Banana,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBandage</summary>
+    /// <remarks>Icon token: <c>bandage</c>.</remarks>
     [Description("@#bandage")]
     Bandage,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBankCard</summary>
+    /// <remarks>Icon token: <c>bank-card</c>.</remarks>
     [Description("@#bank-card")]
     BankCard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBanknote</summary>
+    /// <remarks>Icon token: <c>banknote</c>.</remarks>
     [Description("@#banknote")]
     Banknote,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBanknoteArrowDown</summary>
+    /// <remarks>Icon token: <c>banknote-arrow-down</c>.</remarks>
     [Description("@#banknote-arrow-down")]
     BanknoteArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBanknoteArrowUp</summary>
+    /// <remarks>Icon token: <c>banknote-arrow-up</c>.</remarks>
     [Description("@#banknote-arrow-up")]
     BanknoteArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBanknoteX</summary>
+    /// <remarks>Icon token: <c>banknote-x</c>.</remarks>
     [Description("@#banknote-x")]
     BanknoteX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarChart</summary>
+    /// <remarks>Icon token: <c>bar-chart</c>.</remarks>
     [Description("@#bar-chart")]
     BarChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarChart3</summary>
+    /// <remarks>Icon token: <c>bar-chart-3</c>.</remarks>
     [Description("@#bar-chart-3")]
     BarChart3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarChart4</summary>
+    /// <remarks>Icon token: <c>bar-chart-4</c>.</remarks>
     [Description("@#bar-chart-4")]
     BarChart4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarChartBig</summary>
+    /// <remarks>Icon token: <c>bar-chart-big</c>.</remarks>
     [Description("@#bar-chart-big")]
     BarChartBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarChartHorizontal</summary>
+    /// <remarks>Icon token: <c>bar-chart-horizontal</c>.</remarks>
     [Description("@#bar-chart-horizontal")]
     BarChartHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarChartHorizontalBig</summary>
+    /// <remarks>Icon token: <c>bar-chart-horizontal-big</c>.</remarks>
     [Description("@#bar-chart-horizontal-big")]
     BarChartHorizontalBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarcode</summary>
+    /// <remarks>Icon token: <c>barcode</c>.</remarks>
     [Description("@#barcode")]
     Barcode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBarrel</summary>
+    /// <remarks>Icon token: <c>barrel</c>.</remarks>
     [Description("@#barrel")]
     Barrel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBaseline</summary>
+    /// <remarks>Icon token: <c>baseline</c>.</remarks>
     [Description("@#baseline")]
     Baseline,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBath</summary>
+    /// <remarks>Icon token: <c>bath</c>.</remarks>
     [Description("@#bath")]
     Bath,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBattery</summary>
+    /// <remarks>Icon token: <c>battery</c>.</remarks>
     [Description("@#battery")]
     Battery,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBatteryCharging</summary>
+    /// <remarks>Icon token: <c>battery-charging</c>.</remarks>
     [Description("@#battery-charging")]
     BatteryCharging,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBatteryFull</summary>
+    /// <remarks>Icon token: <c>battery-full</c>.</remarks>
     [Description("@#battery-full")]
     BatteryFull,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBatteryLow</summary>
+    /// <remarks>Icon token: <c>battery-low</c>.</remarks>
     [Description("@#battery-low")]
     BatteryLow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBatteryMedium</summary>
+    /// <remarks>Icon token: <c>battery-medium</c>.</remarks>
     [Description("@#battery-medium")]
     BatteryMedium,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBatteryPlus</summary>
+    /// <remarks>Icon token: <c>battery-plus</c>.</remarks>
     [Description("@#battery-plus")]
     BatteryPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBatteryWarning</summary>
+    /// <remarks>Icon token: <c>battery-warning</c>.</remarks>
     [Description("@#battery-warning")]
     BatteryWarning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBeaker</summary>
+    /// <remarks>Icon token: <c>beaker</c>.</remarks>
     [Description("@#beaker")]
     Beaker,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBean</summary>
+    /// <remarks>Icon token: <c>bean</c>.</remarks>
     [Description("@#bean")]
     Bean,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBeanOff</summary>
+    /// <remarks>Icon token: <c>bean-off</c>.</remarks>
     [Description("@#bean-off")]
     BeanOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBed</summary>
+    /// <remarks>Icon token: <c>bed</c>.</remarks>
     [Description("@#bed")]
     Bed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBedDouble</summary>
+    /// <remarks>Icon token: <c>bed-double</c>.</remarks>
     [Description("@#bed-double")]
     BedDouble,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBedSingle</summary>
+    /// <remarks>Icon token: <c>bed-single</c>.</remarks>
     [Description("@#bed-single")]
     BedSingle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBeef</summary>
+    /// <remarks>Icon token: <c>beef</c>.</remarks>
     [Description("@#beef")]
     Beef,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBeer</summary>
+    /// <remarks>Icon token: <c>beer</c>.</remarks>
     [Description("@#beer")]
     Beer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBeerOff</summary>
+    /// <remarks>Icon token: <c>beer-off</c>.</remarks>
     [Description("@#beer-off")]
     BeerOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBell</summary>
+    /// <remarks>Icon token: <c>bell</c>.</remarks>
     [Description("@#bell")]
     Bell,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBellDot</summary>
+    /// <remarks>Icon token: <c>bell-dot</c>.</remarks>
     [Description("@#bell-dot")]
     BellDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBellElectric</summary>
+    /// <remarks>Icon token: <c>bell-electric</c>.</remarks>
     [Description("@#bell-electric")]
     BellElectric,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBellMinus</summary>
+    /// <remarks>Icon token: <c>bell-minus</c>.</remarks>
     [Description("@#bell-minus")]
     BellMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBellOff</summary>
+    /// <remarks>Icon token: <c>bell-off</c>.</remarks>
     [Description("@#bell-off")]
     BellOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBellPlus</summary>
+    /// <remarks>Icon token: <c>bell-plus</c>.</remarks>
     [Description("@#bell-plus")]
     BellPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBellRing</summary>
+    /// <remarks>Icon token: <c>bell-ring</c>.</remarks>
     [Description("@#bell-ring")]
     BellRing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBetweenHorizontalEnd</summary>
+    /// <remarks>Icon token: <c>between-horizontal-end</c>.</remarks>
     [Description("@#between-horizontal-end")]
     BetweenHorizontalEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBetweenHorizontalStart</summary>
+    /// <remarks>Icon token: <c>between-horizontal-start</c>.</remarks>
     [Description("@#between-horizontal-start")]
     BetweenHorizontalStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBetweenVerticalEnd</summary>
+    /// <remarks>Icon token: <c>between-vertical-end</c>.</remarks>
     [Description("@#between-vertical-end")]
     BetweenVerticalEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBetweenVerticalStart</summary>
+    /// <remarks>Icon token: <c>between-vertical-start</c>.</remarks>
     [Description("@#between-vertical-start")]
     BetweenVerticalStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBicepsFlexed</summary>
+    /// <remarks>Icon token: <c>biceps-flexed</c>.</remarks>
     [Description("@#biceps-flexed")]
     BicepsFlexed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBike</summary>
+    /// <remarks>Icon token: <c>bike</c>.</remarks>
     [Description("@#bike")]
     Bike,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBill</summary>
+    /// <remarks>Icon token: <c>bill</c>.</remarks>
     [Description("@#bill")]
     Bill,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBinary</summary>
+    /// <remarks>Icon token: <c>binary</c>.</remarks>
     [Description("@#binary")]
     Binary,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBinoculars</summary>
+    /// <remarks>Icon token: <c>binoculars</c>.</remarks>
     [Description("@#binoculars")]
     Binoculars,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBiohazard</summary>
+    /// <remarks>Icon token: <c>biohazard</c>.</remarks>
     [Description("@#biohazard")]
     Biohazard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBird</summary>
+    /// <remarks>Icon token: <c>bird</c>.</remarks>
     [Description("@#bird")]
     Bird,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBirdhouse</summary>
+    /// <remarks>Icon token: <c>birdhouse</c>.</remarks>
     [Description("@#birdhouse")]
     Birdhouse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBitcoin</summary>
+    /// <remarks>Icon token: <c>bitcoin</c>.</remarks>
     [Description("@#bitcoin")]
     Bitcoin,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBlend</summary>
+    /// <remarks>Icon token: <c>blend</c>.</remarks>
     [Description("@#blend")]
     Blend,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBlinds</summary>
+    /// <remarks>Icon token: <c>blinds</c>.</remarks>
     [Description("@#blinds")]
     Blinds,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBlocks</summary>
+    /// <remarks>Icon token: <c>blocks</c>.</remarks>
     [Description("@#blocks")]
     Blocks,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBluetooth</summary>
+    /// <remarks>Icon token: <c>bluetooth</c>.</remarks>
     [Description("@#bluetooth")]
     Bluetooth,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBluetoothConnected</summary>
+    /// <remarks>Icon token: <c>bluetooth-connected</c>.</remarks>
     [Description("@#bluetooth-connected")]
     BluetoothConnected,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBluetoothOff</summary>
+    /// <remarks>Icon token: <c>bluetooth-off</c>.</remarks>
     [Description("@#bluetooth-off")]
     BluetoothOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBluetoothSearching</summary>
+    /// <remarks>Icon token: <c>bluetooth-searching</c>.</remarks>
     [Description("@#bluetooth-searching")]
     BluetoothSearching,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBold</summary>
+    /// <remarks>Icon token: <c>bold</c>.</remarks>
     [Description("@#bold")]
     Bold,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBolt</summary>
+    /// <remarks>Icon token: <c>bolt</c>.</remarks>
     [Description("@#bolt")]
     Bolt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBomb</summary>
+    /// <remarks>Icon token: <c>bomb</c>.</remarks>
     [Description("@#bomb")]
     Bomb,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBone</summary>
+    /// <remarks>Icon token: <c>bone</c>.</remarks>
     [Description("@#bone")]
     Bone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBook</summary>
+    /// <remarks>Icon token: <c>book</c>.</remarks>
     [Description("@#book")]
     Book,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookA</summary>
+    /// <remarks>Icon token: <c>book-a</c>.</remarks>
     [Description("@#book-a")]
     BookA,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookAlert</summary>
+    /// <remarks>Icon token: <c>book-alert</c>.</remarks>
     [Description("@#book-alert")]
     BookAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookAudio</summary>
+    /// <remarks>Icon token: <c>book-audio</c>.</remarks>
     [Description("@#book-audio")]
     BookAudio,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookCheck</summary>
+    /// <remarks>Icon token: <c>book-check</c>.</remarks>
     [Description("@#book-check")]
     BookCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookCopy</summary>
+    /// <remarks>Icon token: <c>book-copy</c>.</remarks>
     [Description("@#book-copy")]
     BookCopy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookDashed</summary>
+    /// <remarks>Icon token: <c>book-dashed</c>.</remarks>
     [Description("@#book-dashed")]
     BookDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookDown</summary>
+    /// <remarks>Icon token: <c>book-down</c>.</remarks>
     [Description("@#book-down")]
     BookDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookHeadphones</summary>
+    /// <remarks>Icon token: <c>book-headphones</c>.</remarks>
     [Description("@#book-headphones")]
     BookHeadphones,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookHeart</summary>
+    /// <remarks>Icon token: <c>book-heart</c>.</remarks>
     [Description("@#book-heart")]
     BookHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookImage</summary>
+    /// <remarks>Icon token: <c>book-image</c>.</remarks>
     [Description("@#book-image")]
     BookImage,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookKey</summary>
+    /// <remarks>Icon token: <c>book-key</c>.</remarks>
     [Description("@#book-key")]
     BookKey,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookLock</summary>
+    /// <remarks>Icon token: <c>book-lock</c>.</remarks>
     [Description("@#book-lock")]
     BookLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookMarked</summary>
+    /// <remarks>Icon token: <c>book-marked</c>.</remarks>
     [Description("@#book-marked")]
     BookMarked,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookMinus</summary>
+    /// <remarks>Icon token: <c>book-minus</c>.</remarks>
     [Description("@#book-minus")]
     BookMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookOpen</summary>
+    /// <remarks>Icon token: <c>book-open</c>.</remarks>
     [Description("@#book-open")]
     BookOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookOpenCheck</summary>
+    /// <remarks>Icon token: <c>book-open-check</c>.</remarks>
     [Description("@#book-open-check")]
     BookOpenCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookOpenText</summary>
+    /// <remarks>Icon token: <c>book-open-text</c>.</remarks>
     [Description("@#book-open-text")]
     BookOpenText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookPlus</summary>
+    /// <remarks>Icon token: <c>book-plus</c>.</remarks>
     [Description("@#book-plus")]
     BookPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookSearch</summary>
+    /// <remarks>Icon token: <c>book-search</c>.</remarks>
     [Description("@#book-search")]
     BookSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookText</summary>
+    /// <remarks>Icon token: <c>book-text</c>.</remarks>
     [Description("@#book-text")]
     BookText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookType</summary>
+    /// <remarks>Icon token: <c>book-type</c>.</remarks>
     [Description("@#book-type")]
     BookType,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookUp</summary>
+    /// <remarks>Icon token: <c>book-up</c>.</remarks>
     [Description("@#book-up")]
     BookUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookUp2</summary>
+    /// <remarks>Icon token: <c>book-up-2</c>.</remarks>
     [Description("@#book-up-2")]
     BookUp2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookUser</summary>
+    /// <remarks>Icon token: <c>book-user</c>.</remarks>
     [Description("@#book-user")]
     BookUser,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookX</summary>
+    /// <remarks>Icon token: <c>book-x</c>.</remarks>
     [Description("@#book-x")]
     BookX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookmark</summary>
+    /// <remarks>Icon token: <c>bookmark</c>.</remarks>
     [Description("@#bookmark")]
     Bookmark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkCheck</summary>
+    /// <remarks>Icon token: <c>bookmark-check</c>.</remarks>
     [Description("@#bookmark-check")]
     BookmarkCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkMinus</summary>
+    /// <remarks>Icon token: <c>bookmark-minus</c>.</remarks>
     [Description("@#bookmark-minus")]
     BookmarkMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkPlus</summary>
+    /// <remarks>Icon token: <c>bookmark-plus</c>.</remarks>
     [Description("@#bookmark-plus")]
     BookmarkPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkX</summary>
+    /// <remarks>Icon token: <c>bookmark-x</c>.</remarks>
     [Description("@#bookmark-x")]
     BookmarkX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBoomBox</summary>
+    /// <remarks>Icon token: <c>boom-box</c>.</remarks>
     [Description("@#boom-box")]
     BoomBox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBot</summary>
+    /// <remarks>Icon token: <c>bot</c>.</remarks>
     [Description("@#bot")]
     Bot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBotMessageSquare</summary>
+    /// <remarks>Icon token: <c>bot-message-square</c>.</remarks>
     [Description("@#bot-message-square")]
     BotMessageSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBotOff</summary>
+    /// <remarks>Icon token: <c>bot-off</c>.</remarks>
     [Description("@#bot-off")]
     BotOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBottleWine</summary>
+    /// <remarks>Icon token: <c>bottle-wine</c>.</remarks>
     [Description("@#bottle-wine")]
     BottleWine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBottomBar</summary>
+    /// <remarks>Icon token: <c>bottom-bar</c>.</remarks>
     [Description("@#bottom-bar")]
     BottomBar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBowArrow</summary>
+    /// <remarks>Icon token: <c>bow-arrow</c>.</remarks>
     [Description("@#bow-arrow")]
     BowArrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBox</summary>
+    /// <remarks>Icon token: <c>box</c>.</remarks>
     [Description("@#box")]
     Box,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBoxes</summary>
+    /// <remarks>Icon token: <c>boxes</c>.</remarks>
     [Description("@#boxes")]
     Boxes,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBraces</summary>
+    /// <remarks>Icon token: <c>braces</c>.</remarks>
     [Description("@#braces")]
     Braces,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrackets</summary>
+    /// <remarks>Icon token: <c>brackets</c>.</remarks>
     [Description("@#brackets")]
     Brackets,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrain</summary>
+    /// <remarks>Icon token: <c>brain</c>.</remarks>
     [Description("@#brain")]
     Brain,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrainCircuit</summary>
+    /// <remarks>Icon token: <c>brain-circuit</c>.</remarks>
     [Description("@#brain-circuit")]
     BrainCircuit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrainCog</summary>
+    /// <remarks>Icon token: <c>brain-cog</c>.</remarks>
     [Description("@#brain-cog")]
     BrainCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBreadcrumb</summary>
+    /// <remarks>Icon token: <c>breadcrumb</c>.</remarks>
     [Description("@#breadcrumb")]
     Breadcrumb,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrickWall</summary>
+    /// <remarks>Icon token: <c>brick-wall</c>.</remarks>
     [Description("@#brick-wall")]
     BrickWall,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrickWallFire</summary>
+    /// <remarks>Icon token: <c>brick-wall-fire</c>.</remarks>
     [Description("@#brick-wall-fire")]
     BrickWallFire,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrickWallShield</summary>
+    /// <remarks>Icon token: <c>brick-wall-shield</c>.</remarks>
     [Description("@#brick-wall-shield")]
     BrickWallShield,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBriefcase</summary>
+    /// <remarks>Icon token: <c>briefcase</c>.</remarks>
     [Description("@#briefcase")]
     Briefcase,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseBusiness</summary>
+    /// <remarks>Icon token: <c>briefcase-business</c>.</remarks>
     [Description("@#briefcase-business")]
     BriefcaseBusiness,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseConveyorBelt</summary>
+    /// <remarks>Icon token: <c>briefcase-conveyor-belt</c>.</remarks>
     [Description("@#briefcase-conveyor-belt")]
     BriefcaseConveyorBelt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseMedical</summary>
+    /// <remarks>Icon token: <c>briefcase-medical</c>.</remarks>
     [Description("@#briefcase-medical")]
     BriefcaseMedical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBringToFront</summary>
+    /// <remarks>Icon token: <c>bring-to-front</c>.</remarks>
     [Description("@#bring-to-front")]
     BringToFront,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrush</summary>
+    /// <remarks>Icon token: <c>brush</c>.</remarks>
     [Description("@#brush")]
     Brush,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBrushCleaning</summary>
+    /// <remarks>Icon token: <c>brush-cleaning</c>.</remarks>
     [Description("@#brush-cleaning")]
     BrushCleaning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBubbles</summary>
+    /// <remarks>Icon token: <c>bubbles</c>.</remarks>
     [Description("@#bubbles")]
     Bubbles,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBug</summary>
+    /// <remarks>Icon token: <c>bug</c>.</remarks>
     [Description("@#bug")]
     Bug,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBugOff</summary>
+    /// <remarks>Icon token: <c>bug-off</c>.</remarks>
     [Description("@#bug-off")]
     BugOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBugPlay</summary>
+    /// <remarks>Icon token: <c>bug-play</c>.</remarks>
     [Description("@#bug-play")]
     BugPlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBuilding</summary>
+    /// <remarks>Icon token: <c>building</c>.</remarks>
     [Description("@#building")]
     Building,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBuilding2</summary>
+    /// <remarks>Icon token: <c>building-2</c>.</remarks>
     [Description("@#building-2")]
     Building2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBus</summary>
+    /// <remarks>Icon token: <c>bus</c>.</remarks>
     [Description("@#bus")]
     Bus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuBusFront</summary>
+    /// <remarks>Icon token: <c>bus-front</c>.</remarks>
     [Description("@#bus-front")]
     BusFront,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCable</summary>
+    /// <remarks>Icon token: <c>cable</c>.</remarks>
     [Description("@#cable")]
     Cable,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCableCar</summary>
+    /// <remarks>Icon token: <c>cable-car</c>.</remarks>
     [Description("@#cable-car")]
     CableCar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCake</summary>
+    /// <remarks>Icon token: <c>cake</c>.</remarks>
     [Description("@#cake")]
     Cake,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCakeSlice</summary>
+    /// <remarks>Icon token: <c>cake-slice</c>.</remarks>
     [Description("@#cake-slice")]
     CakeSlice,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalculator</summary>
+    /// <remarks>Icon token: <c>calculator</c>.</remarks>
     [Description("@#calculator")]
     Calculator,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendar</summary>
+    /// <remarks>Icon token: <c>calendar</c>.</remarks>
     [Description("@#calendar")]
     Calendar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendar1</summary>
+    /// <remarks>Icon token: <c>calendar-1</c>.</remarks>
     [Description("@#calendar-1")]
     Calendar1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarArrowDown</summary>
+    /// <remarks>Icon token: <c>calendar-arrow-down</c>.</remarks>
     [Description("@#calendar-arrow-down")]
     CalendarArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarArrowUp</summary>
+    /// <remarks>Icon token: <c>calendar-arrow-up</c>.</remarks>
     [Description("@#calendar-arrow-up")]
     CalendarArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarCheck</summary>
+    /// <remarks>Icon token: <c>calendar-check</c>.</remarks>
     [Description("@#calendar-check")]
     CalendarCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarCheck2</summary>
+    /// <remarks>Icon token: <c>calendar-check-2</c>.</remarks>
     [Description("@#calendar-check-2")]
     CalendarCheck2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarClock</summary>
+    /// <remarks>Icon token: <c>calendar-clock</c>.</remarks>
     [Description("@#calendar-clock")]
     CalendarClock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarCog</summary>
+    /// <remarks>Icon token: <c>calendar-cog</c>.</remarks>
     [Description("@#calendar-cog")]
     CalendarCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarDays</summary>
+    /// <remarks>Icon token: <c>calendar-days</c>.</remarks>
     [Description("@#calendar-days")]
     CalendarDays,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarFold</summary>
+    /// <remarks>Icon token: <c>calendar-fold</c>.</remarks>
     [Description("@#calendar-fold")]
     CalendarFold,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarHeart</summary>
+    /// <remarks>Icon token: <c>calendar-heart</c>.</remarks>
     [Description("@#calendar-heart")]
     CalendarHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarMinus</summary>
+    /// <remarks>Icon token: <c>calendar-minus</c>.</remarks>
     [Description("@#calendar-minus")]
     CalendarMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarMinus2</summary>
+    /// <remarks>Icon token: <c>calendar-minus-2</c>.</remarks>
     [Description("@#calendar-minus-2")]
     CalendarMinus2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarOff</summary>
+    /// <remarks>Icon token: <c>calendar-off</c>.</remarks>
     [Description("@#calendar-off")]
     CalendarOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarPlus</summary>
+    /// <remarks>Icon token: <c>calendar-plus</c>.</remarks>
     [Description("@#calendar-plus")]
     CalendarPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarPlus2</summary>
+    /// <remarks>Icon token: <c>calendar-plus-2</c>.</remarks>
     [Description("@#calendar-plus-2")]
     CalendarPlus2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarRange</summary>
+    /// <remarks>Icon token: <c>calendar-range</c>.</remarks>
     [Description("@#calendar-range")]
     CalendarRange,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarSearch</summary>
+    /// <remarks>Icon token: <c>calendar-search</c>.</remarks>
     [Description("@#calendar-search")]
     CalendarSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarSync</summary>
+    /// <remarks>Icon token: <c>calendar-sync</c>.</remarks>
     [Description("@#calendar-sync")]
     CalendarSync,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarX</summary>
+    /// <remarks>Icon token: <c>calendar-x</c>.</remarks>
     [Description("@#calendar-x")]
     CalendarX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendarX2</summary>
+    /// <remarks>Icon token: <c>calendar-x-2</c>.</remarks>
     [Description("@#calendar-x-2")]
     CalendarX2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCalendars</summary>
+    /// <remarks>Icon token: <c>calendars</c>.</remarks>
     [Description("@#calendars")]
     Calendars,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCamera</summary>
+    /// <remarks>Icon token: <c>camera</c>.</remarks>
     [Description("@#camera")]
     Camera,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCameraOff</summary>
+    /// <remarks>Icon token: <c>camera-off</c>.</remarks>
     [Description("@#camera-off")]
     CameraOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCandlestickChart</summary>
+    /// <remarks>Icon token: <c>candlestick-chart</c>.</remarks>
     [Description("@#candlestick-chart")]
     CandlestickChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCandy</summary>
+    /// <remarks>Icon token: <c>candy</c>.</remarks>
     [Description("@#candy")]
     Candy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCandyCane</summary>
+    /// <remarks>Icon token: <c>candy-cane</c>.</remarks>
     [Description("@#candy-cane")]
     CandyCane,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCandyOff</summary>
+    /// <remarks>Icon token: <c>candy-off</c>.</remarks>
     [Description("@#candy-off")]
     CandyOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCannabis</summary>
+    /// <remarks>Icon token: <c>cannabis</c>.</remarks>
     [Description("@#cannabis")]
     Cannabis,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCannabisOff</summary>
+    /// <remarks>Icon token: <c>cannabis-off</c>.</remarks>
     [Description("@#cannabis-off")]
     CannabisOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCaptions</summary>
+    /// <remarks>Icon token: <c>captions</c>.</remarks>
     [Description("@#captions")]
     Captions,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCaptionsOff</summary>
+    /// <remarks>Icon token: <c>captions-off</c>.</remarks>
     [Description("@#captions-off")]
     CaptionsOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCar</summary>
+    /// <remarks>Icon token: <c>car</c>.</remarks>
     [Description("@#car")]
     Car,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCarFront</summary>
+    /// <remarks>Icon token: <c>car-front</c>.</remarks>
     [Description("@#car-front")]
     CarFront,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCarTaxiFront</summary>
+    /// <remarks>Icon token: <c>car-taxi-front</c>.</remarks>
     [Description("@#car-taxi-front")]
     CarTaxiFront,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCaravan</summary>
+    /// <remarks>Icon token: <c>caravan</c>.</remarks>
     [Description("@#caravan")]
     Caravan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCardSim</summary>
+    /// <remarks>Icon token: <c>card-sim</c>.</remarks>
     [Description("@#card-sim")]
     CardSim,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCarrot</summary>
+    /// <remarks>Icon token: <c>carrot</c>.</remarks>
     [Description("@#carrot")]
     Carrot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCaseLower</summary>
+    /// <remarks>Icon token: <c>case-lower</c>.</remarks>
     [Description("@#case-lower")]
     CaseLower,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCaseSensitive</summary>
+    /// <remarks>Icon token: <c>case-sensitive</c>.</remarks>
     [Description("@#case-sensitive")]
     CaseSensitive,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCaseUpper</summary>
+    /// <remarks>Icon token: <c>case-upper</c>.</remarks>
     [Description("@#case-upper")]
     CaseUpper,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCassetteTape</summary>
+    /// <remarks>Icon token: <c>cassette-tape</c>.</remarks>
     [Description("@#cassette-tape")]
     CassetteTape,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCast</summary>
+    /// <remarks>Icon token: <c>cast</c>.</remarks>
     [Description("@#cast")]
     Cast,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCastle</summary>
+    /// <remarks>Icon token: <c>castle</c>.</remarks>
     [Description("@#castle")]
     Castle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCat</summary>
+    /// <remarks>Icon token: <c>cat</c>.</remarks>
     [Description("@#cat")]
     Cat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCategory</summary>
+    /// <remarks>Icon token: <c>category</c>.</remarks>
     [Description("@#category")]
     Category,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCctv</summary>
+    /// <remarks>Icon token: <c>cctv</c>.</remarks>
     [Description("@#cctv")]
     Cctv,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCharging</summary>
+    /// <remarks>Icon token: <c>charging</c>.</remarks>
     [Description("@#charging")]
     Charging,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartArea</summary>
+    /// <remarks>Icon token: <c>chart-area</c>.</remarks>
     [Description("@#chart-area")]
     ChartArea,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartBar</summary>
+    /// <remarks>Icon token: <c>chart-bar</c>.</remarks>
     [Description("@#chart-bar")]
     ChartBar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartBarBig</summary>
+    /// <remarks>Icon token: <c>chart-bar-big</c>.</remarks>
     [Description("@#chart-bar-big")]
     ChartBarBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartBarDecreasing</summary>
+    /// <remarks>Icon token: <c>chart-bar-decreasing</c>.</remarks>
     [Description("@#chart-bar-decreasing")]
     ChartBarDecreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartBarIncreasing</summary>
+    /// <remarks>Icon token: <c>chart-bar-increasing</c>.</remarks>
     [Description("@#chart-bar-increasing")]
     ChartBarIncreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartBarStacked</summary>
+    /// <remarks>Icon token: <c>chart-bar-stacked</c>.</remarks>
     [Description("@#chart-bar-stacked")]
     ChartBarStacked,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartCandlestick</summary>
+    /// <remarks>Icon token: <c>chart-candlestick</c>.</remarks>
     [Description("@#chart-candlestick")]
     ChartCandlestick,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartColumn</summary>
+    /// <remarks>Icon token: <c>chart-column</c>.</remarks>
     [Description("@#chart-column")]
     ChartColumn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnBig</summary>
+    /// <remarks>Icon token: <c>chart-column-big</c>.</remarks>
     [Description("@#chart-column-big")]
     ChartColumnBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnDecreasing</summary>
+    /// <remarks>Icon token: <c>chart-column-decreasing</c>.</remarks>
     [Description("@#chart-column-decreasing")]
     ChartColumnDecreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnIncreasing</summary>
+    /// <remarks>Icon token: <c>chart-column-increasing</c>.</remarks>
     [Description("@#chart-column-increasing")]
     ChartColumnIncreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnStacked</summary>
+    /// <remarks>Icon token: <c>chart-column-stacked</c>.</remarks>
     [Description("@#chart-column-stacked")]
     ChartColumnStacked,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartGantt</summary>
+    /// <remarks>Icon token: <c>chart-gantt</c>.</remarks>
     [Description("@#chart-gantt")]
     ChartGantt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartLine</summary>
+    /// <remarks>Icon token: <c>chart-line</c>.</remarks>
     [Description("@#chart-line")]
     ChartLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartNetwork</summary>
+    /// <remarks>Icon token: <c>chart-network</c>.</remarks>
     [Description("@#chart-network")]
     ChartNetwork,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumn</summary>
+    /// <remarks>Icon token: <c>chart-no-axes-column</c>.</remarks>
     [Description("@#chart-no-axes-column")]
     ChartNoAxesColumn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumnDecreasing</summary>
+    /// <remarks>Icon token: <c>chart-no-axes-column-decreasing</c>.</remarks>
     [Description("@#chart-no-axes-column-decreasing")]
     ChartNoAxesColumnDecreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumnIncreasing</summary>
+    /// <remarks>Icon token: <c>chart-no-axes-column-increasing</c>.</remarks>
     [Description("@#chart-no-axes-column-increasing")]
     ChartNoAxesColumnIncreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesCombined</summary>
+    /// <remarks>Icon token: <c>chart-no-axes-combined</c>.</remarks>
     [Description("@#chart-no-axes-combined")]
     ChartNoAxesCombined,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesGantt</summary>
+    /// <remarks>Icon token: <c>chart-no-axes-gantt</c>.</remarks>
     [Description("@#chart-no-axes-gantt")]
     ChartNoAxesGantt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartPie</summary>
+    /// <remarks>Icon token: <c>chart-pie</c>.</remarks>
     [Description("@#chart-pie")]
     ChartPie,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartScatter</summary>
+    /// <remarks>Icon token: <c>chart-scatter</c>.</remarks>
     [Description("@#chart-scatter")]
     ChartScatter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChartSpline</summary>
+    /// <remarks>Icon token: <c>chart-spline</c>.</remarks>
     [Description("@#chart-spline")]
     ChartSpline,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCheck</summary>
+    /// <remarks>Icon token: <c>check</c>.</remarks>
     [Description("@#check")]
     Check,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCheckCheck</summary>
+    /// <remarks>Icon token: <c>check-check</c>.</remarks>
     [Description("@#check-check")]
     CheckCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCheckLine</summary>
+    /// <remarks>Icon token: <c>check-line</c>.</remarks>
     [Description("@#check-line")]
     CheckLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCheckup</summary>
+    /// <remarks>Icon token: <c>checkup</c>.</remarks>
     [Description("@#checkup")]
     Checkup,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChefHat</summary>
+    /// <remarks>Icon token: <c>chef-hat</c>.</remarks>
     [Description("@#chef-hat")]
     ChefHat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCherry</summary>
+    /// <remarks>Icon token: <c>cherry</c>.</remarks>
     [Description("@#cherry")]
     Cherry,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChessBishop</summary>
+    /// <remarks>Icon token: <c>chess-bishop</c>.</remarks>
     [Description("@#chess-bishop")]
     ChessBishop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChessKing</summary>
+    /// <remarks>Icon token: <c>chess-king</c>.</remarks>
     [Description("@#chess-king")]
     ChessKing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChessKnight</summary>
+    /// <remarks>Icon token: <c>chess-knight</c>.</remarks>
     [Description("@#chess-knight")]
     ChessKnight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChessPawn</summary>
+    /// <remarks>Icon token: <c>chess-pawn</c>.</remarks>
     [Description("@#chess-pawn")]
     ChessPawn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChessQueen</summary>
+    /// <remarks>Icon token: <c>chess-queen</c>.</remarks>
     [Description("@#chess-queen")]
     ChessQueen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChessRook</summary>
+    /// <remarks>Icon token: <c>chess-rook</c>.</remarks>
     [Description("@#chess-rook")]
     ChessRook,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronDown</summary>
+    /// <remarks>Icon token: <c>chevron-down</c>.</remarks>
     [Description("@#chevron-down")]
     ChevronDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronFirst</summary>
+    /// <remarks>Icon token: <c>chevron-first</c>.</remarks>
     [Description("@#chevron-first")]
     ChevronFirst,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronLast</summary>
+    /// <remarks>Icon token: <c>chevron-last</c>.</remarks>
     [Description("@#chevron-last")]
     ChevronLast,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronLeft</summary>
+    /// <remarks>Icon token: <c>chevron-left</c>.</remarks>
     [Description("@#chevron-left")]
     ChevronLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronRight</summary>
+    /// <remarks>Icon token: <c>chevron-right</c>.</remarks>
     [Description("@#chevron-right")]
     ChevronRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronUp</summary>
+    /// <remarks>Icon token: <c>chevron-up</c>.</remarks>
     [Description("@#chevron-up")]
     ChevronUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsDown</summary>
+    /// <remarks>Icon token: <c>chevrons-down</c>.</remarks>
     [Description("@#chevrons-down")]
     ChevronsDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsDownUp</summary>
+    /// <remarks>Icon token: <c>chevrons-down-up</c>.</remarks>
     [Description("@#chevrons-down-up")]
     ChevronsDownUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeft</summary>
+    /// <remarks>Icon token: <c>chevrons-left</c>.</remarks>
     [Description("@#chevrons-left")]
     ChevronsLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeftRight</summary>
+    /// <remarks>Icon token: <c>chevrons-left-right</c>.</remarks>
     [Description("@#chevrons-left-right")]
     ChevronsLeftRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeftRightEllipsis</summary>
+    /// <remarks>Icon token: <c>chevrons-left-right-ellipsis</c>.</remarks>
     [Description("@#chevrons-left-right-ellipsis")]
     ChevronsLeftRightEllipsis,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsRight</summary>
+    /// <remarks>Icon token: <c>chevrons-right</c>.</remarks>
     [Description("@#chevrons-right")]
     ChevronsRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsRightLeft</summary>
+    /// <remarks>Icon token: <c>chevrons-right-left</c>.</remarks>
     [Description("@#chevrons-right-left")]
     ChevronsRightLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsUp</summary>
+    /// <remarks>Icon token: <c>chevrons-up</c>.</remarks>
     [Description("@#chevrons-up")]
     ChevronsUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChevronsUpDown</summary>
+    /// <remarks>Icon token: <c>chevrons-up-down</c>.</remarks>
     [Description("@#chevrons-up-down")]
     ChevronsUpDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChrome</summary>
+    /// <remarks>Icon token: <c>chrome</c>.</remarks>
     [Description("@#chrome")]
     Chrome,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChromium</summary>
+    /// <remarks>Icon token: <c>chromium</c>.</remarks>
     [Description("@#chromium")]
     Chromium,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuChurch</summary>
+    /// <remarks>Icon token: <c>church</c>.</remarks>
     [Description("@#church")]
     Church,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCigarette</summary>
+    /// <remarks>Icon token: <c>cigarette</c>.</remarks>
     [Description("@#cigarette")]
     Cigarette,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCigaretteOff</summary>
+    /// <remarks>Icon token: <c>cigarette-off</c>.</remarks>
     [Description("@#cigarette-off")]
     CigaretteOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircle</summary>
+    /// <remarks>Icon token: <c>circle</c>.</remarks>
     [Description("@#circle")]
     Circle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleAlert</summary>
+    /// <remarks>Icon token: <c>circle-alert</c>.</remarks>
     [Description("@#circle-alert")]
     CircleAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowDown</summary>
+    /// <remarks>Icon token: <c>circle-arrow-down</c>.</remarks>
     [Description("@#circle-arrow-down")]
     CircleArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowLeft</summary>
+    /// <remarks>Icon token: <c>circle-arrow-left</c>.</remarks>
     [Description("@#circle-arrow-left")]
     CircleArrowLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutDownLeft</summary>
+    /// <remarks>Icon token: <c>circle-arrow-out-down-left</c>.</remarks>
     [Description("@#circle-arrow-out-down-left")]
     CircleArrowOutDownLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutDownRight</summary>
+    /// <remarks>Icon token: <c>circle-arrow-out-down-right</c>.</remarks>
     [Description("@#circle-arrow-out-down-right")]
     CircleArrowOutDownRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutUpLeft</summary>
+    /// <remarks>Icon token: <c>circle-arrow-out-up-left</c>.</remarks>
     [Description("@#circle-arrow-out-up-left")]
     CircleArrowOutUpLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutUpRight</summary>
+    /// <remarks>Icon token: <c>circle-arrow-out-up-right</c>.</remarks>
     [Description("@#circle-arrow-out-up-right")]
     CircleArrowOutUpRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowRight</summary>
+    /// <remarks>Icon token: <c>circle-arrow-right</c>.</remarks>
     [Description("@#circle-arrow-right")]
     CircleArrowRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowUp</summary>
+    /// <remarks>Icon token: <c>circle-arrow-up</c>.</remarks>
     [Description("@#circle-arrow-up")]
     CircleArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleCheck</summary>
+    /// <remarks>Icon token: <c>circle-check</c>.</remarks>
     [Description("@#circle-check")]
     CircleCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleCheckBig</summary>
+    /// <remarks>Icon token: <c>circle-check-big</c>.</remarks>
     [Description("@#circle-check-big")]
     CircleCheckBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronDown</summary>
+    /// <remarks>Icon token: <c>circle-chevron-down</c>.</remarks>
     [Description("@#circle-chevron-down")]
     CircleChevronDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronLeft</summary>
+    /// <remarks>Icon token: <c>circle-chevron-left</c>.</remarks>
     [Description("@#circle-chevron-left")]
     CircleChevronLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronRight</summary>
+    /// <remarks>Icon token: <c>circle-chevron-right</c>.</remarks>
     [Description("@#circle-chevron-right")]
     CircleChevronRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronUp</summary>
+    /// <remarks>Icon token: <c>circle-chevron-up</c>.</remarks>
     [Description("@#circle-chevron-up")]
     CircleChevronUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleDashed</summary>
+    /// <remarks>Icon token: <c>circle-dashed</c>.</remarks>
     [Description("@#circle-dashed")]
     CircleDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleDivide</summary>
+    /// <remarks>Icon token: <c>circle-divide</c>.</remarks>
     [Description("@#circle-divide")]
     CircleDivide,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleDollarSign</summary>
+    /// <remarks>Icon token: <c>circle-dollar-sign</c>.</remarks>
     [Description("@#circle-dollar-sign")]
     CircleDollarSign,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleDot</summary>
+    /// <remarks>Icon token: <c>circle-dot</c>.</remarks>
     [Description("@#circle-dot")]
     CircleDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleDotDashed</summary>
+    /// <remarks>Icon token: <c>circle-dot-dashed</c>.</remarks>
     [Description("@#circle-dot-dashed")]
     CircleDotDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleEllipsis</summary>
+    /// <remarks>Icon token: <c>circle-ellipsis</c>.</remarks>
     [Description("@#circle-ellipsis")]
     CircleEllipsis,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleEqual</summary>
+    /// <remarks>Icon token: <c>circle-equal</c>.</remarks>
     [Description("@#circle-equal")]
     CircleEqual,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleFadingArrowUp</summary>
+    /// <remarks>Icon token: <c>circle-fading-arrow-up</c>.</remarks>
     [Description("@#circle-fading-arrow-up")]
     CircleFadingArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleFadingPlus</summary>
+    /// <remarks>Icon token: <c>circle-fading-plus</c>.</remarks>
     [Description("@#circle-fading-plus")]
     CircleFadingPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleGauge</summary>
+    /// <remarks>Icon token: <c>circle-gauge</c>.</remarks>
     [Description("@#circle-gauge")]
     CircleGauge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleMinus</summary>
+    /// <remarks>Icon token: <c>circle-minus</c>.</remarks>
     [Description("@#circle-minus")]
     CircleMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleOff</summary>
+    /// <remarks>Icon token: <c>circle-off</c>.</remarks>
     [Description("@#circle-off")]
     CircleOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleParking</summary>
+    /// <remarks>Icon token: <c>circle-parking</c>.</remarks>
     [Description("@#circle-parking")]
     CircleParking,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleParkingOff</summary>
+    /// <remarks>Icon token: <c>circle-parking-off</c>.</remarks>
     [Description("@#circle-parking-off")]
     CircleParkingOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePause</summary>
+    /// <remarks>Icon token: <c>circle-pause</c>.</remarks>
     [Description("@#circle-pause")]
     CirclePause,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePercent</summary>
+    /// <remarks>Icon token: <c>circle-percent</c>.</remarks>
     [Description("@#circle-percent")]
     CirclePercent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePile</summary>
+    /// <remarks>Icon token: <c>circle-pile</c>.</remarks>
     [Description("@#circle-pile")]
     CirclePile,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePlay</summary>
+    /// <remarks>Icon token: <c>circle-play</c>.</remarks>
     [Description("@#circle-play")]
     CirclePlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePlus</summary>
+    /// <remarks>Icon token: <c>circle-plus</c>.</remarks>
     [Description("@#circle-plus")]
     CirclePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePoundSterling</summary>
+    /// <remarks>Icon token: <c>circle-pound-sterling</c>.</remarks>
     [Description("@#circle-pound-sterling")]
     CirclePoundSterling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCirclePower</summary>
+    /// <remarks>Icon token: <c>circle-power</c>.</remarks>
     [Description("@#circle-power")]
     CirclePower,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleQuestionMark</summary>
+    /// <remarks>Icon token: <c>circle-question-mark</c>.</remarks>
     [Description("@#circle-question-mark")]
     CircleQuestionMark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleSlash</summary>
+    /// <remarks>Icon token: <c>circle-slash</c>.</remarks>
     [Description("@#circle-slash")]
     CircleSlash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleSlash2</summary>
+    /// <remarks>Icon token: <c>circle-slash-2</c>.</remarks>
     [Description("@#circle-slash-2")]
     CircleSlash2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleSmall</summary>
+    /// <remarks>Icon token: <c>circle-small</c>.</remarks>
     [Description("@#circle-small")]
     CircleSmall,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleStar</summary>
+    /// <remarks>Icon token: <c>circle-star</c>.</remarks>
     [Description("@#circle-star")]
     CircleStar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleStop</summary>
+    /// <remarks>Icon token: <c>circle-stop</c>.</remarks>
     [Description("@#circle-stop")]
     CircleStop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleUser</summary>
+    /// <remarks>Icon token: <c>circle-user</c>.</remarks>
     [Description("@#circle-user")]
     CircleUser,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleUserRound</summary>
+    /// <remarks>Icon token: <c>circle-user-round</c>.</remarks>
     [Description("@#circle-user-round")]
     CircleUserRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircleX</summary>
+    /// <remarks>Icon token: <c>circle-x</c>.</remarks>
     [Description("@#circle-x")]
     CircleX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCircuitBoard</summary>
+    /// <remarks>Icon token: <c>circuit-board</c>.</remarks>
     [Description("@#circuit-board")]
     CircuitBoard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCitrus</summary>
+    /// <remarks>Icon token: <c>citrus</c>.</remarks>
     [Description("@#citrus")]
     Citrus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClapperboard</summary>
+    /// <remarks>Icon token: <c>clapperboard</c>.</remarks>
     [Description("@#clapperboard")]
     Clapperboard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClassroom</summary>
+    /// <remarks>Icon token: <c>classroom</c>.</remarks>
     [Description("@#classroom")]
     Classroom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboard</summary>
+    /// <remarks>Icon token: <c>clipboard</c>.</remarks>
     [Description("@#clipboard")]
     Clipboard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardCheck</summary>
+    /// <remarks>Icon token: <c>clipboard-check</c>.</remarks>
     [Description("@#clipboard-check")]
     ClipboardCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardClock</summary>
+    /// <remarks>Icon token: <c>clipboard-clock</c>.</remarks>
     [Description("@#clipboard-clock")]
     ClipboardClock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardCopy</summary>
+    /// <remarks>Icon token: <c>clipboard-copy</c>.</remarks>
     [Description("@#clipboard-copy")]
     ClipboardCopy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardList</summary>
+    /// <remarks>Icon token: <c>clipboard-list</c>.</remarks>
     [Description("@#clipboard-list")]
     ClipboardList,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardMinus</summary>
+    /// <remarks>Icon token: <c>clipboard-minus</c>.</remarks>
     [Description("@#clipboard-minus")]
     ClipboardMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPaste</summary>
+    /// <remarks>Icon token: <c>clipboard-paste</c>.</remarks>
     [Description("@#clipboard-paste")]
     ClipboardPaste,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPen</summary>
+    /// <remarks>Icon token: <c>clipboard-pen</c>.</remarks>
     [Description("@#clipboard-pen")]
     ClipboardPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPenLine</summary>
+    /// <remarks>Icon token: <c>clipboard-pen-line</c>.</remarks>
     [Description("@#clipboard-pen-line")]
     ClipboardPenLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPlus</summary>
+    /// <remarks>Icon token: <c>clipboard-plus</c>.</remarks>
     [Description("@#clipboard-plus")]
     ClipboardPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardType</summary>
+    /// <remarks>Icon token: <c>clipboard-type</c>.</remarks>
     [Description("@#clipboard-type")]
     ClipboardType,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClipboardX</summary>
+    /// <remarks>Icon token: <c>clipboard-x</c>.</remarks>
     [Description("@#clipboard-x")]
     ClipboardX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock</summary>
+    /// <remarks>Icon token: <c>clock</c>.</remarks>
     [Description("@#clock")]
     Clock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock1</summary>
+    /// <remarks>Icon token: <c>clock-1</c>.</remarks>
     [Description("@#clock-1")]
     Clock1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock10</summary>
+    /// <remarks>Icon token: <c>clock-10</c>.</remarks>
     [Description("@#clock-10")]
     Clock10,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock11</summary>
+    /// <remarks>Icon token: <c>clock-11</c>.</remarks>
     [Description("@#clock-11")]
     Clock11,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock12</summary>
+    /// <remarks>Icon token: <c>clock-12</c>.</remarks>
     [Description("@#clock-12")]
     Clock12,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock2</summary>
+    /// <remarks>Icon token: <c>clock-2</c>.</remarks>
     [Description("@#clock-2")]
     Clock2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock3</summary>
+    /// <remarks>Icon token: <c>clock-3</c>.</remarks>
     [Description("@#clock-3")]
     Clock3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock4</summary>
+    /// <remarks>Icon token: <c>clock-4</c>.</remarks>
     [Description("@#clock-4")]
     Clock4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock5</summary>
+    /// <remarks>Icon token: <c>clock-5</c>.</remarks>
     [Description("@#clock-5")]
     Clock5,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock6</summary>
+    /// <remarks>Icon token: <c>clock-6</c>.</remarks>
     [Description("@#clock-6")]
     Clock6,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock7</summary>
+    /// <remarks>Icon token: <c>clock-7</c>.</remarks>
     [Description("@#clock-7")]
     Clock7,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock8</summary>
+    /// <remarks>Icon token: <c>clock-8</c>.</remarks>
     [Description("@#clock-8")]
     Clock8,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClock9</summary>
+    /// <remarks>Icon token: <c>clock-9</c>.</remarks>
     [Description("@#clock-9")]
     Clock9,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClockAlert</summary>
+    /// <remarks>Icon token: <c>clock-alert</c>.</remarks>
     [Description("@#clock-alert")]
     ClockAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClockArrowDown</summary>
+    /// <remarks>Icon token: <c>clock-arrow-down</c>.</remarks>
     [Description("@#clock-arrow-down")]
     ClockArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClockArrowUp</summary>
+    /// <remarks>Icon token: <c>clock-arrow-up</c>.</remarks>
     [Description("@#clock-arrow-up")]
     ClockArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClockCheck</summary>
+    /// <remarks>Icon token: <c>clock-check</c>.</remarks>
     [Description("@#clock-check")]
     ClockCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClockFading</summary>
+    /// <remarks>Icon token: <c>clock-fading</c>.</remarks>
     [Description("@#clock-fading")]
     ClockFading,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClockPlus</summary>
+    /// <remarks>Icon token: <c>clock-plus</c>.</remarks>
     [Description("@#clock-plus")]
     ClockPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClose</summary>
+    /// <remarks>Icon token: <c>close</c>.</remarks>
     [Description("@#close")]
     Close,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClosedCaption</summary>
+    /// <remarks>Icon token: <c>closed-caption</c>.</remarks>
     [Description("@#closed-caption")]
     ClosedCaption,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloud</summary>
+    /// <remarks>Icon token: <c>cloud</c>.</remarks>
     [Description("@#cloud")]
     Cloud,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudAlert</summary>
+    /// <remarks>Icon token: <c>cloud-alert</c>.</remarks>
     [Description("@#cloud-alert")]
     CloudAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudBackup</summary>
+    /// <remarks>Icon token: <c>cloud-backup</c>.</remarks>
     [Description("@#cloud-backup")]
     CloudBackup,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudCheck</summary>
+    /// <remarks>Icon token: <c>cloud-check</c>.</remarks>
     [Description("@#cloud-check")]
     CloudCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudCog</summary>
+    /// <remarks>Icon token: <c>cloud-cog</c>.</remarks>
     [Description("@#cloud-cog")]
     CloudCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudDownload</summary>
+    /// <remarks>Icon token: <c>cloud-download</c>.</remarks>
     [Description("@#cloud-download")]
     CloudDownload,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudDrizzle</summary>
+    /// <remarks>Icon token: <c>cloud-drizzle</c>.</remarks>
     [Description("@#cloud-drizzle")]
     CloudDrizzle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudFog</summary>
+    /// <remarks>Icon token: <c>cloud-fog</c>.</remarks>
     [Description("@#cloud-fog")]
     CloudFog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudHail</summary>
+    /// <remarks>Icon token: <c>cloud-hail</c>.</remarks>
     [Description("@#cloud-hail")]
     CloudHail,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudLightning</summary>
+    /// <remarks>Icon token: <c>cloud-lightning</c>.</remarks>
     [Description("@#cloud-lightning")]
     CloudLightning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudMoon</summary>
+    /// <remarks>Icon token: <c>cloud-moon</c>.</remarks>
     [Description("@#cloud-moon")]
     CloudMoon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudMoonRain</summary>
+    /// <remarks>Icon token: <c>cloud-moon-rain</c>.</remarks>
     [Description("@#cloud-moon-rain")]
     CloudMoonRain,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudOff</summary>
+    /// <remarks>Icon token: <c>cloud-off</c>.</remarks>
     [Description("@#cloud-off")]
     CloudOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudRain</summary>
+    /// <remarks>Icon token: <c>cloud-rain</c>.</remarks>
     [Description("@#cloud-rain")]
     CloudRain,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudRainWind</summary>
+    /// <remarks>Icon token: <c>cloud-rain-wind</c>.</remarks>
     [Description("@#cloud-rain-wind")]
     CloudRainWind,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudSnow</summary>
+    /// <remarks>Icon token: <c>cloud-snow</c>.</remarks>
     [Description("@#cloud-snow")]
     CloudSnow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudSun</summary>
+    /// <remarks>Icon token: <c>cloud-sun</c>.</remarks>
     [Description("@#cloud-sun")]
     CloudSun,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudSunRain</summary>
+    /// <remarks>Icon token: <c>cloud-sun-rain</c>.</remarks>
     [Description("@#cloud-sun-rain")]
     CloudSunRain,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudSync</summary>
+    /// <remarks>Icon token: <c>cloud-sync</c>.</remarks>
     [Description("@#cloud-sync")]
     CloudSync,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudUpload</summary>
+    /// <remarks>Icon token: <c>cloud-upload</c>.</remarks>
     [Description("@#cloud-upload")]
     CloudUpload,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCloudy</summary>
+    /// <remarks>Icon token: <c>cloudy</c>.</remarks>
     [Description("@#cloudy")]
     Cloudy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClover</summary>
+    /// <remarks>Icon token: <c>clover</c>.</remarks>
     [Description("@#clover")]
     Clover,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuClub</summary>
+    /// <remarks>Icon token: <c>club</c>.</remarks>
     [Description("@#club")]
     Club,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCode</summary>
+    /// <remarks>Icon token: <c>code</c>.</remarks>
     [Description("@#code")]
     Code,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCodeXml</summary>
+    /// <remarks>Icon token: <c>code-xml</c>.</remarks>
     [Description("@#code-xml")]
     CodeXml,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCodepen</summary>
+    /// <remarks>Icon token: <c>codepen</c>.</remarks>
     [Description("@#codepen")]
     Codepen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCodesandbox</summary>
+    /// <remarks>Icon token: <c>codesandbox</c>.</remarks>
     [Description("@#codesandbox")]
     Codesandbox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCoffee</summary>
+    /// <remarks>Icon token: <c>coffee</c>.</remarks>
     [Description("@#coffee")]
     Coffee,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCog</summary>
+    /// <remarks>Icon token: <c>cog</c>.</remarks>
     [Description("@#cog")]
     Cog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCoins</summary>
+    /// <remarks>Icon token: <c>coins</c>.</remarks>
     [Description("@#coins")]
     Coins,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuColumns2</summary>
+    /// <remarks>Icon token: <c>columns-2</c>.</remarks>
     [Description("@#columns-2")]
     Columns2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuColumns3</summary>
+    /// <remarks>Icon token: <c>columns-3</c>.</remarks>
     [Description("@#columns-3")]
     Columns3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuColumns3Cog</summary>
+    /// <remarks>Icon token: <c>columns-3-cog</c>.</remarks>
     [Description("@#columns-3-cog")]
     Columns3Cog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuColumns4</summary>
+    /// <remarks>Icon token: <c>columns-4</c>.</remarks>
     [Description("@#columns-4")]
     Columns4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCombine</summary>
+    /// <remarks>Icon token: <c>combine</c>.</remarks>
     [Description("@#combine")]
     Combine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCommand</summary>
+    /// <remarks>Icon token: <c>command</c>.</remarks>
     [Description("@#command")]
     Command,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuComment</summary>
+    /// <remarks>Icon token: <c>comment</c>.</remarks>
     [Description("@#comment")]
     Comment,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCompass</summary>
+    /// <remarks>Icon token: <c>compass</c>.</remarks>
     [Description("@#compass")]
     Compass,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCompleted</summary>
+    /// <remarks>Icon token: <c>completed</c>.</remarks>
     [Description("@#completed")]
     Completed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuComponent</summary>
+    /// <remarks>Icon token: <c>component</c>.</remarks>
     [Description("@#component")]
     Component,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuComputer</summary>
+    /// <remarks>Icon token: <c>computer</c>.</remarks>
     [Description("@#computer")]
     Computer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuConciergeBell</summary>
+    /// <remarks>Icon token: <c>concierge-bell</c>.</remarks>
     [Description("@#concierge-bell")]
     ConciergeBell,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCone</summary>
+    /// <remarks>Icon token: <c>cone</c>.</remarks>
     [Description("@#cone")]
     Cone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuConstruction</summary>
+    /// <remarks>Icon token: <c>construction</c>.</remarks>
     [Description("@#construction")]
     Construction,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuContact</summary>
+    /// <remarks>Icon token: <c>contact</c>.</remarks>
     [Description("@#contact")]
     Contact,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuContactRound</summary>
+    /// <remarks>Icon token: <c>contact-round</c>.</remarks>
     [Description("@#contact-round")]
     ContactRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuContainer</summary>
+    /// <remarks>Icon token: <c>container</c>.</remarks>
     [Description("@#container")]
     Container,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuContrast</summary>
+    /// <remarks>Icon token: <c>contrast</c>.</remarks>
     [Description("@#contrast")]
     Contrast,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCookie</summary>
+    /// <remarks>Icon token: <c>cookie</c>.</remarks>
     [Description("@#cookie")]
     Cookie,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCookingPot</summary>
+    /// <remarks>Icon token: <c>cooking-pot</c>.</remarks>
     [Description("@#cooking-pot")]
     CookingPot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopy</summary>
+    /// <remarks>Icon token: <c>copy</c>.</remarks>
     [Description("@#copy")]
     Copy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopyCheck</summary>
+    /// <remarks>Icon token: <c>copy-check</c>.</remarks>
     [Description("@#copy-check")]
     CopyCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopyMinus</summary>
+    /// <remarks>Icon token: <c>copy-minus</c>.</remarks>
     [Description("@#copy-minus")]
     CopyMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopyPlus</summary>
+    /// <remarks>Icon token: <c>copy-plus</c>.</remarks>
     [Description("@#copy-plus")]
     CopyPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopySlash</summary>
+    /// <remarks>Icon token: <c>copy-slash</c>.</remarks>
     [Description("@#copy-slash")]
     CopySlash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopyX</summary>
+    /// <remarks>Icon token: <c>copy-x</c>.</remarks>
     [Description("@#copy-x")]
     CopyX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopyleft</summary>
+    /// <remarks>Icon token: <c>copyleft</c>.</remarks>
     [Description("@#copyleft")]
     Copyleft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCopyright</summary>
+    /// <remarks>Icon token: <c>copyright</c>.</remarks>
     [Description("@#copyright")]
     Copyright,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerDownLeft</summary>
+    /// <remarks>Icon token: <c>corner-down-left</c>.</remarks>
     [Description("@#corner-down-left")]
     CornerDownLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerDownRight</summary>
+    /// <remarks>Icon token: <c>corner-down-right</c>.</remarks>
     [Description("@#corner-down-right")]
     CornerDownRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerLeftDown</summary>
+    /// <remarks>Icon token: <c>corner-left-down</c>.</remarks>
     [Description("@#corner-left-down")]
     CornerLeftDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerLeftUp</summary>
+    /// <remarks>Icon token: <c>corner-left-up</c>.</remarks>
     [Description("@#corner-left-up")]
     CornerLeftUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerRightDown</summary>
+    /// <remarks>Icon token: <c>corner-right-down</c>.</remarks>
     [Description("@#corner-right-down")]
     CornerRightDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerRightUp</summary>
+    /// <remarks>Icon token: <c>corner-right-up</c>.</remarks>
     [Description("@#corner-right-up")]
     CornerRightUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerUpLeft</summary>
+    /// <remarks>Icon token: <c>corner-up-left</c>.</remarks>
     [Description("@#corner-up-left")]
     CornerUpLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCornerUpRight</summary>
+    /// <remarks>Icon token: <c>corner-up-right</c>.</remarks>
     [Description("@#corner-up-right")]
     CornerUpRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCoupon</summary>
+    /// <remarks>Icon token: <c>coupon</c>.</remarks>
     [Description("@#coupon")]
     Coupon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCourse</summary>
+    /// <remarks>Icon token: <c>course</c>.</remarks>
     [Description("@#course")]
     Course,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCpu</summary>
+    /// <remarks>Icon token: <c>cpu</c>.</remarks>
     [Description("@#cpu")]
     Cpu,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCreativeCommons</summary>
+    /// <remarks>Icon token: <c>creative-commons</c>.</remarks>
     [Description("@#creative-commons")]
     CreativeCommons,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCreditCard</summary>
+    /// <remarks>Icon token: <c>credit-card</c>.</remarks>
     [Description("@#credit-card")]
     CreditCard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCroissant</summary>
+    /// <remarks>Icon token: <c>croissant</c>.</remarks>
     [Description("@#croissant")]
     Croissant,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCrop</summary>
+    /// <remarks>Icon token: <c>crop</c>.</remarks>
     [Description("@#crop")]
     Crop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCross</summary>
+    /// <remarks>Icon token: <c>cross</c>.</remarks>
     [Description("@#cross")]
     Cross,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCrosshair</summary>
+    /// <remarks>Icon token: <c>crosshair</c>.</remarks>
     [Description("@#crosshair")]
     Crosshair,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCrown</summary>
+    /// <remarks>Icon token: <c>crown</c>.</remarks>
     [Description("@#crown")]
     Crown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCuboid</summary>
+    /// <remarks>Icon token: <c>cuboid</c>.</remarks>
     [Description("@#cuboid")]
     Cuboid,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCupSoda</summary>
+    /// <remarks>Icon token: <c>cup-soda</c>.</remarks>
     [Description("@#cup-soda")]
     CupSoda,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCurrency</summary>
+    /// <remarks>Icon token: <c>currency</c>.</remarks>
     [Description("@#currency")]
     Currency,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCut</summary>
+    /// <remarks>Icon token: <c>cut</c>.</remarks>
     [Description("@#cut")]
     Cut,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuCylinder</summary>
+    /// <remarks>Icon token: <c>cylinder</c>.</remarks>
     [Description("@#cylinder")]
     Cylinder,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDam</summary>
+    /// <remarks>Icon token: <c>dam</c>.</remarks>
     [Description("@#dam")]
     Dam,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDataCompare</summary>
+    /// <remarks>Icon token: <c>data-compare</c>.</remarks>
     [Description("@#data-compare")]
     DataCompare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDataExport</summary>
+    /// <remarks>Icon token: <c>data-export</c>.</remarks>
     [Description("@#data-export")]
     DataExport,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDataFilter</summary>
+    /// <remarks>Icon token: <c>data-filter</c>.</remarks>
     [Description("@#data-filter")]
     DataFilter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDataRefresh</summary>
+    /// <remarks>Icon token: <c>data-refresh</c>.</remarks>
     [Description("@#data-refresh")]
     DataRefresh,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDatabase</summary>
+    /// <remarks>Icon token: <c>database</c>.</remarks>
     [Description("@#database")]
     Database,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDatabaseBackup</summary>
+    /// <remarks>Icon token: <c>database-backup</c>.</remarks>
     [Description("@#database-backup")]
     DatabaseBackup,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDatabaseZap</summary>
+    /// <remarks>Icon token: <c>database-zap</c>.</remarks>
     [Description("@#database-zap")]
     DatabaseZap,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDecimalsArrowLeft</summary>
+    /// <remarks>Icon token: <c>decimals-arrow-left</c>.</remarks>
     [Description("@#decimals-arrow-left")]
     DecimalsArrowLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDecimalsArrowRight</summary>
+    /// <remarks>Icon token: <c>decimals-arrow-right</c>.</remarks>
     [Description("@#decimals-arrow-right")]
     DecimalsArrowRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDelete</summary>
+    /// <remarks>Icon token: <c>delete</c>.</remarks>
     [Description("@#delete")]
     Delete,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDelivery</summary>
+    /// <remarks>Icon token: <c>delivery</c>.</remarks>
     [Description("@#delivery")]
     Delivery,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDessert</summary>
+    /// <remarks>Icon token: <c>dessert</c>.</remarks>
     [Description("@#dessert")]
     Dessert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiameter</summary>
+    /// <remarks>Icon token: <c>diameter</c>.</remarks>
     [Description("@#diameter")]
     Diameter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiamond</summary>
+    /// <remarks>Icon token: <c>diamond</c>.</remarks>
     [Description("@#diamond")]
     Diamond,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiamondMinus</summary>
+    /// <remarks>Icon token: <c>diamond-minus</c>.</remarks>
     [Description("@#diamond-minus")]
     DiamondMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiamondPercent</summary>
+    /// <remarks>Icon token: <c>diamond-percent</c>.</remarks>
     [Description("@#diamond-percent")]
     DiamondPercent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiamondPlus</summary>
+    /// <remarks>Icon token: <c>diamond-plus</c>.</remarks>
     [Description("@#diamond-plus")]
     DiamondPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDice1</summary>
+    /// <remarks>Icon token: <c>dice-1</c>.</remarks>
     [Description("@#dice-1")]
     Dice1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDice2</summary>
+    /// <remarks>Icon token: <c>dice-2</c>.</remarks>
     [Description("@#dice-2")]
     Dice2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDice3</summary>
+    /// <remarks>Icon token: <c>dice-3</c>.</remarks>
     [Description("@#dice-3")]
     Dice3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDice4</summary>
+    /// <remarks>Icon token: <c>dice-4</c>.</remarks>
     [Description("@#dice-4")]
     Dice4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDice5</summary>
+    /// <remarks>Icon token: <c>dice-5</c>.</remarks>
     [Description("@#dice-5")]
     Dice5,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDice6</summary>
+    /// <remarks>Icon token: <c>dice-6</c>.</remarks>
     [Description("@#dice-6")]
     Dice6,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDices</summary>
+    /// <remarks>Icon token: <c>dices</c>.</remarks>
     [Description("@#dices")]
     Dices,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiff</summary>
+    /// <remarks>Icon token: <c>diff</c>.</remarks>
     [Description("@#diff")]
     Diff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDisabled</summary>
+    /// <remarks>Icon token: <c>disabled</c>.</remarks>
     [Description("@#disabled")]
     Disabled,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDisc</summary>
+    /// <remarks>Icon token: <c>disc</c>.</remarks>
     [Description("@#disc")]
     Disc,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDisc2</summary>
+    /// <remarks>Icon token: <c>disc-2</c>.</remarks>
     [Description("@#disc-2")]
     Disc2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDisc3</summary>
+    /// <remarks>Icon token: <c>disc-3</c>.</remarks>
     [Description("@#disc-3")]
     Disc3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDiscAlbum</summary>
+    /// <remarks>Icon token: <c>disc-album</c>.</remarks>
     [Description("@#disc-album")]
     DiscAlbum,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDislike</summary>
+    /// <remarks>Icon token: <c>dislike</c>.</remarks>
     [Description("@#dislike")]
     Dislike,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDivide</summary>
+    /// <remarks>Icon token: <c>divide</c>.</remarks>
     [Description("@#divide")]
     Divide,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDna</summary>
+    /// <remarks>Icon token: <c>dna</c>.</remarks>
     [Description("@#dna")]
     Dna,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDnaOff</summary>
+    /// <remarks>Icon token: <c>dna-off</c>.</remarks>
     [Description("@#dna-off")]
     DnaOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDock</summary>
+    /// <remarks>Icon token: <c>dock</c>.</remarks>
     [Description("@#dock")]
     Dock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDog</summary>
+    /// <remarks>Icon token: <c>dog</c>.</remarks>
     [Description("@#dog")]
     Dog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDollarSign</summary>
+    /// <remarks>Icon token: <c>dollar-sign</c>.</remarks>
     [Description("@#dollar-sign")]
     DollarSign,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDonut</summary>
+    /// <remarks>Icon token: <c>donut</c>.</remarks>
     [Description("@#donut")]
     Donut,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDoorClosed</summary>
+    /// <remarks>Icon token: <c>door-closed</c>.</remarks>
     [Description("@#door-closed")]
     DoorClosed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDoorClosedLocked</summary>
+    /// <remarks>Icon token: <c>door-closed-locked</c>.</remarks>
     [Description("@#door-closed-locked")]
     DoorClosedLocked,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDoorOpen</summary>
+    /// <remarks>Icon token: <c>door-open</c>.</remarks>
     [Description("@#door-open")]
     DoorOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDot</summary>
+    /// <remarks>Icon token: <c>dot</c>.</remarks>
     [Description("@#dot")]
     Dot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDoughnutChart</summary>
+    /// <remarks>Icon token: <c>doughnut-chart</c>.</remarks>
     [Description("@#doughnut-chart")]
     DoughnutChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDownload</summary>
+    /// <remarks>Icon token: <c>download</c>.</remarks>
     [Description("@#download")]
     Download,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDraftingCompass</summary>
+    /// <remarks>Icon token: <c>drafting-compass</c>.</remarks>
     [Description("@#drafting-compass")]
     DraftingCompass,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDrama</summary>
+    /// <remarks>Icon token: <c>drama</c>.</remarks>
     [Description("@#drama")]
     Drama,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDribbble</summary>
+    /// <remarks>Icon token: <c>dribbble</c>.</remarks>
     [Description("@#dribbble")]
     Dribbble,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDrill</summary>
+    /// <remarks>Icon token: <c>drill</c>.</remarks>
     [Description("@#drill")]
     Drill,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDrone</summary>
+    /// <remarks>Icon token: <c>drone</c>.</remarks>
     [Description("@#drone")]
     Drone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDroplet</summary>
+    /// <remarks>Icon token: <c>droplet</c>.</remarks>
     [Description("@#droplet")]
     Droplet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDropletOff</summary>
+    /// <remarks>Icon token: <c>droplet-off</c>.</remarks>
     [Description("@#droplet-off")]
     DropletOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDroplets</summary>
+    /// <remarks>Icon token: <c>droplets</c>.</remarks>
     [Description("@#droplets")]
     Droplets,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDrum</summary>
+    /// <remarks>Icon token: <c>drum</c>.</remarks>
     [Description("@#drum")]
     Drum,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDrumstick</summary>
+    /// <remarks>Icon token: <c>drumstick</c>.</remarks>
     [Description("@#drumstick")]
     Drumstick,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuDumbbell</summary>
+    /// <remarks>Icon token: <c>dumbbell</c>.</remarks>
     [Description("@#dumbbell")]
     Dumbbell,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEar</summary>
+    /// <remarks>Icon token: <c>ear</c>.</remarks>
     [Description("@#ear")]
     Ear,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEarOff</summary>
+    /// <remarks>Icon token: <c>ear-off</c>.</remarks>
     [Description("@#ear-off")]
     EarOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEarth</summary>
+    /// <remarks>Icon token: <c>earth</c>.</remarks>
     [Description("@#earth")]
     Earth,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEarthLock</summary>
+    /// <remarks>Icon token: <c>earth-lock</c>.</remarks>
     [Description("@#earth-lock")]
     EarthLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEclipse</summary>
+    /// <remarks>Icon token: <c>eclipse</c>.</remarks>
     [Description("@#eclipse")]
     Eclipse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEdit</summary>
+    /// <remarks>Icon token: <c>edit</c>.</remarks>
     [Description("@#edit")]
     Edit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEgg</summary>
+    /// <remarks>Icon token: <c>egg</c>.</remarks>
     [Description("@#egg")]
     Egg,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEggFried</summary>
+    /// <remarks>Icon token: <c>egg-fried</c>.</remarks>
     [Description("@#egg-fried")]
     EggFried,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEggOff</summary>
+    /// <remarks>Icon token: <c>egg-off</c>.</remarks>
     [Description("@#egg-off")]
     EggOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEllipsis</summary>
+    /// <remarks>Icon token: <c>ellipsis</c>.</remarks>
     [Description("@#ellipsis")]
     Ellipsis,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEllipsisVertical</summary>
+    /// <remarks>Icon token: <c>ellipsis-vertical</c>.</remarks>
     [Description("@#ellipsis-vertical")]
     EllipsisVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEnter</summary>
+    /// <remarks>Icon token: <c>enter</c>.</remarks>
     [Description("@#enter")]
     Enter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEqual</summary>
+    /// <remarks>Icon token: <c>equal</c>.</remarks>
     [Description("@#equal")]
     Equal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEqualApproximately</summary>
+    /// <remarks>Icon token: <c>equal-approximately</c>.</remarks>
     [Description("@#equal-approximately")]
     EqualApproximately,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEqualNot</summary>
+    /// <remarks>Icon token: <c>equal-not</c>.</remarks>
     [Description("@#equal-not")]
     EqualNot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEraser</summary>
+    /// <remarks>Icon token: <c>eraser</c>.</remarks>
     [Description("@#eraser")]
     Eraser,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuError</summary>
+    /// <remarks>Icon token: <c>error</c>.</remarks>
     [Description("@#error")]
     Error,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEthernetPort</summary>
+    /// <remarks>Icon token: <c>ethernet-port</c>.</remarks>
     [Description("@#ethernet-port")]
     EthernetPort,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEuro</summary>
+    /// <remarks>Icon token: <c>euro</c>.</remarks>
     [Description("@#euro")]
     Euro,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEvCharger</summary>
+    /// <remarks>Icon token: <c>ev-charger</c>.</remarks>
     [Description("@#ev-charger")]
     EvCharger,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuExam</summary>
+    /// <remarks>Icon token: <c>exam</c>.</remarks>
     [Description("@#exam")]
     Exam,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuExitFullscreen</summary>
+    /// <remarks>Icon token: <c>exit-fullscreen</c>.</remarks>
     [Description("@#exit-fullscreen")]
     ExitFullscreen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuExpand</summary>
+    /// <remarks>Icon token: <c>expand</c>.</remarks>
     [Description("@#expand")]
     Expand,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuExternalLink</summary>
+    /// <remarks>Icon token: <c>external-link</c>.</remarks>
     [Description("@#external-link")]
     ExternalLink,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEye</summary>
+    /// <remarks>Icon token: <c>eye</c>.</remarks>
     [Description("@#eye")]
     Eye,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEyeClosed</summary>
+    /// <remarks>Icon token: <c>eye-closed</c>.</remarks>
     [Description("@#eye-closed")]
     EyeClosed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuEyeOff</summary>
+    /// <remarks>Icon token: <c>eye-off</c>.</remarks>
     [Description("@#eye-off")]
     EyeOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFacebook</summary>
+    /// <remarks>Icon token: <c>facebook</c>.</remarks>
     [Description("@#facebook")]
     Facebook,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFactory</summary>
+    /// <remarks>Icon token: <c>factory</c>.</remarks>
     [Description("@#factory")]
     Factory,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFailure</summary>
+    /// <remarks>Icon token: <c>failure</c>.</remarks>
     [Description("@#failure")]
     Failure,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFan</summary>
+    /// <remarks>Icon token: <c>fan</c>.</remarks>
     [Description("@#fan")]
     Fan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFastBackward</summary>
+    /// <remarks>Icon token: <c>fast-backward</c>.</remarks>
     [Description("@#fast-backward")]
     FastBackward,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFastForward</summary>
+    /// <remarks>Icon token: <c>fast-forward</c>.</remarks>
     [Description("@#fast-forward")]
     FastForward,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFavorite</summary>
+    /// <remarks>Icon token: <c>favorite</c>.</remarks>
     [Description("@#favorite")]
     Favorite,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFeather</summary>
+    /// <remarks>Icon token: <c>feather</c>.</remarks>
     [Description("@#feather")]
     Feather,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFence</summary>
+    /// <remarks>Icon token: <c>fence</c>.</remarks>
     [Description("@#fence")]
     Fence,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFerrisWheel</summary>
+    /// <remarks>Icon token: <c>ferris-wheel</c>.</remarks>
     [Description("@#ferris-wheel")]
     FerrisWheel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFigma</summary>
+    /// <remarks>Icon token: <c>figma</c>.</remarks>
     [Description("@#figma")]
     Figma,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFile</summary>
+    /// <remarks>Icon token: <c>file</c>.</remarks>
     [Description("@#file")]
     File,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileArchive</summary>
+    /// <remarks>Icon token: <c>file-archive</c>.</remarks>
     [Description("@#file-archive")]
     FileArchive,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileAudio</summary>
+    /// <remarks>Icon token: <c>file-audio</c>.</remarks>
     [Description("@#file-audio")]
     FileAudio,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileAudio2</summary>
+    /// <remarks>Icon token: <c>file-audio-2</c>.</remarks>
     [Description("@#file-audio-2")]
     FileAudio2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileAxis3d</summary>
+    /// <remarks>Icon token: <c>file-axis-3d</c>.</remarks>
     [Description("@#file-axis-3d")]
     FileAxis3d,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileBadge</summary>
+    /// <remarks>Icon token: <c>file-badge</c>.</remarks>
     [Description("@#file-badge")]
     FileBadge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileBadge2</summary>
+    /// <remarks>Icon token: <c>file-badge-2</c>.</remarks>
     [Description("@#file-badge-2")]
     FileBadge2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileBox</summary>
+    /// <remarks>Icon token: <c>file-box</c>.</remarks>
     [Description("@#file-box")]
     FileBox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileBraces</summary>
+    /// <remarks>Icon token: <c>file-braces</c>.</remarks>
     [Description("@#file-braces")]
     FileBraces,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileBracesCorner</summary>
+    /// <remarks>Icon token: <c>file-braces-corner</c>.</remarks>
     [Description("@#file-braces-corner")]
     FileBracesCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileChartColumn</summary>
+    /// <remarks>Icon token: <c>file-chart-column</c>.</remarks>
     [Description("@#file-chart-column")]
     FileChartColumn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileChartColumnIncreasing</summary>
+    /// <remarks>Icon token: <c>file-chart-column-increasing</c>.</remarks>
     [Description("@#file-chart-column-increasing")]
     FileChartColumnIncreasing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileChartLine</summary>
+    /// <remarks>Icon token: <c>file-chart-line</c>.</remarks>
     [Description("@#file-chart-line")]
     FileChartLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileChartPie</summary>
+    /// <remarks>Icon token: <c>file-chart-pie</c>.</remarks>
     [Description("@#file-chart-pie")]
     FileChartPie,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCheck</summary>
+    /// <remarks>Icon token: <c>file-check</c>.</remarks>
     [Description("@#file-check")]
     FileCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCheck2</summary>
+    /// <remarks>Icon token: <c>file-check-2</c>.</remarks>
     [Description("@#file-check-2")]
     FileCheck2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCheckCorner</summary>
+    /// <remarks>Icon token: <c>file-check-corner</c>.</remarks>
     [Description("@#file-check-corner")]
     FileCheckCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileClock</summary>
+    /// <remarks>Icon token: <c>file-clock</c>.</remarks>
     [Description("@#file-clock")]
     FileClock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCode</summary>
+    /// <remarks>Icon token: <c>file-code</c>.</remarks>
     [Description("@#file-code")]
     FileCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCode2</summary>
+    /// <remarks>Icon token: <c>file-code-2</c>.</remarks>
     [Description("@#file-code-2")]
     FileCode2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCodeCorner</summary>
+    /// <remarks>Icon token: <c>file-code-corner</c>.</remarks>
     [Description("@#file-code-corner")]
     FileCodeCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileCog</summary>
+    /// <remarks>Icon token: <c>file-cog</c>.</remarks>
     [Description("@#file-cog")]
     FileCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileDiff</summary>
+    /// <remarks>Icon token: <c>file-diff</c>.</remarks>
     [Description("@#file-diff")]
     FileDiff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileDigit</summary>
+    /// <remarks>Icon token: <c>file-digit</c>.</remarks>
     [Description("@#file-digit")]
     FileDigit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileDown</summary>
+    /// <remarks>Icon token: <c>file-down</c>.</remarks>
     [Description("@#file-down")]
     FileDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileExclamationPoint</summary>
+    /// <remarks>Icon token: <c>file-exclamation-point</c>.</remarks>
     [Description("@#file-exclamation-point")]
     FileExclamationPoint,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileHeadphone</summary>
+    /// <remarks>Icon token: <c>file-headphone</c>.</remarks>
     [Description("@#file-headphone")]
     FileHeadphone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileHeart</summary>
+    /// <remarks>Icon token: <c>file-heart</c>.</remarks>
     [Description("@#file-heart")]
     FileHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileImage</summary>
+    /// <remarks>Icon token: <c>file-image</c>.</remarks>
     [Description("@#file-image")]
     FileImage,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileInput</summary>
+    /// <remarks>Icon token: <c>file-input</c>.</remarks>
     [Description("@#file-input")]
     FileInput,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileJson</summary>
+    /// <remarks>Icon token: <c>file-json</c>.</remarks>
     [Description("@#file-json")]
     FileJson,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileJson2</summary>
+    /// <remarks>Icon token: <c>file-json-2</c>.</remarks>
     [Description("@#file-json-2")]
     FileJson2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileKey</summary>
+    /// <remarks>Icon token: <c>file-key</c>.</remarks>
     [Description("@#file-key")]
     FileKey,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileKey2</summary>
+    /// <remarks>Icon token: <c>file-key-2</c>.</remarks>
     [Description("@#file-key-2")]
     FileKey2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileLock</summary>
+    /// <remarks>Icon token: <c>file-lock</c>.</remarks>
     [Description("@#file-lock")]
     FileLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileLock2</summary>
+    /// <remarks>Icon token: <c>file-lock-2</c>.</remarks>
     [Description("@#file-lock-2")]
     FileLock2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileMinus</summary>
+    /// <remarks>Icon token: <c>file-minus</c>.</remarks>
     [Description("@#file-minus")]
     FileMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileMinus2</summary>
+    /// <remarks>Icon token: <c>file-minus-2</c>.</remarks>
     [Description("@#file-minus-2")]
     FileMinus2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileMinusCorner</summary>
+    /// <remarks>Icon token: <c>file-minus-corner</c>.</remarks>
     [Description("@#file-minus-corner")]
     FileMinusCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileMusic</summary>
+    /// <remarks>Icon token: <c>file-music</c>.</remarks>
     [Description("@#file-music")]
     FileMusic,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileOutput</summary>
+    /// <remarks>Icon token: <c>file-output</c>.</remarks>
     [Description("@#file-output")]
     FileOutput,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePen</summary>
+    /// <remarks>Icon token: <c>file-pen</c>.</remarks>
     [Description("@#file-pen")]
     FilePen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePenLine</summary>
+    /// <remarks>Icon token: <c>file-pen-line</c>.</remarks>
     [Description("@#file-pen-line")]
     FilePenLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePieChart</summary>
+    /// <remarks>Icon token: <c>file-pie-chart</c>.</remarks>
     [Description("@#file-pie-chart")]
     FilePieChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePlay</summary>
+    /// <remarks>Icon token: <c>file-play</c>.</remarks>
     [Description("@#file-play")]
     FilePlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePlus</summary>
+    /// <remarks>Icon token: <c>file-plus</c>.</remarks>
     [Description("@#file-plus")]
     FilePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePlus2</summary>
+    /// <remarks>Icon token: <c>file-plus-2</c>.</remarks>
     [Description("@#file-plus-2")]
     FilePlus2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilePlusCorner</summary>
+    /// <remarks>Icon token: <c>file-plus-corner</c>.</remarks>
     [Description("@#file-plus-corner")]
     FilePlusCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileQuestionMark</summary>
+    /// <remarks>Icon token: <c>file-question-mark</c>.</remarks>
     [Description("@#file-question-mark")]
     FileQuestionMark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileScan</summary>
+    /// <remarks>Icon token: <c>file-scan</c>.</remarks>
     [Description("@#file-scan")]
     FileScan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSearch</summary>
+    /// <remarks>Icon token: <c>file-search</c>.</remarks>
     [Description("@#file-search")]
     FileSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSearch2</summary>
+    /// <remarks>Icon token: <c>file-search-2</c>.</remarks>
     [Description("@#file-search-2")]
     FileSearch2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSearchCorner</summary>
+    /// <remarks>Icon token: <c>file-search-corner</c>.</remarks>
     [Description("@#file-search-corner")]
     FileSearchCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSignal</summary>
+    /// <remarks>Icon token: <c>file-signal</c>.</remarks>
     [Description("@#file-signal")]
     FileSignal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSliders</summary>
+    /// <remarks>Icon token: <c>file-sliders</c>.</remarks>
     [Description("@#file-sliders")]
     FileSliders,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSpreadsheet</summary>
+    /// <remarks>Icon token: <c>file-spreadsheet</c>.</remarks>
     [Description("@#file-spreadsheet")]
     FileSpreadsheet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileStack</summary>
+    /// <remarks>Icon token: <c>file-stack</c>.</remarks>
     [Description("@#file-stack")]
     FileStack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileSymlink</summary>
+    /// <remarks>Icon token: <c>file-symlink</c>.</remarks>
     [Description("@#file-symlink")]
     FileSymlink,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileTerminal</summary>
+    /// <remarks>Icon token: <c>file-terminal</c>.</remarks>
     [Description("@#file-terminal")]
     FileTerminal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileText</summary>
+    /// <remarks>Icon token: <c>file-text</c>.</remarks>
     [Description("@#file-text")]
     FileText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileType</summary>
+    /// <remarks>Icon token: <c>file-type</c>.</remarks>
     [Description("@#file-type")]
     FileType,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileType2</summary>
+    /// <remarks>Icon token: <c>file-type-2</c>.</remarks>
     [Description("@#file-type-2")]
     FileType2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileTypeCorner</summary>
+    /// <remarks>Icon token: <c>file-type-corner</c>.</remarks>
     [Description("@#file-type-corner")]
     FileTypeCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileUp</summary>
+    /// <remarks>Icon token: <c>file-up</c>.</remarks>
     [Description("@#file-up")]
     FileUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileUser</summary>
+    /// <remarks>Icon token: <c>file-user</c>.</remarks>
     [Description("@#file-user")]
     FileUser,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileVideoCamera</summary>
+    /// <remarks>Icon token: <c>file-video-camera</c>.</remarks>
     [Description("@#file-video-camera")]
     FileVideoCamera,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileVolume</summary>
+    /// <remarks>Icon token: <c>file-volume</c>.</remarks>
     [Description("@#file-volume")]
     FileVolume,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileVolume2</summary>
+    /// <remarks>Icon token: <c>file-volume-2</c>.</remarks>
     [Description("@#file-volume-2")]
     FileVolume2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileWarning</summary>
+    /// <remarks>Icon token: <c>file-warning</c>.</remarks>
     [Description("@#file-warning")]
     FileWarning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileX</summary>
+    /// <remarks>Icon token: <c>file-x</c>.</remarks>
     [Description("@#file-x")]
     FileX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileX2</summary>
+    /// <remarks>Icon token: <c>file-x-2</c>.</remarks>
     [Description("@#file-x-2")]
     FileX2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFileXCorner</summary>
+    /// <remarks>Icon token: <c>file-x-corner</c>.</remarks>
     [Description("@#file-x-corner")]
     FileXCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFiles</summary>
+    /// <remarks>Icon token: <c>files</c>.</remarks>
     [Description("@#files")]
     Files,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilm</summary>
+    /// <remarks>Icon token: <c>film</c>.</remarks>
     [Description("@#film")]
     Film,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilter</summary>
+    /// <remarks>Icon token: <c>filter</c>.</remarks>
     [Description("@#filter")]
     Filter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFilterX</summary>
+    /// <remarks>Icon token: <c>filter-x</c>.</remarks>
     [Description("@#filter-x")]
     FilterX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFinance</summary>
+    /// <remarks>Icon token: <c>finance</c>.</remarks>
     [Description("@#finance")]
     Finance,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFingerprintPattern</summary>
+    /// <remarks>Icon token: <c>fingerprint-pattern</c>.</remarks>
     [Description("@#fingerprint-pattern")]
     FingerprintPattern,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFireExtinguisher</summary>
+    /// <remarks>Icon token: <c>fire-extinguisher</c>.</remarks>
     [Description("@#fire-extinguisher")]
     FireExtinguisher,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFish</summary>
+    /// <remarks>Icon token: <c>fish</c>.</remarks>
     [Description("@#fish")]
     Fish,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFishOff</summary>
+    /// <remarks>Icon token: <c>fish-off</c>.</remarks>
     [Description("@#fish-off")]
     FishOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFishSymbol</summary>
+    /// <remarks>Icon token: <c>fish-symbol</c>.</remarks>
     [Description("@#fish-symbol")]
     FishSymbol,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFishingHook</summary>
+    /// <remarks>Icon token: <c>fishing-hook</c>.</remarks>
     [Description("@#fishing-hook")]
     FishingHook,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFitness</summary>
+    /// <remarks>Icon token: <c>fitness</c>.</remarks>
     [Description("@#fitness")]
     Fitness,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlag</summary>
+    /// <remarks>Icon token: <c>flag</c>.</remarks>
     [Description("@#flag")]
     Flag,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlagOff</summary>
+    /// <remarks>Icon token: <c>flag-off</c>.</remarks>
     [Description("@#flag-off")]
     FlagOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlagTriangleLeft</summary>
+    /// <remarks>Icon token: <c>flag-triangle-left</c>.</remarks>
     [Description("@#flag-triangle-left")]
     FlagTriangleLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlagTriangleRight</summary>
+    /// <remarks>Icon token: <c>flag-triangle-right</c>.</remarks>
     [Description("@#flag-triangle-right")]
     FlagTriangleRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlame</summary>
+    /// <remarks>Icon token: <c>flame</c>.</remarks>
     [Description("@#flame")]
     Flame,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlameKindling</summary>
+    /// <remarks>Icon token: <c>flame-kindling</c>.</remarks>
     [Description("@#flame-kindling")]
     FlameKindling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlashlight</summary>
+    /// <remarks>Icon token: <c>flashlight</c>.</remarks>
     [Description("@#flashlight")]
     Flashlight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlashlightOff</summary>
+    /// <remarks>Icon token: <c>flashlight-off</c>.</remarks>
     [Description("@#flashlight-off")]
     FlashlightOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlaskConical</summary>
+    /// <remarks>Icon token: <c>flask-conical</c>.</remarks>
     [Description("@#flask-conical")]
     FlaskConical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlaskConicalOff</summary>
+    /// <remarks>Icon token: <c>flask-conical-off</c>.</remarks>
     [Description("@#flask-conical-off")]
     FlaskConicalOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlaskRound</summary>
+    /// <remarks>Icon token: <c>flask-round</c>.</remarks>
     [Description("@#flask-round")]
     FlaskRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlipHorizontal</summary>
+    /// <remarks>Icon token: <c>flip-horizontal</c>.</remarks>
     [Description("@#flip-horizontal")]
     FlipHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlipHorizontal2</summary>
+    /// <remarks>Icon token: <c>flip-horizontal-2</c>.</remarks>
     [Description("@#flip-horizontal-2")]
     FlipHorizontal2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlipVertical</summary>
+    /// <remarks>Icon token: <c>flip-vertical</c>.</remarks>
     [Description("@#flip-vertical")]
     FlipVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlipVertical2</summary>
+    /// <remarks>Icon token: <c>flip-vertical-2</c>.</remarks>
     [Description("@#flip-vertical-2")]
     FlipVertical2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlower</summary>
+    /// <remarks>Icon token: <c>flower</c>.</remarks>
     [Description("@#flower")]
     Flower,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFlower2</summary>
+    /// <remarks>Icon token: <c>flower-2</c>.</remarks>
     [Description("@#flower-2")]
     Flower2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFocus</summary>
+    /// <remarks>Icon token: <c>focus</c>.</remarks>
     [Description("@#focus")]
     Focus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFoldHorizontal</summary>
+    /// <remarks>Icon token: <c>fold-horizontal</c>.</remarks>
     [Description("@#fold-horizontal")]
     FoldHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFoldVertical</summary>
+    /// <remarks>Icon token: <c>fold-vertical</c>.</remarks>
     [Description("@#fold-vertical")]
     FoldVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolder</summary>
+    /// <remarks>Icon token: <c>folder</c>.</remarks>
     [Description("@#folder")]
     Folder,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderArchive</summary>
+    /// <remarks>Icon token: <c>folder-archive</c>.</remarks>
     [Description("@#folder-archive")]
     FolderArchive,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderCheck</summary>
+    /// <remarks>Icon token: <c>folder-check</c>.</remarks>
     [Description("@#folder-check")]
     FolderCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderClock</summary>
+    /// <remarks>Icon token: <c>folder-clock</c>.</remarks>
     [Description("@#folder-clock")]
     FolderClock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderClosed</summary>
+    /// <remarks>Icon token: <c>folder-closed</c>.</remarks>
     [Description("@#folder-closed")]
     FolderClosed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderCode</summary>
+    /// <remarks>Icon token: <c>folder-code</c>.</remarks>
     [Description("@#folder-code")]
     FolderCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderCog</summary>
+    /// <remarks>Icon token: <c>folder-cog</c>.</remarks>
     [Description("@#folder-cog")]
     FolderCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderDot</summary>
+    /// <remarks>Icon token: <c>folder-dot</c>.</remarks>
     [Description("@#folder-dot")]
     FolderDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderDown</summary>
+    /// <remarks>Icon token: <c>folder-down</c>.</remarks>
     [Description("@#folder-down")]
     FolderDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderGit</summary>
+    /// <remarks>Icon token: <c>folder-git</c>.</remarks>
     [Description("@#folder-git")]
     FolderGit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderGit2</summary>
+    /// <remarks>Icon token: <c>folder-git-2</c>.</remarks>
     [Description("@#folder-git-2")]
     FolderGit2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderHeart</summary>
+    /// <remarks>Icon token: <c>folder-heart</c>.</remarks>
     [Description("@#folder-heart")]
     FolderHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderInput</summary>
+    /// <remarks>Icon token: <c>folder-input</c>.</remarks>
     [Description("@#folder-input")]
     FolderInput,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderKanban</summary>
+    /// <remarks>Icon token: <c>folder-kanban</c>.</remarks>
     [Description("@#folder-kanban")]
     FolderKanban,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderKey</summary>
+    /// <remarks>Icon token: <c>folder-key</c>.</remarks>
     [Description("@#folder-key")]
     FolderKey,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderLock</summary>
+    /// <remarks>Icon token: <c>folder-lock</c>.</remarks>
     [Description("@#folder-lock")]
     FolderLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderMinus</summary>
+    /// <remarks>Icon token: <c>folder-minus</c>.</remarks>
     [Description("@#folder-minus")]
     FolderMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderOpen</summary>
+    /// <remarks>Icon token: <c>folder-open</c>.</remarks>
     [Description("@#folder-open")]
     FolderOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderOpenDot</summary>
+    /// <remarks>Icon token: <c>folder-open-dot</c>.</remarks>
     [Description("@#folder-open-dot")]
     FolderOpenDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderOutput</summary>
+    /// <remarks>Icon token: <c>folder-output</c>.</remarks>
     [Description("@#folder-output")]
     FolderOutput,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderPen</summary>
+    /// <remarks>Icon token: <c>folder-pen</c>.</remarks>
     [Description("@#folder-pen")]
     FolderPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderPlus</summary>
+    /// <remarks>Icon token: <c>folder-plus</c>.</remarks>
     [Description("@#folder-plus")]
     FolderPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderRoot</summary>
+    /// <remarks>Icon token: <c>folder-root</c>.</remarks>
     [Description("@#folder-root")]
     FolderRoot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderSearch</summary>
+    /// <remarks>Icon token: <c>folder-search</c>.</remarks>
     [Description("@#folder-search")]
     FolderSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderSearch2</summary>
+    /// <remarks>Icon token: <c>folder-search-2</c>.</remarks>
     [Description("@#folder-search-2")]
     FolderSearch2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderSymlink</summary>
+    /// <remarks>Icon token: <c>folder-symlink</c>.</remarks>
     [Description("@#folder-symlink")]
     FolderSymlink,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderSync</summary>
+    /// <remarks>Icon token: <c>folder-sync</c>.</remarks>
     [Description("@#folder-sync")]
     FolderSync,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderTree</summary>
+    /// <remarks>Icon token: <c>folder-tree</c>.</remarks>
     [Description("@#folder-tree")]
     FolderTree,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderUp</summary>
+    /// <remarks>Icon token: <c>folder-up</c>.</remarks>
     [Description("@#folder-up")]
     FolderUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolderX</summary>
+    /// <remarks>Icon token: <c>folder-x</c>.</remarks>
     [Description("@#folder-x")]
     FolderX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFolders</summary>
+    /// <remarks>Icon token: <c>folders</c>.</remarks>
     [Description("@#folders")]
     Folders,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFollow</summary>
+    /// <remarks>Icon token: <c>follow</c>.</remarks>
     [Description("@#follow")]
     Follow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFollowers</summary>
+    /// <remarks>Icon token: <c>followers</c>.</remarks>
     [Description("@#followers")]
     Followers,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFood</summary>
+    /// <remarks>Icon token: <c>food</c>.</remarks>
     [Description("@#food")]
     Food,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFootprints</summary>
+    /// <remarks>Icon token: <c>footprints</c>.</remarks>
     [Description("@#footprints")]
     Footprints,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuForklift</summary>
+    /// <remarks>Icon token: <c>forklift</c>.</remarks>
     [Description("@#forklift")]
     Forklift,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuForm</summary>
+    /// <remarks>Icon token: <c>form</c>.</remarks>
     [Description("@#form")]
     Form,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuForward</summary>
+    /// <remarks>Icon token: <c>forward</c>.</remarks>
     [Description("@#forward")]
     Forward,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFrame</summary>
+    /// <remarks>Icon token: <c>frame</c>.</remarks>
     [Description("@#frame")]
     Frame,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFramer</summary>
+    /// <remarks>Icon token: <c>framer</c>.</remarks>
     [Description("@#framer")]
     Framer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFrown</summary>
+    /// <remarks>Icon token: <c>frown</c>.</remarks>
     [Description("@#frown")]
     Frown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFuel</summary>
+    /// <remarks>Icon token: <c>fuel</c>.</remarks>
     [Description("@#fuel")]
     Fuel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFullscreen</summary>
+    /// <remarks>Icon token: <c>fullscreen</c>.</remarks>
     [Description("@#fullscreen")]
     Fullscreen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFunnel</summary>
+    /// <remarks>Icon token: <c>funnel</c>.</remarks>
     [Description("@#funnel")]
     Funnel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFunnelChart</summary>
+    /// <remarks>Icon token: <c>funnel-chart</c>.</remarks>
     [Description("@#funnel-chart")]
     FunnelChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFunnelPlus</summary>
+    /// <remarks>Icon token: <c>funnel-plus</c>.</remarks>
     [Description("@#funnel-plus")]
     FunnelPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuFunnelX</summary>
+    /// <remarks>Icon token: <c>funnel-x</c>.</remarks>
     [Description("@#funnel-x")]
     FunnelX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGalleryHorizontal</summary>
+    /// <remarks>Icon token: <c>gallery-horizontal</c>.</remarks>
     [Description("@#gallery-horizontal")]
     GalleryHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGalleryHorizontalEnd</summary>
+    /// <remarks>Icon token: <c>gallery-horizontal-end</c>.</remarks>
     [Description("@#gallery-horizontal-end")]
     GalleryHorizontalEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGalleryThumbnails</summary>
+    /// <remarks>Icon token: <c>gallery-thumbnails</c>.</remarks>
     [Description("@#gallery-thumbnails")]
     GalleryThumbnails,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGalleryVertical</summary>
+    /// <remarks>Icon token: <c>gallery-vertical</c>.</remarks>
     [Description("@#gallery-vertical")]
     GalleryVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGalleryVerticalEnd</summary>
+    /// <remarks>Icon token: <c>gallery-vertical-end</c>.</remarks>
     [Description("@#gallery-vertical-end")]
     GalleryVerticalEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGamepad</summary>
+    /// <remarks>Icon token: <c>gamepad</c>.</remarks>
     [Description("@#gamepad")]
     Gamepad,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGamepad2</summary>
+    /// <remarks>Icon token: <c>gamepad-2</c>.</remarks>
     [Description("@#gamepad-2")]
     Gamepad2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGamepadDirectional</summary>
+    /// <remarks>Icon token: <c>gamepad-directional</c>.</remarks>
     [Description("@#gamepad-directional")]
     GamepadDirectional,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGauge</summary>
+    /// <remarks>Icon token: <c>gauge</c>.</remarks>
     [Description("@#gauge")]
     Gauge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGavel</summary>
+    /// <remarks>Icon token: <c>gavel</c>.</remarks>
     [Description("@#gavel")]
     Gavel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGem</summary>
+    /// <remarks>Icon token: <c>gem</c>.</remarks>
     [Description("@#gem")]
     Gem,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGeorgianLari</summary>
+    /// <remarks>Icon token: <c>georgian-lari</c>.</remarks>
     [Description("@#georgian-lari")]
     GeorgianLari,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGhost</summary>
+    /// <remarks>Icon token: <c>ghost</c>.</remarks>
     [Description("@#ghost")]
     Ghost,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGift</summary>
+    /// <remarks>Icon token: <c>gift</c>.</remarks>
     [Description("@#gift")]
     Gift,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitBranch</summary>
+    /// <remarks>Icon token: <c>git-branch</c>.</remarks>
     [Description("@#git-branch")]
     GitBranch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitBranchMinus</summary>
+    /// <remarks>Icon token: <c>git-branch-minus</c>.</remarks>
     [Description("@#git-branch-minus")]
     GitBranchMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitBranchPlus</summary>
+    /// <remarks>Icon token: <c>git-branch-plus</c>.</remarks>
     [Description("@#git-branch-plus")]
     GitBranchPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitCommitHorizontal</summary>
+    /// <remarks>Icon token: <c>git-commit-horizontal</c>.</remarks>
     [Description("@#git-commit-horizontal")]
     GitCommitHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitCommitVertical</summary>
+    /// <remarks>Icon token: <c>git-commit-vertical</c>.</remarks>
     [Description("@#git-commit-vertical")]
     GitCommitVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitCompare</summary>
+    /// <remarks>Icon token: <c>git-compare</c>.</remarks>
     [Description("@#git-compare")]
     GitCompare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitCompareArrows</summary>
+    /// <remarks>Icon token: <c>git-compare-arrows</c>.</remarks>
     [Description("@#git-compare-arrows")]
     GitCompareArrows,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitFork</summary>
+    /// <remarks>Icon token: <c>git-fork</c>.</remarks>
     [Description("@#git-fork")]
     GitFork,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitGraph</summary>
+    /// <remarks>Icon token: <c>git-graph</c>.</remarks>
     [Description("@#git-graph")]
     GitGraph,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitMerge</summary>
+    /// <remarks>Icon token: <c>git-merge</c>.</remarks>
     [Description("@#git-merge")]
     GitMerge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequest</summary>
+    /// <remarks>Icon token: <c>git-pull-request</c>.</remarks>
     [Description("@#git-pull-request")]
     GitPullRequest,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestArrow</summary>
+    /// <remarks>Icon token: <c>git-pull-request-arrow</c>.</remarks>
     [Description("@#git-pull-request-arrow")]
     GitPullRequestArrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestClosed</summary>
+    /// <remarks>Icon token: <c>git-pull-request-closed</c>.</remarks>
     [Description("@#git-pull-request-closed")]
     GitPullRequestClosed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestCreate</summary>
+    /// <remarks>Icon token: <c>git-pull-request-create</c>.</remarks>
     [Description("@#git-pull-request-create")]
     GitPullRequestCreate,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestCreateArrow</summary>
+    /// <remarks>Icon token: <c>git-pull-request-create-arrow</c>.</remarks>
     [Description("@#git-pull-request-create-arrow")]
     GitPullRequestCreateArrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestDraft</summary>
+    /// <remarks>Icon token: <c>git-pull-request-draft</c>.</remarks>
     [Description("@#git-pull-request-draft")]
     GitPullRequestDraft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGithub</summary>
+    /// <remarks>Icon token: <c>github</c>.</remarks>
     [Description("@#github")]
     Github,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGitlab</summary>
+    /// <remarks>Icon token: <c>gitlab</c>.</remarks>
     [Description("@#gitlab")]
     Gitlab,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGlassWater</summary>
+    /// <remarks>Icon token: <c>glass-water</c>.</remarks>
     [Description("@#glass-water")]
     GlassWater,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGlasses</summary>
+    /// <remarks>Icon token: <c>glasses</c>.</remarks>
     [Description("@#glasses")]
     Glasses,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGlobe</summary>
+    /// <remarks>Icon token: <c>globe</c>.</remarks>
     [Description("@#globe")]
     Globe,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGlobeLock</summary>
+    /// <remarks>Icon token: <c>globe-lock</c>.</remarks>
     [Description("@#globe-lock")]
     GlobeLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGlobeX</summary>
+    /// <remarks>Icon token: <c>globe-x</c>.</remarks>
     [Description("@#globe-x")]
     GlobeX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGoal</summary>
+    /// <remarks>Icon token: <c>goal</c>.</remarks>
     [Description("@#goal")]
     Goal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGpu</summary>
+    /// <remarks>Icon token: <c>gpu</c>.</remarks>
     [Description("@#gpu")]
     Gpu,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGraduationCap</summary>
+    /// <remarks>Icon token: <c>graduation-cap</c>.</remarks>
     [Description("@#graduation-cap")]
     GraduationCap,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrape</summary>
+    /// <remarks>Icon token: <c>grape</c>.</remarks>
     [Description("@#grape")]
     Grape,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2</summary>
+    /// <remarks>Icon token: <c>grid-2x2</c>.</remarks>
     [Description("@#grid-2x2")]
     Grid2x2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2Check</summary>
+    /// <remarks>Icon token: <c>grid-2x2-check</c>.</remarks>
     [Description("@#grid-2x2-check")]
     Grid2x2Check,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2Plus</summary>
+    /// <remarks>Icon token: <c>grid-2x2-plus</c>.</remarks>
     [Description("@#grid-2x2-plus")]
     Grid2x2Plus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2X</summary>
+    /// <remarks>Icon token: <c>grid-2x2-x</c>.</remarks>
     [Description("@#grid-2x2-x")]
     Grid2x2X,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrid3x2</summary>
+    /// <remarks>Icon token: <c>grid-3x2</c>.</remarks>
     [Description("@#grid-3x2")]
     Grid3x2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrid3x3</summary>
+    /// <remarks>Icon token: <c>grid-3x3</c>.</remarks>
     [Description("@#grid-3x3")]
     Grid3x3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGrip</summary>
+    /// <remarks>Icon token: <c>grip</c>.</remarks>
     [Description("@#grip")]
     Grip,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGripHorizontal</summary>
+    /// <remarks>Icon token: <c>grip-horizontal</c>.</remarks>
     [Description("@#grip-horizontal")]
     GripHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGripVertical</summary>
+    /// <remarks>Icon token: <c>grip-vertical</c>.</remarks>
     [Description("@#grip-vertical")]
     GripVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGroup</summary>
+    /// <remarks>Icon token: <c>group</c>.</remarks>
     [Description("@#group")]
     Group,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGroupBuy</summary>
+    /// <remarks>Icon token: <c>group-buy</c>.</remarks>
     [Description("@#group-buy")]
     GroupBuy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuGuitar</summary>
+    /// <remarks>Icon token: <c>guitar</c>.</remarks>
     [Description("@#guitar")]
     Guitar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHam</summary>
+    /// <remarks>Icon token: <c>ham</c>.</remarks>
     [Description("@#ham")]
     Ham,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHamburger</summary>
+    /// <remarks>Icon token: <c>hamburger</c>.</remarks>
     [Description("@#hamburger")]
     Hamburger,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHammer</summary>
+    /// <remarks>Icon token: <c>hammer</c>.</remarks>
     [Description("@#hammer")]
     Hammer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHand</summary>
+    /// <remarks>Icon token: <c>hand</c>.</remarks>
     [Description("@#hand")]
     Hand,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandCoins</summary>
+    /// <remarks>Icon token: <c>hand-coins</c>.</remarks>
     [Description("@#hand-coins")]
     HandCoins,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandFist</summary>
+    /// <remarks>Icon token: <c>hand-fist</c>.</remarks>
     [Description("@#hand-fist")]
     HandFist,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandGrab</summary>
+    /// <remarks>Icon token: <c>hand-grab</c>.</remarks>
     [Description("@#hand-grab")]
     HandGrab,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandHeart</summary>
+    /// <remarks>Icon token: <c>hand-heart</c>.</remarks>
     [Description("@#hand-heart")]
     HandHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandHelping</summary>
+    /// <remarks>Icon token: <c>hand-helping</c>.</remarks>
     [Description("@#hand-helping")]
     HandHelping,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandMetal</summary>
+    /// <remarks>Icon token: <c>hand-metal</c>.</remarks>
     [Description("@#hand-metal")]
     HandMetal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandPlatter</summary>
+    /// <remarks>Icon token: <c>hand-platter</c>.</remarks>
     [Description("@#hand-platter")]
     HandPlatter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandbag</summary>
+    /// <remarks>Icon token: <c>handbag</c>.</remarks>
     [Description("@#handbag")]
     Handbag,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHandshake</summary>
+    /// <remarks>Icon token: <c>handshake</c>.</remarks>
     [Description("@#handshake")]
     Handshake,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHardDrive</summary>
+    /// <remarks>Icon token: <c>hard-drive</c>.</remarks>
     [Description("@#hard-drive")]
     HardDrive,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHardDriveDownload</summary>
+    /// <remarks>Icon token: <c>hard-drive-download</c>.</remarks>
     [Description("@#hard-drive-download")]
     HardDriveDownload,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHardDriveUpload</summary>
+    /// <remarks>Icon token: <c>hard-drive-upload</c>.</remarks>
     [Description("@#hard-drive-upload")]
     HardDriveUpload,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHardHat</summary>
+    /// <remarks>Icon token: <c>hard-hat</c>.</remarks>
     [Description("@#hard-hat")]
     HardHat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHash</summary>
+    /// <remarks>Icon token: <c>hash</c>.</remarks>
     [Description("@#hash")]
     Hash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHatGlasses</summary>
+    /// <remarks>Icon token: <c>hat-glasses</c>.</remarks>
     [Description("@#hat-glasses")]
     HatGlasses,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHaze</summary>
+    /// <remarks>Icon token: <c>haze</c>.</remarks>
     [Description("@#haze")]
     Haze,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHd</summary>
+    /// <remarks>Icon token: <c>hd</c>.</remarks>
     [Description("@#hd")]
     Hd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHdmiPort</summary>
+    /// <remarks>Icon token: <c>hdmi-port</c>.</remarks>
     [Description("@#hdmi-port")]
     HdmiPort,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading</summary>
+    /// <remarks>Icon token: <c>heading</c>.</remarks>
     [Description("@#heading")]
     Heading,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading1</summary>
+    /// <remarks>Icon token: <c>heading-1</c>.</remarks>
     [Description("@#heading-1")]
     Heading1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading2</summary>
+    /// <remarks>Icon token: <c>heading-2</c>.</remarks>
     [Description("@#heading-2")]
     Heading2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading3</summary>
+    /// <remarks>Icon token: <c>heading-3</c>.</remarks>
     [Description("@#heading-3")]
     Heading3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading4</summary>
+    /// <remarks>Icon token: <c>heading-4</c>.</remarks>
     [Description("@#heading-4")]
     Heading4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading5</summary>
+    /// <remarks>Icon token: <c>heading-5</c>.</remarks>
     [Description("@#heading-5")]
     Heading5,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeading6</summary>
+    /// <remarks>Icon token: <c>heading-6</c>.</remarks>
     [Description("@#heading-6")]
     Heading6,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeadphoneOff</summary>
+    /// <remarks>Icon token: <c>headphone-off</c>.</remarks>
     [Description("@#headphone-off")]
     HeadphoneOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeadphones</summary>
+    /// <remarks>Icon token: <c>headphones</c>.</remarks>
     [Description("@#headphones")]
     Headphones,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeadset</summary>
+    /// <remarks>Icon token: <c>headset</c>.</remarks>
     [Description("@#headset")]
     Headset,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeart</summary>
+    /// <remarks>Icon token: <c>heart</c>.</remarks>
     [Description("@#heart")]
     Heart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeartCrack</summary>
+    /// <remarks>Icon token: <c>heart-crack</c>.</remarks>
     [Description("@#heart-crack")]
     HeartCrack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeartHandshake</summary>
+    /// <remarks>Icon token: <c>heart-handshake</c>.</remarks>
     [Description("@#heart-handshake")]
     HeartHandshake,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeartMinus</summary>
+    /// <remarks>Icon token: <c>heart-minus</c>.</remarks>
     [Description("@#heart-minus")]
     HeartMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeartOff</summary>
+    /// <remarks>Icon token: <c>heart-off</c>.</remarks>
     [Description("@#heart-off")]
     HeartOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeartPlus</summary>
+    /// <remarks>Icon token: <c>heart-plus</c>.</remarks>
     [Description("@#heart-plus")]
     HeartPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeartPulse</summary>
+    /// <remarks>Icon token: <c>heart-pulse</c>.</remarks>
     [Description("@#heart-pulse")]
     HeartPulse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHeater</summary>
+    /// <remarks>Icon token: <c>heater</c>.</remarks>
     [Description("@#heater")]
     Heater,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHelicopter</summary>
+    /// <remarks>Icon token: <c>helicopter</c>.</remarks>
     [Description("@#helicopter")]
     Helicopter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHexagon</summary>
+    /// <remarks>Icon token: <c>hexagon</c>.</remarks>
     [Description("@#hexagon")]
     Hexagon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHighlighter</summary>
+    /// <remarks>Icon token: <c>highlighter</c>.</remarks>
     [Description("@#highlighter")]
     Highlighter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHint</summary>
+    /// <remarks>Icon token: <c>hint</c>.</remarks>
     [Description("@#hint")]
     Hint,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHistory</summary>
+    /// <remarks>Icon token: <c>history</c>.</remarks>
     [Description("@#history")]
     History,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHome</summary>
+    /// <remarks>Icon token: <c>home</c>.</remarks>
     [Description("@#home")]
     Home,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHomework</summary>
+    /// <remarks>Icon token: <c>homework</c>.</remarks>
     [Description("@#homework")]
     Homework,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHop</summary>
+    /// <remarks>Icon token: <c>hop</c>.</remarks>
     [Description("@#hop")]
     Hop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHopOff</summary>
+    /// <remarks>Icon token: <c>hop-off</c>.</remarks>
     [Description("@#hop-off")]
     HopOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHospital</summary>
+    /// <remarks>Icon token: <c>hospital</c>.</remarks>
     [Description("@#hospital")]
     Hospital,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHotel</summary>
+    /// <remarks>Icon token: <c>hotel</c>.</remarks>
     [Description("@#hotel")]
     Hotel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHourglass</summary>
+    /// <remarks>Icon token: <c>hourglass</c>.</remarks>
     [Description("@#hourglass")]
     Hourglass,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHouse</summary>
+    /// <remarks>Icon token: <c>house</c>.</remarks>
     [Description("@#house")]
     House,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHouseHeart</summary>
+    /// <remarks>Icon token: <c>house-heart</c>.</remarks>
     [Description("@#house-heart")]
     HouseHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHousePlug</summary>
+    /// <remarks>Icon token: <c>house-plug</c>.</remarks>
     [Description("@#house-plug")]
     HousePlug,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHousePlus</summary>
+    /// <remarks>Icon token: <c>house-plus</c>.</remarks>
     [Description("@#house-plus")]
     HousePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuHouseWifi</summary>
+    /// <remarks>Icon token: <c>house-wifi</c>.</remarks>
     [Description("@#house-wifi")]
     HouseWifi,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIceCreamBowl</summary>
+    /// <remarks>Icon token: <c>ice-cream-bowl</c>.</remarks>
     [Description("@#ice-cream-bowl")]
     IceCreamBowl,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIceCreamCone</summary>
+    /// <remarks>Icon token: <c>ice-cream-cone</c>.</remarks>
     [Description("@#ice-cream-cone")]
     IceCreamCone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIdCard</summary>
+    /// <remarks>Icon token: <c>id-card</c>.</remarks>
     [Description("@#id-card")]
     IdCard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIdCardLanyard</summary>
+    /// <remarks>Icon token: <c>id-card-lanyard</c>.</remarks>
     [Description("@#id-card-lanyard")]
     IdCardLanyard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImage</summary>
+    /// <remarks>Icon token: <c>image</c>.</remarks>
     [Description("@#image")]
     Image,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImageDown</summary>
+    /// <remarks>Icon token: <c>image-down</c>.</remarks>
     [Description("@#image-down")]
     ImageDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImageMinus</summary>
+    /// <remarks>Icon token: <c>image-minus</c>.</remarks>
     [Description("@#image-minus")]
     ImageMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImageOff</summary>
+    /// <remarks>Icon token: <c>image-off</c>.</remarks>
     [Description("@#image-off")]
     ImageOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImagePlay</summary>
+    /// <remarks>Icon token: <c>image-play</c>.</remarks>
     [Description("@#image-play")]
     ImagePlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImagePlus</summary>
+    /// <remarks>Icon token: <c>image-plus</c>.</remarks>
     [Description("@#image-plus")]
     ImagePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImageUp</summary>
+    /// <remarks>Icon token: <c>image-up</c>.</remarks>
     [Description("@#image-up")]
     ImageUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImageUpscale</summary>
+    /// <remarks>Icon token: <c>image-upscale</c>.</remarks>
     [Description("@#image-upscale")]
     ImageUpscale,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImages</summary>
+    /// <remarks>Icon token: <c>images</c>.</remarks>
     [Description("@#images")]
     Images,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuImport</summary>
+    /// <remarks>Icon token: <c>import</c>.</remarks>
     [Description("@#import")]
     Import,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInProgress</summary>
+    /// <remarks>Icon token: <c>in-progress</c>.</remarks>
     [Description("@#in-progress")]
     InProgress,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInbox</summary>
+    /// <remarks>Icon token: <c>inbox</c>.</remarks>
     [Description("@#inbox")]
     Inbox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIncomplete</summary>
+    /// <remarks>Icon token: <c>incomplete</c>.</remarks>
     [Description("@#incomplete")]
     Incomplete,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIndentDecrease</summary>
+    /// <remarks>Icon token: <c>indent-decrease</c>.</remarks>
     [Description("@#indent-decrease")]
     IndentDecrease,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIndentIncrease</summary>
+    /// <remarks>Icon token: <c>indent-increase</c>.</remarks>
     [Description("@#indent-increase")]
     IndentIncrease,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIndianRupee</summary>
+    /// <remarks>Icon token: <c>indian-rupee</c>.</remarks>
     [Description("@#indian-rupee")]
     IndianRupee,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInfinity</summary>
+    /// <remarks>Icon token: <c>infinity</c>.</remarks>
     [Description("@#infinity")]
     Infinity,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInfo</summary>
+    /// <remarks>Icon token: <c>info</c>.</remarks>
     [Description("@#info")]
     Info,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInspectionPanel</summary>
+    /// <remarks>Icon token: <c>inspection-panel</c>.</remarks>
     [Description("@#inspection-panel")]
     InspectionPanel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInstagram</summary>
+    /// <remarks>Icon token: <c>instagram</c>.</remarks>
     [Description("@#instagram")]
     Instagram,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInsurance</summary>
+    /// <remarks>Icon token: <c>insurance</c>.</remarks>
     [Description("@#insurance")]
     Insurance,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuInvoice</summary>
+    /// <remarks>Icon token: <c>invoice</c>.</remarks>
     [Description("@#invoice")]
     Invoice,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuItalic</summary>
+    /// <remarks>Icon token: <c>italic</c>.</remarks>
     [Description("@#italic")]
     Italic,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIterationCcw</summary>
+    /// <remarks>Icon token: <c>iteration-ccw</c>.</remarks>
     [Description("@#iteration-ccw")]
     IterationCcw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuIterationCw</summary>
+    /// <remarks>Icon token: <c>iteration-cw</c>.</remarks>
     [Description("@#iteration-cw")]
     IterationCw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuJapaneseYen</summary>
+    /// <remarks>Icon token: <c>japanese-yen</c>.</remarks>
     [Description("@#japanese-yen")]
     JapaneseYen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuJoystick</summary>
+    /// <remarks>Icon token: <c>joystick</c>.</remarks>
     [Description("@#joystick")]
     Joystick,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKanban</summary>
+    /// <remarks>Icon token: <c>kanban</c>.</remarks>
     [Description("@#kanban")]
     Kanban,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKayak</summary>
+    /// <remarks>Icon token: <c>kayak</c>.</remarks>
     [Description("@#kayak")]
     Kayak,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKey</summary>
+    /// <remarks>Icon token: <c>key</c>.</remarks>
     [Description("@#key")]
     Key,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKeyRound</summary>
+    /// <remarks>Icon token: <c>key-round</c>.</remarks>
     [Description("@#key-round")]
     KeyRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKeySquare</summary>
+    /// <remarks>Icon token: <c>key-square</c>.</remarks>
     [Description("@#key-square")]
     KeySquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKeyboard</summary>
+    /// <remarks>Icon token: <c>keyboard</c>.</remarks>
     [Description("@#keyboard")]
     Keyboard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKeyboardMusic</summary>
+    /// <remarks>Icon token: <c>keyboard-music</c>.</remarks>
     [Description("@#keyboard-music")]
     KeyboardMusic,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuKeyboardOff</summary>
+    /// <remarks>Icon token: <c>keyboard-off</c>.</remarks>
     [Description("@#keyboard-off")]
     KeyboardOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLaboratory</summary>
+    /// <remarks>Icon token: <c>laboratory</c>.</remarks>
     [Description("@#laboratory")]
     Laboratory,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLamp</summary>
+    /// <remarks>Icon token: <c>lamp</c>.</remarks>
     [Description("@#lamp")]
     Lamp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLampCeiling</summary>
+    /// <remarks>Icon token: <c>lamp-ceiling</c>.</remarks>
     [Description("@#lamp-ceiling")]
     LampCeiling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLampDesk</summary>
+    /// <remarks>Icon token: <c>lamp-desk</c>.</remarks>
     [Description("@#lamp-desk")]
     LampDesk,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLampFloor</summary>
+    /// <remarks>Icon token: <c>lamp-floor</c>.</remarks>
     [Description("@#lamp-floor")]
     LampFloor,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLampWallDown</summary>
+    /// <remarks>Icon token: <c>lamp-wall-down</c>.</remarks>
     [Description("@#lamp-wall-down")]
     LampWallDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLampWallUp</summary>
+    /// <remarks>Icon token: <c>lamp-wall-up</c>.</remarks>
     [Description("@#lamp-wall-up")]
     LampWallUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLandPlot</summary>
+    /// <remarks>Icon token: <c>land-plot</c>.</remarks>
     [Description("@#land-plot")]
     LandPlot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLandmark</summary>
+    /// <remarks>Icon token: <c>landmark</c>.</remarks>
     [Description("@#landmark")]
     Landmark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLanguages</summary>
+    /// <remarks>Icon token: <c>languages</c>.</remarks>
     [Description("@#languages")]
     Languages,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLaptop</summary>
+    /// <remarks>Icon token: <c>laptop</c>.</remarks>
     [Description("@#laptop")]
     Laptop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLaptopMinimal</summary>
+    /// <remarks>Icon token: <c>laptop-minimal</c>.</remarks>
     [Description("@#laptop-minimal")]
     LaptopMinimal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLaptopMinimalCheck</summary>
+    /// <remarks>Icon token: <c>laptop-minimal-check</c>.</remarks>
     [Description("@#laptop-minimal-check")]
     LaptopMinimalCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLasso</summary>
+    /// <remarks>Icon token: <c>lasso</c>.</remarks>
     [Description("@#lasso")]
     Lasso,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLassoSelect</summary>
+    /// <remarks>Icon token: <c>lasso-select</c>.</remarks>
     [Description("@#lasso-select")]
     LassoSelect,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLaugh</summary>
+    /// <remarks>Icon token: <c>laugh</c>.</remarks>
     [Description("@#laugh")]
     Laugh,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayers</summary>
+    /// <remarks>Icon token: <c>layers</c>.</remarks>
     [Description("@#layers")]
     Layers,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayers2</summary>
+    /// <remarks>Icon token: <c>layers-2</c>.</remarks>
     [Description("@#layers-2")]
     Layers2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayers3</summary>
+    /// <remarks>Icon token: <c>layers-3</c>.</remarks>
     [Description("@#layers-3")]
     Layers3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayersPlus</summary>
+    /// <remarks>Icon token: <c>layers-plus</c>.</remarks>
     [Description("@#layers-plus")]
     LayersPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayoutDashboard</summary>
+    /// <remarks>Icon token: <c>layout-dashboard</c>.</remarks>
     [Description("@#layout-dashboard")]
     LayoutDashboard,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayoutGrid</summary>
+    /// <remarks>Icon token: <c>layout-grid</c>.</remarks>
     [Description("@#layout-grid")]
     LayoutGrid,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayoutList</summary>
+    /// <remarks>Icon token: <c>layout-list</c>.</remarks>
     [Description("@#layout-list")]
     LayoutList,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayoutPanelLeft</summary>
+    /// <remarks>Icon token: <c>layout-panel-left</c>.</remarks>
     [Description("@#layout-panel-left")]
     LayoutPanelLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayoutPanelTop</summary>
+    /// <remarks>Icon token: <c>layout-panel-top</c>.</remarks>
     [Description("@#layout-panel-top")]
     LayoutPanelTop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLayoutTemplate</summary>
+    /// <remarks>Icon token: <c>layout-template</c>.</remarks>
     [Description("@#layout-template")]
     LayoutTemplate,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLeaf</summary>
+    /// <remarks>Icon token: <c>leaf</c>.</remarks>
     [Description("@#leaf")]
     Leaf,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLeafyGreen</summary>
+    /// <remarks>Icon token: <c>leafy-green</c>.</remarks>
     [Description("@#leafy-green")]
     LeafyGreen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLectern</summary>
+    /// <remarks>Icon token: <c>lectern</c>.</remarks>
     [Description("@#lectern")]
     Lectern,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLetterText</summary>
+    /// <remarks>Icon token: <c>letter-text</c>.</remarks>
     [Description("@#letter-text")]
     LetterText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLibrary</summary>
+    /// <remarks>Icon token: <c>library</c>.</remarks>
     [Description("@#library")]
     Library,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLibraryBig</summary>
+    /// <remarks>Icon token: <c>library-big</c>.</remarks>
     [Description("@#library-big")]
     LibraryBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLifeBuoy</summary>
+    /// <remarks>Icon token: <c>life-buoy</c>.</remarks>
     [Description("@#life-buoy")]
     LifeBuoy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLigature</summary>
+    /// <remarks>Icon token: <c>ligature</c>.</remarks>
     [Description("@#ligature")]
     Ligature,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLightbulb</summary>
+    /// <remarks>Icon token: <c>lightbulb</c>.</remarks>
     [Description("@#lightbulb")]
     Lightbulb,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLightbulbOff</summary>
+    /// <remarks>Icon token: <c>lightbulb-off</c>.</remarks>
     [Description("@#lightbulb-off")]
     LightbulbOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLike</summary>
+    /// <remarks>Icon token: <c>like</c>.</remarks>
     [Description("@#like")]
     Like,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLineChart</summary>
+    /// <remarks>Icon token: <c>line-chart</c>.</remarks>
     [Description("@#line-chart")]
     LineChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLineSquiggle</summary>
+    /// <remarks>Icon token: <c>line-squiggle</c>.</remarks>
     [Description("@#line-squiggle")]
     LineSquiggle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLink</summary>
+    /// <remarks>Icon token: <c>link</c>.</remarks>
     [Description("@#link")]
     Link,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLink2</summary>
+    /// <remarks>Icon token: <c>link-2</c>.</remarks>
     [Description("@#link-2")]
     Link2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLink2Off</summary>
+    /// <remarks>Icon token: <c>link-2-off</c>.</remarks>
     [Description("@#link-2-off")]
     Link2Off,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLinkedin</summary>
+    /// <remarks>Icon token: <c>linkedin</c>.</remarks>
     [Description("@#linkedin")]
     Linkedin,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuList</summary>
+    /// <remarks>Icon token: <c>list</c>.</remarks>
     [Description("@#list")]
     List,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListCheck</summary>
+    /// <remarks>Icon token: <c>list-check</c>.</remarks>
     [Description("@#list-check")]
     ListCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListChecks</summary>
+    /// <remarks>Icon token: <c>list-checks</c>.</remarks>
     [Description("@#list-checks")]
     ListChecks,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListChevronsDownUp</summary>
+    /// <remarks>Icon token: <c>list-chevrons-down-up</c>.</remarks>
     [Description("@#list-chevrons-down-up")]
     ListChevronsDownUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListChevronsUpDown</summary>
+    /// <remarks>Icon token: <c>list-chevrons-up-down</c>.</remarks>
     [Description("@#list-chevrons-up-down")]
     ListChevronsUpDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListCollapse</summary>
+    /// <remarks>Icon token: <c>list-collapse</c>.</remarks>
     [Description("@#list-collapse")]
     ListCollapse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListEnd</summary>
+    /// <remarks>Icon token: <c>list-end</c>.</remarks>
     [Description("@#list-end")]
     ListEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListFilter</summary>
+    /// <remarks>Icon token: <c>list-filter</c>.</remarks>
     [Description("@#list-filter")]
     ListFilter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListFilterPlus</summary>
+    /// <remarks>Icon token: <c>list-filter-plus</c>.</remarks>
     [Description("@#list-filter-plus")]
     ListFilterPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListIndentDecrease</summary>
+    /// <remarks>Icon token: <c>list-indent-decrease</c>.</remarks>
     [Description("@#list-indent-decrease")]
     ListIndentDecrease,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListIndentIncrease</summary>
+    /// <remarks>Icon token: <c>list-indent-increase</c>.</remarks>
     [Description("@#list-indent-increase")]
     ListIndentIncrease,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListMinus</summary>
+    /// <remarks>Icon token: <c>list-minus</c>.</remarks>
     [Description("@#list-minus")]
     ListMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListMusic</summary>
+    /// <remarks>Icon token: <c>list-music</c>.</remarks>
     [Description("@#list-music")]
     ListMusic,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListOrdered</summary>
+    /// <remarks>Icon token: <c>list-ordered</c>.</remarks>
     [Description("@#list-ordered")]
     ListOrdered,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListPlus</summary>
+    /// <remarks>Icon token: <c>list-plus</c>.</remarks>
     [Description("@#list-plus")]
     ListPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListRestart</summary>
+    /// <remarks>Icon token: <c>list-restart</c>.</remarks>
     [Description("@#list-restart")]
     ListRestart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListStart</summary>
+    /// <remarks>Icon token: <c>list-start</c>.</remarks>
     [Description("@#list-start")]
     ListStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListTodo</summary>
+    /// <remarks>Icon token: <c>list-todo</c>.</remarks>
     [Description("@#list-todo")]
     ListTodo,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListTree</summary>
+    /// <remarks>Icon token: <c>list-tree</c>.</remarks>
     [Description("@#list-tree")]
     ListTree,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListVideo</summary>
+    /// <remarks>Icon token: <c>list-video</c>.</remarks>
     [Description("@#list-video")]
     ListVideo,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuListX</summary>
+    /// <remarks>Icon token: <c>list-x</c>.</remarks>
     [Description("@#list-x")]
     ListX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLoader</summary>
+    /// <remarks>Icon token: <c>loader</c>.</remarks>
     [Description("@#loader")]
     Loader,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLoaderCircle</summary>
+    /// <remarks>Icon token: <c>loader-circle</c>.</remarks>
     [Description("@#loader-circle")]
     LoaderCircle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLoaderPinwheel</summary>
+    /// <remarks>Icon token: <c>loader-pinwheel</c>.</remarks>
     [Description("@#loader-pinwheel")]
     LoaderPinwheel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLoading</summary>
+    /// <remarks>Icon token: <c>loading</c>.</remarks>
     [Description("@#loading")]
     Loading,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLocate</summary>
+    /// <remarks>Icon token: <c>locate</c>.</remarks>
     [Description("@#locate")]
     Locate,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLocateFixed</summary>
+    /// <remarks>Icon token: <c>locate-fixed</c>.</remarks>
     [Description("@#locate-fixed")]
     LocateFixed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLocateOff</summary>
+    /// <remarks>Icon token: <c>locate-off</c>.</remarks>
     [Description("@#locate-off")]
     LocateOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLocation</summary>
+    /// <remarks>Icon token: <c>location</c>.</remarks>
     [Description("@#location")]
     Location,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLock</summary>
+    /// <remarks>Icon token: <c>lock</c>.</remarks>
     [Description("@#lock")]
     Lock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLockKeyhole</summary>
+    /// <remarks>Icon token: <c>lock-keyhole</c>.</remarks>
     [Description("@#lock-keyhole")]
     LockKeyhole,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLockKeyholeOpen</summary>
+    /// <remarks>Icon token: <c>lock-keyhole-open</c>.</remarks>
     [Description("@#lock-keyhole-open")]
     LockKeyholeOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLockOpen</summary>
+    /// <remarks>Icon token: <c>lock-open</c>.</remarks>
     [Description("@#lock-open")]
     LockOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLockScreen</summary>
+    /// <remarks>Icon token: <c>lock-screen</c>.</remarks>
     [Description("@#lock-screen")]
     LockScreen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLogIn</summary>
+    /// <remarks>Icon token: <c>log-in</c>.</remarks>
     [Description("@#log-in")]
     LogIn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLogOut</summary>
+    /// <remarks>Icon token: <c>log-out</c>.</remarks>
     [Description("@#log-out")]
     LogOut,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLogs</summary>
+    /// <remarks>Icon token: <c>logs</c>.</remarks>
     [Description("@#logs")]
     Logs,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLollipop</summary>
+    /// <remarks>Icon token: <c>lollipop</c>.</remarks>
     [Description("@#lollipop")]
     Lollipop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuLuggage</summary>
+    /// <remarks>Icon token: <c>luggage</c>.</remarks>
     [Description("@#luggage")]
     Luggage,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMagnet</summary>
+    /// <remarks>Icon token: <c>magnet</c>.</remarks>
     [Description("@#magnet")]
     Magnet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMail</summary>
+    /// <remarks>Icon token: <c>mail</c>.</remarks>
     [Description("@#mail")]
     Mail,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailCheck</summary>
+    /// <remarks>Icon token: <c>mail-check</c>.</remarks>
     [Description("@#mail-check")]
     MailCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailMinus</summary>
+    /// <remarks>Icon token: <c>mail-minus</c>.</remarks>
     [Description("@#mail-minus")]
     MailMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailOpen</summary>
+    /// <remarks>Icon token: <c>mail-open</c>.</remarks>
     [Description("@#mail-open")]
     MailOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailPlus</summary>
+    /// <remarks>Icon token: <c>mail-plus</c>.</remarks>
     [Description("@#mail-plus")]
     MailPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailQuestionMark</summary>
+    /// <remarks>Icon token: <c>mail-question-mark</c>.</remarks>
     [Description("@#mail-question-mark")]
     MailQuestionMark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailSearch</summary>
+    /// <remarks>Icon token: <c>mail-search</c>.</remarks>
     [Description("@#mail-search")]
     MailSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailWarning</summary>
+    /// <remarks>Icon token: <c>mail-warning</c>.</remarks>
     [Description("@#mail-warning")]
     MailWarning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailX</summary>
+    /// <remarks>Icon token: <c>mail-x</c>.</remarks>
     [Description("@#mail-x")]
     MailX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMailbox</summary>
+    /// <remarks>Icon token: <c>mailbox</c>.</remarks>
     [Description("@#mailbox")]
     Mailbox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMails</summary>
+    /// <remarks>Icon token: <c>mails</c>.</remarks>
     [Description("@#mails")]
     Mails,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMap</summary>
+    /// <remarks>Icon token: <c>map</c>.</remarks>
     [Description("@#map")]
     Map,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapMinus</summary>
+    /// <remarks>Icon token: <c>map-minus</c>.</remarks>
     [Description("@#map-minus")]
     MapMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPin</summary>
+    /// <remarks>Icon token: <c>map-pin</c>.</remarks>
     [Description("@#map-pin")]
     MapPin,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinCheck</summary>
+    /// <remarks>Icon token: <c>map-pin-check</c>.</remarks>
     [Description("@#map-pin-check")]
     MapPinCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinCheckInside</summary>
+    /// <remarks>Icon token: <c>map-pin-check-inside</c>.</remarks>
     [Description("@#map-pin-check-inside")]
     MapPinCheckInside,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinHouse</summary>
+    /// <remarks>Icon token: <c>map-pin-house</c>.</remarks>
     [Description("@#map-pin-house")]
     MapPinHouse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinMinus</summary>
+    /// <remarks>Icon token: <c>map-pin-minus</c>.</remarks>
     [Description("@#map-pin-minus")]
     MapPinMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinMinusInside</summary>
+    /// <remarks>Icon token: <c>map-pin-minus-inside</c>.</remarks>
     [Description("@#map-pin-minus-inside")]
     MapPinMinusInside,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinOff</summary>
+    /// <remarks>Icon token: <c>map-pin-off</c>.</remarks>
     [Description("@#map-pin-off")]
     MapPinOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinPen</summary>
+    /// <remarks>Icon token: <c>map-pin-pen</c>.</remarks>
     [Description("@#map-pin-pen")]
     MapPinPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinPlus</summary>
+    /// <remarks>Icon token: <c>map-pin-plus</c>.</remarks>
     [Description("@#map-pin-plus")]
     MapPinPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinPlusInside</summary>
+    /// <remarks>Icon token: <c>map-pin-plus-inside</c>.</remarks>
     [Description("@#map-pin-plus-inside")]
     MapPinPlusInside,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinX</summary>
+    /// <remarks>Icon token: <c>map-pin-x</c>.</remarks>
     [Description("@#map-pin-x")]
     MapPinX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinXInside</summary>
+    /// <remarks>Icon token: <c>map-pin-x-inside</c>.</remarks>
     [Description("@#map-pin-x-inside")]
     MapPinXInside,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPinned</summary>
+    /// <remarks>Icon token: <c>map-pinned</c>.</remarks>
     [Description("@#map-pinned")]
     MapPinned,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMapPlus</summary>
+    /// <remarks>Icon token: <c>map-plus</c>.</remarks>
     [Description("@#map-plus")]
     MapPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMars</summary>
+    /// <remarks>Icon token: <c>mars</c>.</remarks>
     [Description("@#mars")]
     Mars,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMarsStroke</summary>
+    /// <remarks>Icon token: <c>mars-stroke</c>.</remarks>
     [Description("@#mars-stroke")]
     MarsStroke,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMartini</summary>
+    /// <remarks>Icon token: <c>martini</c>.</remarks>
     [Description("@#martini")]
     Martini,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMask</summary>
+    /// <remarks>Icon token: <c>mask</c>.</remarks>
     [Description("@#mask")]
     Mask,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMaximize</summary>
+    /// <remarks>Icon token: <c>maximize</c>.</remarks>
     [Description("@#maximize")]
     Maximize,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMaximize2</summary>
+    /// <remarks>Icon token: <c>maximize-2</c>.</remarks>
     [Description("@#maximize-2")]
     Maximize2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMedal</summary>
+    /// <remarks>Icon token: <c>medal</c>.</remarks>
     [Description("@#medal")]
     Medal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMedicalRecord</summary>
+    /// <remarks>Icon token: <c>medical-record</c>.</remarks>
     [Description("@#medical-record")]
     MedicalRecord,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMedicine</summary>
+    /// <remarks>Icon token: <c>medicine</c>.</remarks>
     [Description("@#medicine")]
     Medicine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMegaphone</summary>
+    /// <remarks>Icon token: <c>megaphone</c>.</remarks>
     [Description("@#megaphone")]
     Megaphone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMegaphoneOff</summary>
+    /// <remarks>Icon token: <c>megaphone-off</c>.</remarks>
     [Description("@#megaphone-off")]
     MegaphoneOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMeh</summary>
+    /// <remarks>Icon token: <c>meh</c>.</remarks>
     [Description("@#meh")]
     Meh,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMemoryStick</summary>
+    /// <remarks>Icon token: <c>memory-stick</c>.</remarks>
     [Description("@#memory-stick")]
     MemoryStick,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMenu</summary>
+    /// <remarks>Icon token: <c>menu</c>.</remarks>
     [Description("@#menu")]
     Menu,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMerge</summary>
+    /// <remarks>Icon token: <c>merge</c>.</remarks>
     [Description("@#merge")]
     Merge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessage</summary>
+    /// <remarks>Icon token: <c>message</c>.</remarks>
     [Description("@#message")]
     Message,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircle</summary>
+    /// <remarks>Icon token: <c>message-circle</c>.</remarks>
     [Description("@#message-circle")]
     MessageCircle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleCode</summary>
+    /// <remarks>Icon token: <c>message-circle-code</c>.</remarks>
     [Description("@#message-circle-code")]
     MessageCircleCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleDashed</summary>
+    /// <remarks>Icon token: <c>message-circle-dashed</c>.</remarks>
     [Description("@#message-circle-dashed")]
     MessageCircleDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleHeart</summary>
+    /// <remarks>Icon token: <c>message-circle-heart</c>.</remarks>
     [Description("@#message-circle-heart")]
     MessageCircleHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleMore</summary>
+    /// <remarks>Icon token: <c>message-circle-more</c>.</remarks>
     [Description("@#message-circle-more")]
     MessageCircleMore,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleOff</summary>
+    /// <remarks>Icon token: <c>message-circle-off</c>.</remarks>
     [Description("@#message-circle-off")]
     MessageCircleOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCirclePlus</summary>
+    /// <remarks>Icon token: <c>message-circle-plus</c>.</remarks>
     [Description("@#message-circle-plus")]
     MessageCirclePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleQuestionMark</summary>
+    /// <remarks>Icon token: <c>message-circle-question-mark</c>.</remarks>
     [Description("@#message-circle-question-mark")]
     MessageCircleQuestionMark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleReply</summary>
+    /// <remarks>Icon token: <c>message-circle-reply</c>.</remarks>
     [Description("@#message-circle-reply")]
     MessageCircleReply,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleWarning</summary>
+    /// <remarks>Icon token: <c>message-circle-warning</c>.</remarks>
     [Description("@#message-circle-warning")]
     MessageCircleWarning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleX</summary>
+    /// <remarks>Icon token: <c>message-circle-x</c>.</remarks>
     [Description("@#message-circle-x")]
     MessageCircleX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessagePrivate</summary>
+    /// <remarks>Icon token: <c>message-private</c>.</remarks>
     [Description("@#message-private")]
     MessagePrivate,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquare</summary>
+    /// <remarks>Icon token: <c>message-square</c>.</remarks>
     [Description("@#message-square")]
     MessageSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareCode</summary>
+    /// <remarks>Icon token: <c>message-square-code</c>.</remarks>
     [Description("@#message-square-code")]
     MessageSquareCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDashed</summary>
+    /// <remarks>Icon token: <c>message-square-dashed</c>.</remarks>
     [Description("@#message-square-dashed")]
     MessageSquareDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDiff</summary>
+    /// <remarks>Icon token: <c>message-square-diff</c>.</remarks>
     [Description("@#message-square-diff")]
     MessageSquareDiff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDot</summary>
+    /// <remarks>Icon token: <c>message-square-dot</c>.</remarks>
     [Description("@#message-square-dot")]
     MessageSquareDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareHeart</summary>
+    /// <remarks>Icon token: <c>message-square-heart</c>.</remarks>
     [Description("@#message-square-heart")]
     MessageSquareHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareLock</summary>
+    /// <remarks>Icon token: <c>message-square-lock</c>.</remarks>
     [Description("@#message-square-lock")]
     MessageSquareLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareMore</summary>
+    /// <remarks>Icon token: <c>message-square-more</c>.</remarks>
     [Description("@#message-square-more")]
     MessageSquareMore,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareOff</summary>
+    /// <remarks>Icon token: <c>message-square-off</c>.</remarks>
     [Description("@#message-square-off")]
     MessageSquareOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquarePlus</summary>
+    /// <remarks>Icon token: <c>message-square-plus</c>.</remarks>
     [Description("@#message-square-plus")]
     MessageSquarePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareQuote</summary>
+    /// <remarks>Icon token: <c>message-square-quote</c>.</remarks>
     [Description("@#message-square-quote")]
     MessageSquareQuote,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareReply</summary>
+    /// <remarks>Icon token: <c>message-square-reply</c>.</remarks>
     [Description("@#message-square-reply")]
     MessageSquareReply,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareShare</summary>
+    /// <remarks>Icon token: <c>message-square-share</c>.</remarks>
     [Description("@#message-square-share")]
     MessageSquareShare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareText</summary>
+    /// <remarks>Icon token: <c>message-square-text</c>.</remarks>
     [Description("@#message-square-text")]
     MessageSquareText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareWarning</summary>
+    /// <remarks>Icon token: <c>message-square-warning</c>.</remarks>
     [Description("@#message-square-warning")]
     MessageSquareWarning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareX</summary>
+    /// <remarks>Icon token: <c>message-square-x</c>.</remarks>
     [Description("@#message-square-x")]
     MessageSquareX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMessagesSquare</summary>
+    /// <remarks>Icon token: <c>messages-square</c>.</remarks>
     [Description("@#messages-square")]
     MessagesSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMic</summary>
+    /// <remarks>Icon token: <c>mic</c>.</remarks>
     [Description("@#mic")]
     Mic,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMicOff</summary>
+    /// <remarks>Icon token: <c>mic-off</c>.</remarks>
     [Description("@#mic-off")]
     MicOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMicVocal</summary>
+    /// <remarks>Icon token: <c>mic-vocal</c>.</remarks>
     [Description("@#mic-vocal")]
     MicVocal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMicrochip</summary>
+    /// <remarks>Icon token: <c>microchip</c>.</remarks>
     [Description("@#microchip")]
     Microchip,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMicroscope</summary>
+    /// <remarks>Icon token: <c>microscope</c>.</remarks>
     [Description("@#microscope")]
     Microscope,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMicrowave</summary>
+    /// <remarks>Icon token: <c>microwave</c>.</remarks>
     [Description("@#microwave")]
     Microwave,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMilestone</summary>
+    /// <remarks>Icon token: <c>milestone</c>.</remarks>
     [Description("@#milestone")]
     Milestone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMilk</summary>
+    /// <remarks>Icon token: <c>milk</c>.</remarks>
     [Description("@#milk")]
     Milk,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMilkOff</summary>
+    /// <remarks>Icon token: <c>milk-off</c>.</remarks>
     [Description("@#milk-off")]
     MilkOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMinimize</summary>
+    /// <remarks>Icon token: <c>minimize</c>.</remarks>
     [Description("@#minimize")]
     Minimize,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMinimize2</summary>
+    /// <remarks>Icon token: <c>minimize-2</c>.</remarks>
     [Description("@#minimize-2")]
     Minimize2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMinus</summary>
+    /// <remarks>Icon token: <c>minus</c>.</remarks>
     [Description("@#minus")]
     Minus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitor</summary>
+    /// <remarks>Icon token: <c>monitor</c>.</remarks>
     [Description("@#monitor")]
     Monitor,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorCheck</summary>
+    /// <remarks>Icon token: <c>monitor-check</c>.</remarks>
     [Description("@#monitor-check")]
     MonitorCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorCloud</summary>
+    /// <remarks>Icon token: <c>monitor-cloud</c>.</remarks>
     [Description("@#monitor-cloud")]
     MonitorCloud,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorCog</summary>
+    /// <remarks>Icon token: <c>monitor-cog</c>.</remarks>
     [Description("@#monitor-cog")]
     MonitorCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorDot</summary>
+    /// <remarks>Icon token: <c>monitor-dot</c>.</remarks>
     [Description("@#monitor-dot")]
     MonitorDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorDown</summary>
+    /// <remarks>Icon token: <c>monitor-down</c>.</remarks>
     [Description("@#monitor-down")]
     MonitorDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorOff</summary>
+    /// <remarks>Icon token: <c>monitor-off</c>.</remarks>
     [Description("@#monitor-off")]
     MonitorOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorPause</summary>
+    /// <remarks>Icon token: <c>monitor-pause</c>.</remarks>
     [Description("@#monitor-pause")]
     MonitorPause,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorPlay</summary>
+    /// <remarks>Icon token: <c>monitor-play</c>.</remarks>
     [Description("@#monitor-play")]
     MonitorPlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorSmartphone</summary>
+    /// <remarks>Icon token: <c>monitor-smartphone</c>.</remarks>
     [Description("@#monitor-smartphone")]
     MonitorSmartphone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorSpeaker</summary>
+    /// <remarks>Icon token: <c>monitor-speaker</c>.</remarks>
     [Description("@#monitor-speaker")]
     MonitorSpeaker,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorStop</summary>
+    /// <remarks>Icon token: <c>monitor-stop</c>.</remarks>
     [Description("@#monitor-stop")]
     MonitorStop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorUp</summary>
+    /// <remarks>Icon token: <c>monitor-up</c>.</remarks>
     [Description("@#monitor-up")]
     MonitorUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMonitorX</summary>
+    /// <remarks>Icon token: <c>monitor-x</c>.</remarks>
     [Description("@#monitor-x")]
     MonitorX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoon</summary>
+    /// <remarks>Icon token: <c>moon</c>.</remarks>
     [Description("@#moon")]
     Moon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoonStar</summary>
+    /// <remarks>Icon token: <c>moon-star</c>.</remarks>
     [Description("@#moon-star")]
     MoonStar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMotorbike</summary>
+    /// <remarks>Icon token: <c>motorbike</c>.</remarks>
     [Description("@#motorbike")]
     Motorbike,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMountain</summary>
+    /// <remarks>Icon token: <c>mountain</c>.</remarks>
     [Description("@#mountain")]
     Mountain,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMountainSnow</summary>
+    /// <remarks>Icon token: <c>mountain-snow</c>.</remarks>
     [Description("@#mountain-snow")]
     MountainSnow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMouse</summary>
+    /// <remarks>Icon token: <c>mouse</c>.</remarks>
     [Description("@#mouse")]
     Mouse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMouseOff</summary>
+    /// <remarks>Icon token: <c>mouse-off</c>.</remarks>
     [Description("@#mouse-off")]
     MouseOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMousePointer</summary>
+    /// <remarks>Icon token: <c>mouse-pointer</c>.</remarks>
     [Description("@#mouse-pointer")]
     MousePointer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMousePointer2</summary>
+    /// <remarks>Icon token: <c>mouse-pointer-2</c>.</remarks>
     [Description("@#mouse-pointer-2")]
     MousePointer2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMousePointer2Off</summary>
+    /// <remarks>Icon token: <c>mouse-pointer-2-off</c>.</remarks>
     [Description("@#mouse-pointer-2-off")]
     MousePointer2Off,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMousePointerBan</summary>
+    /// <remarks>Icon token: <c>mouse-pointer-ban</c>.</remarks>
     [Description("@#mouse-pointer-ban")]
     MousePointerBan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMousePointerClick</summary>
+    /// <remarks>Icon token: <c>mouse-pointer-click</c>.</remarks>
     [Description("@#mouse-pointer-click")]
     MousePointerClick,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMove</summary>
+    /// <remarks>Icon token: <c>move</c>.</remarks>
     [Description("@#move")]
     Move,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMove3d</summary>
+    /// <remarks>Icon token: <c>move-3d</c>.</remarks>
     [Description("@#move-3d")]
     Move3d,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveDiagonal</summary>
+    /// <remarks>Icon token: <c>move-diagonal</c>.</remarks>
     [Description("@#move-diagonal")]
     MoveDiagonal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveDiagonal2</summary>
+    /// <remarks>Icon token: <c>move-diagonal-2</c>.</remarks>
     [Description("@#move-diagonal-2")]
     MoveDiagonal2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveDown</summary>
+    /// <remarks>Icon token: <c>move-down</c>.</remarks>
     [Description("@#move-down")]
     MoveDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveDownLeft</summary>
+    /// <remarks>Icon token: <c>move-down-left</c>.</remarks>
     [Description("@#move-down-left")]
     MoveDownLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveDownRight</summary>
+    /// <remarks>Icon token: <c>move-down-right</c>.</remarks>
     [Description("@#move-down-right")]
     MoveDownRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveHorizontal</summary>
+    /// <remarks>Icon token: <c>move-horizontal</c>.</remarks>
     [Description("@#move-horizontal")]
     MoveHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveLeft</summary>
+    /// <remarks>Icon token: <c>move-left</c>.</remarks>
     [Description("@#move-left")]
     MoveLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveRight</summary>
+    /// <remarks>Icon token: <c>move-right</c>.</remarks>
     [Description("@#move-right")]
     MoveRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveUp</summary>
+    /// <remarks>Icon token: <c>move-up</c>.</remarks>
     [Description("@#move-up")]
     MoveUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveUpLeft</summary>
+    /// <remarks>Icon token: <c>move-up-left</c>.</remarks>
     [Description("@#move-up-left")]
     MoveUpLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveUpRight</summary>
+    /// <remarks>Icon token: <c>move-up-right</c>.</remarks>
     [Description("@#move-up-right")]
     MoveUpRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMoveVertical</summary>
+    /// <remarks>Icon token: <c>move-vertical</c>.</remarks>
     [Description("@#move-vertical")]
     MoveVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMovie</summary>
+    /// <remarks>Icon token: <c>movie</c>.</remarks>
     [Description("@#movie")]
     Movie,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMultiply</summary>
+    /// <remarks>Icon token: <c>multiply</c>.</remarks>
     [Description("@#multiply")]
     Multiply,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMusic</summary>
+    /// <remarks>Icon token: <c>music</c>.</remarks>
     [Description("@#music")]
     Music,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMusic2</summary>
+    /// <remarks>Icon token: <c>music-2</c>.</remarks>
     [Description("@#music-2")]
     Music2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMusic3</summary>
+    /// <remarks>Icon token: <c>music-3</c>.</remarks>
     [Description("@#music-3")]
     Music3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuMusic4</summary>
+    /// <remarks>Icon token: <c>music-4</c>.</remarks>
     [Description("@#music-4")]
     Music4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNavigation</summary>
+    /// <remarks>Icon token: <c>navigation</c>.</remarks>
     [Description("@#navigation")]
     Navigation,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNavigation2</summary>
+    /// <remarks>Icon token: <c>navigation-2</c>.</remarks>
     [Description("@#navigation-2")]
     Navigation2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNavigation2Off</summary>
+    /// <remarks>Icon token: <c>navigation-2-off</c>.</remarks>
     [Description("@#navigation-2-off")]
     Navigation2Off,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNavigationDot</summary>
+    /// <remarks>Icon token: <c>navigation-dot</c>.</remarks>
     [Description("@#navigation-dot")]
     NavigationDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNavigationOff</summary>
+    /// <remarks>Icon token: <c>navigation-off</c>.</remarks>
     [Description("@#navigation-off")]
     NavigationOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNetwork</summary>
+    /// <remarks>Icon token: <c>network</c>.</remarks>
     [Description("@#network")]
     Network,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNewspaper</summary>
+    /// <remarks>Icon token: <c>newspaper</c>.</remarks>
     [Description("@#newspaper")]
     Newspaper,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNfc</summary>
+    /// <remarks>Icon token: <c>nfc</c>.</remarks>
     [Description("@#nfc")]
     Nfc,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNonBinary</summary>
+    /// <remarks>Icon token: <c>non-binary</c>.</remarks>
     [Description("@#non-binary")]
     NonBinary,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNote</summary>
+    /// <remarks>Icon token: <c>note</c>.</remarks>
     [Description("@#note")]
     Note,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNotebook</summary>
+    /// <remarks>Icon token: <c>notebook</c>.</remarks>
     [Description("@#notebook")]
     Notebook,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNotebookPen</summary>
+    /// <remarks>Icon token: <c>notebook-pen</c>.</remarks>
     [Description("@#notebook-pen")]
     NotebookPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNotebookTabs</summary>
+    /// <remarks>Icon token: <c>notebook-tabs</c>.</remarks>
     [Description("@#notebook-tabs")]
     NotebookTabs,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNotebookText</summary>
+    /// <remarks>Icon token: <c>notebook-text</c>.</remarks>
     [Description("@#notebook-text")]
     NotebookText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNotepadText</summary>
+    /// <remarks>Icon token: <c>notepad-text</c>.</remarks>
     [Description("@#notepad-text")]
     NotepadText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNotepadTextDashed</summary>
+    /// <remarks>Icon token: <c>notepad-text-dashed</c>.</remarks>
     [Description("@#notepad-text-dashed")]
     NotepadTextDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNut</summary>
+    /// <remarks>Icon token: <c>nut</c>.</remarks>
     [Description("@#nut")]
     Nut,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuNutOff</summary>
+    /// <remarks>Icon token: <c>nut-off</c>.</remarks>
     [Description("@#nut-off")]
     NutOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOctagon</summary>
+    /// <remarks>Icon token: <c>octagon</c>.</remarks>
     [Description("@#octagon")]
     Octagon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOctagonAlert</summary>
+    /// <remarks>Icon token: <c>octagon-alert</c>.</remarks>
     [Description("@#octagon-alert")]
     OctagonAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOctagonMinus</summary>
+    /// <remarks>Icon token: <c>octagon-minus</c>.</remarks>
     [Description("@#octagon-minus")]
     OctagonMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOctagonPause</summary>
+    /// <remarks>Icon token: <c>octagon-pause</c>.</remarks>
     [Description("@#octagon-pause")]
     OctagonPause,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOctagonX</summary>
+    /// <remarks>Icon token: <c>octagon-x</c>.</remarks>
     [Description("@#octagon-x")]
     OctagonX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOmega</summary>
+    /// <remarks>Icon token: <c>omega</c>.</remarks>
     [Description("@#omega")]
     Omega,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOption</summary>
+    /// <remarks>Icon token: <c>option</c>.</remarks>
     [Description("@#option")]
     Option,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOrbit</summary>
+    /// <remarks>Icon token: <c>orbit</c>.</remarks>
     [Description("@#orbit")]
     Orbit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuOrigami</summary>
+    /// <remarks>Icon token: <c>origami</c>.</remarks>
     [Description("@#origami")]
     Origami,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackage</summary>
+    /// <remarks>Icon token: <c>package</c>.</remarks>
     [Description("@#package")]
     Package,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackage2</summary>
+    /// <remarks>Icon token: <c>package-2</c>.</remarks>
     [Description("@#package-2")]
     Package2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackageCheck</summary>
+    /// <remarks>Icon token: <c>package-check</c>.</remarks>
     [Description("@#package-check")]
     PackageCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackageMinus</summary>
+    /// <remarks>Icon token: <c>package-minus</c>.</remarks>
     [Description("@#package-minus")]
     PackageMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackageOpen</summary>
+    /// <remarks>Icon token: <c>package-open</c>.</remarks>
     [Description("@#package-open")]
     PackageOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackagePlus</summary>
+    /// <remarks>Icon token: <c>package-plus</c>.</remarks>
     [Description("@#package-plus")]
     PackagePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackageSearch</summary>
+    /// <remarks>Icon token: <c>package-search</c>.</remarks>
     [Description("@#package-search")]
     PackageSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPackageX</summary>
+    /// <remarks>Icon token: <c>package-x</c>.</remarks>
     [Description("@#package-x")]
     PackageX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPagination</summary>
+    /// <remarks>Icon token: <c>pagination</c>.</remarks>
     [Description("@#pagination")]
     Pagination,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaintBucket</summary>
+    /// <remarks>Icon token: <c>paint-bucket</c>.</remarks>
     [Description("@#paint-bucket")]
     PaintBucket,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaintRoller</summary>
+    /// <remarks>Icon token: <c>paint-roller</c>.</remarks>
     [Description("@#paint-roller")]
     PaintRoller,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaintbrush</summary>
+    /// <remarks>Icon token: <c>paintbrush</c>.</remarks>
     [Description("@#paintbrush")]
     Paintbrush,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaintbrushVertical</summary>
+    /// <remarks>Icon token: <c>paintbrush-vertical</c>.</remarks>
     [Description("@#paintbrush-vertical")]
     PaintbrushVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPalette</summary>
+    /// <remarks>Icon token: <c>palette</c>.</remarks>
     [Description("@#palette")]
     Palette,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanda</summary>
+    /// <remarks>Icon token: <c>panda</c>.</remarks>
     [Description("@#panda")]
     Panda,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottom</summary>
+    /// <remarks>Icon token: <c>panel-bottom</c>.</remarks>
     [Description("@#panel-bottom")]
     PanelBottom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomClose</summary>
+    /// <remarks>Icon token: <c>panel-bottom-close</c>.</remarks>
     [Description("@#panel-bottom-close")]
     PanelBottomClose,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomDashed</summary>
+    /// <remarks>Icon token: <c>panel-bottom-dashed</c>.</remarks>
     [Description("@#panel-bottom-dashed")]
     PanelBottomDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomOpen</summary>
+    /// <remarks>Icon token: <c>panel-bottom-open</c>.</remarks>
     [Description("@#panel-bottom-open")]
     PanelBottomOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeft</summary>
+    /// <remarks>Icon token: <c>panel-left</c>.</remarks>
     [Description("@#panel-left")]
     PanelLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftClose</summary>
+    /// <remarks>Icon token: <c>panel-left-close</c>.</remarks>
     [Description("@#panel-left-close")]
     PanelLeftClose,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftDashed</summary>
+    /// <remarks>Icon token: <c>panel-left-dashed</c>.</remarks>
     [Description("@#panel-left-dashed")]
     PanelLeftDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftOpen</summary>
+    /// <remarks>Icon token: <c>panel-left-open</c>.</remarks>
     [Description("@#panel-left-open")]
     PanelLeftOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftRightDashed</summary>
+    /// <remarks>Icon token: <c>panel-left-right-dashed</c>.</remarks>
     [Description("@#panel-left-right-dashed")]
     PanelLeftRightDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelRight</summary>
+    /// <remarks>Icon token: <c>panel-right</c>.</remarks>
     [Description("@#panel-right")]
     PanelRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelRightClose</summary>
+    /// <remarks>Icon token: <c>panel-right-close</c>.</remarks>
     [Description("@#panel-right-close")]
     PanelRightClose,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelRightDashed</summary>
+    /// <remarks>Icon token: <c>panel-right-dashed</c>.</remarks>
     [Description("@#panel-right-dashed")]
     PanelRightDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelRightOpen</summary>
+    /// <remarks>Icon token: <c>panel-right-open</c>.</remarks>
     [Description("@#panel-right-open")]
     PanelRightOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelTop</summary>
+    /// <remarks>Icon token: <c>panel-top</c>.</remarks>
     [Description("@#panel-top")]
     PanelTop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopBottomDashed</summary>
+    /// <remarks>Icon token: <c>panel-top-bottom-dashed</c>.</remarks>
     [Description("@#panel-top-bottom-dashed")]
     PanelTopBottomDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopClose</summary>
+    /// <remarks>Icon token: <c>panel-top-close</c>.</remarks>
     [Description("@#panel-top-close")]
     PanelTopClose,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopDashed</summary>
+    /// <remarks>Icon token: <c>panel-top-dashed</c>.</remarks>
     [Description("@#panel-top-dashed")]
     PanelTopDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopOpen</summary>
+    /// <remarks>Icon token: <c>panel-top-open</c>.</remarks>
     [Description("@#panel-top-open")]
     PanelTopOpen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelsLeftBottom</summary>
+    /// <remarks>Icon token: <c>panels-left-bottom</c>.</remarks>
     [Description("@#panels-left-bottom")]
     PanelsLeftBottom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelsRightBottom</summary>
+    /// <remarks>Icon token: <c>panels-right-bottom</c>.</remarks>
     [Description("@#panels-right-bottom")]
     PanelsRightBottom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPanelsTopLeft</summary>
+    /// <remarks>Icon token: <c>panels-top-left</c>.</remarks>
     [Description("@#panels-top-left")]
     PanelsTopLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaperclip</summary>
+    /// <remarks>Icon token: <c>paperclip</c>.</remarks>
     [Description("@#paperclip")]
     Paperclip,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuParentheses</summary>
+    /// <remarks>Icon token: <c>parentheses</c>.</remarks>
     [Description("@#parentheses")]
     Parentheses,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuParkingMeter</summary>
+    /// <remarks>Icon token: <c>parking-meter</c>.</remarks>
     [Description("@#parking-meter")]
     ParkingMeter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPartyPopper</summary>
+    /// <remarks>Icon token: <c>party-popper</c>.</remarks>
     [Description("@#party-popper")]
     PartyPopper,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaste</summary>
+    /// <remarks>Icon token: <c>paste</c>.</remarks>
     [Description("@#paste")]
     Paste,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPause</summary>
+    /// <remarks>Icon token: <c>pause</c>.</remarks>
     [Description("@#pause")]
     Pause,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPawPrint</summary>
+    /// <remarks>Icon token: <c>paw-print</c>.</remarks>
     [Description("@#paw-print")]
     PawPrint,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPayment</summary>
+    /// <remarks>Icon token: <c>payment</c>.</remarks>
     [Description("@#payment")]
     Payment,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPaymentMedical</summary>
+    /// <remarks>Icon token: <c>payment-medical</c>.</remarks>
     [Description("@#payment-medical")]
     PaymentMedical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPcCase</summary>
+    /// <remarks>Icon token: <c>pc-case</c>.</remarks>
     [Description("@#pc-case")]
     PcCase,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPen</summary>
+    /// <remarks>Icon token: <c>pen</c>.</remarks>
     [Description("@#pen")]
     Pen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPenLine</summary>
+    /// <remarks>Icon token: <c>pen-line</c>.</remarks>
     [Description("@#pen-line")]
     PenLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPenOff</summary>
+    /// <remarks>Icon token: <c>pen-off</c>.</remarks>
     [Description("@#pen-off")]
     PenOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPenTool</summary>
+    /// <remarks>Icon token: <c>pen-tool</c>.</remarks>
     [Description("@#pen-tool")]
     PenTool,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPencil</summary>
+    /// <remarks>Icon token: <c>pencil</c>.</remarks>
     [Description("@#pencil")]
     Pencil,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPencilLine</summary>
+    /// <remarks>Icon token: <c>pencil-line</c>.</remarks>
     [Description("@#pencil-line")]
     PencilLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPencilOff</summary>
+    /// <remarks>Icon token: <c>pencil-off</c>.</remarks>
     [Description("@#pencil-off")]
     PencilOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPencilRuler</summary>
+    /// <remarks>Icon token: <c>pencil-ruler</c>.</remarks>
     [Description("@#pencil-ruler")]
     PencilRuler,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPentagon</summary>
+    /// <remarks>Icon token: <c>pentagon</c>.</remarks>
     [Description("@#pentagon")]
     Pentagon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPercent</summary>
+    /// <remarks>Icon token: <c>percent</c>.</remarks>
     [Description("@#percent")]
     Percent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPersonStanding</summary>
+    /// <remarks>Icon token: <c>person-standing</c>.</remarks>
     [Description("@#person-standing")]
     PersonStanding,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhilippinePeso</summary>
+    /// <remarks>Icon token: <c>philippine-peso</c>.</remarks>
     [Description("@#philippine-peso")]
     PhilippinePeso,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhone</summary>
+    /// <remarks>Icon token: <c>phone</c>.</remarks>
     [Description("@#phone")]
     Phone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhoneCall</summary>
+    /// <remarks>Icon token: <c>phone-call</c>.</remarks>
     [Description("@#phone-call")]
     PhoneCall,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhoneForwarded</summary>
+    /// <remarks>Icon token: <c>phone-forwarded</c>.</remarks>
     [Description("@#phone-forwarded")]
     PhoneForwarded,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhoneIncoming</summary>
+    /// <remarks>Icon token: <c>phone-incoming</c>.</remarks>
     [Description("@#phone-incoming")]
     PhoneIncoming,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhoneMissed</summary>
+    /// <remarks>Icon token: <c>phone-missed</c>.</remarks>
     [Description("@#phone-missed")]
     PhoneMissed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhoneOff</summary>
+    /// <remarks>Icon token: <c>phone-off</c>.</remarks>
     [Description("@#phone-off")]
     PhoneOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPhoneOutgoing</summary>
+    /// <remarks>Icon token: <c>phone-outgoing</c>.</remarks>
     [Description("@#phone-outgoing")]
     PhoneOutgoing,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPi</summary>
+    /// <remarks>Icon token: <c>pi</c>.</remarks>
     [Description("@#pi")]
     Pi,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPiano</summary>
+    /// <remarks>Icon token: <c>piano</c>.</remarks>
     [Description("@#piano")]
     Piano,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPickaxe</summary>
+    /// <remarks>Icon token: <c>pickaxe</c>.</remarks>
     [Description("@#pickaxe")]
     Pickaxe,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPictureInPicture</summary>
+    /// <remarks>Icon token: <c>picture-in-picture</c>.</remarks>
     [Description("@#picture-in-picture")]
     PictureInPicture,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPictureInPicture2</summary>
+    /// <remarks>Icon token: <c>picture-in-picture-2</c>.</remarks>
     [Description("@#picture-in-picture-2")]
     PictureInPicture2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPieChart</summary>
+    /// <remarks>Icon token: <c>pie-chart</c>.</remarks>
     [Description("@#pie-chart")]
     PieChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPiggyBank</summary>
+    /// <remarks>Icon token: <c>piggy-bank</c>.</remarks>
     [Description("@#piggy-bank")]
     PiggyBank,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPilcrow</summary>
+    /// <remarks>Icon token: <c>pilcrow</c>.</remarks>
     [Description("@#pilcrow")]
     Pilcrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPilcrowLeft</summary>
+    /// <remarks>Icon token: <c>pilcrow-left</c>.</remarks>
     [Description("@#pilcrow-left")]
     PilcrowLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPilcrowRight</summary>
+    /// <remarks>Icon token: <c>pilcrow-right</c>.</remarks>
     [Description("@#pilcrow-right")]
     PilcrowRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPill</summary>
+    /// <remarks>Icon token: <c>pill</c>.</remarks>
     [Description("@#pill")]
     Pill,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPillBottle</summary>
+    /// <remarks>Icon token: <c>pill-bottle</c>.</remarks>
     [Description("@#pill-bottle")]
     PillBottle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPin</summary>
+    /// <remarks>Icon token: <c>pin</c>.</remarks>
     [Description("@#pin")]
     Pin,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPinOff</summary>
+    /// <remarks>Icon token: <c>pin-off</c>.</remarks>
     [Description("@#pin-off")]
     PinOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPipette</summary>
+    /// <remarks>Icon token: <c>pipette</c>.</remarks>
     [Description("@#pipette")]
     Pipette,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPizza</summary>
+    /// <remarks>Icon token: <c>pizza</c>.</remarks>
     [Description("@#pizza")]
     Pizza,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlane</summary>
+    /// <remarks>Icon token: <c>plane</c>.</remarks>
     [Description("@#plane")]
     Plane,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlaneLanding</summary>
+    /// <remarks>Icon token: <c>plane-landing</c>.</remarks>
     [Description("@#plane-landing")]
     PlaneLanding,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlaneTakeoff</summary>
+    /// <remarks>Icon token: <c>plane-takeoff</c>.</remarks>
     [Description("@#plane-takeoff")]
     PlaneTakeoff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlay</summary>
+    /// <remarks>Icon token: <c>play</c>.</remarks>
     [Description("@#play")]
     Play,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlug</summary>
+    /// <remarks>Icon token: <c>plug</c>.</remarks>
     [Description("@#plug")]
     Plug,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlug2</summary>
+    /// <remarks>Icon token: <c>plug-2</c>.</remarks>
     [Description("@#plug-2")]
     Plug2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlugZap</summary>
+    /// <remarks>Icon token: <c>plug-zap</c>.</remarks>
     [Description("@#plug-zap")]
     PlugZap,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPlus</summary>
+    /// <remarks>Icon token: <c>plus</c>.</remarks>
     [Description("@#plus")]
     Plus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPocket</summary>
+    /// <remarks>Icon token: <c>pocket</c>.</remarks>
     [Description("@#pocket")]
     Pocket,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPocketKnife</summary>
+    /// <remarks>Icon token: <c>pocket-knife</c>.</remarks>
     [Description("@#pocket-knife")]
     PocketKnife,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPodcast</summary>
+    /// <remarks>Icon token: <c>podcast</c>.</remarks>
     [Description("@#podcast")]
     Podcast,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPointer</summary>
+    /// <remarks>Icon token: <c>pointer</c>.</remarks>
     [Description("@#pointer")]
     Pointer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPointerOff</summary>
+    /// <remarks>Icon token: <c>pointer-off</c>.</remarks>
     [Description("@#pointer-off")]
     PointerOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPoints</summary>
+    /// <remarks>Icon token: <c>points</c>.</remarks>
     [Description("@#points")]
     Points,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPopcorn</summary>
+    /// <remarks>Icon token: <c>popcorn</c>.</remarks>
     [Description("@#popcorn")]
     Popcorn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPopsicle</summary>
+    /// <remarks>Icon token: <c>popsicle</c>.</remarks>
     [Description("@#popsicle")]
     Popsicle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPoundSterling</summary>
+    /// <remarks>Icon token: <c>pound-sterling</c>.</remarks>
     [Description("@#pound-sterling")]
     PoundSterling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPower</summary>
+    /// <remarks>Icon token: <c>power</c>.</remarks>
     [Description("@#power")]
     Power,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPowerOff</summary>
+    /// <remarks>Icon token: <c>power-off</c>.</remarks>
     [Description("@#power-off")]
     PowerOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPresentation</summary>
+    /// <remarks>Icon token: <c>presentation</c>.</remarks>
     [Description("@#presentation")]
     Presentation,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPrinter</summary>
+    /// <remarks>Icon token: <c>printer</c>.</remarks>
     [Description("@#printer")]
     Printer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPrinterCheck</summary>
+    /// <remarks>Icon token: <c>printer-check</c>.</remarks>
     [Description("@#printer-check")]
     PrinterCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuProduct</summary>
+    /// <remarks>Icon token: <c>product</c>.</remarks>
     [Description("@#product")]
     Product,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuProjector</summary>
+    /// <remarks>Icon token: <c>projector</c>.</remarks>
     [Description("@#projector")]
     Projector,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuProportions</summary>
+    /// <remarks>Icon token: <c>proportions</c>.</remarks>
     [Description("@#proportions")]
     Proportions,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPuzzle</summary>
+    /// <remarks>Icon token: <c>puzzle</c>.</remarks>
     [Description("@#puzzle")]
     Puzzle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuPyramid</summary>
+    /// <remarks>Icon token: <c>pyramid</c>.</remarks>
     [Description("@#pyramid")]
     Pyramid,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuQrCode</summary>
+    /// <remarks>Icon token: <c>qr-code</c>.</remarks>
     [Description("@#qr-code")]
     QrCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuQrcodeBox</summary>
+    /// <remarks>Icon token: <c>qrcode-box</c>.</remarks>
     [Description("@#qrcode-box")]
     QrcodeBox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuQuote</summary>
+    /// <remarks>Icon token: <c>quote</c>.</remarks>
     [Description("@#quote")]
     Quote,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRabbit</summary>
+    /// <remarks>Icon token: <c>rabbit</c>.</remarks>
     [Description("@#rabbit")]
     Rabbit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadar</summary>
+    /// <remarks>Icon token: <c>radar</c>.</remarks>
     [Description("@#radar")]
     Radar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadarChart</summary>
+    /// <remarks>Icon token: <c>radar-chart</c>.</remarks>
     [Description("@#radar-chart")]
     RadarChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadiation</summary>
+    /// <remarks>Icon token: <c>radiation</c>.</remarks>
     [Description("@#radiation")]
     Radiation,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadical</summary>
+    /// <remarks>Icon token: <c>radical</c>.</remarks>
     [Description("@#radical")]
     Radical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadio</summary>
+    /// <remarks>Icon token: <c>radio</c>.</remarks>
     [Description("@#radio")]
     Radio,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadioReceiver</summary>
+    /// <remarks>Icon token: <c>radio-receiver</c>.</remarks>
     [Description("@#radio-receiver")]
     RadioReceiver,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadioTower</summary>
+    /// <remarks>Icon token: <c>radio-tower</c>.</remarks>
     [Description("@#radio-tower")]
     RadioTower,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRadius</summary>
+    /// <remarks>Icon token: <c>radius</c>.</remarks>
     [Description("@#radius")]
     Radius,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRailSymbol</summary>
+    /// <remarks>Icon token: <c>rail-symbol</c>.</remarks>
     [Description("@#rail-symbol")]
     RailSymbol,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRainbow</summary>
+    /// <remarks>Icon token: <c>rainbow</c>.</remarks>
     [Description("@#rainbow")]
     Rainbow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRainy</summary>
+    /// <remarks>Icon token: <c>rainy</c>.</remarks>
     [Description("@#rainy")]
     Rainy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRat</summary>
+    /// <remarks>Icon token: <c>rat</c>.</remarks>
     [Description("@#rat")]
     Rat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRatio</summary>
+    /// <remarks>Icon token: <c>ratio</c>.</remarks>
     [Description("@#ratio")]
     Ratio,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRead</summary>
+    /// <remarks>Icon token: <c>read</c>.</remarks>
     [Description("@#read")]
     Read,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceipt</summary>
+    /// <remarks>Icon token: <c>receipt</c>.</remarks>
     [Description("@#receipt")]
     Receipt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptCent</summary>
+    /// <remarks>Icon token: <c>receipt-cent</c>.</remarks>
     [Description("@#receipt-cent")]
     ReceiptCent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptEuro</summary>
+    /// <remarks>Icon token: <c>receipt-euro</c>.</remarks>
     [Description("@#receipt-euro")]
     ReceiptEuro,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptIndianRupee</summary>
+    /// <remarks>Icon token: <c>receipt-indian-rupee</c>.</remarks>
     [Description("@#receipt-indian-rupee")]
     ReceiptIndianRupee,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptJapaneseYen</summary>
+    /// <remarks>Icon token: <c>receipt-japanese-yen</c>.</remarks>
     [Description("@#receipt-japanese-yen")]
     ReceiptJapaneseYen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptPoundSterling</summary>
+    /// <remarks>Icon token: <c>receipt-pound-sterling</c>.</remarks>
     [Description("@#receipt-pound-sterling")]
     ReceiptPoundSterling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptRussianRuble</summary>
+    /// <remarks>Icon token: <c>receipt-russian-ruble</c>.</remarks>
     [Description("@#receipt-russian-ruble")]
     ReceiptRussianRuble,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptSwissFranc</summary>
+    /// <remarks>Icon token: <c>receipt-swiss-franc</c>.</remarks>
     [Description("@#receipt-swiss-franc")]
     ReceiptSwissFranc,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptText</summary>
+    /// <remarks>Icon token: <c>receipt-text</c>.</remarks>
     [Description("@#receipt-text")]
     ReceiptText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReceiptTurkishLira</summary>
+    /// <remarks>Icon token: <c>receipt-turkish-lira</c>.</remarks>
     [Description("@#receipt-turkish-lira")]
     ReceiptTurkishLira,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRecharge</summary>
+    /// <remarks>Icon token: <c>recharge</c>.</remarks>
     [Description("@#recharge")]
     Recharge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRectangleCircle</summary>
+    /// <remarks>Icon token: <c>rectangle-circle</c>.</remarks>
     [Description("@#rectangle-circle")]
     RectangleCircle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRectangleEllipsis</summary>
+    /// <remarks>Icon token: <c>rectangle-ellipsis</c>.</remarks>
     [Description("@#rectangle-ellipsis")]
     RectangleEllipsis,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRectangleGoggles</summary>
+    /// <remarks>Icon token: <c>rectangle-goggles</c>.</remarks>
     [Description("@#rectangle-goggles")]
     RectangleGoggles,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRectangleHorizontal</summary>
+    /// <remarks>Icon token: <c>rectangle-horizontal</c>.</remarks>
     [Description("@#rectangle-horizontal")]
     RectangleHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRectangleVertical</summary>
+    /// <remarks>Icon token: <c>rectangle-vertical</c>.</remarks>
     [Description("@#rectangle-vertical")]
     RectangleVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRecycle</summary>
+    /// <remarks>Icon token: <c>recycle</c>.</remarks>
     [Description("@#recycle")]
     Recycle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRedo</summary>
+    /// <remarks>Icon token: <c>redo</c>.</remarks>
     [Description("@#redo")]
     Redo,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRedo2</summary>
+    /// <remarks>Icon token: <c>redo-2</c>.</remarks>
     [Description("@#redo-2")]
     Redo2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRedoDot</summary>
+    /// <remarks>Icon token: <c>redo-dot</c>.</remarks>
     [Description("@#redo-dot")]
     RedoDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefresh</summary>
+    /// <remarks>Icon token: <c>refresh</c>.</remarks>
     [Description("@#refresh")]
     Refresh,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCcw</summary>
+    /// <remarks>Icon token: <c>refresh-ccw</c>.</remarks>
     [Description("@#refresh-ccw")]
     RefreshCcw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCcwDot</summary>
+    /// <remarks>Icon token: <c>refresh-ccw-dot</c>.</remarks>
     [Description("@#refresh-ccw-dot")]
     RefreshCcwDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCw</summary>
+    /// <remarks>Icon token: <c>refresh-cw</c>.</remarks>
     [Description("@#refresh-cw")]
     RefreshCw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCwOff</summary>
+    /// <remarks>Icon token: <c>refresh-cw-off</c>.</remarks>
     [Description("@#refresh-cw-off")]
     RefreshCwOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefrigerator</summary>
+    /// <remarks>Icon token: <c>refrigerator</c>.</remarks>
     [Description("@#refrigerator")]
     Refrigerator,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRefund</summary>
+    /// <remarks>Icon token: <c>refund</c>.</remarks>
     [Description("@#refund")]
     Refund,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRegex</summary>
+    /// <remarks>Icon token: <c>regex</c>.</remarks>
     [Description("@#regex")]
     Regex,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRemoveFormatting</summary>
+    /// <remarks>Icon token: <c>remove-formatting</c>.</remarks>
     [Description("@#remove-formatting")]
     RemoveFormatting,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRepeat</summary>
+    /// <remarks>Icon token: <c>repeat</c>.</remarks>
     [Description("@#repeat")]
     Repeat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRepeat1</summary>
+    /// <remarks>Icon token: <c>repeat-1</c>.</remarks>
     [Description("@#repeat-1")]
     Repeat1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRepeat2</summary>
+    /// <remarks>Icon token: <c>repeat-2</c>.</remarks>
     [Description("@#repeat-2")]
     Repeat2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReplace</summary>
+    /// <remarks>Icon token: <c>replace</c>.</remarks>
     [Description("@#replace")]
     Replace,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReplaceAll</summary>
+    /// <remarks>Icon token: <c>replace-all</c>.</remarks>
     [Description("@#replace-all")]
     ReplaceAll,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReply</summary>
+    /// <remarks>Icon token: <c>reply</c>.</remarks>
     [Description("@#reply")]
     Reply,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReplyAll</summary>
+    /// <remarks>Icon token: <c>reply-all</c>.</remarks>
     [Description("@#reply-all")]
     ReplyAll,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReport</summary>
+    /// <remarks>Icon token: <c>report</c>.</remarks>
     [Description("@#report")]
     Report,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuReportMedical</summary>
+    /// <remarks>Icon token: <c>report-medical</c>.</remarks>
     [Description("@#report-medical")]
     ReportMedical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRewind</summary>
+    /// <remarks>Icon token: <c>rewind</c>.</remarks>
     [Description("@#rewind")]
     Rewind,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRibbon</summary>
+    /// <remarks>Icon token: <c>ribbon</c>.</remarks>
     [Description("@#ribbon")]
     Ribbon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRocket</summary>
+    /// <remarks>Icon token: <c>rocket</c>.</remarks>
     [Description("@#rocket")]
     Rocket,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRockingChair</summary>
+    /// <remarks>Icon token: <c>rocking-chair</c>.</remarks>
     [Description("@#rocking-chair")]
     RockingChair,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRollerCoaster</summary>
+    /// <remarks>Icon token: <c>roller-coaster</c>.</remarks>
     [Description("@#roller-coaster")]
     RollerCoaster,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRose</summary>
+    /// <remarks>Icon token: <c>rose</c>.</remarks>
     [Description("@#rose")]
     Rose,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRotate3d</summary>
+    /// <remarks>Icon token: <c>rotate-3d</c>.</remarks>
     [Description("@#rotate-3d")]
     Rotate3d,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRotateCcw</summary>
+    /// <remarks>Icon token: <c>rotate-ccw</c>.</remarks>
     [Description("@#rotate-ccw")]
     RotateCcw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRotateCcwKey</summary>
+    /// <remarks>Icon token: <c>rotate-ccw-key</c>.</remarks>
     [Description("@#rotate-ccw-key")]
     RotateCcwKey,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRotateCcwSquare</summary>
+    /// <remarks>Icon token: <c>rotate-ccw-square</c>.</remarks>
     [Description("@#rotate-ccw-square")]
     RotateCcwSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRotateCw</summary>
+    /// <remarks>Icon token: <c>rotate-cw</c>.</remarks>
     [Description("@#rotate-cw")]
     RotateCw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRotateCwSquare</summary>
+    /// <remarks>Icon token: <c>rotate-cw-square</c>.</remarks>
     [Description("@#rotate-cw-square")]
     RotateCwSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRoute</summary>
+    /// <remarks>Icon token: <c>route</c>.</remarks>
     [Description("@#route")]
     Route,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRouteOff</summary>
+    /// <remarks>Icon token: <c>route-off</c>.</remarks>
     [Description("@#route-off")]
     RouteOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRouter</summary>
+    /// <remarks>Icon token: <c>router</c>.</remarks>
     [Description("@#router")]
     Router,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRows2</summary>
+    /// <remarks>Icon token: <c>rows-2</c>.</remarks>
     [Description("@#rows-2")]
     Rows2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRows3</summary>
+    /// <remarks>Icon token: <c>rows-3</c>.</remarks>
     [Description("@#rows-3")]
     Rows3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRows4</summary>
+    /// <remarks>Icon token: <c>rows-4</c>.</remarks>
     [Description("@#rows-4")]
     Rows4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRss</summary>
+    /// <remarks>Icon token: <c>rss</c>.</remarks>
     [Description("@#rss")]
     Rss,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRuler</summary>
+    /// <remarks>Icon token: <c>ruler</c>.</remarks>
     [Description("@#ruler")]
     Ruler,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRulerDimensionLine</summary>
+    /// <remarks>Icon token: <c>ruler-dimension-line</c>.</remarks>
     [Description("@#ruler-dimension-line")]
     RulerDimensionLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuRussianRuble</summary>
+    /// <remarks>Icon token: <c>russian-ruble</c>.</remarks>
     [Description("@#russian-ruble")]
     RussianRuble,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSailboat</summary>
+    /// <remarks>Icon token: <c>sailboat</c>.</remarks>
     [Description("@#sailboat")]
     Sailboat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSalad</summary>
+    /// <remarks>Icon token: <c>salad</c>.</remarks>
     [Description("@#salad")]
     Salad,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSandwich</summary>
+    /// <remarks>Icon token: <c>sandwich</c>.</remarks>
     [Description("@#sandwich")]
     Sandwich,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSatellite</summary>
+    /// <remarks>Icon token: <c>satellite</c>.</remarks>
     [Description("@#satellite")]
     Satellite,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSatelliteDish</summary>
+    /// <remarks>Icon token: <c>satellite-dish</c>.</remarks>
     [Description("@#satellite-dish")]
     SatelliteDish,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSaudiRiyal</summary>
+    /// <remarks>Icon token: <c>saudi-riyal</c>.</remarks>
     [Description("@#saudi-riyal")]
     SaudiRiyal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSave</summary>
+    /// <remarks>Icon token: <c>save</c>.</remarks>
     [Description("@#save")]
     Save,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSaveAll</summary>
+    /// <remarks>Icon token: <c>save-all</c>.</remarks>
     [Description("@#save-all")]
     SaveAll,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSaveOff</summary>
+    /// <remarks>Icon token: <c>save-off</c>.</remarks>
     [Description("@#save-off")]
     SaveOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScale</summary>
+    /// <remarks>Icon token: <c>scale</c>.</remarks>
     [Description("@#scale")]
     Scale,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScale3d</summary>
+    /// <remarks>Icon token: <c>scale-3d</c>.</remarks>
     [Description("@#scale-3d")]
     Scale3d,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScaling</summary>
+    /// <remarks>Icon token: <c>scaling</c>.</remarks>
     [Description("@#scaling")]
     Scaling,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScan</summary>
+    /// <remarks>Icon token: <c>scan</c>.</remarks>
     [Description("@#scan")]
     Scan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanBarcode</summary>
+    /// <remarks>Icon token: <c>scan-barcode</c>.</remarks>
     [Description("@#scan-barcode")]
     ScanBarcode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanEye</summary>
+    /// <remarks>Icon token: <c>scan-eye</c>.</remarks>
     [Description("@#scan-eye")]
     ScanEye,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanFace</summary>
+    /// <remarks>Icon token: <c>scan-face</c>.</remarks>
     [Description("@#scan-face")]
     ScanFace,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanHeart</summary>
+    /// <remarks>Icon token: <c>scan-heart</c>.</remarks>
     [Description("@#scan-heart")]
     ScanHeart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanLine</summary>
+    /// <remarks>Icon token: <c>scan-line</c>.</remarks>
     [Description("@#scan-line")]
     ScanLine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanQrCode</summary>
+    /// <remarks>Icon token: <c>scan-qr-code</c>.</remarks>
     [Description("@#scan-qr-code")]
     ScanQrCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanSearch</summary>
+    /// <remarks>Icon token: <c>scan-search</c>.</remarks>
     [Description("@#scan-search")]
     ScanSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScanText</summary>
+    /// <remarks>Icon token: <c>scan-text</c>.</remarks>
     [Description("@#scan-text")]
     ScanText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScatterChart</summary>
+    /// <remarks>Icon token: <c>scatter-chart</c>.</remarks>
     [Description("@#scatter-chart")]
     ScatterChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSchool</summary>
+    /// <remarks>Icon token: <c>school</c>.</remarks>
     [Description("@#school")]
     School,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScissors</summary>
+    /// <remarks>Icon token: <c>scissors</c>.</remarks>
     [Description("@#scissors")]
     Scissors,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScissorsLineDashed</summary>
+    /// <remarks>Icon token: <c>scissors-line-dashed</c>.</remarks>
     [Description("@#scissors-line-dashed")]
     ScissorsLineDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScooter</summary>
+    /// <remarks>Icon token: <c>scooter</c>.</remarks>
     [Description("@#scooter")]
     Scooter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScreenShare</summary>
+    /// <remarks>Icon token: <c>screen-share</c>.</remarks>
     [Description("@#screen-share")]
     ScreenShare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScreenShareOff</summary>
+    /// <remarks>Icon token: <c>screen-share-off</c>.</remarks>
     [Description("@#screen-share-off")]
     ScreenShareOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScreenshot</summary>
+    /// <remarks>Icon token: <c>screenshot</c>.</remarks>
     [Description("@#screenshot")]
     Screenshot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScroll</summary>
+    /// <remarks>Icon token: <c>scroll</c>.</remarks>
     [Description("@#scroll")]
     Scroll,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuScrollText</summary>
+    /// <remarks>Icon token: <c>scroll-text</c>.</remarks>
     [Description("@#scroll-text")]
     ScrollText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearch</summary>
+    /// <remarks>Icon token: <c>search</c>.</remarks>
     [Description("@#search")]
     Search,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearchAlert</summary>
+    /// <remarks>Icon token: <c>search-alert</c>.</remarks>
     [Description("@#search-alert")]
     SearchAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearchCheck</summary>
+    /// <remarks>Icon token: <c>search-check</c>.</remarks>
     [Description("@#search-check")]
     SearchCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearchCode</summary>
+    /// <remarks>Icon token: <c>search-code</c>.</remarks>
     [Description("@#search-code")]
     SearchCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearchLarge</summary>
+    /// <remarks>Icon token: <c>search-large</c>.</remarks>
     [Description("@#search-large")]
     SearchLarge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearchSlash</summary>
+    /// <remarks>Icon token: <c>search-slash</c>.</remarks>
     [Description("@#search-slash")]
     SearchSlash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSearchX</summary>
+    /// <remarks>Icon token: <c>search-x</c>.</remarks>
     [Description("@#search-x")]
     SearchX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSection</summary>
+    /// <remarks>Icon token: <c>section</c>.</remarks>
     [Description("@#section")]
     Section,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSelected</summary>
+    /// <remarks>Icon token: <c>selected</c>.</remarks>
     [Description("@#selected")]
     Selected,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSend</summary>
+    /// <remarks>Icon token: <c>send</c>.</remarks>
     [Description("@#send")]
     Send,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSendHorizontal</summary>
+    /// <remarks>Icon token: <c>send-horizontal</c>.</remarks>
     [Description("@#send-horizontal")]
     SendHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSendToBack</summary>
+    /// <remarks>Icon token: <c>send-to-back</c>.</remarks>
     [Description("@#send-to-back")]
     SendToBack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSeparatorHorizontal</summary>
+    /// <remarks>Icon token: <c>separator-horizontal</c>.</remarks>
     [Description("@#separator-horizontal")]
     SeparatorHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSeparatorVertical</summary>
+    /// <remarks>Icon token: <c>separator-vertical</c>.</remarks>
     [Description("@#separator-vertical")]
     SeparatorVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuServer</summary>
+    /// <remarks>Icon token: <c>server</c>.</remarks>
     [Description("@#server")]
     Server,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuServerCog</summary>
+    /// <remarks>Icon token: <c>server-cog</c>.</remarks>
     [Description("@#server-cog")]
     ServerCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuServerCrash</summary>
+    /// <remarks>Icon token: <c>server-crash</c>.</remarks>
     [Description("@#server-crash")]
     ServerCrash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuServerOff</summary>
+    /// <remarks>Icon token: <c>server-off</c>.</remarks>
     [Description("@#server-off")]
     ServerOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSettings</summary>
+    /// <remarks>Icon token: <c>settings</c>.</remarks>
     [Description("@#settings")]
     Settings,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSettings2</summary>
+    /// <remarks>Icon token: <c>settings-2</c>.</remarks>
     [Description("@#settings-2")]
     Settings2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShapes</summary>
+    /// <remarks>Icon token: <c>shapes</c>.</remarks>
     [Description("@#shapes")]
     Shapes,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShare</summary>
+    /// <remarks>Icon token: <c>share</c>.</remarks>
     [Description("@#share")]
     Share,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShare2</summary>
+    /// <remarks>Icon token: <c>share-2</c>.</remarks>
     [Description("@#share-2")]
     Share2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSheet</summary>
+    /// <remarks>Icon token: <c>sheet</c>.</remarks>
     [Description("@#sheet")]
     Sheet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShell</summary>
+    /// <remarks>Icon token: <c>shell</c>.</remarks>
     [Description("@#shell")]
     Shell,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShield</summary>
+    /// <remarks>Icon token: <c>shield</c>.</remarks>
     [Description("@#shield")]
     Shield,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldAlert</summary>
+    /// <remarks>Icon token: <c>shield-alert</c>.</remarks>
     [Description("@#shield-alert")]
     ShieldAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldBan</summary>
+    /// <remarks>Icon token: <c>shield-ban</c>.</remarks>
     [Description("@#shield-ban")]
     ShieldBan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldCheck</summary>
+    /// <remarks>Icon token: <c>shield-check</c>.</remarks>
     [Description("@#shield-check")]
     ShieldCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldEllipsis</summary>
+    /// <remarks>Icon token: <c>shield-ellipsis</c>.</remarks>
     [Description("@#shield-ellipsis")]
     ShieldEllipsis,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldHalf</summary>
+    /// <remarks>Icon token: <c>shield-half</c>.</remarks>
     [Description("@#shield-half")]
     ShieldHalf,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldMinus</summary>
+    /// <remarks>Icon token: <c>shield-minus</c>.</remarks>
     [Description("@#shield-minus")]
     ShieldMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldOff</summary>
+    /// <remarks>Icon token: <c>shield-off</c>.</remarks>
     [Description("@#shield-off")]
     ShieldOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldPlus</summary>
+    /// <remarks>Icon token: <c>shield-plus</c>.</remarks>
     [Description("@#shield-plus")]
     ShieldPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldQuestionMark</summary>
+    /// <remarks>Icon token: <c>shield-question-mark</c>.</remarks>
     [Description("@#shield-question-mark")]
     ShieldQuestionMark,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldUser</summary>
+    /// <remarks>Icon token: <c>shield-user</c>.</remarks>
     [Description("@#shield-user")]
     ShieldUser,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShieldX</summary>
+    /// <remarks>Icon token: <c>shield-x</c>.</remarks>
     [Description("@#shield-x")]
     ShieldX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShip</summary>
+    /// <remarks>Icon token: <c>ship</c>.</remarks>
     [Description("@#ship")]
     Ship,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShipWheel</summary>
+    /// <remarks>Icon token: <c>ship-wheel</c>.</remarks>
     [Description("@#ship-wheel")]
     ShipWheel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShirt</summary>
+    /// <remarks>Icon token: <c>shirt</c>.</remarks>
     [Description("@#shirt")]
     Shirt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShoppingBag</summary>
+    /// <remarks>Icon token: <c>shopping-bag</c>.</remarks>
     [Description("@#shopping-bag")]
     ShoppingBag,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShoppingBasket</summary>
+    /// <remarks>Icon token: <c>shopping-basket</c>.</remarks>
     [Description("@#shopping-basket")]
     ShoppingBasket,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShoppingCart</summary>
+    /// <remarks>Icon token: <c>shopping-cart</c>.</remarks>
     [Description("@#shopping-cart")]
     ShoppingCart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShovel</summary>
+    /// <remarks>Icon token: <c>shovel</c>.</remarks>
     [Description("@#shovel")]
     Shovel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShowerHead</summary>
+    /// <remarks>Icon token: <c>shower-head</c>.</remarks>
     [Description("@#shower-head")]
     ShowerHead,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShredder</summary>
+    /// <remarks>Icon token: <c>shredder</c>.</remarks>
     [Description("@#shredder")]
     Shredder,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShrimp</summary>
+    /// <remarks>Icon token: <c>shrimp</c>.</remarks>
     [Description("@#shrimp")]
     Shrimp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShrink</summary>
+    /// <remarks>Icon token: <c>shrink</c>.</remarks>
     [Description("@#shrink")]
     Shrink,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShrub</summary>
+    /// <remarks>Icon token: <c>shrub</c>.</remarks>
     [Description("@#shrub")]
     Shrub,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuShuffle</summary>
+    /// <remarks>Icon token: <c>shuffle</c>.</remarks>
     [Description("@#shuffle")]
     Shuffle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSidebar</summary>
+    /// <remarks>Icon token: <c>sidebar</c>.</remarks>
     [Description("@#sidebar")]
     Sidebar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSigma</summary>
+    /// <remarks>Icon token: <c>sigma</c>.</remarks>
     [Description("@#sigma")]
     Sigma,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignal</summary>
+    /// <remarks>Icon token: <c>signal</c>.</remarks>
     [Description("@#signal")]
     Signal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignalHigh</summary>
+    /// <remarks>Icon token: <c>signal-high</c>.</remarks>
     [Description("@#signal-high")]
     SignalHigh,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignalLow</summary>
+    /// <remarks>Icon token: <c>signal-low</c>.</remarks>
     [Description("@#signal-low")]
     SignalLow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignalMedium</summary>
+    /// <remarks>Icon token: <c>signal-medium</c>.</remarks>
     [Description("@#signal-medium")]
     SignalMedium,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignalZero</summary>
+    /// <remarks>Icon token: <c>signal-zero</c>.</remarks>
     [Description("@#signal-zero")]
     SignalZero,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignature</summary>
+    /// <remarks>Icon token: <c>signature</c>.</remarks>
     [Description("@#signature")]
     Signature,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignpost</summary>
+    /// <remarks>Icon token: <c>signpost</c>.</remarks>
     [Description("@#signpost")]
     Signpost,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSignpostBig</summary>
+    /// <remarks>Icon token: <c>signpost-big</c>.</remarks>
     [Description("@#signpost-big")]
     SignpostBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSiren</summary>
+    /// <remarks>Icon token: <c>siren</c>.</remarks>
     [Description("@#siren")]
     Siren,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSkipBack</summary>
+    /// <remarks>Icon token: <c>skip-back</c>.</remarks>
     [Description("@#skip-back")]
     SkipBack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSkipBackward</summary>
+    /// <remarks>Icon token: <c>skip-backward</c>.</remarks>
     [Description("@#skip-backward")]
     SkipBackward,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSkipForward</summary>
+    /// <remarks>Icon token: <c>skip-forward</c>.</remarks>
     [Description("@#skip-forward")]
     SkipForward,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSkull</summary>
+    /// <remarks>Icon token: <c>skull</c>.</remarks>
     [Description("@#skull")]
     Skull,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSlack</summary>
+    /// <remarks>Icon token: <c>slack</c>.</remarks>
     [Description("@#slack")]
     Slack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSlash</summary>
+    /// <remarks>Icon token: <c>slash</c>.</remarks>
     [Description("@#slash")]
     Slash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSlice</summary>
+    /// <remarks>Icon token: <c>slice</c>.</remarks>
     [Description("@#slice")]
     Slice,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSlidersHorizontal</summary>
+    /// <remarks>Icon token: <c>sliders-horizontal</c>.</remarks>
     [Description("@#sliders-horizontal")]
     SlidersHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSlidersVertical</summary>
+    /// <remarks>Icon token: <c>sliders-vertical</c>.</remarks>
     [Description("@#sliders-vertical")]
     SlidersVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSmartphone</summary>
+    /// <remarks>Icon token: <c>smartphone</c>.</remarks>
     [Description("@#smartphone")]
     Smartphone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSmartphoneCharging</summary>
+    /// <remarks>Icon token: <c>smartphone-charging</c>.</remarks>
     [Description("@#smartphone-charging")]
     SmartphoneCharging,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSmartphoneNfc</summary>
+    /// <remarks>Icon token: <c>smartphone-nfc</c>.</remarks>
     [Description("@#smartphone-nfc")]
     SmartphoneNfc,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSmile</summary>
+    /// <remarks>Icon token: <c>smile</c>.</remarks>
     [Description("@#smile")]
     Smile,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSmilePlus</summary>
+    /// <remarks>Icon token: <c>smile-plus</c>.</remarks>
     [Description("@#smile-plus")]
     SmilePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSnail</summary>
+    /// <remarks>Icon token: <c>snail</c>.</remarks>
     [Description("@#snail")]
     Snail,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSnowflake</summary>
+    /// <remarks>Icon token: <c>snowflake</c>.</remarks>
     [Description("@#snowflake")]
     Snowflake,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSoapDispenserDroplet</summary>
+    /// <remarks>Icon token: <c>soap-dispenser-droplet</c>.</remarks>
     [Description("@#soap-dispenser-droplet")]
     SoapDispenserDroplet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSofa</summary>
+    /// <remarks>Icon token: <c>sofa</c>.</remarks>
     [Description("@#sofa")]
     Sofa,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSolarPanel</summary>
+    /// <remarks>Icon token: <c>solar-panel</c>.</remarks>
     [Description("@#solar-panel")]
     SolarPanel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSort</summary>
+    /// <remarks>Icon token: <c>sort</c>.</remarks>
     [Description("@#sort")]
     Sort,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSoup</summary>
+    /// <remarks>Icon token: <c>soup</c>.</remarks>
     [Description("@#soup")]
     Soup,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpace</summary>
+    /// <remarks>Icon token: <c>space</c>.</remarks>
     [Description("@#space")]
     Space,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpade</summary>
+    /// <remarks>Icon token: <c>spade</c>.</remarks>
     [Description("@#spade")]
     Spade,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSparkle</summary>
+    /// <remarks>Icon token: <c>sparkle</c>.</remarks>
     [Description("@#sparkle")]
     Sparkle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSparkles</summary>
+    /// <remarks>Icon token: <c>sparkles</c>.</remarks>
     [Description("@#sparkles")]
     Sparkles,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpeaker</summary>
+    /// <remarks>Icon token: <c>speaker</c>.</remarks>
     [Description("@#speaker")]
     Speaker,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpeech</summary>
+    /// <remarks>Icon token: <c>speech</c>.</remarks>
     [Description("@#speech")]
     Speech,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpellCheck</summary>
+    /// <remarks>Icon token: <c>spell-check</c>.</remarks>
     [Description("@#spell-check")]
     SpellCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpellCheck2</summary>
+    /// <remarks>Icon token: <c>spell-check-2</c>.</remarks>
     [Description("@#spell-check-2")]
     SpellCheck2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpline</summary>
+    /// <remarks>Icon token: <c>spline</c>.</remarks>
     [Description("@#spline")]
     Spline,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSplinePointer</summary>
+    /// <remarks>Icon token: <c>spline-pointer</c>.</remarks>
     [Description("@#spline-pointer")]
     SplinePointer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSplit</summary>
+    /// <remarks>Icon token: <c>split</c>.</remarks>
     [Description("@#split")]
     Split,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSplitBill</summary>
+    /// <remarks>Icon token: <c>split-bill</c>.</remarks>
     [Description("@#split-bill")]
     SplitBill,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpool</summary>
+    /// <remarks>Icon token: <c>spool</c>.</remarks>
     [Description("@#spool")]
     Spool,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSports</summary>
+    /// <remarks>Icon token: <c>sports</c>.</remarks>
     [Description("@#sports")]
     Sports,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSpotlight</summary>
+    /// <remarks>Icon token: <c>spotlight</c>.</remarks>
     [Description("@#spotlight")]
     Spotlight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSprayCan</summary>
+    /// <remarks>Icon token: <c>spray-can</c>.</remarks>
     [Description("@#spray-can")]
     SprayCan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSprout</summary>
+    /// <remarks>Icon token: <c>sprout</c>.</remarks>
     [Description("@#sprout")]
     Sprout,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquare</summary>
+    /// <remarks>Icon token: <c>square</c>.</remarks>
     [Description("@#square")]
     Square,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareActivity</summary>
+    /// <remarks>Icon token: <c>square-activity</c>.</remarks>
     [Description("@#square-activity")]
     SquareActivity,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDown</summary>
+    /// <remarks>Icon token: <c>square-arrow-down</c>.</remarks>
     [Description("@#square-arrow-down")]
     SquareArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDownLeft</summary>
+    /// <remarks>Icon token: <c>square-arrow-down-left</c>.</remarks>
     [Description("@#square-arrow-down-left")]
     SquareArrowDownLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDownRight</summary>
+    /// <remarks>Icon token: <c>square-arrow-down-right</c>.</remarks>
     [Description("@#square-arrow-down-right")]
     SquareArrowDownRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowLeft</summary>
+    /// <remarks>Icon token: <c>square-arrow-left</c>.</remarks>
     [Description("@#square-arrow-left")]
     SquareArrowLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutDownLeft</summary>
+    /// <remarks>Icon token: <c>square-arrow-out-down-left</c>.</remarks>
     [Description("@#square-arrow-out-down-left")]
     SquareArrowOutDownLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutDownRight</summary>
+    /// <remarks>Icon token: <c>square-arrow-out-down-right</c>.</remarks>
     [Description("@#square-arrow-out-down-right")]
     SquareArrowOutDownRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutUpLeft</summary>
+    /// <remarks>Icon token: <c>square-arrow-out-up-left</c>.</remarks>
     [Description("@#square-arrow-out-up-left")]
     SquareArrowOutUpLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutUpRight</summary>
+    /// <remarks>Icon token: <c>square-arrow-out-up-right</c>.</remarks>
     [Description("@#square-arrow-out-up-right")]
     SquareArrowOutUpRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowRight</summary>
+    /// <remarks>Icon token: <c>square-arrow-right</c>.</remarks>
     [Description("@#square-arrow-right")]
     SquareArrowRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUp</summary>
+    /// <remarks>Icon token: <c>square-arrow-up</c>.</remarks>
     [Description("@#square-arrow-up")]
     SquareArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUpLeft</summary>
+    /// <remarks>Icon token: <c>square-arrow-up-left</c>.</remarks>
     [Description("@#square-arrow-up-left")]
     SquareArrowUpLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUpRight</summary>
+    /// <remarks>Icon token: <c>square-arrow-up-right</c>.</remarks>
     [Description("@#square-arrow-up-right")]
     SquareArrowUpRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareAsterisk</summary>
+    /// <remarks>Icon token: <c>square-asterisk</c>.</remarks>
     [Description("@#square-asterisk")]
     SquareAsterisk,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareBottomDashedScissors</summary>
+    /// <remarks>Icon token: <c>square-bottom-dashed-scissors</c>.</remarks>
     [Description("@#square-bottom-dashed-scissors")]
     SquareBottomDashedScissors,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareChartGantt</summary>
+    /// <remarks>Icon token: <c>square-chart-gantt</c>.</remarks>
     [Description("@#square-chart-gantt")]
     SquareChartGantt,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareCheck</summary>
+    /// <remarks>Icon token: <c>square-check</c>.</remarks>
     [Description("@#square-check")]
     SquareCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareCheckBig</summary>
+    /// <remarks>Icon token: <c>square-check-big</c>.</remarks>
     [Description("@#square-check-big")]
     SquareCheckBig,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronDown</summary>
+    /// <remarks>Icon token: <c>square-chevron-down</c>.</remarks>
     [Description("@#square-chevron-down")]
     SquareChevronDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronLeft</summary>
+    /// <remarks>Icon token: <c>square-chevron-left</c>.</remarks>
     [Description("@#square-chevron-left")]
     SquareChevronLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronRight</summary>
+    /// <remarks>Icon token: <c>square-chevron-right</c>.</remarks>
     [Description("@#square-chevron-right")]
     SquareChevronRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronUp</summary>
+    /// <remarks>Icon token: <c>square-chevron-up</c>.</remarks>
     [Description("@#square-chevron-up")]
     SquareChevronUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareCode</summary>
+    /// <remarks>Icon token: <c>square-code</c>.</remarks>
     [Description("@#square-code")]
     SquareCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashed</summary>
+    /// <remarks>Icon token: <c>square-dashed</c>.</remarks>
     [Description("@#square-dashed")]
     SquareDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedBottom</summary>
+    /// <remarks>Icon token: <c>square-dashed-bottom</c>.</remarks>
     [Description("@#square-dashed-bottom")]
     SquareDashedBottom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedBottomCode</summary>
+    /// <remarks>Icon token: <c>square-dashed-bottom-code</c>.</remarks>
     [Description("@#square-dashed-bottom-code")]
     SquareDashedBottomCode,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedKanban</summary>
+    /// <remarks>Icon token: <c>square-dashed-kanban</c>.</remarks>
     [Description("@#square-dashed-kanban")]
     SquareDashedKanban,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedMousePointer</summary>
+    /// <remarks>Icon token: <c>square-dashed-mouse-pointer</c>.</remarks>
     [Description("@#square-dashed-mouse-pointer")]
     SquareDashedMousePointer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedTopSolid</summary>
+    /// <remarks>Icon token: <c>square-dashed-top-solid</c>.</remarks>
     [Description("@#square-dashed-top-solid")]
     SquareDashedTopSolid,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDivide</summary>
+    /// <remarks>Icon token: <c>square-divide</c>.</remarks>
     [Description("@#square-divide")]
     SquareDivide,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareDot</summary>
+    /// <remarks>Icon token: <c>square-dot</c>.</remarks>
     [Description("@#square-dot")]
     SquareDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareEqual</summary>
+    /// <remarks>Icon token: <c>square-equal</c>.</remarks>
     [Description("@#square-equal")]
     SquareEqual,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareFunction</summary>
+    /// <remarks>Icon token: <c>square-function</c>.</remarks>
     [Description("@#square-function")]
     SquareFunction,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareKanban</summary>
+    /// <remarks>Icon token: <c>square-kanban</c>.</remarks>
     [Description("@#square-kanban")]
     SquareKanban,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareLibrary</summary>
+    /// <remarks>Icon token: <c>square-library</c>.</remarks>
     [Description("@#square-library")]
     SquareLibrary,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareM</summary>
+    /// <remarks>Icon token: <c>square-m</c>.</remarks>
     [Description("@#square-m")]
     SquareM,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareMenu</summary>
+    /// <remarks>Icon token: <c>square-menu</c>.</remarks>
     [Description("@#square-menu")]
     SquareMenu,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareMinus</summary>
+    /// <remarks>Icon token: <c>square-minus</c>.</remarks>
     [Description("@#square-minus")]
     SquareMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareMousePointer</summary>
+    /// <remarks>Icon token: <c>square-mouse-pointer</c>.</remarks>
     [Description("@#square-mouse-pointer")]
     SquareMousePointer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareParking</summary>
+    /// <remarks>Icon token: <c>square-parking</c>.</remarks>
     [Description("@#square-parking")]
     SquareParking,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareParkingOff</summary>
+    /// <remarks>Icon token: <c>square-parking-off</c>.</remarks>
     [Description("@#square-parking-off")]
     SquareParkingOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePause</summary>
+    /// <remarks>Icon token: <c>square-pause</c>.</remarks>
     [Description("@#square-pause")]
     SquarePause,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePen</summary>
+    /// <remarks>Icon token: <c>square-pen</c>.</remarks>
     [Description("@#square-pen")]
     SquarePen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePercent</summary>
+    /// <remarks>Icon token: <c>square-percent</c>.</remarks>
     [Description("@#square-percent")]
     SquarePercent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePi</summary>
+    /// <remarks>Icon token: <c>square-pi</c>.</remarks>
     [Description("@#square-pi")]
     SquarePi,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePilcrow</summary>
+    /// <remarks>Icon token: <c>square-pilcrow</c>.</remarks>
     [Description("@#square-pilcrow")]
     SquarePilcrow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePlay</summary>
+    /// <remarks>Icon token: <c>square-play</c>.</remarks>
     [Description("@#square-play")]
     SquarePlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePlus</summary>
+    /// <remarks>Icon token: <c>square-plus</c>.</remarks>
     [Description("@#square-plus")]
     SquarePlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquarePower</summary>
+    /// <remarks>Icon token: <c>square-power</c>.</remarks>
     [Description("@#square-power")]
     SquarePower,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareRadical</summary>
+    /// <remarks>Icon token: <c>square-radical</c>.</remarks>
     [Description("@#square-radical")]
     SquareRadical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareRoundCorner</summary>
+    /// <remarks>Icon token: <c>square-round-corner</c>.</remarks>
     [Description("@#square-round-corner")]
     SquareRoundCorner,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareScissors</summary>
+    /// <remarks>Icon token: <c>square-scissors</c>.</remarks>
     [Description("@#square-scissors")]
     SquareScissors,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareSigma</summary>
+    /// <remarks>Icon token: <c>square-sigma</c>.</remarks>
     [Description("@#square-sigma")]
     SquareSigma,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareSlash</summary>
+    /// <remarks>Icon token: <c>square-slash</c>.</remarks>
     [Description("@#square-slash")]
     SquareSlash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareSplitHorizontal</summary>
+    /// <remarks>Icon token: <c>square-split-horizontal</c>.</remarks>
     [Description("@#square-split-horizontal")]
     SquareSplitHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareSplitVertical</summary>
+    /// <remarks>Icon token: <c>square-split-vertical</c>.</remarks>
     [Description("@#square-split-vertical")]
     SquareSplitVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareSquare</summary>
+    /// <remarks>Icon token: <c>square-square</c>.</remarks>
     [Description("@#square-square")]
     SquareSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareStack</summary>
+    /// <remarks>Icon token: <c>square-stack</c>.</remarks>
     [Description("@#square-stack")]
     SquareStack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareStar</summary>
+    /// <remarks>Icon token: <c>square-star</c>.</remarks>
     [Description("@#square-star")]
     SquareStar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareStop</summary>
+    /// <remarks>Icon token: <c>square-stop</c>.</remarks>
     [Description("@#square-stop")]
     SquareStop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareTerminal</summary>
+    /// <remarks>Icon token: <c>square-terminal</c>.</remarks>
     [Description("@#square-terminal")]
     SquareTerminal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareUser</summary>
+    /// <remarks>Icon token: <c>square-user</c>.</remarks>
     [Description("@#square-user")]
     SquareUser,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareUserRound</summary>
+    /// <remarks>Icon token: <c>square-user-round</c>.</remarks>
     [Description("@#square-user-round")]
     SquareUserRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquareX</summary>
+    /// <remarks>Icon token: <c>square-x</c>.</remarks>
     [Description("@#square-x")]
     SquareX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquaresExclude</summary>
+    /// <remarks>Icon token: <c>squares-exclude</c>.</remarks>
     [Description("@#squares-exclude")]
     SquaresExclude,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquaresIntersect</summary>
+    /// <remarks>Icon token: <c>squares-intersect</c>.</remarks>
     [Description("@#squares-intersect")]
     SquaresIntersect,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquaresSubtract</summary>
+    /// <remarks>Icon token: <c>squares-subtract</c>.</remarks>
     [Description("@#squares-subtract")]
     SquaresSubtract,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquaresUnite</summary>
+    /// <remarks>Icon token: <c>squares-unite</c>.</remarks>
     [Description("@#squares-unite")]
     SquaresUnite,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquircle</summary>
+    /// <remarks>Icon token: <c>squircle</c>.</remarks>
     [Description("@#squircle")]
     Squircle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquircleDashed</summary>
+    /// <remarks>Icon token: <c>squircle-dashed</c>.</remarks>
     [Description("@#squircle-dashed")]
     SquircleDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSquirrel</summary>
+    /// <remarks>Icon token: <c>squirrel</c>.</remarks>
     [Description("@#squirrel")]
     Squirrel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStamp</summary>
+    /// <remarks>Icon token: <c>stamp</c>.</remarks>
     [Description("@#stamp")]
     Stamp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStar</summary>
+    /// <remarks>Icon token: <c>star</c>.</remarks>
     [Description("@#star")]
     Star,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStarHalf</summary>
+    /// <remarks>Icon token: <c>star-half</c>.</remarks>
     [Description("@#star-half")]
     StarHalf,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStarOff</summary>
+    /// <remarks>Icon token: <c>star-off</c>.</remarks>
     [Description("@#star-off")]
     StarOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStatistics</summary>
+    /// <remarks>Icon token: <c>statistics</c>.</remarks>
     [Description("@#statistics")]
     Statistics,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStepBack</summary>
+    /// <remarks>Icon token: <c>step-back</c>.</remarks>
     [Description("@#step-back")]
     StepBack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStepForward</summary>
+    /// <remarks>Icon token: <c>step-forward</c>.</remarks>
     [Description("@#step-forward")]
     StepForward,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStethoscope</summary>
+    /// <remarks>Icon token: <c>stethoscope</c>.</remarks>
     [Description("@#stethoscope")]
     Stethoscope,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSticker</summary>
+    /// <remarks>Icon token: <c>sticker</c>.</remarks>
     [Description("@#sticker")]
     Sticker,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStickyNote</summary>
+    /// <remarks>Icon token: <c>sticky-note</c>.</remarks>
     [Description("@#sticky-note")]
     StickyNote,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStone</summary>
+    /// <remarks>Icon token: <c>stone</c>.</remarks>
     [Description("@#stone")]
     Stone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStop</summary>
+    /// <remarks>Icon token: <c>stop</c>.</remarks>
     [Description("@#stop")]
     Stop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStore</summary>
+    /// <remarks>Icon token: <c>store</c>.</remarks>
     [Description("@#store")]
     Store,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStretchHorizontal</summary>
+    /// <remarks>Icon token: <c>stretch-horizontal</c>.</remarks>
     [Description("@#stretch-horizontal")]
     StretchHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStretchVertical</summary>
+    /// <remarks>Icon token: <c>stretch-vertical</c>.</remarks>
     [Description("@#stretch-vertical")]
     StretchVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuStrikethrough</summary>
+    /// <remarks>Icon token: <c>strikethrough</c>.</remarks>
     [Description("@#strikethrough")]
     Strikethrough,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSubscript</summary>
+    /// <remarks>Icon token: <c>subscript</c>.</remarks>
     [Description("@#subscript")]
     Subscript,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSubway</summary>
+    /// <remarks>Icon token: <c>subway</c>.</remarks>
     [Description("@#subway")]
     Subway,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSuccess</summary>
+    /// <remarks>Icon token: <c>success</c>.</remarks>
     [Description("@#success")]
     Success,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSun</summary>
+    /// <remarks>Icon token: <c>sun</c>.</remarks>
     [Description("@#sun")]
     Sun,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunDim</summary>
+    /// <remarks>Icon token: <c>sun-dim</c>.</remarks>
     [Description("@#sun-dim")]
     SunDim,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunMedium</summary>
+    /// <remarks>Icon token: <c>sun-medium</c>.</remarks>
     [Description("@#sun-medium")]
     SunMedium,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunMoon</summary>
+    /// <remarks>Icon token: <c>sun-moon</c>.</remarks>
     [Description("@#sun-moon")]
     SunMoon,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunSnow</summary>
+    /// <remarks>Icon token: <c>sun-snow</c>.</remarks>
     [Description("@#sun-snow")]
     SunSnow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunny</summary>
+    /// <remarks>Icon token: <c>sunny</c>.</remarks>
     [Description("@#sunny")]
     Sunny,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunrise</summary>
+    /// <remarks>Icon token: <c>sunrise</c>.</remarks>
     [Description("@#sunrise")]
     Sunrise,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSunset</summary>
+    /// <remarks>Icon token: <c>sunset</c>.</remarks>
     [Description("@#sunset")]
     Sunset,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSuperscript</summary>
+    /// <remarks>Icon token: <c>superscript</c>.</remarks>
     [Description("@#superscript")]
     Superscript,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSwatchBook</summary>
+    /// <remarks>Icon token: <c>swatch-book</c>.</remarks>
     [Description("@#swatch-book")]
     SwatchBook,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSwissFranc</summary>
+    /// <remarks>Icon token: <c>swiss-franc</c>.</remarks>
     [Description("@#swiss-franc")]
     SwissFranc,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSwitchCamera</summary>
+    /// <remarks>Icon token: <c>switch-camera</c>.</remarks>
     [Description("@#switch-camera")]
     SwitchCamera,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSword</summary>
+    /// <remarks>Icon token: <c>sword</c>.</remarks>
     [Description("@#sword")]
     Sword,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSwords</summary>
+    /// <remarks>Icon token: <c>swords</c>.</remarks>
     [Description("@#swords")]
     Swords,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuSyringe</summary>
+    /// <remarks>Icon token: <c>syringe</c>.</remarks>
     [Description("@#syringe")]
     Syringe,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTable</summary>
+    /// <remarks>Icon token: <c>table</c>.</remarks>
     [Description("@#table")]
     Table,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTable2</summary>
+    /// <remarks>Icon token: <c>table-2</c>.</remarks>
     [Description("@#table-2")]
     Table2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTableCellsMerge</summary>
+    /// <remarks>Icon token: <c>table-cells-merge</c>.</remarks>
     [Description("@#table-cells-merge")]
     TableCellsMerge,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTableCellsSplit</summary>
+    /// <remarks>Icon token: <c>table-cells-split</c>.</remarks>
     [Description("@#table-cells-split")]
     TableCellsSplit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTableColumnsSplit</summary>
+    /// <remarks>Icon token: <c>table-columns-split</c>.</remarks>
     [Description("@#table-columns-split")]
     TableColumnsSplit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTableOfContents</summary>
+    /// <remarks>Icon token: <c>table-of-contents</c>.</remarks>
     [Description("@#table-of-contents")]
     TableOfContents,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTableProperties</summary>
+    /// <remarks>Icon token: <c>table-properties</c>.</remarks>
     [Description("@#table-properties")]
     TableProperties,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTableRowsSplit</summary>
+    /// <remarks>Icon token: <c>table-rows-split</c>.</remarks>
     [Description("@#table-rows-split")]
     TableRowsSplit,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTablet</summary>
+    /// <remarks>Icon token: <c>tablet</c>.</remarks>
     [Description("@#tablet")]
     Tablet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTabletSmartphone</summary>
+    /// <remarks>Icon token: <c>tablet-smartphone</c>.</remarks>
     [Description("@#tablet-smartphone")]
     TabletSmartphone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTablets</summary>
+    /// <remarks>Icon token: <c>tablets</c>.</remarks>
     [Description("@#tablets")]
     Tablets,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTag</summary>
+    /// <remarks>Icon token: <c>tag</c>.</remarks>
     [Description("@#tag")]
     Tag,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTags</summary>
+    /// <remarks>Icon token: <c>tags</c>.</remarks>
     [Description("@#tags")]
     Tags,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTakeout</summary>
+    /// <remarks>Icon token: <c>takeout</c>.</remarks>
     [Description("@#takeout")]
     Takeout,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTally1</summary>
+    /// <remarks>Icon token: <c>tally-1</c>.</remarks>
     [Description("@#tally-1")]
     Tally1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTally2</summary>
+    /// <remarks>Icon token: <c>tally-2</c>.</remarks>
     [Description("@#tally-2")]
     Tally2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTally3</summary>
+    /// <remarks>Icon token: <c>tally-3</c>.</remarks>
     [Description("@#tally-3")]
     Tally3,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTally4</summary>
+    /// <remarks>Icon token: <c>tally-4</c>.</remarks>
     [Description("@#tally-4")]
     Tally4,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTally5</summary>
+    /// <remarks>Icon token: <c>tally-5</c>.</remarks>
     [Description("@#tally-5")]
     Tally5,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTangent</summary>
+    /// <remarks>Icon token: <c>tangent</c>.</remarks>
     [Description("@#tangent")]
     Tangent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTarget</summary>
+    /// <remarks>Icon token: <c>target</c>.</remarks>
     [Description("@#target")]
     Target,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTelescope</summary>
+    /// <remarks>Icon token: <c>telescope</c>.</remarks>
     [Description("@#telescope")]
     Telescope,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTent</summary>
+    /// <remarks>Icon token: <c>tent</c>.</remarks>
     [Description("@#tent")]
     Tent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTentTree</summary>
+    /// <remarks>Icon token: <c>tent-tree</c>.</remarks>
     [Description("@#tent-tree")]
     TentTree,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTerminal</summary>
+    /// <remarks>Icon token: <c>terminal</c>.</remarks>
     [Description("@#terminal")]
     Terminal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTestTube</summary>
+    /// <remarks>Icon token: <c>test-tube</c>.</remarks>
     [Description("@#test-tube")]
     TestTube,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTestTubeDiagonal</summary>
+    /// <remarks>Icon token: <c>test-tube-diagonal</c>.</remarks>
     [Description("@#test-tube-diagonal")]
     TestTubeDiagonal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTestTubes</summary>
+    /// <remarks>Icon token: <c>test-tubes</c>.</remarks>
     [Description("@#test-tubes")]
     TestTubes,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuText</summary>
+    /// <remarks>Icon token: <c>text</c>.</remarks>
     [Description("@#text")]
     Text,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignCenter</summary>
+    /// <remarks>Icon token: <c>text-align-center</c>.</remarks>
     [Description("@#text-align-center")]
     TextAlignCenter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignEnd</summary>
+    /// <remarks>Icon token: <c>text-align-end</c>.</remarks>
     [Description("@#text-align-end")]
     TextAlignEnd,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignJustify</summary>
+    /// <remarks>Icon token: <c>text-align-justify</c>.</remarks>
     [Description("@#text-align-justify")]
     TextAlignJustify,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignStart</summary>
+    /// <remarks>Icon token: <c>text-align-start</c>.</remarks>
     [Description("@#text-align-start")]
     TextAlignStart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextCursor</summary>
+    /// <remarks>Icon token: <c>text-cursor</c>.</remarks>
     [Description("@#text-cursor")]
     TextCursor,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextCursorInput</summary>
+    /// <remarks>Icon token: <c>text-cursor-input</c>.</remarks>
     [Description("@#text-cursor-input")]
     TextCursorInput,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextInitial</summary>
+    /// <remarks>Icon token: <c>text-initial</c>.</remarks>
     [Description("@#text-initial")]
     TextInitial,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextQuote</summary>
+    /// <remarks>Icon token: <c>text-quote</c>.</remarks>
     [Description("@#text-quote")]
     TextQuote,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextSearch</summary>
+    /// <remarks>Icon token: <c>text-search</c>.</remarks>
     [Description("@#text-search")]
     TextSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextSelect</summary>
+    /// <remarks>Icon token: <c>text-select</c>.</remarks>
     [Description("@#text-select")]
     TextSelect,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTextWrap</summary>
+    /// <remarks>Icon token: <c>text-wrap</c>.</remarks>
     [Description("@#text-wrap")]
     TextWrap,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTheater</summary>
+    /// <remarks>Icon token: <c>theater</c>.</remarks>
     [Description("@#theater")]
     Theater,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuThermometer</summary>
+    /// <remarks>Icon token: <c>thermometer</c>.</remarks>
     [Description("@#thermometer")]
     Thermometer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuThermometerSnowflake</summary>
+    /// <remarks>Icon token: <c>thermometer-snowflake</c>.</remarks>
     [Description("@#thermometer-snowflake")]
     ThermometerSnowflake,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuThermometerSun</summary>
+    /// <remarks>Icon token: <c>thermometer-sun</c>.</remarks>
     [Description("@#thermometer-sun")]
     ThermometerSun,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuThumbsDown</summary>
+    /// <remarks>Icon token: <c>thumbs-down</c>.</remarks>
     [Description("@#thumbs-down")]
     ThumbsDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuThumbsUp</summary>
+    /// <remarks>Icon token: <c>thumbs-up</c>.</remarks>
     [Description("@#thumbs-up")]
     ThumbsUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicket</summary>
+    /// <remarks>Icon token: <c>ticket</c>.</remarks>
     [Description("@#ticket")]
     Ticket,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketCheck</summary>
+    /// <remarks>Icon token: <c>ticket-check</c>.</remarks>
     [Description("@#ticket-check")]
     TicketCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketMinus</summary>
+    /// <remarks>Icon token: <c>ticket-minus</c>.</remarks>
     [Description("@#ticket-minus")]
     TicketMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketPercent</summary>
+    /// <remarks>Icon token: <c>ticket-percent</c>.</remarks>
     [Description("@#ticket-percent")]
     TicketPercent,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketPlus</summary>
+    /// <remarks>Icon token: <c>ticket-plus</c>.</remarks>
     [Description("@#ticket-plus")]
     TicketPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketSlash</summary>
+    /// <remarks>Icon token: <c>ticket-slash</c>.</remarks>
     [Description("@#ticket-slash")]
     TicketSlash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketX</summary>
+    /// <remarks>Icon token: <c>ticket-x</c>.</remarks>
     [Description("@#ticket-x")]
     TicketX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTickets</summary>
+    /// <remarks>Icon token: <c>tickets</c>.</remarks>
     [Description("@#tickets")]
     Tickets,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTicketsPlane</summary>
+    /// <remarks>Icon token: <c>tickets-plane</c>.</remarks>
     [Description("@#tickets-plane")]
     TicketsPlane,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTimer</summary>
+    /// <remarks>Icon token: <c>timer</c>.</remarks>
     [Description("@#timer")]
     Timer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTimerOff</summary>
+    /// <remarks>Icon token: <c>timer-off</c>.</remarks>
     [Description("@#timer-off")]
     TimerOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTimerReset</summary>
+    /// <remarks>Icon token: <c>timer-reset</c>.</remarks>
     [Description("@#timer-reset")]
     TimerReset,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToBottom</summary>
+    /// <remarks>Icon token: <c>to-bottom</c>.</remarks>
     [Description("@#to-bottom")]
     ToBottom,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToTop</summary>
+    /// <remarks>Icon token: <c>to-top</c>.</remarks>
     [Description("@#to-top")]
     ToTop,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToggleLeft</summary>
+    /// <remarks>Icon token: <c>toggle-left</c>.</remarks>
     [Description("@#toggle-left")]
     ToggleLeft,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToggleRight</summary>
+    /// <remarks>Icon token: <c>toggle-right</c>.</remarks>
     [Description("@#toggle-right")]
     ToggleRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToilet</summary>
+    /// <remarks>Icon token: <c>toilet</c>.</remarks>
     [Description("@#toilet")]
     Toilet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToolCase</summary>
+    /// <remarks>Icon token: <c>tool-case</c>.</remarks>
     [Description("@#tool-case")]
     ToolCase,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToolbox</summary>
+    /// <remarks>Icon token: <c>toolbox</c>.</remarks>
     [Description("@#toolbox")]
     Toolbox,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTopBar</summary>
+    /// <remarks>Icon token: <c>top-bar</c>.</remarks>
     [Description("@#top-bar")]
     TopBar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTornado</summary>
+    /// <remarks>Icon token: <c>tornado</c>.</remarks>
     [Description("@#tornado")]
     Tornado,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTorus</summary>
+    /// <remarks>Icon token: <c>torus</c>.</remarks>
     [Description("@#torus")]
     Torus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTouchpad</summary>
+    /// <remarks>Icon token: <c>touchpad</c>.</remarks>
     [Description("@#touchpad")]
     Touchpad,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTouchpadOff</summary>
+    /// <remarks>Icon token: <c>touchpad-off</c>.</remarks>
     [Description("@#touchpad-off")]
     TouchpadOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTowerControl</summary>
+    /// <remarks>Icon token: <c>tower-control</c>.</remarks>
     [Description("@#tower-control")]
     TowerControl,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuToyBrick</summary>
+    /// <remarks>Icon token: <c>toy-brick</c>.</remarks>
     [Description("@#toy-brick")]
     ToyBrick,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTractor</summary>
+    /// <remarks>Icon token: <c>tractor</c>.</remarks>
     [Description("@#tractor")]
     Tractor,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrafficCone</summary>
+    /// <remarks>Icon token: <c>traffic-cone</c>.</remarks>
     [Description("@#traffic-cone")]
     TrafficCone,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrain</summary>
+    /// <remarks>Icon token: <c>train</c>.</remarks>
     [Description("@#train")]
     Train,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrainFront</summary>
+    /// <remarks>Icon token: <c>train-front</c>.</remarks>
     [Description("@#train-front")]
     TrainFront,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrainFrontTunnel</summary>
+    /// <remarks>Icon token: <c>train-front-tunnel</c>.</remarks>
     [Description("@#train-front-tunnel")]
     TrainFrontTunnel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrainTrack</summary>
+    /// <remarks>Icon token: <c>train-track</c>.</remarks>
     [Description("@#train-track")]
     TrainTrack,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTramFront</summary>
+    /// <remarks>Icon token: <c>tram-front</c>.</remarks>
     [Description("@#tram-front")]
     TramFront,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTransfer</summary>
+    /// <remarks>Icon token: <c>transfer</c>.</remarks>
     [Description("@#transfer")]
     Transfer,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTransgender</summary>
+    /// <remarks>Icon token: <c>transgender</c>.</remarks>
     [Description("@#transgender")]
     Transgender,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrash</summary>
+    /// <remarks>Icon token: <c>trash</c>.</remarks>
     [Description("@#trash")]
     Trash,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrash2</summary>
+    /// <remarks>Icon token: <c>trash-2</c>.</remarks>
     [Description("@#trash-2")]
     Trash2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTravel</summary>
+    /// <remarks>Icon token: <c>travel</c>.</remarks>
     [Description("@#travel")]
     Travel,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTreeDeciduous</summary>
+    /// <remarks>Icon token: <c>tree-deciduous</c>.</remarks>
     [Description("@#tree-deciduous")]
     TreeDeciduous,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTreePalm</summary>
+    /// <remarks>Icon token: <c>tree-palm</c>.</remarks>
     [Description("@#tree-palm")]
     TreePalm,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTreePine</summary>
+    /// <remarks>Icon token: <c>tree-pine</c>.</remarks>
     [Description("@#tree-pine")]
     TreePine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrees</summary>
+    /// <remarks>Icon token: <c>trees</c>.</remarks>
     [Description("@#trees")]
     Trees,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrello</summary>
+    /// <remarks>Icon token: <c>trello</c>.</remarks>
     [Description("@#trello")]
     Trello,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrendingDown</summary>
+    /// <remarks>Icon token: <c>trending-down</c>.</remarks>
     [Description("@#trending-down")]
     TrendingDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrendingUp</summary>
+    /// <remarks>Icon token: <c>trending-up</c>.</remarks>
     [Description("@#trending-up")]
     TrendingUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrendingUpDown</summary>
+    /// <remarks>Icon token: <c>trending-up-down</c>.</remarks>
     [Description("@#trending-up-down")]
     TrendingUpDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTriangle</summary>
+    /// <remarks>Icon token: <c>triangle</c>.</remarks>
     [Description("@#triangle")]
     Triangle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTriangleAlert</summary>
+    /// <remarks>Icon token: <c>triangle-alert</c>.</remarks>
     [Description("@#triangle-alert")]
     TriangleAlert,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTriangleDashed</summary>
+    /// <remarks>Icon token: <c>triangle-dashed</c>.</remarks>
     [Description("@#triangle-dashed")]
     TriangleDashed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTriangleRight</summary>
+    /// <remarks>Icon token: <c>triangle-right</c>.</remarks>
     [Description("@#triangle-right")]
     TriangleRight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTrophy</summary>
+    /// <remarks>Icon token: <c>trophy</c>.</remarks>
     [Description("@#trophy")]
     Trophy,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTruck</summary>
+    /// <remarks>Icon token: <c>truck</c>.</remarks>
     [Description("@#truck")]
     Truck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTruckElectric</summary>
+    /// <remarks>Icon token: <c>truck-electric</c>.</remarks>
     [Description("@#truck-electric")]
     TruckElectric,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTurkishLira</summary>
+    /// <remarks>Icon token: <c>turkish-lira</c>.</remarks>
     [Description("@#turkish-lira")]
     TurkishLira,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTurntable</summary>
+    /// <remarks>Icon token: <c>turntable</c>.</remarks>
     [Description("@#turntable")]
     Turntable,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTurtle</summary>
+    /// <remarks>Icon token: <c>turtle</c>.</remarks>
     [Description("@#turtle")]
     Turtle,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTv</summary>
+    /// <remarks>Icon token: <c>tv</c>.</remarks>
     [Description("@#tv")]
     Tv,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTvMinimal</summary>
+    /// <remarks>Icon token: <c>tv-minimal</c>.</remarks>
     [Description("@#tv-minimal")]
     TvMinimal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTvMinimalPlay</summary>
+    /// <remarks>Icon token: <c>tv-minimal-play</c>.</remarks>
     [Description("@#tv-minimal-play")]
     TvMinimalPlay,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTwitch</summary>
+    /// <remarks>Icon token: <c>twitch</c>.</remarks>
     [Description("@#twitch")]
     Twitch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTwitter</summary>
+    /// <remarks>Icon token: <c>twitter</c>.</remarks>
     [Description("@#twitter")]
     Twitter,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuType</summary>
+    /// <remarks>Icon token: <c>type</c>.</remarks>
     [Description("@#type")]
     Type,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuTypeOutline</summary>
+    /// <remarks>Icon token: <c>type-outline</c>.</remarks>
     [Description("@#type-outline")]
     TypeOutline,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUmbrella</summary>
+    /// <remarks>Icon token: <c>umbrella</c>.</remarks>
     [Description("@#umbrella")]
     Umbrella,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUmbrellaOff</summary>
+    /// <remarks>Icon token: <c>umbrella-off</c>.</remarks>
     [Description("@#umbrella-off")]
     UmbrellaOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnderline</summary>
+    /// <remarks>Icon token: <c>underline</c>.</remarks>
     [Description("@#underline")]
     Underline,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUndo</summary>
+    /// <remarks>Icon token: <c>undo</c>.</remarks>
     [Description("@#undo")]
     Undo,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUndo2</summary>
+    /// <remarks>Icon token: <c>undo-2</c>.</remarks>
     [Description("@#undo-2")]
     Undo2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUndoDot</summary>
+    /// <remarks>Icon token: <c>undo-dot</c>.</remarks>
     [Description("@#undo-dot")]
     UndoDot,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnfoldHorizontal</summary>
+    /// <remarks>Icon token: <c>unfold-horizontal</c>.</remarks>
     [Description("@#unfold-horizontal")]
     UnfoldHorizontal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnfoldVertical</summary>
+    /// <remarks>Icon token: <c>unfold-vertical</c>.</remarks>
     [Description("@#unfold-vertical")]
     UnfoldVertical,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnfollow</summary>
+    /// <remarks>Icon token: <c>unfollow</c>.</remarks>
     [Description("@#unfollow")]
     Unfollow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUngroup</summary>
+    /// <remarks>Icon token: <c>ungroup</c>.</remarks>
     [Description("@#ungroup")]
     Ungroup,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUniversity</summary>
+    /// <remarks>Icon token: <c>university</c>.</remarks>
     [Description("@#university")]
     University,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnlink</summary>
+    /// <remarks>Icon token: <c>unlink</c>.</remarks>
     [Description("@#unlink")]
     Unlink,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnlink2</summary>
+    /// <remarks>Icon token: <c>unlink-2</c>.</remarks>
     [Description("@#unlink-2")]
     Unlink2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnlock</summary>
+    /// <remarks>Icon token: <c>unlock</c>.</remarks>
     [Description("@#unlock")]
     Unlock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnplug</summary>
+    /// <remarks>Icon token: <c>unplug</c>.</remarks>
     [Description("@#unplug")]
     Unplug,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnread</summary>
+    /// <remarks>Icon token: <c>unread</c>.</remarks>
     [Description("@#unread")]
     Unread,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUnselected</summary>
+    /// <remarks>Icon token: <c>unselected</c>.</remarks>
     [Description("@#unselected")]
     Unselected,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUpload</summary>
+    /// <remarks>Icon token: <c>upload</c>.</remarks>
     [Description("@#upload")]
     Upload,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUsb</summary>
+    /// <remarks>Icon token: <c>usb</c>.</remarks>
     [Description("@#usb")]
     Usb,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUser</summary>
+    /// <remarks>Icon token: <c>user</c>.</remarks>
     [Description("@#user")]
     User,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserCheck</summary>
+    /// <remarks>Icon token: <c>user-check</c>.</remarks>
     [Description("@#user-check")]
     UserCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserCog</summary>
+    /// <remarks>Icon token: <c>user-cog</c>.</remarks>
     [Description("@#user-cog")]
     UserCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserLock</summary>
+    /// <remarks>Icon token: <c>user-lock</c>.</remarks>
     [Description("@#user-lock")]
     UserLock,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserMinus</summary>
+    /// <remarks>Icon token: <c>user-minus</c>.</remarks>
     [Description("@#user-minus")]
     UserMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserPen</summary>
+    /// <remarks>Icon token: <c>user-pen</c>.</remarks>
     [Description("@#user-pen")]
     UserPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserPlus</summary>
+    /// <remarks>Icon token: <c>user-plus</c>.</remarks>
     [Description("@#user-plus")]
     UserPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRound</summary>
+    /// <remarks>Icon token: <c>user-round</c>.</remarks>
     [Description("@#user-round")]
     UserRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundCheck</summary>
+    /// <remarks>Icon token: <c>user-round-check</c>.</remarks>
     [Description("@#user-round-check")]
     UserRoundCheck,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundCog</summary>
+    /// <remarks>Icon token: <c>user-round-cog</c>.</remarks>
     [Description("@#user-round-cog")]
     UserRoundCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundMinus</summary>
+    /// <remarks>Icon token: <c>user-round-minus</c>.</remarks>
     [Description("@#user-round-minus")]
     UserRoundMinus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundPen</summary>
+    /// <remarks>Icon token: <c>user-round-pen</c>.</remarks>
     [Description("@#user-round-pen")]
     UserRoundPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundPlus</summary>
+    /// <remarks>Icon token: <c>user-round-plus</c>.</remarks>
     [Description("@#user-round-plus")]
     UserRoundPlus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundSearch</summary>
+    /// <remarks>Icon token: <c>user-round-search</c>.</remarks>
     [Description("@#user-round-search")]
     UserRoundSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundX</summary>
+    /// <remarks>Icon token: <c>user-round-x</c>.</remarks>
     [Description("@#user-round-x")]
     UserRoundX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserSearch</summary>
+    /// <remarks>Icon token: <c>user-search</c>.</remarks>
     [Description("@#user-search")]
     UserSearch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserStar</summary>
+    /// <remarks>Icon token: <c>user-star</c>.</remarks>
     [Description("@#user-star")]
     UserStar,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUserX</summary>
+    /// <remarks>Icon token: <c>user-x</c>.</remarks>
     [Description("@#user-x")]
     UserX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUsers</summary>
+    /// <remarks>Icon token: <c>users</c>.</remarks>
     [Description("@#users")]
     Users,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUsersRound</summary>
+    /// <remarks>Icon token: <c>users-round</c>.</remarks>
     [Description("@#users-round")]
     UsersRound,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUtensils</summary>
+    /// <remarks>Icon token: <c>utensils</c>.</remarks>
     [Description("@#utensils")]
     Utensils,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUtensilsCrossed</summary>
+    /// <remarks>Icon token: <c>utensils-crossed</c>.</remarks>
     [Description("@#utensils-crossed")]
     UtensilsCrossed,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuUtilityPole</summary>
+    /// <remarks>Icon token: <c>utility-pole</c>.</remarks>
     [Description("@#utility-pole")]
     UtilityPole,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVan</summary>
+    /// <remarks>Icon token: <c>van</c>.</remarks>
     [Description("@#van")]
     Van,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVariable</summary>
+    /// <remarks>Icon token: <c>variable</c>.</remarks>
     [Description("@#variable")]
     Variable,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVault</summary>
+    /// <remarks>Icon token: <c>vault</c>.</remarks>
     [Description("@#vault")]
     Vault,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVectorSquare</summary>
+    /// <remarks>Icon token: <c>vector-square</c>.</remarks>
     [Description("@#vector-square")]
     VectorSquare,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVegan</summary>
+    /// <remarks>Icon token: <c>vegan</c>.</remarks>
     [Description("@#vegan")]
     Vegan,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVenetianMask</summary>
+    /// <remarks>Icon token: <c>venetian-mask</c>.</remarks>
     [Description("@#venetian-mask")]
     VenetianMask,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVenus</summary>
+    /// <remarks>Icon token: <c>venus</c>.</remarks>
     [Description("@#venus")]
     Venus,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVenusAndMars</summary>
+    /// <remarks>Icon token: <c>venus-and-mars</c>.</remarks>
     [Description("@#venus-and-mars")]
     VenusAndMars,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVibrate</summary>
+    /// <remarks>Icon token: <c>vibrate</c>.</remarks>
     [Description("@#vibrate")]
     Vibrate,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVibrateOff</summary>
+    /// <remarks>Icon token: <c>vibrate-off</c>.</remarks>
     [Description("@#vibrate-off")]
     VibrateOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVideo</summary>
+    /// <remarks>Icon token: <c>video</c>.</remarks>
     [Description("@#video")]
     Video,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVideoOff</summary>
+    /// <remarks>Icon token: <c>video-off</c>.</remarks>
     [Description("@#video-off")]
     VideoOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVideotape</summary>
+    /// <remarks>Icon token: <c>videotape</c>.</remarks>
     [Description("@#videotape")]
     Videotape,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuView</summary>
+    /// <remarks>Icon token: <c>view</c>.</remarks>
     [Description("@#view")]
     View,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVoicemail</summary>
+    /// <remarks>Icon token: <c>voicemail</c>.</remarks>
     [Description("@#voicemail")]
     Voicemail,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolleyball</summary>
+    /// <remarks>Icon token: <c>volleyball</c>.</remarks>
     [Description("@#volleyball")]
     Volleyball,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolume</summary>
+    /// <remarks>Icon token: <c>volume</c>.</remarks>
     [Description("@#volume")]
     Volume,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolume1</summary>
+    /// <remarks>Icon token: <c>volume-1</c>.</remarks>
     [Description("@#volume-1")]
     Volume1,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolume2</summary>
+    /// <remarks>Icon token: <c>volume-2</c>.</remarks>
     [Description("@#volume-2")]
     Volume2,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolumeDown</summary>
+    /// <remarks>Icon token: <c>volume-down</c>.</remarks>
     [Description("@#volume-down")]
     VolumeDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolumeOff</summary>
+    /// <remarks>Icon token: <c>volume-off</c>.</remarks>
     [Description("@#volume-off")]
     VolumeOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolumeOn</summary>
+    /// <remarks>Icon token: <c>volume-on</c>.</remarks>
     [Description("@#volume-on")]
     VolumeOn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolumeUp</summary>
+    /// <remarks>Icon token: <c>volume-up</c>.</remarks>
     [Description("@#volume-up")]
     VolumeUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVolumeX</summary>
+    /// <remarks>Icon token: <c>volume-x</c>.</remarks>
     [Description("@#volume-x")]
     VolumeX,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuVote</summary>
+    /// <remarks>Icon token: <c>vote</c>.</remarks>
     [Description("@#vote")]
     Vote,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWalk</summary>
+    /// <remarks>Icon token: <c>walk</c>.</remarks>
     [Description("@#walk")]
     Walk,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWallet</summary>
+    /// <remarks>Icon token: <c>wallet</c>.</remarks>
     [Description("@#wallet")]
     Wallet,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWalletCards</summary>
+    /// <remarks>Icon token: <c>wallet-cards</c>.</remarks>
     [Description("@#wallet-cards")]
     WalletCards,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWalletMinimal</summary>
+    /// <remarks>Icon token: <c>wallet-minimal</c>.</remarks>
     [Description("@#wallet-minimal")]
     WalletMinimal,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWallpaper</summary>
+    /// <remarks>Icon token: <c>wallpaper</c>.</remarks>
     [Description("@#wallpaper")]
     Wallpaper,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWand</summary>
+    /// <remarks>Icon token: <c>wand</c>.</remarks>
     [Description("@#wand")]
     Wand,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWandSparkles</summary>
+    /// <remarks>Icon token: <c>wand-sparkles</c>.</remarks>
     [Description("@#wand-sparkles")]
     WandSparkles,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWarehouse</summary>
+    /// <remarks>Icon token: <c>warehouse</c>.</remarks>
     [Description("@#warehouse")]
     Warehouse,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWarning</summary>
+    /// <remarks>Icon token: <c>warning</c>.</remarks>
     [Description("@#warning")]
     Warning,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWashingMachine</summary>
+    /// <remarks>Icon token: <c>washing-machine</c>.</remarks>
     [Description("@#washing-machine")]
     WashingMachine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWatch</summary>
+    /// <remarks>Icon token: <c>watch</c>.</remarks>
     [Description("@#watch")]
     Watch,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWaterfallChart</summary>
+    /// <remarks>Icon token: <c>waterfall-chart</c>.</remarks>
     [Description("@#waterfall-chart")]
     WaterfallChart,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWaves</summary>
+    /// <remarks>Icon token: <c>waves</c>.</remarks>
     [Description("@#waves")]
     Waves,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWavesArrowDown</summary>
+    /// <remarks>Icon token: <c>waves-arrow-down</c>.</remarks>
     [Description("@#waves-arrow-down")]
     WavesArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWavesArrowUp</summary>
+    /// <remarks>Icon token: <c>waves-arrow-up</c>.</remarks>
     [Description("@#waves-arrow-up")]
     WavesArrowUp,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWavesLadder</summary>
+    /// <remarks>Icon token: <c>waves-ladder</c>.</remarks>
     [Description("@#waves-ladder")]
     WavesLadder,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWaypoints</summary>
+    /// <remarks>Icon token: <c>waypoints</c>.</remarks>
     [Description("@#waypoints")]
     Waypoints,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWebcam</summary>
+    /// <remarks>Icon token: <c>webcam</c>.</remarks>
     [Description("@#webcam")]
     Webcam,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWebhook</summary>
+    /// <remarks>Icon token: <c>webhook</c>.</remarks>
     [Description("@#webhook")]
     Webhook,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWebhookOff</summary>
+    /// <remarks>Icon token: <c>webhook-off</c>.</remarks>
     [Description("@#webhook-off")]
     WebhookOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWeight</summary>
+    /// <remarks>Icon token: <c>weight</c>.</remarks>
     [Description("@#weight")]
     Weight,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWeightTilde</summary>
+    /// <remarks>Icon token: <c>weight-tilde</c>.</remarks>
     [Description("@#weight-tilde")]
     WeightTilde,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWheat</summary>
+    /// <remarks>Icon token: <c>wheat</c>.</remarks>
     [Description("@#wheat")]
     Wheat,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWheatOff</summary>
+    /// <remarks>Icon token: <c>wheat-off</c>.</remarks>
     [Description("@#wheat-off")]
     WheatOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWholeWord</summary>
+    /// <remarks>Icon token: <c>whole-word</c>.</remarks>
     [Description("@#whole-word")]
     WholeWord,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifi</summary>
+    /// <remarks>Icon token: <c>wifi</c>.</remarks>
     [Description("@#wifi")]
     Wifi,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiCog</summary>
+    /// <remarks>Icon token: <c>wifi-cog</c>.</remarks>
     [Description("@#wifi-cog")]
     WifiCog,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiHigh</summary>
+    /// <remarks>Icon token: <c>wifi-high</c>.</remarks>
     [Description("@#wifi-high")]
     WifiHigh,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiLow</summary>
+    /// <remarks>Icon token: <c>wifi-low</c>.</remarks>
     [Description("@#wifi-low")]
     WifiLow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiOff</summary>
+    /// <remarks>Icon token: <c>wifi-off</c>.</remarks>
     [Description("@#wifi-off")]
     WifiOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiPen</summary>
+    /// <remarks>Icon token: <c>wifi-pen</c>.</remarks>
     [Description("@#wifi-pen")]
     WifiPen,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiSync</summary>
+    /// <remarks>Icon token: <c>wifi-sync</c>.</remarks>
     [Description("@#wifi-sync")]
     WifiSync,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWifiZero</summary>
+    /// <remarks>Icon token: <c>wifi-zero</c>.</remarks>
     [Description("@#wifi-zero")]
     WifiZero,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWind</summary>
+    /// <remarks>Icon token: <c>wind</c>.</remarks>
     [Description("@#wind")]
     Wind,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWindArrowDown</summary>
+    /// <remarks>Icon token: <c>wind-arrow-down</c>.</remarks>
     [Description("@#wind-arrow-down")]
     WindArrowDown,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWine</summary>
+    /// <remarks>Icon token: <c>wine</c>.</remarks>
     [Description("@#wine")]
     Wine,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWineOff</summary>
+    /// <remarks>Icon token: <c>wine-off</c>.</remarks>
     [Description("@#wine-off")]
     WineOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWishlist</summary>
+    /// <remarks>Icon token: <c>wishlist</c>.</remarks>
     [Description("@#wishlist")]
     Wishlist,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWithdraw</summary>
+    /// <remarks>Icon token: <c>withdraw</c>.</remarks>
     [Description("@#withdraw")]
     Withdraw,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWorkflow</summary>
+    /// <remarks>Icon token: <c>workflow</c>.</remarks>
     [Description("@#workflow")]
     Workflow,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWorm</summary>
+    /// <remarks>Icon token: <c>worm</c>.</remarks>
     [Description("@#worm")]
     Worm,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWrapText</summary>
+    /// <remarks>Icon token: <c>wrap-text</c>.</remarks>
     [Description("@#wrap-text")]
     WrapText,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuWrench</summary>
+    /// <remarks>Icon token: <c>wrench</c>.</remarks>
     [Description("@#wrench")]
     Wrench,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuX</summary>
+    /// <remarks>Icon token: <c>x</c>.</remarks>
     [Description("@#x")]
     X,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuYoutube</summary>
+    /// <remarks>Icon token: <c>youtube</c>.</remarks>
     [Description("@#youtube")]
     Youtube,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuZap</summary>
+    /// <remarks>Icon token: <c>zap</c>.</remarks>
     [Description("@#zap")]
     Zap,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuZapOff</summary>
+    /// <remarks>Icon token: <c>zap-off</c>.</remarks>
     [Description("@#zap-off")]
     ZapOff,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuZoomIn</summary>
+    /// <remarks>Icon token: <c>zoom-in</c>.</remarks>
     [Description("@#zoom-in")]
     ZoomIn,
 
+    /// <summary>Vue 3 &amp; UniApp Icon VuZoomOut</summary>
+    /// <remarks>Icon token: <c>zoom-out</c>.</remarks>
     [Description("@#zoom-out")]
     ZoomOut
 }

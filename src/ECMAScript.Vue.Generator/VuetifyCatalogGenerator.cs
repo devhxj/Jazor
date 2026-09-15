@@ -285,7 +285,7 @@ internal static class VuetifyCatalogGenerator
 
     private static string RenderComponentSource(Component component, VuetifyContract contract, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> descriptions)
     {
-        var source = SystemFile.ReadAllText(component.SourcePath);
+        var source = BindingDocumentationGenerator.NormalizeDocumentationPlacement(SystemFile.ReadAllText(component.SourcePath));
         var root = CSharpSyntaxTree.ParseText(source, path: component.SourcePath).GetRoot();
         var declaration = root.DescendantNodes().OfType<ClassDeclarationSyntax>()
             .SingleOrDefault(candidate =>
@@ -429,11 +429,13 @@ internal static class VuetifyCatalogGenerator
     {
         var materialized = components.OrderBy(static component => component.Export, StringComparer.Ordinal).ToArray();
         var module = materialized[0].Module;
+        builder.AppendLine("/// <summary>供 Vue render/h 调用的组件导出；将所需导出传给渲染函数或应用组件注册表。</summary>");
         builder.AppendLine($"[ECMAScript(\"{module}\")]");
         builder.AppendLine($"public static class {catalogName}");
         builder.AppendLine("{");
         foreach (var component in materialized)
         {
+            builder.AppendLine($"    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref=\"{component.Export}\"/>。</summary>");
             builder.AppendLine($"    [ECMAScriptName(\"{component.Export}\")]");
             builder.AppendLine($"    public extern static IVuetifyComponent {component.Export} {{ get; }}");
             builder.AppendLine();
@@ -458,6 +460,7 @@ internal static class VuetifyCatalogGenerator
         builder.AppendLine("{");
         foreach (var component in components.OrderBy(static component => component.Export, StringComparer.Ordinal))
         {
+            builder.AppendLine($"    /// <summary>按名称注册 <see cref=\"{component.Export}\"/> 组件，供 Vue 应用解析。</summary>");
             builder.AppendLine($"    [Description(\"@#{component.Export}\")]");
             builder.AppendLine($"    public IVuetifyComponent? {component.Export} {{ get; init; }}");
             builder.AppendLine();

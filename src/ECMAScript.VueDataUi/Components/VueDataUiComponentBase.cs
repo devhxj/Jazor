@@ -30,11 +30,17 @@ public abstract class VueDataUiChartComponent<TDataset, TConfig> : ComponentBase
 public abstract class VueDataUiRequiredConfigChartComponent<TDataset, TConfig> : ComponentBase, ECMAScript.Vue.IVueComponent
     where TConfig : VueDataUiConfig
 {
+    /// <summary>
+    /// 传入组件的数据；数据形状由当前图表的 Dataset 类型决定。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("dataset")]
     public TDataset Dataset { get; set; } = default!;
 
+    /// <summary>
+    /// 组件的显示和交互配置；具体选项由当前图表的强类型配置定义。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("config")]
@@ -46,6 +52,9 @@ public abstract class VueDataUiRequiredConfigChartComponent<TDataset, TConfig> :
 public abstract class VueDataUiConfigComponent<TConfig> : ComponentBase, ECMAScript.Vue.IVueComponent
     where TConfig : VueDataUiConfig
 {
+    /// <summary>
+    /// 组件的显示和交互配置；具体选项由当前图表的强类型配置定义。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("config")]
     public TConfig? Config { get; set; }
@@ -58,6 +67,9 @@ public abstract class VueDataUiConfigComponent<TConfig> : ComponentBase, ECMAScr
 /// <typeparam name="TDataset">该组件的输入数据形状。</typeparam>
 public abstract class VueDataUiDatasetComponent<TDataset> : ComponentBase, ECMAScript.Vue.IVueComponent
 {
+    /// <summary>
+    /// 传入组件的数据；数据形状由当前图表的 Dataset 类型决定。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("dataset")]
@@ -74,10 +86,16 @@ public abstract class VueDataUiOptionalDatasetChartComponent<TDataset, TConfig> 
     where TDataset : class
     where TConfig : VueDataUiConfig
 {
+    /// <summary>
+    /// 传入组件的数据；数据形状由当前图表的 Dataset 类型决定。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dataset")]
     public TDataset? Dataset { get; set; }
 
+    /// <summary>
+    /// 组件的显示和交互配置；具体选项由当前图表的强类型配置定义。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("config")]
     public TConfig? Config { get; set; }

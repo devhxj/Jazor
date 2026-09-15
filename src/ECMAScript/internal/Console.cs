@@ -1,4 +1,4 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
 public static partial class Global
 {
@@ -48,7 +48,7 @@ public static partial class Global
 		/// Resets the counter identified by <paramref name="label"/>; omitted labels reset the JavaScript default counter.
 		/// </summary>
 		/// <param name="label">一个字符串，若传入此参数 countReset() 重置此 label 的 count 为 0。 若忽略此参数 countReset() 重置 count() 默认的 default 字段的 count 为 0</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#countReset")]
 		public extern static void CountReset(string? label = null);
 
@@ -194,7 +194,7 @@ public static partial class Global
 		/// Logs the elapsed duration for a named timer without stopping it, with optional additional runtime values.
 		/// </summary>
 		/// <param name="label">计时器索引。</param>
-		/// <param name="val"></param>
+		/// <param name="val">传给该 JavaScript API 的参数值。</param>
 		[Description("@#timeLog")]
 		public extern static void TimeLog(string label, params object?[] val);
 

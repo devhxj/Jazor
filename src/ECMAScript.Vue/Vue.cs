@@ -16,6 +16,9 @@ namespace ECMAScript;
 [Description("@#")]
 public abstract class VueWatchHandle
 {
+	/// <summary>
+	/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+	/// </summary>
 	protected VueWatchHandle()
 	{
 	}
@@ -535,12 +538,12 @@ public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TVal
 /// in public callback signatures. This remains intentionally small until concrete host members
 /// are required by authoring or lowering.
 /// </summary>
-[ECMAScript("dayjs")]
-[Description("@#")]
 /// <remarks>
 /// Dayjs 在这里仅作为生态库回调签名的最小 host contract；具体日期操作必须由实际导入的
 /// Day.js 模块提供，不能因为存在此类型就假设 compiler 拥有完整 Day.js runtime。
 /// </remarks>
+[ECMAScript("dayjs")]
+[Description("@#")]
 public sealed class Dayjs
 {
 	private Dayjs()
@@ -553,79 +556,133 @@ public sealed class Dayjs
 /// <c>h</c> function as a callback parameter. The instance methods inline back to direct
 /// <c>h(...)</c> calls so callbacks stay strongly typed without leaking raw delegates.
 /// </summary>
-[ECMAScript]
-[Description("@#")]
 /// <remarks>
 /// VueRenderHost 是对 Vue h() 的强类型 authoring 入口。Invoke 方法通过 inline 直接调用
 /// 当前 host 的 h 函数，不生成额外 wrapper runtime，也不承担组件 props/slot lowering。
 /// </remarks>
+[ECMAScript]
+[Description("@#")]
 public sealed class VueRenderHost
 {
 	private VueRenderHost()
 	{
 	}
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2)")]
 	public extern Vue.IVNode Invoke(string type);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(string type, Vue.IVNode child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(string type, Vue.IVNode[] children);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(string type, Vue.VueChild child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(string type, Vue.VueProps props);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(string type, Vue.VueProps props, Vue.IVNode child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(string type, Vue.VueProps props, Vue.IVNode[] children);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(string type, Vue.VueProps props, Vue.VueChild child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.IVNode child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.IVNode[] children);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueChild child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueSlots slots);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.IVNode child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.IVNode[] children);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.VueChild child);
 
+	/// <summary>
+	/// 调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。
+	/// </summary>
 	[ECMAScriptInline("__arg1(__arg2, __arg3, __arg4)")]
 	public extern Vue.IVNode Invoke(Vue.IVueComponent component, Vue.VueProps props, Vue.VueSlots slots);
 }
 
-[ECMAScript("vue")]
-[Description("@#")]
 /// <remarks>
 /// Vue 静态 partial surface 按 API、类型和结构分片维护，最终都映射到 Vue 3 runtime module。
 /// 这里的类型与方法是 authoring contract，不是 C# 对 Vue runtime 的重新实现。
 /// </remarks>
+[ECMAScript("vue")]
+[Description("@#")]
 public static partial class Vue
 {
 }

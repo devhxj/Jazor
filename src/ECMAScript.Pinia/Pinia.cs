@@ -166,6 +166,9 @@ public delegate TExtension? PiniaPlugin<TStore, TOptions, TCustomProperties, TCu
 /// <param name="newModule">宿主 HMR 运行时提供的新热模块对象。The new hot module object supplied by the host HMR runtime.</param>
 public delegate void PiniaHotUpdateHandler(IObject newModule);
 
+/// <summary>
+/// Pinia 状态管理入口；创建并安装根实例后，使用 DefineStore 声明 store，通过订阅和 action 钩子观察变更。
+/// </summary>
 [ECMAScript("pinia")]
 [Description("@#")]
 public static partial class Pinia

@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VAppBar")]
 /// <summary>
 /// Vuetify 应用栏组件。
 /// Vuetify app bar component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VAppBar")]
 public sealed class VAppBar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

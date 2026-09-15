@@ -48,7 +48,8 @@ internal sealed record WebIdlArgumentDocumentation(
 internal sealed record WebIdlMemberDocumentation(
     int MemberIndex,
     WebIdlDocumentation? Documentation,
-    IReadOnlyList<WebIdlArgumentDocumentation>? Arguments = null);
+    IReadOnlyList<WebIdlArgumentDocumentation>? Arguments = null,
+    string? Returns = null);
 
 internal sealed record WebIdlDeclarationInventory(
     string Kind,

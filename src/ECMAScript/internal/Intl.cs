@@ -1,11 +1,11 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#Intl")]
 /// <summary>
 /// JavaScript ECMA-402 <c>Intl</c> host and its locale-aware formatting constructors.
 /// JavaScript ECMA-402 <c>Intl</c> 宿主及其本地化格式化构造器。
 /// </summary>
+[ECMAScript]
+[Description("@#Intl")]
 public static class Intl
 {
 	/// <summary>
@@ -92,9 +92,15 @@ public static class Intl
 	[Description("@#")]
 	public enum CollatorUsage
 	{
+		/// <summary>
+		/// For sorting a list of strings.
+		/// </summary>
 		[Description("@#sort")]
 		Sort,
 
+		/// <summary>
+		/// For filtering a list of strings by testing each list item for a full-string match against a key. With &quot;search&quot;, the caller should only pay attention to whether compare() returns zero or non-zero and should not distinguish the non-zero return values from each other. That is, it is inappropriate to use &quot;search&quot; for sorting/ordering.
+		/// </summary>
 		[Description("@#search")]
 		Search
 	}
@@ -107,8 +113,14 @@ public static class Intl
 	[Description("@#")]
 	public enum LocaleMatcher
 	{
+		/// <summary>
+		/// 使用 RFC 4647 lookup 规则逐级回退匹配语言标签。
+		/// </summary>
 		[Description("@#lookup")]
 		Lookup,
+		/// <summary>
+		/// 由运行时选择最适合请求语言标签的可用 locale。
+		/// </summary>
 		[Description("@#best fit")]
 		BestFit
 	}
@@ -121,10 +133,19 @@ public static class Intl
 	[Description("@#")]
 	public enum CaseFirst
 	{
+		/// <summary>
+		/// 其他排序条件相同时，大写字母排在小写字母之前。
+		/// </summary>
 		[Description("@#upper")]
 		Upper,
+		/// <summary>
+		/// 其他排序条件相同时，小写字母排在大写字母之前。
+		/// </summary>
 		[Description("@#lower")]
 		Lower,
+		/// <summary>
+		/// 不强制大小写排序优先级，使用当前 locale 的默认规则。
+		/// </summary>
 		[Description("@#false")]
 		False
 	}
@@ -137,12 +158,24 @@ public static class Intl
 	[Description("@#")]
 	public enum Sensitivity
 	{
+		/// <summary>
+		/// Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A. In the Unicode collation algorithm, this is equivalent to the primary strength level.
+		/// </summary>
 		[Description("@#base")]
 		Base,
+		/// <summary>
+		/// Only strings that differ in base letters or accents and other diacritic marks compare as unequal. Examples: a ≠ b, a ≠ á, a = A. In the Unicode collation algorithm, this is equivalent to the secondary strength level.
+		/// </summary>
 		[Description("@#accent")]
 		Accent,
+		/// <summary>
+		/// Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A. In the Unicode collation algorithm, this is equivalent to the primary strength level with case level handling.
+		/// </summary>
 		[Description("@#case")]
 		Case,
+		/// <summary>
+		/// Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal. Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A. In the Unicode collation algorithm, this is equivalent to the tertiary strength level.
+		/// </summary>
 		[Description("@#variant")]
 		Variant
 	}
@@ -156,38 +189,89 @@ public static class Intl
 	[Description("@#")]
 	public enum Collation
 	{
+		/// <summary>
+		/// 按 Big5 汉字顺序比较。
+		/// </summary>
 		[Description("@#big5han")]
 		Big5han,
+		/// <summary>
+		/// 使用兼容排序规则。
+		/// </summary>
 		[Description("@#compat")]
 		Compat,
+		/// <summary>
+		/// 使用字典排序规则。
+		/// </summary>
 		[Description("@#dict")]
 		Dict,
+		/// <summary>
+		/// 按代码点直接排序。
+		/// </summary>
 		[Description("@#direct")]
 		Direct,
+		/// <summary>
+		/// 使用 Unicode 默认排序元素表规则。
+		/// </summary>
 		[Description("@#ducet")]
 		Ducet,
+		/// <summary>
+		/// 使用面向 Emoji 的排序规则。
+		/// </summary>
 		[Description("@#emoji")]
 		Emoji,
+		/// <summary>
+		/// 使用欧洲排序规则。
+		/// </summary>
 		[Description("@#eor")]
 		Eor,
+		/// <summary>
+		/// 按 GB2312 汉字顺序比较。
+		/// </summary>
 		[Description("@#gb2312")]
 		Gb2312,
+		/// <summary>
+		/// 使用电话簿排序规则。
+		/// </summary>
 		[Description("@#phonebk")]
 		Phonebk,
+		/// <summary>
+		/// 使用语音排序规则。
+		/// </summary>
 		[Description("@#phonetic")]
 		Phonetic,
+		/// <summary>
+		/// 按汉语拼音排序。
+		/// </summary>
 		[Description("@#pinyin")]
 		Pinyin,
+		/// <summary>
+		/// 使用改革后的语言排序规则。
+		/// </summary>
 		[Description("@#reformed")]
 		Reformed,
+		/// <summary>
+		/// 使用韩语初声搜索排序规则。
+		/// </summary>
 		[Description("@#searchjl")]
 		Searchjl,
+		/// <summary>
+		/// 按汉字笔画排序。
+		/// </summary>
 		[Description("@#stroke")]
 		Stroke,
+		/// <summary>
+		/// 使用该语言的传统排序规则。
+		/// </summary>
 		[Description("@#trad")]
 		Trad,
+		/// <summary>
+		/// 使用 Unicode 汉字排序规则。
+		/// </summary>
 		[Description("@#unihan")]
 		Unihan,
+		/// <summary>
+		/// 按注音符号排序。
+		/// </summary>
 		[Description("@#zhuyin")]
 		Zhuyin
 	}
@@ -271,13 +355,13 @@ public static class Intl
 		public extern Collator(IEnumerable<string> locales, CollatorOptions options);
 
 		/// <summary>Returns supported locales from one locale identifier. 从单个 locale 标识符返回受支持 locale。</summary>
-		[Description("@#supportedLocalesOf")]
 		/// <summary>Returns supported locales for a locale identifier. 返回单个 locale 标识符受支持的 locale。</summary>
+		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		/// <summary>Returns supported locales from a locale list. 从 locale 列表返回受支持 locale。</summary>
-		[Description("@#supportedLocalesOf")]
 		/// <summary>Returns supported locales for a locale list. 返回 locale 列表中受支持的 locale。</summary>
+		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
 		/// <summary>Returns locales supported under the supplied collation options. 返回给定比较选项下受支持的 locale。</summary>
@@ -297,153 +381,272 @@ public static class Intl
 		public virtual extern ResolvedCollatorOptions ResolvedOptions();
 	}
 
+	/// <summary>Output style for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的输出样式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Output style for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的输出样式。</summary>
 	public enum NumberFormatOptionsStyle
 	{
+		/// <summary>
+		/// For plain number formatting.
+		/// </summary>
 		[Description("@#decimal")]
 		Decimal,  // 十进制格式（默认数字格式）
+		/// <summary>
+		/// For percent formatting.
+		/// </summary>
 		[Description("@#percent")]
 		Percent,  // 百分比格式（如 0.5 → "50%"）
+		/// <summary>
+		/// For currency formatting.
+		/// </summary>
 		[Description("@#currency")]
 		Currency,  // 货币格式（如 1000 → "$1,000.00"）
+		/// <summary>
+		/// For unit formatting.
+		/// </summary>
 		[Description("@#unit")]
 		Unit
 	}
 
+	/// <summary>Currency display form for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的货币显示形式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Currency display form for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的货币显示形式。</summary>
 	public enum NumberFormatOptionsCurrencyDisplay
 	{
+		/// <summary>
+		/// Use the ISO currency code.
+		/// </summary>
 		[Description("@#code")]
 		Code,
+		/// <summary>
+		/// Use a localized currency symbol such as €.
+		/// </summary>
 		[Description("@#symbol")]
 		Symbol,
+		/// <summary>
+		/// Use a narrow format symbol (&quot;$100&quot; rather than &quot;US$100&quot;).
+		/// </summary>
 		[Description("@#narrowSymbol")]
 		NarrowSymbol,
+		/// <summary>
+		/// Use a localized currency name such as &quot;dollar&quot;.
+		/// </summary>
 		[Description("@#name")]
 		Name
 	}
 
+	/// <summary>Currency-sign treatment for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的货币符号处理方式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Currency-sign treatment for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的货币符号处理方式。</summary>
 	public enum NumberFormatCurrencySign
 	{
+		/// <summary>
+		/// 使用常规的本地化货币正负号格式。
+		/// </summary>
 		[Description("@#standard")]
 		Standard,
+		/// <summary>
+		/// 使用财务记账形式表示负金额，例如括号；具体形式取决于 locale。
+		/// </summary>
 		[Description("@#accounting")]
 		Accounting
 	}
 
+	/// <summary>Number notation style for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的数值记法样式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Number notation style for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的数值记法样式。</summary>
 	public enum NumberFormatNotation
 	{
+		/// <summary>
+		/// Plain number formatting.
+		/// </summary>
 		[Description("@#standard")]
 		Standard,
+		/// <summary>
+		/// Return the order-of-magnitude for formatted number.
+		/// </summary>
 		[Description("@#scientific")]
 		Scientific,
+		/// <summary>
+		/// Return the exponent of ten when divisible by three.
+		/// </summary>
 		[Description("@#engineering")]
 		Engineering,
+		/// <summary>
+		/// String representing exponent; defaults to using the &quot;short&quot; form.
+		/// </summary>
 		[Description("@#compact")]
 		Compact
 	}
 
+	/// <summary>Display width for compact notation. 紧凑记法的显示宽度。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Display width for compact notation. 紧凑记法的显示宽度。</summary>
 	public enum CompactDisplay
 	{
+		/// <summary>
+		/// 使用缩写的紧凑计数名称，例如 M。
+		/// </summary>
 		[Description("@#short")]
 		Short,
+		/// <summary>
+		/// 使用完整的紧凑计数名称，例如本地化的 million。
+		/// </summary>
 		[Description("@#long")]
 		Long
 	}
 
+	/// <summary>Sign display policy for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的符号显示策略。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Sign display policy for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的符号显示策略。</summary>
 	public enum NumberFormatSignDisplay
 	{
+		/// <summary>
+		/// Sign display for negative numbers only, including negative zero.
+		/// </summary>
 		[Description("@#auto")]
 		Auto,
+		/// <summary>
+		/// Never display sign.
+		/// </summary>
 		[Description("@#never")]
 		Never,
+		/// <summary>
+		/// Always display sign.
+		/// </summary>
 		[Description("@#always")]
 		Always,
+		/// <summary>
+		/// Sign display for positive and negative numbers, but not zero.
+		/// </summary>
 		[Description("@#exceptZero")]
 		ExceptZero,
+		/// <summary>
+		/// Sign display for negative numbers only, excluding negative zero.
+		/// </summary>
 		[Description("@#negative")]
 		Negative
 	}
 
+	/// <summary>Grouping mode for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的分组模式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Grouping mode for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的分组模式。</summary>
 	public enum NumberFormatUseGrouping
 	{
+		/// <summary>
+		/// Display grouping separators based on the locale preference, which may also be dependent on the currency.
+		/// </summary>
 		[Description("@#auto")]
 		Auto,
+		/// <summary>
+		/// Display grouping separators even if the locale prefers otherwise.
+		/// </summary>
 		[Description("@#always")]
 		Always,
+		/// <summary>
+		/// Display grouping separators when there are at least 2 digits in a group.
+		/// </summary>
 		[Description("@#min2")]
 		Min2
 	}
 
+	/// <summary>Rounding algorithm for ECMA-402 formatting. ECMA-402 格式化舍入算法。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Rounding algorithm for ECMA-402 formatting. ECMA-402 格式化舍入算法。</summary>
 	public enum RoundingMode
 	{
+		/// <summary>
+		/// Round toward +∞. Positive values round up. Negative values round &quot;more positive&quot;.
+		/// </summary>
 		[Description("@#ceil")]
 		Ceil,
+		/// <summary>
+		/// Round toward -∞. Positive values round down. Negative values round &quot;more negative&quot;.
+		/// </summary>
 		[Description("@#floor")]
 		Floor,
+		/// <summary>
+		/// Round away from 0. The magnitude of the value is always increased by rounding. Positive values round up. Negative values round &quot;more negative&quot;.
+		/// </summary>
 		[Description("@#expand")]
 		Expand,
+		/// <summary>
+		/// Round toward 0. This magnitude of the value is always reduced by rounding. Positive values round down. Negative values round &quot;less negative&quot;.
+		/// </summary>
 		[Description("@#trunc")]
 		Trunc,
+		/// <summary>
+		/// Ties toward +∞. Values above the half-increment round like &quot;ceil&quot; (towards +∞), and below like &quot;floor&quot; (towards -∞). On the half-increment, values round like &quot;ceil&quot;.
+		/// </summary>
 		[Description("@#halfCeil")]
 		HalfCeil,
+		/// <summary>
+		/// Ties toward -∞. Values above the half-increment round like &quot;ceil&quot; (towards +∞), and below like &quot;floor&quot; (towards -∞). On the half-increment, values round like &quot;floor&quot;.
+		/// </summary>
 		[Description("@#halfFloor")]
 		HalfFloor,
+		/// <summary>
+		/// Ties away from 0. Values above the half-increment round like &quot;expand&quot; (away from zero), and below like &quot;trunc&quot; (towards 0). On the half-increment, values round like &quot;expand&quot;.
+		/// </summary>
 		[Description("@#halfExpand")]
 		HalfExpand,
+		/// <summary>
+		/// Ties toward 0. Values above the half-increment round like &quot;expand&quot; (away from zero), and below like &quot;trunc&quot; (towards 0). On the half-increment, values round like &quot;trunc&quot;.
+		/// </summary>
 		[Description("@#halfTrunc")]
 		HalfTrunc,
+		/// <summary>
+		/// Ties towards the nearest even integer. Values above the half-increment round like &quot;expand&quot; (away from zero), and below like &quot;trunc&quot; (towards 0). On the half-increment values round towards the nearest even digit.
+		/// </summary>
 		[Description("@#halfEven")]
 		HalfEven
 	}
 
+	/// <summary>Priority when fraction and significant-digit options coexist. 小数位和有效位选项共存时的优先级。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Priority when fraction and significant-digit options coexist. 小数位和有效位选项共存时的优先级。</summary>
 	public enum RoundingPriority
 	{
+		/// <summary>
+		/// The result from the significant digits property is used.
+		/// </summary>
 		[Description("@#auto")]
 		Auto,
+		/// <summary>
+		/// The result from the property that results in more precision is used.
+		/// </summary>
 		[Description("@#morePrecision")]
 		MorePrecision,
+		/// <summary>
+		/// The result from the property that results in less precision is used.
+		/// </summary>
 		[Description("@#lessPrecision")]
 		LessPrecision
 	}
 
+	/// <summary>Trailing-zero display policy. 尾随零显示策略。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Trailing-zero display policy. 尾随零显示策略。</summary>
 	public enum TrailingZeroDisplay
 	{
+		/// <summary>
+		/// Keep trailing zeros according to minimumFractionDigits and minimumSignificantDigits.
+		/// </summary>
 		[Description("@#auto")]
 		Auto,
+		/// <summary>
+		/// Remove the fraction digits if they are all zero. This is the same as &quot;auto&quot; if any of the fraction digits is non-zero.
+		/// </summary>
 		[Description("@#stripIfInteger")]
 		StripIfInteger
 	}
 
 	/// <summary>Configuration object for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的配置对象。</summary>
+		/// <summary>
+		/// JavaScript accepts Boolean and string modes here.
+		/// The union keeps the public host close to the runtime surface without forcing callers through CLR-only helper wrappers.
+		/// JavaScript 在此接受布尔值和字符串模式；联合类型使公开宿主接近运行时表面，无需调用方通过仅 CLR 的辅助包装器。
+		/// </summary>
 	[Description("@#")]
 	public record NumberFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
@@ -456,11 +659,6 @@ public static class Intl
 		[property: Description("@#unitDisplay")] LongShortNarrow? UnitDisplay = null,
 		[property: Description("@#notation")] NumberFormatNotation? Notation = null,
 		[property: Description("@#compactDisplay")] CompactDisplay? CompactDisplay = null,
-		/// <summary>
-		/// JavaScript accepts Boolean and string modes here.
-		/// The union keeps the public host close to the runtime surface without forcing callers through CLR-only helper wrappers.
-		/// JavaScript 在此接受布尔值和字符串模式；联合类型使公开宿主接近运行时表面，无需调用方通过仅 CLR 的辅助包装器。
-		/// </summary>
 		[property: Description("@#useGrouping")] IntlUseGrouping? UseGrouping = null,
 		[property: Description("@#signDisplay")] NumberFormatSignDisplay? SignDisplay = null,
 		[property: Description("@#minimumIntegerDigits")] Number? MinimumIntegerDigits = null,
@@ -784,17 +982,29 @@ public static class Intl
 		public extern override string ToString();
 	}
 
+	/// <summary>Unicode hour-cycle identifiers. Unicode 小时制标识符。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Unicode hour-cycle identifiers. Unicode 小时制标识符。</summary>
 	public enum HourCycle
 	{
+		/// <summary>
+		/// 使用 0 到 11 的小时编号。
+		/// </summary>
 		[Description("@#h11")]
 		H11,
+		/// <summary>
+		/// 使用 1 到 12 的小时编号。
+		/// </summary>
 		[Description("@#h12")]
 		H12,
+		/// <summary>
+		/// 使用 0 到 23 的小时编号。
+		/// </summary>
 		[Description("@#h23")]
 		H23,
+		/// <summary>
+		/// 使用 1 到 24 的小时编号。
+		/// </summary>
 		[Description("@#h24")]
 		H24
 	}
@@ -845,71 +1055,122 @@ public static class Intl
 		public extern string[] Weekend { get; }
 	}
 
+	/// <summary>Date/time format-matching algorithm. 日期时间格式匹配算法。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Date/time format-matching algorithm. 日期时间格式匹配算法。</summary>
 	public enum FormatMatcher
 	{
+		/// <summary>
+		/// 由运行时选择最适合当前 locale 的日期格式匹配算法。
+		/// </summary>
 		[Description("@#best fit")]
 		BestFit,
+		/// <summary>
+		/// 使用规范定义的基本日期格式匹配算法。
+		/// </summary>
 		[Description("@#basic")]
 		Basic
 	}
 
+	/// <summary>Long, short, and narrow localized display widths. long、short 和 narrow 的本地化显示宽度。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Long, short, and narrow localized display widths. long、short 和 narrow 的本地化显示宽度。</summary>
 	public enum LongShortNarrow
 	{
+		/// <summary>
+		/// E.g., Thursday
+		/// </summary>
 		[Description("@#long")]
 		Long,
+		/// <summary>
+		/// E.g., Thu
+		/// </summary>
 		[Description("@#short")]
 		Short,
+		/// <summary>
+		/// E.g., T. Two weekdays may have the same narrow style for some locales (e.g., both Tuesday's and Thursday's narrow styles are T in the en-US locale).
+		/// </summary>
 		[Description("@#narrow")]
 		Narrow
 	}
 
+	/// <summary>Numeric or two-digit date/time field style. 数值或两位数字的日期时间字段样式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Numeric or two-digit date/time field style. 数值或两位数字的日期时间字段样式。</summary>
 	public enum NumericTwoDigit
 	{
+		/// <summary>
+		/// 按一般数值宽度显示日期时间字段。
+		/// </summary>
 		[Description("@#numeric")]
 		Numeric,
+		/// <summary>
+		/// 将日期时间字段补齐为两位数字。
+		/// </summary>
 		[Description("@#2-digit")]
 		TwoDigit
 	}
 
+	/// <summary>Date/time preset style. 日期时间预设样式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Date/time preset style. 日期时间预设样式。</summary>
 	public enum DateTimeStyle
 	{
+		/// <summary>
+		/// 使用最完整的本地化日期或时间格式。
+		/// </summary>
 		[Description("@#full")]
 		Full,
+		/// <summary>
+		/// 使用较完整的本地化日期或时间格式。
+		/// </summary>
 		[Description("@#long")]
 		Long,
+		/// <summary>
+		/// 使用中等长度的本地化日期或时间格式。
+		/// </summary>
 		[Description("@#medium")]
 		Medium,
+		/// <summary>
+		/// 使用紧凑的本地化日期或时间格式。
+		/// </summary>
 		[Description("@#short")]
 		Short
 	}
 
+	/// <summary>Time-zone name display style. 时区名称显示样式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Time-zone name display style. 时区名称显示样式。</summary>
 	public enum TimeZoneName
 	{
+		/// <summary>
+		/// Short localized form (e.g.: PST, GMT-8)
+		/// </summary>
 		[Description("@#short")]
 		Short,
+		/// <summary>
+		/// Long localized form (e.g., Pacific Standard Time, Nordamerikanische Westküsten-Normalzeit)
+		/// </summary>
 		[Description("@#long")]
 		Long,
+		/// <summary>
+		/// Short localized GMT format (e.g., GMT-8)
+		/// </summary>
 		[Description("@#shortOffset")]
 		ShortOffset,
+		/// <summary>
+		/// Long localized GMT format (e.g., GMT-08:00)
+		/// </summary>
 		[Description("@#longOffset")]
 		LongOffset,
+		/// <summary>
+		/// Short generic non-location format (e.g.: PT, Los Angeles Zeit).
+		/// </summary>
 		[Description("@#shortGeneric")]
 		ShortGeneric,
+		/// <summary>
+		/// Long generic non-location format (e.g.: Pacific Time, Nordamerikanische Westküstenzeit)
+		/// </summary>
 		[Description("@#longGeneric")]
 		LongGeneric
 	}
@@ -918,10 +1179,19 @@ public static class Intl
 	[Description("@#")]
 	public enum FractionalSecondDigits
 	{
+		/// <summary>
+		/// 显示一位小数秒。
+		/// </summary>
 		[Description("@#1")]
 		One = 1,
+		/// <summary>
+		/// 显示两位小数秒。
+		/// </summary>
 		[Description("@#2")]
 		Two = 2,
+		/// <summary>
+		/// 显示三位小数秒。
+		/// </summary>
 		[Description("@#3")]
 		Three = 3
 	}
@@ -1009,34 +1279,40 @@ public static class Intl
 		/// <summary>Creates a date/time formatter for a locale list and options. 为 locale 列表和 options 创建日期时间格式化器。</summary>
 		public extern DateTimeFormat(IEnumerable<string> locales, DateTimeFormatOptions options);
 
+		/// <summary>
+		/// The Intl.DateTimeFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in date and time formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.DateTimeFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in date and time formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
-		[Description("@#supportedLocalesOf")]
 		/// <summary>Returns locales supported with date/time options. 返回日期时间选项下受支持的 locale。</summary>
+		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DateTimeFormatOptions options);
 
-		[Description("@#supportedLocalesOf")]
 		/// <summary>Returns locale-list entries supported with date/time options. 返回日期时间选项下受支持的 locale 列表项。</summary>
+		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, DateTimeFormatOptions options);
 
-		[Description("@#format")]
 		/// <summary>Formats the current time using JavaScript runtime time. 使用 JavaScript 运行时时间格式化当前时刻。</summary>
+		[Description("@#format")]
 		public virtual extern string Format();
 
-		[Description("@#format")]
 		/// <summary>Formats a Date-or-timestamp input. 格式化 Date 或时间戳输入。</summary>
+		[Description("@#format")]
 		public virtual extern string Format(IntlDateTimeInput date);
 
-		[Description("@#format")]
 		/// <summary>Formats a JavaScript Date object. 格式化 JavaScript Date 对象。</summary>
+		[Description("@#format")]
 		public virtual extern string Format(Date date);
 
-		[Description("@#format")]
 		/// <summary>Formats a Unix-epoch millisecond timestamp. 格式化 Unix epoch 毫秒时间戳。</summary>
+		[Description("@#format")]
 		public virtual extern string Format(Number date);
 
 		/// <summary>
@@ -1109,54 +1385,93 @@ public static class Intl
 		[Description("@#formatRangeToParts")]
 		public virtual extern Array<RangeFormatPart> FormatRangeToParts(Number startDate, Number endDate);
 
-		[Description("@#resolvedOptions")]
 		/// <summary>Returns runtime-resolved date/time options. 返回运行时解析后的日期时间选项。</summary>
+		[Description("@#resolvedOptions")]
 		public virtual extern ResolvedDateTimeFormatOptions ResolvedOptions();
 	}
 
+	/// <summary>Relative-time display width. 相对时间显示宽度。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Relative-time display width. 相对时间显示宽度。</summary>
 	public enum RelativeTimeFormatStyle
 	{
+		/// <summary>
+		/// E.g., &quot;in 1 month&quot;
+		/// </summary>
 		[Description("@#long")]
 		Long,
+		/// <summary>
+		/// E.g., &quot;in 1 mo.&quot;
+		/// </summary>
 		[Description("@#short")]
 		Short,
+		/// <summary>
+		/// E.g., &quot;in 1 mo.&quot;. The narrow style could be similar to the short style for some locales.
+		/// </summary>
 		[Description("@#narrow")]
 		Narrow
 	}
 
+	/// <summary>Relative-time numeric wording policy. 相对时间数值措辞策略。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Relative-time numeric wording policy. 相对时间数值措辞策略。</summary>
 	public enum RelativeTimeFormatNumeric
 	{
+		/// <summary>
+		/// 始终使用数值相对时间，例如 1 天前。
+		/// </summary>
 		[Description("@#always")]
 		Always,
+		/// <summary>
+		/// 在可用时使用昨天、今天、明天等本地化词语。
+		/// </summary>
 		[Description("@#auto")]
 		Auto
 	}
 
+	/// <summary>Unit accepted by <c>Intl.RelativeTimeFormat</c>. <c>Intl.RelativeTimeFormat</c> 接受的单位。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Unit accepted by <c>Intl.RelativeTimeFormat</c>. <c>Intl.RelativeTimeFormat</c> 接受的单位。</summary>
 	public enum RelativeTimeUnit
 	{
+		/// <summary>
+		/// 以年为相对时间单位。
+		/// </summary>
 		[Description("@#year")]
 		Year,
+		/// <summary>
+		/// 以季度为相对时间单位。
+		/// </summary>
 		[Description("@#quarter")]
 		Quarter,
+		/// <summary>
+		/// 以月为相对时间单位。
+		/// </summary>
 		[Description("@#month")]
 		Month,
+		/// <summary>
+		/// 以周为相对时间单位。
+		/// </summary>
 		[Description("@#week")]
 		Week,
+		/// <summary>
+		/// 以天为相对时间单位。
+		/// </summary>
 		[Description("@#day")]
 		Day,
+		/// <summary>
+		/// 以小时为相对时间单位。
+		/// </summary>
 		[Description("@#hour")]
 		Hour,
+		/// <summary>
+		/// 以分钟为相对时间单位。
+		/// </summary>
 		[Description("@#minute")]
 		Minute,
+		/// <summary>
+		/// 以秒为相对时间单位。
+		/// </summary>
 		[Description("@#second")]
 		Second
 	}
@@ -1243,24 +1558,36 @@ public static class Intl
 		/// <summary>Creates a formatter for a locale list and options. 为 locale 列表和 options 创建格式化器。</summary>
 		public extern RelativeTimeFormat(IEnumerable<string> locales, RelativeTimeFormatOptions options);
 
+		/// <summary>
+		/// The Intl.RelativeTimeFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in relative time formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.RelativeTimeFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in relative time formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
+		/// <summary>
+		/// The Intl.RelativeTimeFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in relative time formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, RelativeTimeFormatOptions options);
 
+		/// <summary>
+		/// The Intl.RelativeTimeFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in relative time formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, RelativeTimeFormatOptions options);
 
-		[Description("@#format")]
 		/// <summary>Formats a signed value relative to the supplied unit. 按给定单位格式化带符号的相对值。</summary>
+		[Description("@#format")]
 		public extern string Format(Number value, RelativeTimeUnit unit);
 
-		[Description("@#formatToParts")]
 		/// <summary>Formats a relative value as JavaScript part records. 将相对值格式化为 JavaScript part 记录。</summary>
+		[Description("@#formatToParts")]
 		public extern Array<RelativeTimeFormatPart> FormatToParts(Number value, RelativeTimeUnit unit);
 
 		/// <summary>Returns runtime-resolved relative-time options. 返回运行时解析后的相对时间选项。</summary>
@@ -1268,28 +1595,46 @@ public static class Intl
 		public extern ResolvedRelativeTimeFormatOptions ResolvedOptions();
 	}
 
+	/// <summary>Duration output style. Duration 输出样式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Duration output style. Duration 输出样式。</summary>
 	public enum DurationFormatStyle
 	{
+		/// <summary>
+		/// E.g., 1 hour and 50 minutes
+		/// </summary>
 		[Description("@#long")]
 		Long,
+		/// <summary>
+		/// E.g., 1 hr, 50 min
+		/// </summary>
 		[Description("@#short")]
 		Short,
+		/// <summary>
+		/// E.g., 1h 50m
+		/// </summary>
 		[Description("@#narrow")]
 		Narrow,
+		/// <summary>
+		/// E.g., 1:50:00
+		/// </summary>
 		[Description("@#digital")]
 		Digital
 	}
 
+	/// <summary>Whether a duration unit is automatically omitted or always shown. Duration 单位自动省略或始终显示的策略。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Whether a duration unit is automatically omitted or always shown. Duration 单位自动省略或始终显示的策略。</summary>
 	public enum DurationDisplay
 	{
+		/// <summary>
+		/// 根据值与格式上下文自动决定是否显示该持续时间单位。
+		/// </summary>
 		[Description("@#auto")]
 		Auto,
+		/// <summary>
+		/// 即使持续时间的该单位为零，也显示该单位。
+		/// </summary>
 		[Description("@#always")]
 		Always
 	}
@@ -1303,6 +1648,9 @@ public static class Intl
 	[Description("@#")]
 	public enum DurationNumericStyle
 	{
+		/// <summary>
+		/// 以数值字段显示持续时间单位，适用于数字时钟形式。
+		/// </summary>
 		[Description("@#numeric")]
 		Numeric
 	}
@@ -1447,15 +1795,27 @@ public static class Intl
 		/// <summary>Creates a duration formatter for a locale list and options. 为 locale 列表和 options 创建 Duration 格式化器。</summary>
 		public extern DurationFormat(IEnumerable<string> locales, DurationFormatOptions options);
 
+		/// <summary>
+		/// The Intl.DurationFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in duration formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.DurationFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in duration formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
+		/// <summary>
+		/// The Intl.DurationFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in duration formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DurationFormatOptions options);
 
+		/// <summary>
+		/// The Intl.DurationFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in duration formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, DurationFormatOptions options);
 
@@ -1478,15 +1838,24 @@ public static class Intl
 		public extern ResolvedDurationFormatOptions ResolvedOptions();
 	}
 
+	/// <summary>List relationship type: conjunction, disjunction, or unit. 列表关系类型：合取、析取或单位。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>List relationship type: conjunction, disjunction, or unit. 列表关系类型：合取、析取或单位。</summary>
 	public enum ListFormatType
 	{
+		/// <summary>
+		/// For &quot;and&quot;-based grouping of the list items: &quot;A, B, and C&quot;
+		/// </summary>
 		[Description("@#conjunction")]
 		Conjunction,
+		/// <summary>
+		/// For &quot;or&quot;-based grouping of the list items: &quot;A, B, or C&quot;
+		/// </summary>
 		[Description("@#disjunction")]
 		Disjunction,
+		/// <summary>
+		/// For grouping the list items as a compound unit (neither &quot;and&quot;-based nor &quot;or&quot;-based): &quot;A, B, C&quot;
+		/// </summary>
 		[Description("@#unit")]
 		Unit
 	}
@@ -1550,15 +1919,27 @@ public static class Intl
 		/// <summary>Creates a list formatter for a locale list and options. 为 locale 列表和 options 创建列表格式化器。</summary>
 		public extern ListFormat(IEnumerable<string> locales, ListFormatOptions options);
 
+		/// <summary>
+		/// The Intl.ListFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in list formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.ListFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in list formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
+		/// <summary>
+		/// The Intl.ListFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in list formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, ListFormatOptions options);
 
+		/// <summary>
+		/// The Intl.ListFormat.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in list formatting without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, ListFormatOptions options);
 
@@ -1598,13 +1979,19 @@ public static class Intl
 		public extern ResolvedListFormatOptions ResolvedOptions();
 	}
 
+	/// <summary>Plural-rule category family. 复数规则类别族。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Plural-rule category family. 复数规则类别族。</summary>
 	public enum PluralRulesType
 	{
+		/// <summary>
+		/// For cardinal numbers (referring to the quantity of things).
+		/// </summary>
 		[Description("@#cardinal")]
 		Cardinal,
+		/// <summary>
+		/// For ordinal number (referring to the ordering or ranking of things, e.g., &quot;1st&quot;, &quot;2nd&quot;, &quot;3rd&quot; in English).
+		/// </summary>
 		[Description("@#ordinal")]
 		Ordinal
 	}
@@ -1689,20 +2076,32 @@ public static class Intl
 		/// <summary>Creates plural rules for a locale list and options. 为 locale 列表和 options 创建复数规则。</summary>
 		public extern PluralRules(IEnumerable<string> locales, PluralRulesOptions options);
 
+		/// <summary>
+		/// The Intl.PluralRules.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in plural rules without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.PluralRules.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in plural rules without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
+		/// <summary>
+		/// The Intl.PluralRules.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in plural rules without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, PluralRulesOptions options);
 
+		/// <summary>
+		/// The Intl.PluralRules.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in plural rules without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, PluralRulesOptions options);
 
-		[Description("@#select")]
 		/// <summary>Returns the plural category for a JavaScript number. 返回 JavaScript Number 的复数类别。</summary>
+		[Description("@#select")]
 		public extern string Select(Number value);
 
 		/// <summary>
@@ -1733,43 +2132,73 @@ public static class Intl
 		public extern ResolvedPluralRulesOptions ResolvedOptions();
 	}
 
+	/// <summary>Code domain accepted by <c>Intl.DisplayNames</c>. <c>Intl.DisplayNames</c> 接受的代码域。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Code domain accepted by <c>Intl.DisplayNames</c>. <c>Intl.DisplayNames</c> 接受的代码域。</summary>
 	public enum DisplayNamesType
 	{
+		/// <summary>
+		/// 把语言标识转换为本地化语言名称。
+		/// </summary>
 		[Description("@#language")]
 		Language,
+		/// <summary>
+		/// 把地区代码转换为本地化地区名称。
+		/// </summary>
 		[Description("@#region")]
 		Region,
+		/// <summary>
+		/// 把文字系统代码转换为本地化文字系统名称。
+		/// </summary>
 		[Description("@#script")]
 		Script,
+		/// <summary>
+		/// 把货币代码转换为本地化货币名称。
+		/// </summary>
 		[Description("@#currency")]
 		Currency,
+		/// <summary>
+		/// 把历法标识转换为本地化历法名称。
+		/// </summary>
 		[Description("@#calendar")]
 		Calendar,
+		/// <summary>
+		/// 把日期时间字段标识转换为本地化名称。
+		/// </summary>
 		[Description("@#dateTimeField")]
 		DateTimeField
 	}
 
+	/// <summary>Fallback policy when a display name is unavailable. 显示名称不可用时的回退策略。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Fallback policy when a display name is unavailable. 显示名称不可用时的回退策略。</summary>
 	public enum DisplayNamesFallback
 	{
+		/// <summary>
+		/// Return the input code itself.
+		/// </summary>
 		[Description("@#code")]
 		Code,
+		/// <summary>
+		/// Return undefined.
+		/// </summary>
 		[Description("@#none")]
 		None
 	}
 
+	/// <summary>Language-name display form. 语言名称显示形式。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Language-name display form. 语言名称显示形式。</summary>
 	public enum DisplayNamesLanguageDisplay
 	{
+		/// <summary>
+		/// Display special regional dialects using their own name. E.g. &quot;nl-BE&quot; will be displayed as &quot;Flemish&quot;.
+		/// </summary>
 		[Description("@#dialect")]
 		Dialect,
+		/// <summary>
+		/// Display all languages using standard format. E.g. &quot;nl-BE&quot; will be displayed as &quot;Dutch (Belgium)&quot;.
+		/// </summary>
 		[Description("@#standard")]
 		Standard
 	}
@@ -1828,15 +2257,27 @@ public static class Intl
 		/// <summary>Creates display names for a locale list and options. 为 locale 列表和 options 创建显示名称格式化器。</summary>
 		public extern DisplayNames(IEnumerable<string> locales, DisplayNamesOptions options);
 
+		/// <summary>
+		/// The Intl.DisplayNames.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in display names without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.DisplayNames.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in display names without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
+		/// <summary>
+		/// The Intl.DisplayNames.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in display names without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DisplayNamesOptions options);
 
+		/// <summary>
+		/// The Intl.DisplayNames.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in display names without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, DisplayNamesOptions options);
 
@@ -1853,15 +2294,24 @@ public static class Intl
 		public extern ResolvedDisplayNamesOptions ResolvedOptions();
 	}
 
+	/// <summary>Text segmentation granularity. 文本分词粒度。</summary>
 	[String]
 	[Description("@#")]
-	/// <summary>Text segmentation granularity. 文本分词粒度。</summary>
 	public enum SegmenterGranularity
 	{
+		/// <summary>
+		/// Split the input into segments at grapheme cluster (user-perceived character) boundaries, as determined by the locale.
+		/// </summary>
 		[Description("@#grapheme")]
 		Grapheme,
+		/// <summary>
+		/// Split the input into segments at word boundaries, as determined by the locale.
+		/// </summary>
 		[Description("@#word")]
 		Word,
+		/// <summary>
+		/// Split the input into segments at sentence boundaries, as determined by the locale.
+		/// </summary>
 		[Description("@#sentence")]
 		Sentence
 	}
@@ -1971,15 +2421,27 @@ public static class Intl
 		/// <summary>Creates a segmenter for a locale list and options. 为 locale 列表和 options 创建分词器。</summary>
 		public extern Segmenter(IEnumerable<string> locales, SegmenterOptions options);
 
+		/// <summary>
+		/// The Intl.Segmenter.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in segmentation without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
+		/// <summary>
+		/// The Intl.Segmenter.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in segmentation without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
 
+		/// <summary>
+		/// The Intl.Segmenter.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in segmentation without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, SegmenterOptions options);
 
+		/// <summary>
+		/// The Intl.Segmenter.supportedLocalesOf() static method returns an array containing those of the provided locales that are supported in segmentation without having to fall back to the runtime's default locale.
+		/// </summary>
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales, SegmenterOptions options);
 

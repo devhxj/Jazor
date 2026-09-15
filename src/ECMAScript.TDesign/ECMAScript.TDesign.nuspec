@@ -23,6 +23,7 @@
   <files>
     <file src="$buildOutputDir$ECMAScript.TDesign.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.TDesign.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.TDesign.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.TDesign.targets" target="buildTransitive\ECMAScript.TDesign.targets" />
     <file src="$projectDir$manifest.json" target="jazor\tdesign-vue-next" />
     <file src="$projectDir$dist\**\*" target="jazor\tdesign-vue-next\dist" />

@@ -19,7 +19,10 @@ internal sealed partial class TDesignDocumentation
 
     public TDesignDocumentation(string snapshotRoot)
     {
-        using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(snapshotRoot, "documentation.json")));
+        var path = Path.Combine(snapshotRoot, "documentation.json");
+        if (!File.Exists(path))
+            throw new InvalidOperationException("Missing TDesign documentation snapshot. Run 'tdesign documentation <upstream-source.tar.gz>' before generating components.");
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
         _comments = document.RootElement.GetProperty("comments").EnumerateObject()
             .ToDictionary(static item => item.Name, static item => item.Value.GetString()!, StringComparer.Ordinal);
     }
@@ -92,7 +95,7 @@ internal sealed partial class TDesignDocumentation
         Console.WriteLine($"Frozen {comments.Count} upstream documentation entries for TDesign {Version}.");
     }
 
-    private static void Visit(Node parent, string path, Action<Node, string, string?> visit)
+    internal static void Visit(Node parent, string path, Action<Node, string, string?> visit)
     {
         string? comment = null;
         foreach (var child in parent.NamedChildren)
@@ -143,7 +146,7 @@ internal sealed partial class TDesignDocumentation
                 summary.Add("默认值：" + line[9..]);
             else if (line.StartsWith("@deprecated", StringComparison.Ordinal))
                 summary.Add("已弃用：" + line[11..].Trim());
-            else if (!line.StartsWith('@'))
+            else if (!line.StartsWith('@') && line != "null")
                 summary.Add(line);
         }
         var text = string.Join("\n", summary).Trim();

@@ -118,9 +118,16 @@ public static partial class Vue
 			=> ((IEnumerable<string>)this).GetEnumerator();
 	}
 
+	/// <summary>
+	/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class VueNamesOrOptionsCollectionBuilder
 	{
+		/// <summary>
+		/// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+		/// </summary>
+		/// <param name="items">按期望顺序排列的元素。</param>
 		public static VueNamesOrOptions Create(ReadOnlySpan<string> items)
 			=> items.ToArray();
 	}
@@ -220,12 +227,21 @@ public static partial class Vue
 		/// <returns>给定属性键对应的声明。</returns>
 		public extern VuePropDeclaration<TValue>? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按 prop 名称写入其类型或完整选项定义，支持 C# 集合初始化器语法。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VuePropType type);
 
+		/// <summary>
+		/// 按 prop 名称写入其类型或完整选项定义，支持 C# 集合初始化器语法。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VuePropType?[] types);
 
+		/// <summary>
+		/// 按 prop 名称写入其类型或完整选项定义，支持 C# 集合初始化器语法。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VuePropOptions<TValue> options);
 
@@ -249,8 +265,14 @@ public static partial class Vue
 	[Description("@#")]
 	public record VueEmitRegistry : VueProps, System.Collections.IEnumerable
 	{
+		/// <summary>
+		/// 按事件名称读取或写入 emits 的参数校验配置；发出事件时 Vue 使用该配置进行开发模式校验。
+		/// </summary>
 		public extern VueEmitValidator? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按事件名称添加 emits 声明或参数校验函数，供 Vue 检查组件发出的事件。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueEmitValidator validator);
 
@@ -266,8 +288,14 @@ public static partial class Vue
 	[Description("@#")]
 	public record VueEmitRegistry<T0> : VueProps, System.Collections.IEnumerable
 	{
+		/// <summary>
+		/// 按事件名称读取或写入 emits 的参数校验配置；发出事件时 Vue 使用该配置进行开发模式校验。
+		/// </summary>
 		public extern VueEmitValidator<T0>? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按事件名称添加 emits 声明或参数校验函数，供 Vue 检查组件发出的事件。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueEmitValidator<T0> validator);
 
@@ -284,8 +312,14 @@ public static partial class Vue
 	[Description("@#")]
 	public record VueEmitRegistry<T0, T1> : VueProps, System.Collections.IEnumerable
 	{
+		/// <summary>
+		/// 按事件名称读取或写入 emits 的参数校验配置；发出事件时 Vue 使用该配置进行开发模式校验。
+		/// </summary>
 		public extern VueEmitValidator<T0, T1>? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按事件名称添加 emits 声明或参数校验函数，供 Vue 检查组件发出的事件。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueEmitValidator<T0, T1> validator);
 
@@ -303,8 +337,14 @@ public static partial class Vue
 	[Description("@#")]
 	public record VueEmitRegistry<T0, T1, T2> : VueProps, System.Collections.IEnumerable
 	{
+		/// <summary>
+		/// 按事件名称读取或写入 emits 的参数校验配置；发出事件时 Vue 使用该配置进行开发模式校验。
+		/// </summary>
 		public extern VueEmitValidator<T0, T1, T2>? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按事件名称添加 emits 声明或参数校验函数，供 Vue 检查组件发出的事件。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueEmitValidator<T0, T1, T2> validator);
 
@@ -323,8 +363,14 @@ public static partial class Vue
 	[Description("@#")]
 	public record VueEmitRegistry<T0, T1, T2, T3> : VueProps, System.Collections.IEnumerable
 	{
+		/// <summary>
+		/// 按事件名称读取或写入 emits 的参数校验配置；发出事件时 Vue 使用该配置进行开发模式校验。
+		/// </summary>
 		public extern VueEmitValidator<T0, T1, T2, T3>? this[string key] { get; set; }
 
+		/// <summary>
+		/// 按事件名称添加 emits 声明或参数校验函数，供 Vue 检查组件发出的事件。
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueEmitValidator<T0, T1, T2, T3> validator);
 

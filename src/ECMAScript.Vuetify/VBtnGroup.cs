@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VBtnGroup")]
 /// <summary>
 /// Vuetify 按钮组组件。
 /// Vuetify button group component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VBtnGroup")]
 public sealed class VBtnGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>

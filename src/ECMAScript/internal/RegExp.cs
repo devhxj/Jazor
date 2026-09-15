@@ -2,8 +2,6 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
-[ECMAScript]
-[Description("@#RegExp")]
 /// <summary>
 /// JavaScript <c>RegExp</c> constructor and regular-expression instance API host binding.
 /// JavaScript <c>RegExp</c> 构造器及正则表达式实例 API 的宿主绑定。
@@ -14,6 +12,8 @@ namespace ECMAScript;
 /// 正则语法、标志和匹配结果遵循 JavaScript <c>RegExp</c>，而不是
 /// <c>System.Text.RegularExpressions</c>；C# API 仅描述可映射的宿主表面。
 /// </remarks>
+[ECMAScript]
+[Description("@#RegExp")]
 public sealed class RegExp : IPattern, IMatchPattern, IMatchAllPattern, ISearchPattern, ISplitPattern
 {
 	/// <summary>

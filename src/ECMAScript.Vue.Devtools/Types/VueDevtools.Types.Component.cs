@@ -26,6 +26,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class ComponentInstance
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected ComponentInstance()
         {
         }
@@ -36,6 +39,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class ComponentTreeNode
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected ComponentTreeNode()
         {
         }
@@ -113,6 +119,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class InspectedComponentData
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected InspectedComponentData()
         {
         }
@@ -146,6 +155,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class ComponentBounds
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected ComponentBounds()
         {
         }
@@ -172,6 +184,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class VisitComponentTreePayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected VisitComponentTreePayload()
         {
         }
@@ -198,6 +213,9 @@ public static partial class VueDevtools
     [Description("@#")]
     public abstract class InspectComponentPayload
     {
+        /// <summary>
+        /// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+        /// </summary>
         protected InspectComponentPayload()
         {
         }

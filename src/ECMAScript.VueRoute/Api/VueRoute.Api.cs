@@ -2,6 +2,9 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
+/// <summary>
+/// Vue Router 入口；创建 history 和 router，声明路由记录，并通过导航守卫管理异步导航。
+/// </summary>
 public static partial class VueRoute
 {
 	/// <summary>

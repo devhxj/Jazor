@@ -1,18 +1,18 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
 /// <summary>
 /// JavaScript <c>Date</c> runtime host.
 /// Deliberately omits CLR comparison and formatting interfaces so the public surface stays close to JavaScript.
 /// JavaScript <c>Date</c> 运行时宿主。刻意省略 CLR 比较与格式化接口，使公开表面保持接近 JavaScript。
 /// </summary>
-[ECMAScript]
-[Description("@#Date")]
 /// <remarks>
 /// Date 使用 JavaScript 的时间戳、时区和非法日期规则；它不是 System.DateTime 的透明替代品。
 /// 需要 tick、DateOnly 或 DateTimeOffset 语义时，应使用相应 CLR runtime module 的 carrier。
 /// Date uses JavaScript timestamp, time-zone, and invalid-date rules; it is not a transparent <c>System.DateTime</c> replacement.
 /// For ticks, DateOnly, or DateTimeOffset semantics, use the appropriate CLR runtime-module carrier.
 /// </remarks>
+[ECMAScript]
+[Description("@#Date")]
 public sealed class Date
 {
 	/// <summary>
@@ -39,7 +39,7 @@ public sealed class Date
 	/// Returns a string representation of a date. The format of the string depends on the locale.
 	/// 返回日期的 JavaScript 默认字符串表示，格式由运行时与时区决定。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toString")]
 	public extern override string ToString();
 
@@ -47,7 +47,7 @@ public sealed class Date
 	/// Returns a date as a string value.
 	/// 返回本地日期部分的 JavaScript 文本表示。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toDateString")]
 	public extern string ToDateString();
 
@@ -55,7 +55,7 @@ public sealed class Date
 	/// Returns a time as a string value.
 	/// 返回本地时间部分的 JavaScript 文本表示。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toTimeString")]
 	public extern string ToTimeString();
 
@@ -63,7 +63,7 @@ public sealed class Date
 	/// Returns a value as a string value appropriate to the host environment's current locale.
 	/// 使用宿主环境当前 locale 返回本地日期时间文本。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleString")]
 	public extern string ToLocaleString();
 
@@ -71,7 +71,7 @@ public sealed class Date
 	/// Returns a date as a string value appropriate to the host environment's current locale.
 	/// 使用宿主环境当前 locale 返回本地日期文本。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleDateString")]
 	public extern string ToLocaleDateString();
 
@@ -79,7 +79,7 @@ public sealed class Date
 	/// Returns a time as a string value appropriate to the host environment's current locale.
 	/// 使用宿主环境当前 locale 返回本地时间文本。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString();
 
@@ -87,7 +87,7 @@ public sealed class Date
 	/// Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC.
 	/// 返回自 1970-01-01 UTC 午夜起的毫秒时间戳；非法 Date 返回 JavaScript <c>NaN</c>。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#valueOf")]
 	public extern Number ValueOf();
 
@@ -95,7 +95,7 @@ public sealed class Date
 	/// Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC.
 	/// 返回自 1970-01-01 UTC 午夜起的毫秒时间戳；与 <see cref="ValueOf"/> 相同。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getTime")]
 	public extern Number GetTime();
 
@@ -103,7 +103,7 @@ public sealed class Date
 	/// Gets the year, using local time.
 	/// 使用本地时区获取完整年份。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getFullYear")]
 	public extern Number GetFullYear();
 
@@ -119,7 +119,7 @@ public sealed class Date
 	/// Gets the year using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取完整年份。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCFullYear")]
 	public extern Number GetUTCFullYear();
 
@@ -127,7 +127,7 @@ public sealed class Date
 	/// Gets the month, using local time.
 	/// 使用本地时区获取月份，返回值从 0 开始（0 为一月）。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getMonth")]
 	public extern Number GetMonth();
 
@@ -135,7 +135,7 @@ public sealed class Date
 	/// Gets the month of a Date object using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取月份，返回值从 0 开始（0 为一月）。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCMonth")]
 	public extern Number GetUTCMonth();
 
@@ -143,7 +143,7 @@ public sealed class Date
 	/// Gets the day-of-the-month, using local time.
 	/// 使用本地时区获取一个月中的日期，范围通常为 1 至 31。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getDate")]
 	public extern Number GetDate();
 
@@ -151,7 +151,7 @@ public sealed class Date
 	/// Gets the day of the month using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取一个月中的日期，范围通常为 1 至 31。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCDate")]
 	public extern Number GetUTCDate();
 
@@ -159,7 +159,7 @@ public sealed class Date
 	/// Gets the day of the week, using local time.
 	/// 使用本地时区获取星期，返回值从 0 开始（0 为星期日）。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getDay")]
 	public extern Number GetDay();
 
@@ -167,7 +167,7 @@ public sealed class Date
 	/// Gets the day of the week using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取星期，返回值从 0 开始（0 为星期日）。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCDay")]
 	public extern Number GetUTCDay();
 
@@ -175,7 +175,7 @@ public sealed class Date
 	/// Gets the hours in a date, using local time.
 	/// 使用本地时区获取小时，通常范围为 0 至 23。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getHours")]
 	public extern Number GetHours();
 
@@ -183,7 +183,7 @@ public sealed class Date
 	/// Gets the hours value in a Date object using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取小时，通常范围为 0 至 23。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCHours")]
 	public extern Number GetUTCHours();
 
@@ -191,7 +191,7 @@ public sealed class Date
 	/// Gets the minutes of a Date object, using local time.
 	/// 使用本地时区获取分钟，通常范围为 0 至 59。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getMinutes")]
 	public extern Number GetMinutes();
 
@@ -199,7 +199,7 @@ public sealed class Date
 	/// Gets the minutes of a Date object using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取分钟，通常范围为 0 至 59。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCMinutes")]
 	public extern Number GetUTCMinutes();
 
@@ -207,7 +207,7 @@ public sealed class Date
 	/// Gets the seconds of a Date object, using local time.
 	/// 使用本地时区获取秒，通常范围为 0 至 59。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getSeconds")]
 	public extern Number GetSeconds();
 
@@ -215,7 +215,7 @@ public sealed class Date
 	/// Gets the seconds of a Date object using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取秒，通常范围为 0 至 59。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCSeconds")]
 	public extern Number GetUTCSeconds();
 
@@ -223,7 +223,7 @@ public sealed class Date
 	/// Gets the milliseconds of a Date, using local time.
 	/// 使用本地时区获取毫秒，通常范围为 0 至 999。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getMilliseconds")]
 	public extern Number GetMilliseconds();
 
@@ -231,7 +231,7 @@ public sealed class Date
 	/// Gets the milliseconds of a Date object using Universal Coordinated Time (UTC).
 	/// 使用 UTC 获取毫秒，通常范围为 0 至 999。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getUTCMilliseconds")]
 	public extern Number GetUTCMilliseconds();
 
@@ -239,7 +239,7 @@ public sealed class Date
 	/// Gets the difference in minutes between Universal Coordinated Time (UTC) and the time on the local computer.
 	/// 返回 UTC 与本地时间的分钟偏移，符号遵循 JavaScript <c>getTimezoneOffset</c>（UTC 减本地时间）。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#getTimezoneOffset")]
 	public extern Number GetTimezoneOffset();
 
@@ -248,7 +248,7 @@ public sealed class Date
 	/// 设置自 Unix epoch 起的毫秒时间戳并返回更新后的时间值；非法值会使 Date 变为 invalid date。
 	/// </summary>
 	/// <param name="time">A numeric value representing the number of elapsed milliseconds since midnight, January 1, 1970 GMT.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setTime")]
 	public extern Number SetTime(Number time);
 
@@ -257,7 +257,7 @@ public sealed class Date
 	/// 使用本地时间设置毫秒部分；越界值按 JavaScript 日期归一化规则进位或借位。
 	/// </summary>
 	/// <param name="ms">A numeric value equal to the millisecond value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setMilliseconds")]
 	public extern Number SetMilliseconds(Number ms);
 
@@ -266,7 +266,7 @@ public sealed class Date
 	/// 使用 UTC 设置毫秒部分；越界值按 JavaScript 日期归一化规则进位或借位。
 	/// </summary>
 	/// <param name="ms">A numeric value equal to the millisecond value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCMilliseconds")]
 	public extern Number SetUTCMilliseconds(Number ms);
 
@@ -276,7 +276,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setSeconds")]
 	public extern Number SetSeconds(Number sec, Number? ms = default);
 
@@ -286,7 +286,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCSeconds")]
 	public extern Number SetUTCSeconds(Number sec, Number? ms = default);
 
@@ -297,7 +297,7 @@ public sealed class Date
 	/// <param name="min">A numeric value equal to the minutes value.</param>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setMinutes")]
 	public extern Number SetMinutes(Number min, Number? sec = default, Number? ms = default);
 
@@ -308,7 +308,7 @@ public sealed class Date
 	/// <param name="min">A numeric value equal to the minutes value.</param>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCMinutes")]
 	public extern Number SetUTCMinutes(Number min, Number? sec = default, Number? ms = default);
 
@@ -320,7 +320,7 @@ public sealed class Date
 	/// <param name="min">A numeric value equal to the minutes value.</param>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setHours")]
 	public extern Number SetHours(Number hours, Number? min = default, Number? sec = default, Number? ms = default);
 
@@ -332,7 +332,7 @@ public sealed class Date
 	/// <param name="min">A numeric value equal to the minutes value.</param>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCHours")]
 	public extern Number SetUTCHours(Number hours, Number? min = default, Number? sec = default, Number? ms = default);
 
@@ -341,7 +341,7 @@ public sealed class Date
 	/// 使用本地时间设置一个月中的日期；越界日期会跨月归一化。
 	/// </summary>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setDate")]
 	public extern Number SetDate(Number date);
 
@@ -350,7 +350,7 @@ public sealed class Date
 	/// 使用 UTC 设置一个月中的日期；越界日期会跨月归一化。
 	/// </summary>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCDate")]
 	public extern Number SetUTCDate(Number date);
 
@@ -360,7 +360,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively.</param>
 	/// <param name="date">A numeric value representing the day of the month. If this value is not supplied, the value from a call to the getDate method is used.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setMonth")]
 	public extern Number SetMonth(Number month, Number? date = default);
 
@@ -370,7 +370,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively.</param>
 	/// <param name="date">A numeric value representing the day of the month. If it is not supplied, the value from a call to the getUTCDate method is used.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCMonth")]
 	public extern Number SetUTCMonth(Number month, Number? date = default);
 
@@ -381,7 +381,7 @@ public sealed class Date
 	/// <param name="year">A numeric value for the year.</param>
 	/// <param name="month">A zero-based numeric value for the month (0 for January, 11 for December). Must be specified if numDate is specified.</param>
 	/// <param name="date">A numeric value equal for the day of the month.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setFullYear")]
 	public extern Number SetFullYear(Number year, Number? month = default, Number? date = default);
 
@@ -400,7 +400,7 @@ public sealed class Date
 	/// <param name="year">A numeric value equal to the year.</param>
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively. Must be supplied if numDate is supplied.</param>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#setUTCFullYear")]
 	public extern Number SetUTCFullYear(Number year, Number? month = default, Number? date = default);
 
@@ -408,7 +408,7 @@ public sealed class Date
 	/// Returns a date converted to a string using Universal Coordinated Time (UTC).
 	/// 返回 RFC 风格的 UTC 日期文本，直接映射 JavaScript <c>Date.prototype.toUTCString</c>。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toUTCString")]
 	public extern string ToUTCString();
 
@@ -424,7 +424,7 @@ public sealed class Date
 	/// Returns a date as a string value in ISO format.
 	/// 返回 ISO 8601 UTC 文本；invalid date 时 JavaScript 抛出 RangeError，本投影以 <see cref="InvalidOperationException"/> 表达。
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	/// <exception cref="InvalidOperationException"></exception>
 	[Description("@#toISOString")]
 	public extern string ToISOString();
@@ -443,8 +443,8 @@ public sealed class Date
 	/// Nullable is used because JavaScript returns <c>null</c> when the date is invalid.
 	/// 供 <c>JSON.stringify</c> 序列化日期；invalid date 时 JavaScript 返回 <c>null</c>，因此结果可空。
 	/// </summary>
-	/// <param name="key"></param>
-	/// <returns></returns>
+	/// <param name="key">传给该 JavaScript API 的参数值。</param>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toJSON")]
 	public extern string? ToJSON(object? key = null);
 
@@ -453,7 +453,7 @@ public sealed class Date
 	/// 按 JavaScript <c>Date.parse</c> 规则解析日期字符串，返回自 Unix epoch 起的毫秒数；失败时返回 <c>NaN</c>。
 	/// </summary>
 	/// <param name="s">A date string</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#parse")]
 	public extern static Number Parse(string s);
 
@@ -468,7 +468,7 @@ public sealed class Date
 	/// <param name="minutes">Must be supplied if seconds is supplied. A number from 0 to 59 that specifies the minutes.</param>
 	/// <param name="seconds">Must be supplied if milliseconds is supplied. A number from 0 to 59 that specifies the seconds.</param>
 	/// <param name="milliseconds">A number from 0 to 999 that specifies the milliseconds.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#UTC")]
 	public extern static Number UTC(Number year, Number monthIndex, Number? date = default, Number? hours = default, Number? minutes = default, Number? seconds = default, Number? milliseconds = default);
 
@@ -492,23 +492,47 @@ public sealed class Date
 	/// <summary>Creates a Date using JavaScript date-string parsing. 使用 JavaScript 日期字符串解析创建 Date。</summary>
 	public extern static implicit operator Date(string value);
 
+	/// <summary>
+	/// 使用 JavaScript == 比较宿主值；Date 对象按对象身份比较，不按日期时间数值比较。
+	/// </summary>
 	public extern static bool operator ==(Date left, Date right);
 
+	/// <summary>
+	/// 使用 JavaScript != 比较宿主值；Date 对象按对象身份比较，不按日期时间数值比较。
+	/// </summary>
 	public extern static bool operator !=(Date left, Date right);
 
+	/// <summary>
+	/// 使用 JavaScript &lt; 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator <(Date left, Date right);
 
+	/// <summary>
+	/// 使用 JavaScript &gt; 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator >(Date left, Date right);
 
+	/// <summary>
+	/// 使用 JavaScript &lt;= 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator <=(Date left, Date right);
 
+	/// <summary>
+	/// 使用 JavaScript &gt;= 进行关系比较；Date 对象转换为时间戳，Number 与 BigInt 按 JavaScript 数值比较规则处理。
+	/// </summary>
 	public extern static bool operator >=(Date left, Date right);
 
 	// Kept only to satisfy C#'s operator contract for == and != on the host type.
+	/// <summary>
+	/// Kept only to satisfy C#'s operator contract for == and != on the host type. 日期相等判断应使用已绑定的运算符。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override bool Equals(object? obj);
 
 	// Kept only to satisfy C#'s operator contract for == and != on the host type.
+	/// <summary>
+	/// Kept only to satisfy C#'s operator contract for == and != on the host type. 此成员不是 JavaScript Date 的公开运行时方法。
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern override int GetHashCode();
 
@@ -518,7 +542,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleString")]
 	public extern string ToLocaleString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
@@ -534,7 +558,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleString")]
 	public extern string ToLocaleString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 
@@ -544,7 +568,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleDateString")]
 	public extern string ToLocaleDateString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
@@ -560,7 +584,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleDateString")]
 	public extern string ToLocaleDateString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 
@@ -570,7 +594,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString(string? locales = null, Intl.DateTimeFormatOptions? options = null);
 
@@ -586,7 +610,7 @@ public sealed class Date
 	/// </summary>
 	/// <param name="locales">A locale string or array of locale strings that contain one or more language or locale tags.If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale.If you omit this parameter, the default locale of the JavaScript runtime is used.</param>
 	/// <param name="options">An object that contains one or more properties that specify comparison options.</param>
-	/// <returns></returns>
+	/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 }

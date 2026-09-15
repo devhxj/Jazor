@@ -40,6 +40,7 @@ internal static class TDesignComponentGenerator
             .OrderBy(static component => component.Contract.AuthoringType, StringComparer.Ordinal)
             .ToArray();
         var attempts = MergeRuntimeComponents(candidates)
+            .Select(typeCatalog.DocumentComponent)
             .Select(component => GeneratedComponent.TryCreate(component, typeScript, typeCatalog, out var generated, out var failure)
                 ? new GenerationAttempt(component, generated, null)
                 : new GenerationAttempt(component, null, failure))
@@ -320,7 +321,9 @@ internal static class TDesignComponentGenerator
         if (string.IsNullOrWhiteSpace(text))
             return;
         builder.AppendLine($"{indent}/// <summary>");
-        foreach (var line in text!.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n'))
+        var normalized = Regex.Replace(text!, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase)
+            .Replace("\r", string.Empty, StringComparison.Ordinal);
+        foreach (var line in normalized.Split('\n'))
             builder.AppendLine(line.Trim().Length == 0
                 ? $"{indent}///"
                 : $"{indent}/// {EscapeXml(line.Trim())}");
@@ -485,7 +488,7 @@ internal static class TDesignComponentGenerator
                 if (TryGetTNodeBranch(sourceType, out var tNodeType))
                 {
                     var slotSource = slotsByProperty.GetValueOrDefault(property.Name) ??
-                        new ComponentSlot(property.Name, property.Name, sourceType, property.SourcePath);
+                        new ComponentSlot(property.Name, property.Name, sourceType, property.SourcePath, property.Description);
                     if (!TryMapSlot(mapper, slotSource, tNodeType, component.Contract.AuthoringType, out var slot, out failure))
                     {
                         generated = default!;
@@ -776,16 +779,17 @@ internal static class TDesignComponentGenerator
     {
         private readonly Dictionary<string, TypeScriptDeclaration[]> _byName;
         private readonly Dictionary<(string SourcePath, string Name), ImportedType> _imports;
+        private readonly TDesignDocumentation _documentation;
 
         public TypeCatalog(string snapshotRoot, Language typeScript)
         {
-            var documentation = new TDesignDocumentation(snapshotRoot);
+            _documentation = new TDesignDocumentation(snapshotRoot);
             var declarations = new List<TypeScriptDeclaration>();
             var imports = new Dictionary<(string SourcePath, string Name), ImportedType>();
             foreach (var path in Directory.GetFiles(snapshotRoot, "*.d.ts", SearchOption.AllDirectories))
             {
                 var sourcePath = Path.GetRelativePath(snapshotRoot, path).Replace('\\', '/');
-                var source = documentation.Annotate(sourcePath, File.ReadAllText(path), typeScript);
+                var source = _documentation.Annotate(sourcePath, File.ReadAllText(path), typeScript);
                 foreach (var import in ReadImports(sourcePath, source))
                     imports[import.Key] = import.Value;
                 using var parser = new Parser(typeScript);
@@ -814,7 +818,7 @@ internal static class TDesignComponentGenerator
                         definition,
                         declaration.Type == "interface_declaration" ? ReadInterfaceBases(declaration.Text) : [],
                         ReadTypeParameters(declaration),
-                        documentation.GetSummary(sourcePath, name)));
+                        _documentation.GetSummary(sourcePath, name)));
                 }
             }
 
@@ -825,6 +829,61 @@ internal static class TDesignComponentGenerator
                     static group => group.OrderBy(static declaration => declaration.SourcePath, StringComparer.Ordinal).ToArray(),
                     StringComparer.Ordinal);
             _imports = imports;
+        }
+
+        public Component DocumentComponent(Component component)
+        {
+            var propsName = component.Binding.PropsDeclaration?.Split(':')[^1];
+            string Describe(string name, string? existing)
+                => (propsName is not null && component.Binding.PropsSource is not null
+                    ? GetMemberSummary(component.Binding.PropsSource, propsName, name, [])
+                    : null) ?? existing ?? TDesignDocumentation.ComponentMemberSummary(name);
+            return component with
+            {
+                Contract = component.Contract with
+                {
+                    Properties = component.Contract.Properties.Select(property => property with
+                    {
+                        Description = Describe(property.Name, property.Description)
+                    }).ToArray(),
+                    Events = component.Contract.Events.Select(@event => @event with
+                    {
+                        Description = Describe(@event.Property, @event.Description)
+                    }).ToArray(),
+                    Slots = component.Contract.Slots.Select(slot => slot with
+                    {
+                        Description = Describe(slot.Property ?? slot.Name, slot.Description)
+                    }).ToArray()
+                }
+            };
+        }
+
+        private string? GetMemberSummary(
+            string sourcePath, string declarationName, string member, HashSet<(string, string)> visited)
+        {
+            if (!TryResolve(sourcePath, declarationName, out var declaration) ||
+                !visited.Add((declaration.SourcePath, declaration.Name)))
+                return null;
+            var summary = _documentation.GetSummary(declaration.SourcePath, declaration.Name + "." + member);
+            if (summary is not null)
+                return summary.StartsWith("默认值：", StringComparison.Ordinal)
+                    ? TDesignDocumentation.ComponentMemberSummary(member) + "\n" + summary
+                    : summary;
+            // Public facades can be aliases (EnhancedTableProps -> TdEnhancedTableProps).
+            // Follow aliases and inherited props through the same source-aware resolver.
+            var sources = declaration.Kind == TypeScriptDeclarationKind.TypeAlias
+                ? new[] { declaration.Definition }
+                : declaration.BaseTypes;
+            foreach (var baseType in sources)
+            {
+                foreach (Match reference in Regex.Matches(baseType, @"[A-Za-z_$][A-Za-z0-9_$]*"))
+                {
+                    var inherited = GetMemberSummary(declaration.SourcePath, reference.Value, member, visited);
+                    if (inherited is not null)
+                        return inherited;
+                }
+            }
+            return null;
         }
 
         private static IEnumerable<Node> EnumerateDeclarations(Node node)
@@ -2795,4 +2854,3 @@ internal static class TDesignComponentGenerator
     }
 
 }
-

@@ -16,9 +16,15 @@ public static partial class Vue
 	[String]
 	public enum VueTransitionType
 	{
+		/// <summary>
+		/// 监听 CSS transitionend 判断过渡结束。
+		/// </summary>
 		[Description("@#transition")]
 		Transition,
 
+		/// <summary>
+		/// 监听 CSS animationend 判断过渡结束。
+		/// </summary>
 		[Description("@#animation")]
 		Animation
 	}
@@ -30,9 +36,15 @@ public static partial class Vue
 	[String]
 	public enum VueTransitionMode
 	{
+		/// <summary>
+		/// 先完成新元素的进入过渡，再开始旧元素的离开过渡。
+		/// </summary>
 		[Description("@#in-out")]
 		InOut,
 
+		/// <summary>
+		/// 先完成旧元素的离开过渡，再开始新元素的进入过渡。
+		/// </summary>
 		[Description("@#out-in")]
 		OutIn
 	}
@@ -43,9 +55,15 @@ public static partial class Vue
 	/// </summary>
 	public record VueTransitionDuration : VueProps
 	{
+		/// <summary>
+		/// 进入过渡的显式持续时间，单位为毫秒。用于覆盖自动结束事件检测。
+		/// </summary>
 		[Description("@#enter")]
 		public Number? Enter { get; init; }
 
+		/// <summary>
+		/// 离开过渡的显式持续时间，单位为毫秒。用于覆盖自动结束事件检测。
+		/// </summary>
 		[Description("@#leave")]
 		public Number? Leave { get; init; }
 	}
@@ -71,84 +89,176 @@ public static partial class Vue
 	/// </summary>
 	public record VueTransitionProps : VueProps
 	{
+		/// <summary>
+		/// Used to automatically generate transition CSS class names.
+		/// e.g. `name: 'fade'` will auto expand to `.fade-enter`,
+		/// `.fade-enter-active`, etc.
+		/// </summary>
 		[Description("@#name")]
 		public string? Name { get; init; }
 
+		/// <summary>
+		/// Whether to apply CSS transition classes.
+		/// Default: true
+		/// </summary>
 		[Description("@#css")]
 		public bool? Css { get; init; }
 
+		/// <summary>
+		/// Specifies the type of transition events to wait for to
+		/// determine transition end timing.
+		/// Default behavior is auto detecting the type that has
+		/// longer duration.
+		/// </summary>
 		[Description("@#type")]
 		public VueTransitionType? Type { get; init; }
 
+		/// <summary>
+		/// Specifies explicit durations of the transition.
+		/// Default behavior is wait for the first `transitionend`
+		/// or `animationend` event on the root transition element.
+		/// </summary>
 		[Description("@#duration")]
 		public VueTransitionDurationValue? Duration { get; init; }
 
+		/// <summary>
+		/// Controls the timing sequence of leaving/entering transitions.
+		/// Default behavior is simultaneous.
+		/// </summary>
 		[Description("@#mode")]
 		public VueTransitionMode? Mode { get; init; }
 
+		/// <summary>
+		/// Whether to apply transition on initial render.
+		/// Default: false
+		/// </summary>
 		[Description("@#appear")]
 		public bool? Appear { get; init; }
 
+		/// <summary>
+		/// Props for customizing transition classes.
+		/// Use kebab-case in templates, e.g. enter-from-class=&quot;xxx&quot;
+		/// </summary>
 		[Description("@#enterFromClass")]
 		public string? EnterFromClass { get; init; }
 
+		/// <summary>
+		/// 覆盖进入过渡整个持续阶段的 CSS 类；通常在此定义过渡时长和缓动。
+		/// </summary>
 		[Description("@#enterActiveClass")]
 		public string? EnterActiveClass { get; init; }
 
+		/// <summary>
+		/// 覆盖进入过渡的结束状态 CSS 类。
+		/// </summary>
 		[Description("@#enterToClass")]
 		public string? EnterToClass { get; init; }
 
+		/// <summary>
+		/// 覆盖首次显示过渡的起始状态 CSS 类。
+		/// </summary>
 		[Description("@#appearFromClass")]
 		public string? AppearFromClass { get; init; }
 
+		/// <summary>
+		/// 覆盖首次显示过渡整个持续阶段的 CSS 类；通常在此定义过渡时长和缓动。
+		/// </summary>
 		[Description("@#appearActiveClass")]
 		public string? AppearActiveClass { get; init; }
 
+		/// <summary>
+		/// 覆盖首次显示过渡的结束状态 CSS 类。
+		/// </summary>
 		[Description("@#appearToClass")]
 		public string? AppearToClass { get; init; }
 
+		/// <summary>
+		/// 覆盖离开过渡的起始状态 CSS 类。
+		/// </summary>
 		[Description("@#leaveFromClass")]
 		public string? LeaveFromClass { get; init; }
 
+		/// <summary>
+		/// 覆盖离开过渡整个持续阶段的 CSS 类；通常在此定义过渡时长和缓动。
+		/// </summary>
 		[Description("@#leaveActiveClass")]
 		public string? LeaveActiveClass { get; init; }
 
+		/// <summary>
+		/// 覆盖离开过渡的结束状态 CSS 类。
+		/// </summary>
 		[Description("@#leaveToClass")]
 		public string? LeaveToClass { get; init; }
 
+		/// <summary>
+		/// 在进入过渡开始前调用，可准备元素的初始状态。
+		/// </summary>
 		[Description("@#onBeforeEnter")]
 		public VueTransitionHook? OnBeforeEnter { get; init; }
 
+		/// <summary>
+		/// 执行进入过渡的 JavaScript 钩子；异步动画完成时调用 done。
+		/// </summary>
 		[Description("@#onEnter")]
 		public VueTransitionDoneHook? OnEnter { get; init; }
 
+		/// <summary>
+		/// 在进入过渡完成后调用。
+		/// </summary>
 		[Description("@#onAfterEnter")]
 		public VueTransitionHook? OnAfterEnter { get; init; }
 
+		/// <summary>
+		/// 在进入过渡被取消时调用，可清理动画状态。
+		/// </summary>
 		[Description("@#onEnterCancelled")]
 		public VueTransitionHook? OnEnterCancelled { get; init; }
 
+		/// <summary>
+		/// 在离开过渡开始前调用，可准备元素的初始状态。
+		/// </summary>
 		[Description("@#onBeforeLeave")]
 		public VueTransitionHook? OnBeforeLeave { get; init; }
 
+		/// <summary>
+		/// 执行离开过渡的 JavaScript 钩子；异步动画完成时调用 done。
+		/// </summary>
 		[Description("@#onLeave")]
 		public VueTransitionDoneHook? OnLeave { get; init; }
 
+		/// <summary>
+		/// 在离开过渡完成后调用。
+		/// </summary>
 		[Description("@#onAfterLeave")]
 		public VueTransitionHook? OnAfterLeave { get; init; }
 
+		/// <summary>
+		/// 在离开过渡被取消时调用，可清理动画状态。
+		/// </summary>
 		[Description("@#onLeaveCancelled")]
 		public VueTransitionHook? OnLeaveCancelled { get; init; }
 
+		/// <summary>
+		/// 在首次显示过渡开始前调用，可准备元素的初始状态。
+		/// </summary>
 		[Description("@#onBeforeAppear")]
 		public VueTransitionHook? OnBeforeAppear { get; init; }
 
+		/// <summary>
+		/// 执行首次显示过渡的 JavaScript 钩子；异步动画完成时调用 done。
+		/// </summary>
 		[Description("@#onAppear")]
 		public VueTransitionDoneHook? OnAppear { get; init; }
 
+		/// <summary>
+		/// 在首次显示过渡完成后调用。
+		/// </summary>
 		[Description("@#onAfterAppear")]
 		public VueTransitionHook? OnAfterAppear { get; init; }
 
+		/// <summary>
+		/// 在首次显示过渡被取消时调用，可清理动画状态。
+		/// </summary>
 		[Description("@#onAppearCancelled")]
 		public VueTransitionHook? OnAppearCancelled { get; init; }
 	}
@@ -159,24 +269,55 @@ public static partial class Vue
 	/// </summary>
 	public record VueTransitionGroupProps : VueProps
 	{
+		/// <summary>
+		/// Used to automatically generate transition CSS class names.
+		/// e.g. `name: 'fade'` will auto expand to `.fade-enter`,
+		/// `.fade-enter-active`, etc.
+		/// </summary>
 		[Description("@#name")]
 		public string? Name { get; init; }
 
+		/// <summary>
+		/// If not defined, renders as a fragment.
+		/// </summary>
 		[Description("@#tag")]
 		public string? Tag { get; init; }
 
+		/// <summary>
+		/// For customizing the CSS class applied during move transitions.
+		/// Use kebab-case in templates, e.g. move-class=&quot;xxx&quot;
+		/// </summary>
 		[Description("@#moveClass")]
 		public string? MoveClass { get; init; }
 
+		/// <summary>
+		/// Whether to apply CSS transition classes.
+		/// Default: true
+		/// </summary>
 		[Description("@#css")]
 		public bool? Css { get; init; }
 
+		/// <summary>
+		/// Specifies the type of transition events to wait for to
+		/// determine transition end timing.
+		/// Default behavior is auto detecting the type that has
+		/// longer duration.
+		/// </summary>
 		[Description("@#type")]
 		public VueTransitionType? Type { get; init; }
 
+		/// <summary>
+		/// Specifies explicit durations of the transition.
+		/// Default behavior is wait for the first `transitionend`
+		/// or `animationend` event on the root transition element.
+		/// </summary>
 		[Description("@#duration")]
 		public VueTransitionDurationValue? Duration { get; init; }
 
+		/// <summary>
+		/// Whether to apply transition on initial render.
+		/// Default: false
+		/// </summary>
 		[Description("@#appear")]
 		public bool? Appear { get; init; }
 	}
@@ -187,12 +328,23 @@ public static partial class Vue
 	/// </summary>
 	public record VueKeepAliveProps : VueProps
 	{
+		/// <summary>
+		/// If specified, only components with names matched by
+		/// `include` will be cached.
+		/// </summary>
 		[Description("@#include")]
 		public VueKeepAliveMatch? Include { get; init; }
 
+		/// <summary>
+		/// Any component with a name matched by `exclude` will
+		/// not be cached.
+		/// </summary>
 		[Description("@#exclude")]
 		public VueKeepAliveMatch? Exclude { get; init; }
 
+		/// <summary>
+		/// The maximum number of component instances to cache.
+		/// </summary>
 		[Description("@#max")]
 		public VueIntStringValue? Max { get; init; }
 	}
@@ -203,12 +355,26 @@ public static partial class Vue
 	/// </summary>
 	public record VueTeleportProps : VueProps
 	{
+		/// <summary>
+		/// Required. Specify target container.
+		/// Can either be a selector or an actual element.
+		/// </summary>
 		[Description("@#to")]
 		public VueTeleportTarget? To { get; init; }
 
+		/// <summary>
+		/// When `true`, the content will remain in its original
+		/// location instead of moved into the target container.
+		/// Can be changed dynamically.
+		/// </summary>
 		[Description("@#disabled")]
 		public bool? Disabled { get; init; }
 
+		/// <summary>
+		/// When `true`, the Teleport will defer until other
+		/// parts of the application have been mounted before
+		/// resolving its target. (3.5+)
+		/// </summary>
 		[Description("@#defer")]
 		public bool? Defer { get; init; }
 	}
@@ -219,15 +385,28 @@ public static partial class Vue
 	/// </summary>
 	public record VueSuspenseProps : VueProps
 	{
+		/// <summary>
+		/// Switch to fallback content if it takes longer than `timeout` milliseconds to render the new default content.
+		/// A `timeout` value of `0` will cause the fallback content to be displayed immediately when default content is replaced.
+		/// </summary>
 		[Description("@#timeout")]
 		public Number? Timeout { get; init; }
 
+		/// <summary>
+		/// 进入等待异步依赖的 pending 状态时调用。
+		/// </summary>
 		[Description("@#onPending")]
 		public Action? OnPending { get; init; }
 
+		/// <summary>
+		/// 所有待处理异步依赖完成并切换到默认插槽内容后调用。
+		/// </summary>
 		[Description("@#onResolve")]
 		public Action? OnResolve { get; init; }
 
+		/// <summary>
+		/// 实际显示 fallback 插槽内容时调用。
+		/// </summary>
 		[Description("@#onFallback")]
 		public Action? OnFallback { get; init; }
 	}
@@ -242,6 +421,9 @@ public static partial class Vue
 	/// </remarks>
 	public record VueDefaultSlots : VueSlots
 	{
+		/// <summary>
+		/// 默认插槽的渲染函数；返回要插入组件默认内容区域的子节点。
+		/// </summary>
 		[Description("@#default")]
 		public VueSlotCallback? Default { get; init; }
 	}
@@ -252,9 +434,15 @@ public static partial class Vue
 	/// </summary>
 	public record VueSuspenseSlots : VueSlots
 	{
+		/// <summary>
+		/// 包含异步组件或 async setup 依赖的主要内容；依赖完成后显示。
+		/// </summary>
 		[Description("@#default")]
 		public VueSlotCallback? Default { get; init; }
 
+		/// <summary>
+		/// 主要内容等待异步依赖时显示的占位内容。
+		/// </summary>
 		[Description("@#fallback")]
 		public VueSlotCallback? Fallback { get; init; }
 	}
@@ -292,9 +480,15 @@ public static partial class Vue
 	[String]
 	public enum VueCompilerWhitespace
 	{
+		/// <summary>
+		/// 压缩连续空白，并移除符合编译器规则的元素间空白；这是 Vue 默认策略。
+		/// </summary>
 		[Description("@#condense")]
 		Condense,
 
+		/// <summary>
+		/// 保留模板中可保留的空白文本，适用于空白影响布局或文本呈现的场景。
+		/// </summary>
 		[Description("@#preserve")]
 		Preserve
 	}
@@ -305,6 +499,9 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueGlobalProperties
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueGlobalProperties()
 		{
 		}
@@ -322,6 +519,9 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueOptionMergeStrategies
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueOptionMergeStrategies()
 		{
 		}
@@ -340,19 +540,34 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueAppCompilerOptions
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueAppCompilerOptions()
 		{
 		}
 
+		/// <summary>
+		/// 判断标签是否应作为原生自定义元素处理；返回 true 时跳过 Vue 组件解析。
+		/// </summary>
 		[Description("@#isCustomElement")]
 		public extern VueIsCustomElementCallback? IsCustomElement { get; set; }
 
+		/// <summary>
+		/// 模板空白处理策略；condense 压缩连续空白，preserve 保留可保留的空白。
+		/// </summary>
 		[Description("@#whitespace")]
 		public extern VueCompilerWhitespace? Whitespace { get; set; }
 
+		/// <summary>
+		/// 模板文本插值的开始、结束分隔符；数组必须包含两个字符串，例如 [&quot;[[&quot;, &quot;]]&quot; ]。
+		/// </summary>
 		[Description("@#delimiters")]
 		public extern string[]? Delimiters { get; set; }
 
+		/// <summary>
+		/// 是否在生产模板编译结果中保留 HTML 注释；仅对包含运行时模板编译器的 Vue 构建生效。
+		/// </summary>
 		[Description("@#comments")]
 		public extern bool Comments { get; set; }
 	}
@@ -363,39 +578,69 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueAppConfig
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueAppConfig()
 		{
 		}
 
+		/// <summary>
+		/// 捕获组件渲染、生命周期、事件等过程中传播的错误；回调接收错误、组件实例及错误来源信息。
+		/// </summary>
 		[Description("@#errorHandler")]
 		public extern VueAppErrorHandler? ErrorHandler { get; set; }
 
+		/// <summary>
+		/// 自定义开发环境警告处理函数；接收警告文本、组件实例和组件追踪信息，生产构建中不调用。
+		/// </summary>
 		[Description("@#warnHandler")]
 		public extern VueAppWarnHandler? WarnHandler { get; set; }
 
+		/// <summary>
+		/// 在浏览器 Performance 面板记录组件初始化、编译、渲染和更新的性能标记；仅开发模式且支持 performance.mark 时生效。
+		/// </summary>
 		[Description("@#performance")]
 		public extern bool Performance { get; set; }
 
+		/// <summary>
+		/// Options to pass to `@vue/compiler-dom`.
+		/// Only supported in runtime compiler build.
+		/// </summary>
 		[Description("@#compilerOptions")]
 		public extern VueAppCompilerOptions CompilerOptions { get; }
 
+		/// <summary>
+		/// 暴露给本应用所有组件实例的全局属性；组件自身同名属性优先。
+		/// </summary>
 		[Description("@#globalProperties")]
 		public extern VueGlobalProperties GlobalProperties { get; }
 
+		/// <summary>
+		/// 为自定义组件选项指定合并函数；用于 mixins 和 extends 等选项合并过程。
+		/// </summary>
 		[Description("@#optionMergeStrategies")]
 		public extern VueOptionMergeStrategies OptionMergeStrategies { get; }
 
+		/// <summary>
+		/// Prefix for all useId() calls within this app
+		/// </summary>
 		[Description("@#idPrefix")]
 		public extern string? IdPrefix { get; set; }
 
+		/// <summary>
+		/// Whether to throw unhandled errors in production.
+		/// Default is `false` to avoid crashing on any error (and only logs it)
+		/// But in some cases, e.g. SSR, throwing might be more desirable.
+		/// </summary>
 		[Description("@#throwUnhandledErrorInProduction")]
 		public extern bool ThrowUnhandledErrorInProduction { get; set; }
 	}
 
 	/// <summary>
-	/// 只读响应式引用。仅 <c>value</c> getter 可用；不允许写入。通常由 <see cref="Computed{T}"/> 或 <c>readonly()</c> 创建。
+	/// 只读响应式引用。仅 <c>value</c> getter 可用；不允许写入。通常由 <see cref="Computed{T}(Func{T})"/> 或 <c>readonly()</c> 创建。
 	/// A readonly reactive reference. Only the <c>value</c> getter is available; writes
-	/// are not permitted. Typically created by <see cref="Computed{T}"/> or <c>readonly()</c>.
+	/// are not permitted. Typically created by <see cref="Computed{T}(Func{T})"/> or <c>readonly()</c>.
 	/// </summary>
 	/// <typeparam name="T">包装值的类型。</typeparam>
 	public class VueReadonlyRef<T>
@@ -417,6 +662,9 @@ public static partial class Vue
 	/// <typeparam name="T">计算属性值类型。</typeparam>
 	public abstract class VueComputedRef<T> : VueReadonlyRef<T>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueComputedRef()
 		{
 		}
@@ -432,6 +680,9 @@ public static partial class Vue
 	/// <typeparam name="T">计算属性值类型。</typeparam>
 	public abstract class VueWritableComputedRef<T> : IVueRef<T>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueWritableComputedRef()
 		{
 		}
@@ -453,6 +704,9 @@ public static partial class Vue
 	/// <typeparam name="T">包装值的类型。</typeparam>
 	public abstract class VueShallowRef<T> : IVueRef<T>
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueShallowRef()
 		{
 		}
@@ -474,6 +728,9 @@ public static partial class Vue
 	[Description("@#")]
 	public abstract class VueRefs
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueRefs()
 		{
 		}
@@ -499,6 +756,9 @@ public static partial class Vue
 	public abstract class VueRefs<TSource> : VueRefs
 		where TSource : class
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueRefs()
 		{
 		}
@@ -540,24 +800,45 @@ public static partial class Vue
 	[String]
 	public enum VueDebuggerEventType
 	{
+		/// <summary>
+		/// 读取属性值时记录依赖。
+		/// </summary>
 		[Description("@#get")]
 		Get,
 
+		/// <summary>
+		/// 检查键是否存在时记录依赖。
+		/// </summary>
 		[Description("@#has")]
 		Has,
 
+		/// <summary>
+		/// 枚举键或遍历集合时记录迭代依赖。
+		/// </summary>
 		[Description("@#iterate")]
 		Iterate,
 
+		/// <summary>
+		/// 修改目标已有属性或集合项的值，触发相关依赖更新。
+		/// </summary>
 		[Description("@#set")]
 		Set,
 
+		/// <summary>
+		/// 向目标添加此前不存在的属性或集合项，触发相关依赖更新。
+		/// </summary>
 		[Description("@#add")]
 		Add,
 
+		/// <summary>
+		/// 删除目标属性或集合项，触发相关依赖更新。
+		/// </summary>
 		[Description("@#delete")]
 		Delete,
 
+		/// <summary>
+		/// 清空响应式集合，触发依赖该集合的 effect。
+		/// </summary>
 		[Description("@#clear")]
 		Clear
 	}
@@ -570,28 +851,52 @@ public static partial class Vue
 	/// </summary>
 	public abstract class VueDebuggerEvent
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected VueDebuggerEvent()
 		{
 		}
 
+		/// <summary>
+		/// 触发依赖追踪或更新的响应式 effect；用于定位哪个订阅参与本次调试事件。
+		/// </summary>
 		[Description("@#effect")]
 		public extern VueValue? Effect { get; }
 
+		/// <summary>
+		/// 本次依赖操作的原始响应式目标对象。
+		/// </summary>
 		[Description("@#target")]
 		public extern VueValue? Target { get; }
 
+		/// <summary>
+		/// 触发追踪或通知的操作类别，区分 get、has、iterate、set、add、delete、clear。
+		/// </summary>
 		[Description("@#type")]
 		public extern VueDebuggerEventType Type { get; }
 
+		/// <summary>
+		/// 被读取、写入、删除或迭代的依赖键；迭代事件可能使用内部 Symbol。
+		/// </summary>
 		[Description("@#key")]
 		public extern VueValue? Key { get; }
 
+		/// <summary>
+		/// 触发写入或添加操作的新值；读取事件中通常未设置。
+		/// </summary>
 		[Description("@#newValue")]
 		public extern VueValue? NewValue { get; }
 
+		/// <summary>
+		/// 触发修改或删除之前的旧值；读取事件中通常未设置。
+		/// </summary>
 		[Description("@#oldValue")]
 		public extern VueValue? OldValue { get; }
 
+		/// <summary>
+		/// 集合 clear 操作之前保存的集合快照；用于开发模式依赖调试。
+		/// </summary>
 		[Description("@#oldTarget")]
 		public extern VueValue? OldTarget { get; }
 	}

@@ -23,6 +23,7 @@
   <files>
     <file src="$buildOutputDir$ECMAScript.VueRoute.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.VueRoute.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.VueRoute.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.VueRoute.targets" target="buildTransitive\ECMAScript.VueRoute.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vue-router" />
     <file src="$projectDir$dist\**\*" target="jazor\vue-router\dist" />

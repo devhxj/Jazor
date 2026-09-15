@@ -18,6 +18,7 @@
   <files>
     <file src="$buildOutputDir$ECMAScript.Pinia.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Pinia.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Pinia.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.Pinia.targets" target="buildTransitive\ECMAScript.Pinia.targets" />
     <file src="$projectDir$manifest.json" target="jazor\pinia" />
     <file src="$projectDir$dist\**\*" target="jazor\pinia\dist" />

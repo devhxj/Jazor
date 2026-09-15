@@ -60,8 +60,10 @@
   <ItemGroup>
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.xml" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.xml" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net11.0\" />

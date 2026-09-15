@@ -39,3 +39,15 @@
 ## 更新检查
 
 提交前确认：目录和文件名符合命名规则；链接指向现有权威文档；新内容归入相应权威位置；涉及公共行为的改动已同步到相应架构或使用指南；`git diff --check` 通过。
+
+## ECMAScript 与绑定库 API 注释
+
+所有公开的 ECMAScript 基础类型、Web IDL 类型以及 Vue、Pinia、Vue Router、Element Plus、Vuetify、TDesign、Style、Vu Icons、Vue Data UI 和 Devtools 绑定都必须生成 XML 文档。绑定库优先保留对应上游版本的原始 JSDoc、web-types 或 MDN 说明；只有在 C# 投影、联合类型、集合构造器和事件回调等桥接处补充本地说明。补充内容应解释 C# 用法与 JavaScript 行为之间的关系，不能用空泛摘要覆盖上游语义。
+
+绑定文档快照必须记录来源仓库、版本、许可证和采集日期。生成器将 XML 随程序集和 NuGet 包交付，维护者可在仓库根目录运行以下门禁，检查公开声明、枚举值、XML 条目、上游快照和 nuspec 文件是否一致：
+
+```bash
+dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD
+```
+
+Web IDL 文档来源使用 MDN 快照，许可证为 `CC-BY-SA-2.5`；Vue 生态绑定使用各上游项目锁定版本的文档快照。修改绑定声明或生成器后，应同时更新快照、生成输出和 XML，并运行对应生成器的 `documentation --check`。

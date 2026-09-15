@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[ECMAScript("vuetify/components", Transform.Component, "VCardActions")]
 /// <summary>
 /// Vuetify 卡片操作区域组件。
 /// Vuetify card actions section component.
 /// </summary>
+[ECMAScript("vuetify/components", Transform.Component, "VCardActions")]
 public sealed class VCardActions : ComponentBase, IVuetifyComponent
 {
     /// <summary>

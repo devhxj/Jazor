@@ -5,14 +5,14 @@ namespace ECMAScript;
 /// This stays as its own host because JavaScript exposes structured disposal through a concrete runtime object rather than a CLR-only helper pattern.
 /// JavaScript <c>DisposableStack</c> 运行时宿主；JavaScript 通过具体运行时对象公开结构化释放，因此不应替换为仅 CLR 的辅助模式。
 /// </summary>
-[ECMAScript]
-[Description("@#DisposableStack")]
 /// <remarks>
 /// <c>DisposableStack</c> is a host binding for JavaScript explicit resource management; it is not the compiler expansion of CLR <c>using</c>.
 /// Disposal and exception propagation must follow this host protocol instead of being replaced with ordinary array operations.
 /// <c>DisposableStack</c> 是 JavaScript 显式资源管理协议的宿主绑定，不等同于 CLR <c>using</c> 的编译器展开；
 /// 释放和异常传播必须遵循此宿主协议，不能自行替换为普通数组操作。
 /// </remarks>
+[ECMAScript]
+[Description("@#DisposableStack")]
 public sealed class DisposableStack
 {
 	/// <summary>
@@ -77,12 +77,12 @@ public sealed class DisposableStack
 /// Callback overloads explicitly distinguish synchronous bridge callbacks from promise-producing callbacks so the C# surface stays close to JavaScript disposal semantics.
 /// JavaScript <c>AsyncDisposableStack</c> 运行时宿主；回调重载明确区分同步桥接回调和产生 Promise 的回调，以保持 C# 表面贴近 JavaScript 释放语义。
 /// </summary>
-[ECMAScript]
-[Description("@#AsyncDisposableStack")]
 /// <remarks>
 /// <c>AsyncDisposableStack</c> preserves JavaScript asynchronous disposal order and promise-propagation rules.
 /// <c>AsyncDisposableStack</c> 保留 JavaScript 异步释放顺序和 Promise 传播规则。
 /// </remarks>
+[ECMAScript]
+[Description("@#AsyncDisposableStack")]
 public sealed class AsyncDisposableStack
 {
 	/// <summary>

@@ -1,4 +1,4 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
 /// <remarks>
 /// Math 保持 JavaScript 的静态 host shape；成员名通过 Description/ECMAScript 映射到 Math。
@@ -81,7 +81,7 @@ public static partial class Global
 		/// 返回 Number 的绝对值；<c>AbsFn</c> 后缀仅为 C# 命名适配，实际映射 JavaScript <c>Math.abs</c>。
 		/// </summary>
 		/// <param name="x">A numeric expression for which the absolute value is needed.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#abs")]
 		public extern static Number Absolute(Number x);
 
@@ -90,7 +90,7 @@ public static partial class Global
 		/// 返回反余弦值（弧度）；超出 [-1, 1] 的输入按 JavaScript 返回 <c>NaN</c>。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#acos")]
 		public extern static Number Arccosine(Number x);
 
@@ -99,7 +99,7 @@ public static partial class Global
 		/// 返回一个数的反双曲余弦值；小于 1 的输入按 JavaScript 返回 <c>NaN</c>。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#acosh")]
 		public extern static Number Arccosh(Number x);
 
@@ -108,7 +108,7 @@ public static partial class Global
 		/// 返回反正弦值（弧度）；超出 [-1, 1] 的输入按 JavaScript 返回 <c>NaN</c>。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#asin")]
 		public extern static Number Arcsin(Number x);
 
@@ -116,8 +116,8 @@ public static partial class Global
 		/// Returns the inverse hyperbolic sine of a number.
 		/// 返回一个数值的反双曲正弦值。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#asinh")]
 		public extern static Number Arcsinh(Number x);
 
@@ -126,7 +126,7 @@ public static partial class Global
 		/// 返回反正切值（弧度）。
 		/// </summary>
 		/// <param name="x">A numeric expression for which the arctangent is needed.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#atan")]
 		public extern static Number Arctan(Number x);
 
@@ -136,7 +136,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="y">A numeric expression representing the cartesian y-coordinate.</param>
 		/// <param name="x">A numeric expression representing the cartesian x-coordinate.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#atan2")]
 		public extern static Number Arctan2(Number y, Number x);
 
@@ -144,8 +144,8 @@ public static partial class Global
 		/// Returns the inverse hyperbolic tangent of a number.
 		/// 返回一个数值的反双曲正切值；绝对值大于 1 的输入按 JavaScript 返回 <c>NaN</c>。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#atanh")]
 		public extern static Number Arctanh(Number x);
 
@@ -153,8 +153,8 @@ public static partial class Global
 		/// Returns the cube root of a number.
 		/// 返回任意数字的立方根，保留负数的符号。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#cbrt")]
 		public extern static Number CubeRoot(Number x);
 
@@ -163,7 +163,7 @@ public static partial class Global
 		/// 返回大于等于输入的最小整数；结果仍是 JavaScript Number。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#ceil")]
 		public extern static Number Ceil(Number x);
 
@@ -171,8 +171,8 @@ public static partial class Global
 		/// Returns the number of leading zero bits in the 32-bit binary representation of a number.
 		/// 将输入按 JavaScript ToUint32 转换后，返回其 32 位表示中的前导零位数。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#clz32")]
 		public extern static Number Clz32(Number x);
 
@@ -181,7 +181,7 @@ public static partial class Global
 		/// 返回弧度输入的余弦值。
 		/// </summary>
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#cos")]
 		public extern static Number Cosine(Number x);
 
@@ -189,8 +189,8 @@ public static partial class Global
 		/// Returns the hyperbolic cosine of a number.
 		/// 返回数值的双曲余弦函数。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#cosh")]
 		public extern static Number Cosh(Number x);
 
@@ -199,7 +199,7 @@ public static partial class Global
 		/// 返回 e 的 x 次幂，对应 JavaScript <c>Math.exp</c>。
 		/// </summary>
 		/// <param name="x">A numeric expression representing the power of e.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#exp")]
 		public extern static Number Exp(Number x);
 
@@ -207,7 +207,7 @@ public static partial class Global
 		/// Calculates e^x - 1, where e is the base of natural logarithms.
 		/// </summary>
 		/// <remarks>This method provides an optimized calculation for small values of <paramref name="x"/> to improve
-		/// precision. For larger values, it uses the standard exponential calculation.</remarks>
+		/// precision. For larger values, it uses the standard exponential calculation.
 		/// JavaScript <c>Math.expm1</c> 投影；用于精确计算 e^x - 1，尤其改善接近零输入的精度。</remarks>
 		/// <param name="x">The exponent value for which to calculate e^x - 1.</param>
 		/// <returns>The result of e^x - 1. Returns <see cref="double.NaN"/> if <paramref name="x"/> is <see cref="double.NaN"/>.
@@ -221,7 +221,7 @@ public static partial class Global
 		/// 返回小于等于输入的最大整数；结果仍是 JavaScript Number。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#floor")]
 		public extern static Number FloorFunc(Number x);
 
@@ -229,8 +229,8 @@ public static partial class Global
 		/// Returns the nearest IEEE-754 binary32 representation of a number, re-expanded as a JavaScript number.
 		/// 返回最接近的 IEEE-754 binary32 表示并重新扩展为 JavaScript Number。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#fround")]
 		public extern static Number Fround(Number x);
 
@@ -246,8 +246,8 @@ public static partial class Global
 		/// Returns the square root of the sum of squares of its arguments.
 		/// 返回所有参数平方和的平方根，使用 JavaScript <c>Math.hypot</c> 的数值稳定实现。
 		/// </summary>
-		/// <param name="values"></param>
-		/// <returns></returns>
+		/// <param name="values">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#hypot")]
 		public extern static Number Hypot(params Number[] values);
 
@@ -266,7 +266,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="a">First number.</param>
 		/// <param name="b">Second number.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#imul")]
 		public extern static Number Imul(Number a, Number b);
 
@@ -275,7 +275,7 @@ public static partial class Global
 		/// 返回以 e 为底的对数；负数输入按 JavaScript 返回 <c>NaN</c>。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#log")]
 		public extern static Number Logarithm(Number x);
 
@@ -283,8 +283,8 @@ public static partial class Global
 		/// Returns the base 10 logarithm of a number.
 		/// 返回以 10 为底的对数；非正输入遵循 JavaScript Number 边界行为。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#log10")]
 		public extern static Number Logarithm10(Number x);
 
@@ -292,8 +292,8 @@ public static partial class Global
 		/// Returns the natural logarithm (base e) of 1 + x, where x is the argument.
 		/// 返回 ln(1+x)，对接近零的 x 比直接计算 ln(1+x) 更精确。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#log1p")]
 		public extern static Number Logarithm1p(Number x);
 
@@ -301,8 +301,8 @@ public static partial class Global
 		/// Returns the base 2 logarithm of a number.
 		/// 返回以 2 为底的对数；非正输入遵循 JavaScript Number 边界行为。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#log2")]
 		public extern static Number Logarithm2(Number x);
 
@@ -312,7 +312,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="val1">Numeric expressions to be evaluated.</param>
 		/// <param name="val2">Numeric expressions to be evaluated.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#max")]
 		public extern static Number Maximum(Number val1, Number val2);
 
@@ -321,7 +321,7 @@ public static partial class Global
 		/// 返回参数中的最大值；空参数、<c>NaN</c> 和有符号零均遵循 JavaScript <c>Math.max</c>。
 		/// </summary>
 		/// <param name="values">Numeric expressions to be evaluated.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#max")]
 		public extern static Number Maximum(params Number[] values);
 
@@ -331,7 +331,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="val1">Numeric expressions to be evaluated.</param>
 		/// <param name="val2">Numeric expressions to be evaluated.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#min")]
 		public extern static Number Minimum(Number val1, Number val2);
 
@@ -340,7 +340,7 @@ public static partial class Global
 		/// 返回参数中的最小值；空参数、<c>NaN</c> 和有符号零均遵循 JavaScript <c>Math.min</c>。
 		/// </summary>
 		/// <param name="values">Numeric expressions to be evaluated.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#min")]
 		public extern static Number Minimum(params Number[] values);
 
@@ -350,7 +350,7 @@ public static partial class Global
 		/// </summary>
 		/// <param name="x">The base value of the expression.</param>
 		/// <param name="y">The exponent value of the expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#pow")]
 		public extern static Number Power(Number x, Number y);
 
@@ -358,7 +358,7 @@ public static partial class Global
 		/// Returns a pseudorandom number between 0 and 1.
 		/// 返回区间 [0, 1) 的伪随机 Number；它不是密码学安全随机源。
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#random")]
 		public extern static Number Random();
 
@@ -367,7 +367,7 @@ public static partial class Global
 		/// 按 JavaScript <c>Math.round</c> 规则舍入到最近整数；与某些 CLR 舍入规则不同，.5 朝正无穷方向处理并保留 -0 情形。
 		/// </summary>
 		/// <param name="x">The value to be rounded to the nearest integer.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#round")]
 		public extern static Number Round5(Number x);
 
@@ -375,8 +375,8 @@ public static partial class Global
 		/// Returns 1 or -1, indicating the sign of the number passed as argument. If the input is 0 or -0, it will be returned as-is.
 		/// 返回 Number 的符号；输入为 +0 或 -0 时原样返回，<c>NaN</c> 时返回 <c>NaN</c>。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#sign")]
 		public extern static Number Signum(Number x);
 
@@ -385,7 +385,7 @@ public static partial class Global
 		/// 返回弧度输入的正弦值。
 		/// </summary>
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#sin")]
 		public extern static Number Sine(Number x);
 
@@ -393,8 +393,8 @@ public static partial class Global
 		/// Returns the hyperbolic sine of a number.
 		/// 返回数值的双曲正弦函数。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#sinh")]
 		public extern static Number Sineh(Number x);
 
@@ -403,7 +403,7 @@ public static partial class Global
 		/// 返回平方根；负数输入按 JavaScript 返回 <c>NaN</c>，并保留 -0。
 		/// </summary>
 		/// <param name="x">A numeric expression.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#sqrt")]
 		public extern static Number SquareRoot(Number x);
 
@@ -412,7 +412,7 @@ public static partial class Global
 		/// 返回弧度输入的正切值。
 		/// </summary>
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
-		/// <returns></returns>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#tan")]
 		public extern static Number Tangent(Number x);
 
@@ -420,8 +420,8 @@ public static partial class Global
 		/// Returns the hyperbolic tangent of a number.
 		/// 返回数值的双曲正切函数。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#tanh")]
 		public extern static Number Tangenth(Number x);
 
@@ -429,8 +429,8 @@ public static partial class Global
 		/// Returns the integer part of a number by removing any fractional digits.
 		/// 移除小数部分并向零截断；输入为 -0 时保留 -0，结果仍是 JavaScript Number。
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">传给该 JavaScript API 的参数值。</param>
+		/// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
 		[Description("@#trunc")]
 		public extern static Number Trunc(Number x);
 	}

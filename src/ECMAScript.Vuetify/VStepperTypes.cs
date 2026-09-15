@@ -12,14 +12,32 @@ namespace ECMAScript.Vuetify;
 [CollectionBuilder(typeof(VuetifyStepperItemsCollectionBuilder), nameof(VuetifyStepperItemsCollectionBuilder.Create))]
 public readonly union VuetifyStepperItems(VuetifyStepperItemValue[]) : IEnumerable<VuetifyStepperItemValue>
 {
+    /// <summary>
+    /// 读取当前值的 VuetifyStepperItemValue[] 分支；不属于该分支时返回 null。
+    /// </summary>
     public VuetifyStepperItemValue[]? AsArray => Value as VuetifyStepperItemValue[];
 
+    /// <summary>
+    /// 将 VuetifyStepperItemValue[] 值转换为 VuetifyStepperItems，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="items">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyStepperItems(VuetifyStepperItemValue[] items)
         => new(items);
 
+    /// <summary>
+    /// 将 string[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+    /// </summary>
+    /// <param name="items">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyStepperItems(string[] items)
         => new(Array.ConvertAll(items, static item => (VuetifyStepperItemValue)item));
 
+    /// <summary>
+    /// 将 VuetifyStepperItem[] 的每一项转换为对应联合分支，保持原有顺序并创建新的数组。
+    /// </summary>
+    /// <param name="items">按期望顺序排列的元素。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyStepperItems(VuetifyStepperItem[] items)
         => new(Array.ConvertAll(items, static item => (VuetifyStepperItemValue)item));
 
@@ -30,9 +48,16 @@ public readonly union VuetifyStepperItems(VuetifyStepperItemValue[]) : IEnumerab
         => ((IEnumerable<VuetifyStepperItemValue>)this).GetEnumerator();
 }
 
+/// <summary>
+/// 供 C# 集合表达式调用的构建器；应用可直接使用 [item1, item2] 语法构造对应集合。
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class VuetifyStepperItemsCollectionBuilder
 {
+    /// <summary>
+    /// 为 C# 集合表达式创建有序集合；复制传入的元素，不保留临时 Span。
+    /// </summary>
+    /// <param name="items">按期望顺序排列的元素。</param>
     public static VuetifyStepperItems Create(ReadOnlySpan<VuetifyStepperItemValue> items)
         => items.ToArray();
 }
@@ -45,13 +70,29 @@ public static class VuetifyStepperItemsCollectionBuilder
 [Description("@#")]
 public readonly union VuetifyStepperItemValue(string, VuetifyStepperItem)
 {
+    /// <summary>
+    /// 读取当前值的 string 分支；不属于该分支时返回 null。
+    /// </summary>
     public string? AsString => Value as string;
 
+    /// <summary>
+    /// 读取当前值的 VuetifyStepperItem 分支；不属于该分支时返回 null。
+    /// </summary>
     public VuetifyStepperItem? AsItem => Value as VuetifyStepperItem;
 
+    /// <summary>
+    /// 将 string 值转换为 VuetifyStepperItemValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyStepperItemValue(string value)
         => new(value);
 
+    /// <summary>
+    /// 将 VuetifyStepperItem 值转换为 VuetifyStepperItemValue，保留输入值供 JavaScript API 使用。
+    /// </summary>
+    /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
+    /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyStepperItemValue(VuetifyStepperItem value)
         => new(value);
 }
@@ -64,15 +105,27 @@ public readonly union VuetifyStepperItemValue(string, VuetifyStepperItem)
 [Description("@#")]
 public sealed record VuetifyStepperItem : VueDictionary
 {
+    /// <summary>
+    /// 条目的标题内容，用于默认显示文本。
+    /// </summary>
     [Description("@#title")]
     public VueStringNumberValue? Title { get; init; }
 
+    /// <summary>
+    /// 此条目关联的模型值，用于渲染和更新回调。
+    /// </summary>
     [Description("@#value")]
     public VuetifyGroupModelValue? Value { get; init; }
 
+    /// <summary>
+    /// 条目标题下方的补充文本。
+    /// </summary>
     [Description("@#subtitle")]
     public VueStringNumberValue? Subtitle { get; init; }
 
+    /// <summary>
+    /// 是否禁止此项的用户交互。
+    /// </summary>
     [Description("@#disabled")]
     public bool? Disabled { get; init; }
 }
@@ -85,9 +138,15 @@ public sealed record VuetifyStepperItem : VueDictionary
 [Description("@#")]
 public sealed record VStepperNavigationSlotContext
 {
+    /// <summary>
+    /// 移动到组中的上一个可选项。
+    /// </summary>
     [Description("@#prev")]
     public Action? Prev { get; init; }
 
+    /// <summary>
+    /// 移动到组中的下一个可选项。
+    /// </summary>
     [Description("@#next")]
     public Action? Next { get; init; }
 }
@@ -100,24 +159,45 @@ public sealed record VStepperNavigationSlotContext
 [Description("@#")]
 public sealed record VStepperItemSlotContext
 {
+    /// <summary>
+    /// 是否允许用户进入并编辑此步骤。
+    /// </summary>
     [Description("@#canEdit")]
     public bool CanEdit { get; init; }
 
+    /// <summary>
+    /// 当前步骤是否处于错误状态。
+    /// </summary>
     [Description("@#hasError")]
     public bool HasError { get; init; }
 
+    /// <summary>
+    /// 当前步骤是否已完成。
+    /// </summary>
     [Description("@#hasCompleted")]
     public bool HasCompleted { get; init; }
 
+    /// <summary>
+    /// 条目的标题内容，用于默认显示文本。
+    /// </summary>
     [Description("@#title")]
     public VueStringNumberValue? Title { get; init; }
 
+    /// <summary>
+    /// 条目标题下方的补充文本。
+    /// </summary>
     [Description("@#subtitle")]
     public VueStringNumberValue? Subtitle { get; init; }
 
+    /// <summary>
+    /// 当前步骤关联的模型值，用于识别导航目标。
+    /// </summary>
     [Description("@#step")]
     public VuetifyGroupModelValue? Step { get; init; }
 
+    /// <summary>
+    /// 此条目关联的模型值，用于渲染和更新回调。
+    /// </summary>
     [Description("@#value")]
     public VuetifyGroupModelValue? Value { get; init; }
 }
@@ -130,12 +210,21 @@ public sealed record VStepperItemSlotContext
 [Description("@#")]
 public sealed record VStepperContentItemSlotContext
 {
+    /// <summary>
+    /// 条目的标题内容，用于默认显示文本。
+    /// </summary>
     [Description("@#title")]
     public VueValue? Title { get; init; }
 
+    /// <summary>
+    /// 此条目关联的模型值，用于渲染和更新回调。
+    /// </summary>
     [Description("@#value")]
     public VuetifyGroupModelValue? Value { get; init; }
 
+    /// <summary>
+    /// 调用方提供的原始数据，供自定义渲染读取业务字段。
+    /// </summary>
     [Description("@#raw")]
     public VuetifyStepperItemValue? Raw { get; init; }
 }
@@ -148,6 +237,9 @@ public sealed record VStepperContentItemSlotContext
 [Description("@#")]
 public sealed record VStepperActionButtonProps : VueProps
 {
+    /// <summary>
+    /// 自定义渲染时应转发的点击处理函数，用于执行组件默认交互。
+    /// </summary>
     [Description("@#onClick")]
     public Action? OnClick { get; init; }
 }
@@ -160,6 +252,9 @@ public sealed record VStepperActionButtonProps : VueProps
 [Description("@#")]
 public sealed record VStepperActionButtonSlotContext
 {
+    /// <summary>
+    /// 供自定义渲染转发给目标元素或组件的属性，包含上游提供的事件和可访问性绑定。
+    /// </summary>
     [Description("@#props")]
     public VStepperActionButtonProps? Props { get; init; }
 }

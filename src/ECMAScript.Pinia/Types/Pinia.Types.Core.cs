@@ -3,6 +3,9 @@ using System.ComponentModel;
 
 namespace ECMAScript;
 
+/// <summary>
+/// Pinia 状态管理入口；创建并安装根实例后，使用 DefineStore 声明 store，通过订阅和 action 钩子观察变更。
+/// </summary>
 public static partial class Pinia
 {
 	/// <summary>
@@ -143,6 +146,9 @@ public static partial class Pinia
 	[Description("@#")]
 	public abstract class SetupStoreHelpers
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected SetupStoreHelpers()
 		{
 		}
@@ -768,6 +774,9 @@ public static partial class Pinia
 	public abstract class StoreRefs<TStore> : Vue.VueRefs<TStore>
 		where TStore : class
 	{
+		/// <summary>
+		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
+		/// </summary>
 		protected StoreRefs()
 		{
 		}

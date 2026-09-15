@@ -11,6 +11,9 @@ public sealed class VueUi3dBar : VueDataUiChartComponent<VueUi3dBarDataset, VueU
 [ECMAScript("vue-data-ui/vue-ui-accordion", Transform.Component, "VueUiAccordion")]
 public sealed class VueUiAccordion : VueDataUiConfigComponent<VueUiAccordionConfig>
 {
+    /// <summary>
+    /// 隐藏手风琴的详细内容区域。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideDetails")]
     public bool? HideDetails { get; set; }
@@ -56,10 +59,16 @@ public sealed class VueUiDag : VueDataUiChartComponent<VueUiDagDataset, VueUiDag
 [ECMAScript("vue-data-ui/vue-ui-dashboard", Transform.Component, "VueUiDashboard")]
 public sealed class VueUiDashboard : VueDataUiChartComponent<VueUiDashboardElement[], VueUiDashboardConfig>
 {
+    /// <summary>
+    /// 仪表板布局发生变化时触发；携带更新后的组件位置和尺寸。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<VueUiDashboardPlacedElement[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 复制仪表板的替代表示时触发；携带配置和当前布局数据。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCopyAlt")]
     public EventCallback<VueUiDashboardCopyAlt> OnCopyAlt { get; set; }
@@ -101,27 +110,45 @@ public sealed class VueUiHistoryPlot : VueDataUiChartComponent<VueUiHistoryPlotD
 [ECMAScript("vue-data-ui/vue-ui-icon", Transform.Component, "VueUiIcon")]
 public sealed class VueUiIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 {
+    /// <summary>
+    /// 要显示的内置图标；每个枚举成员说明对应的图形。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("name")]
     public VueUiIconName Name { get; set; }
 
+    /// <summary>
+    /// SVG 轮廓使用的描边颜色。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stroke")]
     public string? Stroke { get; set; }
 
+    /// <summary>
+    /// SVG 描边线宽，以 SVG 用户坐标单位表示。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public double? StrokeWidth { get; set; }
 
+    /// <summary>
+    /// 图标显示尺寸，可使用数值或带单位的 CSS 尺寸。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public Vue.VueStringNumberValue? Size { get; set; }
 
+    /// <summary>
+    /// 为图标启用持续旋转动画。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("isSpin")]
     public bool? IsSpin { get; set; }
 
+    /// <summary>
+    /// 图标完成一周旋转的 CSS 时间，例如 1s。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("spinDuration")]
     public string? SpinDuration { get; set; }
@@ -155,28 +182,46 @@ public sealed class VueUiParallelCoordinatePlot : VueDataUiChartComponent<VueUiP
 [ECMAScript("vue-data-ui/vue-ui-pattern", Transform.Component, "VueUiPattern")]
 public sealed class VueUiPattern : ComponentBase
 {
+    /// <summary>
+    /// 要使用的内置 SVG 填充图案。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("name")]
     public VueUiPatternName Name { get; set; }
 
+    /// <summary>
+    /// 当前 SVG 图案的唯一 id；使用 url(#id) 引用填充时应保持一致。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("id")]
     public string Id { get; set; } = string.Empty;
 
+    /// <summary>
+    /// SVG 图案的填充颜色。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fill")]
     public string? Fill { get; set; }
 
+    /// <summary>
+    /// SVG 轮廓使用的描边颜色。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stroke")]
     public string? Stroke { get; set; }
 
+    /// <summary>
+    /// SVG 描边线宽，以 SVG 用户坐标单位表示。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public double? StrokeWidth { get; set; }
 
+    /// <summary>
+    /// 缩放 SVG 图案的比例。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scale")]
     public double? Scale { get; set; }
@@ -186,32 +231,53 @@ public sealed class VueUiPattern : ComponentBase
 [ECMAScript("vue-data-ui/vue-ui-pattern-seed", Transform.Component, "VueUiPatternSeed")]
 public sealed class VueUiPatternSeed : ComponentBase
 {
+    /// <summary>
+    /// 当前 SVG 图案的唯一 id；使用 url(#id) 引用填充时应保持一致。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("id")]
     public string Id { get; set; } = string.Empty;
 
+    /// <summary>
+    /// 确定性图案的随机种子；相同种子和配置生成相同的图案。
+    /// </summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("seed")]
     public Vue.VueStringNumberValue Seed { get; set; } = default!;
 
+    /// <summary>
+    /// 图案前景的 CSS 颜色值。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("foregroundColor")]
     public string? ForegroundColor { get; set; }
 
+    /// <summary>
+    /// 背景的 CSS 颜色值。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("backgroundColor")]
     public string? BackgroundColor { get; set; }
 
+    /// <summary>
+    /// 种子图案允许的最大图形尺寸。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxSize")]
     public double? MaxSize { get; set; }
 
+    /// <summary>
+    /// 种子图案允许的最小图形尺寸。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minSize")]
     public double? MinSize { get; set; }
 
+    /// <summary>
+    /// 区分使用相同种子的多个图案实例，避免 SVG 标识冲突。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disambiguator")]
     public Vue.VueStringNumberValue? Disambiguator { get; set; }

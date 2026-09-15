@@ -1900,7 +1900,6 @@
     "es/tag/type.d.ts#TdCheckTagGroupProps.defaultValue": "/**\n   * 选中标签值，非受控属性\n   * @default []\n   */",
     "es/tag/type.d.ts#TdCheckTagGroupProps.modelValue": "/**\n   * 选中标签值\n   * @default []\n   */",
     "es/tag/type.d.ts#TdCheckTagGroupProps.multiple": "/**\n   * 是否支持选中多个标签\n   * @default false\n   */",
-    "es/tag/type.d.ts#TdCheckTagGroupProps.onChange": "/**\n   * null\n   */",
     "es/tag/type.d.ts#TdCheckTagGroupProps.options": "/**\n   * 标签选项列表\n   */",
     "es/tag/type.d.ts#TdCheckTagGroupProps.uncheckedProps": "/**\n   * 透传标签未选态属性\n   */",
     "es/tag/type.d.ts#TdCheckTagGroupProps.value": "/**\n   * 选中标签值\n   * @default []\n   */",

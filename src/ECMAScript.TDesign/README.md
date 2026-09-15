@@ -12,6 +12,10 @@ RazorVue 组件生成到消费程序集的 `Jazor.Generated.ModuleCatalog`。
 
 绑定输入固定在 `../ECMAScript.Vue.Generator/upstream/tdesign-vue-next/1.20.7`。`components.json`、`bindings.json` 和 `contracts.json` 分别记录可导出的组件、实际模块/export 与强类型 props 契约。没有当前 runtime export 的文档标签不是 binding 输入。
 
+`documentation.json` 保存相同上游版本源码中的中文 JSDoc，来源 commit 为
+`018b90352b184fb93f57dca62db83d80d486a14f`（MIT 许可证）。注释按源文件、类型和成员匹配，
+补充默认值、配置对象成员和回调说明；枚举逐项释义由生成器的中文词表维护。
+
 ## 维护命令
 
 以下命令只供包维护者更新锁定上游快照和验证生成结果；应用构建与发布不会执行它们：
@@ -19,12 +23,17 @@ RazorVue 组件生成到消费程序集的 `Jazor.Generated.ModuleCatalog`。
 ```bash
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings
+dotnet run --project src/ECMAScript.Vue.Generator -- tdesign documentation .tmp/tdesign-docs.tar.gz
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot --check
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings --check
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --report
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 ```
+
+重新生成文档输入前，将[锁定的上游源码归档](https://codeload.github.com/Tencent/tdesign-vue-next/tar.gz/018b90352b184fb93f57dca62db83d80d486a14f)
+保存为 `.tmp/tdesign-docs.tar.gz`。`tdesign snapshot` 会重建快照目录，因此完整刷新时应按上述顺序重建文档；
+日常只修改枚举释义时，直接运行 `tdesign components` 即可，不需要下载上游源码。
 
 `tdesign components` 是全覆盖门禁：只有每个已声明 props 都具备具体 C# 类型时才生成当前 118 个 runtime 组件。不能为了通过生成而使用 `object`、`VueValue` 或占位契约。
 
@@ -92,9 +101,13 @@ Razor Source Generator 集成、render-function lowering 和产物物化分别�
 
 ## 相关文档
 
-组件源码中的 XML 注释来自锁定版本的 TDesign `web-types.json`，包含组件、prop、事件和 slot 的中英文
-原文。IDE 悬停 `TButton.Theme`、`TForm.OnSubmit` 或 `TTable.LoadingContent` 可直接查看上游说明；
-C# 属性名仍按 PascalCase/`XxxValue`/`XxxContent` 规则映射到 Vue 原名。
+NuGet 包随程序集提供 `ECMAScript.TDesign.xml`，安装包后 IDE 可显示组件、属性、事件、插槽、
+配置对象、委托和公共方法的说明。组件介绍来自锁定的 `web-types.json`，成员优先使用同版本源码的中文 JSDoc。
+上游没有说明的字段补充绑定侧说明；枚举成员同时注明中文含义和实际 JavaScript 字符串。
+
+例如悬停 `TButtonThemeValue.Primary` 可见“品牌色主题”，`TButtonShapeValue.Round` 可见“圆角长方形按钮”，
+`TScroll.BufferSize` 可见预渲染行数的用途和上游默认值。C# 属性名仍按 PascalCase/`XxxValue`/`XxxContent`
+规则映射到 Vue 原名，例如按钮主题属性是 `TButton.Theme`，包含插槽分支的标签属性是 `TFormItem.LabelValue`。
 
 - [ECMAScript.Vue.Generator](../ECMAScript.Vue.Generator/README.md)
 - [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)
