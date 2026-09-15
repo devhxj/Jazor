@@ -4,11 +4,35 @@
 
 ## 2026-09-15
 
-### 文档与绑定交付
+### Jazor 1.0.0-preview.2
 
-- 为 ECMAScript 基础库及 Vue、Pinia、Vue Router、Element Plus、Vuetify、TDesign、Style、Vu Icons、Vue Data UI 和 Devtools 绑定补齐公开类型、方法、属性、枚举和枚举值的 XML 文档；绑定注释优先采用锁定上游版本的原始说明。
-- NuGet 包现在随程序集交付 XML 文档；新增 `verify-binding-documentation.cs` 门禁检查公开声明覆盖率、上游快照、生成输出和 nuspec 文件，避免后续绑定改动丢失开发者提示。
-- Web IDL 绑定接入带来源、许可证和采集日期的 MDN 文档快照，并增加生成器回归测试，确保原始注释换行安全转换为 XML。
+#### 体验优化
+
+- ECMAScript 基础库及 Vue、Pinia、Vue Router、Element Plus、Vuetify、TDesign、Style、Vu Icons、Vue Data UI 和 Devtools 绑定现在为公开类型、方法、属性、枚举和枚举值提供可直接指导开发的 XML 文档，并优先保留锁定上游版本的原始说明。by @devhxj
+- NuGet 包现在随程序集交付 XML 文档，IDE 安装包后即可显示绑定 API 说明。by @devhxj
+
+#### 问题修复
+
+- Emit 输出目录被占用时现在保留原始锁定异常，便于定位残留终端或进程导致的构建失败。by @devhxj
+
+#### 其他变更
+
+- Web IDL 绑定接入带来源、许可证和采集日期的 MDN 文档快照，并增加生成器回归校验，确保原始注释换行可安全转换为 XML。by @devhxj
+
+New Features
+
+Improvements
+
+- ECMAScript core and Vue, Pinia, Vue Router, Element Plus, Vuetify, TDesign, Style, Vu Icons, Vue Data UI, and Devtools bindings now provide actionable XML documentation for public types, methods, properties, enums, and enum values while retaining original comments from pinned upstream versions whenever available. by @devhxj
+- NuGet packages now ship the assembly XML documentation so IDE help is available immediately after installation. by @devhxj
+
+Bug Fixes
+
+- Emit now preserves the original output-lock exception when an output directory is in use, making stale terminals or processes easier to identify. by @devhxj
+
+Chores
+
+- Web IDL bindings now use MDN documentation snapshots with source, license, and retrieval metadata, with generator regression checks for safe XML conversion of multiline comments. by @devhxj
 
 ## 2026-09-14
 
