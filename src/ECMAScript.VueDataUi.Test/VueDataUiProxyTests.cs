@@ -15,7 +15,7 @@ public sealed class VueDataUiProxyTests
     {
         using var manifest = JsonDocument.Parse(File.ReadAllText(GetManifestPath()));
         var imports = manifest.RootElement.GetProperty("imports");
-        var componentTypes = typeof(VueUiXy).Assembly
+        var componentTypes = typeof(VdXy).Assembly
             .GetExportedTypes()
             .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
             .Where(static item => item.Attribute?.Transform == Transform.Component)
@@ -45,7 +45,9 @@ public sealed class VueDataUiProxyTests
             Assert.IsTrue(
                 imports.TryGetProperty(attribute.Import, out _),
                 $"manifest.json is missing {attribute.Import} for {type.Name}.");
-            Assert.AreEqual(type.Name, attribute.ExportName, type.Name);
+            // C# uses the short Vd prefix; the npm entry still exports its original VueUi name.
+            Assert.IsTrue(type.Name.StartsWith("Vd", StringComparison.Ordinal), type.Name);
+            Assert.AreEqual("VueUi" + type.Name[2..], attribute.ExportName, type.Name);
         }
 
         Assert.AreEqual("3.23.4", manifest.RootElement.GetProperty("version").GetString());
@@ -69,27 +71,27 @@ public sealed class VueDataUiProxyTests
     [TestMethod]
     public void VueDataUi_IconAndPatternLiteralsMatchUpstreamDeclarations()
     {
-        AssertStringEnumMatchesDeclaration(typeof(VueUiPatternName), nameof(VueUiPatternName));
-        AssertStringEnumMatchesDeclaration(typeof(VueUiIconName), nameof(VueUiIconName));
+        AssertStringEnumMatchesDeclaration(typeof(VdPatternName), "VueUiPatternName");
+        AssertStringEnumMatchesDeclaration(typeof(VdIconName), "VueUiIconName");
 
         Assert.AreEqual(
-            typeof(VueUiPatternName),
-            typeof(VueUiPattern).GetProperty(nameof(VueUiPattern.Name))!.PropertyType);
+            typeof(VdPatternName),
+            typeof(VdPattern).GetProperty(nameof(VdPattern.Name))!.PropertyType);
         Assert.AreEqual(
-            typeof(VueUiIconName),
-            typeof(VueUiIcon).GetProperty(nameof(VueUiIcon.Name))!.PropertyType);
+            typeof(VdIconName),
+            typeof(VdIcon).GetProperty(nameof(VdIcon.Name))!.PropertyType);
     }
 
     [TestMethod]
     public void VueDataUi_PositionalDatasetFactoriesKeepArrayRuntimeShapes()
     {
-        var agePyramidRow = typeof(VueUiAgePyramidData).GetMethod(nameof(VueUiAgePyramidData.Row));
+        var agePyramidRow = typeof(VdAgePyramidData).GetMethod(nameof(VdAgePyramidData.Row));
         Assert.IsNotNull(agePyramidRow);
         Assert.AreEqual(
             "[__arg1, __arg2, __arg3, __arg4]",
             agePyramidRow!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 
-        var flowLink = typeof(VueUiFlowData).GetMethod(nameof(VueUiFlowData.Link));
+        var flowLink = typeof(VdFlowData).GetMethod(nameof(VdFlowData.Link));
         Assert.IsNotNull(flowLink);
         Assert.AreEqual(
             "[__arg1, __arg2, __arg3]",
@@ -99,7 +101,7 @@ public sealed class VueDataUiProxyTests
     [TestMethod]
     public void VueDataUi_PublicAuthoringSurfaceHasNoObjectCatchAlls()
     {
-        var assembly = typeof(VueDataUiConfig).Assembly;
+        var assembly = typeof(VdConfig).Assembly;
         foreach (var type in assembly.GetExportedTypes().Where(static type => !type.Name.StartsWith('<')))
         {
             const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
@@ -125,64 +127,64 @@ public sealed class VueDataUiProxyTests
     [TestMethod]
     public void VueDataUi_NativeUnionsKeepErasedValueBranchesPrecise()
     {
-        AssertNativeUnion(typeof(VueDataUiCellValue), typeof(string), typeof(double));
-        AssertNativeUnion(typeof(VueUiXySeriesValues), typeof(double?[]), typeof(VueUiXyCoordinate[]));
-        AssertNativeUnion(typeof(VueUiWordCloudDataset), typeof(VueUiWordCloudDatasetItem[]), typeof(string));
-        AssertNativeUnion(typeof(VueUiQuickChartDataset), typeof(double?[]), typeof(VueUiQuickChartDatasetItem), typeof(VueUiQuickChartDatasetItem[]));
+        AssertNativeUnion(typeof(VdCellValue), typeof(string), typeof(double));
+        AssertNativeUnion(typeof(VdXySeriesValues), typeof(double?[]), typeof(VdXyCoordinate[]));
+        AssertNativeUnion(typeof(VdWordCloudDataset), typeof(VdWordCloudDatasetItem[]), typeof(string));
+        AssertNativeUnion(typeof(VdQuickChartDataset), typeof(double?[]), typeof(VdQuickChartDatasetItem), typeof(VdQuickChartDatasetItem[]));
     }
 
     [TestMethod]
     public void VueDataUi_ConfigExtensibilityRemainsStructured()
     {
-        Assert.IsTrue(typeof(Vue.VueDictionary<Vue.VueValue>).IsAssignableFrom(typeof(VueDataUiConfig)));
-        Assert.IsTrue(typeof(Vue.VueDictionary<Vue.VueValue>).IsAssignableFrom(typeof(VueDataUiDatasetItem)));
-        Assert.AreEqual(typeof(VueDataUiConfig), typeof(VueUiDonutConfig).BaseType);
-        Assert.AreEqual(typeof(VueDataUiConfig), typeof(VueUiXyConfig).BaseType);
+        Assert.IsTrue(typeof(Vue.VueDictionary<Vue.VueValue>).IsAssignableFrom(typeof(VdConfig)));
+        Assert.IsTrue(typeof(Vue.VueDictionary<Vue.VueValue>).IsAssignableFrom(typeof(VdDatasetItem)));
+        Assert.AreEqual(typeof(VdConfig), typeof(VdDonutConfig).BaseType);
+        Assert.AreEqual(typeof(VdConfig), typeof(VdXyConfig).BaseType);
     }
 
     [TestMethod]
     public void VueDataUi_DonutLegendCallbackUsesTheUpstreamSummaryPayload()
     {
-        var callback = typeof(VueUiDonut).GetProperty(nameof(VueUiDonut.OnSelectLegend));
+        var callback = typeof(VdDonut).GetProperty(nameof(VdDonut.OnSelectLegend));
         Assert.IsNotNull(callback);
-        Assert.AreEqual(typeof(EventCallback<VueUiDonutLegendItem[]>), callback!.PropertyType);
+        Assert.AreEqual(typeof(EventCallback<VdDonutLegendItem[]>), callback!.PropertyType);
 
         var name = callback.GetCustomAttribute<ECMAScriptNameAttribute>();
         Assert.IsNotNull(name);
         Assert.AreEqual("onSelectLegend", name!.Name);
 
-        Assert.AreEqual(typeof(string), typeof(VueUiDonutLegendItem).GetProperty(nameof(VueUiDonutLegendItem.Color))!.PropertyType);
-        Assert.AreEqual(typeof(string), typeof(VueUiDonutLegendItem).GetProperty(nameof(VueUiDonutLegendItem.Name))!.PropertyType);
-        Assert.AreEqual(typeof(double), typeof(VueUiDonutLegendItem).GetProperty(nameof(VueUiDonutLegendItem.Value))!.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(VdDonutLegendItem).GetProperty(nameof(VdDonutLegendItem.Color))!.PropertyType);
+        Assert.AreEqual(typeof(string), typeof(VdDonutLegendItem).GetProperty(nameof(VdDonutLegendItem.Name))!.PropertyType);
+        Assert.AreEqual(typeof(double), typeof(VdDonutLegendItem).GetProperty(nameof(VdDonutLegendItem.Value))!.PropertyType);
     }
 
     [TestMethod]
     public void VueDataUi_ChartDescriptorsKeepTheirSpecializedDatasetTypes()
     {
-        AssertDatasetType(typeof(VueUiHorizontalBar), typeof(VueUiHorizontalBarDatasetItem[]));
-        AssertDatasetType(typeof(VueUiTableHeatmap), typeof(VueUiTableHeatmapDatasetItem[]));
+        AssertDatasetType(typeof(VdHorizontalBar), typeof(VdHorizontalBarDatasetItem[]));
+        AssertDatasetType(typeof(VdTableHeatmap), typeof(VdTableHeatmapDatasetItem[]));
         AssertDatasetType(
-            typeof(VueUiTableSparkline),
-            typeof(VueUiTableSparklineDatasetItem[]),
-            typeof(VueDataUiRequiredConfigChartComponent<,>));
-        AssertDatasetType(typeof(VueUiCandlestick), typeof(VueDataUiCellValue[][]));
+            typeof(VdTableSparkline),
+            typeof(VdTableSparklineDatasetItem[]),
+            typeof(VdRequiredConfigChartComponent<,>));
+        AssertDatasetType(typeof(VdCandlestick), typeof(VdCellValue[][]));
 
-        Assert.AreEqual(typeof(VueDataUiCellValue?[]), typeof(VueUiTableHeatmapDatasetItem)
-            .GetProperty(nameof(VueUiTableHeatmapDatasetItem.Values))!.PropertyType);
-        Assert.AreEqual(typeof(double?[]), typeof(VueUiTableSparklineDatasetItem)
-            .GetProperty(nameof(VueUiTableSparklineDatasetItem.Values))!.PropertyType);
+        Assert.AreEqual(typeof(VdCellValue?[]), typeof(VdTableHeatmapDatasetItem)
+            .GetProperty(nameof(VdTableHeatmapDatasetItem.Values))!.PropertyType);
+        Assert.AreEqual(typeof(double?[]), typeof(VdTableSparklineDatasetItem)
+            .GetProperty(nameof(VdTableSparklineDatasetItem.Values))!.PropertyType);
 
-        var ohlc = typeof(VueUiCandlestickData).GetMethod(nameof(VueUiCandlestickData.Ohlc));
+        var ohlc = typeof(VdCandlestickData).GetMethod(nameof(VdCandlestickData.Ohlc));
         Assert.IsNotNull(ohlc);
-        Assert.AreEqual(typeof(VueDataUiCellValue[]), ohlc!.ReturnType);
+        Assert.AreEqual(typeof(VdCellValue[]), ohlc!.ReturnType);
         Assert.AreEqual(
             "[__arg1, __arg2, __arg3, __arg4, __arg5, __arg6]",
             ohlc.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 
-        Assert.IsNotNull(typeof(VueDataUiChartComponent<,>).GetProperty(nameof(VueDataUiChartComponent<int, VueUiDonutConfig>.Dataset))
+        Assert.IsNotNull(typeof(VdChartComponent<,>).GetProperty(nameof(VdChartComponent<int, VdDonutConfig>.Dataset))
             ?.GetCustomAttribute<EditorRequiredAttribute>());
-        Assert.IsNotNull(typeof(VueDataUiRequiredConfigChartComponent<,>)
-            .GetProperty(nameof(VueDataUiRequiredConfigChartComponent<int, VueUiTableSparklineConfig>.Config))
+        Assert.IsNotNull(typeof(VdRequiredConfigChartComponent<,>)
+            .GetProperty(nameof(VdRequiredConfigChartComponent<int, VdTableSparklineConfig>.Config))
             ?.GetCustomAttribute<EditorRequiredAttribute>());
     }
 
@@ -289,7 +291,7 @@ public sealed class VueDataUiProxyTests
     {
         var chartBase = componentType.BaseType;
         Assert.IsNotNull(chartBase, componentType.FullName);
-        Assert.AreEqual(expectedBaseDefinition ?? typeof(VueDataUiChartComponent<,>), chartBase!.GetGenericTypeDefinition());
+        Assert.AreEqual(expectedBaseDefinition ?? typeof(VdChartComponent<,>), chartBase!.GetGenericTypeDefinition());
         Assert.AreEqual(expectedDatasetType, chartBase.GetGenericArguments()[0]);
     }
 }

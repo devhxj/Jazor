@@ -31,8 +31,6 @@
     <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.dll" target="lib/net11.0" />
     <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.pdb" target="lib/net11.0" />
     <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.xml" target="lib/net11.0" />
-    <file src="$buildOutputRoot$ECMAScript.Blazor\bin\$configuration$\net11.0\ECMAScript.Blazor.dll" target="lib/net11.0" />
-    <file src="$buildOutputRoot$ECMAScript.Blazor\bin\$configuration$\net11.0\ECMAScript.Blazor.pdb" target="lib/net11.0" />
     <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.dll" target="tools/net11.0/analyzers" />
     <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.pdb" target="tools/net11.0/analyzers" />
     <file src="$nugetPackageRoot$anglesharp\$angleSharpVersion$\lib\netstandard2.0\AngleSharp.dll" target="tools/net11.0/analyzers" />

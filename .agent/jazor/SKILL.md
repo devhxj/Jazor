@@ -30,7 +30,7 @@ Inspect the project's `.csproj`, `global.json`, package references, and existing
 
 ## Current contract
 
-- The current release is `1.0.0-preview.2`; use `v1.0.0-preview.2` examples unless the user's repository or package source explicitly targets another version.
+- The current release is `1.0.0-preview.3`; use `v1.0.0-preview.3` examples unless the user's repository or package source explicitly targets another version.
 - Jazor compiles a supported, typed C# semantic subset to deterministic ECMAScript modules. It is not a full CLR implementation and it is not a general string-based JavaScript interop layer.
 - A pure Jazor authoring project directly references `Jazor`. A RazorVue authoring project directly references `Jazor` and `Jazor.Vue`. The final host directly references `Jazor` and owns Emit output. Add binding packages explicitly where their types are authored.
 - JavaScript resource libraries carry `manifest.json` and `dist/**`; pure Jazor libraries carry the generated `Jazor.Generated.ModuleCatalog`. Do not invent a third carrier or manually stitch dependency paths.

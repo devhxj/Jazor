@@ -19,31 +19,31 @@ public sealed class VueDataUiCompilerTests
                 public sealed record XyChartOptions : Vue.VueProps
                 {
                     [Description("@#title")]
-                    public VueDataUiChartTitle? Title { get; init; }
+                    public VdChartTitle? Title { get; init; }
                 }
 
                 [ECMAScriptModule("charts/xy-data.mjs")]
                 public static class XyDataModule
                 {
-                    public static VueUiXyDatasetItem[] Dataset()
+                    public static VdXyDatasetItem[] Dataset()
                         =>
                         [
-                            new VueUiXyDatasetItem
+                            new VdXyDatasetItem
                             {
                                 Name = "Revenue",
                                 Series = new double?[] { 12, null, 29 },
-                                Type = VueUiXySeriesType.Line,
+                                Type = VdXySeriesType.Line,
                                 UseArea = true,
                                 Smooth = true
                             }
                         ];
 
-                    public static VueUiXyConfig Config()
+                    public static VdXyConfig Config()
                         => new()
                         {
                             Responsive = true,
-                            Downsample = new VueDataUiDownsampleOptions { Threshold = 500 },
-                            ["chart"] = new XyChartOptions { Title = new VueDataUiChartTitle { Text = "Revenue" } }
+                            Downsample = new VdDownsampleOptions { Threshold = 500 },
+                            ["chart"] = new XyChartOptions { Title = new VdChartTitle { Text = "Revenue" } }
                         };
                 }
             }
@@ -73,22 +73,22 @@ public sealed class VueDataUiCompilerTests
                 [ECMAScriptModule("charts/table-data.mjs")]
                 public static class TableDataModule
                 {
-                    public static VueUiTableDataset Table()
+                    public static VdTableDataset Table()
                         => new()
                         {
                             Header =
                             [
-                                new VueUiTableDatasetHeaderItem { Name = "Month", Type = VueUiTableColumnType.Text },
-                                new VueUiTableDatasetHeaderItem { Name = "Revenue", Type = VueUiTableColumnType.Numeric, Sum = true }
+                                new VdTableDatasetHeaderItem { Name = "Month", Type = VdTableColumnType.Text },
+                                new VdTableDatasetHeaderItem { Name = "Revenue", Type = VdTableColumnType.Numeric, Sum = true }
                             ],
                             Body =
                             [
-                                new VueUiTableDatasetBodyItem { Td = new VueDataUiCellValue[] { "Jan", 12 } },
-                                new VueUiTableDatasetBodyItem { Td = new VueDataUiCellValue[] { "Feb", 29 } }
+                                new VdTableDatasetBodyItem { Td = new VdCellValue[] { "Jan", 12 } },
+                                new VdTableDatasetBodyItem { Td = new VdCellValue[] { "Feb", 29 } }
                             ]
                         };
 
-                    public static VueUiQuickChartDataset Quick()
+                    public static VdQuickChartDataset Quick()
                         => new double?[] { 2, null, 5 };
                 }
             }
@@ -114,22 +114,22 @@ public sealed class VueDataUiCompilerTests
                 [ECMAScriptModule("charts/specialized-data.mjs")]
                 public static class SpecializedDataModule
                 {
-                    public static VueUiTableHeatmapDatasetItem[] Heatmap()
+                    public static VdTableHeatmapDatasetItem[] Heatmap()
                         =>
                         [
-                            new VueUiTableHeatmapDatasetItem
+                            new VdTableHeatmapDatasetItem
                             {
                                 Name = "North",
-                                Values = new VueDataUiCellValue?[] { "Jan", 42, null },
+                                Values = new VdCellValue?[] { "Jan", 42, null },
                                 Color = "#0f766e",
-                                Shape = VueUiTableHeatmapShape.Diamond
+                                Shape = VdTableHeatmapShape.Diamond
                             }
                         ];
 
-                    public static VueUiTableSparklineDatasetItem[] Sparkline()
+                    public static VdTableSparklineDatasetItem[] Sparkline()
                         =>
                         [
-                            new VueUiTableSparklineDatasetItem
+                            new VdTableSparklineDatasetItem
                             {
                                 Name = "Revenue",
                                 Values = new double?[] { 12, null, 29 },
@@ -137,8 +137,8 @@ public sealed class VueDataUiCompilerTests
                             }
                         ];
 
-                    public static VueDataUiCellValue[][] Candles()
-                        => [VueUiCandlestickData.Ohlc("2026-08-14", 12, 18, 10, 16, 4200)];
+                    public static VdCellValue[][] Candles()
+                        => [VdCandlestickData.Ohlc("2026-08-14", 12, 18, 10, 16, 4200)];
                 }
             }
             """,
@@ -166,16 +166,16 @@ public sealed class VueDataUiCompilerTests
                 [ECMAScriptModule("charts/extended-data.mjs")]
                 public static class ExtendedDataModule
                 {
-                    public static VueDataUiCellValue[][] AgePyramid()
-                        => [VueUiAgePyramidData.Row("2026", 1, 42, null)];
+                    public static VdCellValue[][] AgePyramid()
+                        => [VdAgePyramidData.Row("2026", 1, 42, null)];
 
-                    public static VueDataUiCellValue[][] Flow()
-                        => [VueUiFlowData.Link("Source", "Target", 12)];
+                    public static VdCellValue[][] Flow()
+                        => [VdFlowData.Link("Source", "Target", 12)];
 
-                    public static VueUiWorldDataset World()
+                    public static VdWorldDataset World()
                         => new()
                         {
-                            ["CN"] = new VueUiWorldDatasetItem
+                            ["CN"] = new VdWorldDatasetItem
                             {
                                 Value = 42,
                                 Category = "Active",
@@ -183,10 +183,10 @@ public sealed class VueDataUiCompilerTests
                             }
                         };
 
-                    public static VueUiRatingDataset Rating()
+                    public static VdRatingDataset Rating()
                         => new()
                         {
-                            Rating = new VueUiRatingDatasetDetailed { ["quality"] = 4.5 }
+                            Rating = new VdRatingDatasetDetailed { ["quality"] = 4.5 }
                         };
                 }
             }

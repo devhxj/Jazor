@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.3&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.1 is the current preview release.
+> Jazor 1.0.0-preview.3 is the current preview release.
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -34,7 +34,9 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## AI-assisted development
 
-The first compiler version, its first 500 tests, and the initial RazorVue implementation were written by humans. Subsequent development has been collaborative and primarily AI-led, with the Zhipu GLM-5 series and GPT-5 series serving as the main AI collaborators; maintainers continue to review changes, run the gates, and make release decisions.
+The initial implementations of Jazor's core compiler, RazorVue, and CLR support, together with the first 500 tests, were written by hand over nearly two years. This work established the project's technical foundation.
+
+AI assistance has primarily helped advance documentation, test coverage, external library bindings, iterative improvements, CI, and version management. The Zhipu GLM-5 and GPT-5 series have been the main AI collaborators in this subsequent work; maintainers continue to guide the project, review changes, and make release decisions.
 
 ## Acknowledgements
 
@@ -77,9 +79,9 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 | Package | Responsibility |
 | --- | --- |
 | `Jazor` | Framework-neutral compiler, CLR contracts, analyzer, emit tooling, MSBuild and ASP.NET Core integration; suitable for ordinary ECMAScript libraries |
-| `Jazor.Vue` | Vue authoring, Razor-to-Vue opt-in, Vue runtime assets, `ECMAScript.Vue`, `ECMAScript.VueContract`, and `ECMAScript.Blazor` payload |
+| `Jazor.Vue` | Vue authoring, Razor-to-Vue opt-in, Vue runtime assets, `ECMAScript.Vue` and `ECMAScript.VueContract` payload |
 | `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
-| `ECMAScript.VueDataUi` | Typed `vue-data-ui` RazorVue charts with per-component local ESM materialization |
+| `ECMAScript.VueDataUi` | Typed `Vd*` RazorVue charts with per-component local ESM materialization; [prefix migration](src/ECMAScript.VueDataUi/README.md#razor-使用) |
 | `ECMAScript.VuIcons` | Typed `vu-icons` RazorVue icons with static per-icon and dynamic catalog paths |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
@@ -108,7 +110,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.1
+dotnet add package Jazor --version 1.0.0-preview.3
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -116,8 +118,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -198,23 +200,16 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Release status
 
-### Jazor 1.0.0-preview.1 · 2026-09-14
+### Jazor 1.0.0-preview.3 · 2026-09-16
 
-- The first 1.0 preview is available for evaluating the frozen-candidate API and supported feature set.
-- The preview has passed the public API, compiler, Razor-to-Vue, SSR, binding-contract, typed-bootstrap, Release package-consumer, and Chrome sample gates described below.
-- Release candidates run one archived verification path covering API compatibility, quality gates, package shape, and Windows SPA/SSR consumers.
-- Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
-- RazorVue diagnostics emit SARIF and schema `1.0` remediation reports with stable IDs, HelpLinks, authored source locations, and minimal fixes.
-- Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
+- Vue Data UI components and supporting public types now use the `Vd` prefix. Migrate `VueUi*` / `VueDataUi*` references to `Vd*`.
+- The empty ECMAScript.Blazor assembly has been removed; RazorVue CLR mappings remain available.
+- Analyzer pre-diagnostics cover additional unsupported usages; ASP.NET Core APIs now ship XML documentation and SPA/SSR/HMR guides.
+- This is a preview release; stable 1.0 has not been published. See [Current Status](docs/04-roadmap/current-status.md) for supported scope and quality gates.
 
-### 1.0 freeze-candidate status · 2026-09-14
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3) and matching Git tag as the version reference. Mirrors may lag behind or show an older stable release when previews are hidden. Keep all Jazor/ECMAScript packages on the same version and explicitly select `1.0.0-preview.3`.
 
-- The public API snapshot matches the frozen baseline: `76,108` entries, `0` added, and `0` removed.
-- The Release mainline is green: Compiler `10,711/10,711`, CLR `5,089/5,089`, Razor SG `4,982/4,982`, and Emit `202/202`, with the remaining ecosystem suites passing as well.
-- The Release sample matrix passes for both `RazorVue.Authoring` and `JazorAdmin`, including isolated NuGet consumers and Chrome browser smoke. Typed bootstrap and Element Plus, Vuetify, and TDesign binding contract gates also pass.
-- This is preview evidence; a stable 1.0 package has not been published. The supported scope and explicit reject boundaries remain documented in [Current Status](docs/04-roadmap/current-status.md).
-
-Read the [release notes](CHANGELOG.md) for the complete history.
+The main branch may contain unreleased changes. Read [Unreleased and version history](CHANGELOG.md) before applying main-branch examples to an installed package.
 
 ## License and Feedback
 

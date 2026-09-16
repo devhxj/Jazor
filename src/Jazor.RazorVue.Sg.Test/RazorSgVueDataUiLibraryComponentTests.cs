@@ -10,7 +10,7 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
     [TestMethod]
     public async Task BuildComponent_OfficialRazorVueDataUiDonut_UsesPerChartImportAndInheritedParameters()
     {
-        var descriptor = typeof(VueUiDonut).GetCustomAttribute<ECMAScriptAttribute>();
+        var descriptor = typeof(VdDonut).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(descriptor);
         Assert.AreEqual("vue-data-ui/vue-ui-donut", descriptor!.Import);
         Assert.AreEqual(Transform.Component, descriptor.Transform);
@@ -22,7 +22,7 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
             """
             @using ECMAScript.VueDataUi
 
-            <VueUiDonut Dataset="@DonutDataset" Config="@DonutConfig" OnSelectLegend="HandleLegend" />
+            <VdDonut Dataset="@DonutDataset" Config="@DonutConfig" OnSelectLegend="HandleLegend" />
             """,
             codeBehindSource:
             """
@@ -33,19 +33,19 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
             [ECMAScriptModule("./components/revenue-donut")]
             public partial class RevenueDonut : ComponentBase, IVueComponent
             {
-                private VueUiDonutDatasetItem[] DonutDataset { get; } =
+                private VdDonutDatasetItem[] DonutDataset { get; } =
                 [
-                    new VueUiDonutDatasetItem { Name = "Revenue", Values = new double[] { 48, 52 }, Color = "#0f766e" }
+                    new VdDonutDatasetItem { Name = "Revenue", Values = new double[] { 48, 52 }, Color = "#0f766e" }
                 ];
 
-                private VueUiDonutConfig DonutConfig { get; } = new()
+                private VdDonutConfig DonutConfig { get; } = new()
                 {
                     Responsive = true
                 };
 
                 private double SelectedLegendValue { get; set; }
 
-                private void HandleLegend(VueUiDonutLegendItem[] legend)
+                private void HandleLegend(VdDonutLegendItem[] legend)
                 {
                     SelectedLegendValue = legend[0].Value;
                 }
@@ -54,7 +54,7 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.RevenueDonut");
 
-        StringAssert.Contains(observation.GeneratedCSharp, "OpenComponent<global::ECMAScript.VueDataUi.VueUiDonut>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.GeneratedCSharp, "OpenComponent<global::ECMAScript.VueDataUi.VdDonut>", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(
             observation.ModuleText,
@@ -75,10 +75,10 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
             """
             @using ECMAScript.VueDataUi
 
-            <VueUiFlow Dataset="@FlowDataset" Config="@FlowConfig" />
-            <VueUiAgePyramid Dataset="@AgePyramidDataset" Config="@AgePyramidConfig" />
-            <VueUiWorld Config="@WorldConfig" />
-            <VueUiIcon Name="@VueUiIconName.ArrowLeft" Size="18" />
+            <VdFlow Dataset="@FlowDataset" Config="@FlowConfig" />
+            <VdAgePyramid Dataset="@AgePyramidDataset" Config="@AgePyramidConfig" />
+            <VdWorld Config="@WorldConfig" />
+            <VdIcon Name="@VdIconName.ArrowLeft" Size="18" />
             """,
             codeBehindSource:
             """
@@ -89,21 +89,21 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
             [ECMAScriptModule("./components/extended-charts")]
             public partial class ExtendedCharts : ComponentBase, IVueComponent
             {
-                private VueDataUiCellValue[][] FlowDataset { get; } =
+                private VdCellValue[][] FlowDataset { get; } =
                 [
-                    VueUiFlowData.Link("Source", "Target", 12)
+                    VdFlowData.Link("Source", "Target", 12)
                 ];
 
-                private VueDataUiCellValue[][] AgePyramidDataset { get; } =
+                private VdCellValue[][] AgePyramidDataset { get; } =
                 [
-                    VueUiAgePyramidData.Row("2026", 1, 42, null)
+                    VdAgePyramidData.Row("2026", 1, 42, null)
                 ];
 
-                private VueUiFlowConfig FlowConfig { get; } = new() { Responsive = true };
+                private VdFlowConfig FlowConfig { get; } = new() { Responsive = true };
 
-                private VueUiAgePyramidConfig AgePyramidConfig { get; } = new() { Responsive = true };
+                private VdAgePyramidConfig AgePyramidConfig { get; } = new() { Responsive = true };
 
-                private VueUiWorldConfig WorldConfig { get; } = new() { Theme = VueDataUiTheme.Light };
+                private VdWorldConfig WorldConfig { get; } = new() { Theme = VdTheme.Light };
             }
             """,
             rootNamespace: "Demo.Pages",

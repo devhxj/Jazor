@@ -4,30 +4,41 @@ public static partial class css
 {
     /// <summary>CSS-wide <c>inherit</c> keyword; uses the parent element's computed value. CSS 全局 <c>inherit</c> 关键字，使用父元素的计算值。</summary>
     public static readonly CssWideKeyword inherit = CssWideKeyword.Inherit;
+
     /// <summary>CSS-wide <c>initial</c> keyword; restores the specification-defined initial value. CSS 全局 <c>initial</c> 关键字，恢复规范定义的初始值。</summary>
     public static readonly CssWideKeyword initial = CssWideKeyword.Initial;
+
     /// <summary>CSS-wide <c>unset</c> keyword; inherits inherited properties and otherwise uses their initial value. CSS 全局 <c>unset</c> 关键字，继承型属性继承，其他属性恢复初始值。</summary>
     public static readonly CssWideKeyword unset = CssWideKeyword.Unset;
+
     /// <summary>CSS-wide <c>revert</c> keyword; rolls the declaration back to an earlier cascade origin. CSS 全局 <c>revert</c> 关键字，回退到更早的层叠来源。</summary>
     public static readonly CssWideKeyword revert = CssWideKeyword.Revert;
+
     /// <summary>CSS-wide <c>revert-layer</c> keyword; rolls the declaration back within cascade layers. CSS 全局 <c>revert-layer</c> 关键字，在层叠层内回退声明。</summary>
     [ECMAScriptName("revertLayer")]
     public static readonly CssWideKeyword revert_layer = CssWideKeyword.RevertLayer;
+
     /// <summary>CSS <c>auto</c> keyword for a property-defined automatic behavior. CSS <c>auto</c> 关键字，具体行为由接收属性定义。</summary>
     public static readonly CssAutoKeyword auto = CssAutoKeyword.Auto;
+
     /// <summary>CSS <c>none</c> keyword that disables the feature described by the receiving property. CSS <c>none</c> 关键字，禁用接收属性描述的功能。</summary>
     public static readonly CssNoneKeyword none = CssNoneKeyword.None;
+
     /// <summary>CSS <c>normal</c> keyword for the property-defined default behavior. CSS <c>normal</c> 关键字，使用属性定义的默认行为。</summary>
     public static readonly CssNormalKeyword normal = CssNormalKeyword.Normal;
+
     /// <summary>Intrinsic <c>min-content</c> size based on the smallest unwrapped content contribution. 基于最小不换行内容贡献的内在 <c>min-content</c> 尺寸。</summary>
     [ECMAScriptName("minContent")]
     public static readonly CssSizingKeyword min_content = CssSizingKeyword.MinContent;
+
     /// <summary>Intrinsic <c>max-content</c> size based on the preferred unwrapped content contribution. 基于首选不换行内容贡献的内在 <c>max-content</c> 尺寸。</summary>
     [ECMAScriptName("maxContent")]
     public static readonly CssSizingKeyword max_content = CssSizingKeyword.MaxContent;
+
     /// <summary>Intrinsic sizing keyword <c>fit-content</c> without parentheses。内在尺寸关键字 <c>fit-content</c>（无括号形式）。</summary>
     [ECMAScriptName("fitContentKeyword")]
     public static readonly CssSizingFunctionKeyword fit_content_keyword = CssSizingFunctionKeyword.FitContent;
+
     /// <summary>Intrinsic sizing keyword <c>stretch</c>, distinct from alignment <c>stretch</c>。内在尺寸关键字 <c>stretch</c>，与 alignment 的同名值分离。</summary>
     [ECMAScriptName("sizingStretch")]
     public static readonly CssSizingFunctionKeyword sizing_stretch = CssSizingFunctionKeyword.Stretch;
@@ -1169,7 +1180,7 @@ public static partial class css
         => "\"" + value
             .Replace("\\", "\\\\")
             .Replace("\"", "\\\"")
-            .Replace("\r", "\\d " )
-            .Replace("\n", "\\a " ) + "\"";
+            .Replace("\r", "\\d ")
+            .Replace("\n", "\\a ") + "\"";
 
 }

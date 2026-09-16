@@ -14,6 +14,9 @@ public static class JazorReloadExtensions
     private const string MiddlewareRegisteredKey = "__JazorReloadMiddlewareRegistered";
 
     /// <summary>Registers the development reload endpoints and HTML injection middleware.</summary>
+    /// <remarks>仅 Development 生效；该环境必须先 AddJazorReload。放在 UsePathBase 之后、静态文件/SPA/SSR 之前，以便注入客户端脚本。同一管线重复调用不重复注册。只观察构建产物，不执行 C#/Razor 编译。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorReload(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -91,10 +94,17 @@ public static class JazorReloadExtensions
         await service.AcceptWebSocketAsync(socket, context.RequestAborted);
     }
     /// <summary>Adds development reload services with the default configuration.</summary>
+    /// <remarks>注册配置校验和宿主管理的文件观察服务；观察仅在 Development 启动。仍需 UseJazorReload 注册客户端及 WebSocket 端点，并使用 dotnet watch 或构建命令生成产物。</remarks>
+    /// <param name="services">构建宿主前配置的服务集合。</param>
+    /// <returns>原服务集合，供继续注册服务。</returns>
     public static IServiceCollection AddJazorReload(this IServiceCollection services)
         => services.AddJazorReload(configure: null);
 
     /// <summary>Adds development reload services with explicit configuration.</summary>
+    /// <remarks>注册配置校验和宿主管理的文件观察服务；观察仅在 Development 启动。仍需 UseJazorReload 注册客户端及 WebSocket 端点，并使用 dotnet watch 或构建命令生成产物。</remarks>
+    /// <param name="services">构建宿主前配置的服务集合。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原服务集合，供继续注册服务。</returns>
     public static IServiceCollection AddJazorReload(
         this IServiceCollection services,
         Action<JazorReloadOptions>? configure)

@@ -15,9 +15,11 @@ carrier。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue
 
 ## 安装
 
+ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/README.md)；[开发刷新与 HMR](../Jazor.AspNetCore.Dev/README.md)。两套程序集随本包交付 XML 文档，IDE 可直接查看参数、默认值与使用约束。
+
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
 </ItemGroup>
 ```
 
@@ -29,7 +31,7 @@ carrier。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue
 定义 module 的类库应隔离这项工具引用：
 
 ```xml
-<PackageReference Include="Jazor" Version="1.0.0-preview.1" PrivateAssets="all" />
+<PackageReference Include="Jazor" Version="1.0.0-preview.3" PrivateAssets="all" />
 ```
 
 最终 `Exe`/`WinExe` 宿主需要 Emit 时直接引用 `Jazor`，不设置 `PrivateAssets`。包内
@@ -66,11 +68,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.3" />
 </ItemGroup>
 ```
 
@@ -78,8 +80,7 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有；其 runtime
 JavaScript 由 `ECMAScript` 的 `manifest.json + dist/**` 提供。`Jazor` 不因此引用 ASP.NET Core
-framework。`ECMAScript.Blazor` 不随核心包安装，只作为 `Jazor.Vue` 可选带入的标准 ECMAScript
-模拟/投影扩展，不贡献 whitelist 或 runtime module。
+framework。
 
 ## SSR
 
@@ -108,8 +109,8 @@ ASP.NET Core 持有请求管线、静态资源与响应文档，DenoHost 执行�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

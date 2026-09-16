@@ -2,6 +2,40 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-16
+
+### Jazor 1.0.0-preview.3
+
+中文 | English
+
+#### 体验优化
+
+- `Jazor.AspNetCore` / `Jazor.AspNetCore.Dev` 补全公开 API XML 注释，随 `Jazor` 包交付；新增 SPA、SSR、HMR 接入指南，说明中间件顺序、默认值和运行边界。by @devhxj
+
+#### 问题修复
+
+- 补齐 `Jazor.Analyzer` 的属性读写、运算符、闭合泛型与嵌套实参、推断局部类型、record struct 签名、外部 host 返回类型及 `as` 运行时别名歧义预诊断；保留泛型参数与编译域边界。by @devhxj
+
+#### 其他变更
+
+- **破坏性变更**：Vue Data UI 的 71 个组件及配套公开类型统一采用 `Vd` 前缀。将 Razor 标签与 C# 类型中的 `VueUi*` / `VueDataUi*` 改为 `Vd*`，例如 `VueUiDonut` → `VdDonut`、`VueDataUiTheme` → `VdTheme`。包名、命名空间和上游 JavaScript 导出不变。此命名调整在 1.0 稳定版前完成。by @devhxj
+- 移除空的 `ECMAScript.Blazor` 项目及 `Jazor.Vue` 对应 DLL/PDB；删除手工配置的旧程序集引用。CLR 映射继续由 `Jazor.CLR` 提供。by @devhxj
+- 统一当前文档与安装示例版本，明确镜像、预发布和主分支差异；修正人工完成核心首版及首批 500 个测试、历时近两年的开发说明。by @devhxj
+
+#### Improvements
+
+- Ship public API XML documentation for `Jazor.AspNetCore` and `Jazor.AspNetCore.Dev` in the `Jazor` package, with SPA, SSR, and HMR guides covering middleware order, defaults, and runtime boundaries. by @devhxj
+
+#### Bug Fixes
+
+- Complete analyzer pre-diagnostics for property accessors, operators, closed and nested generic arguments, inferred locals, record struct signatures, external host results, and ambiguous runtime aliases in `as` casts. Preserve type-parameter and compilation-domain boundaries. by @devhxj
+
+#### Chores
+
+- **Breaking change**: Rename all 71 Vue Data UI components and supporting public types to the `Vd` prefix. Migrate Razor tags and C# references from `VueUi*` / `VueDataUi*` to `Vd*`, such as `VueUiDonut` → `VdDonut` and `VueDataUiTheme` → `VdTheme`. Package names, namespaces, and upstream JavaScript exports are unchanged. This naming adjustment precedes stable 1.0. by @devhxj
+- Remove the empty `ECMAScript.Blazor` project and DLL/PDB payload from `Jazor.Vue`; remove manual references to the retired assembly. CLR mappings remain in `Jazor.CLR`. by @devhxj
+- Align current documentation and installation versions, explain mirror/prerelease/main-branch differences, and clarify the nearly two years of handwritten core implementations and first 500 tests. by @devhxj
+
 ## 2026-09-15
 
 ### Jazor 1.0.0-preview.2

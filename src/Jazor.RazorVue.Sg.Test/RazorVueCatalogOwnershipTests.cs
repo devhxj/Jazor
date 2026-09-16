@@ -9,35 +9,14 @@ public sealed class RazorVueCatalogOwnershipTests
         var repositoryRoot = FindRepositoryRoot();
         var catalogDirectory = Path.Combine(repositoryRoot, "src", "Jazor.RazorVue", "RazorSdk", "Catalog");
         var clrDirectory = Path.Combine(repositoryRoot, "src", "Jazor.CLR");
-        var blazorProjectionDirectory = Path.Combine(repositoryRoot, "src", "ECMAScript.Blazor");
 
         var catalogSources = Directory.Exists(catalogDirectory)
             ? Directory.EnumerateFiles(catalogDirectory, "*.cs", SearchOption.AllDirectories).ToArray()
             : [];
         Assert.HasCount(0, catalogSources, "RazorVue must not retain a CLR whitelist catalog.");
 
-        var blazorProjectionSources = Directory.EnumerateFiles(blazorProjectionDirectory, "*.cs", SearchOption.AllDirectories)
-            .Where(static path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            .Where(static path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        foreach (var source in blazorProjectionSources)
-        {
-            var text = File.ReadAllText(source);
-            Assert.IsFalse(text.Contains("[Jazor", StringComparison.Ordinal), source);
-            Assert.IsFalse(text.Contains("[ECMAScriptModule", StringComparison.Ordinal), source);
-        }
-
         var sourceRoots = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor.Compiler.Generator", "SharedGeneration.cs"));
-        Assert.IsFalse(sourceRoots.Contains("Path.Combine(src, \"ECMAScript.Blazor\")", StringComparison.Ordinal));
         Assert.IsFalse(sourceRoots.Contains("Path.Combine(src, \"Jazor.RazorVue\", \"RazorSdk\", \"Catalog\")", StringComparison.Ordinal));
-
-        var blazorProjectionProject = File.ReadAllText(
-            Path.Combine(repositoryRoot, "src", "ECMAScript.Blazor", "ECMAScript.Blazor.csproj"));
-        Assert.IsFalse(
-            blazorProjectionProject.Contains(
-                "<FrameworkReference Include=\"Microsoft.AspNetCore.App\"",
-                StringComparison.Ordinal),
-            "ECMAScript.Blazor is a standard ECMAScript projection library and must not carry an ASP.NET Core framework dependency.");
 
         var clrModules = Directory.EnumerateFiles(Path.Combine(clrDirectory, "module"), "*.cs", SearchOption.TopDirectoryOnly)
             .Select(path => Path.GetFileName(path))

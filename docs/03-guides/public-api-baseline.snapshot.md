@@ -1,4 +1,4 @@
-﻿# Public API snapshot (2026-09-12)
+# Public API snapshot (2026-09-12)
 
 ## ECMAScript.ElementPlus
 - type ECMAScript.ElementPlus.ElAffix
@@ -55686,180 +55686,43 @@
   - VueApp App
 
 ## ECMAScript.VueDataUi
-- type ECMAScript.VueDataUi.VueDataUiCellValue
-  - Void .ctor(Double)
-  - Void .ctor(System.String)
-  - System.Nullable`1[System.Double] get_AsNumber()
-  - System.Object get_Value()
-  - System.String get_AsString()
-  - System.Nullable`1[System.Double] AsNumber
-  - System.Object Value
-  - System.String AsString
-- type ECMAScript.VueDataUi.VueDataUiChartComponent`2
-  - TConfig get_Config()
-  - TDataset get_Dataset()
-  - Void set_Config(TConfig)
-  - Void set_Dataset(TDataset)
-  - TConfig Config
-  - TDataset Dataset
-- type ECMAScript.VueDataUi.VueDataUiChartSubtitle
+- type ECMAScript.VueDataUi.Vd3dBar
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiChartSubtitle)
+- type ECMAScript.VueDataUi.Vd3dBarConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.Vd3dBarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDataUi.Vd3dBarConfig, ECMAScript.VueDataUi.Vd3dBarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.Vd3dBarConfig, ECMAScript.VueDataUi.Vd3dBarConfig)
+  - ECMAScript.VueDataUi.Vd3dBarConfig <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+- type ECMAScript.VueDataUi.Vd3dBarDataset
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.Vd3dBarDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueDataUiChartSubtitle, ECMAScript.VueDataUi.VueDataUiChartSubtitle)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueDataUiChartSubtitle, ECMAScript.VueDataUi.VueDataUiChartSubtitle)
-  - ECMAScript.VueDataUi.VueDataUiChartSubtitle <Clone>$()
-  - Int32 GetHashCode()
-  - System.String ToString()
-  - System.String get_Color()
-  - System.String get_Text()
-  - Void set_Color(System.String)
-  - Void set_Text(System.String)
-  - System.String Color
-  - System.String Text
-- type ECMAScript.VueDataUi.VueDataUiChartTitle
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiChartTitle)
-  - Boolean Equals(System.Object)
-  - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueDataUiChartTitle, ECMAScript.VueDataUi.VueDataUiChartTitle)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueDataUiChartTitle, ECMAScript.VueDataUi.VueDataUiChartTitle)
-  - ECMAScript.VueDataUi.VueDataUiChartSubtitle get_Subtitle()
-  - ECMAScript.VueDataUi.VueDataUiChartTitle <Clone>$()
-  - Int32 GetHashCode()
-  - System.Nullable`1[System.Boolean] get_Bold()
-  - System.Nullable`1[System.Double] get_FontSize()
-  - System.String ToString()
-  - System.String get_Color()
-  - System.String get_Text()
-  - Void set_Bold(System.Nullable`1[System.Boolean])
-  - Void set_Color(System.String)
-  - Void set_FontSize(System.Nullable`1[System.Double])
-  - Void set_Subtitle(ECMAScript.VueDataUi.VueDataUiChartSubtitle)
-  - Void set_Text(System.String)
-  - ECMAScript.VueDataUi.VueDataUiChartSubtitle Subtitle
-  - System.Nullable`1[System.Boolean] Bold
-  - System.Nullable`1[System.Double] FontSize
-  - System.String Color
-  - System.String Text
-- type ECMAScript.VueDataUi.VueDataUiConfig
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(System.Object)
-  - Boolean Equals(VueDictionary`1)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueDataUiConfig, ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueDataUiConfig, ECMAScript.VueDataUi.VueDataUiConfig)
-  - ECMAScript.VueDataUi.VueDataUiConfig <Clone>$()
-  - Int32 GetHashCode()
-  - System.Nullable`1[ECMAScript.VueDataUi.VueDataUiTheme] get_Theme()
-  - System.Nullable`1[System.Boolean] get_Debug()
-  - System.Nullable`1[System.Boolean] get_Loading()
-  - System.Nullable`1[System.Boolean] get_Responsive()
-  - System.Nullable`1[System.Boolean] get_UseCssAnimation()
-  - System.Nullable`1[System.Boolean] get_UseCursorPointer()
-  - System.String ToString()
-  - System.String[] get_CustomPalette()
-  - Void set_CustomPalette(System.String[])
-  - Void set_Debug(System.Nullable`1[System.Boolean])
-  - Void set_Loading(System.Nullable`1[System.Boolean])
-  - Void set_Responsive(System.Nullable`1[System.Boolean])
-  - Void set_Theme(System.Nullable`1[ECMAScript.VueDataUi.VueDataUiTheme])
-  - Void set_UseCssAnimation(System.Nullable`1[System.Boolean])
-  - Void set_UseCursorPointer(System.Nullable`1[System.Boolean])
-  - System.Nullable`1[ECMAScript.VueDataUi.VueDataUiTheme] Theme
-  - System.Nullable`1[System.Boolean] Debug
-  - System.Nullable`1[System.Boolean] Loading
-  - System.Nullable`1[System.Boolean] Responsive
-  - System.Nullable`1[System.Boolean] UseCssAnimation
-  - System.Nullable`1[System.Boolean] UseCursorPointer
-  - System.String[] CustomPalette
-- type ECMAScript.VueDataUi.VueDataUiConfigComponent`1
-  - TConfig get_Config()
-  - Void set_Config(TConfig)
-  - TConfig Config
-- type ECMAScript.VueDataUi.VueDataUiDatasetComponent`1
-  - TDataset get_Dataset()
-  - Void set_Dataset(TDataset)
-  - TDataset Dataset
-- type ECMAScript.VueDataUi.VueDataUiDatasetItem
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(System.Object)
-  - Boolean Equals(VueDictionary`1)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueDataUiDatasetItem, ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueDataUiDatasetItem, ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - ECMAScript.VueDataUi.VueDataUiDatasetItem <Clone>$()
-  - Int32 GetHashCode()
-  - System.String ToString()
-- type ECMAScript.VueDataUi.VueDataUiDownsampleOptions
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDownsampleOptions)
-  - Boolean Equals(System.Object)
-  - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueDataUiDownsampleOptions, ECMAScript.VueDataUi.VueDataUiDownsampleOptions)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueDataUiDownsampleOptions, ECMAScript.VueDataUi.VueDataUiDownsampleOptions)
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions <Clone>$()
-  - Int32 GetHashCode()
-  - System.Nullable`1[System.Int32] get_Threshold()
-  - System.String ToString()
-  - Void set_Threshold(System.Nullable`1[System.Int32])
-  - System.Nullable`1[System.Int32] Threshold
-- type ECMAScript.VueDataUi.VueDataUiOptionalDatasetChartComponent`2
-  - TConfig get_Config()
-  - TDataset get_Dataset()
-  - Void set_Config(TConfig)
-  - Void set_Dataset(TDataset)
-  - TConfig Config
-  - TDataset Dataset
-- type ECMAScript.VueDataUi.VueDataUiRequiredConfigChartComponent`2
-  - TConfig get_Config()
-  - TDataset get_Dataset()
-  - Void set_Config(TConfig)
-  - Void set_Dataset(TDataset)
-  - TConfig Config
-  - TDataset Dataset
-- enum ECMAScript.VueDataUi.VueDataUiTheme
-  - ECMAScript.VueDataUi.VueDataUiTheme Dark
-  - ECMAScript.VueDataUi.VueDataUiTheme Light
-  - Int32 value__
-- type ECMAScript.VueDataUi.VueUi3dBar
-  - Void .ctor()
-- type ECMAScript.VueDataUi.VueUi3dBarConfig
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUi3dBarConfig)
-  - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUi3dBarConfig, ECMAScript.VueDataUi.VueUi3dBarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUi3dBarConfig, ECMAScript.VueDataUi.VueUi3dBarConfig)
-  - ECMAScript.VueDataUi.VueUi3dBarConfig <Clone>$()
-  - Int32 GetHashCode()
-  - System.String ToString()
-- type ECMAScript.VueDataUi.VueUi3dBarDataset
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUi3dBarDataset)
-  - Boolean Equals(System.Object)
-  - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUi3dBarDataset, ECMAScript.VueDataUi.VueUi3dBarDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUi3dBarDataset, ECMAScript.VueDataUi.VueUi3dBarDataset)
-  - ECMAScript.VueDataUi.VueUi3dBarDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem[] get_Series()
+  - Boolean op_Equality(ECMAScript.VueDataUi.Vd3dBarDataset, ECMAScript.VueDataUi.Vd3dBarDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.Vd3dBarDataset, ECMAScript.VueDataUi.Vd3dBarDataset)
+  - ECMAScript.VueDataUi.Vd3dBarDataset <Clone>$()
+  - ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem[] get_Series()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Percentage()
   - System.String ToString()
   - Void set_Percentage(System.Nullable`1[System.Double])
-  - Void set_Series(ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem[])
-  - ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem[] Series
+  - Void set_Series(ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem[])
+  - ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem[] Series
   - System.Nullable`1[System.Double] Percentage
-- type ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown
+- type ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown)
+  - Boolean Equals(ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown, ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown, ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown)
+  - Boolean op_Equality(ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown, ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown, ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown <Clone>$()
+  - ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
@@ -55867,120 +55730,120 @@
   - Void set_Value(Double)
   - Double Value
   - System.String Name
-- type ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem
+- type ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem)
+  - Boolean Equals(ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem, ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem, ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem, ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem, ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown[] get_Breakdown()
-  - ECMAScript.VueDataUi.VueUi3dBarDatasetSeriesItem <Clone>$()
+  - ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown[] get_Breakdown()
+  - ECMAScript.VueDataUi.Vd3dBarDatasetSeriesItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
-  - Void set_Breakdown(ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown[])
+  - Void set_Breakdown(ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown[])
   - Void set_Color(System.String)
   - Void set_Name(System.String)
   - Void set_Value(Double)
   - Double Value
-  - ECMAScript.VueDataUi.VueUi3dBarDatasetBreakdown[] Breakdown
+  - ECMAScript.VueDataUi.Vd3dBarDatasetBreakdown[] Breakdown
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiAccordion
+- type ECMAScript.VueDataUi.VdAccordion
   - Void .ctor()
   - System.Nullable`1[System.Boolean] get_HideDetails()
   - Void set_HideDetails(System.Nullable`1[System.Boolean])
   - System.Nullable`1[System.Boolean] HideDetails
-- type ECMAScript.VueDataUi.VueUiAccordionConfig
+- type ECMAScript.VueDataUi.VdAccordionConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiAccordionConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdAccordionConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiAccordionConfig, ECMAScript.VueDataUi.VueUiAccordionConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiAccordionConfig, ECMAScript.VueDataUi.VueUiAccordionConfig)
-  - ECMAScript.VueDataUi.VueUiAccordionConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdAccordionConfig, ECMAScript.VueDataUi.VdAccordionConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdAccordionConfig, ECMAScript.VueDataUi.VdAccordionConfig)
+  - ECMAScript.VueDataUi.VdAccordionConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiAgePyramid
+- type ECMAScript.VueDataUi.VdAgePyramid
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiAgePyramidConfig
+- type ECMAScript.VueDataUi.VdAgePyramidConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiAgePyramidConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdAgePyramidConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiAgePyramidConfig, ECMAScript.VueDataUi.VueUiAgePyramidConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiAgePyramidConfig, ECMAScript.VueDataUi.VueUiAgePyramidConfig)
-  - ECMAScript.VueDataUi.VueUiAgePyramidConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdAgePyramidConfig, ECMAScript.VueDataUi.VdAgePyramidConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdAgePyramidConfig, ECMAScript.VueDataUi.VdAgePyramidConfig)
+  - ECMAScript.VueDataUi.VdAgePyramidConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiAgePyramidData
-  - ECMAScript.VueDataUi.VueDataUiCellValue[] Row(System.String, Double, System.Nullable`1[System.Double], System.Nullable`1[System.Double])
-- type ECMAScript.VueDataUi.VueUiAnnotator
+- type ECMAScript.VueDataUi.VdAgePyramidData
+  - ECMAScript.VueDataUi.VdCellValue[] Row(System.String, Double, System.Nullable`1[System.Double], System.Nullable`1[System.Double])
+- type ECMAScript.VueDataUi.VdAnnotator
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiAnnotatorConfig
+- type ECMAScript.VueDataUi.VdAnnotatorConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiAnnotatorConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdAnnotatorConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiAnnotatorConfig, ECMAScript.VueDataUi.VueUiAnnotatorConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiAnnotatorConfig, ECMAScript.VueDataUi.VueUiAnnotatorConfig)
-  - ECMAScript.VueDataUi.VueUiAnnotatorConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdAnnotatorConfig, ECMAScript.VueDataUi.VdAnnotatorConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdAnnotatorConfig, ECMAScript.VueDataUi.VdAnnotatorConfig)
+  - ECMAScript.VueDataUi.VdAnnotatorConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiAnnotatorDataset
+- type ECMAScript.VueDataUi.VdAnnotatorDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiAnnotatorDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdAnnotatorDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiAnnotatorDataset, ECMAScript.VueDataUi.VueUiAnnotatorDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiAnnotatorDataset, ECMAScript.VueDataUi.VueUiAnnotatorDataset)
-  - ECMAScript.VueDataUi.VueUiAnnotatorDataset <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdAnnotatorDataset, ECMAScript.VueDataUi.VdAnnotatorDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdAnnotatorDataset, ECMAScript.VueDataUi.VdAnnotatorDataset)
+  - ECMAScript.VueDataUi.VdAnnotatorDataset <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiBullet
+- type ECMAScript.VueDataUi.VdBullet
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiBulletConfig
+- type ECMAScript.VueDataUi.VdBulletConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiBulletConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdBulletConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiBulletConfig, ECMAScript.VueDataUi.VueUiBulletConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiBulletConfig, ECMAScript.VueDataUi.VueUiBulletConfig)
-  - ECMAScript.VueDataUi.VueUiBulletConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdBulletConfig, ECMAScript.VueDataUi.VdBulletConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdBulletConfig, ECMAScript.VueDataUi.VdBulletConfig)
+  - ECMAScript.VueDataUi.VdBulletConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiBulletDataset
+- type ECMAScript.VueDataUi.VdBulletDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiBulletDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdBulletDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiBulletDataset, ECMAScript.VueDataUi.VueUiBulletDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiBulletDataset, ECMAScript.VueDataUi.VueUiBulletDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdBulletDataset, ECMAScript.VueDataUi.VdBulletDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdBulletDataset, ECMAScript.VueDataUi.VdBulletDataset)
   - Double get_Target()
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiBulletDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiBulletSegment[] get_Segments()
+  - ECMAScript.VueDataUi.VdBulletDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdBulletSegment[] get_Segments()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Segments(ECMAScript.VueDataUi.VueUiBulletSegment[])
+  - Void set_Segments(ECMAScript.VueDataUi.VdBulletSegment[])
   - Void set_Target(Double)
   - Void set_Value(Double)
   - Double Target
   - Double Value
-  - ECMAScript.VueDataUi.VueUiBulletSegment[] Segments
-- type ECMAScript.VueDataUi.VueUiBulletSegment
+  - ECMAScript.VueDataUi.VdBulletSegment[] Segments
+- type ECMAScript.VueDataUi.VdBulletSegment
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiBulletSegment)
+  - Boolean Equals(ECMAScript.VueDataUi.VdBulletSegment)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiBulletSegment, ECMAScript.VueDataUi.VueUiBulletSegment)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiBulletSegment, ECMAScript.VueDataUi.VueUiBulletSegment)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdBulletSegment, ECMAScript.VueDataUi.VdBulletSegment)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdBulletSegment, ECMAScript.VueDataUi.VdBulletSegment)
   - Double get_From()
   - Double get_To()
-  - ECMAScript.VueDataUi.VueUiBulletSegment <Clone>$()
+  - ECMAScript.VueDataUi.VdBulletSegment <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -55993,26 +55856,26 @@
   - Double To
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiBump
+- type ECMAScript.VueDataUi.VdBump
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiBumpConfig
+- type ECMAScript.VueDataUi.VdBumpConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiBumpConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdBumpConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiBumpConfig, ECMAScript.VueDataUi.VueUiBumpConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiBumpConfig, ECMAScript.VueDataUi.VueUiBumpConfig)
-  - ECMAScript.VueDataUi.VueUiBumpConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdBumpConfig, ECMAScript.VueDataUi.VdBumpConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdBumpConfig, ECMAScript.VueDataUi.VdBumpConfig)
+  - ECMAScript.VueDataUi.VdBumpConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiBumpDatasetItem
+- type ECMAScript.VueDataUi.VdBumpDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiBumpDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdBumpDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiBumpDatasetItem, ECMAScript.VueDataUi.VueUiBumpDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiBumpDatasetItem, ECMAScript.VueDataUi.VueUiBumpDatasetItem)
-  - ECMAScript.VueDataUi.VueUiBumpDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdBumpDatasetItem, ECMAScript.VueDataUi.VdBumpDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdBumpDatasetItem, ECMAScript.VueDataUi.VdBumpDatasetItem)
+  - ECMAScript.VueDataUi.VdBumpDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Values()
   - System.String ToString()
@@ -56024,98 +55887,155 @@
   - System.Nullable`1[System.Double][] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiCandlestick
+- type ECMAScript.VueDataUi.VdCandlestick
   - Void .ctor()
   - System.Nullable`1[System.Int32] get_SelectedXIndex()
   - Void set_SelectedXIndex(System.Nullable`1[System.Int32])
   - System.Nullable`1[System.Int32] SelectedXIndex
-- type ECMAScript.VueDataUi.VueUiCandlestickConfig
+- type ECMAScript.VueDataUi.VdCandlestickConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiCandlestickConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdCandlestickConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiCandlestickConfig, ECMAScript.VueDataUi.VueUiCandlestickConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiCandlestickConfig, ECMAScript.VueDataUi.VueUiCandlestickConfig)
-  - ECMAScript.VueDataUi.VueUiCandlestickConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdCandlestickConfig, ECMAScript.VueDataUi.VdCandlestickConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdCandlestickConfig, ECMAScript.VueDataUi.VdCandlestickConfig)
+  - ECMAScript.VueDataUi.VdCandlestickConfig <Clone>$()
   - Int32 GetHashCode()
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiCandlestickType] get_Type()
+  - System.Nullable`1[ECMAScript.VueDataUi.VdCandlestickType] get_Type()
   - System.String ToString()
-  - Void set_Type(System.Nullable`1[ECMAScript.VueDataUi.VueUiCandlestickType])
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiCandlestickType] Type
-- type ECMAScript.VueDataUi.VueUiCandlestickData
-  - ECMAScript.VueDataUi.VueDataUiCellValue[] Ohlc(VueStringNumberValue, Double, Double, Double, Double, Double)
-- enum ECMAScript.VueDataUi.VueUiCandlestickType
-  - ECMAScript.VueDataUi.VueUiCandlestickType Candlestick
-  - ECMAScript.VueDataUi.VueUiCandlestickType Ohlc
+  - Void set_Type(System.Nullable`1[ECMAScript.VueDataUi.VdCandlestickType])
+  - System.Nullable`1[ECMAScript.VueDataUi.VdCandlestickType] Type
+- type ECMAScript.VueDataUi.VdCandlestickData
+  - ECMAScript.VueDataUi.VdCellValue[] Ohlc(VueStringNumberValue, Double, Double, Double, Double, Double)
+- enum ECMAScript.VueDataUi.VdCandlestickType
+  - ECMAScript.VueDataUi.VdCandlestickType Candlestick
+  - ECMAScript.VueDataUi.VdCandlestickType Ohlc
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiCarouselTable
+- type ECMAScript.VueDataUi.VdCarouselTable
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiCarouselTableConfig
+- type ECMAScript.VueDataUi.VdCarouselTableConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiCarouselTableConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdCarouselTableConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiCarouselTableConfig, ECMAScript.VueDataUi.VueUiCarouselTableConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiCarouselTableConfig, ECMAScript.VueDataUi.VueUiCarouselTableConfig)
-  - ECMAScript.VueDataUi.VueUiCarouselTableConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdCarouselTableConfig, ECMAScript.VueDataUi.VdCarouselTableConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdCarouselTableConfig, ECMAScript.VueDataUi.VdCarouselTableConfig)
+  - ECMAScript.VueDataUi.VdCarouselTableConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiCarouselTableDataset
+- type ECMAScript.VueDataUi.VdCarouselTableDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiCarouselTableDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdCarouselTableDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiCarouselTableDataset, ECMAScript.VueDataUi.VueUiCarouselTableDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiCarouselTableDataset, ECMAScript.VueDataUi.VueUiCarouselTableDataset)
-  - ECMAScript.VueDataUi.VueDataUiCellValue[][] get_Body()
-  - ECMAScript.VueDataUi.VueUiCarouselTableDataset <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdCarouselTableDataset, ECMAScript.VueDataUi.VdCarouselTableDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdCarouselTableDataset, ECMAScript.VueDataUi.VdCarouselTableDataset)
+  - ECMAScript.VueDataUi.VdCarouselTableDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdCellValue[][] get_Body()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String[] get_Head()
-  - Void set_Body(ECMAScript.VueDataUi.VueDataUiCellValue[][])
+  - Void set_Body(ECMAScript.VueDataUi.VdCellValue[][])
   - Void set_Head(System.String[])
-  - ECMAScript.VueDataUi.VueDataUiCellValue[][] Body
+  - ECMAScript.VueDataUi.VdCellValue[][] Body
   - System.String[] Head
-- type ECMAScript.VueDataUi.VueUiChestnut
+- type ECMAScript.VueDataUi.VdCellValue
+  - Void .ctor(Double)
+  - Void .ctor(System.String)
+  - System.Nullable`1[System.Double] get_AsNumber()
+  - System.Object get_Value()
+  - System.String get_AsString()
+  - System.Nullable`1[System.Double] AsNumber
+  - System.Object Value
+  - System.String AsString
+- type ECMAScript.VueDataUi.VdChartComponent`2
+  - TConfig get_Config()
+  - TDataset get_Dataset()
+  - Void set_Config(TConfig)
+  - Void set_Dataset(TDataset)
+  - TConfig Config
+  - TDataset Dataset
+- type ECMAScript.VueDataUi.VdChartSubtitle
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiChestnutConfig
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiChestnutConfig)
-  - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiChestnutConfig, ECMAScript.VueDataUi.VueUiChestnutConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiChestnutConfig, ECMAScript.VueDataUi.VueUiChestnutConfig)
-  - ECMAScript.VueDataUi.VueUiChestnutConfig <Clone>$()
-  - Int32 GetHashCode()
-  - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiChestnutDatasetBranch
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiChestnutDatasetBranch)
+  - Boolean Equals(ECMAScript.VueDataUi.VdChartSubtitle)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiChestnutDatasetBranch, ECMAScript.VueDataUi.VueUiChestnutDatasetBranch)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiChestnutDatasetBranch, ECMAScript.VueDataUi.VueUiChestnutDatasetBranch)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChartSubtitle, ECMAScript.VueDataUi.VdChartSubtitle)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChartSubtitle, ECMAScript.VueDataUi.VdChartSubtitle)
+  - ECMAScript.VueDataUi.VdChartSubtitle <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_Color()
+  - System.String get_Text()
+  - Void set_Color(System.String)
+  - Void set_Text(System.String)
+  - System.String Color
+  - System.String Text
+- type ECMAScript.VueDataUi.VdChartTitle
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.VdChartTitle)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChartTitle, ECMAScript.VueDataUi.VdChartTitle)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChartTitle, ECMAScript.VueDataUi.VdChartTitle)
+  - ECMAScript.VueDataUi.VdChartSubtitle get_Subtitle()
+  - ECMAScript.VueDataUi.VdChartTitle <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Bold()
+  - System.Nullable`1[System.Double] get_FontSize()
+  - System.String ToString()
+  - System.String get_Color()
+  - System.String get_Text()
+  - Void set_Bold(System.Nullable`1[System.Boolean])
+  - Void set_Color(System.String)
+  - Void set_FontSize(System.Nullable`1[System.Double])
+  - Void set_Subtitle(ECMAScript.VueDataUi.VdChartSubtitle)
+  - Void set_Text(System.String)
+  - ECMAScript.VueDataUi.VdChartSubtitle Subtitle
+  - System.Nullable`1[System.Boolean] Bold
+  - System.Nullable`1[System.Double] FontSize
+  - System.String Color
+  - System.String Text
+- type ECMAScript.VueDataUi.VdChestnut
+  - Void .ctor()
+- type ECMAScript.VueDataUi.VdChestnutConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.VdChestnutConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChestnutConfig, ECMAScript.VueDataUi.VdChestnutConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChestnutConfig, ECMAScript.VueDataUi.VdChestnutConfig)
+  - ECMAScript.VueDataUi.VdChestnutConfig <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+- type ECMAScript.VueDataUi.VdChestnutDatasetBranch
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.VdChestnutDatasetBranch)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChestnutDatasetBranch, ECMAScript.VueDataUi.VdChestnutDatasetBranch)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChestnutDatasetBranch, ECMAScript.VueDataUi.VdChestnutDatasetBranch)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetBranch <Clone>$()
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown[] get_Breakdown()
+  - ECMAScript.VueDataUi.VdChestnutDatasetBranch <Clone>$()
+  - ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown[] get_Breakdown()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
-  - Void set_Breakdown(ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown[])
+  - Void set_Breakdown(ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown[])
   - Void set_Name(System.String)
   - Void set_Value(Double)
   - Double Value
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown[] Breakdown
+  - ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown[] Breakdown
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown
+- type ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown)
+  - Boolean Equals(ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown, ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown, ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown, ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown, ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetBranchBreakdown <Clone>$()
+  - ECMAScript.VueDataUi.VdChestnutDatasetBranchBreakdown <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -56126,45 +56046,45 @@
   - Double Value
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiChestnutDatasetRoot
+- type ECMAScript.VueDataUi.VdChestnutDatasetRoot
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiChestnutDatasetRoot)
+  - Boolean Equals(ECMAScript.VueDataUi.VdChestnutDatasetRoot)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiChestnutDatasetRoot, ECMAScript.VueDataUi.VueUiChestnutDatasetRoot)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiChestnutDatasetRoot, ECMAScript.VueDataUi.VueUiChestnutDatasetRoot)
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetBranch[] get_Branches()
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetRoot <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChestnutDatasetRoot, ECMAScript.VueDataUi.VdChestnutDatasetRoot)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChestnutDatasetRoot, ECMAScript.VueDataUi.VdChestnutDatasetRoot)
+  - ECMAScript.VueDataUi.VdChestnutDatasetBranch[] get_Branches()
+  - ECMAScript.VueDataUi.VdChestnutDatasetRoot <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
-  - Void set_Branches(ECMAScript.VueDataUi.VueUiChestnutDatasetBranch[])
+  - Void set_Branches(ECMAScript.VueDataUi.VdChestnutDatasetBranch[])
   - Void set_Color(System.String)
   - Void set_Name(System.String)
-  - ECMAScript.VueDataUi.VueUiChestnutDatasetBranch[] Branches
+  - ECMAScript.VueDataUi.VdChestnutDatasetBranch[] Branches
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiChord
+- type ECMAScript.VueDataUi.VdChord
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiChordConfig
+- type ECMAScript.VueDataUi.VdChordConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiChordConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdChordConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiChordConfig, ECMAScript.VueDataUi.VueUiChordConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiChordConfig, ECMAScript.VueDataUi.VueUiChordConfig)
-  - ECMAScript.VueDataUi.VueUiChordConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChordConfig, ECMAScript.VueDataUi.VdChordConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChordConfig, ECMAScript.VueDataUi.VdChordConfig)
+  - ECMAScript.VueDataUi.VdChordConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiChordDataset
+- type ECMAScript.VueDataUi.VdChordDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiChordDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdChordDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiChordDataset, ECMAScript.VueDataUi.VueUiChordDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiChordDataset, ECMAScript.VueDataUi.VueUiChordDataset)
-  - ECMAScript.VueDataUi.VueUiChordDataset <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdChordDataset, ECMAScript.VueDataUi.VdChordDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdChordDataset, ECMAScript.VueDataUi.VdChordDataset)
+  - ECMAScript.VueDataUi.VdChordDataset <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][][] get_Matrix()
   - System.String ToString()
@@ -56176,88 +56096,123 @@
   - System.Nullable`1[System.Double][][] Matrix
   - System.String[] Colors
   - System.String[] Labels
-- type ECMAScript.VueDataUi.VueUiCirclePack
+- type ECMAScript.VueDataUi.VdCirclePack
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiCirclePackConfig
+- type ECMAScript.VueDataUi.VdCirclePackConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiCirclePackConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdCirclePackConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiCirclePackConfig, ECMAScript.VueDataUi.VueUiCirclePackConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiCirclePackConfig, ECMAScript.VueDataUi.VueUiCirclePackConfig)
-  - ECMAScript.VueDataUi.VueUiCirclePackConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdCirclePackConfig, ECMAScript.VueDataUi.VdCirclePackConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdCirclePackConfig, ECMAScript.VueDataUi.VdCirclePackConfig)
+  - ECMAScript.VueDataUi.VdCirclePackConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiCirclePackDatasetItem
+- type ECMAScript.VueDataUi.VdCirclePackDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiCirclePackDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdCirclePackDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiCirclePackDatasetItem, ECMAScript.VueDataUi.VueUiCirclePackDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiCirclePackDatasetItem, ECMAScript.VueDataUi.VueUiCirclePackDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdCirclePackDatasetItem, ECMAScript.VueDataUi.VdCirclePackDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdCirclePackDatasetItem, ECMAScript.VueDataUi.VdCirclePackDatasetItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiCirclePackDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiCirclePackDatasetItem[] get_Children()
+  - ECMAScript.VueDataUi.VdCirclePackDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdCirclePackDatasetItem[] get_Children()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
-  - Void set_Children(ECMAScript.VueDataUi.VueUiCirclePackDatasetItem[])
+  - Void set_Children(ECMAScript.VueDataUi.VdCirclePackDatasetItem[])
   - Void set_Color(System.String)
   - Void set_Name(System.String)
   - Void set_Value(Double)
   - Double Value
-  - ECMAScript.VueDataUi.VueUiCirclePackDatasetItem[] Children
+  - ECMAScript.VueDataUi.VdCirclePackDatasetItem[] Children
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiCursor
+- type ECMAScript.VueDataUi.VdConfig
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiCursorConfig
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiCursorConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiCursorConfig, ECMAScript.VueDataUi.VueUiCursorConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiCursorConfig, ECMAScript.VueDataUi.VueUiCursorConfig)
-  - ECMAScript.VueDataUi.VueUiCursorConfig <Clone>$()
+  - Boolean Equals(VueDictionary`1)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdConfig, ECMAScript.VueDataUi.VdConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdConfig, ECMAScript.VueDataUi.VdConfig)
+  - ECMAScript.VueDataUi.VdConfig <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueDataUi.VdTheme] get_Theme()
+  - System.Nullable`1[System.Boolean] get_Debug()
+  - System.Nullable`1[System.Boolean] get_Loading()
+  - System.Nullable`1[System.Boolean] get_Responsive()
+  - System.Nullable`1[System.Boolean] get_UseCssAnimation()
+  - System.Nullable`1[System.Boolean] get_UseCursorPointer()
+  - System.String ToString()
+  - System.String[] get_CustomPalette()
+  - Void set_CustomPalette(System.String[])
+  - Void set_Debug(System.Nullable`1[System.Boolean])
+  - Void set_Loading(System.Nullable`1[System.Boolean])
+  - Void set_Responsive(System.Nullable`1[System.Boolean])
+  - Void set_Theme(System.Nullable`1[ECMAScript.VueDataUi.VdTheme])
+  - Void set_UseCssAnimation(System.Nullable`1[System.Boolean])
+  - Void set_UseCursorPointer(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[ECMAScript.VueDataUi.VdTheme] Theme
+  - System.Nullable`1[System.Boolean] Debug
+  - System.Nullable`1[System.Boolean] Loading
+  - System.Nullable`1[System.Boolean] Responsive
+  - System.Nullable`1[System.Boolean] UseCssAnimation
+  - System.Nullable`1[System.Boolean] UseCursorPointer
+  - System.String[] CustomPalette
+- type ECMAScript.VueDataUi.VdConfigComponent`1
+  - TConfig get_Config()
+  - Void set_Config(TConfig)
+  - TConfig Config
+- type ECMAScript.VueDataUi.VdCursor
+  - Void .ctor()
+- type ECMAScript.VueDataUi.VdCursorConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdCursorConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdCursorConfig, ECMAScript.VueDataUi.VdCursorConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdCursorConfig, ECMAScript.VueDataUi.VdCursorConfig)
+  - ECMAScript.VueDataUi.VdCursorConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDag
+- type ECMAScript.VueDataUi.VdDag
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiDagConfig
+- type ECMAScript.VueDataUi.VdDagConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDagConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDagConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDagConfig, ECMAScript.VueDataUi.VueUiDagConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDagConfig, ECMAScript.VueDataUi.VueUiDagConfig)
-  - ECMAScript.VueDataUi.VueUiDagConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDagConfig, ECMAScript.VueDataUi.VdDagConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDagConfig, ECMAScript.VueDataUi.VdDagConfig)
+  - ECMAScript.VueDataUi.VdDagConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDagDataset
+- type ECMAScript.VueDataUi.VdDagDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDagDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDagDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDagDataset, ECMAScript.VueDataUi.VueUiDagDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDagDataset, ECMAScript.VueDataUi.VueUiDagDataset)
-  - ECMAScript.VueDataUi.VueUiDagDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiDagEdge[] get_Edges()
-  - ECMAScript.VueDataUi.VueUiDagNode[] get_Nodes()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDagDataset, ECMAScript.VueDataUi.VdDagDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDagDataset, ECMAScript.VueDataUi.VdDagDataset)
+  - ECMAScript.VueDataUi.VdDagDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdDagEdge[] get_Edges()
+  - ECMAScript.VueDataUi.VdDagNode[] get_Nodes()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Edges(ECMAScript.VueDataUi.VueUiDagEdge[])
-  - Void set_Nodes(ECMAScript.VueDataUi.VueUiDagNode[])
-  - ECMAScript.VueDataUi.VueUiDagEdge[] Edges
-  - ECMAScript.VueDataUi.VueUiDagNode[] Nodes
-- type ECMAScript.VueDataUi.VueUiDagEdge
+  - Void set_Edges(ECMAScript.VueDataUi.VdDagEdge[])
+  - Void set_Nodes(ECMAScript.VueDataUi.VdDagNode[])
+  - ECMAScript.VueDataUi.VdDagEdge[] Edges
+  - ECMAScript.VueDataUi.VdDagNode[] Nodes
+- type ECMAScript.VueDataUi.VdDagEdge
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDagEdge)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDagEdge)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDagEdge, ECMAScript.VueDataUi.VueUiDagEdge)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDagEdge, ECMAScript.VueDataUi.VueUiDagEdge)
-  - ECMAScript.VueDataUi.VueUiDagEdge <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDagEdge, ECMAScript.VueDataUi.VdDagEdge)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDagEdge, ECMAScript.VueDataUi.VdDagEdge)
+  - ECMAScript.VueDataUi.VdDagEdge <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_Animated()
   - System.Nullable`1[System.Double] get_AnimationDirection()
@@ -56281,14 +56236,14 @@
   - System.String Dasharray
   - System.String From
   - System.String To
-- type ECMAScript.VueDataUi.VueUiDagNode
+- type ECMAScript.VueDataUi.VdDagNode
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDagNode)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDagNode)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDagNode, ECMAScript.VueDataUi.VueUiDagNode)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDagNode, ECMAScript.VueDataUi.VueUiDagNode)
-  - ECMAScript.VueDataUi.VueUiDagNode <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDagNode, ECMAScript.VueDataUi.VdDagNode)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDagNode, ECMAScript.VueDataUi.VdDagNode)
+  - ECMAScript.VueDataUi.VdDagNode <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_BackgroundColor()
@@ -56303,53 +56258,53 @@
   - System.String Color
   - System.String Id
   - System.String Label
-- type ECMAScript.VueDataUi.VueUiDashboard
+- type ECMAScript.VueDataUi.VdDashboard
   - Void .ctor()
-  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDashboardCopyAlt] get_OnCopyAlt()
-  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDashboardPlacedElement[]] get_OnChange()
-  - Void set_OnChange(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDashboardPlacedElement[]])
-  - Void set_OnCopyAlt(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDashboardCopyAlt])
-  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDashboardCopyAlt] OnCopyAlt
-  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDashboardPlacedElement[]] OnChange
-- type ECMAScript.VueDataUi.VueUiDashboardConfig
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDashboardCopyAlt] get_OnCopyAlt()
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDashboardPlacedElement[]] get_OnChange()
+  - Void set_OnChange(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDashboardPlacedElement[]])
+  - Void set_OnCopyAlt(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDashboardCopyAlt])
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDashboardCopyAlt] OnCopyAlt
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDashboardPlacedElement[]] OnChange
+- type ECMAScript.VueDataUi.VdDashboardConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDashboardConfig, ECMAScript.VueDataUi.VueUiDashboardConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDashboardConfig, ECMAScript.VueDataUi.VueUiDashboardConfig)
-  - ECMAScript.VueDataUi.VueUiDashboardConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDashboardConfig, ECMAScript.VueDataUi.VdDashboardConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDashboardConfig, ECMAScript.VueDataUi.VdDashboardConfig)
+  - ECMAScript.VueDataUi.VdDashboardConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDashboardCopyAlt
+- type ECMAScript.VueDataUi.VdDashboardCopyAlt
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardCopyAlt)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardCopyAlt)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDashboardCopyAlt, ECMAScript.VueDataUi.VueUiDashboardCopyAlt)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDashboardCopyAlt, ECMAScript.VueDataUi.VueUiDashboardCopyAlt)
-  - ECMAScript.VueDataUi.VueUiDashboardConfig get_Config()
-  - ECMAScript.VueDataUi.VueUiDashboardCopyAlt <Clone>$()
-  - ECMAScript.VueDataUi.VueUiDashboardPlacedElement[] get_Dataset()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDashboardCopyAlt, ECMAScript.VueDataUi.VdDashboardCopyAlt)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDashboardCopyAlt, ECMAScript.VueDataUi.VdDashboardCopyAlt)
+  - ECMAScript.VueDataUi.VdDashboardConfig get_Config()
+  - ECMAScript.VueDataUi.VdDashboardCopyAlt <Clone>$()
+  - ECMAScript.VueDataUi.VdDashboardPlacedElement[] get_Dataset()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Config(ECMAScript.VueDataUi.VueUiDashboardConfig)
-  - Void set_Dataset(ECMAScript.VueDataUi.VueUiDashboardPlacedElement[])
-  - ECMAScript.VueDataUi.VueUiDashboardConfig Config
-  - ECMAScript.VueDataUi.VueUiDashboardPlacedElement[] Dataset
-- type ECMAScript.VueDataUi.VueUiDashboardElement
+  - Void set_Config(ECMAScript.VueDataUi.VdDashboardConfig)
+  - Void set_Dataset(ECMAScript.VueDataUi.VdDashboardPlacedElement[])
+  - ECMAScript.VueDataUi.VdDashboardConfig Config
+  - ECMAScript.VueDataUi.VdDashboardPlacedElement[] Dataset
+- type ECMAScript.VueDataUi.VdDashboardElement
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardElement)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardElement)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDashboardElement, ECMAScript.VueDataUi.VueUiDashboardElement)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDashboardElement, ECMAScript.VueDataUi.VueUiDashboardElement)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDashboardElement, ECMAScript.VueDataUi.VdDashboardElement)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDashboardElement, ECMAScript.VueDataUi.VdDashboardElement)
   - Double get_Height()
   - Double get_Left()
   - Double get_Top()
   - Double get_Width()
-  - ECMAScript.VueDataUi.VueUiDashboardElement <Clone>$()
-  - ECMAScript.VueDataUi.VueUiDashboardElementProps get_Props()
+  - ECMAScript.VueDataUi.VdDashboardElement <Clone>$()
+  - ECMAScript.VueDataUi.VdDashboardElementProps get_Props()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Component()
@@ -56357,7 +56312,7 @@
   - Void set_Height(Double)
   - Void set_Id(VueStringNumberValue)
   - Void set_Left(Double)
-  - Void set_Props(ECMAScript.VueDataUi.VueUiDashboardElementProps)
+  - Void set_Props(ECMAScript.VueDataUi.VdDashboardElementProps)
   - Void set_Top(Double)
   - Void set_Width(Double)
   - VueStringNumberValue get_Id()
@@ -56365,27 +56320,27 @@
   - Double Left
   - Double Top
   - Double Width
-  - ECMAScript.VueDataUi.VueUiDashboardElementProps Props
+  - ECMAScript.VueDataUi.VdDashboardElementProps Props
   - System.String Component
   - VueStringNumberValue Id
-- type ECMAScript.VueDataUi.VueUiDashboardElementProps
+- type ECMAScript.VueDataUi.VdDashboardElementProps
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardElementProps)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardElementProps)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDashboardElementProps, ECMAScript.VueDataUi.VueUiDashboardElementProps)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDashboardElementProps, ECMAScript.VueDataUi.VueUiDashboardElementProps)
-  - ECMAScript.VueDataUi.VueUiDashboardElementProps <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDashboardElementProps, ECMAScript.VueDataUi.VdDashboardElementProps)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDashboardElementProps, ECMAScript.VueDataUi.VdDashboardElementProps)
+  - ECMAScript.VueDataUi.VdDashboardElementProps <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDashboardElementProps`2
+- type ECMAScript.VueDataUi.VdDashboardElementProps`2
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardElementProps)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardElementProps`2[TDataset,TConfig])
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardElementProps)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardElementProps`2[TDataset,TConfig])
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDashboardElementProps`2[TDataset,TConfig], ECMAScript.VueDataUi.VueUiDashboardElementProps`2[TDataset,TConfig])
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDashboardElementProps`2[TDataset,TConfig], ECMAScript.VueDataUi.VueUiDashboardElementProps`2[TDataset,TConfig])
-  - ECMAScript.VueDataUi.VueUiDashboardElementProps`2[TDataset,TConfig] <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDashboardElementProps`2[TDataset,TConfig], ECMAScript.VueDataUi.VdDashboardElementProps`2[TDataset,TConfig])
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDashboardElementProps`2[TDataset,TConfig], ECMAScript.VueDataUi.VdDashboardElementProps`2[TDataset,TConfig])
+  - ECMAScript.VueDataUi.VdDashboardElementProps`2[TDataset,TConfig] <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - TConfig get_Config()
@@ -56394,19 +56349,19 @@
   - Void set_Dataset(TDataset)
   - TConfig Config
   - TDataset Dataset
-- type ECMAScript.VueDataUi.VueUiDashboardPlacedElement
+- type ECMAScript.VueDataUi.VdDashboardPlacedElement
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDashboardPlacedElement)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDashboardPlacedElement)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDashboardPlacedElement, ECMAScript.VueDataUi.VueUiDashboardPlacedElement)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDashboardPlacedElement, ECMAScript.VueDataUi.VueUiDashboardPlacedElement)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDashboardPlacedElement, ECMAScript.VueDataUi.VdDashboardPlacedElement)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDashboardPlacedElement, ECMAScript.VueDataUi.VdDashboardPlacedElement)
   - Double get_Height()
   - Double get_Index()
   - Double get_Left()
   - Double get_Top()
   - Double get_Width()
-  - ECMAScript.VueDataUi.VueUiDashboardPlacedElement <Clone>$()
+  - ECMAScript.VueDataUi.VdDashboardPlacedElement <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Component()
@@ -56425,16 +56380,30 @@
   - Double Width
   - System.String Component
   - System.String Id
-- type ECMAScript.VueDataUi.VueUiDigits
+- type ECMAScript.VueDataUi.VdDatasetComponent`1
+  - TDataset get_Dataset()
+  - Void set_Dataset(TDataset)
+  - TDataset Dataset
+- type ECMAScript.VueDataUi.VdDatasetItem
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiDigitsConfig
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDigitsConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDigitsConfig, ECMAScript.VueDataUi.VueUiDigitsConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDigitsConfig, ECMAScript.VueDataUi.VueUiDigitsConfig)
-  - ECMAScript.VueDataUi.VueUiDigitsConfig <Clone>$()
+  - Boolean Equals(VueDictionary`1)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDatasetItem, ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDatasetItem, ECMAScript.VueDataUi.VdDatasetItem)
+  - ECMAScript.VueDataUi.VdDatasetItem <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+- type ECMAScript.VueDataUi.VdDigits
+  - Void .ctor()
+- type ECMAScript.VueDataUi.VdDigitsConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDigitsConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDigitsConfig, ECMAScript.VueDataUi.VdDigitsConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDigitsConfig, ECMAScript.VueDataUi.VdDigitsConfig)
+  - ECMAScript.VueDataUi.VdDigitsConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_BackgroundColor()
@@ -56446,30 +56415,30 @@
   - System.String BackgroundColor
   - System.String Height
   - System.String Width
-- type ECMAScript.VueDataUi.VueUiDonut
+- type ECMAScript.VueDataUi.VdDonut
   - Void .ctor()
-  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDonutLegendItem[]] get_OnSelectLegend()
-  - Void set_OnSelectLegend(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDonutLegendItem[]])
-  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VueUiDonutLegendItem[]] OnSelectLegend
-- type ECMAScript.VueDataUi.VueUiDonutConfig
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDonutLegendItem[]] get_OnSelectLegend()
+  - Void set_OnSelectLegend(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDonutLegendItem[]])
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.VueDataUi.VdDonutLegendItem[]] OnSelectLegend
+- type ECMAScript.VueDataUi.VdDonutConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDonutConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDonutConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDonutConfig, ECMAScript.VueDataUi.VueUiDonutConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDonutConfig, ECMAScript.VueDataUi.VueUiDonutConfig)
-  - ECMAScript.VueDataUi.VueUiDonutConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDonutConfig, ECMAScript.VueDataUi.VdDonutConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDonutConfig, ECMAScript.VueDataUi.VdDonutConfig)
+  - ECMAScript.VueDataUi.VdDonutConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDonutDatasetItem
+- type ECMAScript.VueDataUi.VdDonutDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDonutDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDonutDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDonutDatasetItem, ECMAScript.VueDataUi.VueUiDonutDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDonutDatasetItem, ECMAScript.VueDataUi.VueUiDonutDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDonutDatasetItem, ECMAScript.VueDataUi.VdDonutDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDonutDatasetItem, ECMAScript.VueDataUi.VdDonutDatasetItem)
   - Double[] get_Values()
-  - ECMAScript.VueDataUi.VueUiDonutDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdDonutDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -56483,26 +56452,26 @@
   - System.String Color
   - System.String Comment
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiDonutEvolution
+- type ECMAScript.VueDataUi.VdDonutEvolution
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiDonutEvolutionConfig
+- type ECMAScript.VueDataUi.VdDonutEvolutionConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDonutEvolutionConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDonutEvolutionConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDonutEvolutionConfig, ECMAScript.VueDataUi.VueUiDonutEvolutionConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDonutEvolutionConfig, ECMAScript.VueDataUi.VueUiDonutEvolutionConfig)
-  - ECMAScript.VueDataUi.VueUiDonutEvolutionConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDonutEvolutionConfig, ECMAScript.VueDataUi.VdDonutEvolutionConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDonutEvolutionConfig, ECMAScript.VueDataUi.VdDonutEvolutionConfig)
+  - ECMAScript.VueDataUi.VdDonutEvolutionConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem
+- type ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem, ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem, ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem)
-  - ECMAScript.VueDataUi.VueUiDonutEvolutionDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem, ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem, ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem)
+  - ECMAScript.VueDataUi.VdDonutEvolutionDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Values()
   - System.String ToString()
@@ -56514,15 +56483,15 @@
   - System.Nullable`1[System.Double][] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiDonutLegendItem
+- type ECMAScript.VueDataUi.VdDonutLegendItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDonutLegendItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDonutLegendItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDonutLegendItem, ECMAScript.VueDataUi.VueUiDonutLegendItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDonutLegendItem, ECMAScript.VueDataUi.VueUiDonutLegendItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDonutLegendItem, ECMAScript.VueDataUi.VdDonutLegendItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDonutLegendItem, ECMAScript.VueDataUi.VdDonutLegendItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiDonutLegendItem <Clone>$()
+  - ECMAScript.VueDataUi.VdDonutLegendItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -56533,26 +56502,39 @@
   - Double Value
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiDumbbell
+- type ECMAScript.VueDataUi.VdDownsampleOptions
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiDumbbellConfig
-  - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDumbbellConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDownsampleOptions)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDumbbellConfig, ECMAScript.VueDataUi.VueUiDumbbellConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDumbbellConfig, ECMAScript.VueDataUi.VueUiDumbbellConfig)
-  - ECMAScript.VueDataUi.VueUiDumbbellConfig <Clone>$()
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDownsampleOptions, ECMAScript.VueDataUi.VdDownsampleOptions)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDownsampleOptions, ECMAScript.VueDataUi.VdDownsampleOptions)
+  - ECMAScript.VueDataUi.VdDownsampleOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Int32] get_Threshold()
+  - System.String ToString()
+  - Void set_Threshold(System.Nullable`1[System.Int32])
+  - System.Nullable`1[System.Int32] Threshold
+- type ECMAScript.VueDataUi.VdDumbbell
+  - Void .ctor()
+- type ECMAScript.VueDataUi.VdDumbbellConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDumbbellConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDumbbellConfig, ECMAScript.VueDataUi.VdDumbbellConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDumbbellConfig, ECMAScript.VueDataUi.VdDumbbellConfig)
+  - ECMAScript.VueDataUi.VdDumbbellConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiDumbbellDataset
+- type ECMAScript.VueDataUi.VdDumbbellDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiDumbbellDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDumbbellDataset)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiDumbbellDataset, ECMAScript.VueDataUi.VueUiDumbbellDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiDumbbellDataset, ECMAScript.VueDataUi.VueUiDumbbellDataset)
-  - ECMAScript.VueDataUi.VueUiDumbbellDataset <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdDumbbellDataset, ECMAScript.VueDataUi.VdDumbbellDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdDumbbellDataset, ECMAScript.VueDataUi.VdDumbbellDataset)
+  - ECMAScript.VueDataUi.VdDumbbellDataset <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_End()
   - System.Nullable`1[System.Double] get_Start()
@@ -56564,41 +56546,41 @@
   - System.Nullable`1[System.Double] End
   - System.Nullable`1[System.Double] Start
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiFlow
+- type ECMAScript.VueDataUi.VdFlow
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiFlowConfig
+- type ECMAScript.VueDataUi.VdFlowConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiFlowConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdFlowConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiFlowConfig, ECMAScript.VueDataUi.VueUiFlowConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiFlowConfig, ECMAScript.VueDataUi.VueUiFlowConfig)
-  - ECMAScript.VueDataUi.VueUiFlowConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdFlowConfig, ECMAScript.VueDataUi.VdFlowConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdFlowConfig, ECMAScript.VueDataUi.VdFlowConfig)
+  - ECMAScript.VueDataUi.VdFlowConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiFlowData
-  - ECMAScript.VueDataUi.VueDataUiCellValue[] Link(System.String, System.String, System.Nullable`1[System.Double])
-- type ECMAScript.VueDataUi.VueUiFunnel
+- type ECMAScript.VueDataUi.VdFlowData
+  - ECMAScript.VueDataUi.VdCellValue[] Link(System.String, System.String, System.Nullable`1[System.Double])
+- type ECMAScript.VueDataUi.VdFunnel
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiFunnelConfig
+- type ECMAScript.VueDataUi.VdFunnelConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiFunnelConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdFunnelConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiFunnelConfig, ECMAScript.VueDataUi.VueUiFunnelConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiFunnelConfig, ECMAScript.VueDataUi.VueUiFunnelConfig)
-  - ECMAScript.VueDataUi.VueUiFunnelConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdFunnelConfig, ECMAScript.VueDataUi.VdFunnelConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdFunnelConfig, ECMAScript.VueDataUi.VdFunnelConfig)
+  - ECMAScript.VueDataUi.VdFunnelConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiFunnelDatasetItem
+- type ECMAScript.VueDataUi.VdFunnelDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiFunnelDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdFunnelDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiFunnelDatasetItem, ECMAScript.VueDataUi.VueUiFunnelDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiFunnelDatasetItem, ECMAScript.VueDataUi.VueUiFunnelDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdFunnelDatasetItem, ECMAScript.VueDataUi.VdFunnelDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdFunnelDatasetItem, ECMAScript.VueDataUi.VdFunnelDatasetItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiFunnelDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdFunnelDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -56609,62 +56591,62 @@
   - Double Value
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiGalaxy
+- type ECMAScript.VueDataUi.VdGalaxy
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiGalaxyConfig
+- type ECMAScript.VueDataUi.VdGalaxyConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGalaxyConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGalaxyConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGalaxyConfig, ECMAScript.VueDataUi.VueUiGalaxyConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGalaxyConfig, ECMAScript.VueDataUi.VueUiGalaxyConfig)
-  - ECMAScript.VueDataUi.VueUiGalaxyConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGalaxyConfig, ECMAScript.VueDataUi.VdGalaxyConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGalaxyConfig, ECMAScript.VueDataUi.VdGalaxyConfig)
+  - ECMAScript.VueDataUi.VdGalaxyConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiGauge
+- type ECMAScript.VueDataUi.VdGauge
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiGaugeConfig
+- type ECMAScript.VueDataUi.VdGaugeConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGaugeConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGaugeConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGaugeConfig, ECMAScript.VueDataUi.VueUiGaugeConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGaugeConfig, ECMAScript.VueDataUi.VueUiGaugeConfig)
-  - ECMAScript.VueDataUi.VueUiGaugeConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGaugeConfig, ECMAScript.VueDataUi.VdGaugeConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGaugeConfig, ECMAScript.VueDataUi.VdGaugeConfig)
+  - ECMAScript.VueDataUi.VdGaugeConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiGaugeDataset
+- type ECMAScript.VueDataUi.VdGaugeDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGaugeDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGaugeDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGaugeDataset, ECMAScript.VueDataUi.VueUiGaugeDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGaugeDataset, ECMAScript.VueDataUi.VueUiGaugeDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGaugeDataset, ECMAScript.VueDataUi.VdGaugeDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGaugeDataset, ECMAScript.VueDataUi.VdGaugeDataset)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiGaugeDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem[] get_Series()
+  - ECMAScript.VueDataUi.VdGaugeDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdGaugeDatasetSerieItem[] get_Series()
   - Int32 GetHashCode()
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Id()
   - System.Nullable`1[System.Double] get_Base()
   - System.String ToString()
   - Void set_Base(System.Nullable`1[System.Double])
   - Void set_Id(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
-  - Void set_Series(ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem[])
+  - Void set_Series(ECMAScript.VueDataUi.VdGaugeDatasetSerieItem[])
   - Void set_Value(Double)
   - Double Value
-  - ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem[] Series
+  - ECMAScript.VueDataUi.VdGaugeDatasetSerieItem[] Series
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Id
   - System.Nullable`1[System.Double] Base
-- type ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem
+- type ECMAScript.VueDataUi.VdGaugeDatasetSerieItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGaugeDatasetSerieItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem, ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem, ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGaugeDatasetSerieItem, ECMAScript.VueDataUi.VdGaugeDatasetSerieItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGaugeDatasetSerieItem, ECMAScript.VueDataUi.VdGaugeDatasetSerieItem)
   - Double get_From()
   - Double get_To()
-  - ECMAScript.VueDataUi.VueUiGaugeDatasetSerieItem <Clone>$()
+  - ECMAScript.VueDataUi.VdGaugeDatasetSerieItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -56677,27 +56659,27 @@
   - Double To
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiGeo
+- type ECMAScript.VueDataUi.VdGeo
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiGeoConfig
+- type ECMAScript.VueDataUi.VdGeoConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGeoConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGeoConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGeoConfig, ECMAScript.VueDataUi.VueUiGeoConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGeoConfig, ECMAScript.VueDataUi.VueUiGeoConfig)
-  - ECMAScript.VueDataUi.VueUiGeoConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGeoConfig, ECMAScript.VueDataUi.VdGeoConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGeoConfig, ECMAScript.VueDataUi.VdGeoConfig)
+  - ECMAScript.VueDataUi.VdGeoConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiGeoDatasetItem
+- type ECMAScript.VueDataUi.VdGeoDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGeoDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGeoDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGeoDatasetItem, ECMAScript.VueDataUi.VueUiGeoDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGeoDatasetItem, ECMAScript.VueDataUi.VueUiGeoDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGeoDatasetItem, ECMAScript.VueDataUi.VdGeoDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGeoDatasetItem, ECMAScript.VueDataUi.VdGeoDatasetItem)
   - Double[] get_Coordinates()
-  - ECMAScript.VueDataUi.VueUiGeoDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdGeoDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Radius()
   - System.String ToString()
@@ -56714,38 +56696,38 @@
   - System.String Color
   - System.String Description
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiGizmo
+- type ECMAScript.VueDataUi.VdGizmo
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiGizmoConfig
+- type ECMAScript.VueDataUi.VdGizmoConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiGizmoConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdGizmoConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiGizmoConfig, ECMAScript.VueDataUi.VueUiGizmoConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiGizmoConfig, ECMAScript.VueDataUi.VueUiGizmoConfig)
-  - ECMAScript.VueDataUi.VueUiGizmoConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdGizmoConfig, ECMAScript.VueDataUi.VdGizmoConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdGizmoConfig, ECMAScript.VueDataUi.VdGizmoConfig)
+  - ECMAScript.VueDataUi.VdGizmoConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiHeatmap
+- type ECMAScript.VueDataUi.VdHeatmap
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiHeatmapConfig
+- type ECMAScript.VueDataUi.VdHeatmapConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHeatmapConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHeatmapConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHeatmapConfig, ECMAScript.VueDataUi.VueUiHeatmapConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHeatmapConfig, ECMAScript.VueDataUi.VueUiHeatmapConfig)
-  - ECMAScript.VueDataUi.VueUiHeatmapConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHeatmapConfig, ECMAScript.VueDataUi.VdHeatmapConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHeatmapConfig, ECMAScript.VueDataUi.VdHeatmapConfig)
+  - ECMAScript.VueDataUi.VdHeatmapConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiHeatmapDatasetItem
+- type ECMAScript.VueDataUi.VdHeatmapDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHeatmapDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHeatmapDatasetItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHeatmapDatasetItem, ECMAScript.VueDataUi.VueUiHeatmapDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHeatmapDatasetItem, ECMAScript.VueDataUi.VueUiHeatmapDatasetItem)
-  - ECMAScript.VueDataUi.VueUiHeatmapDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHeatmapDatasetItem, ECMAScript.VueDataUi.VdHeatmapDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHeatmapDatasetItem, ECMAScript.VueDataUi.VdHeatmapDatasetItem)
+  - ECMAScript.VueDataUi.VdHeatmapDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Values()
   - System.String ToString()
@@ -56754,26 +56736,26 @@
   - VueStringNumberValue get_Name()
   - System.Nullable`1[System.Double][] Values
   - VueStringNumberValue Name
-- type ECMAScript.VueDataUi.VueUiHill
+- type ECMAScript.VueDataUi.VdHill
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiHillConfig
+- type ECMAScript.VueDataUi.VdHillConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHillConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHillConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHillConfig, ECMAScript.VueDataUi.VueUiHillConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHillConfig, ECMAScript.VueDataUi.VueUiHillConfig)
-  - ECMAScript.VueDataUi.VueUiHillConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHillConfig, ECMAScript.VueDataUi.VdHillConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHillConfig, ECMAScript.VueDataUi.VdHillConfig)
+  - ECMAScript.VueDataUi.VdHillConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiHillDatasetItem
+- type ECMAScript.VueDataUi.VdHillDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHillDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHillDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHillDatasetItem, ECMAScript.VueDataUi.VueUiHillDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHillDatasetItem, ECMAScript.VueDataUi.VueUiHillDatasetItem)
-  - ECMAScript.VueDataUi.VueUiHillDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHillDatasetItem, ECMAScript.VueDataUi.VdHillDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHillDatasetItem, ECMAScript.VueDataUi.VdHillDatasetItem)
+  - ECMAScript.VueDataUi.VdHillDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_Disabled()
   - System.Nullable`1[System.Boolean] get_Muted()
@@ -56791,27 +56773,27 @@
   - System.String Color
   - System.String Id
   - System.String Label
-- type ECMAScript.VueDataUi.VueUiHistoryPlot
+- type ECMAScript.VueDataUi.VdHistoryPlot
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiHistoryPlotConfig
+- type ECMAScript.VueDataUi.VdHistoryPlotConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHistoryPlotConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHistoryPlotConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHistoryPlotConfig, ECMAScript.VueDataUi.VueUiHistoryPlotConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHistoryPlotConfig, ECMAScript.VueDataUi.VueUiHistoryPlotConfig)
-  - ECMAScript.VueDataUi.VueUiHistoryPlotConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHistoryPlotConfig, ECMAScript.VueDataUi.VdHistoryPlotConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHistoryPlotConfig, ECMAScript.VueDataUi.VdHistoryPlotConfig)
+  - ECMAScript.VueDataUi.VdHistoryPlotConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem
+- type ECMAScript.VueDataUi.VdHistoryPlotDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHistoryPlotDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem, ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem, ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem)
-  - ECMAScript.VueDataUi.VueUiHistoryPlotDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiHistoryPlotValue[] get_Values()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHistoryPlotDatasetItem, ECMAScript.VueDataUi.VdHistoryPlotDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHistoryPlotDatasetItem, ECMAScript.VueDataUi.VdHistoryPlotDatasetItem)
+  - ECMAScript.VueDataUi.VdHistoryPlotDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdHistoryPlotValue[] get_Values()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_Smooth()
   - System.Nullable`1[System.Boolean] get_TemperatureIndependant()
@@ -56828,8 +56810,8 @@
   - Void set_TemperatureColors(System.String[])
   - Void set_TemperatureIndependant(System.Nullable`1[System.Boolean])
   - Void set_UsePlotTemperatureColors(System.Nullable`1[System.Boolean])
-  - Void set_Values(ECMAScript.VueDataUi.VueUiHistoryPlotValue[])
-  - ECMAScript.VueDataUi.VueUiHistoryPlotValue[] Values
+  - Void set_Values(ECMAScript.VueDataUi.VdHistoryPlotValue[])
+  - ECMAScript.VueDataUi.VdHistoryPlotValue[] Values
   - System.Nullable`1[System.Boolean] Smooth
   - System.Nullable`1[System.Boolean] TemperatureIndependant
   - System.Nullable`1[System.Boolean] UsePlotTemperatureColors
@@ -56837,16 +56819,16 @@
   - System.String Color
   - System.String Name
   - System.String[] TemperatureColors
-- type ECMAScript.VueDataUi.VueUiHistoryPlotValue
+- type ECMAScript.VueDataUi.VdHistoryPlotValue
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHistoryPlotValue)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHistoryPlotValue)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHistoryPlotValue, ECMAScript.VueDataUi.VueUiHistoryPlotValue)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHistoryPlotValue, ECMAScript.VueDataUi.VueUiHistoryPlotValue)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHistoryPlotValue, ECMAScript.VueDataUi.VdHistoryPlotValue)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHistoryPlotValue, ECMAScript.VueDataUi.VdHistoryPlotValue)
   - Double get_X()
   - Double get_Y()
-  - ECMAScript.VueDataUi.VueUiHistoryPlotValue <Clone>$()
+  - ECMAScript.VueDataUi.VdHistoryPlotValue <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Label()
@@ -56856,356 +56838,356 @@
   - Double X
   - Double Y
   - System.String Label
-- type ECMAScript.VueDataUi.VueUiHorizontalBar
+- type ECMAScript.VueDataUi.VdHorizontalBar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiHorizontalBarConfig
+- type ECMAScript.VueDataUi.VdHorizontalBarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHorizontalBarConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiVerticalBarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHorizontalBarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdVerticalBarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHorizontalBarConfig, ECMAScript.VueDataUi.VueUiHorizontalBarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHorizontalBarConfig, ECMAScript.VueDataUi.VueUiHorizontalBarConfig)
-  - ECMAScript.VueDataUi.VueUiHorizontalBarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHorizontalBarConfig, ECMAScript.VueDataUi.VdHorizontalBarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHorizontalBarConfig, ECMAScript.VueDataUi.VdHorizontalBarConfig)
+  - ECMAScript.VueDataUi.VdHorizontalBarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem
+- type ECMAScript.VueDataUi.VdHorizontalBarDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdHorizontalBarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdVerticalBarDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem, ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem, ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem)
-  - ECMAScript.VueDataUi.VueUiHorizontalBarDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdHorizontalBarDatasetItem, ECMAScript.VueDataUi.VdHorizontalBarDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdHorizontalBarDatasetItem, ECMAScript.VueDataUi.VdHorizontalBarDatasetItem)
+  - ECMAScript.VueDataUi.VdHorizontalBarDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiIcon
+- type ECMAScript.VueDataUi.VdIcon
   - Void .ctor()
-  - ECMAScript.VueDataUi.VueUiIconName get_Name()
+  - ECMAScript.VueDataUi.VdIconName get_Name()
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Size()
   - System.Nullable`1[System.Boolean] get_IsSpin()
   - System.Nullable`1[System.Double] get_StrokeWidth()
   - System.String get_SpinDuration()
   - System.String get_Stroke()
   - Void set_IsSpin(System.Nullable`1[System.Boolean])
-  - Void set_Name(ECMAScript.VueDataUi.VueUiIconName)
+  - Void set_Name(ECMAScript.VueDataUi.VdIconName)
   - Void set_Size(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
   - Void set_SpinDuration(System.String)
   - Void set_Stroke(System.String)
   - Void set_StrokeWidth(System.Nullable`1[System.Double])
-  - ECMAScript.VueDataUi.VueUiIconName Name
+  - ECMAScript.VueDataUi.VdIconName Name
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Size
   - System.Nullable`1[System.Boolean] IsSpin
   - System.Nullable`1[System.Double] StrokeWidth
   - System.String SpinDuration
   - System.String Stroke
-- enum ECMAScript.VueDataUi.VueUiIconName
-  - ECMAScript.VueDataUi.VueUiIconName AToZ
-  - ECMAScript.VueDataUi.VueUiIconName Accessibility
-  - ECMAScript.VueDataUi.VueUiIconName Accordion
-  - ECMAScript.VueDataUi.VueUiIconName AddColumn
-  - ECMAScript.VueDataUi.VueUiIconName AddRow
-  - ECMAScript.VueDataUi.VueUiIconName Annotation
-  - ECMAScript.VueDataUi.VueUiIconName Annotator
-  - ECMAScript.VueDataUi.VueUiIconName AnnotatorDisabled
-  - ECMAScript.VueDataUi.VueUiIconName ApiStream
-  - ECMAScript.VueDataUi.VueUiIconName ArrowBottom
-  - ECMAScript.VueDataUi.VueUiIconName ArrowLeft
-  - ECMAScript.VueDataUi.VueUiIconName ArrowRight
-  - ECMAScript.VueDataUi.VueUiIconName ArrowTop
-  - ECMAScript.VueDataUi.VueUiIconName Battery
-  - ECMAScript.VueDataUi.VueUiIconName Bell
-  - ECMAScript.VueDataUi.VueUiIconName BellOff
-  - ECMAScript.VueDataUi.VueUiIconName BellRing
-  - ECMAScript.VueDataUi.VueUiIconName Binary
-  - ECMAScript.VueDataUi.VueUiIconName Blur
-  - ECMAScript.VueDataUi.VueUiIconName Boxes
-  - ECMAScript.VueDataUi.VueUiIconName Branches
-  - ECMAScript.VueDataUi.VueUiIconName BringToBack
-  - ECMAScript.VueDataUi.VueUiIconName BringToFront
-  - ECMAScript.VueDataUi.VueUiIconName Bucket
-  - ECMAScript.VueDataUi.VueUiIconName BucketEmpty
-  - ECMAScript.VueDataUi.VueUiIconName BucketFill
-  - ECMAScript.VueDataUi.VueUiIconName BucketRecycle
-  - ECMAScript.VueDataUi.VueUiIconName Bug
-  - ECMAScript.VueDataUi.VueUiIconName Building
-  - ECMAScript.VueDataUi.VueUiIconName Calendar
-  - ECMAScript.VueDataUi.VueUiIconName CarouselTable
-  - ECMAScript.VueDataUi.VueUiIconName Chart3dBar
-  - ECMAScript.VueDataUi.VueUiIconName ChartAgePyramid
-  - ECMAScript.VueDataUi.VueUiIconName ChartBar
-  - ECMAScript.VueDataUi.VueUiIconName ChartBullet
-  - ECMAScript.VueDataUi.VueUiIconName ChartBump
-  - ECMAScript.VueDataUi.VueUiIconName ChartCandlestick
-  - ECMAScript.VueDataUi.VueUiIconName ChartChestnut
-  - ECMAScript.VueDataUi.VueUiIconName ChartChord
-  - ECMAScript.VueDataUi.VueUiIconName ChartCirclePack
-  - ECMAScript.VueDataUi.VueUiIconName ChartCluster
-  - ECMAScript.VueDataUi.VueUiIconName ChartDag
-  - ECMAScript.VueDataUi.VueUiIconName ChartDonut
-  - ECMAScript.VueDataUi.VueUiIconName ChartDonutEvolution
-  - ECMAScript.VueDataUi.VueUiIconName ChartDumbbell
-  - ECMAScript.VueDataUi.VueUiIconName ChartFlow
-  - ECMAScript.VueDataUi.VueUiIconName ChartFunnel
-  - ECMAScript.VueDataUi.VueUiIconName ChartGalaxy
-  - ECMAScript.VueDataUi.VueUiIconName ChartGauge
-  - ECMAScript.VueDataUi.VueUiIconName ChartHeatmap
-  - ECMAScript.VueDataUi.VueUiIconName ChartHill
-  - ECMAScript.VueDataUi.VueUiIconName ChartHistoryPlot
-  - ECMAScript.VueDataUi.VueUiIconName ChartLine
-  - ECMAScript.VueDataUi.VueUiIconName ChartMoodRadar
-  - ECMAScript.VueDataUi.VueUiIconName ChartNestedDonuts
-  - ECMAScript.VueDataUi.VueUiIconName ChartOnion
-  - ECMAScript.VueDataUi.VueUiIconName ChartParallelCoordinatePlot
-  - ECMAScript.VueDataUi.VueUiIconName ChartQuadrant
-  - ECMAScript.VueDataUi.VueUiIconName ChartRadar
-  - ECMAScript.VueDataUi.VueUiIconName ChartRelationCircle
-  - ECMAScript.VueDataUi.VueUiIconName ChartRidgeline
-  - ECMAScript.VueDataUi.VueUiIconName ChartRings
-  - ECMAScript.VueDataUi.VueUiIconName ChartScatter
-  - ECMAScript.VueDataUi.VueUiIconName ChartSparkHistogram
-  - ECMAScript.VueDataUi.VueUiIconName ChartSparkStackbar
-  - ECMAScript.VueDataUi.VueUiIconName ChartSparkbar
-  - ECMAScript.VueDataUi.VueUiIconName ChartSparkline
-  - ECMAScript.VueDataUi.VueUiIconName ChartStackbar
-  - ECMAScript.VueDataUi.VueUiIconName ChartStackline
-  - ECMAScript.VueDataUi.VueUiIconName ChartStripPlot
-  - ECMAScript.VueDataUi.VueUiIconName ChartTable
-  - ECMAScript.VueDataUi.VueUiIconName ChartTableSparkline
-  - ECMAScript.VueDataUi.VueUiIconName ChartThermometer
-  - ECMAScript.VueDataUi.VueUiIconName ChartTiremarks
-  - ECMAScript.VueDataUi.VueUiIconName ChartVerticalBar
-  - ECMAScript.VueDataUi.VueUiIconName ChartWaffle
-  - ECMAScript.VueDataUi.VueUiIconName ChartWheel
-  - ECMAScript.VueDataUi.VueUiIconName ChartWordCloud
-  - ECMAScript.VueDataUi.VueUiIconName ChartWordCloudZh
-  - ECMAScript.VueDataUi.VueUiIconName Check
-  - ECMAScript.VueDataUi.VueUiIconName CheckList
-  - ECMAScript.VueDataUi.VueUiIconName Chip
-  - ECMAScript.VueDataUi.VueUiIconName ChipAi
-  - ECMAScript.VueDataUi.VueUiIconName ChipBinary
-  - ECMAScript.VueDataUi.VueUiIconName Circle
-  - ECMAScript.VueDataUi.VueUiIconName CircleCancel
-  - ECMAScript.VueDataUi.VueUiIconName CircleCheck
-  - ECMAScript.VueDataUi.VueUiIconName CircleExclamation
-  - ECMAScript.VueDataUi.VueUiIconName CircleFill
-  - ECMAScript.VueDataUi.VueUiIconName CircleQuestion
-  - ECMAScript.VueDataUi.VueUiIconName ClankerCrazy
-  - ECMAScript.VueDataUi.VueUiIconName ClankerNasty
-  - ECMAScript.VueDataUi.VueUiIconName Clip
-  - ECMAScript.VueDataUi.VueUiIconName ClipBoard
-  - ECMAScript.VueDataUi.VueUiIconName ClipboardBar
-  - ECMAScript.VueDataUi.VueUiIconName ClipboardDonut
-  - ECMAScript.VueDataUi.VueUiIconName ClipboardLine
-  - ECMAScript.VueDataUi.VueUiIconName ClipboardVariable
-  - ECMAScript.VueDataUi.VueUiIconName Close
-  - ECMAScript.VueDataUi.VueUiIconName Cloud
-  - ECMAScript.VueDataUi.VueUiIconName CloudRain
-  - ECMAScript.VueDataUi.VueUiIconName ColorPicker
-  - ECMAScript.VueDataUi.VueUiIconName Computer
-  - ECMAScript.VueDataUi.VueUiIconName Copy
-  - ECMAScript.VueDataUi.VueUiIconName CopyLeft
-  - ECMAScript.VueDataUi.VueUiIconName Croissant
-  - ECMAScript.VueDataUi.VueUiIconName Csv
-  - ECMAScript.VueDataUi.VueUiIconName CurlyBrackets
-  - ECMAScript.VueDataUi.VueUiIconName CurlySpread
-  - ECMAScript.VueDataUi.VueUiIconName Cursor
-  - ECMAScript.VueDataUi.VueUiIconName Dashboard
-  - ECMAScript.VueDataUi.VueUiIconName Database
-  - ECMAScript.VueDataUi.VueUiIconName Diamond
-  - ECMAScript.VueDataUi.VueUiIconName DiamondFill
-  - ECMAScript.VueDataUi.VueUiIconName Digit0
-  - ECMAScript.VueDataUi.VueUiIconName Digit1
-  - ECMAScript.VueDataUi.VueUiIconName Digit2
-  - ECMAScript.VueDataUi.VueUiIconName Digit3
-  - ECMAScript.VueDataUi.VueUiIconName Digit4
-  - ECMAScript.VueDataUi.VueUiIconName Digit5
-  - ECMAScript.VueDataUi.VueUiIconName Digit6
-  - ECMAScript.VueDataUi.VueUiIconName Digit7
-  - ECMAScript.VueDataUi.VueUiIconName Digit8
-  - ECMAScript.VueDataUi.VueUiIconName Digit9
-  - ECMAScript.VueDataUi.VueUiIconName Direction
-  - ECMAScript.VueDataUi.VueUiIconName Document
-  - ECMAScript.VueDataUi.VueUiIconName DoubleCheck
-  - ECMAScript.VueDataUi.VueUiIconName DoubleSpark
-  - ECMAScript.VueDataUi.VueUiIconName Download
-  - ECMAScript.VueDataUi.VueUiIconName Envelope
-  - ECMAScript.VueDataUi.VueUiIconName Excel
-  - ECMAScript.VueDataUi.VueUiIconName ExitFullscreen
-  - ECMAScript.VueDataUi.VueUiIconName Export
-  - ECMAScript.VueDataUi.VueUiIconName ExternalLink
-  - ECMAScript.VueDataUi.VueUiIconName Eye
-  - ECMAScript.VueDataUi.VueUiIconName File
-  - ECMAScript.VueDataUi.VueUiIconName FileCsv
-  - ECMAScript.VueDataUi.VueUiIconName FilePdf
-  - ECMAScript.VueDataUi.VueUiIconName FilePlus
-  - ECMAScript.VueDataUi.VueUiIconName FilePng
-  - ECMAScript.VueDataUi.VueUiIconName FileSearch
-  - ECMAScript.VueDataUi.VueUiIconName FileSvg
-  - ECMAScript.VueDataUi.VueUiIconName Focus
-  - ECMAScript.VueDataUi.VueUiIconName Folder
-  - ECMAScript.VueDataUi.VueUiIconName FolderFill
-  - ECMAScript.VueDataUi.VueUiIconName FolderOpen
-  - ECMAScript.VueDataUi.VueUiIconName FolderOpenFill
-  - ECMAScript.VueDataUi.VueUiIconName Fork
-  - ECMAScript.VueDataUi.VueUiIconName FrameLine
-  - ECMAScript.VueDataUi.VueUiIconName Fullscreen
-  - ECMAScript.VueDataUi.VueUiIconName Func
-  - ECMAScript.VueDataUi.VueUiIconName GisLayerQuery
-  - ECMAScript.VueDataUi.VueUiIconName GisLayerSearch
-  - ECMAScript.VueDataUi.VueUiIconName Hexagon
-  - ECMAScript.VueDataUi.VueUiIconName HexagonFill
-  - ECMAScript.VueDataUi.VueUiIconName Hierarchy
-  - ECMAScript.VueDataUi.VueUiIconName Histogram
-  - ECMAScript.VueDataUi.VueUiIconName HistogramDown
-  - ECMAScript.VueDataUi.VueUiIconName HistogramUp
-  - ECMAScript.VueDataUi.VueUiIconName Home
-  - ECMAScript.VueDataUi.VueUiIconName HomeFilled
-  - ECMAScript.VueDataUi.VueUiIconName Hourglass
-  - ECMAScript.VueDataUi.VueUiIconName HtmlTag
-  - ECMAScript.VueDataUi.VueUiIconName Icons
-  - ECMAScript.VueDataUi.VueUiIconName Image
-  - ECMAScript.VueDataUi.VueUiIconName Key
-  - ECMAScript.VueDataUi.VueUiIconName Knobs
-  - ECMAScript.VueDataUi.VueUiIconName Kpi
-  - ECMAScript.VueDataUi.VueUiIconName KpiBox
-  - ECMAScript.VueDataUi.VueUiIconName LabelClose
-  - ECMAScript.VueDataUi.VueUiIconName LabelOpen
-  - ECMAScript.VueDataUi.VueUiIconName Lambda
-  - ECMAScript.VueDataUi.VueUiIconName Lap
-  - ECMAScript.VueDataUi.VueUiIconName Laptop
-  - ECMAScript.VueDataUi.VueUiIconName Legend
-  - ECMAScript.VueDataUi.VueUiIconName LightBulbOff
-  - ECMAScript.VueDataUi.VueUiIconName LightBulbOn
-  - ECMAScript.VueDataUi.VueUiIconName LineUp
-  - ECMAScript.VueDataUi.VueUiIconName Link
-  - ECMAScript.VueDataUi.VueUiIconName ListType
-  - ECMAScript.VueDataUi.VueUiIconName Lock
-  - ECMAScript.VueDataUi.VueUiIconName Magnify
-  - ECMAScript.VueDataUi.VueUiIconName Menu
-  - ECMAScript.VueDataUi.VueUiIconName Microscope
-  - ECMAScript.VueDataUi.VueUiIconName Minimap
-  - ECMAScript.VueDataUi.VueUiIconName Minus
-  - ECMAScript.VueDataUi.VueUiIconName Monitor
-  - ECMAScript.VueDataUi.VueUiIconName MoodEmbarrassed
-  - ECMAScript.VueDataUi.VueUiIconName MoodFlat
-  - ECMAScript.VueDataUi.VueUiIconName MoodHappy
-  - ECMAScript.VueDataUi.VueUiIconName MoodLaughing
-  - ECMAScript.VueDataUi.VueUiIconName MoodNeutral
-  - ECMAScript.VueDataUi.VueUiIconName MoodSad
-  - ECMAScript.VueDataUi.VueUiIconName MoodSurprised
-  - ECMAScript.VueDataUi.VueUiIconName MoodWink
-  - ECMAScript.VueDataUi.VueUiIconName Move
-  - ECMAScript.VueDataUi.VueUiIconName Mu
-  - ECMAScript.VueDataUi.VueUiIconName Network
-  - ECMAScript.VueDataUi.VueUiIconName NineToZero
-  - ECMAScript.VueDataUi.VueUiIconName Npmx
-  - ECMAScript.VueDataUi.VueUiIconName Numbers
-  - ECMAScript.VueDataUi.VueUiIconName Palette
-  - ECMAScript.VueDataUi.VueUiIconName Pause
-  - ECMAScript.VueDataUi.VueUiIconName Pdf
-  - ECMAScript.VueDataUi.VueUiIconName Pentagon
-  - ECMAScript.VueDataUi.VueUiIconName PentagonFill
-  - ECMAScript.VueDataUi.VueUiIconName People
-  - ECMAScript.VueDataUi.VueUiIconName Percentage
-  - ECMAScript.VueDataUi.VueUiIconName PercentageDown
-  - ECMAScript.VueDataUi.VueUiIconName PercentageUp
-  - ECMAScript.VueDataUi.VueUiIconName Person
-  - ECMAScript.VueDataUi.VueUiIconName Pi
-  - ECMAScript.VueDataUi.VueUiIconName Pie
-  - ECMAScript.VueDataUi.VueUiIconName Play
-  - ECMAScript.VueDataUi.VueUiIconName PlotArrow
-  - ECMAScript.VueDataUi.VueUiIconName PlotLine
-  - ECMAScript.VueDataUi.VueUiIconName Plug
-  - ECMAScript.VueDataUi.VueUiIconName Plus
-  - ECMAScript.VueDataUi.VueUiIconName Pointer
-  - ECMAScript.VueDataUi.VueUiIconName Printer
-  - ECMAScript.VueDataUi.VueUiIconName Puzzle
-  - ECMAScript.VueDataUi.VueUiIconName PuzzleFill
-  - ECMAScript.VueDataUi.VueUiIconName Ratio
-  - ECMAScript.VueDataUi.VueUiIconName Recycle
-  - ECMAScript.VueDataUi.VueUiIconName Refresh
-  - ECMAScript.VueDataUi.VueUiIconName Resize
-  - ECMAScript.VueDataUi.VueUiIconName ResizeTLBR
-  - ECMAScript.VueDataUi.VueUiIconName ResizeTRBL
-  - ECMAScript.VueDataUi.VueUiIconName ResizeX
-  - ECMAScript.VueDataUi.VueUiIconName ResizeY
-  - ECMAScript.VueDataUi.VueUiIconName Restart
-  - ECMAScript.VueDataUi.VueUiIconName Revert
-  - ECMAScript.VueDataUi.VueUiIconName Robot
-  - ECMAScript.VueDataUi.VueUiIconName Save
-  - ECMAScript.VueDataUi.VueUiIconName Scada
-  - ECMAScript.VueDataUi.VueUiIconName Screenshot
-  - ECMAScript.VueDataUi.VueUiIconName SelectAndGroup
-  - ECMAScript.VueDataUi.VueUiIconName Settings
-  - ECMAScript.VueDataUi.VueUiIconName Shield
-  - ECMAScript.VueDataUi.VueUiIconName ShieldExclam
-  - ECMAScript.VueDataUi.VueUiIconName Sigma
-  - ECMAScript.VueDataUi.VueUiIconName Skeleton
-  - ECMAScript.VueDataUi.VueUiIconName Sliders
-  - ECMAScript.VueDataUi.VueUiIconName Smiley
-  - ECMAScript.VueDataUi.VueUiIconName Sort
-  - ECMAScript.VueDataUi.VueUiIconName Spark
-  - ECMAScript.VueDataUi.VueUiIconName Spin
-  - ECMAScript.VueDataUi.VueUiIconName Spinner1
-  - ECMAScript.VueDataUi.VueUiIconName Spinner2
-  - ECMAScript.VueDataUi.VueUiIconName Spinner3
-  - ECMAScript.VueDataUi.VueUiIconName Spinner4
-  - ECMAScript.VueDataUi.VueUiIconName Sql
-  - ECMAScript.VueDataUi.VueUiIconName SqlQuery
-  - ECMAScript.VueDataUi.VueUiIconName SqlSearch
-  - ECMAScript.VueDataUi.VueUiIconName Square
-  - ECMAScript.VueDataUi.VueUiIconName SquareFill
-  - ECMAScript.VueDataUi.VueUiIconName Stack
-  - ECMAScript.VueDataUi.VueUiIconName Star
-  - ECMAScript.VueDataUi.VueUiIconName StarFace
-  - ECMAScript.VueDataUi.VueUiIconName StarFill
-  - ECMAScript.VueDataUi.VueUiIconName Stop
-  - ECMAScript.VueDataUi.VueUiIconName Sun
-  - ECMAScript.VueDataUi.VueUiIconName Svg
-  - ECMAScript.VueDataUi.VueUiIconName TableClose
-  - ECMAScript.VueDataUi.VueUiIconName TableDialogClose
-  - ECMAScript.VueDataUi.VueUiIconName TableDialogOpen
-  - ECMAScript.VueDataUi.VueUiIconName TableOpen
-  - ECMAScript.VueDataUi.VueUiIconName Tag
-  - ECMAScript.VueDataUi.VueUiIconName Target
-  - ECMAScript.VueDataUi.VueUiIconName Test
-  - ECMAScript.VueDataUi.VueUiIconName Text
-  - ECMAScript.VueDataUi.VueUiIconName Tooltip
-  - ECMAScript.VueDataUi.VueUiIconName TooltipDisabled
-  - ECMAScript.VueDataUi.VueUiIconName Trash
-  - ECMAScript.VueDataUi.VueUiIconName Trend
-  - ECMAScript.VueDataUi.VueUiIconName TrendDown
-  - ECMAScript.VueDataUi.VueUiIconName TrendUp
-  - ECMAScript.VueDataUi.VueUiIconName Triangle
-  - ECMAScript.VueDataUi.VueUiIconName TriangleExclamation
-  - ECMAScript.VueDataUi.VueUiIconName TriangleFill
-  - ECMAScript.VueDataUi.VueUiIconName TriangleInformation
-  - ECMAScript.VueDataUi.VueUiIconName Twig
-  - ECMAScript.VueDataUi.VueUiIconName Unlock
-  - ECMAScript.VueDataUi.VueUiIconName Unplug
-  - ECMAScript.VueDataUi.VueUiIconName Unstack
-  - ECMAScript.VueDataUi.VueUiIconName Upload
-  - ECMAScript.VueDataUi.VueUiIconName VueDataUi
-  - ECMAScript.VueDataUi.VueUiIconName Wifi
-  - ECMAScript.VueDataUi.VueUiIconName World
-  - ECMAScript.VueDataUi.VueUiIconName Wrench
-  - ECMAScript.VueDataUi.VueUiIconName ZToA
-  - ECMAScript.VueDataUi.VueUiIconName ZeroToNine
-  - ECMAScript.VueDataUi.VueUiIconName ZoomLock
-  - ECMAScript.VueDataUi.VueUiIconName ZoomMinus
-  - ECMAScript.VueDataUi.VueUiIconName ZoomPlus
-  - ECMAScript.VueDataUi.VueUiIconName ZoomUnlock
+- enum ECMAScript.VueDataUi.VdIconName
+  - ECMAScript.VueDataUi.VdIconName AToZ
+  - ECMAScript.VueDataUi.VdIconName Accessibility
+  - ECMAScript.VueDataUi.VdIconName Accordion
+  - ECMAScript.VueDataUi.VdIconName AddColumn
+  - ECMAScript.VueDataUi.VdIconName AddRow
+  - ECMAScript.VueDataUi.VdIconName Annotation
+  - ECMAScript.VueDataUi.VdIconName Annotator
+  - ECMAScript.VueDataUi.VdIconName AnnotatorDisabled
+  - ECMAScript.VueDataUi.VdIconName ApiStream
+  - ECMAScript.VueDataUi.VdIconName ArrowBottom
+  - ECMAScript.VueDataUi.VdIconName ArrowLeft
+  - ECMAScript.VueDataUi.VdIconName ArrowRight
+  - ECMAScript.VueDataUi.VdIconName ArrowTop
+  - ECMAScript.VueDataUi.VdIconName Battery
+  - ECMAScript.VueDataUi.VdIconName Bell
+  - ECMAScript.VueDataUi.VdIconName BellOff
+  - ECMAScript.VueDataUi.VdIconName BellRing
+  - ECMAScript.VueDataUi.VdIconName Binary
+  - ECMAScript.VueDataUi.VdIconName Blur
+  - ECMAScript.VueDataUi.VdIconName Boxes
+  - ECMAScript.VueDataUi.VdIconName Branches
+  - ECMAScript.VueDataUi.VdIconName BringToBack
+  - ECMAScript.VueDataUi.VdIconName BringToFront
+  - ECMAScript.VueDataUi.VdIconName Bucket
+  - ECMAScript.VueDataUi.VdIconName BucketEmpty
+  - ECMAScript.VueDataUi.VdIconName BucketFill
+  - ECMAScript.VueDataUi.VdIconName BucketRecycle
+  - ECMAScript.VueDataUi.VdIconName Bug
+  - ECMAScript.VueDataUi.VdIconName Building
+  - ECMAScript.VueDataUi.VdIconName Calendar
+  - ECMAScript.VueDataUi.VdIconName CarouselTable
+  - ECMAScript.VueDataUi.VdIconName Chart3dBar
+  - ECMAScript.VueDataUi.VdIconName ChartAgePyramid
+  - ECMAScript.VueDataUi.VdIconName ChartBar
+  - ECMAScript.VueDataUi.VdIconName ChartBullet
+  - ECMAScript.VueDataUi.VdIconName ChartBump
+  - ECMAScript.VueDataUi.VdIconName ChartCandlestick
+  - ECMAScript.VueDataUi.VdIconName ChartChestnut
+  - ECMAScript.VueDataUi.VdIconName ChartChord
+  - ECMAScript.VueDataUi.VdIconName ChartCirclePack
+  - ECMAScript.VueDataUi.VdIconName ChartCluster
+  - ECMAScript.VueDataUi.VdIconName ChartDag
+  - ECMAScript.VueDataUi.VdIconName ChartDonut
+  - ECMAScript.VueDataUi.VdIconName ChartDonutEvolution
+  - ECMAScript.VueDataUi.VdIconName ChartDumbbell
+  - ECMAScript.VueDataUi.VdIconName ChartFlow
+  - ECMAScript.VueDataUi.VdIconName ChartFunnel
+  - ECMAScript.VueDataUi.VdIconName ChartGalaxy
+  - ECMAScript.VueDataUi.VdIconName ChartGauge
+  - ECMAScript.VueDataUi.VdIconName ChartHeatmap
+  - ECMAScript.VueDataUi.VdIconName ChartHill
+  - ECMAScript.VueDataUi.VdIconName ChartHistoryPlot
+  - ECMAScript.VueDataUi.VdIconName ChartLine
+  - ECMAScript.VueDataUi.VdIconName ChartMoodRadar
+  - ECMAScript.VueDataUi.VdIconName ChartNestedDonuts
+  - ECMAScript.VueDataUi.VdIconName ChartOnion
+  - ECMAScript.VueDataUi.VdIconName ChartParallelCoordinatePlot
+  - ECMAScript.VueDataUi.VdIconName ChartQuadrant
+  - ECMAScript.VueDataUi.VdIconName ChartRadar
+  - ECMAScript.VueDataUi.VdIconName ChartRelationCircle
+  - ECMAScript.VueDataUi.VdIconName ChartRidgeline
+  - ECMAScript.VueDataUi.VdIconName ChartRings
+  - ECMAScript.VueDataUi.VdIconName ChartScatter
+  - ECMAScript.VueDataUi.VdIconName ChartSparkHistogram
+  - ECMAScript.VueDataUi.VdIconName ChartSparkStackbar
+  - ECMAScript.VueDataUi.VdIconName ChartSparkbar
+  - ECMAScript.VueDataUi.VdIconName ChartSparkline
+  - ECMAScript.VueDataUi.VdIconName ChartStackbar
+  - ECMAScript.VueDataUi.VdIconName ChartStackline
+  - ECMAScript.VueDataUi.VdIconName ChartStripPlot
+  - ECMAScript.VueDataUi.VdIconName ChartTable
+  - ECMAScript.VueDataUi.VdIconName ChartTableSparkline
+  - ECMAScript.VueDataUi.VdIconName ChartThermometer
+  - ECMAScript.VueDataUi.VdIconName ChartTiremarks
+  - ECMAScript.VueDataUi.VdIconName ChartVerticalBar
+  - ECMAScript.VueDataUi.VdIconName ChartWaffle
+  - ECMAScript.VueDataUi.VdIconName ChartWheel
+  - ECMAScript.VueDataUi.VdIconName ChartWordCloud
+  - ECMAScript.VueDataUi.VdIconName ChartWordCloudZh
+  - ECMAScript.VueDataUi.VdIconName Check
+  - ECMAScript.VueDataUi.VdIconName CheckList
+  - ECMAScript.VueDataUi.VdIconName Chip
+  - ECMAScript.VueDataUi.VdIconName ChipAi
+  - ECMAScript.VueDataUi.VdIconName ChipBinary
+  - ECMAScript.VueDataUi.VdIconName Circle
+  - ECMAScript.VueDataUi.VdIconName CircleCancel
+  - ECMAScript.VueDataUi.VdIconName CircleCheck
+  - ECMAScript.VueDataUi.VdIconName CircleExclamation
+  - ECMAScript.VueDataUi.VdIconName CircleFill
+  - ECMAScript.VueDataUi.VdIconName CircleQuestion
+  - ECMAScript.VueDataUi.VdIconName ClankerCrazy
+  - ECMAScript.VueDataUi.VdIconName ClankerNasty
+  - ECMAScript.VueDataUi.VdIconName Clip
+  - ECMAScript.VueDataUi.VdIconName ClipBoard
+  - ECMAScript.VueDataUi.VdIconName ClipboardBar
+  - ECMAScript.VueDataUi.VdIconName ClipboardDonut
+  - ECMAScript.VueDataUi.VdIconName ClipboardLine
+  - ECMAScript.VueDataUi.VdIconName ClipboardVariable
+  - ECMAScript.VueDataUi.VdIconName Close
+  - ECMAScript.VueDataUi.VdIconName Cloud
+  - ECMAScript.VueDataUi.VdIconName CloudRain
+  - ECMAScript.VueDataUi.VdIconName ColorPicker
+  - ECMAScript.VueDataUi.VdIconName Computer
+  - ECMAScript.VueDataUi.VdIconName Copy
+  - ECMAScript.VueDataUi.VdIconName CopyLeft
+  - ECMAScript.VueDataUi.VdIconName Croissant
+  - ECMAScript.VueDataUi.VdIconName Csv
+  - ECMAScript.VueDataUi.VdIconName CurlyBrackets
+  - ECMAScript.VueDataUi.VdIconName CurlySpread
+  - ECMAScript.VueDataUi.VdIconName Cursor
+  - ECMAScript.VueDataUi.VdIconName Dashboard
+  - ECMAScript.VueDataUi.VdIconName Database
+  - ECMAScript.VueDataUi.VdIconName Diamond
+  - ECMAScript.VueDataUi.VdIconName DiamondFill
+  - ECMAScript.VueDataUi.VdIconName Digit0
+  - ECMAScript.VueDataUi.VdIconName Digit1
+  - ECMAScript.VueDataUi.VdIconName Digit2
+  - ECMAScript.VueDataUi.VdIconName Digit3
+  - ECMAScript.VueDataUi.VdIconName Digit4
+  - ECMAScript.VueDataUi.VdIconName Digit5
+  - ECMAScript.VueDataUi.VdIconName Digit6
+  - ECMAScript.VueDataUi.VdIconName Digit7
+  - ECMAScript.VueDataUi.VdIconName Digit8
+  - ECMAScript.VueDataUi.VdIconName Digit9
+  - ECMAScript.VueDataUi.VdIconName Direction
+  - ECMAScript.VueDataUi.VdIconName Document
+  - ECMAScript.VueDataUi.VdIconName DoubleCheck
+  - ECMAScript.VueDataUi.VdIconName DoubleSpark
+  - ECMAScript.VueDataUi.VdIconName Download
+  - ECMAScript.VueDataUi.VdIconName Envelope
+  - ECMAScript.VueDataUi.VdIconName Excel
+  - ECMAScript.VueDataUi.VdIconName ExitFullscreen
+  - ECMAScript.VueDataUi.VdIconName Export
+  - ECMAScript.VueDataUi.VdIconName ExternalLink
+  - ECMAScript.VueDataUi.VdIconName Eye
+  - ECMAScript.VueDataUi.VdIconName File
+  - ECMAScript.VueDataUi.VdIconName FileCsv
+  - ECMAScript.VueDataUi.VdIconName FilePdf
+  - ECMAScript.VueDataUi.VdIconName FilePlus
+  - ECMAScript.VueDataUi.VdIconName FilePng
+  - ECMAScript.VueDataUi.VdIconName FileSearch
+  - ECMAScript.VueDataUi.VdIconName FileSvg
+  - ECMAScript.VueDataUi.VdIconName Focus
+  - ECMAScript.VueDataUi.VdIconName Folder
+  - ECMAScript.VueDataUi.VdIconName FolderFill
+  - ECMAScript.VueDataUi.VdIconName FolderOpen
+  - ECMAScript.VueDataUi.VdIconName FolderOpenFill
+  - ECMAScript.VueDataUi.VdIconName Fork
+  - ECMAScript.VueDataUi.VdIconName FrameLine
+  - ECMAScript.VueDataUi.VdIconName Fullscreen
+  - ECMAScript.VueDataUi.VdIconName Func
+  - ECMAScript.VueDataUi.VdIconName GisLayerQuery
+  - ECMAScript.VueDataUi.VdIconName GisLayerSearch
+  - ECMAScript.VueDataUi.VdIconName Hexagon
+  - ECMAScript.VueDataUi.VdIconName HexagonFill
+  - ECMAScript.VueDataUi.VdIconName Hierarchy
+  - ECMAScript.VueDataUi.VdIconName Histogram
+  - ECMAScript.VueDataUi.VdIconName HistogramDown
+  - ECMAScript.VueDataUi.VdIconName HistogramUp
+  - ECMAScript.VueDataUi.VdIconName Home
+  - ECMAScript.VueDataUi.VdIconName HomeFilled
+  - ECMAScript.VueDataUi.VdIconName Hourglass
+  - ECMAScript.VueDataUi.VdIconName HtmlTag
+  - ECMAScript.VueDataUi.VdIconName Icons
+  - ECMAScript.VueDataUi.VdIconName Image
+  - ECMAScript.VueDataUi.VdIconName Key
+  - ECMAScript.VueDataUi.VdIconName Knobs
+  - ECMAScript.VueDataUi.VdIconName Kpi
+  - ECMAScript.VueDataUi.VdIconName KpiBox
+  - ECMAScript.VueDataUi.VdIconName LabelClose
+  - ECMAScript.VueDataUi.VdIconName LabelOpen
+  - ECMAScript.VueDataUi.VdIconName Lambda
+  - ECMAScript.VueDataUi.VdIconName Lap
+  - ECMAScript.VueDataUi.VdIconName Laptop
+  - ECMAScript.VueDataUi.VdIconName Legend
+  - ECMAScript.VueDataUi.VdIconName LightBulbOff
+  - ECMAScript.VueDataUi.VdIconName LightBulbOn
+  - ECMAScript.VueDataUi.VdIconName LineUp
+  - ECMAScript.VueDataUi.VdIconName Link
+  - ECMAScript.VueDataUi.VdIconName ListType
+  - ECMAScript.VueDataUi.VdIconName Lock
+  - ECMAScript.VueDataUi.VdIconName Magnify
+  - ECMAScript.VueDataUi.VdIconName Menu
+  - ECMAScript.VueDataUi.VdIconName Microscope
+  - ECMAScript.VueDataUi.VdIconName Minimap
+  - ECMAScript.VueDataUi.VdIconName Minus
+  - ECMAScript.VueDataUi.VdIconName Monitor
+  - ECMAScript.VueDataUi.VdIconName MoodEmbarrassed
+  - ECMAScript.VueDataUi.VdIconName MoodFlat
+  - ECMAScript.VueDataUi.VdIconName MoodHappy
+  - ECMAScript.VueDataUi.VdIconName MoodLaughing
+  - ECMAScript.VueDataUi.VdIconName MoodNeutral
+  - ECMAScript.VueDataUi.VdIconName MoodSad
+  - ECMAScript.VueDataUi.VdIconName MoodSurprised
+  - ECMAScript.VueDataUi.VdIconName MoodWink
+  - ECMAScript.VueDataUi.VdIconName Move
+  - ECMAScript.VueDataUi.VdIconName Mu
+  - ECMAScript.VueDataUi.VdIconName Network
+  - ECMAScript.VueDataUi.VdIconName NineToZero
+  - ECMAScript.VueDataUi.VdIconName Npmx
+  - ECMAScript.VueDataUi.VdIconName Numbers
+  - ECMAScript.VueDataUi.VdIconName Palette
+  - ECMAScript.VueDataUi.VdIconName Pause
+  - ECMAScript.VueDataUi.VdIconName Pdf
+  - ECMAScript.VueDataUi.VdIconName Pentagon
+  - ECMAScript.VueDataUi.VdIconName PentagonFill
+  - ECMAScript.VueDataUi.VdIconName People
+  - ECMAScript.VueDataUi.VdIconName Percentage
+  - ECMAScript.VueDataUi.VdIconName PercentageDown
+  - ECMAScript.VueDataUi.VdIconName PercentageUp
+  - ECMAScript.VueDataUi.VdIconName Person
+  - ECMAScript.VueDataUi.VdIconName Pi
+  - ECMAScript.VueDataUi.VdIconName Pie
+  - ECMAScript.VueDataUi.VdIconName Play
+  - ECMAScript.VueDataUi.VdIconName PlotArrow
+  - ECMAScript.VueDataUi.VdIconName PlotLine
+  - ECMAScript.VueDataUi.VdIconName Plug
+  - ECMAScript.VueDataUi.VdIconName Plus
+  - ECMAScript.VueDataUi.VdIconName Pointer
+  - ECMAScript.VueDataUi.VdIconName Printer
+  - ECMAScript.VueDataUi.VdIconName Puzzle
+  - ECMAScript.VueDataUi.VdIconName PuzzleFill
+  - ECMAScript.VueDataUi.VdIconName Ratio
+  - ECMAScript.VueDataUi.VdIconName Recycle
+  - ECMAScript.VueDataUi.VdIconName Refresh
+  - ECMAScript.VueDataUi.VdIconName Resize
+  - ECMAScript.VueDataUi.VdIconName ResizeTLBR
+  - ECMAScript.VueDataUi.VdIconName ResizeTRBL
+  - ECMAScript.VueDataUi.VdIconName ResizeX
+  - ECMAScript.VueDataUi.VdIconName ResizeY
+  - ECMAScript.VueDataUi.VdIconName Restart
+  - ECMAScript.VueDataUi.VdIconName Revert
+  - ECMAScript.VueDataUi.VdIconName Robot
+  - ECMAScript.VueDataUi.VdIconName Save
+  - ECMAScript.VueDataUi.VdIconName Scada
+  - ECMAScript.VueDataUi.VdIconName Screenshot
+  - ECMAScript.VueDataUi.VdIconName SelectAndGroup
+  - ECMAScript.VueDataUi.VdIconName Settings
+  - ECMAScript.VueDataUi.VdIconName Shield
+  - ECMAScript.VueDataUi.VdIconName ShieldExclam
+  - ECMAScript.VueDataUi.VdIconName Sigma
+  - ECMAScript.VueDataUi.VdIconName Skeleton
+  - ECMAScript.VueDataUi.VdIconName Sliders
+  - ECMAScript.VueDataUi.VdIconName Smiley
+  - ECMAScript.VueDataUi.VdIconName Sort
+  - ECMAScript.VueDataUi.VdIconName Spark
+  - ECMAScript.VueDataUi.VdIconName Spin
+  - ECMAScript.VueDataUi.VdIconName Spinner1
+  - ECMAScript.VueDataUi.VdIconName Spinner2
+  - ECMAScript.VueDataUi.VdIconName Spinner3
+  - ECMAScript.VueDataUi.VdIconName Spinner4
+  - ECMAScript.VueDataUi.VdIconName Sql
+  - ECMAScript.VueDataUi.VdIconName SqlQuery
+  - ECMAScript.VueDataUi.VdIconName SqlSearch
+  - ECMAScript.VueDataUi.VdIconName Square
+  - ECMAScript.VueDataUi.VdIconName SquareFill
+  - ECMAScript.VueDataUi.VdIconName Stack
+  - ECMAScript.VueDataUi.VdIconName Star
+  - ECMAScript.VueDataUi.VdIconName StarFace
+  - ECMAScript.VueDataUi.VdIconName StarFill
+  - ECMAScript.VueDataUi.VdIconName Stop
+  - ECMAScript.VueDataUi.VdIconName Sun
+  - ECMAScript.VueDataUi.VdIconName Svg
+  - ECMAScript.VueDataUi.VdIconName TableClose
+  - ECMAScript.VueDataUi.VdIconName TableDialogClose
+  - ECMAScript.VueDataUi.VdIconName TableDialogOpen
+  - ECMAScript.VueDataUi.VdIconName TableOpen
+  - ECMAScript.VueDataUi.VdIconName Tag
+  - ECMAScript.VueDataUi.VdIconName Target
+  - ECMAScript.VueDataUi.VdIconName Test
+  - ECMAScript.VueDataUi.VdIconName Text
+  - ECMAScript.VueDataUi.VdIconName Tooltip
+  - ECMAScript.VueDataUi.VdIconName TooltipDisabled
+  - ECMAScript.VueDataUi.VdIconName Trash
+  - ECMAScript.VueDataUi.VdIconName Trend
+  - ECMAScript.VueDataUi.VdIconName TrendDown
+  - ECMAScript.VueDataUi.VdIconName TrendUp
+  - ECMAScript.VueDataUi.VdIconName Triangle
+  - ECMAScript.VueDataUi.VdIconName TriangleExclamation
+  - ECMAScript.VueDataUi.VdIconName TriangleFill
+  - ECMAScript.VueDataUi.VdIconName TriangleInformation
+  - ECMAScript.VueDataUi.VdIconName Twig
+  - ECMAScript.VueDataUi.VdIconName Unlock
+  - ECMAScript.VueDataUi.VdIconName Unplug
+  - ECMAScript.VueDataUi.VdIconName Unstack
+  - ECMAScript.VueDataUi.VdIconName Upload
+  - ECMAScript.VueDataUi.VdIconName VueDataUi
+  - ECMAScript.VueDataUi.VdIconName Wifi
+  - ECMAScript.VueDataUi.VdIconName World
+  - ECMAScript.VueDataUi.VdIconName Wrench
+  - ECMAScript.VueDataUi.VdIconName ZToA
+  - ECMAScript.VueDataUi.VdIconName ZeroToNine
+  - ECMAScript.VueDataUi.VdIconName ZoomLock
+  - ECMAScript.VueDataUi.VdIconName ZoomMinus
+  - ECMAScript.VueDataUi.VdIconName ZoomPlus
+  - ECMAScript.VueDataUi.VdIconName ZoomUnlock
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiKpi
+- type ECMAScript.VueDataUi.VdKpi
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiKpiConfig
+- type ECMAScript.VueDataUi.VdKpiConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiKpiConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdKpiConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiKpiConfig, ECMAScript.VueDataUi.VueUiKpiConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiKpiConfig, ECMAScript.VueDataUi.VueUiKpiConfig)
-  - ECMAScript.VueDataUi.VueUiKpiConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdKpiConfig, ECMAScript.VueDataUi.VdKpiConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdKpiConfig, ECMAScript.VueDataUi.VdKpiConfig)
+  - ECMAScript.VueDataUi.VdKpiConfig <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_UseAnimation()
   - System.Nullable`1[System.Int32] get_ValueRounding()
@@ -57223,39 +57205,39 @@
   - System.String Prefix
   - System.String Suffix
   - System.String Title
-- type ECMAScript.VueDataUi.VueUiMiniLoader
+- type ECMAScript.VueDataUi.VdMiniLoader
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiMiniLoaderConfig
+- type ECMAScript.VueDataUi.VdMiniLoaderConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiMiniLoaderConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdMiniLoaderConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiMiniLoaderConfig, ECMAScript.VueDataUi.VueUiMiniLoaderConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiMiniLoaderConfig, ECMAScript.VueDataUi.VueUiMiniLoaderConfig)
-  - ECMAScript.VueDataUi.VueUiMiniLoaderConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdMiniLoaderConfig, ECMAScript.VueDataUi.VdMiniLoaderConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdMiniLoaderConfig, ECMAScript.VueDataUi.VdMiniLoaderConfig)
+  - ECMAScript.VueDataUi.VdMiniLoaderConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiMolecule
+- type ECMAScript.VueDataUi.VdMolecule
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiMoleculeConfig
+- type ECMAScript.VueDataUi.VdMoleculeConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiMoleculeConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdMoleculeConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiMoleculeConfig, ECMAScript.VueDataUi.VueUiMoleculeConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiMoleculeConfig, ECMAScript.VueDataUi.VueUiMoleculeConfig)
-  - ECMAScript.VueDataUi.VueUiMoleculeConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdMoleculeConfig, ECMAScript.VueDataUi.VdMoleculeConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdMoleculeConfig, ECMAScript.VueDataUi.VdMoleculeConfig)
+  - ECMAScript.VueDataUi.VdMoleculeConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiMoleculeDatasetNode
+- type ECMAScript.VueDataUi.VdMoleculeDatasetNode
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiMoleculeDatasetNode)
+  - Boolean Equals(ECMAScript.VueDataUi.VdMoleculeDatasetNode)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiMoleculeDatasetNode, ECMAScript.VueDataUi.VueUiMoleculeDatasetNode)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiMoleculeDatasetNode, ECMAScript.VueDataUi.VueUiMoleculeDatasetNode)
-  - ECMAScript.VueDataUi.VueUiMoleculeDatasetNode <Clone>$()
-  - ECMAScript.VueDataUi.VueUiMoleculeDatasetNode[] get_Nodes()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdMoleculeDatasetNode, ECMAScript.VueDataUi.VdMoleculeDatasetNode)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdMoleculeDatasetNode, ECMAScript.VueDataUi.VdMoleculeDatasetNode)
+  - ECMAScript.VueDataUi.VdMoleculeDatasetNode <Clone>$()
+  - ECMAScript.VueDataUi.VdMoleculeDatasetNode[] get_Nodes()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -57264,36 +57246,36 @@
   - Void set_Color(System.String)
   - Void set_Details(System.String)
   - Void set_Name(System.String)
-  - Void set_Nodes(ECMAScript.VueDataUi.VueUiMoleculeDatasetNode[])
-  - ECMAScript.VueDataUi.VueUiMoleculeDatasetNode[] Nodes
+  - Void set_Nodes(ECMAScript.VueDataUi.VdMoleculeDatasetNode[])
+  - ECMAScript.VueDataUi.VdMoleculeDatasetNode[] Nodes
   - System.String Color
   - System.String Details
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiMoodRadar
+- type ECMAScript.VueDataUi.VdMoodRadar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiMoodRadarConfig
+- type ECMAScript.VueDataUi.VdMoodRadarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiMoodRadarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdMoodRadarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiMoodRadarConfig, ECMAScript.VueDataUi.VueUiMoodRadarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiMoodRadarConfig, ECMAScript.VueDataUi.VueUiMoodRadarConfig)
-  - ECMAScript.VueDataUi.VueUiMoodRadarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdMoodRadarConfig, ECMAScript.VueDataUi.VdMoodRadarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdMoodRadarConfig, ECMAScript.VueDataUi.VdMoodRadarConfig)
+  - ECMAScript.VueDataUi.VdMoodRadarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiMoodRadarDataset
+- type ECMAScript.VueDataUi.VdMoodRadarDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiMoodRadarDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdMoodRadarDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiMoodRadarDataset, ECMAScript.VueDataUi.VueUiMoodRadarDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiMoodRadarDataset, ECMAScript.VueDataUi.VueUiMoodRadarDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdMoodRadarDataset, ECMAScript.VueDataUi.VdMoodRadarDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdMoodRadarDataset, ECMAScript.VueDataUi.VdMoodRadarDataset)
   - Double get_Five()
   - Double get_Four()
   - Double get_One()
   - Double get_Three()
   - Double get_Two()
-  - ECMAScript.VueDataUi.VueUiMoodRadarDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdMoodRadarDataset <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - Void set_Five(Double)
@@ -57306,55 +57288,55 @@
   - Double One
   - Double Three
   - Double Two
-- type ECMAScript.VueDataUi.VueUiNestedDonuts
+- type ECMAScript.VueDataUi.VdNestedDonuts
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiNestedDonutsConfig
+- type ECMAScript.VueDataUi.VdNestedDonutsConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiNestedDonutsConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdNestedDonutsConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiNestedDonutsConfig, ECMAScript.VueDataUi.VueUiNestedDonutsConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiNestedDonutsConfig, ECMAScript.VueDataUi.VueUiNestedDonutsConfig)
-  - ECMAScript.VueDataUi.VueUiNestedDonutsConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdNestedDonutsConfig, ECMAScript.VueDataUi.VdNestedDonutsConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdNestedDonutsConfig, ECMAScript.VueDataUi.VdNestedDonutsConfig)
+  - ECMAScript.VueDataUi.VdNestedDonutsConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem
+- type ECMAScript.VueDataUi.VdNestedDonutsDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdNestedDonutsDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem, ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem, ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem)
-  - ECMAScript.VueDataUi.VueUiDonutDatasetItem[] get_Series()
-  - ECMAScript.VueDataUi.VueUiNestedDonutsDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdNestedDonutsDatasetItem, ECMAScript.VueDataUi.VdNestedDonutsDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdNestedDonutsDatasetItem, ECMAScript.VueDataUi.VdNestedDonutsDatasetItem)
+  - ECMAScript.VueDataUi.VdDonutDatasetItem[] get_Series()
+  - ECMAScript.VueDataUi.VdNestedDonutsDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
   - Void set_Name(System.String)
-  - Void set_Series(ECMAScript.VueDataUi.VueUiDonutDatasetItem[])
-  - ECMAScript.VueDataUi.VueUiDonutDatasetItem[] Series
+  - Void set_Series(ECMAScript.VueDataUi.VdDonutDatasetItem[])
+  - ECMAScript.VueDataUi.VdDonutDatasetItem[] Series
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiOnion
+- type ECMAScript.VueDataUi.VdOnion
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiOnionConfig
+- type ECMAScript.VueDataUi.VdOnionConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiOnionConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdOnionConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiOnionConfig, ECMAScript.VueDataUi.VueUiOnionConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiOnionConfig, ECMAScript.VueDataUi.VueUiOnionConfig)
-  - ECMAScript.VueDataUi.VueUiOnionConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdOnionConfig, ECMAScript.VueDataUi.VdOnionConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdOnionConfig, ECMAScript.VueDataUi.VdOnionConfig)
+  - ECMAScript.VueDataUi.VdOnionConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiOnionDatasetItem
+- type ECMAScript.VueDataUi.VdOnionDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiOnionDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdOnionDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiOnionDatasetItem, ECMAScript.VueDataUi.VueUiOnionDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiOnionDatasetItem, ECMAScript.VueDataUi.VueUiOnionDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdOnionDatasetItem, ECMAScript.VueDataUi.VdOnionDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdOnionDatasetItem, ECMAScript.VueDataUi.VdOnionDatasetItem)
   - Double get_Percentage()
-  - ECMAScript.VueDataUi.VueUiOnionDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdOnionDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Value()
   - System.String ToString()
@@ -57374,27 +57356,34 @@
   - System.String Name
   - System.String Prefix
   - System.String Suffix
-- type ECMAScript.VueDataUi.VueUiParallelCoordinatePlot
+- type ECMAScript.VueDataUi.VdOptionalDatasetChartComponent`2
+  - TConfig get_Config()
+  - TDataset get_Dataset()
+  - Void set_Config(TConfig)
+  - Void set_Dataset(TDataset)
+  - TConfig Config
+  - TDataset Dataset
+- type ECMAScript.VueDataUi.VdParallelCoordinatePlot
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig
+- type ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig, ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig, ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig)
-  - ECMAScript.VueDataUi.VueUiParallelCoordinatePlotConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig, ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig, ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig)
+  - ECMAScript.VueDataUi.VdParallelCoordinatePlotConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem
+- type ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem, ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem, ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem)
-  - ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem[] get_Series()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem, ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem, ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem)
+  - ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem[] get_Series()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -57402,20 +57391,20 @@
   - System.String get_Shape()
   - Void set_Color(System.String)
   - Void set_Name(System.String)
-  - Void set_Series(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem[])
+  - Void set_Series(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem[])
   - Void set_Shape(System.String)
-  - ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem[] Series
+  - ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem[] Series
   - System.String Color
   - System.String Name
   - System.String Shape
-- type ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem
+- type ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem, ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem, ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem)
-  - ECMAScript.VueDataUi.VueUiParallelCoordinatePlotDatasetSerieItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem, ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem, ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem)
+  - ECMAScript.VueDataUi.VdParallelCoordinatePlotDatasetSerieItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Values()
   - System.String ToString()
@@ -57424,9 +57413,9 @@
   - Void set_Values(System.Nullable`1[System.Double][])
   - System.Nullable`1[System.Double][] Values
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiPattern
+- type ECMAScript.VueDataUi.VdPattern
   - Void .ctor()
-  - ECMAScript.VueDataUi.VueUiPatternName get_Name()
+  - ECMAScript.VueDataUi.VdPatternName get_Name()
   - System.Nullable`1[System.Double] get_Scale()
   - System.Nullable`1[System.Double] get_StrokeWidth()
   - System.String get_Fill()
@@ -57434,31 +57423,31 @@
   - System.String get_Stroke()
   - Void set_Fill(System.String)
   - Void set_Id(System.String)
-  - Void set_Name(ECMAScript.VueDataUi.VueUiPatternName)
+  - Void set_Name(ECMAScript.VueDataUi.VdPatternName)
   - Void set_Scale(System.Nullable`1[System.Double])
   - Void set_Stroke(System.String)
   - Void set_StrokeWidth(System.Nullable`1[System.Double])
-  - ECMAScript.VueDataUi.VueUiPatternName Name
+  - ECMAScript.VueDataUi.VdPatternName Name
   - System.Nullable`1[System.Double] Scale
   - System.Nullable`1[System.Double] StrokeWidth
   - System.String Fill
   - System.String Id
   - System.String Stroke
-- enum ECMAScript.VueDataUi.VueUiPatternName
-  - ECMAScript.VueDataUi.VueUiPatternName Bubbles
-  - ECMAScript.VueDataUi.VueUiPatternName Flooring
-  - ECMAScript.VueDataUi.VueUiPatternName Grid
-  - ECMAScript.VueDataUi.VueUiPatternName HexagonDiamond
-  - ECMAScript.VueDataUi.VueUiPatternName HexagonFlooring
-  - ECMAScript.VueDataUi.VueUiPatternName HexagonGrid
-  - ECMAScript.VueDataUi.VueUiPatternName Maze
-  - ECMAScript.VueDataUi.VueUiPatternName Redrum
-  - ECMAScript.VueDataUi.VueUiPatternName Scales
-  - ECMAScript.VueDataUi.VueUiPatternName Squares
-  - ECMAScript.VueDataUi.VueUiPatternName Wave
-  - ECMAScript.VueDataUi.VueUiPatternName ZigZag
+- enum ECMAScript.VueDataUi.VdPatternName
+  - ECMAScript.VueDataUi.VdPatternName Bubbles
+  - ECMAScript.VueDataUi.VdPatternName Flooring
+  - ECMAScript.VueDataUi.VdPatternName Grid
+  - ECMAScript.VueDataUi.VdPatternName HexagonDiamond
+  - ECMAScript.VueDataUi.VdPatternName HexagonFlooring
+  - ECMAScript.VueDataUi.VdPatternName HexagonGrid
+  - ECMAScript.VueDataUi.VdPatternName Maze
+  - ECMAScript.VueDataUi.VdPatternName Redrum
+  - ECMAScript.VueDataUi.VdPatternName Scales
+  - ECMAScript.VueDataUi.VdPatternName Squares
+  - ECMAScript.VueDataUi.VdPatternName Wave
+  - ECMAScript.VueDataUi.VdPatternName ZigZag
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiPatternSeed
+- type ECMAScript.VueDataUi.VdPatternSeed
   - Void .ctor()
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Disambiguator()
   - System.Nullable`1[System.Double] get_MaxSize()
@@ -57481,27 +57470,27 @@
   - System.String ForegroundColor
   - System.String Id
   - VueStringNumberValue Seed
-- type ECMAScript.VueDataUi.VueUiQuadrant
+- type ECMAScript.VueDataUi.VdQuadrant
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiQuadrantConfig
+- type ECMAScript.VueDataUi.VdQuadrantConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiQuadrantConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdQuadrantConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiQuadrantConfig, ECMAScript.VueDataUi.VueUiQuadrantConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiQuadrantConfig, ECMAScript.VueDataUi.VueUiQuadrantConfig)
-  - ECMAScript.VueDataUi.VueUiQuadrantConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdQuadrantConfig, ECMAScript.VueDataUi.VdQuadrantConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdQuadrantConfig, ECMAScript.VueDataUi.VdQuadrantConfig)
+  - ECMAScript.VueDataUi.VdQuadrantConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiQuadrantDatasetItem
+- type ECMAScript.VueDataUi.VdQuadrantDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiQuadrantDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdQuadrantDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiQuadrantDatasetItem, ECMAScript.VueDataUi.VueUiQuadrantDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiQuadrantDatasetItem, ECMAScript.VueDataUi.VueUiQuadrantDatasetItem)
-  - ECMAScript.VueDataUi.VueUiQuadrantDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem[] get_Series()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdQuadrantDatasetItem, ECMAScript.VueDataUi.VdQuadrantDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdQuadrantDatasetItem, ECMAScript.VueDataUi.VdQuadrantDatasetItem)
+  - ECMAScript.VueDataUi.VdQuadrantDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem[] get_Series()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -57509,22 +57498,22 @@
   - System.String get_Shape()
   - Void set_Color(System.String)
   - Void set_Name(System.String)
-  - Void set_Series(ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem[])
+  - Void set_Series(ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem[])
   - Void set_Shape(System.String)
-  - ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem[] Series
+  - ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem[] Series
   - System.String Color
   - System.String Name
   - System.String Shape
-- type ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem
+- type ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem, ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem, ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem, ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem, ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem)
   - Double get_X()
   - Double get_Y()
-  - ECMAScript.VueDataUi.VueUiQuadrantDatasetSerieItem <Clone>$()
+  - ECMAScript.VueDataUi.VdQuadrantDatasetSerieItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
@@ -57534,16 +57523,16 @@
   - Double X
   - Double Y
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiQuickChart
+- type ECMAScript.VueDataUi.VdQuickChart
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiQuickChartConfig
+- type ECMAScript.VueDataUi.VdQuickChartConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiQuickChartConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdQuickChartConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiQuickChartConfig, ECMAScript.VueDataUi.VueUiQuickChartConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiQuickChartConfig, ECMAScript.VueDataUi.VueUiQuickChartConfig)
-  - ECMAScript.VueDataUi.VueUiQuickChartConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdQuickChartConfig, ECMAScript.VueDataUi.VdQuickChartConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdQuickChartConfig, ECMAScript.VueDataUi.VdQuickChartConfig)
+  - ECMAScript.VueDataUi.VdQuickChartConfig <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_ShowLegend()
   - System.Nullable`1[System.Boolean] get_ShowTooltip()
@@ -57555,64 +57544,64 @@
   - System.Nullable`1[System.Boolean] ShowLegend
   - System.Nullable`1[System.Boolean] ShowTooltip
   - System.String Title
-- type ECMAScript.VueDataUi.VueUiQuickChartDataset
-  - Void .ctor(ECMAScript.VueDataUi.VueUiQuickChartDatasetItem)
-  - Void .ctor(ECMAScript.VueDataUi.VueUiQuickChartDatasetItem[])
+- type ECMAScript.VueDataUi.VdQuickChartDataset
+  - Void .ctor(ECMAScript.VueDataUi.VdQuickChartDatasetItem)
+  - Void .ctor(ECMAScript.VueDataUi.VdQuickChartDatasetItem[])
   - Void .ctor(System.Nullable`1[System.Double][])
-  - ECMAScript.VueDataUi.VueUiQuickChartDatasetItem get_AsItem()
-  - ECMAScript.VueDataUi.VueUiQuickChartDatasetItem[] get_AsItems()
+  - ECMAScript.VueDataUi.VdQuickChartDatasetItem get_AsItem()
+  - ECMAScript.VueDataUi.VdQuickChartDatasetItem[] get_AsItems()
   - System.Nullable`1[System.Double][] get_AsValues()
   - System.Object get_Value()
-  - ECMAScript.VueDataUi.VueUiQuickChartDatasetItem AsItem
-  - ECMAScript.VueDataUi.VueUiQuickChartDatasetItem[] AsItems
+  - ECMAScript.VueDataUi.VdQuickChartDatasetItem AsItem
+  - ECMAScript.VueDataUi.VdQuickChartDatasetItem[] AsItems
   - System.Nullable`1[System.Double][] AsValues
   - System.Object Value
-- type ECMAScript.VueDataUi.VueUiQuickChartDatasetItem
+- type ECMAScript.VueDataUi.VdQuickChartDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiQuickChartDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdQuickChartDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiQuickChartDatasetItem, ECMAScript.VueDataUi.VueUiQuickChartDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiQuickChartDatasetItem, ECMAScript.VueDataUi.VueUiQuickChartDatasetItem)
-  - ECMAScript.VueDataUi.VueUiQuickChartDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdQuickChartDatasetItem, ECMAScript.VueDataUi.VdQuickChartDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdQuickChartDatasetItem, ECMAScript.VueDataUi.VdQuickChartDatasetItem)
+  - ECMAScript.VueDataUi.VdQuickChartDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRadar
+- type ECMAScript.VueDataUi.VdRadar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiRadarConfig
+- type ECMAScript.VueDataUi.VdRadarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRadarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRadarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRadarConfig, ECMAScript.VueDataUi.VueUiRadarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRadarConfig, ECMAScript.VueDataUi.VueUiRadarConfig)
-  - ECMAScript.VueDataUi.VueUiRadarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRadarConfig, ECMAScript.VueDataUi.VdRadarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRadarConfig, ECMAScript.VueDataUi.VdRadarConfig)
+  - ECMAScript.VueDataUi.VdRadarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRadarDataset
+- type ECMAScript.VueDataUi.VdRadarDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRadarDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRadarDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRadarDataset, ECMAScript.VueDataUi.VueUiRadarDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRadarDataset, ECMAScript.VueDataUi.VueUiRadarDataset)
-  - ECMAScript.VueDataUi.VueUiRadarDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem[] get_Categories()
-  - ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem[] get_Series()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRadarDataset, ECMAScript.VueDataUi.VdRadarDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRadarDataset, ECMAScript.VueDataUi.VdRadarDataset)
+  - ECMAScript.VueDataUi.VdRadarDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdRadarDatasetCategoryItem[] get_Categories()
+  - ECMAScript.VueDataUi.VdRadarDatasetSerieItem[] get_Series()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Categories(ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem[])
-  - Void set_Series(ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem[])
-  - ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem[] Categories
-  - ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem[] Series
-- type ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem
+  - Void set_Categories(ECMAScript.VueDataUi.VdRadarDatasetCategoryItem[])
+  - Void set_Series(ECMAScript.VueDataUi.VdRadarDatasetSerieItem[])
+  - ECMAScript.VueDataUi.VdRadarDatasetCategoryItem[] Categories
+  - ECMAScript.VueDataUi.VdRadarDatasetSerieItem[] Series
+- type ECMAScript.VueDataUi.VdRadarDatasetCategoryItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRadarDatasetCategoryItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem, ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem, ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem)
-  - ECMAScript.VueDataUi.VueUiRadarDatasetCategoryItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRadarDatasetCategoryItem, ECMAScript.VueDataUi.VdRadarDatasetCategoryItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRadarDatasetCategoryItem, ECMAScript.VueDataUi.VdRadarDatasetCategoryItem)
+  - ECMAScript.VueDataUi.VdRadarDatasetCategoryItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -57627,15 +57616,15 @@
   - System.String Name
   - System.String Prefix
   - System.String Suffix
-- type ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem
+- type ECMAScript.VueDataUi.VdRadarDatasetSerieItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRadarDatasetSerieItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem, ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem, ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRadarDatasetSerieItem, ECMAScript.VueDataUi.VdRadarDatasetSerieItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRadarDatasetSerieItem, ECMAScript.VueDataUi.VdRadarDatasetSerieItem)
   - Double[] get_Values()
-  - ECMAScript.VueDataUi.VueUiRadarDatasetSerieItem <Clone>$()
+  - ECMAScript.VueDataUi.VdRadarDatasetSerieItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Target()
   - System.String ToString()
@@ -57649,71 +57638,71 @@
   - System.Nullable`1[System.Double] Target
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiRating
+- type ECMAScript.VueDataUi.VdRating
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiRatingConfig
+- type ECMAScript.VueDataUi.VdRatingConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRatingConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRatingConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRatingConfig, ECMAScript.VueDataUi.VueUiRatingConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRatingConfig, ECMAScript.VueDataUi.VueUiRatingConfig)
-  - ECMAScript.VueDataUi.VueUiRatingConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRatingConfig, ECMAScript.VueDataUi.VdRatingConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRatingConfig, ECMAScript.VueDataUi.VdRatingConfig)
+  - ECMAScript.VueDataUi.VdRatingConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRatingDataset
+- type ECMAScript.VueDataUi.VdRatingDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRatingDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRatingDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRatingDataset, ECMAScript.VueDataUi.VueUiRatingDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRatingDataset, ECMAScript.VueDataUi.VueUiRatingDataset)
-  - ECMAScript.VueDataUi.VueUiRatingDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiRatingValue get_Rating()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRatingDataset, ECMAScript.VueDataUi.VdRatingDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRatingDataset, ECMAScript.VueDataUi.VdRatingDataset)
+  - ECMAScript.VueDataUi.VdRatingDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdRatingValue get_Rating()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Rating(ECMAScript.VueDataUi.VueUiRatingValue)
-  - ECMAScript.VueDataUi.VueUiRatingValue Rating
-- type ECMAScript.VueDataUi.VueUiRatingDatasetDetailed
+  - Void set_Rating(ECMAScript.VueDataUi.VdRatingValue)
+  - ECMAScript.VueDataUi.VdRatingValue Rating
+- type ECMAScript.VueDataUi.VdRatingDatasetDetailed
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRatingDatasetDetailed)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRatingDatasetDetailed)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueDictionary`1)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRatingDatasetDetailed, ECMAScript.VueDataUi.VueUiRatingDatasetDetailed)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRatingDatasetDetailed, ECMAScript.VueDataUi.VueUiRatingDatasetDetailed)
-  - ECMAScript.VueDataUi.VueUiRatingDatasetDetailed <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRatingDatasetDetailed, ECMAScript.VueDataUi.VdRatingDatasetDetailed)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRatingDatasetDetailed, ECMAScript.VueDataUi.VdRatingDatasetDetailed)
+  - ECMAScript.VueDataUi.VdRatingDatasetDetailed <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRatingValue
+- type ECMAScript.VueDataUi.VdRatingValue
   - Void .ctor(Double)
-  - Void .ctor(ECMAScript.VueDataUi.VueUiRatingDatasetDetailed)
-  - ECMAScript.VueDataUi.VueUiRatingDatasetDetailed get_AsDetailed()
+  - Void .ctor(ECMAScript.VueDataUi.VdRatingDatasetDetailed)
+  - ECMAScript.VueDataUi.VdRatingDatasetDetailed get_AsDetailed()
   - System.Nullable`1[System.Double] get_AsNumber()
   - System.Object get_Value()
-  - ECMAScript.VueDataUi.VueUiRatingDatasetDetailed AsDetailed
+  - ECMAScript.VueDataUi.VdRatingDatasetDetailed AsDetailed
   - System.Nullable`1[System.Double] AsNumber
   - System.Object Value
-- type ECMAScript.VueDataUi.VueUiRelationCircle
+- type ECMAScript.VueDataUi.VdRelationCircle
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiRelationCircleConfig
+- type ECMAScript.VueDataUi.VdRelationCircleConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRelationCircleConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRelationCircleConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRelationCircleConfig, ECMAScript.VueDataUi.VueUiRelationCircleConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRelationCircleConfig, ECMAScript.VueDataUi.VueUiRelationCircleConfig)
-  - ECMAScript.VueDataUi.VueUiRelationCircleConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRelationCircleConfig, ECMAScript.VueDataUi.VdRelationCircleConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRelationCircleConfig, ECMAScript.VueDataUi.VdRelationCircleConfig)
+  - ECMAScript.VueDataUi.VdRelationCircleConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem
+- type ECMAScript.VueDataUi.VdRelationCircleDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRelationCircleDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem, ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem, ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRelationCircleDatasetItem, ECMAScript.VueDataUi.VdRelationCircleDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRelationCircleDatasetItem, ECMAScript.VueDataUi.VdRelationCircleDatasetItem)
   - Double[] get_Weights()
-  - ECMAScript.VueDataUi.VueUiRelationCircleDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdRelationCircleDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -57730,26 +57719,33 @@
   - System.String Label
   - VueStringNumberValue Id
   - VueStringNumberValue[] Relations
-- type ECMAScript.VueDataUi.VueUiRidgeline
+- type ECMAScript.VueDataUi.VdRequiredConfigChartComponent`2
+  - TConfig get_Config()
+  - TDataset get_Dataset()
+  - Void set_Config(TConfig)
+  - Void set_Dataset(TDataset)
+  - TConfig Config
+  - TDataset Dataset
+- type ECMAScript.VueDataUi.VdRidgeline
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiRidgelineConfig
+- type ECMAScript.VueDataUi.VdRidgelineConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRidgelineConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRidgelineConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRidgelineConfig, ECMAScript.VueDataUi.VueUiRidgelineConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRidgelineConfig, ECMAScript.VueDataUi.VueUiRidgelineConfig)
-  - ECMAScript.VueDataUi.VueUiRidgelineConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRidgelineConfig, ECMAScript.VueDataUi.VdRidgelineConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRidgelineConfig, ECMAScript.VueDataUi.VdRidgelineConfig)
+  - ECMAScript.VueDataUi.VdRidgelineConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRidgelineDatapoint
+- type ECMAScript.VueDataUi.VdRidgelineDatapoint
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRidgelineDatapoint)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRidgelineDatapoint)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRidgelineDatapoint, ECMAScript.VueDataUi.VueUiRidgelineDatapoint)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRidgelineDatapoint, ECMAScript.VueDataUi.VueUiRidgelineDatapoint)
-  - ECMAScript.VueDataUi.VueUiRidgelineDatapoint <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRidgelineDatapoint, ECMAScript.VueDataUi.VdRidgelineDatapoint)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRidgelineDatapoint, ECMAScript.VueDataUi.VdRidgelineDatapoint)
+  - ECMAScript.VueDataUi.VdRidgelineDatapoint <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Values()
   - System.String ToString()
@@ -57761,43 +57757,43 @@
   - System.Nullable`1[System.Double][] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiRidgelineDatasetItem
+- type ECMAScript.VueDataUi.VdRidgelineDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRidgelineDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRidgelineDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRidgelineDatasetItem, ECMAScript.VueDataUi.VueUiRidgelineDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRidgelineDatasetItem, ECMAScript.VueDataUi.VueUiRidgelineDatasetItem)
-  - ECMAScript.VueDataUi.VueUiRidgelineDatapoint[] get_Datapoints()
-  - ECMAScript.VueDataUi.VueUiRidgelineDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRidgelineDatasetItem, ECMAScript.VueDataUi.VdRidgelineDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRidgelineDatasetItem, ECMAScript.VueDataUi.VdRidgelineDatasetItem)
+  - ECMAScript.VueDataUi.VdRidgelineDatapoint[] get_Datapoints()
+  - ECMAScript.VueDataUi.VdRidgelineDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
-  - Void set_Datapoints(ECMAScript.VueDataUi.VueUiRidgelineDatapoint[])
+  - Void set_Datapoints(ECMAScript.VueDataUi.VdRidgelineDatapoint[])
   - Void set_Name(System.String)
-  - ECMAScript.VueDataUi.VueUiRidgelineDatapoint[] Datapoints
+  - ECMAScript.VueDataUi.VdRidgelineDatapoint[] Datapoints
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiRings
+- type ECMAScript.VueDataUi.VdRings
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiRingsConfig
+- type ECMAScript.VueDataUi.VdRingsConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRingsConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRingsConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRingsConfig, ECMAScript.VueDataUi.VueUiRingsConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRingsConfig, ECMAScript.VueDataUi.VueUiRingsConfig)
-  - ECMAScript.VueDataUi.VueUiRingsConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRingsConfig, ECMAScript.VueDataUi.VdRingsConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRingsConfig, ECMAScript.VueDataUi.VdRingsConfig)
+  - ECMAScript.VueDataUi.VdRingsConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiRingsDatasetItem
+- type ECMAScript.VueDataUi.VdRingsDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiRingsDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdRingsDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiRingsDatasetItem, ECMAScript.VueDataUi.VueUiRingsDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiRingsDatasetItem, ECMAScript.VueDataUi.VueUiRingsDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdRingsDatasetItem, ECMAScript.VueDataUi.VdRingsDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdRingsDatasetItem, ECMAScript.VueDataUi.VdRingsDatasetItem)
   - Double[] get_Values()
-  - ECMAScript.VueDataUi.VueUiRingsDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdRingsDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -57808,53 +57804,53 @@
   - Double[] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiScatter
+- type ECMAScript.VueDataUi.VdScatter
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiScatterConfig
+- type ECMAScript.VueDataUi.VdScatterConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiScatterConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdScatterConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiScatterConfig, ECMAScript.VueDataUi.VueUiScatterConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiScatterConfig, ECMAScript.VueDataUi.VueUiScatterConfig)
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions get_Downsample()
-  - ECMAScript.VueDataUi.VueUiScatterConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdScatterConfig, ECMAScript.VueDataUi.VdScatterConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdScatterConfig, ECMAScript.VueDataUi.VdScatterConfig)
+  - ECMAScript.VueDataUi.VdDownsampleOptions get_Downsample()
+  - ECMAScript.VueDataUi.VdScatterConfig <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_UsePerformanceMode()
   - System.String ToString()
-  - Void set_Downsample(ECMAScript.VueDataUi.VueDataUiDownsampleOptions)
+  - Void set_Downsample(ECMAScript.VueDataUi.VdDownsampleOptions)
   - Void set_UsePerformanceMode(System.Nullable`1[System.Boolean])
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions Downsample
+  - ECMAScript.VueDataUi.VdDownsampleOptions Downsample
   - System.Nullable`1[System.Boolean] UsePerformanceMode
-- type ECMAScript.VueDataUi.VueUiScatterDatasetItem
+- type ECMAScript.VueDataUi.VdScatterDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiScatterDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdScatterDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiScatterDatasetItem, ECMAScript.VueDataUi.VueUiScatterDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiScatterDatasetItem, ECMAScript.VueDataUi.VueUiScatterDatasetItem)
-  - ECMAScript.VueDataUi.VueUiScatterDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiScatterDatasetValueItem[] get_Values()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdScatterDatasetItem, ECMAScript.VueDataUi.VdScatterDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdScatterDatasetItem, ECMAScript.VueDataUi.VdScatterDatasetItem)
+  - ECMAScript.VueDataUi.VdScatterDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdScatterDatasetValueItem[] get_Values()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
   - Void set_Color(System.String)
   - Void set_Name(System.String)
-  - Void set_Values(ECMAScript.VueDataUi.VueUiScatterDatasetValueItem[])
-  - ECMAScript.VueDataUi.VueUiScatterDatasetValueItem[] Values
+  - Void set_Values(ECMAScript.VueDataUi.VdScatterDatasetValueItem[])
+  - ECMAScript.VueDataUi.VdScatterDatasetValueItem[] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiScatterDatasetValueItem
+- type ECMAScript.VueDataUi.VdScatterDatasetValueItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiScatterDatasetValueItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdScatterDatasetValueItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiScatterDatasetValueItem, ECMAScript.VueDataUi.VueUiScatterDatasetValueItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiScatterDatasetValueItem, ECMAScript.VueDataUi.VueUiScatterDatasetValueItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdScatterDatasetValueItem, ECMAScript.VueDataUi.VdScatterDatasetValueItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdScatterDatasetValueItem, ECMAScript.VueDataUi.VdScatterDatasetValueItem)
   - Double get_X()
   - Double get_Y()
-  - ECMAScript.VueDataUi.VueUiScatterDatasetValueItem <Clone>$()
+  - ECMAScript.VueDataUi.VdScatterDatasetValueItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Weight()
   - System.String ToString()
@@ -57867,50 +57863,50 @@
   - Double Y
   - System.Nullable`1[System.Double] Weight
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiSkeleton
+- type ECMAScript.VueDataUi.VdSkeleton
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSkeletonConfig
+- type ECMAScript.VueDataUi.VdSkeletonConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSkeletonConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSkeletonConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSkeletonConfig, ECMAScript.VueDataUi.VueUiSkeletonConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSkeletonConfig, ECMAScript.VueDataUi.VueUiSkeletonConfig)
-  - ECMAScript.VueDataUi.VueUiSkeletonConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSkeletonConfig, ECMAScript.VueDataUi.VdSkeletonConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSkeletonConfig, ECMAScript.VueDataUi.VdSkeletonConfig)
+  - ECMAScript.VueDataUi.VdSkeletonConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSmiley
+- type ECMAScript.VueDataUi.VdSmiley
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSmileyConfig
+- type ECMAScript.VueDataUi.VdSmileyConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSmileyConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSmileyConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSmileyConfig, ECMAScript.VueDataUi.VueUiSmileyConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSmileyConfig, ECMAScript.VueDataUi.VueUiSmileyConfig)
-  - ECMAScript.VueDataUi.VueUiSmileyConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSmileyConfig, ECMAScript.VueDataUi.VdSmileyConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSmileyConfig, ECMAScript.VueDataUi.VdSmileyConfig)
+  - ECMAScript.VueDataUi.VdSmileyConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSparkHistogram
+- type ECMAScript.VueDataUi.VdSparkHistogram
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSparkHistogramConfig
+- type ECMAScript.VueDataUi.VdSparkHistogramConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkHistogramConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkHistogramConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkHistogramConfig, ECMAScript.VueDataUi.VueUiSparkHistogramConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkHistogramConfig, ECMAScript.VueDataUi.VueUiSparkHistogramConfig)
-  - ECMAScript.VueDataUi.VueUiSparkHistogramConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkHistogramConfig, ECMAScript.VueDataUi.VdSparkHistogramConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkHistogramConfig, ECMAScript.VueDataUi.VdSparkHistogramConfig)
+  - ECMAScript.VueDataUi.VdSparkHistogramConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem
+- type ECMAScript.VueDataUi.VdSparkHistogramDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkHistogramDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem, ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem, ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem)
-  - ECMAScript.VueDataUi.VueUiSparkHistogramDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkHistogramDatasetItem, ECMAScript.VueDataUi.VdSparkHistogramDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkHistogramDatasetItem, ECMAScript.VueDataUi.VdSparkHistogramDatasetItem)
+  - ECMAScript.VueDataUi.VdSparkHistogramDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Value()
   - System.String ToString()
@@ -57922,26 +57918,26 @@
   - System.Nullable`1[System.Double] Value
   - System.String Color
   - System.String TimeLabel
-- type ECMAScript.VueDataUi.VueUiSparkStackbar
+- type ECMAScript.VueDataUi.VdSparkStackbar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSparkStackbarConfig
+- type ECMAScript.VueDataUi.VdSparkStackbarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkStackbarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkStackbarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkStackbarConfig, ECMAScript.VueDataUi.VueUiSparkStackbarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkStackbarConfig, ECMAScript.VueDataUi.VueUiSparkStackbarConfig)
-  - ECMAScript.VueDataUi.VueUiSparkStackbarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkStackbarConfig, ECMAScript.VueDataUi.VdSparkStackbarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkStackbarConfig, ECMAScript.VueDataUi.VdSparkStackbarConfig)
+  - ECMAScript.VueDataUi.VdSparkStackbarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem
+- type ECMAScript.VueDataUi.VdSparkStackbarDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkStackbarDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem, ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem, ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem)
-  - ECMAScript.VueDataUi.VueUiSparkStackbarDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkStackbarDatasetItem, ECMAScript.VueDataUi.VdSparkStackbarDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkStackbarDatasetItem, ECMAScript.VueDataUi.VdSparkStackbarDatasetItem)
+  - ECMAScript.VueDataUi.VdSparkStackbarDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Proportion()
   - System.Nullable`1[System.Double] get_Start()
@@ -57965,38 +57961,38 @@
   - System.String Color
   - System.String Name
   - System.String ProportionLabel
-- type ECMAScript.VueDataUi.VueUiSparkTrend
+- type ECMAScript.VueDataUi.VdSparkTrend
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSparkTrendConfig
+- type ECMAScript.VueDataUi.VdSparkTrendConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkTrendConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkTrendConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkTrendConfig, ECMAScript.VueDataUi.VueUiSparkTrendConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkTrendConfig, ECMAScript.VueDataUi.VueUiSparkTrendConfig)
-  - ECMAScript.VueDataUi.VueUiSparkTrendConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkTrendConfig, ECMAScript.VueDataUi.VdSparkTrendConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkTrendConfig, ECMAScript.VueDataUi.VdSparkTrendConfig)
+  - ECMAScript.VueDataUi.VdSparkTrendConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSparkbar
+- type ECMAScript.VueDataUi.VdSparkbar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSparkbarConfig
+- type ECMAScript.VueDataUi.VdSparkbarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkbarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkbarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkbarConfig, ECMAScript.VueDataUi.VueUiSparkbarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkbarConfig, ECMAScript.VueDataUi.VueUiSparkbarConfig)
-  - ECMAScript.VueDataUi.VueUiSparkbarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkbarConfig, ECMAScript.VueDataUi.VdSparkbarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkbarConfig, ECMAScript.VueDataUi.VdSparkbarConfig)
+  - ECMAScript.VueDataUi.VdSparkbarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSparkbarDatasetItem
+- type ECMAScript.VueDataUi.VdSparkbarDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkbarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkbarDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkbarDatasetItem, ECMAScript.VueDataUi.VueUiSparkbarDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkbarDatasetItem, ECMAScript.VueDataUi.VueUiSparkbarDatasetItem)
-  - ECMAScript.VueDataUi.VueUiSparkbarDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkbarDatasetItem, ECMAScript.VueDataUi.VdSparkbarDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkbarDatasetItem, ECMAScript.VueDataUi.VdSparkbarDatasetItem)
+  - ECMAScript.VueDataUi.VdSparkbarDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Value()
   - System.String ToString()
@@ -58014,29 +58010,29 @@
   - System.String Name
   - System.String Prefix
   - System.String Suffix
-- type ECMAScript.VueDataUi.VueUiSparkgauge
+- type ECMAScript.VueDataUi.VdSparkgauge
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSparkgaugeConfig
+- type ECMAScript.VueDataUi.VdSparkgaugeConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkgaugeConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkgaugeConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkgaugeConfig, ECMAScript.VueDataUi.VueUiSparkgaugeConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkgaugeConfig, ECMAScript.VueDataUi.VueUiSparkgaugeConfig)
-  - ECMAScript.VueDataUi.VueUiSparkgaugeConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkgaugeConfig, ECMAScript.VueDataUi.VdSparkgaugeConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkgaugeConfig, ECMAScript.VueDataUi.VdSparkgaugeConfig)
+  - ECMAScript.VueDataUi.VdSparkgaugeConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiSparkgaugeDataset
+- type ECMAScript.VueDataUi.VdSparkgaugeDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparkgaugeDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparkgaugeDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparkgaugeDataset, ECMAScript.VueDataUi.VueUiSparkgaugeDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparkgaugeDataset, ECMAScript.VueDataUi.VueUiSparkgaugeDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparkgaugeDataset, ECMAScript.VueDataUi.VdSparkgaugeDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparkgaugeDataset, ECMAScript.VueDataUi.VdSparkgaugeDataset)
   - Double get_Max()
   - Double get_Min()
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiSparkgaugeDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdSparkgaugeDataset <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Title()
@@ -58048,32 +58044,32 @@
   - Double Min
   - Double Value
   - System.String Title
-- type ECMAScript.VueDataUi.VueUiSparkline
+- type ECMAScript.VueDataUi.VdSparkline
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiSparklineConfig
+- type ECMAScript.VueDataUi.VdSparklineConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparklineConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparklineConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparklineConfig, ECMAScript.VueDataUi.VueUiSparklineConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparklineConfig, ECMAScript.VueDataUi.VueUiSparklineConfig)
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions get_Downsample()
-  - ECMAScript.VueDataUi.VueUiSparklineConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparklineConfig, ECMAScript.VueDataUi.VdSparklineConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparklineConfig, ECMAScript.VueDataUi.VdSparklineConfig)
+  - ECMAScript.VueDataUi.VdDownsampleOptions get_Downsample()
+  - ECMAScript.VueDataUi.VdSparklineConfig <Clone>$()
   - Int32 GetHashCode()
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiSparklineType] get_Type()
+  - System.Nullable`1[ECMAScript.VueDataUi.VdSparklineType] get_Type()
   - System.String ToString()
-  - Void set_Downsample(ECMAScript.VueDataUi.VueDataUiDownsampleOptions)
-  - Void set_Type(System.Nullable`1[ECMAScript.VueDataUi.VueUiSparklineType])
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions Downsample
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiSparklineType] Type
-- type ECMAScript.VueDataUi.VueUiSparklineDatasetItem
+  - Void set_Downsample(ECMAScript.VueDataUi.VdDownsampleOptions)
+  - Void set_Type(System.Nullable`1[ECMAScript.VueDataUi.VdSparklineType])
+  - ECMAScript.VueDataUi.VdDownsampleOptions Downsample
+  - System.Nullable`1[ECMAScript.VueDataUi.VdSparklineType] Type
+- type ECMAScript.VueDataUi.VdSparklineDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiSparklineDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdSparklineDatasetItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiSparklineDatasetItem, ECMAScript.VueDataUi.VueUiSparklineDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiSparklineDatasetItem, ECMAScript.VueDataUi.VueUiSparklineDatasetItem)
-  - ECMAScript.VueDataUi.VueUiSparklineDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdSparklineDatasetItem, ECMAScript.VueDataUi.VdSparklineDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdSparklineDatasetItem, ECMAScript.VueDataUi.VdSparklineDatasetItem)
+  - ECMAScript.VueDataUi.VdSparklineDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Value()
   - System.String ToString()
@@ -58082,30 +58078,30 @@
   - VueStringNumberValue get_Period()
   - System.Nullable`1[System.Double] Value
   - VueStringNumberValue Period
-- enum ECMAScript.VueDataUi.VueUiSparklineType
-  - ECMAScript.VueDataUi.VueUiSparklineType Bar
-  - ECMAScript.VueDataUi.VueUiSparklineType Line
+- enum ECMAScript.VueDataUi.VdSparklineType
+  - ECMAScript.VueDataUi.VdSparklineType Bar
+  - ECMAScript.VueDataUi.VdSparklineType Line
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiStackbar
+- type ECMAScript.VueDataUi.VdStackbar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiStackbarConfig
+- type ECMAScript.VueDataUi.VdStackbarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStackbarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStackbarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStackbarConfig, ECMAScript.VueDataUi.VueUiStackbarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStackbarConfig, ECMAScript.VueDataUi.VueUiStackbarConfig)
-  - ECMAScript.VueDataUi.VueUiStackbarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStackbarConfig, ECMAScript.VueDataUi.VdStackbarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStackbarConfig, ECMAScript.VueDataUi.VdStackbarConfig)
+  - ECMAScript.VueDataUi.VdStackbarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiStackbarDatasetItem
+- type ECMAScript.VueDataUi.VdStackbarDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStackbarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStackbarDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStackbarDatasetItem, ECMAScript.VueDataUi.VueUiStackbarDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStackbarDatasetItem, ECMAScript.VueDataUi.VueUiStackbarDatasetItem)
-  - ECMAScript.VueDataUi.VueUiStackbarDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStackbarDatasetItem, ECMAScript.VueDataUi.VdStackbarDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStackbarDatasetItem, ECMAScript.VueDataUi.VdStackbarDatasetItem)
+  - ECMAScript.VueDataUi.VdStackbarDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Series()
   - System.String ToString()
@@ -58117,71 +58113,71 @@
   - System.Nullable`1[System.Double][] Series
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiStackline
+- type ECMAScript.VueDataUi.VdStackline
   - Void .ctor()
   - System.Nullable`1[System.Int32] get_SelectedXIndex()
   - Void set_SelectedXIndex(System.Nullable`1[System.Int32])
   - System.Nullable`1[System.Int32] SelectedXIndex
-- type ECMAScript.VueDataUi.VueUiStacklineConfig
+- type ECMAScript.VueDataUi.VdStacklineConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStacklineConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStacklineConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStacklineConfig, ECMAScript.VueDataUi.VueUiStacklineConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStacklineConfig, ECMAScript.VueDataUi.VueUiStacklineConfig)
-  - ECMAScript.VueDataUi.VueUiStacklineConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStacklineConfig, ECMAScript.VueDataUi.VdStacklineConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStacklineConfig, ECMAScript.VueDataUi.VdStacklineConfig)
+  - ECMAScript.VueDataUi.VdStacklineConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiStacklineDatasetItem
+- type ECMAScript.VueDataUi.VdStacklineDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStackbarDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStacklineDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStackbarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStacklineDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStacklineDatasetItem, ECMAScript.VueDataUi.VueUiStacklineDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStacklineDatasetItem, ECMAScript.VueDataUi.VueUiStacklineDatasetItem)
-  - ECMAScript.VueDataUi.VueUiStacklineDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStacklineDatasetItem, ECMAScript.VueDataUi.VdStacklineDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStacklineDatasetItem, ECMAScript.VueDataUi.VdStacklineDatasetItem)
+  - ECMAScript.VueDataUi.VdStacklineDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_Standalone()
   - System.String ToString()
   - Void set_Standalone(System.Nullable`1[System.Boolean])
   - System.Nullable`1[System.Boolean] Standalone
-- type ECMAScript.VueDataUi.VueUiStripPlot
+- type ECMAScript.VueDataUi.VdStripPlot
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiStripPlotConfig
+- type ECMAScript.VueDataUi.VdStripPlotConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStripPlotConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStripPlotConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStripPlotConfig, ECMAScript.VueDataUi.VueUiStripPlotConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStripPlotConfig, ECMAScript.VueDataUi.VueUiStripPlotConfig)
-  - ECMAScript.VueDataUi.VueUiStripPlotConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStripPlotConfig, ECMAScript.VueDataUi.VdStripPlotConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStripPlotConfig, ECMAScript.VueDataUi.VdStripPlotConfig)
+  - ECMAScript.VueDataUi.VdStripPlotConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiStripPlotDataset
+- type ECMAScript.VueDataUi.VdStripPlotDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStripPlotDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStripPlotDataset)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStripPlotDataset, ECMAScript.VueDataUi.VueUiStripPlotDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStripPlotDataset, ECMAScript.VueDataUi.VueUiStripPlotDataset)
-  - ECMAScript.VueDataUi.VueUiStripPlotDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiStripPlotDatasetItem[] get_Plots()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStripPlotDataset, ECMAScript.VueDataUi.VdStripPlotDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStripPlotDataset, ECMAScript.VueDataUi.VdStripPlotDataset)
+  - ECMAScript.VueDataUi.VdStripPlotDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdStripPlotDatasetItem[] get_Plots()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
   - Void set_Name(System.String)
-  - Void set_Plots(ECMAScript.VueDataUi.VueUiStripPlotDatasetItem[])
-  - ECMAScript.VueDataUi.VueUiStripPlotDatasetItem[] Plots
+  - Void set_Plots(ECMAScript.VueDataUi.VdStripPlotDatasetItem[])
+  - ECMAScript.VueDataUi.VdStripPlotDatasetItem[] Plots
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiStripPlotDatasetItem
+- type ECMAScript.VueDataUi.VdStripPlotDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiStripPlotDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdStripPlotDatasetItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiStripPlotDatasetItem, ECMAScript.VueDataUi.VueUiStripPlotDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiStripPlotDatasetItem, ECMAScript.VueDataUi.VueUiStripPlotDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdStripPlotDatasetItem, ECMAScript.VueDataUi.VdStripPlotDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdStripPlotDatasetItem, ECMAScript.VueDataUi.VdStripPlotDatasetItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiStripPlotDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdStripPlotDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Name()
@@ -58189,21 +58185,21 @@
   - Void set_Value(Double)
   - Double Value
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiTable
+- type ECMAScript.VueDataUi.VdTable
   - Void .ctor()
-- enum ECMAScript.VueDataUi.VueUiTableColumnType
-  - ECMAScript.VueDataUi.VueUiTableColumnType Date
-  - ECMAScript.VueDataUi.VueUiTableColumnType Numeric
-  - ECMAScript.VueDataUi.VueUiTableColumnType Text
+- enum ECMAScript.VueDataUi.VdTableColumnType
+  - ECMAScript.VueDataUi.VdTableColumnType Date
+  - ECMAScript.VueDataUi.VdTableColumnType Numeric
+  - ECMAScript.VueDataUi.VdTableColumnType Text
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiTableConfig
+- type ECMAScript.VueDataUi.VdTableConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableConfig, ECMAScript.VueDataUi.VueUiTableConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableConfig, ECMAScript.VueDataUi.VueUiTableConfig)
-  - ECMAScript.VueDataUi.VueUiTableConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableConfig, ECMAScript.VueDataUi.VdTableConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableConfig, ECMAScript.VueDataUi.VdTableConfig)
+  - ECMAScript.VueDataUi.VdTableConfig <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_MaxHeight()
   - System.Nullable`1[System.Int32] get_RowsPerPage()
@@ -58212,44 +58208,44 @@
   - Void set_RowsPerPage(System.Nullable`1[System.Int32])
   - System.Nullable`1[System.Double] MaxHeight
   - System.Nullable`1[System.Int32] RowsPerPage
-- type ECMAScript.VueDataUi.VueUiTableDataset
+- type ECMAScript.VueDataUi.VdTableDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableDataset, ECMAScript.VueDataUi.VueUiTableDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableDataset, ECMAScript.VueDataUi.VueUiTableDataset)
-  - ECMAScript.VueDataUi.VueUiTableDataset <Clone>$()
-  - ECMAScript.VueDataUi.VueUiTableDatasetBodyItem[] get_Body()
-  - ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem[] get_Header()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableDataset, ECMAScript.VueDataUi.VdTableDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableDataset, ECMAScript.VueDataUi.VdTableDataset)
+  - ECMAScript.VueDataUi.VdTableDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdTableDatasetBodyItem[] get_Body()
+  - ECMAScript.VueDataUi.VdTableDatasetHeaderItem[] get_Header()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Body(ECMAScript.VueDataUi.VueUiTableDatasetBodyItem[])
-  - Void set_Header(ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem[])
-  - ECMAScript.VueDataUi.VueUiTableDatasetBodyItem[] Body
-  - ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem[] Header
-- type ECMAScript.VueDataUi.VueUiTableDatasetBodyItem
+  - Void set_Body(ECMAScript.VueDataUi.VdTableDatasetBodyItem[])
+  - Void set_Header(ECMAScript.VueDataUi.VdTableDatasetHeaderItem[])
+  - ECMAScript.VueDataUi.VdTableDatasetBodyItem[] Body
+  - ECMAScript.VueDataUi.VdTableDatasetHeaderItem[] Header
+- type ECMAScript.VueDataUi.VdTableDatasetBodyItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableDatasetBodyItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableDatasetBodyItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableDatasetBodyItem, ECMAScript.VueDataUi.VueUiTableDatasetBodyItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableDatasetBodyItem, ECMAScript.VueDataUi.VueUiTableDatasetBodyItem)
-  - ECMAScript.VueDataUi.VueDataUiCellValue[] get_Td()
-  - ECMAScript.VueDataUi.VueUiTableDatasetBodyItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableDatasetBodyItem, ECMAScript.VueDataUi.VdTableDatasetBodyItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableDatasetBodyItem, ECMAScript.VueDataUi.VdTableDatasetBodyItem)
+  - ECMAScript.VueDataUi.VdCellValue[] get_Td()
+  - ECMAScript.VueDataUi.VdTableDatasetBodyItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-  - Void set_Td(ECMAScript.VueDataUi.VueDataUiCellValue[])
-  - ECMAScript.VueDataUi.VueDataUiCellValue[] Td
-- type ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem
+  - Void set_Td(ECMAScript.VueDataUi.VdCellValue[])
+  - ECMAScript.VueDataUi.VdCellValue[] Td
+- type ECMAScript.VueDataUi.VdTableDatasetHeaderItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableDatasetHeaderItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem, ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem, ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem)
-  - ECMAScript.VueDataUi.VueUiTableColumnType get_Type()
-  - ECMAScript.VueDataUi.VueUiTableDatasetHeaderItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableDatasetHeaderItem, ECMAScript.VueDataUi.VdTableDatasetHeaderItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableDatasetHeaderItem, ECMAScript.VueDataUi.VdTableDatasetHeaderItem)
+  - ECMAScript.VueDataUi.VdTableColumnType get_Type()
+  - ECMAScript.VueDataUi.VdTableDatasetHeaderItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_Average()
   - System.Nullable`1[System.Boolean] get_IsSearch()
@@ -58262,76 +58258,76 @@
   - Void set_IsSort(System.Nullable`1[System.Boolean])
   - Void set_Name(System.String)
   - Void set_Sum(System.Nullable`1[System.Boolean])
-  - Void set_Type(ECMAScript.VueDataUi.VueUiTableColumnType)
-  - ECMAScript.VueDataUi.VueUiTableColumnType Type
+  - Void set_Type(ECMAScript.VueDataUi.VdTableColumnType)
+  - ECMAScript.VueDataUi.VdTableColumnType Type
   - System.Nullable`1[System.Boolean] Average
   - System.Nullable`1[System.Boolean] IsSearch
   - System.Nullable`1[System.Boolean] IsSort
   - System.Nullable`1[System.Boolean] Sum
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiTableHeatmap
+- type ECMAScript.VueDataUi.VdTableHeatmap
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiTableHeatmapConfig
+- type ECMAScript.VueDataUi.VdTableHeatmapConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableHeatmapConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableHeatmapConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableHeatmapConfig, ECMAScript.VueDataUi.VueUiTableHeatmapConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableHeatmapConfig, ECMAScript.VueDataUi.VueUiTableHeatmapConfig)
-  - ECMAScript.VueDataUi.VueUiTableHeatmapConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableHeatmapConfig, ECMAScript.VueDataUi.VdTableHeatmapConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableHeatmapConfig, ECMAScript.VueDataUi.VdTableHeatmapConfig)
+  - ECMAScript.VueDataUi.VdTableHeatmapConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem
+- type ECMAScript.VueDataUi.VdTableHeatmapDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableHeatmapDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem, ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem, ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem)
-  - ECMAScript.VueDataUi.VueUiTableHeatmapDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableHeatmapDatasetItem, ECMAScript.VueDataUi.VdTableHeatmapDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableHeatmapDatasetItem, ECMAScript.VueDataUi.VdTableHeatmapDatasetItem)
+  - ECMAScript.VueDataUi.VdTableHeatmapDatasetItem <Clone>$()
   - Int32 GetHashCode()
-  - System.Nullable`1[ECMAScript.VueDataUi.VueDataUiCellValue][] get_Values()
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiTableHeatmapShape] get_Shape()
+  - System.Nullable`1[ECMAScript.VueDataUi.VdCellValue][] get_Values()
+  - System.Nullable`1[ECMAScript.VueDataUi.VdTableHeatmapShape] get_Shape()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
   - Void set_Color(System.String)
   - Void set_Name(System.String)
-  - Void set_Shape(System.Nullable`1[ECMAScript.VueDataUi.VueUiTableHeatmapShape])
-  - Void set_Values(System.Nullable`1[ECMAScript.VueDataUi.VueDataUiCellValue][])
-  - System.Nullable`1[ECMAScript.VueDataUi.VueDataUiCellValue][] Values
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiTableHeatmapShape] Shape
+  - Void set_Shape(System.Nullable`1[ECMAScript.VueDataUi.VdTableHeatmapShape])
+  - Void set_Values(System.Nullable`1[ECMAScript.VueDataUi.VdCellValue][])
+  - System.Nullable`1[ECMAScript.VueDataUi.VdCellValue][] Values
+  - System.Nullable`1[ECMAScript.VueDataUi.VdTableHeatmapShape] Shape
   - System.String Color
   - System.String Name
-- enum ECMAScript.VueDataUi.VueUiTableHeatmapShape
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Circle
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Diamond
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Hexagon
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Pentagon
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Square
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Star
-  - ECMAScript.VueDataUi.VueUiTableHeatmapShape Triangle
+- enum ECMAScript.VueDataUi.VdTableHeatmapShape
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Circle
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Diamond
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Hexagon
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Pentagon
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Square
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Star
+  - ECMAScript.VueDataUi.VdTableHeatmapShape Triangle
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiTableSparkline
+- type ECMAScript.VueDataUi.VdTableSparkline
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiTableSparklineConfig
+- type ECMAScript.VueDataUi.VdTableSparklineConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableSparklineConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableSparklineConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableSparklineConfig, ECMAScript.VueDataUi.VueUiTableSparklineConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableSparklineConfig, ECMAScript.VueDataUi.VueUiTableSparklineConfig)
-  - ECMAScript.VueDataUi.VueUiTableSparklineConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableSparklineConfig, ECMAScript.VueDataUi.VdTableSparklineConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableSparklineConfig, ECMAScript.VueDataUi.VdTableSparklineConfig)
+  - ECMAScript.VueDataUi.VdTableSparklineConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem
+- type ECMAScript.VueDataUi.VdTableSparklineDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTableSparklineDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem, ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem, ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem)
-  - ECMAScript.VueDataUi.VueUiTableSparklineDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTableSparklineDatasetItem, ECMAScript.VueDataUi.VdTableSparklineDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTableSparklineDatasetItem, ECMAScript.VueDataUi.VdTableSparklineDatasetItem)
+  - ECMAScript.VueDataUi.VdTableSparklineDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double][] get_Values()
   - System.String ToString()
@@ -58343,16 +58339,20 @@
   - System.Nullable`1[System.Double][] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiThermometer
+- enum ECMAScript.VueDataUi.VdTheme
+  - ECMAScript.VueDataUi.VdTheme Dark
+  - ECMAScript.VueDataUi.VdTheme Light
+  - Int32 value__
+- type ECMAScript.VueDataUi.VdThermometer
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiThermometerColors
+- type ECMAScript.VueDataUi.VdThermometerColors
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiThermometerColors)
+  - Boolean Equals(ECMAScript.VueDataUi.VdThermometerColors)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiThermometerColors, ECMAScript.VueDataUi.VueUiThermometerColors)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiThermometerColors, ECMAScript.VueDataUi.VueUiThermometerColors)
-  - ECMAScript.VueDataUi.VueUiThermometerColors <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdThermometerColors, ECMAScript.VueDataUi.VdThermometerColors)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdThermometerColors, ECMAScript.VueDataUi.VdThermometerColors)
+  - ECMAScript.VueDataUi.VdThermometerColors <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_From()
@@ -58361,32 +58361,32 @@
   - Void set_To(System.String)
   - System.String From
   - System.String To
-- type ECMAScript.VueDataUi.VueUiThermometerConfig
+- type ECMAScript.VueDataUi.VdThermometerConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiThermometerConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdThermometerConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiThermometerConfig, ECMAScript.VueDataUi.VueUiThermometerConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiThermometerConfig, ECMAScript.VueDataUi.VueUiThermometerConfig)
-  - ECMAScript.VueDataUi.VueUiThermometerConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdThermometerConfig, ECMAScript.VueDataUi.VdThermometerConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdThermometerConfig, ECMAScript.VueDataUi.VdThermometerConfig)
+  - ECMAScript.VueDataUi.VdThermometerConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiThermometerDataset
+- type ECMAScript.VueDataUi.VdThermometerDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiThermometerDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdThermometerDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiThermometerDataset, ECMAScript.VueDataUi.VueUiThermometerDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiThermometerDataset, ECMAScript.VueDataUi.VueUiThermometerDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdThermometerDataset, ECMAScript.VueDataUi.VdThermometerDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdThermometerDataset, ECMAScript.VueDataUi.VdThermometerDataset)
   - Double get_From()
   - Double get_To()
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiThermometerColors get_Colors()
-  - ECMAScript.VueDataUi.VueUiThermometerDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdThermometerColors get_Colors()
+  - ECMAScript.VueDataUi.VdThermometerDataset <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Steps()
   - System.String ToString()
-  - Void set_Colors(ECMAScript.VueDataUi.VueUiThermometerColors)
+  - Void set_Colors(ECMAScript.VueDataUi.VdThermometerColors)
   - Void set_From(Double)
   - Void set_Steps(System.Nullable`1[System.Double])
   - Void set_To(Double)
@@ -58394,102 +58394,102 @@
   - Double From
   - Double To
   - Double Value
-  - ECMAScript.VueDataUi.VueUiThermometerColors Colors
+  - ECMAScript.VueDataUi.VdThermometerColors Colors
   - System.Nullable`1[System.Double] Steps
-- type ECMAScript.VueDataUi.VueUiTimer
+- type ECMAScript.VueDataUi.VdTimer
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiTimerConfig
+- type ECMAScript.VueDataUi.VdTimerConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTimerConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTimerConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTimerConfig, ECMAScript.VueDataUi.VueUiTimerConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTimerConfig, ECMAScript.VueDataUi.VueUiTimerConfig)
-  - ECMAScript.VueDataUi.VueUiTimerConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTimerConfig, ECMAScript.VueDataUi.VdTimerConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTimerConfig, ECMAScript.VueDataUi.VdTimerConfig)
+  - ECMAScript.VueDataUi.VdTimerConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiTiremarks
+- type ECMAScript.VueDataUi.VdTiremarks
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiTiremarksConfig
+- type ECMAScript.VueDataUi.VdTiremarksConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTiremarksConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTiremarksConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTiremarksConfig, ECMAScript.VueDataUi.VueUiTiremarksConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTiremarksConfig, ECMAScript.VueDataUi.VueUiTiremarksConfig)
-  - ECMAScript.VueDataUi.VueUiTiremarksConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTiremarksConfig, ECMAScript.VueDataUi.VdTiremarksConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTiremarksConfig, ECMAScript.VueDataUi.VdTiremarksConfig)
+  - ECMAScript.VueDataUi.VdTiremarksConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiTiremarksDataset
+- type ECMAScript.VueDataUi.VdTiremarksDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTiremarksDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTiremarksDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTiremarksDataset, ECMAScript.VueDataUi.VueUiTiremarksDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTiremarksDataset, ECMAScript.VueDataUi.VueUiTiremarksDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTiremarksDataset, ECMAScript.VueDataUi.VdTiremarksDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTiremarksDataset, ECMAScript.VueDataUi.VdTiremarksDataset)
   - Double get_Percentage()
-  - ECMAScript.VueDataUi.VueUiTiremarksDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdTiremarksDataset <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - Void set_Percentage(Double)
   - Double Percentage
-- type ECMAScript.VueDataUi.VueUiTreemap
+- type ECMAScript.VueDataUi.VdTreemap
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiTreemapConfig
+- type ECMAScript.VueDataUi.VdTreemapConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTreemapConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTreemapConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTreemapConfig, ECMAScript.VueDataUi.VueUiTreemapConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTreemapConfig, ECMAScript.VueDataUi.VueUiTreemapConfig)
-  - ECMAScript.VueDataUi.VueUiTreemapConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTreemapConfig, ECMAScript.VueDataUi.VdTreemapConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTreemapConfig, ECMAScript.VueDataUi.VdTreemapConfig)
+  - ECMAScript.VueDataUi.VdTreemapConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiTreemapDatasetItem
+- type ECMAScript.VueDataUi.VdTreemapDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiTreemapDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdTreemapDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiTreemapDatasetItem, ECMAScript.VueDataUi.VueUiTreemapDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiTreemapDatasetItem, ECMAScript.VueDataUi.VueUiTreemapDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdTreemapDatasetItem, ECMAScript.VueDataUi.VdTreemapDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdTreemapDatasetItem, ECMAScript.VueDataUi.VdTreemapDatasetItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiTreemapDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiTreemapDatasetItem[] get_Children()
+  - ECMAScript.VueDataUi.VdTreemapDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdTreemapDatasetItem[] get_Children()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
   - System.String get_ParentId()
-  - Void set_Children(ECMAScript.VueDataUi.VueUiTreemapDatasetItem[])
+  - Void set_Children(ECMAScript.VueDataUi.VdTreemapDatasetItem[])
   - Void set_Color(System.String)
   - Void set_Name(System.String)
   - Void set_ParentId(System.String)
   - Void set_Value(Double)
   - Double Value
-  - ECMAScript.VueDataUi.VueUiTreemapDatasetItem[] Children
+  - ECMAScript.VueDataUi.VdTreemapDatasetItem[] Children
   - System.String Color
   - System.String Name
   - System.String ParentId
-- type ECMAScript.VueDataUi.VueUiVerticalBar
+- type ECMAScript.VueDataUi.VdVerticalBar
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiVerticalBarConfig
+- type ECMAScript.VueDataUi.VdVerticalBarConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiVerticalBarConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdVerticalBarConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiVerticalBarConfig, ECMAScript.VueDataUi.VueUiVerticalBarConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiVerticalBarConfig, ECMAScript.VueDataUi.VueUiVerticalBarConfig)
-  - ECMAScript.VueDataUi.VueUiVerticalBarConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdVerticalBarConfig, ECMAScript.VueDataUi.VdVerticalBarConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdVerticalBarConfig, ECMAScript.VueDataUi.VdVerticalBarConfig)
+  - ECMAScript.VueDataUi.VdVerticalBarConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild
+- type ECMAScript.VueDataUi.VdVerticalBarDatasetChild
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild)
+  - Boolean Equals(ECMAScript.VueDataUi.VdVerticalBarDatasetChild)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild, ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild, ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild)
-  - ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdVerticalBarDatasetChild, ECMAScript.VueDataUi.VdVerticalBarDatasetChild)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdVerticalBarDatasetChild, ECMAScript.VueDataUi.VdVerticalBarDatasetChild)
+  - ECMAScript.VueDataUi.VdVerticalBarDatasetChild <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Value()
   - System.String ToString()
@@ -58498,49 +58498,49 @@
   - Void set_Value(System.Nullable`1[System.Double])
   - System.Nullable`1[System.Double] Value
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem
+- type ECMAScript.VueDataUi.VdVerticalBarDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdVerticalBarDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem, ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem, ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem)
-  - ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild[] get_Children()
-  - ECMAScript.VueDataUi.VueUiVerticalBarDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdVerticalBarDatasetItem, ECMAScript.VueDataUi.VdVerticalBarDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdVerticalBarDatasetItem, ECMAScript.VueDataUi.VdVerticalBarDatasetItem)
+  - ECMAScript.VueDataUi.VdVerticalBarDatasetChild[] get_Children()
+  - ECMAScript.VueDataUi.VdVerticalBarDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_Value()
   - System.String ToString()
   - System.String get_Color()
   - System.String get_Name()
-  - Void set_Children(ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild[])
+  - Void set_Children(ECMAScript.VueDataUi.VdVerticalBarDatasetChild[])
   - Void set_Color(System.String)
   - Void set_Name(System.String)
   - Void set_Value(System.Nullable`1[System.Double])
-  - ECMAScript.VueDataUi.VueUiVerticalBarDatasetChild[] Children
+  - ECMAScript.VueDataUi.VdVerticalBarDatasetChild[] Children
   - System.Nullable`1[System.Double] Value
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiWaffle
+- type ECMAScript.VueDataUi.VdWaffle
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiWaffleConfig
+- type ECMAScript.VueDataUi.VdWaffleConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWaffleConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWaffleConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWaffleConfig, ECMAScript.VueDataUi.VueUiWaffleConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWaffleConfig, ECMAScript.VueDataUi.VueUiWaffleConfig)
-  - ECMAScript.VueDataUi.VueUiWaffleConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWaffleConfig, ECMAScript.VueDataUi.VdWaffleConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWaffleConfig, ECMAScript.VueDataUi.VdWaffleConfig)
+  - ECMAScript.VueDataUi.VdWaffleConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiWaffleDatasetItem
+- type ECMAScript.VueDataUi.VdWaffleDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWaffleDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWaffleDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWaffleDatasetItem, ECMAScript.VueDataUi.VueUiWaffleDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWaffleDatasetItem, ECMAScript.VueDataUi.VueUiWaffleDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWaffleDatasetItem, ECMAScript.VueDataUi.VdWaffleDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWaffleDatasetItem, ECMAScript.VueDataUi.VdWaffleDatasetItem)
   - Double[] get_Values()
-  - ECMAScript.VueDataUi.VueUiWaffleDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdWaffleDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -58551,61 +58551,61 @@
   - Double[] Values
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiWheel
+- type ECMAScript.VueDataUi.VdWheel
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiWheelConfig
+- type ECMAScript.VueDataUi.VdWheelConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWheelConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWheelConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWheelConfig, ECMAScript.VueDataUi.VueUiWheelConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWheelConfig, ECMAScript.VueDataUi.VueUiWheelConfig)
-  - ECMAScript.VueDataUi.VueUiWheelConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWheelConfig, ECMAScript.VueDataUi.VdWheelConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWheelConfig, ECMAScript.VueDataUi.VdWheelConfig)
+  - ECMAScript.VueDataUi.VdWheelConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiWheelDataset
+- type ECMAScript.VueDataUi.VdWheelDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWheelDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWheelDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWheelDataset, ECMAScript.VueDataUi.VueUiWheelDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWheelDataset, ECMAScript.VueDataUi.VueUiWheelDataset)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWheelDataset, ECMAScript.VueDataUi.VdWheelDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWheelDataset, ECMAScript.VueDataUi.VdWheelDataset)
   - Double get_Percentage()
-  - ECMAScript.VueDataUi.VueUiWheelDataset <Clone>$()
+  - ECMAScript.VueDataUi.VdWheelDataset <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - Void set_Percentage(Double)
   - Double Percentage
-- type ECMAScript.VueDataUi.VueUiWordCloud
+- type ECMAScript.VueDataUi.VdWordCloud
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiWordCloudConfig
+- type ECMAScript.VueDataUi.VdWordCloudConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWordCloudConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWordCloudConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWordCloudConfig, ECMAScript.VueDataUi.VueUiWordCloudConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWordCloudConfig, ECMAScript.VueDataUi.VueUiWordCloudConfig)
-  - ECMAScript.VueDataUi.VueUiWordCloudConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWordCloudConfig, ECMAScript.VueDataUi.VdWordCloudConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWordCloudConfig, ECMAScript.VueDataUi.VdWordCloudConfig)
+  - ECMAScript.VueDataUi.VdWordCloudConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiWordCloudDataset
-  - Void .ctor(ECMAScript.VueDataUi.VueUiWordCloudDatasetItem[])
+- type ECMAScript.VueDataUi.VdWordCloudDataset
+  - Void .ctor(ECMAScript.VueDataUi.VdWordCloudDatasetItem[])
   - Void .ctor(System.String)
-  - ECMAScript.VueDataUi.VueUiWordCloudDatasetItem[] get_AsItems()
+  - ECMAScript.VueDataUi.VdWordCloudDatasetItem[] get_AsItems()
   - System.Object get_Value()
   - System.String get_AsText()
-  - ECMAScript.VueDataUi.VueUiWordCloudDatasetItem[] AsItems
+  - ECMAScript.VueDataUi.VdWordCloudDatasetItem[] AsItems
   - System.Object Value
   - System.String AsText
-- type ECMAScript.VueDataUi.VueUiWordCloudDatasetItem
+- type ECMAScript.VueDataUi.VdWordCloudDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWordCloudDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWordCloudDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWordCloudDatasetItem, ECMAScript.VueDataUi.VueUiWordCloudDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWordCloudDatasetItem, ECMAScript.VueDataUi.VueUiWordCloudDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWordCloudDatasetItem, ECMAScript.VueDataUi.VdWordCloudDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWordCloudDatasetItem, ECMAScript.VueDataUi.VdWordCloudDatasetItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiWordCloudDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdWordCloudDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Color()
@@ -58616,37 +58616,37 @@
   - Double Value
   - System.String Color
   - System.String Name
-- type ECMAScript.VueDataUi.VueUiWorld
+- type ECMAScript.VueDataUi.VdWorld
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiWorldConfig
+- type ECMAScript.VueDataUi.VdWorldConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWorldConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWorldConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWorldConfig, ECMAScript.VueDataUi.VueUiWorldConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWorldConfig, ECMAScript.VueDataUi.VueUiWorldConfig)
-  - ECMAScript.VueDataUi.VueUiWorldConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWorldConfig, ECMAScript.VueDataUi.VdWorldConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWorldConfig, ECMAScript.VueDataUi.VdWorldConfig)
+  - ECMAScript.VueDataUi.VdWorldConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiWorldDataset
+- type ECMAScript.VueDataUi.VdWorldDataset
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWorldDataset)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWorldDataset)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueDictionary`1)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWorldDataset, ECMAScript.VueDataUi.VueUiWorldDataset)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWorldDataset, ECMAScript.VueDataUi.VueUiWorldDataset)
-  - ECMAScript.VueDataUi.VueUiWorldDataset <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWorldDataset, ECMAScript.VueDataUi.VdWorldDataset)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWorldDataset, ECMAScript.VueDataUi.VdWorldDataset)
+  - ECMAScript.VueDataUi.VdWorldDataset <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiWorldDatasetItem
+- type ECMAScript.VueDataUi.VdWorldDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiWorldDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdWorldDatasetItem)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiWorldDatasetItem, ECMAScript.VueDataUi.VueUiWorldDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiWorldDatasetItem, ECMAScript.VueDataUi.VueUiWorldDatasetItem)
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdWorldDatasetItem, ECMAScript.VueDataUi.VdWorldDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdWorldDatasetItem, ECMAScript.VueDataUi.VdWorldDatasetItem)
   - Double get_Value()
-  - ECMAScript.VueDataUi.VueUiWorldDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdWorldDatasetItem <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
   - System.String get_Category()
@@ -58657,33 +58657,33 @@
   - Double Value
   - System.String Category
   - System.String Color
-- type ECMAScript.VueDataUi.VueUiXy
+- type ECMAScript.VueDataUi.VdXy
   - Void .ctor()
   - System.Nullable`1[System.Int32] get_SelectedXIndex()
   - Void set_SelectedXIndex(System.Nullable`1[System.Int32])
   - System.Nullable`1[System.Int32] SelectedXIndex
-- type ECMAScript.VueDataUi.VueUiXyCanvas
+- type ECMAScript.VueDataUi.VdXyCanvas
   - Void .ctor()
-- type ECMAScript.VueDataUi.VueUiXyCanvasConfig
+- type ECMAScript.VueDataUi.VdXyCanvasConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiXyCanvasConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdXyCanvasConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiXyCanvasConfig, ECMAScript.VueDataUi.VueUiXyCanvasConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiXyCanvasConfig, ECMAScript.VueDataUi.VueUiXyCanvasConfig)
-  - ECMAScript.VueDataUi.VueUiXyCanvasConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdXyCanvasConfig, ECMAScript.VueDataUi.VdXyCanvasConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdXyCanvasConfig, ECMAScript.VueDataUi.VdXyCanvasConfig)
+  - ECMAScript.VueDataUi.VdXyCanvasConfig <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
-- type ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem
+- type ECMAScript.VueDataUi.VdXyCanvasDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdXyCanvasDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem, ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem, ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem)
-  - ECMAScript.VueDataUi.VueUiXyCanvasDatasetItem <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdXyCanvasDatasetItem, ECMAScript.VueDataUi.VdXyCanvasDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdXyCanvasDatasetItem, ECMAScript.VueDataUi.VdXyCanvasDatasetItem)
+  - ECMAScript.VueDataUi.VdXyCanvasDatasetItem <Clone>$()
   - Int32 GetHashCode()
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiXySeriesType] get_Type()
+  - System.Nullable`1[ECMAScript.VueDataUi.VdXySeriesType] get_Type()
   - System.Nullable`1[System.Boolean] get_AutoScaling()
   - System.Nullable`1[System.Boolean] get_DataLabels()
   - System.Nullable`1[System.Boolean] get_ShowYMarker()
@@ -58710,9 +58710,9 @@
   - Void set_Series(System.Nullable`1[System.Double][])
   - Void set_ShowYMarker(System.Nullable`1[System.Boolean])
   - Void set_Suffix(System.String)
-  - Void set_Type(System.Nullable`1[ECMAScript.VueDataUi.VueUiXySeriesType])
+  - Void set_Type(System.Nullable`1[ECMAScript.VueDataUi.VdXySeriesType])
   - Void set_UseArea(System.Nullable`1[System.Boolean])
-  - System.Nullable`1[ECMAScript.VueDataUi.VueUiXySeriesType] Type
+  - System.Nullable`1[ECMAScript.VueDataUi.VdXySeriesType] Type
   - System.Nullable`1[System.Boolean] AutoScaling
   - System.Nullable`1[System.Boolean] DataLabels
   - System.Nullable`1[System.Boolean] ShowYMarker
@@ -58726,30 +58726,30 @@
   - System.String Name
   - System.String Prefix
   - System.String Suffix
-- type ECMAScript.VueDataUi.VueUiXyConfig
+- type ECMAScript.VueDataUi.VdXyConfig
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiConfig)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiXyConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdConfig)
+  - Boolean Equals(ECMAScript.VueDataUi.VdXyConfig)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiXyConfig, ECMAScript.VueDataUi.VueUiXyConfig)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiXyConfig, ECMAScript.VueDataUi.VueUiXyConfig)
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions get_Downsample()
-  - ECMAScript.VueDataUi.VueUiXyConfig <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdXyConfig, ECMAScript.VueDataUi.VdXyConfig)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdXyConfig, ECMAScript.VueDataUi.VdXyConfig)
+  - ECMAScript.VueDataUi.VdDownsampleOptions get_Downsample()
+  - ECMAScript.VueDataUi.VdXyConfig <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_UsePerformanceMode()
   - System.String ToString()
-  - Void set_Downsample(ECMAScript.VueDataUi.VueDataUiDownsampleOptions)
+  - Void set_Downsample(ECMAScript.VueDataUi.VdDownsampleOptions)
   - Void set_UsePerformanceMode(System.Nullable`1[System.Boolean])
-  - ECMAScript.VueDataUi.VueDataUiDownsampleOptions Downsample
+  - ECMAScript.VueDataUi.VdDownsampleOptions Downsample
   - System.Nullable`1[System.Boolean] UsePerformanceMode
-- type ECMAScript.VueDataUi.VueUiXyCoordinate
+- type ECMAScript.VueDataUi.VdXyCoordinate
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiXyCoordinate)
+  - Boolean Equals(ECMAScript.VueDataUi.VdXyCoordinate)
   - Boolean Equals(System.Object)
   - Boolean Equals(VueProps)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiXyCoordinate, ECMAScript.VueDataUi.VueUiXyCoordinate)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiXyCoordinate, ECMAScript.VueDataUi.VueUiXyCoordinate)
-  - ECMAScript.VueDataUi.VueUiXyCoordinate <Clone>$()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdXyCoordinate, ECMAScript.VueDataUi.VdXyCoordinate)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdXyCoordinate, ECMAScript.VueDataUi.VdXyCoordinate)
+  - ECMAScript.VueDataUi.VdXyCoordinate <Clone>$()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Double] get_X()
   - System.Nullable`1[System.Double] get_Y()
@@ -58758,16 +58758,16 @@
   - Void set_Y(System.Nullable`1[System.Double])
   - System.Nullable`1[System.Double] X
   - System.Nullable`1[System.Double] Y
-- type ECMAScript.VueDataUi.VueUiXyDatasetItem
+- type ECMAScript.VueDataUi.VdXyDatasetItem
   - Void .ctor()
-  - Boolean Equals(ECMAScript.VueDataUi.VueDataUiDatasetItem)
-  - Boolean Equals(ECMAScript.VueDataUi.VueUiXyDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdDatasetItem)
+  - Boolean Equals(ECMAScript.VueDataUi.VdXyDatasetItem)
   - Boolean Equals(System.Object)
-  - Boolean op_Equality(ECMAScript.VueDataUi.VueUiXyDatasetItem, ECMAScript.VueDataUi.VueUiXyDatasetItem)
-  - Boolean op_Inequality(ECMAScript.VueDataUi.VueUiXyDatasetItem, ECMAScript.VueDataUi.VueUiXyDatasetItem)
-  - ECMAScript.VueDataUi.VueUiXyDatasetItem <Clone>$()
-  - ECMAScript.VueDataUi.VueUiXySeriesType get_Type()
-  - ECMAScript.VueDataUi.VueUiXySeriesValues get_Series()
+  - Boolean op_Equality(ECMAScript.VueDataUi.VdXyDatasetItem, ECMAScript.VueDataUi.VdXyDatasetItem)
+  - Boolean op_Inequality(ECMAScript.VueDataUi.VdXyDatasetItem, ECMAScript.VueDataUi.VdXyDatasetItem)
+  - ECMAScript.VueDataUi.VdXyDatasetItem <Clone>$()
+  - ECMAScript.VueDataUi.VdXySeriesType get_Type()
+  - ECMAScript.VueDataUi.VdXySeriesValues get_Series()
   - Int32 GetHashCode()
   - System.Nullable`1[System.Boolean] get_DataLabels()
   - System.Nullable`1[System.Boolean] get_Smooth()
@@ -58778,29 +58778,29 @@
   - Void set_Color(System.String)
   - Void set_DataLabels(System.Nullable`1[System.Boolean])
   - Void set_Name(System.String)
-  - Void set_Series(ECMAScript.VueDataUi.VueUiXySeriesValues)
+  - Void set_Series(ECMAScript.VueDataUi.VdXySeriesValues)
   - Void set_Smooth(System.Nullable`1[System.Boolean])
-  - Void set_Type(ECMAScript.VueDataUi.VueUiXySeriesType)
+  - Void set_Type(ECMAScript.VueDataUi.VdXySeriesType)
   - Void set_UseArea(System.Nullable`1[System.Boolean])
-  - ECMAScript.VueDataUi.VueUiXySeriesType Type
-  - ECMAScript.VueDataUi.VueUiXySeriesValues Series
+  - ECMAScript.VueDataUi.VdXySeriesType Type
+  - ECMAScript.VueDataUi.VdXySeriesValues Series
   - System.Nullable`1[System.Boolean] DataLabels
   - System.Nullable`1[System.Boolean] Smooth
   - System.Nullable`1[System.Boolean] UseArea
   - System.String Color
   - System.String Name
-- enum ECMAScript.VueDataUi.VueUiXySeriesType
-  - ECMAScript.VueDataUi.VueUiXySeriesType Bar
-  - ECMAScript.VueDataUi.VueUiXySeriesType Line
-  - ECMAScript.VueDataUi.VueUiXySeriesType Plot
+- enum ECMAScript.VueDataUi.VdXySeriesType
+  - ECMAScript.VueDataUi.VdXySeriesType Bar
+  - ECMAScript.VueDataUi.VdXySeriesType Line
+  - ECMAScript.VueDataUi.VdXySeriesType Plot
   - Int32 value__
-- type ECMAScript.VueDataUi.VueUiXySeriesValues
-  - Void .ctor(ECMAScript.VueDataUi.VueUiXyCoordinate[])
+- type ECMAScript.VueDataUi.VdXySeriesValues
+  - Void .ctor(ECMAScript.VueDataUi.VdXyCoordinate[])
   - Void .ctor(System.Nullable`1[System.Double][])
-  - ECMAScript.VueDataUi.VueUiXyCoordinate[] get_AsCoordinates()
+  - ECMAScript.VueDataUi.VdXyCoordinate[] get_AsCoordinates()
   - System.Nullable`1[System.Double][] get_AsValues()
   - System.Object get_Value()
-  - ECMAScript.VueDataUi.VueUiXyCoordinate[] AsCoordinates
+  - ECMAScript.VueDataUi.VdXyCoordinate[] AsCoordinates
   - System.Nullable`1[System.Double][] AsValues
   - System.Object Value
 

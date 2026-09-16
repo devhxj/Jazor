@@ -12,7 +12,7 @@
 
 ## 扫描范围与规则
 
-当前扫描 `src/ECMAScript/`、`src/Jazor.CLR/`、`src/ECMAScript.Vue/` 与 `src/ECMAScript.Vuetify/`，不依赖运行时反射装载这些项目。Blazor framework 的 CLR mapping 只来自 `src/Jazor.CLR/`；`ECMAScript.Blazor` 是随 `Jazor.Vue` 交付的可选标准 ECMAScript 模拟/投影扩展，不是 whitelist source-root，也不携带 CLR runtime module。
+当前扫描 `src/ECMAScript/`、`src/Jazor.CLR/`、`src/ECMAScript.Vue/` 与 `src/ECMAScript.Vuetify/`，不依赖运行时反射装载这些项目。Blazor framework 的 CLR mapping 只来自 `src/Jazor.CLR/`。
 
 - 未显式提供成员字符串时，key 必须来自 `symbol.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)`。
 - `Op.Discard` 不进入可消费白名单；属性会展开为 getter/setter 记录。
@@ -22,7 +22,7 @@
 ## 运行
 
 ```bash
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 1.0.0-preview.1
+dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 1.0.0-preview.3
 ```
 
 `--version` 必须与当前 lockstep 发布版本一致，可带预发布/构建元数据。生成器不会从脏工作树或最近的旧 tag 猜测版本；

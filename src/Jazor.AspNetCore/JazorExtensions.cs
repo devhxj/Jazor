@@ -23,6 +23,9 @@ public static class JazorExtensions
     private const string XPermittedCrossDomainPoliciesHeaderName = "X-Permitted-Cross-Domain-Policies";
 
     /// <summary>Registers Jazor security headers and generated/browser asset hosting.</summary>
+    /// <remarks>依次注册响应头和资源托管；SSR、SPA fallback 与开发 reload 需单独注册。放在 UsePathBase 之后、fallback 之前。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorHost(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -30,6 +33,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Registers Jazor security headers and generated/browser asset hosting.</summary>
+    /// <remarks>依次注册响应头和资源托管；SSR、SPA fallback 与开发 reload 需单独注册。放在 UsePathBase 之后、fallback 之前。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorHost(
         this IApplicationBuilder app,
         Action<JazorHostOptions>? configure)
@@ -45,6 +52,9 @@ public static class JazorExtensions
     }
 
     /// <summary>Applies Jazor's default response security headers.</summary>
+    /// <remarks>响应开始前只填充尚不存在的响应头；null 或空白配置不写入。AdditionalHeaders 最后应用，也不覆盖已有值。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSecurityHeaders(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -52,6 +62,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Applies configured Jazor response security headers.</summary>
+    /// <remarks>响应开始前只填充尚不存在的响应头；null 或空白配置不写入。AdditionalHeaders 最后应用，也不覆盖已有值。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSecurityHeaders(
         this IApplicationBuilder app,
         Action<JazorSecurityHeaderOptions>? configure)
@@ -64,6 +78,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Applies the supplied Jazor response security headers.</summary>
+    /// <remarks>响应开始前只填充尚不存在的响应头；null 或空白配置不写入。AdditionalHeaders 最后应用，也不覆盖已有值。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="options">用于本次中间件注册的选项。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSecurityHeaders(
         this IApplicationBuilder app,
         JazorSecurityHeaderOptions options)
@@ -86,14 +104,21 @@ public static class JazorExtensions
         return app;
     }
 
-    /// <summary>Serves static files with Jazor's content-type and cache defaults.</summary>
+    /// <summary>Serves static files with source-map content-type support.</summary>
+    /// <remarks>只为 StaticFiles 的内容类型提供器补充 .map → application/json；不设置缓存策略。需要 Jazor 默认缓存头时使用 UseJazorAssets 或 UseJazorArtifacts。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorStaticFiles(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
         return app.UseJazorStaticFiles(new StaticFileOptions());
     }
 
-    /// <summary>Serves configured static files with Jazor's content-type and cache defaults.</summary>
+    /// <summary>Serves configured static files with source-map content-type support.</summary>
+    /// <remarks>只为 StaticFiles 的内容类型提供器补充 .map → application/json；不设置缓存策略。需要 Jazor 默认缓存头时使用 UseJazorAssets 或 UseJazorArtifacts。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorStaticFiles(
         this IApplicationBuilder app,
         Action<StaticFileOptions> configure)
@@ -106,7 +131,11 @@ public static class JazorExtensions
         return app.UseJazorStaticFiles(options);
     }
 
-    /// <summary>Serves static files using the supplied options and Jazor response defaults.</summary>
+    /// <summary>Serves static files using the supplied options and source-map content-type support.</summary>
+    /// <remarks>只为 StaticFiles 的内容类型提供器补充 .map → application/json；不设置缓存策略。需要 Jazor 默认缓存头时使用 UseJazorAssets 或 UseJazorArtifacts。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="options">用于本次中间件注册的选项。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorStaticFiles(
         this IApplicationBuilder app,
         StaticFileOptions options)
@@ -121,6 +150,9 @@ public static class JazorExtensions
     }
 
     /// <summary>Mounts the generated content-root artifact graph at <c>/jazor</c>.</summary>
+    /// <remarks>默认目录为 ContentRootPath/jazor，URL 为 /jazor。注册时至少一个探测文件存在才挂载；首次构建晚于注册时需要重启宿主。挂载后默认对缺失产物返回 404。默认缓存为 no-cache, must-revalidate；显式 immutable 前缀使用一年缓存。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorArtifacts(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -128,6 +160,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Mounts the generated content-root artifact graph with configurable discovery.</summary>
+    /// <remarks>默认目录为 ContentRootPath/jazor，URL 为 /jazor。注册时至少一个探测文件存在才挂载；首次构建晚于注册时需要重启宿主。挂载后默认对缺失产物返回 404。默认缓存为 no-cache, must-revalidate；显式 immutable 前缀使用一年缓存。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorArtifacts(
         this IApplicationBuilder app,
         Action<JazorArtifactOptions>? configure)
@@ -140,6 +176,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Mounts the generated content-root artifact graph using the supplied options.</summary>
+    /// <remarks>默认目录为 ContentRootPath/jazor，URL 为 /jazor。注册时至少一个探测文件存在才挂载；首次构建晚于注册时需要重启宿主。挂载后默认对缺失产物返回 404。默认缓存为 no-cache, must-revalidate；显式 immutable 前缀使用一年缓存。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="options">用于本次中间件注册的选项。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorArtifacts(
         this IApplicationBuilder app,
         JazorArtifactOptions options)
@@ -180,6 +220,9 @@ public static class JazorExtensions
     }
 
     /// <summary>Serves generated Jazor artifacts followed by ordinary web-root assets.</summary>
+    /// <remarks>先挂载生成产物，再执行默认文件解析及 web root 静态文件托管，避免 wwwroot 中旧产物遮蔽新文件。默认补充 nosniff 与 no-cache, must-revalidate；回调最后运行，可覆盖默认头。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorAssets(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -187,6 +230,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Serves generated Jazor artifacts and web-root assets with configuration.</summary>
+    /// <remarks>先挂载生成产物，再执行默认文件解析及 web root 静态文件托管，避免 wwwroot 中旧产物遮蔽新文件。默认补充 nosniff 与 no-cache, must-revalidate；回调最后运行，可覆盖默认头。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorAssets(
         this IApplicationBuilder app,
         Action<JazorAssetOptions>? configure)
@@ -199,6 +246,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Serves generated Jazor artifacts and web-root assets using the supplied options.</summary>
+    /// <remarks>先挂载生成产物，再执行默认文件解析及 web root 静态文件托管，避免 wwwroot 中旧产物遮蔽新文件。默认补充 nosniff 与 no-cache, must-revalidate；回调最后运行，可覆盖默认头。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="options">用于本次中间件注册的选项。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorAssets(
         this IApplicationBuilder app,
         JazorAssetOptions options)
@@ -243,6 +294,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Writes custom SPA HTML for eligible, otherwise-unhandled navigation requests.</summary>
+    /// <remarks>仅对没有已选 endpoint 的 GET/HEAD 导航，在下游返回 404 且响应未开始时写 HTML。默认排除 API、资源路径与带扩展名路径；无 Accept 可通过，显式 Accept 必须包含可接受的 HTML。自定义 writer 负责 ContentType 和 HEAD 空响应体。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="writeHtml">写入 HTML 的回调；取消令牌为 RequestAborted，需自行处理 ContentType 与 HEAD。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml)
@@ -254,6 +309,10 @@ public static class JazorExtensions
     }
 
     /// <summary>Uses a web-root HTML file as the SPA fallback document.</summary>
+    /// <remarks>仅对没有已选 endpoint 的 GET/HEAD 导航，在下游返回 404 且响应未开始时写 HTML。默认排除 API、资源路径与带扩展名路径；无 Accept 可通过，显式 Accept 必须包含可接受的 HTML。自定义 writer 负责 ContentType 和 HEAD 空响应体。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="webRootPagePath">相对 WebRootFileProvider 的 HTML 路径，例如 index.html；请求时不存在则抛出异常。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         string webRootPagePath)
@@ -263,6 +322,11 @@ public static class JazorExtensions
     }
 
     /// <summary>Uses a configured web-root HTML file as the SPA fallback document.</summary>
+    /// <remarks>仅对没有已选 endpoint 的 GET/HEAD 导航，在下游返回 404 且响应未开始时写 HTML。默认排除 API、资源路径与带扩展名路径；无 Accept 可通过，显式 Accept 必须包含可接受的 HTML。自定义 writer 负责 ContentType 和 HEAD 空响应体。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="webRootPagePath">相对 WebRootFileProvider 的 HTML 路径，例如 index.html；请求时不存在则抛出异常。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         string webRootPagePath,
@@ -274,6 +338,11 @@ public static class JazorExtensions
     }
 
     /// <summary>Uses a web-root HTML file and the supplied SPA fallback options.</summary>
+    /// <remarks>仅对没有已选 endpoint 的 GET/HEAD 导航，在下游返回 404 且响应未开始时写 HTML。默认排除 API、资源路径与带扩展名路径；无 Accept 可通过，显式 Accept 必须包含可接受的 HTML。自定义 writer 负责 ContentType 和 HEAD 空响应体。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="webRootPagePath">相对 WebRootFileProvider 的 HTML 路径，例如 index.html；请求时不存在则抛出异常。</param>
+    /// <param name="options">用于本次中间件注册的选项。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         string webRootPagePath,
@@ -285,6 +354,11 @@ public static class JazorExtensions
     }
 
     /// <summary>Writes custom SPA HTML with configurable eligibility rules.</summary>
+    /// <remarks>仅对没有已选 endpoint 的 GET/HEAD 导航，在下游返回 404 且响应未开始时写 HTML。默认排除 API、资源路径与带扩展名路径；无 Accept 可通过，显式 Accept 必须包含可接受的 HTML。自定义 writer 负责 ContentType 和 HEAD 空响应体。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="writeHtml">写入 HTML 的回调；取消令牌为 RequestAborted，需自行处理 ContentType 与 HEAD。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml,
@@ -299,6 +373,11 @@ public static class JazorExtensions
     }
 
     /// <summary>Writes custom SPA HTML using the supplied eligibility rules.</summary>
+    /// <remarks>仅对没有已选 endpoint 的 GET/HEAD 导航，在下游返回 404 且响应未开始时写 HTML。默认排除 API、资源路径与带扩展名路径；无 Accept 可通过，显式 Accept 必须包含可接受的 HTML。自定义 writer 负责 ContentType 和 HEAD 空响应体。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="writeHtml">写入 HTML 的回调；取消令牌为 RequestAborted，需自行处理 ContentType 与 HEAD。</param>
+    /// <param name="options">用于本次中间件注册的选项。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml,

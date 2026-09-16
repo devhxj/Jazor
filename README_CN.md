@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.3&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.1 是当前预览版本。
+> Jazor 1.0.0-preview.3 是当前预览版本。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -34,7 +34,9 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## AI 协作开发
 
-第一版转译器、最初的 500 个测试以及 RazorVue 初版由人工编写。后续开发采用协作式、以 AI 为主的方式，主要使用智谱 GLM-5 系列和 GPT-5 系列作为 AI 协作者；维护者持续负责代码审查、门禁执行和发版决策。
+Jazor 核心编译器、RazorVue 和 CLR 支持的第一版，以及首批 500 个测试，均由人工手写完成，前后投入近两年时间，奠定了项目的技术基础。
+
+在此基础上，AI 主要协助推进文档完善、测试覆盖、外部库封装、迭代优化，以及 CI 和版本管理。后续协作主要使用智谱 GLM-5 系列和 GPT-5 系列；项目方向、代码审查和发版决策仍由维护者负责。
 
 ## 致谢
 
@@ -77,9 +79,9 @@ flowchart LR
 | 包 | 职责 |
 | --- | --- |
 | `Jazor` | 框架无关的编译器、CLR 契约、分析器、emit 工具、MSBuild 与 ASP.NET Core 集成，可用于普通 ECMAScript 类库 |
-| `Jazor.Vue` | Vue authoring、Razor-to-Vue opt-in、Vue runtime 资源，以及 `ECMAScript.Vue`、`ECMAScript.VueContract`、`ECMAScript.Blazor` payload |
+| `Jazor.Vue` | Vue authoring、Razor-to-Vue opt-in、Vue runtime 资源，以及 `ECMAScript.Vue`、`ECMAScript.VueContract` payload |
 | `ECMAScript.*` | 框架无关 ECMAScript 绑定、可选 Vue 生态绑定与 CSS-in-JS 类库 |
-| `ECMAScript.VueDataUi` | `vue-data-ui` 的强类型 RazorVue 图表与按组件本地 ESM 物化 |
+| `ECMAScript.VueDataUi` | `Vd*` 强类型 RazorVue 图表与按组件本地 ESM 物化；[前缀迁移](src/ECMAScript.VueDataUi/README.md#razor-使用) |
 | `ECMAScript.VuIcons` | `vu-icons` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
 | `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
 
@@ -107,15 +109,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.1
+dotnet add package Jazor --version 1.0.0-preview.3
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -196,22 +198,16 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
 ## 发布状态
 
-### Jazor 1.0.0-preview.1 · 2026-09-14
+### Jazor 1.0.0-preview.3 · 2026-09-16
 
-- 首个 1.0 preview 已提供，用于评估冻结候选 API 和已声明功能范围。
-- 预览版已通过公共 API、编译器、Razor-to-Vue、SSR、绑定契约、typed bootstrap、Release 包消费者和 Chrome 样例门禁。
-- 发布候选通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
-- Element Plus、Vuetify 和 TDesign 的 Vue 绑定会在发布前对照生成快照、manifest 与上游版本执行契约检查。
-- RazorVue 诊断支持输出带稳定 ID、HelpLink、作者源码位置和最小修复建议的 SARIF 与 schema `1.0` 报告。
+- Vue Data UI 组件及配套公开类型统一采用 `Vd` 前缀；升级时将 `VueUi*` / `VueDataUi*` 引用迁移到 `Vd*`。
+- 移除空的 ECMAScript.Blazor 程序集，RazorVue CLR 映射继续保留。
+- 补全分析器预诊断；ASP.NET Core API 随包交付 XML 文档及 SPA/SSR/HMR 接入指南。
+- 当前为预发布版本，稳定版 1.0 尚未发布；支持范围与质量门禁见[当前状态](docs/04-roadmap/current-status.md)。
 
-### 1.0 冻结候选状态 · 2026-09-14
+版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.3`。
 
-- 公共 API 快照与冻结基线一致：共 `76,108` 条，新增 `0`，删除 `0`。
-- Release 主线全部通过：Compiler `10,711/10,711`、CLR `5,089/5,089`、Razor SG `4,982/4,982`、Emit `202/202`，其余生态测试也全部通过。
-- `RazorVue.Authoring` 与 `JazorAdmin` 的 Release 样例矩阵通过隔离 NuGet 消费者和 Chrome 浏览器 smoke；typed bootstrap 以及 Element Plus、Vuetify、TDesign 绑定契约门禁也已通过。
-- 这些是 preview 的候选证据；稳定版 1.0 尚未发布。支持范围与明确拒绝边界见[当前状态](docs/04-roadmap/current-status.md)。
-
-完整版本历史见 [更新日志](CHANGELOG.md)。
+主分支可能包含尚未发布的改动。将主分支示例用于已安装包前，请核对[未发布改动与版本历史](CHANGELOG.md)。
 
 ## 许可证与反馈
 

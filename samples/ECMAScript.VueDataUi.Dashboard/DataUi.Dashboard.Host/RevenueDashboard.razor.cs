@@ -12,20 +12,20 @@ namespace DataUi.Dashboard.Host;
 [ECMAScriptModule("dashboard/revenue")]
 public partial class RevenueDashboard : ComponentBase, IVueComponent
 {
-    private readonly VueUiDonutDatasetItem[] revenue =
+    private readonly VdDonutDatasetItem[] revenue =
     [
         new() { Name = "Subscription", Values = [68], Color = "#0f766e" },
         new() { Name = "Usage", Values = [32], Color = "#2563eb" }
     ];
 
-    private readonly VueUiDonutConfig donutConfig = new()
+    private readonly VdDonutConfig donutConfig = new()
     {
         Responsive = true,
         UseCssAnimation = true,
         CustomPalette = ["#0f766e", "#2563eb"]
     };
 
-    private readonly VueUiGaugeDataset conversion = new()
+    private readonly VdGaugeDataset conversion = new()
     {
         Base = 100,
         Value = 74,
@@ -37,13 +37,13 @@ public partial class RevenueDashboard : ComponentBase, IVueComponent
         ]
     };
 
-    private readonly VueUiGaugeConfig gaugeConfig = new()
+    private readonly VdGaugeConfig gaugeConfig = new()
     {
         Responsive = true,
-        Theme = VueDataUiTheme.Light
+        Theme = VdTheme.Light
     };
 
-    private readonly VueUiSparklineDatasetItem[] trend =
+    private readonly VdSparklineDatasetItem[] trend =
     [
         new() { Period = "Mon", Value = 54 },
         new() { Period = "Tue", Value = 61 },
@@ -52,10 +52,10 @@ public partial class RevenueDashboard : ComponentBase, IVueComponent
         new() { Period = "Fri", Value = 74 }
     ];
 
-    private readonly VueUiSparklineConfig trendConfig = new()
+    private readonly VdSparklineConfig trendConfig = new()
     {
         Responsive = true,
-        Type = VueUiSparklineType.Line,
+        Type = VdSparklineType.Line,
         UseCssAnimation = true
     };
 }

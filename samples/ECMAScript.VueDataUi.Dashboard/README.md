@@ -4,7 +4,7 @@
 
 ## 内容
 
-- `RevenueDashboard.razor` 将三个 `VueUi*` chart 放到固定高度容器中，并以 `Responsive = true` 使用 upstream resize 行为。
+- `RevenueDashboard.razor` 将 `VdDonut`、`VdGauge` 和 `VdSparkline` 放到固定高度容器中，并以 `Responsive = true` 使用 upstream resize 行为。
 - `RevenueDashboard.razor.cs` 只使用 `ECMAScript.VueDataUi` 的 typed dataset/config；没有 `object` 或 root `vue-data-ui` import。
 - `build-local.cs` 先在隔离目录打包 `Jazor`、`Jazor.Vue` 和 `ECMAScript.VueDataUi`，随后以 package consumer 方式构建并检查生成的图表 import、style 和 selected ESM entries。
 

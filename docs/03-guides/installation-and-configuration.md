@@ -6,6 +6,8 @@
 
 ## 前置条件
 
+当前版本为 **1.0.0-preview.3（2026-09-16）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前项目目标为 `net11.0`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
 - 普通 ECMAScript 模块库通过 NuGet 包与 `Jazor.Emit` 管理资源闭包。
@@ -17,7 +19,7 @@
 | C# -> ECMAScript 模块 | `Jazor` | 对应的 `ECMAScript.*` 绑定 |
 | 普通 C# -> ECMAScript 类库 | `Jazor` | 不需要 Vue 依赖 |
 | 当前 Razor-to-Vue 集成 | `Jazor`、`Jazor.Vue` | Vue authoring、Razor hook、Vue runtime 与基础 Vue bindings |
-| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；运行时 JavaScript 由 `ECMAScript` 的 `manifest.json + dist/**` 提供；`ECMAScript.Blazor` 仅由 `Jazor.Vue` 带入可选的标准 ECMAScript 模拟/投影扩展 |
+| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；运行时 JavaScript 由 `ECMAScript` 的 `manifest.json + dist/**` 提供 |
 | Vue Router | `Jazor`、`Jazor.Vue`、`ECMAScript.VueRoute` | `ECMAScript.VueRoute` 显式提供 Router bindings |
 | Pinia | `Jazor`、`Jazor.Vue`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
 | Vue Devtools 自定义插件 | `Jazor`、`Jazor.Vue`、`ECMAScript.Vue.Devtools` | `Jazor.Vue` 提供 Vue runtime 闭包 |
@@ -30,7 +32,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
 </ItemGroup>
 ```
 
@@ -43,8 +45,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
-    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -53,15 +55,15 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.1" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.3" />
 </ItemGroup>
 ```
 

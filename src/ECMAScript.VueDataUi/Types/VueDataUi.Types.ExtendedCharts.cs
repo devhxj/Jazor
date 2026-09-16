@@ -1,12 +1,12 @@
 namespace ECMAScript.VueDataUi;
 
 // 3.23.4 complete catalog: these records intentionally model each component's stable input shape.
-// Deep style/options remain extensible through VueDataUiConfig/VueDataUiDatasetItem, never object.
+// Deep style/options remain extensible through VdConfig/VdDatasetItem, never object.
 
-/// <summary>VueUi3dBar 的 breakdown 条目。</summary>
+/// <summary>Vd3dBar 的 breakdown 条目。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUi3dBarDatasetBreakdown : Vue.VueProps
+public record Vd3dBarDatasetBreakdown : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -21,10 +21,10 @@ public record VueUi3dBarDatasetBreakdown : Vue.VueProps
     public double Value { get; init; }
 }
 
-/// <summary>VueUi3dBar 的单个 series。</summary>
+/// <summary>Vd3dBar 的单个 series。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUi3dBarDatasetSeriesItem : VueDataUiDatasetItem
+public record Vd3dBarDatasetSeriesItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -48,13 +48,13 @@ public record VueUi3dBarDatasetSeriesItem : VueDataUiDatasetItem
     /// 当前项数值的细分数据，用于绘制构成部分。
     /// </summary>
     [Description("@#breakdown")]
-    public VueUi3dBarDatasetBreakdown[]? Breakdown { get; init; }
+    public Vd3dBarDatasetBreakdown[]? Breakdown { get; init; }
 }
 
-/// <summary>VueUi3dBar dataset 根对象。</summary>
+/// <summary>Vd3dBar dataset 根对象。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUi3dBarDataset : Vue.VueProps
+public record Vd3dBarDataset : Vue.VueProps
 {
     /// <summary>
     /// 用于绘制百分比进度的数值，通常以 0 到 100 表示。
@@ -66,51 +66,51 @@ public record VueUi3dBarDataset : Vue.VueProps
     /// 本项包含的数据序列；序列顺序决定与图表分类或时间刻度的对应关系。
     /// </summary>
     [Description("@#series")]
-    public VueUi3dBarDatasetSeriesItem[]? Series { get; init; }
+    public Vd3dBarDatasetSeriesItem[]? Series { get; init; }
 }
 
 /// <summary>3D bar configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUi3dBarConfig : VueDataUiConfig;
+public record Vd3dBarConfig : VdConfig;
 
 /// <summary>Accordion configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiAccordionConfig : VueDataUiConfig;
+public record VdAccordionConfig : VdConfig;
 
 /// <summary>Age pyramid configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiAgePyramidConfig : VueDataUiConfig;
+public record VdAgePyramidConfig : VdConfig;
 
 /// <summary>
 /// Age pyramid positional row helper。C# tuple 会 lower 为 object，所以此 helper owns the array shape
 /// required by upstream: <c>[year, rank, left, right]</c>。
 /// </summary>
-public static class VueUiAgePyramidData
+public static class VdAgePyramidData
 {
     /// <summary>
     /// 按 [year, rank, left, right] 顺序构造人口金字塔数据行；left/right 为两侧分组数值。
     /// </summary>
     [ECMAScriptInline("[__arg1, __arg2, __arg3, __arg4]")]
-    public extern static VueDataUiCellValue[] Row(string year, double rank, double? left, double? right);
+    public extern static VdCellValue[] Row(string year, double rank, double? left, double? right);
 }
 
 /// <summary>Annotator 可选 dataset 的结构化 object。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiAnnotatorDataset : VueDataUiDatasetItem;
+public record VdAnnotatorDataset : VdDatasetItem;
 
 /// <summary>Annotator configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiAnnotatorConfig : VueDataUiConfig;
+public record VdAnnotatorConfig : VdConfig;
 
 /// <summary>Bump chart 的 series row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiBumpDatasetItem : VueDataUiDatasetItem
+public record VdBumpDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -134,12 +134,12 @@ public record VueUiBumpDatasetItem : VueDataUiDatasetItem
 /// <summary>Bump chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiBumpConfig : VueDataUiConfig;
+public record VdBumpConfig : VdConfig;
 
 /// <summary>Carousel table dataset。每行 cell 保持 string/number closed domain。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiCarouselTableDataset : Vue.VueProps
+public record VdCarouselTableDataset : Vue.VueProps
 {
     /// <summary>
     /// 按列顺序排列的表头文本。
@@ -151,18 +151,18 @@ public record VueUiCarouselTableDataset : Vue.VueProps
     /// 表格正文的行数据，每行单元格顺序应与表头一致。
     /// </summary>
     [Description("@#body")]
-    public VueDataUiCellValue[][] Body { get; init; } = [];
+    public VdCellValue[][] Body { get; init; } = [];
 }
 
 /// <summary>Carousel table configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiCarouselTableConfig : VueDataUiConfig;
+public record VdCarouselTableConfig : VdConfig;
 
 /// <summary>Chestnut chart breakdown leaf。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiChestnutDatasetBranchBreakdown : Vue.VueProps
+public record VdChestnutDatasetBranchBreakdown : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -186,7 +186,7 @@ public record VueUiChestnutDatasetBranchBreakdown : Vue.VueProps
 /// <summary>Chestnut chart branch。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiChestnutDatasetBranch : Vue.VueProps
+public record VdChestnutDatasetBranch : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -204,13 +204,13 @@ public record VueUiChestnutDatasetBranch : Vue.VueProps
     /// 当前项数值的细分数据，用于绘制构成部分。
     /// </summary>
     [Description("@#breakdown")]
-    public VueUiChestnutDatasetBranchBreakdown[]? Breakdown { get; init; }
+    public VdChestnutDatasetBranchBreakdown[]? Breakdown { get; init; }
 }
 
 /// <summary>Chestnut chart root node。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiChestnutDatasetRoot : VueDataUiDatasetItem
+public record VdChestnutDatasetRoot : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -228,18 +228,18 @@ public record VueUiChestnutDatasetRoot : VueDataUiDatasetItem
     /// 根节点包含的分支数据。
     /// </summary>
     [Description("@#branches")]
-    public VueUiChestnutDatasetBranch[] Branches { get; init; } = [];
+    public VdChestnutDatasetBranch[] Branches { get; init; } = [];
 }
 
 /// <summary>Chestnut chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiChestnutConfig : VueDataUiConfig;
+public record VdChestnutConfig : VdConfig;
 
 /// <summary>Chord matrix dataset。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiChordDataset : Vue.VueProps
+public record VdChordDataset : Vue.VueProps
 {
     /// <summary>
     /// 弦图关系矩阵；行列索引对应 labels 中的节点顺序。
@@ -263,12 +263,12 @@ public record VueUiChordDataset : Vue.VueProps
 /// <summary>Chord chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiChordConfig : VueDataUiConfig;
+public record VdChordConfig : VdConfig;
 
 /// <summary>Circle pack hierarchy node。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiCirclePackDatasetItem : VueDataUiDatasetItem
+public record VdCirclePackDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -292,23 +292,23 @@ public record VueUiCirclePackDatasetItem : VueDataUiDatasetItem
     /// 当前数据项的子节点，用于形成层级或分类细分。
     /// </summary>
     [Description("@#children")]
-    public VueUiCirclePackDatasetItem[]? Children { get; init; }
+    public VdCirclePackDatasetItem[]? Children { get; init; }
 }
 
 /// <summary>Circle pack configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiCirclePackConfig : VueDataUiConfig;
+public record VdCirclePackConfig : VdConfig;
 
 /// <summary>Cursor visual configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiCursorConfig : VueDataUiConfig;
+public record VdCursorConfig : VdConfig;
 
 /// <summary>DAG node authored by callers。额外 metadata 可通过继承的 dictionary 传递。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDagNode : VueDataUiDatasetItem
+public record VdDagNode : VdDatasetItem
 {
     /// <summary>
     /// 数据项的唯一标识；应在当前集合内保持稳定。
@@ -338,7 +338,7 @@ public record VueUiDagNode : VueDataUiDatasetItem
 /// <summary>DAG edge authored by callers。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDagEdge : Vue.VueProps
+public record VdDagEdge : Vue.VueProps
 {
     /// <summary>
     /// 有向边的起始节点 id。
@@ -386,38 +386,38 @@ public record VueUiDagEdge : Vue.VueProps
 /// <summary>DAG dataset root。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDagDataset : Vue.VueProps
+public record VdDagDataset : Vue.VueProps
 {
     /// <summary>
     /// 图中的节点；每个节点的 id 用于边的 from/to 引用。
     /// </summary>
     [Description("@#nodes")]
-    public VueUiDagNode[] Nodes { get; init; } = [];
+    public VdDagNode[] Nodes { get; init; } = [];
 
     /// <summary>
     /// 连接 nodes 中节点的有向边；from/to 应引用节点的 id。
     /// </summary>
     [Description("@#edges")]
-    public VueUiDagEdge[] Edges { get; init; } = [];
+    public VdDagEdge[] Edges { get; init; } = [];
 }
 
 /// <summary>DAG chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDagConfig : VueDataUiConfig;
+public record VdDagConfig : VdConfig;
 
 /// <summary>
-/// Dashboard item props base。具体 chart 可使用 <see cref="VueUiDashboardElementProps{TDataset,TConfig}"/>
+/// Dashboard item props base。具体 chart 可使用 <see cref="VdDashboardElementProps{TDataset,TConfig}"/>
 /// 保持内部 dataset/config 的 exact C# type。
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDashboardElementProps : Vue.VueProps;
+public record VdDashboardElementProps : Vue.VueProps;
 
 /// <summary>Dashboard 中一个具体图表的 typed props。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDashboardElementProps<TDataset, TConfig> : VueUiDashboardElementProps
+public record VdDashboardElementProps<TDataset, TConfig> : VdDashboardElementProps
 {
     /// <summary>
     /// 传入组件的数据；数据形状由当前图表的 Dataset 类型决定。
@@ -435,7 +435,7 @@ public record VueUiDashboardElementProps<TDataset, TConfig> : VueUiDashboardElem
 /// <summary>Dashboard grid 中的一个 component placement。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDashboardElement : VueDataUiDatasetItem
+public record VdDashboardElement : VdDatasetItem
 {
     /// <summary>
     /// 数据项的唯一标识；应在当前集合内保持稳定。
@@ -477,13 +477,13 @@ public record VueUiDashboardElement : VueDataUiDatasetItem
     /// 传给仪表板内嵌图表的参数，包含 dataset 和 config。
     /// </summary>
     [Description("@#props")]
-    public VueUiDashboardElementProps? Props { get; init; }
+    public VdDashboardElementProps? Props { get; init; }
 }
 
 /// <summary>Dashboard <c>change</c> event 的 placement shape。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDashboardPlacedElement : Vue.VueProps
+public record VdDashboardPlacedElement : Vue.VueProps
 {
     /// <summary>
     /// 内嵌组件的名称；用于选择仪表板元素对应的图表渲染器。
@@ -531,30 +531,30 @@ public record VueUiDashboardPlacedElement : Vue.VueProps
 /// <summary>Dashboard <c>copyAlt</c> event payload。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDashboardCopyAlt : Vue.VueProps
+public record VdDashboardCopyAlt : Vue.VueProps
 {
     /// <summary>
     /// 组件的显示和交互配置；具体选项由当前图表的强类型配置定义。
     /// </summary>
     [Description("@#config")]
-    public VueUiDashboardConfig Config { get; init; } = default!;
+    public VdDashboardConfig Config { get; init; } = default!;
 
     /// <summary>
     /// 传入组件的数据；数据形状由当前图表的 Dataset 类型决定。
     /// </summary>
     [Description("@#dataset")]
-    public VueUiDashboardPlacedElement[] Dataset { get; init; } = [];
+    public VdDashboardPlacedElement[] Dataset { get; init; } = [];
 }
 
 /// <summary>Dashboard configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDashboardConfig : VueDataUiConfig;
+public record VdDashboardConfig : VdConfig;
 
 /// <summary>Digits visual configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDigitsConfig : VueDataUiConfig
+public record VdDigitsConfig : VdConfig
 {
     /// <summary>
     /// 背景的 CSS 颜色值。
@@ -578,7 +578,7 @@ public record VueUiDigitsConfig : VueDataUiConfig
 /// <summary>Donut evolution 的 series row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDonutEvolutionDatasetItem : VueDataUiDatasetItem
+public record VdDonutEvolutionDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -602,12 +602,12 @@ public record VueUiDonutEvolutionDatasetItem : VueDataUiDatasetItem
 /// <summary>Donut evolution configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDonutEvolutionConfig : VueDataUiConfig;
+public record VdDonutEvolutionConfig : VdConfig;
 
 /// <summary>
 /// Flow link array helper。The upstream tuple must remain a JavaScript array rather than a C# tuple object.
 /// </summary>
-public static class VueUiFlowData
+public static class VdFlowData
 {
     /// <summary>
     /// 按 [from, to, value] 顺序构造流向图连线；from/to 为节点名称，value 为流量。
@@ -616,23 +616,23 @@ public static class VueUiFlowData
     /// <param name="from">连接起点的节点标识，需与 Nodes 中的节点名称对应。</param>
     /// <param name="to">连接终点的节点标识，需与 Nodes 中的节点名称对应。</param>
     [ECMAScriptInline("[__arg1, __arg2, __arg3]")]
-    public extern static VueDataUiCellValue[] Link(string from, string to, double? value);
+    public extern static VdCellValue[] Link(string from, string to, double? value);
 }
 
 /// <summary>Flow chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiFlowConfig : VueDataUiConfig;
+public record VdFlowConfig : VdConfig;
 
-/// <summary>Galaxy configuration。Dataset reuses <see cref="VueUiDonutDatasetItem"/> rows.</summary>
+/// <summary>Galaxy configuration。Dataset reuses <see cref="VdDonutDatasetItem"/> rows.</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGalaxyConfig : VueDataUiConfig;
+public record VdGalaxyConfig : VdConfig;
 
 /// <summary>Geo map point。Coordinates are emitted as a two-item JavaScript array.</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGeoDatasetItem : VueDataUiDatasetItem
+public record VdGeoDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -668,17 +668,17 @@ public record VueUiGeoDatasetItem : VueDataUiDatasetItem
 /// <summary>Geo map configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGeoConfig : VueDataUiConfig;
+public record VdGeoConfig : VdConfig;
 
 /// <summary>Gizmo configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGizmoConfig : VueDataUiConfig;
+public record VdGizmoConfig : VdConfig;
 
 /// <summary>Hill chart item。The chart deliberately accepts arbitrary metadata alongside these stable fields.</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHillDatasetItem : VueDataUiDatasetItem
+public record VdHillDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项的唯一标识；应在当前集合内保持稳定。
@@ -714,12 +714,12 @@ public record VueUiHillDatasetItem : VueDataUiDatasetItem
 /// <summary>Hill chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHillConfig : VueDataUiConfig;
+public record VdHillConfig : VdConfig;
 
 /// <summary>History plot coordinate。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHistoryPlotValue : Vue.VueProps
+public record VdHistoryPlotValue : Vue.VueProps
 {
     /// <summary>
     /// 数据点在 X 轴上的数值坐标。
@@ -743,7 +743,7 @@ public record VueUiHistoryPlotValue : Vue.VueProps
 /// <summary>History plot series row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHistoryPlotDatasetItem : VueDataUiDatasetItem
+public record VdHistoryPlotDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -755,7 +755,7 @@ public record VueUiHistoryPlotDatasetItem : VueDataUiDatasetItem
     /// 按分类或时间顺序排列的数据点；与对应的标签数组保持相同顺序。
     /// </summary>
     [Description("@#values")]
-    public VueUiHistoryPlotValue[] Values { get; init; } = [];
+    public VdHistoryPlotValue[] Values { get; init; } = [];
 
     /// <summary>
     /// 此项使用的 CSS 颜色值；可覆盖图表默认调色板分配的颜色。
@@ -797,17 +797,17 @@ public record VueUiHistoryPlotDatasetItem : VueDataUiDatasetItem
 /// <summary>History plot configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHistoryPlotConfig : VueDataUiConfig;
+public record VdHistoryPlotConfig : VdConfig;
 
 /// <summary>Mini loader configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiMiniLoaderConfig : VueDataUiConfig;
+public record VdMiniLoaderConfig : VdConfig;
 
 /// <summary>Molecule graph node。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiMoleculeDatasetNode : Vue.VueProps
+public record VdMoleculeDatasetNode : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -825,7 +825,7 @@ public record VueUiMoleculeDatasetNode : Vue.VueProps
     /// 与当前分子节点连接的下一层节点。
     /// </summary>
     [Description("@#nodes")]
-    public VueUiMoleculeDatasetNode[]? Nodes { get; init; }
+    public VdMoleculeDatasetNode[]? Nodes { get; init; }
 
     /// <summary>
     /// 此项使用的 CSS 颜色值；可覆盖图表默认调色板分配的颜色。
@@ -837,12 +837,12 @@ public record VueUiMoleculeDatasetNode : Vue.VueProps
 /// <summary>Molecule graph configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiMoleculeConfig : VueDataUiConfig;
+public record VdMoleculeConfig : VdConfig;
 
 /// <summary>Mood radar's fixed five score buckets。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiMoodRadarDataset : Vue.VueProps
+public record VdMoodRadarDataset : Vue.VueProps
 {
     /// <summary>
     /// 评分为 1 的数量，用于心情雷达图对应维度。
@@ -878,12 +878,12 @@ public record VueUiMoodRadarDataset : Vue.VueProps
 /// <summary>Mood radar configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiMoodRadarConfig : VueDataUiConfig;
+public record VdMoodRadarConfig : VdConfig;
 
 /// <summary>Nested donut ring and its inner donut series。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiNestedDonutsDatasetItem : VueDataUiDatasetItem
+public record VdNestedDonutsDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -895,18 +895,18 @@ public record VueUiNestedDonutsDatasetItem : VueDataUiDatasetItem
     /// 本项包含的数据序列；序列顺序决定与图表分类或时间刻度的对应关系。
     /// </summary>
     [Description("@#series")]
-    public VueUiDonutDatasetItem[] Series { get; init; } = [];
+    public VdDonutDatasetItem[] Series { get; init; } = [];
 }
 
 /// <summary>Nested donuts configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiNestedDonutsConfig : VueDataUiConfig;
+public record VdNestedDonutsConfig : VdConfig;
 
 /// <summary>Onion chart layer。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiOnionDatasetItem : VueDataUiDatasetItem
+public record VdOnionDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -948,12 +948,12 @@ public record VueUiOnionDatasetItem : VueDataUiDatasetItem
 /// <summary>Onion chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiOnionConfig : VueDataUiConfig;
+public record VdOnionConfig : VdConfig;
 
 /// <summary>Parallel coordinate axis values。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiParallelCoordinatePlotDatasetSerieItem : Vue.VueProps
+public record VdParallelCoordinatePlotDatasetSerieItem : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -971,7 +971,7 @@ public record VueUiParallelCoordinatePlotDatasetSerieItem : Vue.VueProps
 /// <summary>Parallel coordinate plot series row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiParallelCoordinatePlotDatasetItem : VueDataUiDatasetItem
+public record VdParallelCoordinatePlotDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -995,18 +995,18 @@ public record VueUiParallelCoordinatePlotDatasetItem : VueDataUiDatasetItem
     /// 本项包含的数据序列；序列顺序决定与图表分类或时间刻度的对应关系。
     /// </summary>
     [Description("@#series")]
-    public VueUiParallelCoordinatePlotDatasetSerieItem[] Series { get; init; } = [];
+    public VdParallelCoordinatePlotDatasetSerieItem[] Series { get; init; } = [];
 }
 
 /// <summary>Parallel coordinate plot configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiParallelCoordinatePlotConfig : VueDataUiConfig;
+public record VdParallelCoordinatePlotConfig : VdConfig;
 
 /// <summary>Quadrant point。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiQuadrantDatasetSerieItem : Vue.VueProps
+public record VdQuadrantDatasetSerieItem : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1030,7 +1030,7 @@ public record VueUiQuadrantDatasetSerieItem : Vue.VueProps
 /// <summary>Quadrant dataset row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiQuadrantDatasetItem : VueDataUiDatasetItem
+public record VdQuadrantDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1054,23 +1054,23 @@ public record VueUiQuadrantDatasetItem : VueDataUiDatasetItem
     /// 本项包含的数据序列；序列顺序决定与图表分类或时间刻度的对应关系。
     /// </summary>
     [Description("@#series")]
-    public VueUiQuadrantDatasetSerieItem[] Series { get; init; } = [];
+    public VdQuadrantDatasetSerieItem[] Series { get; init; } = [];
 }
 
 /// <summary>Quadrant configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiQuadrantConfig : VueDataUiConfig;
+public record VdQuadrantConfig : VdConfig;
 
 /// <summary>Rating detailed scores keyed by label。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRatingDatasetDetailed : Vue.VueDictionary<double>;
+public record VdRatingDatasetDetailed : Vue.VueDictionary<double>;
 
 /// <summary>Rating may be a scalar or a named score dictionary。</summary>
 [ECMAScript]
 [Description("@#")]
-public readonly union VueUiRatingValue(double, VueUiRatingDatasetDetailed)
+public readonly union VdRatingValue(double, VdRatingDatasetDetailed)
 {
     /// <summary>
     /// 读取当前值的 double 分支；不属于该分支时返回 null。
@@ -1078,32 +1078,32 @@ public readonly union VueUiRatingValue(double, VueUiRatingDatasetDetailed)
     public double? AsNumber => Value is double value ? value : default(double?);
 
     /// <summary>
-    /// 读取当前值的 VueUiRatingDatasetDetailed 分支；不属于该分支时返回 null。
+    /// 读取当前值的 VdRatingDatasetDetailed 分支；不属于该分支时返回 null。
     /// </summary>
-    public VueUiRatingDatasetDetailed? AsDetailed => Value as VueUiRatingDatasetDetailed;
+    public VdRatingDatasetDetailed? AsDetailed => Value as VdRatingDatasetDetailed;
 }
 
 /// <summary>Rating and Smiley dataset root。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRatingDataset : Vue.VueProps
+public record VdRatingDataset : Vue.VueProps
 {
     /// <summary>
     /// 当前评分值或按等级细分的评分数据。
     /// </summary>
     [Description("@#rating")]
-    public VueUiRatingValue Rating { get; init; } = default!;
+    public VdRatingValue Rating { get; init; } = default!;
 }
 
 /// <summary>Rating configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRatingConfig : VueDataUiConfig;
+public record VdRatingConfig : VdConfig;
 
 /// <summary>Relation circle entity and its linked ids。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRelationCircleDatasetItem : VueDataUiDatasetItem
+public record VdRelationCircleDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项的唯一标识；应在当前集合内保持稳定。
@@ -1139,12 +1139,12 @@ public record VueUiRelationCircleDatasetItem : VueDataUiDatasetItem
 /// <summary>Relation circle configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRelationCircleConfig : VueDataUiConfig;
+public record VdRelationCircleConfig : VdConfig;
 
 /// <summary>Ridgeline nested datapoint。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRidgelineDatapoint : Vue.VueProps
+public record VdRidgelineDatapoint : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1168,7 +1168,7 @@ public record VueUiRidgelineDatapoint : Vue.VueProps
 /// <summary>Ridgeline series group。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRidgelineDatasetItem : VueDataUiDatasetItem
+public record VdRidgelineDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1180,18 +1180,18 @@ public record VueUiRidgelineDatasetItem : VueDataUiDatasetItem
     /// 组成此山脊分布的数据点集合。
     /// </summary>
     [Description("@#datapoints")]
-    public VueUiRidgelineDatapoint[] Datapoints { get; init; } = [];
+    public VdRidgelineDatapoint[] Datapoints { get; init; } = [];
 }
 
 /// <summary>Ridgeline configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRidgelineConfig : VueDataUiConfig;
+public record VdRidgelineConfig : VdConfig;
 
 /// <summary>Rings chart series row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRingsDatasetItem : VueDataUiDatasetItem
+public record VdRingsDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1215,27 +1215,27 @@ public record VueUiRingsDatasetItem : VueDataUiDatasetItem
 /// <summary>Rings chart configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiRingsConfig : VueDataUiConfig;
+public record VdRingsConfig : VdConfig;
 
 /// <summary>Skeleton visual configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSkeletonConfig : VueDataUiConfig;
+public record VdSkeletonConfig : VdConfig;
 
 /// <summary>Smiley configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSmileyConfig : VueDataUiConfig;
+public record VdSmileyConfig : VdConfig;
 
 /// <summary>Spark trend configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkTrendConfig : VueDataUiConfig;
+public record VdSparkTrendConfig : VdConfig;
 
 /// <summary>Spark gauge dataset root。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkgaugeDataset : Vue.VueProps
+public record VdSparkgaugeDataset : Vue.VueProps
 {
     /// <summary>
     /// 此数据项的数值，参与对应图表的长度、位置、面积或刻度计算。
@@ -1265,12 +1265,12 @@ public record VueUiSparkgaugeDataset : Vue.VueProps
 /// <summary>Spark gauge configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkgaugeConfig : VueDataUiConfig;
+public record VdSparkgaugeConfig : VdConfig;
 
 /// <summary>Spark stackbar segment。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkStackbarDatasetItem : VueDataUiDatasetItem
+public record VdSparkStackbarDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1318,12 +1318,12 @@ public record VueUiSparkStackbarDatasetItem : VueDataUiDatasetItem
 /// <summary>Spark stackbar configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkStackbarConfig : VueDataUiConfig;
+public record VdSparkStackbarConfig : VdConfig;
 
 /// <summary>Strip plot point。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiStripPlotDatasetItem : Vue.VueProps
+public record VdStripPlotDatasetItem : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1341,7 +1341,7 @@ public record VueUiStripPlotDatasetItem : Vue.VueProps
 /// <summary>Strip plot group。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiStripPlotDataset : VueDataUiDatasetItem
+public record VdStripPlotDataset : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1353,18 +1353,18 @@ public record VueUiStripPlotDataset : VueDataUiDatasetItem
     /// 当前条带图分类中的散点数据。
     /// </summary>
     [Description("@#plots")]
-    public VueUiStripPlotDatasetItem[] Plots { get; init; } = [];
+    public VdStripPlotDatasetItem[] Plots { get; init; } = [];
 }
 
 /// <summary>Strip plot configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiStripPlotConfig : VueDataUiConfig;
+public record VdStripPlotConfig : VdConfig;
 
 /// <summary>Thermometer gradient colors。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiThermometerColors : Vue.VueProps
+public record VdThermometerColors : Vue.VueProps
 {
     /// <summary>
     /// 温度渐变起始端的颜色。
@@ -1382,7 +1382,7 @@ public record VueUiThermometerColors : Vue.VueProps
 /// <summary>Thermometer dataset root。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiThermometerDataset : Vue.VueProps
+public record VdThermometerDataset : Vue.VueProps
 {
     /// <summary>
     /// 此数据项的数值，参与对应图表的长度、位置、面积或刻度计算。
@@ -1412,23 +1412,23 @@ public record VueUiThermometerDataset : Vue.VueProps
     /// 温度计颜色渐变的起止配置。
     /// </summary>
     [Description("@#colors")]
-    public VueUiThermometerColors? Colors { get; init; }
+    public VdThermometerColors? Colors { get; init; }
 }
 
 /// <summary>Thermometer configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiThermometerConfig : VueDataUiConfig;
+public record VdThermometerConfig : VdConfig;
 
 /// <summary>Timer configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiTimerConfig : VueDataUiConfig;
+public record VdTimerConfig : VdConfig;
 
 /// <summary>Tiremarks dataset root。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiTiremarksDataset : Vue.VueProps
+public record VdTiremarksDataset : Vue.VueProps
 {
     /// <summary>
     /// 用于绘制百分比进度的数值，通常以 0 到 100 表示。
@@ -1440,12 +1440,12 @@ public record VueUiTiremarksDataset : Vue.VueProps
 /// <summary>Tiremarks configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiTiremarksConfig : VueDataUiConfig;
+public record VdTiremarksConfig : VdConfig;
 
 /// <summary>Wheel dataset root。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiWheelDataset : Vue.VueProps
+public record VdWheelDataset : Vue.VueProps
 {
     /// <summary>
     /// 用于绘制百分比进度的数值，通常以 0 到 100 表示。
@@ -1457,12 +1457,12 @@ public record VueUiWheelDataset : Vue.VueProps
 /// <summary>Wheel configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiWheelConfig : VueDataUiConfig;
+public record VdWheelConfig : VdConfig;
 
 /// <summary>World map country value。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiWorldDatasetItem : Vue.VueProps
+public record VdWorldDatasetItem : Vue.VueProps
 {
     /// <summary>
     /// 此数据项的数值，参与对应图表的长度、位置、面积或刻度计算。
@@ -1486,17 +1486,17 @@ public record VueUiWorldDatasetItem : Vue.VueProps
 /// <summary>World map's ISO-keyed dataset。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiWorldDataset : Vue.VueDictionary<VueUiWorldDatasetItem>;
+public record VdWorldDataset : Vue.VueDictionary<VdWorldDatasetItem>;
 
 /// <summary>World map configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiWorldConfig : VueDataUiConfig;
+public record VdWorldConfig : VdConfig;
 
 /// <summary>XY canvas series row。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiXyCanvasDatasetItem : VueDataUiDatasetItem
+public record VdXyCanvasDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -1520,7 +1520,7 @@ public record VueUiXyCanvasDatasetItem : VueDataUiDatasetItem
     /// 此序列的图形绘制方式，具体选项见枚举成员说明。
     /// </summary>
     [Description("@#type")]
-    public VueUiXySeriesType? Type { get; init; }
+    public VdXySeriesType? Type { get; init; }
 
     /// <summary>
     /// 在此折线序列与基线之间绘制填充区域。
@@ -1586,14 +1586,14 @@ public record VueUiXyCanvasDatasetItem : VueDataUiDatasetItem
 /// <summary>XY canvas configuration。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiXyCanvasConfig : VueDataUiConfig;
+public record VdXyCanvasConfig : VdConfig;
 
 /// <summary>
 /// vue-data-ui SVG pattern 的 closed literal domain。Description 保留 upstream 的 kebab-case
 /// runtime token，避免 C# identifier 命名影响 emitted JavaScript。
 /// </summary>
 [String]
-public enum VueUiPatternName
+public enum VdPatternName
 {
     /// <summary>
     /// 气泡填充图案；上游标识为 “bubbles”。
@@ -1673,7 +1673,7 @@ public enum VueUiPatternName
 /// token 由 Description 固定，新增上游 icon 时应在 catalog parity 测试更新时同步补齐。
 /// </summary>
 [String]
-public enum VueUiIconName
+public enum VdIconName
 {
     /// <summary>
     /// 无障碍图标；上游标识为 “accessibility”。

@@ -5,11 +5,11 @@ namespace ECMAScript.VueDataUi;
 /// <c>vue-data-ui/vue-ui-*</c> entry so a component never pulls the aggregate root bundle.
 /// </summary>
 [ECMAScript("vue-data-ui/vue-ui-3d-bar", Transform.Component, "VueUi3dBar")]
-public sealed class VueUi3dBar : VueDataUiChartComponent<VueUi3dBarDataset, VueUi3dBarConfig>;
+public sealed class Vd3dBar : VdChartComponent<Vd3dBarDataset, Vd3dBarConfig>;
 
 /// <summary>可折叠 content 容器。</summary>
 [ECMAScript("vue-data-ui/vue-ui-accordion", Transform.Component, "VueUiAccordion")]
-public sealed class VueUiAccordion : VueDataUiConfigComponent<VueUiAccordionConfig>
+public sealed class VdAccordion : VdConfigComponent<VdAccordionConfig>
 {
     /// <summary>
     /// 隐藏手风琴的详细内容区域。
@@ -21,94 +21,94 @@ public sealed class VueUiAccordion : VueDataUiConfigComponent<VueUiAccordionConf
 
 /// <summary>年龄金字塔图表。</summary>
 [ECMAScript("vue-data-ui/vue-ui-age-pyramid", Transform.Component, "VueUiAgePyramid")]
-public sealed class VueUiAgePyramid : VueDataUiChartComponent<VueDataUiCellValue[][], VueUiAgePyramidConfig>;
+public sealed class VdAgePyramid : VdChartComponent<VdCellValue[][], VdAgePyramidConfig>;
 
 /// <summary>图表 annotation overlay。</summary>
 [ECMAScript("vue-data-ui/vue-ui-annotator", Transform.Component, "VueUiAnnotator")]
-public sealed class VueUiAnnotator : VueDataUiOptionalDatasetChartComponent<VueUiAnnotatorDataset, VueUiAnnotatorConfig>;
+public sealed class VdAnnotator : VdOptionalDatasetChartComponent<VdAnnotatorDataset, VdAnnotatorConfig>;
 
 /// <summary>排名变化的 bump chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-bump", Transform.Component, "VueUiBump")]
-public sealed class VueUiBump : VueDataUiChartComponent<VueUiBumpDatasetItem[], VueUiBumpConfig>;
+public sealed class VdBump : VdChartComponent<VdBumpDatasetItem[], VdBumpConfig>;
 
 /// <summary>自动滚动 carousel table。</summary>
 [ECMAScript("vue-data-ui/vue-ui-carousel-table", Transform.Component, "VueUiCarouselTable")]
-public sealed class VueUiCarouselTable : VueDataUiChartComponent<VueUiCarouselTableDataset, VueUiCarouselTableConfig>;
+public sealed class VdCarouselTable : VdChartComponent<VdCarouselTableDataset, VdCarouselTableConfig>;
 
 /// <summary>层级 chestnut chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-chestnut", Transform.Component, "VueUiChestnut")]
-public sealed class VueUiChestnut : VueDataUiChartComponent<VueUiChestnutDatasetRoot[], VueUiChestnutConfig>;
+public sealed class VdChestnut : VdChartComponent<VdChestnutDatasetRoot[], VdChestnutConfig>;
 
 /// <summary>矩阵关系 chord chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-chord", Transform.Component, "VueUiChord")]
-public sealed class VueUiChord : VueDataUiChartComponent<VueUiChordDataset, VueUiChordConfig>;
+public sealed class VdChord : VdChartComponent<VdChordDataset, VdChordConfig>;
 
 /// <summary>层级 circle pack chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-circle-pack", Transform.Component, "VueUiCirclePack")]
-public sealed class VueUiCirclePack : VueDataUiChartComponent<VueUiCirclePackDatasetItem[], VueUiCirclePackConfig>;
+public sealed class VdCirclePack : VdChartComponent<VdCirclePackDatasetItem[], VdCirclePackConfig>;
 
 /// <summary>交叉坐标 cursor overlay。</summary>
 [ECMAScript("vue-data-ui/vue-ui-cursor", Transform.Component, "VueUiCursor")]
-public sealed class VueUiCursor : VueDataUiConfigComponent<VueUiCursorConfig>;
+public sealed class VdCursor : VdConfigComponent<VdCursorConfig>;
 
 /// <summary>有向无环图 visualization。</summary>
 [ECMAScript("vue-data-ui/vue-ui-dag", Transform.Component, "VueUiDag")]
-public sealed class VueUiDag : VueDataUiChartComponent<VueUiDagDataset, VueUiDagConfig>;
+public sealed class VdDag : VdChartComponent<VdDagDataset, VdDagConfig>;
 
 /// <summary>可拖动 chart dashboard layout。</summary>
 [ECMAScript("vue-data-ui/vue-ui-dashboard", Transform.Component, "VueUiDashboard")]
-public sealed class VueUiDashboard : VueDataUiChartComponent<VueUiDashboardElement[], VueUiDashboardConfig>
+public sealed class VdDashboard : VdChartComponent<VdDashboardElement[], VdDashboardConfig>
 {
     /// <summary>
     /// 仪表板布局发生变化时触发；携带更新后的组件位置和尺寸。
     /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
-    public EventCallback<VueUiDashboardPlacedElement[]> OnChange { get; set; }
+    public EventCallback<VdDashboardPlacedElement[]> OnChange { get; set; }
 
     /// <summary>
     /// 复制仪表板的替代表示时触发；携带配置和当前布局数据。
     /// </summary>
     [Parameter]
     [ECMAScriptName("onCopyAlt")]
-    public EventCallback<VueUiDashboardCopyAlt> OnCopyAlt { get; set; }
+    public EventCallback<VdDashboardCopyAlt> OnCopyAlt { get; set; }
 }
 
 /// <summary>数码管数值 visual。</summary>
 [ECMAScript("vue-data-ui/vue-ui-digits", Transform.Component, "VueUiDigits")]
-public sealed class VueUiDigits : VueDataUiChartComponent<double, VueUiDigitsConfig>;
+public sealed class VdDigits : VdChartComponent<double, VdDigitsConfig>;
 
 /// <summary>多时段 donut evolution chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-donut-evolution", Transform.Component, "VueUiDonutEvolution")]
-public sealed class VueUiDonutEvolution : VueDataUiChartComponent<VueUiDonutEvolutionDatasetItem[], VueUiDonutEvolutionConfig>;
+public sealed class VdDonutEvolution : VdChartComponent<VdDonutEvolutionDatasetItem[], VdDonutEvolutionConfig>;
 
-/// <summary>source-target flow chart。Use <see cref="VueUiFlowData.Link"/> for each positional row.</summary>
+/// <summary>source-target flow chart。Use <see cref="VdFlowData.Link"/> for each positional row.</summary>
 [ECMAScript("vue-data-ui/vue-ui-flow", Transform.Component, "VueUiFlow")]
-public sealed class VueUiFlow : VueDataUiChartComponent<VueDataUiCellValue[][], VueUiFlowConfig>;
+public sealed class VdFlow : VdChartComponent<VdCellValue[][], VdFlowConfig>;
 
 /// <summary>Galaxy chart，dataset 与 donut rows 共用。</summary>
 [ECMAScript("vue-data-ui/vue-ui-galaxy", Transform.Component, "VueUiGalaxy")]
-public sealed class VueUiGalaxy : VueDataUiChartComponent<VueUiDonutDatasetItem[], VueUiGalaxyConfig>;
+public sealed class VdGalaxy : VdChartComponent<VdDonutDatasetItem[], VdGalaxyConfig>;
 
 /// <summary>地理点位 chart。上游允许 dataset omitted，因此不把参数错误标记为 required。</summary>
 [ECMAScript("vue-data-ui/vue-ui-geo", Transform.Component, "VueUiGeo")]
-public sealed class VueUiGeo : VueDataUiOptionalDatasetChartComponent<VueUiGeoDatasetItem[], VueUiGeoConfig>;
+public sealed class VdGeo : VdOptionalDatasetChartComponent<VdGeoDatasetItem[], VdGeoConfig>;
 
 /// <summary>单值 gizmo visual。</summary>
 [ECMAScript("vue-data-ui/vue-ui-gizmo", Transform.Component, "VueUiGizmo")]
-public sealed class VueUiGizmo : VueDataUiChartComponent<double, VueUiGizmoConfig>;
+public sealed class VdGizmo : VdChartComponent<double, VdGizmoConfig>;
 
 /// <summary>可编辑 hill chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-hill", Transform.Component, "VueUiHill")]
-public sealed class VueUiHill : VueDataUiChartComponent<VueUiHillDatasetItem[], VueUiHillConfig>;
+public sealed class VdHill : VdChartComponent<VdHillDatasetItem[], VdHillConfig>;
 
 /// <summary>History plot chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-history-plot", Transform.Component, "VueUiHistoryPlot")]
-public sealed class VueUiHistoryPlot : VueDataUiChartComponent<VueUiHistoryPlotDatasetItem[], VueUiHistoryPlotConfig>;
+public sealed class VdHistoryPlot : VdChartComponent<VdHistoryPlotDatasetItem[], VdHistoryPlotConfig>;
 
 /// <summary>vue-data-ui icon renderer。</summary>
 [ECMAScript("vue-data-ui/vue-ui-icon", Transform.Component, "VueUiIcon")]
-public sealed class VueUiIcon : ComponentBase, ECMAScript.Vue.IVueComponent
+public sealed class VdIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>
     /// 要显示的内置图标；每个枚举成员说明对应的图形。
@@ -116,7 +116,7 @@ public sealed class VueUiIcon : ComponentBase, ECMAScript.Vue.IVueComponent
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("name")]
-    public VueUiIconName Name { get; set; }
+    public VdIconName Name { get; set; }
 
     /// <summary>
     /// SVG 轮廓使用的描边颜色。
@@ -156,31 +156,31 @@ public sealed class VueUiIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 
 /// <summary>Mini loading indicator。</summary>
 [ECMAScript("vue-data-ui/vue-ui-mini-loader", Transform.Component, "VueUiMiniLoader")]
-public sealed class VueUiMiniLoader : VueDataUiConfigComponent<VueUiMiniLoaderConfig>;
+public sealed class VdMiniLoader : VdConfigComponent<VdMiniLoaderConfig>;
 
 /// <summary>递归 molecule graph。</summary>
 [ECMAScript("vue-data-ui/vue-ui-molecule", Transform.Component, "VueUiMolecule")]
-public sealed class VueUiMolecule : VueDataUiChartComponent<VueUiMoleculeDatasetNode[], VueUiMoleculeConfig>;
+public sealed class VdMolecule : VdChartComponent<VdMoleculeDatasetNode[], VdMoleculeConfig>;
 
 /// <summary>固定五档 mood radar。</summary>
 [ECMAScript("vue-data-ui/vue-ui-mood-radar", Transform.Component, "VueUiMoodRadar")]
-public sealed class VueUiMoodRadar : VueDataUiChartComponent<VueUiMoodRadarDataset, VueUiMoodRadarConfig>;
+public sealed class VdMoodRadar : VdChartComponent<VdMoodRadarDataset, VdMoodRadarConfig>;
 
 /// <summary>多环 nested donuts chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-nested-donuts", Transform.Component, "VueUiNestedDonuts")]
-public sealed class VueUiNestedDonuts : VueDataUiChartComponent<VueUiNestedDonutsDatasetItem[], VueUiNestedDonutsConfig>;
+public sealed class VdNestedDonuts : VdChartComponent<VdNestedDonutsDatasetItem[], VdNestedDonutsConfig>;
 
 /// <summary>同心 onion chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-onion", Transform.Component, "VueUiOnion")]
-public sealed class VueUiOnion : VueDataUiChartComponent<VueUiOnionDatasetItem[], VueUiOnionConfig>;
+public sealed class VdOnion : VdChartComponent<VdOnionDatasetItem[], VdOnionConfig>;
 
 /// <summary>平行坐标图。</summary>
 [ECMAScript("vue-data-ui/vue-ui-parallel-coordinate-plot", Transform.Component, "VueUiParallelCoordinatePlot")]
-public sealed class VueUiParallelCoordinatePlot : VueDataUiChartComponent<VueUiParallelCoordinatePlotDatasetItem[], VueUiParallelCoordinatePlotConfig>;
+public sealed class VdParallelCoordinatePlot : VdChartComponent<VdParallelCoordinatePlotDatasetItem[], VdParallelCoordinatePlotConfig>;
 
 /// <summary>SVG pattern renderer。</summary>
 [ECMAScript("vue-data-ui/vue-ui-pattern", Transform.Component, "VueUiPattern")]
-public sealed class VueUiPattern : ComponentBase
+public sealed class VdPattern : ComponentBase
 {
     /// <summary>
     /// 要使用的内置 SVG 填充图案。
@@ -188,7 +188,7 @@ public sealed class VueUiPattern : ComponentBase
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("name")]
-    public VueUiPatternName Name { get; set; }
+    public VdPatternName Name { get; set; }
 
     /// <summary>
     /// 当前 SVG 图案的唯一 id；使用 url(#id) 引用填充时应保持一致。
@@ -229,7 +229,7 @@ public sealed class VueUiPattern : ComponentBase
 
 /// <summary>根据 seed 生成 deterministic SVG pattern。</summary>
 [ECMAScript("vue-data-ui/vue-ui-pattern-seed", Transform.Component, "VueUiPatternSeed")]
-public sealed class VueUiPatternSeed : ComponentBase
+public sealed class VdPatternSeed : ComponentBase
 {
     /// <summary>
     /// 当前 SVG 图案的唯一 id；使用 url(#id) 引用填充时应保持一致。
@@ -285,68 +285,68 @@ public sealed class VueUiPatternSeed : ComponentBase
 
 /// <summary>四象限 data visualization。</summary>
 [ECMAScript("vue-data-ui/vue-ui-quadrant", Transform.Component, "VueUiQuadrant")]
-public sealed class VueUiQuadrant : VueDataUiChartComponent<VueUiQuadrantDatasetItem[], VueUiQuadrantConfig>;
+public sealed class VdQuadrant : VdChartComponent<VdQuadrantDatasetItem[], VdQuadrantConfig>;
 
 /// <summary>评分 visual。</summary>
 [ECMAScript("vue-data-ui/vue-ui-rating", Transform.Component, "VueUiRating")]
-public sealed class VueUiRating : VueDataUiChartComponent<VueUiRatingDataset, VueUiRatingConfig>;
+public sealed class VdRating : VdChartComponent<VdRatingDataset, VdRatingConfig>;
 
 /// <summary>关系网络圆图。</summary>
 [ECMAScript("vue-data-ui/vue-ui-relation-circle", Transform.Component, "VueUiRelationCircle")]
-public sealed class VueUiRelationCircle : VueDataUiChartComponent<VueUiRelationCircleDatasetItem[], VueUiRelationCircleConfig>;
+public sealed class VdRelationCircle : VdChartComponent<VdRelationCircleDatasetItem[], VdRelationCircleConfig>;
 
 /// <summary>多分布 ridgeline chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-ridgeline", Transform.Component, "VueUiRidgeline")]
-public sealed class VueUiRidgeline : VueDataUiChartComponent<VueUiRidgelineDatasetItem[], VueUiRidgelineConfig>;
+public sealed class VdRidgeline : VdChartComponent<VdRidgelineDatasetItem[], VdRidgelineConfig>;
 
 /// <summary>多层 rings chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-rings", Transform.Component, "VueUiRings")]
-public sealed class VueUiRings : VueDataUiChartComponent<VueUiRingsDatasetItem[], VueUiRingsConfig>;
+public sealed class VdRings : VdChartComponent<VdRingsDatasetItem[], VdRingsConfig>;
 
 /// <summary>内置 chart skeleton renderer。</summary>
 [ECMAScript("vue-data-ui/vue-ui-skeleton", Transform.Component, "VueUiSkeleton")]
-public sealed class VueUiSkeleton : VueDataUiConfigComponent<VueUiSkeletonConfig>;
+public sealed class VdSkeleton : VdConfigComponent<VdSkeletonConfig>;
 
 /// <summary>rating dataset 的 smiley presentation。</summary>
 [ECMAScript("vue-data-ui/vue-ui-smiley", Transform.Component, "VueUiSmiley")]
-public sealed class VueUiSmiley : VueDataUiChartComponent<VueUiRatingDataset, VueUiSmileyConfig>;
+public sealed class VdSmiley : VdChartComponent<VdRatingDataset, VdSmileyConfig>;
 
 /// <summary>轻量 spark trend chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-spark-trend", Transform.Component, "VueUiSparkTrend")]
-public sealed class VueUiSparkTrend : VueDataUiChartComponent<double?[], VueUiSparkTrendConfig>;
+public sealed class VdSparkTrend : VdChartComponent<double?[], VdSparkTrendConfig>;
 
 /// <summary>单值 spark gauge。</summary>
 [ECMAScript("vue-data-ui/vue-ui-sparkgauge", Transform.Component, "VueUiSparkgauge")]
-public sealed class VueUiSparkgauge : VueDataUiChartComponent<VueUiSparkgaugeDataset, VueUiSparkgaugeConfig>;
+public sealed class VdSparkgauge : VdChartComponent<VdSparkgaugeDataset, VdSparkgaugeConfig>;
 
 /// <summary>轻量 stacked bar chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-sparkstackbar", Transform.Component, "VueUiSparkStackbar")]
-public sealed class VueUiSparkStackbar : VueDataUiChartComponent<VueUiSparkStackbarDatasetItem[], VueUiSparkStackbarConfig>;
+public sealed class VdSparkStackbar : VdChartComponent<VdSparkStackbarDatasetItem[], VdSparkStackbarConfig>;
 
 /// <summary>Strip plot chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-strip-plot", Transform.Component, "VueUiStripPlot")]
-public sealed class VueUiStripPlot : VueDataUiChartComponent<VueUiStripPlotDataset[], VueUiStripPlotConfig>;
+public sealed class VdStripPlot : VdChartComponent<VdStripPlotDataset[], VdStripPlotConfig>;
 
 /// <summary>温度计 chart。</summary>
 [ECMAScript("vue-data-ui/vue-ui-thermometer", Transform.Component, "VueUiThermometer")]
-public sealed class VueUiThermometer : VueDataUiChartComponent<VueUiThermometerDataset, VueUiThermometerConfig>;
+public sealed class VdThermometer : VdChartComponent<VdThermometerDataset, VdThermometerConfig>;
 
 /// <summary>带 controls 的计时器 visual。</summary>
 [ECMAScript("vue-data-ui/vue-ui-timer", Transform.Component, "VueUiTimer")]
-public sealed class VueUiTimer : VueDataUiConfigComponent<VueUiTimerConfig>;
+public sealed class VdTimer : VdConfigComponent<VdTimerConfig>;
 
 /// <summary>百分比 tiremarks visual。</summary>
 [ECMAScript("vue-data-ui/vue-ui-tiremarks", Transform.Component, "VueUiTiremarks")]
-public sealed class VueUiTiremarks : VueDataUiChartComponent<VueUiTiremarksDataset, VueUiTiremarksConfig>;
+public sealed class VdTiremarks : VdChartComponent<VdTiremarksDataset, VdTiremarksConfig>;
 
 /// <summary>百分比 wheel visual。</summary>
 [ECMAScript("vue-data-ui/vue-ui-wheel", Transform.Component, "VueUiWheel")]
-public sealed class VueUiWheel : VueDataUiChartComponent<VueUiWheelDataset, VueUiWheelConfig>;
+public sealed class VdWheel : VdChartComponent<VdWheelDataset, VdWheelConfig>;
 
 /// <summary>世界地图 chart。dataset is optional in the upstream prop contract.</summary>
 [ECMAScript("vue-data-ui/vue-ui-world", Transform.Component, "VueUiWorld")]
-public sealed class VueUiWorld : VueDataUiOptionalDatasetChartComponent<VueUiWorldDataset, VueUiWorldConfig>;
+public sealed class VdWorld : VdOptionalDatasetChartComponent<VdWorldDataset, VdWorldConfig>;
 
 /// <summary>Canvas renderer for large XY series。</summary>
 [ECMAScript("vue-data-ui/vue-ui-xy-canvas", Transform.Component, "VueUiXyCanvas")]
-public sealed class VueUiXyCanvas : VueDataUiChartComponent<VueUiXyCanvasDatasetItem[], VueUiXyCanvasConfig>;
+public sealed class VdXyCanvas : VdChartComponent<VdXyCanvasDatasetItem[], VdXyCanvasConfig>;

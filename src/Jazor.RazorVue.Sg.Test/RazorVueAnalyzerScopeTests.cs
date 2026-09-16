@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class RazorVueAnalyzerScopeTests
+public sealed partial class RazorVueAnalyzerScopeTests
 {
     [TestMethod]
     public async Task ComponentSurface_DoesNotTriggerGenericWhitelistAnalyzer()
@@ -658,7 +658,8 @@ public sealed class RazorVueAnalyzerScopeTests
 
     private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(
         string source,
-        bool includeVueContractReference = true)
+        bool includeVueContractReference = true,
+        string? referencedSource = null)
     {
         var references = RazorSgTestHost.CreateMetadataReferences();
         if (!includeVueContractReference)
@@ -670,6 +671,19 @@ public sealed class RazorVueAnalyzerScopeTests
                     vueContractAssemblyPath,
                     StringComparison.OrdinalIgnoreCase))
                 .ToArray();
+        }
+
+        if (referencedSource is not null)
+        {
+            var library = CSharpCompilation.Create(
+                "Analyzer.ExternalHost",
+                [CSharpSyntaxTree.ParseText(referencedSource, new CSharpParseOptions(LanguageVersion.Preview))],
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            using var image = new MemoryStream();
+            var emit = library.Emit(image);
+            Assert.IsTrue(emit.Success, string.Join(Environment.NewLine, emit.Diagnostics));
+            references = [.. references, MetadataReference.CreateFromImage(image.ToArray())];
         }
 
         var compilation = CSharpCompilation.Create(
@@ -687,8 +701,11 @@ public sealed class RazorVueAnalyzerScopeTests
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
 
-        return await compilation
+        var diagnostics = await compilation
             .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new Jazor.Analyzer.Analyzer()))
             .GetAnalyzerDiagnosticsAsync();
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "AD0001"),
+            string.Join(Environment.NewLine, diagnostics));
+        return diagnostics;
     }
 }

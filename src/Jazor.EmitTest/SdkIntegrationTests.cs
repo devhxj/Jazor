@@ -56,8 +56,10 @@ public sealed class SdkIntegrationTests
         var vueEntryNames = vueArchive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
-        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Blazor.dll");
-        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Blazor.pdb");
+        AssertPackageDoesNotContain(
+            package.VuePackagePath,
+            "lib/net11.0/ECMAScript.Blazor.dll",
+            "lib/net11.0/ECMAScript.Blazor.pdb");
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Vue.dll");
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
         CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
@@ -74,11 +76,6 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\" version=\"", StringComparison.Ordinal);
         StringAssert.Contains(vueNuspec, "exclude=\"Build,Analyzers\"", StringComparison.Ordinal);
         StringAssert.Contains(vueNuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />", StringComparison.Ordinal);
-        using var jazorArchiveForBlazorBoundary = ZipFile.OpenRead(package.PackagePath);
-        Assert.IsFalse(
-            jazorArchiveForBlazorBoundary.Entries.Any(static entry =>
-                string.Equals(entry.FullName.Replace('\\', '/'), "lib/net11.0/ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase)),
-            "ECMAScript.Blazor is a Jazor.Vue payload and must not be installed by the Jazor core package.");
         var vueAnalyzerEntries = vueEntryNames
             .Where(static path => path.StartsWith("tools/net11.0/analyzers/", StringComparison.OrdinalIgnoreCase))
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
@@ -220,7 +217,9 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, vueBuild.ExitCode, vueBuild.ToString());
 
         var vueAssets = ReadProjectAssetsText(vueRoot);
-        StringAssert.Contains(vueAssets, "ECMAScript.Blazor.dll", StringComparison.Ordinal);
+        Assert.IsFalse(vueAssets.Contains("ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase), vueAssets);
+        StringAssert.Contains(vueAssets, "ECMAScript.Vue.dll", StringComparison.Ordinal);
+        StringAssert.Contains(vueAssets, "ECMAScript.VueContract.dll", StringComparison.Ordinal);
         StringAssert.Contains(vueAssets, "Jazor.RazorVue.dll", StringComparison.Ordinal);
         StringAssert.Contains(vueAssets, "Microsoft.AspNetCore.App", StringComparison.Ordinal);
         Assert.IsTrue(
@@ -350,8 +349,6 @@ public sealed class SdkIntegrationTests
             package.VuePackagePath,
             "lib/net11.0/ECMAScript.Vue.dll",
             "lib/net11.0/ECMAScript.VueContract.dll",
-            "lib/net11.0/ECMAScript.Blazor.dll",
-            "lib/net11.0/ECMAScript.Blazor.pdb",
             "jazor/vue3/manifest.json",
             "jazor/vue3/dist/vue.runtime.esm-browser.js",
             "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
@@ -4470,8 +4467,13 @@ public sealed class SdkIntegrationTests
             "tools/net11.0/Jazor.Emit.dll");
         AssertPackageEntries(
             vuePackagePath,
-            "lib/net11.0/ECMAScript.Blazor.dll",
+            "lib/net11.0/ECMAScript.Vue.dll",
+            "lib/net11.0/ECMAScript.VueContract.dll",
             "tools/net11.0/analyzers/Jazor.RazorVue.dll");
+        AssertPackageDoesNotContain(
+            vuePackagePath,
+            "lib/net11.0/ECMAScript.Blazor.dll",
+            "lib/net11.0/ECMAScript.Blazor.pdb");
         AssertPackageEntries(
             tdesignPackagePath,
             "lib/net11.0/ECMAScript.TDesign.dll",

@@ -47,8 +47,6 @@
     <None Include="$(JazorVuePackageBuildOutputRoot)ECMAScript.Vue\bin\$(Configuration)\net11.0\ECMAScript.Vue.pdb" Pack="false" />
     <None Include="$(JazorVuePackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="false" />
     <None Include="$(JazorVuePackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="false" />
-    <None Include="$(JazorVuePackageBuildOutputRoot)ECMAScript.Blazor\bin\$(Configuration)\net11.0\ECMAScript.Blazor.dll" Pack="false" />
-    <None Include="$(JazorVuePackageBuildOutputRoot)ECMAScript.Blazor\bin\$(Configuration)\net11.0\ECMAScript.Blazor.pdb" Pack="false" />
     <None Include="$(JazorVuePackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="false" />
     <None Include="$(JazorVuePackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="false" />
     <!-- RazorVue parses static HTML fragments inside the analyzer process; ship its parser beside the analyzer. -->
@@ -56,7 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Blazor\ECMAScript.Blazor.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
     <_JazorVuePackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />

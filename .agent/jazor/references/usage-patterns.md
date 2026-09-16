@@ -6,7 +6,7 @@ Use these patterns as starting points and adjust them to the project inspected b
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 1.0.0-preview.2
+dotnet add Sample.Modules package Jazor --version 1.0.0-preview.3
 ```
 
 ```csharp
@@ -34,8 +34,8 @@ The generated assembly carries `Jazor.Generated.ModuleCatalog`. The final host o
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.2" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -45,11 +45,11 @@ Keep `.razor` parameters strongly typed and valid for official Razor SG. Use Vue
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.2" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.2" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.2" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.2" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.3" />
 </ItemGroup>
 ```
 

@@ -69,8 +69,10 @@
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net11.0\Jazor.AspNetCore.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net11.0\Jazor.AspNetCore.xml" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net11.0\Jazor.AspNetCore.pdb" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.xml" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.pdb" Pack="true" PackagePath="lib\net11.0\" />
   </ItemGroup>
 

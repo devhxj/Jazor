@@ -11,6 +11,11 @@ namespace Jazor.AspNetCore;
 public static class JazorSsrExtensions
 {
     /// <summary>Renders a fixed generated root component for eligible SPA navigation requests.</summary>
+    /// <remarks>先调用 services.AddJazorSsr，并在此中间件之前托管同一套产物。复用 SPA fallback 的导航/404 规则；HEAD 不创建渲染请求。每次渲染创建 Vue app，Deno worker 持久复用。固定 request/props 被各请求共享；请求相关数据应使用 requestFactory。异常沿 ASP.NET Core 管线传播。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="modulePath">相对 SSR 产物根目录的生成模块路径，例如 components/app.mjs；不是浏览器 URL。</param>
+    /// <param name="props">可由 System.Text.Json 序列化的组件 props；同样发送给浏览器 hydration。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSsr(
         this IApplicationBuilder app,
         string modulePath,
@@ -21,6 +26,11 @@ public static class JazorSsrExtensions
     }
 
     /// <summary>Renders the supplied fixed request for eligible SPA navigation requests.</summary>
+    /// <remarks>先调用 services.AddJazorSsr，并在此中间件之前托管同一套产物。复用 SPA fallback 的导航/404 规则；HEAD 不创建渲染请求。每次渲染创建 Vue app，Deno worker 持久复用。固定 request/props 被各请求共享；请求相关数据应使用 requestFactory。异常沿 ASP.NET Core 管线传播。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="request">根模块、props 和 provider 快照；HTTP 固定请求重载会跨请求复用此对象。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSsr(
         this IApplicationBuilder app,
         JazorSsrRequest request,
@@ -35,6 +45,11 @@ public static class JazorSsrExtensions
     }
 
     /// <summary>Renders a request-specific generated root component for eligible SPA navigation requests.</summary>
+    /// <remarks>先调用 services.AddJazorSsr，并在此中间件之前托管同一套产物。复用 SPA fallback 的导航/404 规则；HEAD 不创建渲染请求。每次渲染创建 Vue app，Deno worker 持久复用。固定 request/props 被各请求共享；请求相关数据应使用 requestFactory。异常沿 ASP.NET Core 管线传播。</remarks>
+    /// <param name="app">要注册中间件的应用管线。</param>
+    /// <param name="requestFactory">按请求创建 SSR 输入的工厂，可读取 HttpContext；取消令牌为 RequestAborted。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSsr(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task<JazorSsrRequest>> requestFactory,
@@ -84,6 +99,10 @@ public static class JazorSsrExtensions
             configure);
     // Keep DI and pipeline entry points together: callers only need one SSR extension surface.
     /// <summary>Adds SSR services backed by the packaged DenoHost runtime.</summary>
+    /// <remarks>注册由 DI 管理生命周期的单例 renderer 与产物定位服务。Deno worker 按需创建并受 WorkerCount 限制；此方法不注册 HTTP 中间件。</remarks>
+    /// <param name="services">构建宿主前配置的服务集合。</param>
+    /// <param name="configure">配置此入口的选项；允许 null 的重载使用默认值。</param>
+    /// <returns>原服务集合，供继续注册服务。</returns>
     public static IServiceCollection AddJazorSsr(
         this IServiceCollection services,
         Action<JazorSsrOptions>? configure = null)

@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ECMAScript")]
-[assembly: InternalsVisibleTo("ECMAScript.Blazor")]
 [assembly: InternalsVisibleTo("Jazor.Analyzer")]
 [assembly: InternalsVisibleTo("Jazor.CLR")]
 [assembly: InternalsVisibleTo("Jazor.CLR.Test")]

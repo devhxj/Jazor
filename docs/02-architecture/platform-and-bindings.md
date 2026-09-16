@@ -18,7 +18,7 @@
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |
 | `ECMAScript.Pinia.Testing` | `@pinia/testing` 绑定：测试期 Pinia root、spy 与 initial-state 的 authoring contract |
 | `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
-| `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 binding：完整 71 个公开 `VueUi*` 组件、强类型 dataset/config 与按组件 ESM entry |
+| `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 binding：完整 71 个公开 `Vd*` 组件、强类型 dataset/config 与按组件 ESM entry |
 | `ECMAScript.VuIcons` | `vu-icons` 1.5.4 binding：完整 1,821 个 `Vu*` 图标组件与闭合动态 icon enum |
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
@@ -34,9 +34,8 @@
 | 包/程序集 | 用途 | 交付边界 |
 | --- | --- | --- |
 | `Jazor.CLR` | Blazor framework CLR 类型的生成 module/doc、`[Jazor]` mapping、carrier 与 runtime helper | runtime JavaScript 由 `ECMAScript` 的 `manifest.json + dist/**` 提供；唯一 CLR mapping owner |
-| `ECMAScript.Blazor` | 标准 ECMAScript 模拟/投影扩展作者面 | 独立项目/程序集；由 `Jazor.Vue` NuGet 按需带入，**不**随 `Jazor` 核心包安装；不贡献 whitelist、CLR module 或 runtime mapping |
 
-`Jazor.CLR` 面向 Blazor framework CLR mapping 与 runtime helper；第二个 Razor renderer 的角色并不在其职责之内。所有进入 runtime-sensitive lowering 的 Blazor 类型都先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成 module/doc，再由 `Jazor.CLR` 完善；生成的 runtime JavaScript 作为 `ECMAScript` JS resource library 的 manifest/dist 内容交付。Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责。`ECMAScript.Blazor` 与 `ECMAScript/internal/Math.cs` 同类，只提供公开 ECMAScript 模拟/投影扩展，不扫描进 compiler whitelist source roots。
+`Jazor.CLR` 面向 Blazor framework CLR mapping 与 runtime helper；第二个 Razor renderer 的角色并不在其职责之内。所有进入 runtime-sensitive lowering 的 Blazor 类型都先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成 module/doc，再由 `Jazor.CLR` 完善；生成的 runtime JavaScript 作为 `ECMAScript` JS resource library 的 manifest/dist 内容交付。Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责。
 
 ## 名称与作者契约
 

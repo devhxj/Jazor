@@ -913,7 +913,7 @@ internal static class RazorVueM5CapabilityLedger
             "The route catalog and internal NavigationManager history subset have reference, official SG, Deno, real browser, and isolated Release package evidence for typed route/query refresh, not-found, push/replace/pop history, HistoryEntryState, LocationChanged, and LocationChanging cancellation. External URI, forceLoad, popstate/hashchange cancellation, server circuit, SSR/prerender route identity, and standard Router/RouteView/LayoutView/NavLink composition remain explicitly excluded."),
         new(
             "P0-blazor-clr-mapping-package",
-            "First-party Jazor.CLR generated Blazor mapping package boundary; ECMAScript.Blazor remains an optional authoring projection payload",
+            "First-party Jazor.CLR generated Blazor mapping package boundary",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.Support,
@@ -930,7 +930,7 @@ internal static class RazorVueM5CapabilityLedger
             ImplementationPath = "Jazor.CLR generated Alias/Inline/Import/Allowed modules consumed by Jazor.Compiler.Generator; static CLR mapping ownership remains in Jazor.CLR",
             ContributionContractVersion = "generated-clr-module/v1",
             Dependencies = "Jazor.CLR module/doc source; Jazor.Compiler.Generator; Jazor.Vue lib/net11.0 authoring payload; Microsoft.AspNetCore.App generator reference",
-            ExcludedSurface = "Dynamic third-party mapping discovery; duplicate provider registries; ECMAScript.Blazor mapping contribution; Blazor assets in core Jazor package"
+            ExcludedSurface = "Dynamic third-party mapping discovery; duplicate provider registries; Blazor assets in core Jazor package"
         },
         new(
             "P1-blazor-clr-navigation-location-changing",

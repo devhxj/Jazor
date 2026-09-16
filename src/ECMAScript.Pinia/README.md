@@ -11,9 +11,9 @@ authoring contract。消费方编写的 RazorVue 模块生成到消费程序集�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.1" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
 </ItemGroup>
 ```
 

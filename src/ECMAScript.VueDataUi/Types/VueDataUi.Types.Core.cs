@@ -6,7 +6,7 @@ namespace ECMAScript.VueDataUi;
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record VueDataUiConfig : Vue.VueDictionary<Vue.VueValue>
+public record VdConfig : Vue.VueDictionary<Vue.VueValue>
 {
     /// <summary>启用 upstream debug 输出。Enables upstream debug output.</summary>
     [Description("@#debug")]
@@ -22,7 +22,7 @@ public record VueDataUiConfig : Vue.VueDictionary<Vue.VueValue>
 
     /// <summary>库内置主题。The built-in chart theme.</summary>
     [Description("@#theme")]
-    public VueDataUiTheme? Theme { get; init; }
+    public VdTheme? Theme { get; init; }
 
     /// <summary>替换默认 palette 的颜色列表。Overrides the default color palette.</summary>
     [Description("@#customPalette")]
@@ -39,7 +39,7 @@ public record VueDataUiConfig : Vue.VueDictionary<Vue.VueValue>
 
 /// <summary>vue-data-ui 内置主题 literal。</summary>
 [String]
-public enum VueDataUiTheme
+public enum VdTheme
 {
     /// <summary>
     /// 浅色外观；上游取值为 “light”。
@@ -60,12 +60,12 @@ public enum VueDataUiTheme
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record VueDataUiDatasetItem : Vue.VueDictionary<Vue.VueValue>;
+public record VdDatasetItem : Vue.VueDictionary<Vue.VueValue>;
 
 /// <summary>通用 downsample 选项，适合 XY、scatter 与 sparkline 的大数据量场景。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueDataUiDownsampleOptions : Vue.VueProps
+public record VdDownsampleOptions : Vue.VueProps
 {
     /// <summary>
     /// 降采样后目标数据点数量的阈值。
@@ -77,7 +77,7 @@ public record VueDataUiDownsampleOptions : Vue.VueProps
 /// <summary>通用 chart 标题形状。Common title shape shared by the major chart families.</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueDataUiChartTitle : Vue.VueProps
+public record VdChartTitle : Vue.VueProps
 {
     /// <summary>
     /// 在当前标题或副标题位置显示的文本。
@@ -89,7 +89,7 @@ public record VueDataUiChartTitle : Vue.VueProps
     /// 主标题下方的副标题文本与样式配置。
     /// </summary>
     [Description("@#subtitle")]
-    public VueDataUiChartSubtitle? Subtitle { get; init; }
+    public VdChartSubtitle? Subtitle { get; init; }
 
     /// <summary>
     /// 此项使用的 CSS 颜色值；可覆盖图表默认调色板分配的颜色。
@@ -113,7 +113,7 @@ public record VueDataUiChartTitle : Vue.VueProps
 /// <summary>通用 chart subtitle 形状。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueDataUiChartSubtitle : Vue.VueProps
+public record VdChartSubtitle : Vue.VueProps
 {
     /// <summary>
     /// 在当前标题或副标题位置显示的文本。
@@ -134,7 +134,7 @@ public record VueDataUiChartSubtitle : Vue.VueProps
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public readonly union VueDataUiCellValue(string, double)
+public readonly union VdCellValue(string, double)
 {
     /// <summary>
     /// 读取当前值的 string 分支；不属于该分支时返回 null。
@@ -149,7 +149,7 @@ public readonly union VueDataUiCellValue(string, double)
 
 /// <summary>XY 图表 series 类型。</summary>
 [String]
-public enum VueUiXySeriesType
+public enum VdXySeriesType
 {
     /// <summary>
     /// 以条形绘制数据；上游取值为 “bar”。
@@ -173,7 +173,7 @@ public enum VueUiXySeriesType
 /// <summary>XY coordinate series 的一个点。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiXyCoordinate : Vue.VueProps
+public record VdXyCoordinate : Vue.VueProps
 {
     /// <summary>
     /// 数据点在 X 轴上的数值坐标。
@@ -191,7 +191,7 @@ public record VueUiXyCoordinate : Vue.VueProps
 /// <summary>XY series 可为 sequential values 或显式 coordinates。</summary>
 [ECMAScript]
 [Description("@#")]
-public readonly union VueUiXySeriesValues(double?[], VueUiXyCoordinate[])
+public readonly union VdXySeriesValues(double?[], VdXyCoordinate[])
 {
     /// <summary>
     /// 读取当前值的 double?[] 分支；不属于该分支时返回 null。
@@ -199,15 +199,15 @@ public readonly union VueUiXySeriesValues(double?[], VueUiXyCoordinate[])
     public double?[]? AsValues => Value as double?[];
 
     /// <summary>
-    /// 读取当前值的 VueUiXyCoordinate[] 分支；不属于该分支时返回 null。
+    /// 读取当前值的 VdXyCoordinate[] 分支；不属于该分支时返回 null。
     /// </summary>
-    public VueUiXyCoordinate[]? AsCoordinates => Value as VueUiXyCoordinate[];
+    public VdXyCoordinate[]? AsCoordinates => Value as VdXyCoordinate[];
 }
 
-/// <summary>VueUiXy 的 authoring dataset item。</summary>
+/// <summary>VdXy 的 authoring dataset item。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiXyDatasetItem : VueDataUiDatasetItem
+public record VdXyDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -219,13 +219,13 @@ public record VueUiXyDatasetItem : VueDataUiDatasetItem
     /// 本项包含的数据序列；序列顺序决定与图表分类或时间刻度的对应关系。
     /// </summary>
     [Description("@#series")]
-    public VueUiXySeriesValues Series { get; init; } = default!;
+    public VdXySeriesValues Series { get; init; } = default!;
 
     /// <summary>
     /// 此序列的图形绘制方式，具体选项见枚举成员说明。
     /// </summary>
     [Description("@#type")]
-    public VueUiXySeriesType Type { get; init; }
+    public VdXySeriesType Type { get; init; }
 
     /// <summary>
     /// 此项使用的 CSS 颜色值；可覆盖图表默认调色板分配的颜色。
@@ -255,13 +255,13 @@ public record VueUiXyDatasetItem : VueDataUiDatasetItem
 /// <summary>XY config 的稳定公共字段；详细 layout 继续可通过基类字典加 record 扩展。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiXyConfig : VueDataUiConfig
+public record VdXyConfig : VdConfig
 {
     /// <summary>
     /// 大数据量时的降采样配置，可设置保留数据点的阈值。
     /// </summary>
     [Description("@#downsample")]
-    public VueDataUiDownsampleOptions? Downsample { get; init; }
+    public VdDownsampleOptions? Downsample { get; init; }
 
     /// <summary>
     /// 启用面向大数据量的性能模式；组件将使用其性能模式的绘制策略。
@@ -270,10 +270,10 @@ public record VueUiXyConfig : VueDataUiConfig
     public bool? UsePerformanceMode { get; init; }
 }
 
-/// <summary>VueUiDonut 的 authoring dataset item。</summary>
+/// <summary>VdDonut 的 authoring dataset item。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDonutDatasetItem : VueDataUiDatasetItem
+public record VdDonutDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -301,12 +301,12 @@ public record VueUiDonutDatasetItem : VueDataUiDatasetItem
 }
 
 /// <summary>
-/// VueUiDonut <c>selectLegend</c> event 的图例摘要。它是 runtime emitted shape，
+/// VdDonut <c>selectLegend</c> event 的图例摘要。它是 runtime emitted shape，
 /// 与 authoring dataset 分开，避免把 <c>values</c> 误当成单一聚合值。
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDonutLegendItem : Vue.VueProps
+public record VdDonutLegendItem : Vue.VueProps
 {
     /// <summary>
     /// 此项使用的 CSS 颜色值；可覆盖图表默认调色板分配的颜色。
@@ -330,12 +330,12 @@ public record VueUiDonutLegendItem : Vue.VueProps
 /// <summary>Donut 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiDonutConfig : VueDataUiConfig;
+public record VdDonutConfig : VdConfig;
 
 /// <summary>Gauge 的一个 range series。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGaugeDatasetSerieItem : Vue.VueProps
+public record VdGaugeDatasetSerieItem : Vue.VueProps
 {
     /// <summary>
     /// 当前区间的起始数值。
@@ -362,10 +362,10 @@ public record VueUiGaugeDatasetSerieItem : Vue.VueProps
     public string? Name { get; init; }
 }
 
-/// <summary>VueUiGauge 的 dataset。</summary>
+/// <summary>VdGauge 的 dataset。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGaugeDataset : Vue.VueProps
+public record VdGaugeDataset : Vue.VueProps
 {
     /// <summary>
     /// 仪表盘的基准数值。
@@ -383,7 +383,7 @@ public record VueUiGaugeDataset : Vue.VueProps
     /// 本项包含的数据序列；序列顺序决定与图表分类或时间刻度的对应关系。
     /// </summary>
     [Description("@#series")]
-    public VueUiGaugeDatasetSerieItem[] Series { get; init; } = [];
+    public VdGaugeDatasetSerieItem[] Series { get; init; } = [];
 
     /// <summary>
     /// 数据项的唯一标识；应在当前集合内保持稳定。
@@ -395,12 +395,12 @@ public record VueUiGaugeDataset : Vue.VueProps
 /// <summary>Gauge 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiGaugeConfig : VueDataUiConfig;
+public record VdGaugeConfig : VdConfig;
 
 /// <summary>Vertical/Horizontal bar children。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiVerticalBarDatasetChild : Vue.VueProps
+public record VdVerticalBarDatasetChild : Vue.VueProps
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -418,7 +418,7 @@ public record VueUiVerticalBarDatasetChild : Vue.VueProps
 /// <summary>Vertical/Horizontal bar 的 dataset item。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiVerticalBarDatasetItem : VueDataUiDatasetItem
+public record VdVerticalBarDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -442,7 +442,7 @@ public record VueUiVerticalBarDatasetItem : VueDataUiDatasetItem
     /// 当前数据项的子节点，用于形成层级或分类细分。
     /// </summary>
     [Description("@#children")]
-    public VueUiVerticalBarDatasetChild[]? Children { get; init; }
+    public VdVerticalBarDatasetChild[]? Children { get; init; }
 }
 
 /// <summary>
@@ -451,22 +451,22 @@ public record VueUiVerticalBarDatasetItem : VueDataUiDatasetItem
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHorizontalBarDatasetItem : VueUiVerticalBarDatasetItem;
+public record VdHorizontalBarDatasetItem : VdVerticalBarDatasetItem;
 
 /// <summary>Vertical bar 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiVerticalBarConfig : VueDataUiConfig;
+public record VdVerticalBarConfig : VdConfig;
 
 /// <summary>Horizontal bar 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiHorizontalBarConfig : VueUiVerticalBarConfig;
+public record VdHorizontalBarConfig : VdVerticalBarConfig;
 
 /// <summary>Sparkline 的时序点。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparklineDatasetItem : Vue.VueProps
+public record VdSparklineDatasetItem : Vue.VueProps
 {
     /// <summary>
     /// 此数据点对应的时间段或分类标签。
@@ -483,7 +483,7 @@ public record VueUiSparklineDatasetItem : Vue.VueProps
 
 /// <summary>Sparkline 的绘制形式。</summary>
 [String]
-public enum VueUiSparklineType
+public enum VdSparklineType
 {
     /// <summary>
     /// 线条形式；上游取值为 “line”。
@@ -501,25 +501,25 @@ public enum VueUiSparklineType
 /// <summary>Sparkline 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparklineConfig : VueDataUiConfig
+public record VdSparklineConfig : VdConfig
 {
     /// <summary>
     /// 此序列的图形绘制方式，具体选项见枚举成员说明。
     /// </summary>
     [Description("@#type")]
-    public VueUiSparklineType? Type { get; init; }
+    public VdSparklineType? Type { get; init; }
 
     /// <summary>
     /// 大数据量时的降采样配置，可设置保留数据点的阈值。
     /// </summary>
     [Description("@#downsample")]
-    public VueDataUiDownsampleOptions? Downsample { get; init; }
+    public VdDownsampleOptions? Downsample { get; init; }
 }
 
 /// <summary>Sparkbar 的 dataset item。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkbarDatasetItem : VueDataUiDatasetItem
+public record VdSparkbarDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 数据项或序列的显示名称，用于标签、图例和提示内容。
@@ -555,12 +555,12 @@ public record VueUiSparkbarDatasetItem : VueDataUiDatasetItem
 /// <summary>Sparkbar 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkbarConfig : VueDataUiConfig;
+public record VdSparkbarConfig : VdConfig;
 
 /// <summary>Spark histogram 的单柱 input。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkHistogramDatasetItem : VueDataUiDatasetItem
+public record VdSparkHistogramDatasetItem : VdDatasetItem
 {
     /// <summary>
     /// 此数据项的数值，参与对应图表的长度、位置、面积或刻度计算。
@@ -584,4 +584,4 @@ public record VueUiSparkHistogramDatasetItem : VueDataUiDatasetItem
 /// <summary>Spark histogram 的稳定公共 config surface。</summary>
 [ECMAScript]
 [Description("@#")]
-public record VueUiSparkHistogramConfig : VueDataUiConfig;
+public record VdSparkHistogramConfig : VdConfig;

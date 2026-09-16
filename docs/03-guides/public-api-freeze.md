@@ -1,5 +1,7 @@
 # 1.0 公共 API 冻结审查
 
+> 当前已发布版本：[1.0.0-preview.3（2026-09-16）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+
 > 状态：核心 API 冻结条件已满足，`1.0.0-preview.1` 已作为首个冻结候选发布；正式 `1.0.0` 仍待在候选 ref 上完成最终复核与完整 RC 门禁。本文是 1.0 发布前的契约基线；任何新增、删除、重命名或签名改变都必须先更新本文、测试和 CHANGELOG。长期发布认证、多版本兼容矩阵和性能趋势属于 1.0 之后的运营质量工作，不作为核心冻结阻塞。
 
 ## 审查结论
@@ -84,7 +86,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.1
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.3
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only stage1,stage2` 只适用于局部复核，正式候选必须运行完整序列。

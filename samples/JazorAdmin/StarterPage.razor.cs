@@ -153,7 +153,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         Option("supplement", L("Supplementary invoice", "补充发票"))
     ];
 
-    private VueUiVerticalBarDatasetItem[] StarterTrendItems =>
+    private VdVerticalBarDatasetItem[] StarterTrendItems =>
     [
         new() { Name = "Mon", Value = 42, Color = "#0052d9" },
         new() { Name = "Tue", Value = 68, Color = "#0052d9" },
@@ -166,15 +166,15 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
 
     // The overview uses two comparable line series with area fill, matching the
     // Starter information hierarchy while keeping the detailed demo pages on bars.
-    private VueUiXyDatasetItem[] StarterTrendSeries =>
+    private VdXyDatasetItem[] StarterTrendSeries =>
     [
-        new() { Name = L("Visits", "访问量"), Series = (VueUiXySeriesValues)new double?[] { 42, 68, 54, 88, 74, 91, 79 }, Type = VueUiXySeriesType.Line, Color = "#0052d9", UseArea = true, Smooth = true },
-        new() { Name = L("Previous period", "上期"), Series = (VueUiXySeriesValues)new double?[] { 36, 55, 49, 63, 60, 72, 66 }, Type = VueUiXySeriesType.Line, Color = "#8b9bb4", UseArea = true, Smooth = true }
+        new() { Name = L("Visits", "访问量"), Series = (VdXySeriesValues)new double?[] { 42, 68, 54, 88, 74, 91, 79 }, Type = VdXySeriesType.Line, Color = "#0052d9", UseArea = true, Smooth = true },
+        new() { Name = L("Previous period", "上期"), Series = (VdXySeriesValues)new double?[] { 36, 55, 49, 63, 60, 72, 66 }, Type = VdXySeriesType.Line, Color = "#8b9bb4", UseArea = true, Smooth = true }
     ];
 
-    private static readonly VueUiXyConfig StarterTrendXyConfig = new() { Responsive = true };
+    private static readonly VdXyConfig StarterTrendXyConfig = new() { Responsive = true };
 
-    private VueUiVerticalBarDatasetItem[] DeploymentTrendItems =>
+    private VdVerticalBarDatasetItem[] DeploymentTrendItems =>
     [
         new() { Name = "Mon", Value = 35, Color = "#0052d9" },
         new() { Name = "Tue", Value = 66, Color = "#0052d9" },
@@ -182,14 +182,14 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         new() { Name = "Thu", Value = 92, Color = "#0052d9" }
     ];
 
-    private VueUiVerticalBarDatasetItem[] WarningTrendItems =>
+    private VdVerticalBarDatasetItem[] WarningTrendItems =>
     [
         new() { Name = "Mon", Value = 24, Color = "#ed7b2f" },
         new() { Name = "Tue", Value = 48, Color = "#ed7b2f" },
         new() { Name = "Wed", Value = 12, Color = "#ed7b2f" }
     ];
 
-    private VueUiSparklineDatasetItem[] UserVisitItems =>
+    private VdSparklineDatasetItem[] UserVisitItems =>
     [
         new() { Period = "Mon", Value = 48 },
         new() { Period = "Tue", Value = 72 },
@@ -197,17 +197,17 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         new() { Period = "Thu", Value = 86 }
     ];
 
-    private static readonly VueUiVerticalBarConfig StarterTrendConfig = new() { Responsive = true };
-    private static readonly VueUiSparklineConfig UserVisitConfig = new() { Responsive = true, Type = VueUiSparklineType.Line };
+    private static readonly VdVerticalBarConfig StarterTrendConfig = new() { Responsive = true };
+    private static readonly VdSparklineConfig UserVisitConfig = new() { Responsive = true, Type = VdSparklineType.Line };
 
-    private VueUiDonutDatasetItem[] StarterDistributionItems =>
+    private VdDonutDatasetItem[] StarterDistributionItems =>
     [
         new() { Name = L("Direct", "直接访问"), Values = [45], Color = "#0052d9" },
         new() { Name = L("Search", "搜索"), Values = [32], Color = "#00a870" },
         new() { Name = L("Referral", "推荐"), Values = [23], Color = "#edb105" }
     ];
 
-    private static readonly VueUiDonutConfig StarterDistributionConfig = new() { Responsive = true };
+    private static readonly VdDonutConfig StarterDistributionConfig = new() { Responsive = true };
 
     private string AdvancedStatusText
         => advancedApproved ? L("Approved", "已审核") : L("Pending review", "待审核");

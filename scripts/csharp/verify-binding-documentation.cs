@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 // Run from the repository root. --no-build checks existing Debug output.
 // --packages DIR also validates the XML inside every shipping binding package.
 // --baseline REF verifies that this documentation-only change preserves C# tokens.
+// --library NAME[,NAME] selects binding or ASP.NET Core libraries for focused checks.
 var root = Directory.GetCurrentDirectory();
 if (!File.Exists(Path.Combine(root, "Jazor.slnx")))
     throw new InvalidOperationException("Run from the repository root.");
@@ -22,8 +23,16 @@ var libraries = new[]
     "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue", "ECMAScript.VueContract",
     "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute",
     "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi", "ECMAScript.VuIcons",
-    "ECMAScript.Style", "ECMAScript.ElementPlus", "ECMAScript.Vuetify", "ECMAScript.TDesign"
+    "ECMAScript.Style", "ECMAScript.ElementPlus", "ECMAScript.Vuetify", "ECMAScript.TDesign",
+    "Jazor.AspNetCore", "Jazor.AspNetCore.Dev"
 };
+if (Option("--library") is { } selection)
+{
+    var selected = selection.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+    if (selected.Length == 0 || selected.Except(libraries).Any())
+        throw new ArgumentException("--library must name known documentation libraries: " + string.Join(", ", libraries));
+    libraries = selected;
+}
 var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview)
     .WithDocumentationMode(DocumentationMode.Diagnose);
 var configuration = Option("--configuration") ?? "Debug";
@@ -120,7 +129,7 @@ if (Option("--packages") is { } packages)
     {
         var packageId = library switch
         {
-            "ECMAScript" or "ECMAScript.Contract" => "Jazor",
+            "ECMAScript" or "ECMAScript.Contract" or "Jazor.AspNetCore" or "Jazor.AspNetCore.Dev" => "Jazor",
             "ECMAScript.Vue" or "ECMAScript.VueContract" => "Jazor.Vue",
             _ => library
         };

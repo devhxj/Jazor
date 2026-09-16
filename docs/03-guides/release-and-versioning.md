@@ -1,5 +1,7 @@
 # 发版与版本规则
 
+> 当前已发布版本：[1.0.0-preview.3（2026-09-16）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
 ## 版本号语义

@@ -10,7 +10,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 1.0.0-preview.1
+dotnet add Sample.Modules package Jazor --version 1.0.0-preview.3
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -36,7 +36,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 1.0.0-preview.1
+dotnet add Sample.Host package Jazor --version 1.0.0-preview.3
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
@@ -64,7 +64,7 @@ dotnet build Sample.Host
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

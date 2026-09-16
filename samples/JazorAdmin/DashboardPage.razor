@@ -21,19 +21,19 @@
 
     <div class="ja-dash__metrics" aria-label="@L("Platform operations", "平台运营")" data-metric-count="4">
         <div class="ja-metric" data-metric="active-applications" aria-label="@L("Active applications", "活跃应用")">
-            <VueUiKpi Dataset="@(overview?.Applications ?? 0)" Config="@ApplicationKpiConfig" />
+            <VdKpi Dataset="@(overview?.Applications ?? 0)" Config="@ApplicationKpiConfig" />
             <div class="ja-metric__footer"><span>@(overview?.PortalApplications.Length ?? 0) @L("portal entries enabled", "个门户入口已启用")</span></div>
         </div>
         <div class="ja-metric" data-metric="sign-ins" aria-label="@L("Sign-ins (7d)", "登录次数（近 7 天）")">
-            <VueUiKpi Dataset="@TotalSignIns" Config="@SignInKpiConfig" />
+            <VdKpi Dataset="@TotalSignIns" Config="@SignInKpiConfig" />
             <div class="ja-metric__footer"><span>@L("interactive authorization-code requests", "交互式授权码请求")</span></div>
         </div>
         <div class="ja-metric" data-metric="token-issuances" aria-label="@L("Token issuances (7d)", "令牌签发（近 7 天）")">
-            <VueUiKpi Dataset="@(overview?.TokenIssuances ?? 0)" Config="@TokenKpiConfig" />
+            <VdKpi Dataset="@(overview?.TokenIssuances ?? 0)" Config="@TokenKpiConfig" />
             <div class="ja-metric__footer"><span>@L("access, refresh, and authorization code", "访问、刷新与授权码")</span></div>
         </div>
         <div class="ja-metric" data-metric="audit-events" aria-label="@L("Audit events (7d)", "审计事件（近 7 天）")">
-            <VueUiKpi Dataset="@(overview?.AuditEvents ?? 0)" Config="@AuditKpiConfig" />
+            <VdKpi Dataset="@(overview?.AuditEvents ?? 0)" Config="@AuditKpiConfig" />
             <div class="ja-metric__footer"><span>@L("recorded in the last 7 days", "近 7 天已记录")</span></div>
         </div>
     </div>
@@ -54,7 +54,7 @@
                 }
                 else if (HasSignInActivity)
                 {
-                    <VueUiVerticalBar Dataset="@SignInTrendItems" Config="@SignInTrendConfig" />
+                    <VdVerticalBar Dataset="@SignInTrendItems" Config="@SignInTrendConfig" />
                 }
                 else
                 {
@@ -80,7 +80,7 @@
                 }
                 else if (HasInventory)
                 {
-                    <VueUiDonut Dataset="@DistributionItems" Config="@DistributionConfig" />
+                    <VdDonut Dataset="@DistributionItems" Config="@DistributionConfig" />
                 }
                 else
                 {

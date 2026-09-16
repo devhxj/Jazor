@@ -25,56 +25,56 @@ public partial class DashboardPage : AppComponentBase, IVueContainerComponent
     private OverviewView? overview;
     private int loadVersion;
 
-    // KPI 数字卡走 VueUiKpi；标题属于页面文案，必须随当前界面语言重新投影。
-    // KPI cards use VueUiKpi; their titles are page copy and must follow the active language.
-    private VueUiKpiConfig ApplicationKpiConfig => new()
+    // KPI 数字卡走 VdKpi；标题属于页面文案，必须随当前界面语言重新投影。
+    // KPI cards use VdKpi; their titles are page copy and must follow the active language.
+    private VdKpiConfig ApplicationKpiConfig => new()
     {
         Title = L("Active applications", "活跃应用"),
         UseAnimation = true
     };
 
-    private VueUiKpiConfig SignInKpiConfig => new()
+    private VdKpiConfig SignInKpiConfig => new()
     {
         Title = L("Sign-ins (7d)", "登录次数（近 7 天）"),
         UseAnimation = true
     };
 
-    private VueUiKpiConfig TokenKpiConfig => new()
+    private VdKpiConfig TokenKpiConfig => new()
     {
         Title = L("Token issuances (7d)", "令牌签发（近 7 天）"),
         UseAnimation = true
     };
 
-    private VueUiKpiConfig AuditKpiConfig => new()
+    private VdKpiConfig AuditKpiConfig => new()
     {
         Title = L("Audit events (7d)", "审计事件（近 7 天）"),
         UseAnimation = true
     };
 
-    private static readonly VueUiVerticalBarConfig SignInTrendConfig = new()
+    private static readonly VdVerticalBarConfig SignInTrendConfig = new()
     {
         Responsive = true
     };
 
-    private static readonly VueUiDonutConfig DistributionConfig = new()
+    private static readonly VdDonutConfig DistributionConfig = new()
     {
         Responsive = true
     };
 
     // 登录趋势直接来自审计中的 authorization_code 签发，而不是把 Quartz 调度记录误作用户活动。
     // Sign-in trend is derived from audited authorization-code issuance, not Quartz task activity.
-    private VueUiVerticalBarDatasetItem[] SignInTrendItems
+    private VdVerticalBarDatasetItem[] SignInTrendItems
     {
         get
         {
             if (overview?.RecentAudit is not { Length: > 0 } audit)
                 return [];
 
-            var items = new VueUiVerticalBarDatasetItem[audit.Length];
+            var items = new VdVerticalBarDatasetItem[audit.Length];
             for (var index = 0; index < audit.Length; index++)
             {
                 var day = audit[index];
-                items[index] = new VueUiVerticalBarDatasetItem
+                items[index] = new VdVerticalBarDatasetItem
                 {
                     Name = ToDayLabel(day.Date),
                     Value = day.SignIns,
@@ -89,7 +89,7 @@ public partial class DashboardPage : AppComponentBase, IVueContainerComponent
     // 平台运营库存：账号、OpenID 应用和当前有效令牌。零库存时不把 0 值交给 donut，
     // 因为图表库会尝试计算百分比并显示 NaN%。
     // Do not pass an all-zero donut dataset: the chart library would calculate NaN percentages.
-    private VueUiDonutDatasetItem[] DistributionItems =>
+    private VdDonutDatasetItem[] DistributionItems =>
     [
         new() { Name = L("Accounts", "账号"), Values = [overview?.Accounts ?? 0], Color = "#0052d9" },
         new() { Name = L("OpenID applications", "OpenID 应用"), Values = [overview?.Applications ?? 0], Color = "#00a6a6" },

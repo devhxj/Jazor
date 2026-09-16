@@ -17,7 +17,7 @@ namespace Jazor.Analyzer;
 /// </summary>
 /// <remarks>
 /// 约定“ES特性”包括 <b>[ECMAScript]</b>、<b>[ECMAScriptModule]</b>。分析器会诊断进入该编译域的源声明：
-/// class 同时分析声明和方法体，interface 与 delegate 只分析其声明签名，不考虑“ES特性”的来源。
+/// class 与 structural record（含 record struct）同时分析声明和方法体，interface 与 delegate 只分析其声明签名，不考虑“ES特性”的来源。
 /// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、record、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型</para>
 /// <para>2、分析器对泛型实参、数组元素类型、局部推断类型、集合表达式等擦除位置做严格入口诊断；若出现闭合的外部具体类型，要求该类型本身受支持</para>
 /// <para>3、分析器不追踪类型参数 T 的真实来源；类型参数本身允许通过，等到具体运行时敏感的类型或成员用法再诊断</para>
@@ -27,7 +27,7 @@ namespace Jazor.Analyzer;
 /// <para>6、“ES特性”标记的类中不能使用析构函数</para>
 /// <para>7、“ES特性”标记的类中默认支持Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数</para>
 /// <para>8、“ES特性”标记的类可支持其他特性，但不需要对特性的类型参数进行检查</para>
-/// <para>9、interface 与 delegate 只检查声明签名；enum 不需要 runtime member 白名单诊断，struct 仍不在声明级支持范围</para>
+/// <para>9、interface 与 delegate 只检查声明签名；enum 不需要 runtime member 白名单诊断，非 record 的 struct 不在声明级分析范围</para>
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class Analyzer : DiagnosticAnalyzer
@@ -114,12 +114,17 @@ public partial class Analyzer : DiagnosticAnalyzer
 		OperationKind.FieldInitializer,
 		OperationKind.PropertyInitializer,
 		OperationKind.ParameterInitializer,
-		OperationKind.VariableDeclarationGroup,
+		OperationKind.VariableDeclarator,
+		OperationKind.LocalReference,
 		OperationKind.ObjectCreation,
 		OperationKind.ArrayCreation,
 		OperationKind.CollectionExpression,
 		OperationKind.Invocation,
 		OperationKind.BinaryOperator,
+		OperationKind.UnaryOperator,
+		OperationKind.Increment,
+		OperationKind.Decrement,
+		OperationKind.CompoundAssignment,
 		OperationKind.FieldReference,
 		OperationKind.PropertyReference,
 		OperationKind.MethodReference,
@@ -152,7 +157,7 @@ public partial class Analyzer : DiagnosticAnalyzer
         context.RegisterSymbolStartAction(startContext =>
 		{
 			var symbol = (INamedTypeSymbol)startContext.Symbol;
-			if (symbol.TypeKind != TypeKind.Class)
+			if (symbol.TypeKind != TypeKind.Class && !StructuralRecordSupport.IsStructuralRecordType(symbol))
 				return;
 
 			var hasAttribute = HasECMAScriptAttribute(symbol);
@@ -265,19 +270,39 @@ public partial class Analyzer : DiagnosticAnalyzer
 			 original.Name == "AddEventStopPropagationAttribute");
 	}
 
-	private static bool IsWhiteListedProperty(IPropertySymbol property)
+	private static bool IsWhiteListedProperty(IPropertyReferenceOperation operation)
 	{
+		var property = operation.Property;
 		if (IsWhiteListedMember(property))
 			return true;
 
-		if (property.GetMethod is not null && IsWhiteListedMember(property.GetMethod))
-			return true;
-
-		if (property.SetMethod is not null && IsWhiteListedMember(property.SetMethod))
-			return true;
-
-		return false;
+		// A getter mapping does not authorize a setter. Compound updates consume both accessors.
+		IOperation target = operation;
+		while (target.Parent is ITupleOperation tuple)
+			target = tuple;
+		var writeOnly = target.Parent is IAssignmentOperation assignment &&
+			assignment is ISimpleAssignmentOperation or IDeconstructionAssignmentOperation &&
+			ReferenceEquals(assignment.Target, target);
+		var readWrite = operation.Parent is ICompoundAssignmentOperation compound && ReferenceEquals(compound.Target, operation) ||
+			operation.Parent is ICoalesceAssignmentOperation coalesce && ReferenceEquals(coalesce.Target, operation) ||
+			operation.Parent is IIncrementOrDecrementOperation update && ReferenceEquals(update.Target, operation);
+		return (writeOnly || property.GetMethod is not null && IsWhiteListedMember(property.GetMethod)) &&
+			(!(writeOnly || readWrite) || property.SetMethod is not null && IsWhiteListedMember(property.SetMethod));
 	}
+
+    private static void CheckOperator(Action<Diagnostic> report, IMethodSymbol? method, Location location)
+    {
+        if (method is null)
+            return;
+
+        if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(method) ||
+            (!IsWhiteListedMember(method) &&
+             !method.GetAttributes().Any(Util.IsECMAScriptSupportMarkerAttributeData) &&
+             !InECMAScriptAttribute(method.ContainingType)))
+        {
+            report(Diagnostic.Create(Rule, location, method.OriginalDefinition.ToDisplayString(Format.NameFormat)));
+        }
+    }
 
 	private static bool TryGetClassLikeRuntimeAlias(ITypeSymbol typeSymbol, out string runtimeAlias)
 	{
@@ -575,8 +600,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 			// 接口、委托、抽象类和 structural record 只豁免外层容器本身；
 			// their closed generic arguments still enter the ECMAScript runtime boundary and must be checked.
-			if (namedType.IsGenericType)
-				CheckTypeArguments(report, namedType.TypeArguments, location);
+			// Nested symbols carry only their own arguments; Outer<Concrete>.Inner still closes Outer<T>.
+			for (var current = namedType; current is not null; current = current.ContainingType)
+				CheckTypeArguments(report, current.TypeArguments, location);
 		}
 
 		// 允许枚举、接口、委托、匿名类型、抽象类、特性和结构化 record 的外层类型。
@@ -623,19 +649,17 @@ public partial class Analyzer : DiagnosticAnalyzer
 					CheckType(ctx.ReportDiagnostic, initializer.Value.Type, initializer.Syntax.GetLocation());
 				}
 				break;
-			case OperationKind.VariableDeclarationGroup:
+			case OperationKind.VariableDeclarator:
 				{
-					var group = (IVariableDeclarationGroupOperation)ctx.Operation;
-					foreach (var declaration in group.Declarations)
-					{
-						foreach (var declarator in declaration.Declarators)
-						{
-							if (declarator.Symbol is not null)
-								CheckType(ctx.ReportDiagnostic, declarator.Symbol.Type, GetLocation(declarator.Symbol.Locations));
-						}
-					}
+					var declarator = (IVariableDeclaratorOperation)ctx.Operation;
+					CheckType(ctx.ReportDiagnostic, declarator.Symbol.Type, GetLocation(declarator.Symbol.Locations));
 				}
 				break;
+            case OperationKind.LocalReference:
+                // out var and deconstruction declarations are local references, not variable groups.
+                if (ctx.Operation is ILocalReferenceOperation { IsDeclaration: true } local)
+                    CheckType(ctx.ReportDiagnostic, local.Local.Type, GetLocation(local.Local.Locations));
+                break;
 			case OperationKind.ObjectCreation:
 				{
 					var creation = (IObjectCreationOperation)ctx.Operation;
@@ -670,6 +694,8 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.Invocation:
 				{
 					var invocation = (IInvocationOperation)ctx.Operation;
+                    CheckType(ctx.ReportDiagnostic, invocation.TargetMethod.ContainingType, invocation.Syntax.GetLocation());
+                    CheckType(ctx.ReportDiagnostic, invocation.Type, invocation.Syntax.GetLocation());
 					// 检查 Instance 是否是委托类型（适用于 myDelegate() 或 event?.Invoke()）
 					if (invocation.Instance?.Type?.TypeKind == TypeKind.Delegate)
 						return;
@@ -719,23 +745,29 @@ public partial class Analyzer : DiagnosticAnalyzer
 				}
 				break;
 			case OperationKind.BinaryOperator:
-				{
-					var operation = (IBinaryOperation)ctx.Operation;
-					if (operation.OperatorMethod is not null &&
-						StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(operation.OperatorMethod))
-					{
-						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
-							operation.Syntax.GetLocation(),
-							operation.OperatorMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)));
-					}
-				}
+				CheckOperator(ctx.ReportDiagnostic, ((IBinaryOperation)ctx.Operation).OperatorMethod, ctx.Operation.Syntax.GetLocation());
 				break;
+            case OperationKind.UnaryOperator:
+                CheckOperator(ctx.ReportDiagnostic, ((IUnaryOperation)ctx.Operation).OperatorMethod, ctx.Operation.Syntax.GetLocation());
+                break;
+            case OperationKind.Increment:
+            case OperationKind.Decrement:
+                CheckOperator(ctx.ReportDiagnostic, ((IIncrementOrDecrementOperation)ctx.Operation).OperatorMethod, ctx.Operation.Syntax.GetLocation());
+                break;
+            case OperationKind.CompoundAssignment:
+                var compoundAssignment = (ICompoundAssignmentOperation)ctx.Operation;
+                CheckOperator(ctx.ReportDiagnostic, compoundAssignment.OperatorMethod, ctx.Operation.Syntax.GetLocation());
+                CheckOperator(ctx.ReportDiagnostic, compoundAssignment.InConversion.MethodSymbol, ctx.Operation.Syntax.GetLocation());
+                CheckOperator(ctx.ReportDiagnostic, compoundAssignment.OutConversion.MethodSymbol, ctx.Operation.Syntax.GetLocation());
+                break;
 			case OperationKind.FieldReference:
 				{
 					var operation = (IFieldReferenceOperation)ctx.Operation;
 					if (IsInsideNameOf(operation))
 						return;
 
+                    CheckType(ctx.ReportDiagnostic, operation.Field.ContainingType, operation.Syntax.GetLocation());
+                    CheckType(ctx.ReportDiagnostic, operation.Field.Type, operation.Syntax.GetLocation());
 					if (!Util.IsECMAScriptRecordProxyMember(
 							operation.Field,
 							operation.Instance?.Type ?? operation.Field.ContainingType) &&
@@ -769,6 +801,8 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 
 					var hostType = operation.Instance?.Type ?? operation.Property.ContainingType;
+                    CheckType(ctx.ReportDiagnostic, operation.Property.ContainingType, operation.Syntax.GetLocation());
+                    CheckType(ctx.ReportDiagnostic, operation.Property.Type, operation.Syntax.GetLocation());
 					if (IsSupportedObjectLiteralIndexerReference(operation, hostType) ||
 						Util.IsECMAScriptRecordProxyMember(operation.Property, hostType))
 					{
@@ -789,7 +823,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					if (operation.Property.ContainingType.IsAnonymousType ||
 						StructuralRecordSupport.IsStructuralRecordMember(operation.Property) ||
 						InECMAScriptAttribute(operation.Property.ContainingType) ||
-						IsWhiteListedProperty(operation.Property))
+						IsWhiteListedProperty(operation))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -804,6 +838,8 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 
 					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
+                    CheckType(ctx.ReportDiagnostic, operation.Method.ContainingType, operation.Syntax.GetLocation());
+					CheckTypeArguments(ctx.ReportDiagnostic, operation.Method.TypeArguments, operation.Syntax.GetLocation());
 					if (!Util.IsECMAScriptRecordProxyMember(
 							operation.Method,
 							operation.Instance?.Type ?? operation.Method.ContainingType) &&
@@ -914,6 +950,11 @@ public partial class Analyzer : DiagnosticAnalyzer
 				break;
 			case OperationKind.Conversion:
 				CheckType(ctx.ReportDiagnostic, ctx.Operation.Type, ctx.Operation.Syntax.GetLocation());
+                var conversion = (IConversionOperation)ctx.Operation;
+                CheckOperator(ctx.ReportDiagnostic, conversion.OperatorMethod, conversion.Syntax.GetLocation());
+                if (conversion.IsTryCast)
+                    CheckAmbiguousRuntimeTypeFilter(ctx.ReportDiagnostic, ctx.Compilation,
+                        conversion.Type, conversion.Syntax.GetLocation(), "as type filtering");
 				break;
 			case OperationKind.ConditionalAccess:
 				CheckType(ctx.ReportDiagnostic, ctx.Operation.Type, ctx.Operation.Syntax.GetLocation());
