@@ -498,7 +498,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -538,6 +538,9 @@ internal static class PackageCatalog
         "ECMAScript.DateFns",
         "ECMAScript.VueUse",
         "ECMAScript.FloatingUi",
+        "ECMAScript.VeeValidate",
+        "ECMAScript.VueI18n",
+        "ECMAScript.VueQuery",
         "ECMAScript.Vuetify",
         "ECMAScript.ElementPlus",
         "ECMAScript.TDesign"
@@ -577,6 +580,15 @@ internal static class PackageCatalog
         ["floating-ui"] = "ECMAScript.FloatingUi",
         ["floatingui"] = "ECMAScript.FloatingUi",
         ["ECMAScript.FloatingUi"] = "ECMAScript.FloatingUi",
+        ["vee-validate"] = "ECMAScript.VeeValidate",
+        ["veevalidate"] = "ECMAScript.VeeValidate",
+        ["ECMAScript.VeeValidate"] = "ECMAScript.VeeValidate",
+        ["vue-i18n"] = "ECMAScript.VueI18n",
+        ["vuei18n"] = "ECMAScript.VueI18n",
+        ["ECMAScript.VueI18n"] = "ECMAScript.VueI18n",
+        ["vue-query"] = "ECMAScript.VueQuery",
+        ["vuequery"] = "ECMAScript.VueQuery",
+        ["ECMAScript.VueQuery"] = "ECMAScript.VueQuery",
         ["vuetify"] = "ECMAScript.Vuetify",
         ["ECMAScript.Vuetify"] = "ECMAScript.Vuetify",
         ["admin"] = "Jazor.Admin",
@@ -690,6 +702,21 @@ internal static class PackageCatalog
             ["ECMAScript.FloatingUi"] = new(
                 "ECMAScript.FloatingUi",
                 Path.Combine(repoRoot, "src", "ECMAScript.FloatingUi", "ECMAScript.FloatingUi.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.VeeValidate"] = new(
+                "ECMAScript.VeeValidate",
+                Path.Combine(repoRoot, "src", "ECMAScript.VeeValidate", "ECMAScript.VeeValidate.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.VueI18n"] = new(
+                "ECMAScript.VueI18n",
+                Path.Combine(repoRoot, "src", "ECMAScript.VueI18n", "ECMAScript.VueI18n.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.VueQuery"] = new(
+                "ECMAScript.VueQuery",
+                Path.Combine(repoRoot, "src", "ECMAScript.VueQuery", "ECMAScript.VueQuery.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Vuetify"] = new(

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$packageId$</id>
+    <version>$version$</version>
+    <authors>$packageAuthors$</authors>
+    <description>$packageDescription$</description>
+    <projectUrl>$repositoryUrl$</projectUrl>
+    <repository type="$repositoryType$" url="$repositoryUrl$" />
+    <readme>$packageReadmeFile$</readme>
+    <dependencies>
+      <group targetFramework="net11.0">
+        <dependency id="Jazor" version="$dependencyVersion$" exclude="Build,Analyzers" />
+        <dependency id="Jazor.Vue" version="$dependencyVersion$" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net11.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="$buildOutputDir$ECMAScript.VueI18n.dll" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.VueI18n.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.VueI18n.xml" target="lib/net11.0" />
+    <file src="$projectDir$buildTransitive\ECMAScript.VueI18n.targets" target="buildTransitive\ECMAScript.VueI18n.targets" />
+    <file src="$projectDir$manifest.json" target="jazor\vue-i18n" />
+    <file src="$projectDir$inventory.json" target="jazor\vue-i18n" />
+    <file src="$projectDir$dist\**\*" target="jazor\vue-i18n\dist" />
+    <file src="$projectDir$licenses\**\*" target="jazor\vue-i18n\licenses" />
+    <file src="$projectDir$$packageReadmeFile$" target="" />
+  </files>
+</package>

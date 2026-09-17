@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vee-validate\manifest.json" />
+  </ItemGroup>
+</Project>

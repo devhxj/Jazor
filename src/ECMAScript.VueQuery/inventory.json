@@ -1,0 +1,21 @@
+{
+  "upstream": "vue-query",
+  "version": "5.103.1",
+  "license": "MIT",
+  "packages": {
+    "@tanstack/match-sorter-utils": "8.19.4",
+    "@tanstack/query-core": "5.103.1",
+    "@tanstack/vue-query": "5.103.1",
+    "vue-demi": "0.14.10"
+  },
+  "source": "https://registry.npmjs.org/vue-query/5.103.1",
+  "documentation": "https://tanstack.com/query/latest/docs/framework/vue/overview",
+  "entryImports": [
+    "@tanstack/match-sorter-utils",
+    "@tanstack/query-core",
+    "@tanstack/vue-query",
+    "vue-demi"
+  ],
+  "vendoredModuleCount": 46,
+  "fingerprint": "7AA138B9BBCF3948000A7CE042C6EA5B178AE129A2A3FF29095C235ED4C3F8BD"
+}

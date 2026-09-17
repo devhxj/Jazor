@@ -1,0 +1,15 @@
+{
+  "upstream": "vee-validate",
+  "version": "4.15.1",
+  "license": "MIT",
+  "packages": {
+    "vee-validate": "4.15.1"
+  },
+  "source": "https://registry.npmjs.org/vee-validate/4.15.1",
+  "documentation": "https://vee-validate.logaretm.com/v4/",
+  "entryImports": [
+    "vee-validate"
+  ],
+  "vendoredModuleCount": 1,
+  "fingerprint": "4932B7B1E0754A171CF049537C000C591A5BA563496DC5A1066CE9A28F4F708F"
+}

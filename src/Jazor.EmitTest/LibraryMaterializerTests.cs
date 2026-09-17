@@ -186,6 +186,53 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_P3BClosures_ResolveTheirEntryGraphs()
+    {
+        // vee-validate, vue-i18n, and vue-query each vendor a multi-package closure whose entry
+        // declares package edges (including the vue / @vue/devtools-api peers) rather than module
+        // edges. Selecting the author entry must materialize the whole graph and resolve every
+        // declared provider through the Vue resource library.
+        // 三个 P3-B 包各 vendor 一个多包闭包；entry 用 package 边（含 vue / @vue/devtools-api peer）
+        // 声明依赖。选择作者入口必须物化整图，并通过 Vue 资源库解析全部 provider。
+        var cases = new[]
+        {
+            (Manifest: "ECMAScript.VeeValidate", Id: "vee-validate", Specifier: "vee-validate", Entry: "dist/vee-validate/dist/vee-validate.mjs"),
+            (Manifest: "ECMAScript.VueI18n", Id: "vue-i18n", Specifier: "vue-i18n", Entry: "dist/vue-i18n/dist/vue-i18n.mjs"),
+            (Manifest: "ECMAScript.VueQuery", Id: "vue-query", Specifier: "@tanstack/vue-query", Entry: "dist/@tanstack/vue-query/build/modern/index.js")
+        };
+        var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
+
+        foreach (var (manifestName, libraryId, specifier, expectedEntry) in cases)
+        {
+            var manifestPath = FindLibraryManifest(manifestName);
+            using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var version = manifest.RootElement.GetProperty("version").GetString()!;
+            var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
+            try
+            {
+                var result = new LibraryMaterializer().Materialize(
+                    [manifestPath, vueManifestPath],
+                    outputRoot,
+                    BuildMode.Production,
+                    requiredImports: [specifier]);
+
+                Assert.AreEqual($"vendor/{libraryId}/{version}/{expectedEntry}", result.ImportPaths[specifier]);
+
+                // Every declared import of the closure has a resolvable provider path.
+                foreach (var declared in manifest.RootElement.GetProperty("imports").EnumerateObject())
+                    Assert.IsTrue(result.ImportPaths.ContainsKey(declared.Name), $"{libraryId}: '{declared.Name}' was not selected.");
+
+                // The vue provider must be materialized into its own vendor tree.
+                Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), $"{libraryId}: the vue provider was not resolved.");
+            }
+            finally
+            {
+                Directory.Delete(outputRoot, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public void Load_ValidatesProductionEntryBeforeMaterialization()
     {
         using var workspace = new LibraryWorkspace();

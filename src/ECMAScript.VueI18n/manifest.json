@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 2,
+  "libraryId": "vue-i18n",
+  "version": "11.4.12",
+  "imports": {
+    "@intlify/core-base": {
+      "type": "module",
+      "development": "dist/@intlify/core-base/dist/core-base.mjs",
+      "production": "dist/@intlify/core-base/dist/core-base.mjs",
+      "developmentHash": "021c3e499aa31806866d63b0e56bdf555d7e74786abf16568a0054bafc30300c",
+      "productionHash": "021c3e499aa31806866d63b0e56bdf555d7e74786abf16568a0054bafc30300c",
+      "developmentDependencies": [
+        "@intlify/message-compiler",
+        "@intlify/shared"
+      ],
+      "productionDependencies": [
+        "@intlify/message-compiler",
+        "@intlify/shared"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@intlify/message-compiler": {
+      "type": "module",
+      "development": "dist/@intlify/message-compiler/dist/message-compiler.mjs",
+      "production": "dist/@intlify/message-compiler/dist/message-compiler.mjs",
+      "developmentHash": "ddcf1134e1516b226e5a0bcca576f01423ca0080343346ff3c392c8115a6eeab",
+      "productionHash": "ddcf1134e1516b226e5a0bcca576f01423ca0080343346ff3c392c8115a6eeab",
+      "developmentDependencies": [
+        "@intlify/shared"
+      ],
+      "productionDependencies": [
+        "@intlify/shared"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@intlify/shared": {
+      "type": "module",
+      "development": "dist/@intlify/shared/dist/shared.mjs",
+      "production": "dist/@intlify/shared/dist/shared.mjs",
+      "developmentHash": "1b730d3c5164b2d4dafe2b17ca9af86827b21dcb6d9fad420acd42765db95673",
+      "productionHash": "1b730d3c5164b2d4dafe2b17ca9af86827b21dcb6d9fad420acd42765db95673",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "vue-i18n": {
+      "type": "module",
+      "development": "dist/vue-i18n/dist/vue-i18n.mjs",
+      "production": "dist/vue-i18n/dist/vue-i18n.mjs",
+      "developmentHash": "e959723d6670377ea628c2435a4604433835e9d8b172d9c54fcb6a5a3c752954",
+      "productionHash": "e959723d6670377ea628c2435a4604433835e9d8b172d9c54fcb6a5a3c752954",
+      "developmentDependencies": [
+        "@intlify/core-base",
+        "@intlify/shared",
+        "@vue/devtools-api",
+        "vue"
+      ],
+      "productionDependencies": [
+        "@intlify/core-base",
+        "@intlify/shared",
+        "@vue/devtools-api",
+        "vue"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    }
+  },
+  "requires": {
+    "vue3": "^3.0.0"
+  },
+  "styles": [],
+  "files": [
+    {
+      "type": "license",
+      "path": "licenses/intlify-core-base-LICENSE",
+      "hash": "403a4d6f9815ae33bd7a613202529f0805045c642f92a169fa673d7fa07dd568"
+    },
+    {
+      "type": "license",
+      "path": "licenses/intlify-message-compiler-LICENSE",
+      "hash": "403a4d6f9815ae33bd7a613202529f0805045c642f92a169fa673d7fa07dd568"
+    },
+    {
+      "type": "license",
+      "path": "licenses/intlify-shared-LICENSE",
+      "hash": "403a4d6f9815ae33bd7a613202529f0805045c642f92a169fa673d7fa07dd568"
+    },
+    {
+      "type": "license",
+      "path": "licenses/vue-i18n-LICENSE",
+      "hash": "403a4d6f9815ae33bd7a613202529f0805045c642f92a169fa673d7fa07dd568"
+    }
+  ]
+}
