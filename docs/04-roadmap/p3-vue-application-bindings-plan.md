@@ -37,7 +37,7 @@ Monaco 与 WangEditor 必须是两个独立包。Monaco 默认直接绑定核心
 
 ## 分阶段顺序
 
-组件类绑定的统一策略以 `ECMAScript.VueRoute` 的 `RouterLink`/`RouterView` 为范式：同时提供 Razor 组件代理（`ComponentBase, IVueComponent` + `Transform.Component`）与类型化组件描述符（`IVueComponent<TProps, TSlots>`），二者映射同一上游组件；固定交付物、参数同步规则与透传属性约定见[JS 资源库绑定指南](../03-guides/js-resource-binding.md#组件绑定双表示模式)。P3-A 三包均为函数/composable，无组件代理；P3-C 的 `VueDraggable`、`FilePond`、`WangEditor` 与 P3-D 的 Monaco 属于组件类，按该范式落地。
+组件类绑定的策略见[JS 资源库绑定指南](../03-guides/js-resource-binding.md#组件绑定)：组件数少时用手写双表示（`ECMAScript.VueRoute` 的 `RouterLink`/`RouterView` 范式，Razor 代理 + `IVueComponent<TProps, TSlots>` 描述符），组件数多且上游有机器可读 metadata 时用全量代理 + 生成描述符（`ECMAScript.Vuetify` 范式，生成 `VuetifyCatalog.g.cs` 导出目录与 `dist/components.mjs` shim）。P3-A 三包均为函数/composable，无组件代理；P3-C 的 `VueDraggable`、`FilePond`、`WangEditor` 组件数少，按手写双表示落地；P3-D 的 Monaco 是指令式 editor API 而非 Vue 组件，按函数/Hook 绑定。
 
 ### P3-A：基础工具与确定性纯函数
 

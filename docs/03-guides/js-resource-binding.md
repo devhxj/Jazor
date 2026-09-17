@@ -59,54 +59,75 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 - 上游扩展缝（如 date-fns 的 `ContextOptions`/TZDate）可整体不绑定，但必须在包 README 的未绑定清单中写明。
 - 上游 `Object`/`Any` 域的 API 优先改为泛型（`CreateEventHook<T>`、`UseAsyncState<T>`），不要用 `object?` 兜底；类型擦除不是弱化 C# 作者面的理由。泛型参数不参与编译器特判时不会要求具体 runtime 语义。
 
-## 组件绑定：双表示模式
+## 组件绑定
 
-当上游导出 **Vue 组件**（而非纯函数或 composable）时，绑定同时提供两套作者入口，二者映射到同一个上游组件。以 `ECMAScript.VueRoute` 的 `RouterLink`/`RouterView` 为准：
+当上游导出 **Vue 组件**（而非纯函数或 composable）时，绑定按上游组件数量选择两种范型。两者共享同一套参数映射规则，区别只在描述符如何产生。
 
-| 表示 | 载体 | 面向 | 声明方式 |
+| 范型 | 适用 | 参考实现 | 描述符来源 |
 | --- | --- | --- | --- |
-| Razor 组件代理 | `sealed class : ComponentBase, IVueComponent` | `.razor` 标签作者 | `[ECMAScript("<specifier>", Transform.Component, "<ExportName>")]` |
-| 类型化组件描述符 | `static` 属性 `Vue.IVueComponent<TProps, TSlots>` | `H()` 渲染函数作者 | `[Description("@#<ExportName>")]` |
+| A：手写双表示 | 组件数少（个位数），且需要逐组件强类型 props/slots | `ECMAScript.VueRoute`（`RouterLink`/`RouterView`） | 手写 `record XxxProps`/`XxxSlots` + `IVueComponent<TProps, TSlots>` |
+| B：全量代理 + 生成描述符 | 组件数多（几十到上百），上游提供机器可读 metadata | `ECMAScript.Vuetify`（114 组件）、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | 生成器从上游 contracts/web-types 产出导出目录与 shim |
 
-组件代理承载 Razor 编译期契约（`[Parameter]` 属性绑定、render fragment、事件回调），描述符承载运行时渲染契约（`H` 重载按 `TProps`/`TSlots` 选择）。代理类不产生额外 JS 产物，发射时由 RazorVue 映射到同一上游组件。
+无论哪种范型，组件代理类都**不产生额外 JS 产物**：它只是 Razor 编译期契约容器，发射时由 RazorVue 映射到上游同名组件。
 
-组件代理的固定形态：
+### 共同约定
 
-- 命名加库名前缀避免与项目自有组件冲突：代理类 `VueRouterLink`，描述符属性用上游原名 `RouterLink`。
-- 必填参数用 `[Parameter] [EditorRequired]`；C# 保留字或命名冲突用 `[ECMAScriptName("<js名>")]` 还原，例如 `CssClass` → `class`、`CssStyle` → `style`。
-- 默认插槽是 `[Parameter] [ECMAScriptName("default")] RenderFragment<TSlotScope>? ChildContent`；作用域类型是 `record XxxSlotScope : Vue.VueProps`。
-- 事件用 `[Parameter] EventCallback<TEvent>`，例如 `EventCallback<MouseEvent> OnClick`。
-- 透传属性固定为 `[Parameter(CaptureUnmatchedValues = true)] IReadOnlyDictionary<string, object?>? AdditionalAttributes`，键使用 Vue/HTML 实际属性名，使 `data-*`、`aria-*`、`role` 等原样落到宿主元素。
+- **命名空间隔离**：组件库使用独立命名空间（`ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign`），不复用函数库的 `ECMAScript` 命名空间；组件类型加库前缀（`V*`/`T*`/`El*`）避免跨库冲突。
+- **显式命名优先**：生成组件对每个参数显式标注 `[ECMAScriptName("<运行时名>")]`（`Vuetify` 生成部分 2460 处），不依赖命名推断。手写基类在 C# 名经 camelCase 降低后已等于 JS 名时省略该属性（`VInputComponentBase.cs` 的 `Id`/`Name`/`PersistentHint` → `id`/`name`/`persistentHint`，45 个参数零标注）。C# 保留字或冲突必须还原：`CssClass` → `class`、`CssStyle` → `style`。
+- **组件声明**：`[ECMAScript("<specifier>", Transform.Component, "<ExportName>")]`；`Transform.Component` 专用于组件，函数/Hook 用 `Transform.Import`，不可混用。
+- **组件代理**：`sealed class : ComponentBase, IVueComponent`；必填参数标 `[Parameter] [EditorRequired]`。
+- **插槽**：无作用域用 `[Parameter] RenderFragment? ChildContent` 并标 `[ECMAScriptName("default")]`；有作用域用 `RenderFragment<TSlotContext>`，上下文是 `[ECMAScript] [Description("@#")] record`（需要作为对象传给宿主 API 时才继承 `Vue.VueProps`）。
+- **事件**：`[Parameter] EventCallback<TEvent>`；无参事件用 `EventCallback`。
+- **透传属性**：`[Parameter(CaptureUnmatchedValues = true)] IReadOnlyDictionary<string, object?>? AdditionalAttributes`，键使用 Vue/HTML 实际属性名，使 `data-*`、`aria-*`、`role` 原样落到宿主元素。
 
-类型化描述符的固定形态：
+### 范型 A：手写双表示
 
-- Props 用 `record XxxProps : Vue.VueProps`，公共选项抽到基类 `record XxxOptions : Vue.VueProps` 再由完整 Props 继承，避免重复。
-- Slots 用 `record XxxSlots : Vue.VueSlots`，默认槽是委托属性 `XxxSlotCallback? Default`。
-- 组件描述符声明为 `Vue.IVueComponent<XxxProps, XxxSlots>`；调用形态为 `H(RouterLink, new RouterLinkProps { ... }, new RouterLinkSlots { Default = scope => new IVNode[] { ... } })`。
-- 无 props 只有插槽时用 `Vue.IVueSlotComponent<TSlots>`，只有 props 时用 `Vue.IVueComponent<TProps>`；接口选择让编译器挑到正确的 `H` 重载。
-
-配套约束：
-
-- 两套表示的参数集、插槽名、事件名必须保持同步，否则 Razor 标签与 `H()` 调用的行为会漂移；代理测试与发射测试要分别锁定两侧。
-- `Transform.Component` 用于组件、`Transform.Import` 用于函数/Hook，不要混用。
-- 布局守卫测试锁定目录结构（`Api/`、`Types/` 分片）、shell 文件只保留属性入口、以及项目元数据，防止组件代理被误并入 API 分片。
-
-`ECMAScript.VueRoute` 的 `RouterLink` 作者面示例：
+代理面向 `.razor` 标签作者，描述符面向 `H()` 渲染函数作者，二者映射同一上游组件。
 
 ```razor
 <VueRouterLink CssClass="@CssClassValue" To="@Target.Route" data-action-key="@Action.Key">@Text</VueRouterLink>
 ```
 
+描述符固定形态：
+
+- Props 用 `record XxxProps : Vue.VueProps`；公共选项抽到基类 `record XxxOptions : Vue.VueProps` 再由完整 Props 继承（`RouterLinkOptions` → `RouterLinkProps`），避免重复。
+- Slots 用 `record XxxSlots : Vue.VueSlots`，默认槽是委托属性 `XxxSlotCallback? Default`。
+- 描述符类型按需要选接口：props+slots 用 `IVueComponent<TProps, TSlots>`，仅 props 用 `IVueComponent<TProps>`，仅 slots 用 `IVueSlotComponent<TSlots>`——接口选择让 `H` 重载解析到正确形状。
+- 调用形态：`H(RouterLink, new RouterLinkProps { ... }, new RouterLinkSlots { Default = scope => new IVNode[] { ... } })`。
+- 两套表示的参数集、插槽名、事件名必须同步，否则 Razor 标签与 `H()` 调用会漂移；代理测试与发射测试分别锁定两侧。
+
+### 范型 B：全量代理 + 生成描述符
+
+组件数大时不在 C# 侧手写每个组件的 props 记录，改由生成器维护：
+
+- **一个组件一个文件**：`VBtn.cs`、`VAlert.cs`，各自是完整代理（`VBtnSlotContexts.cs` 等单独承载插槽上下文）。
+- **标记接口替代泛型描述符**：`public interface IVuetifyComponent : IVueComponent { }`，代理实现它；不再为每个组件生成 `TProps`/`TSlots`。
+- **生成导出目录**：生成器产出 `VuetifyCatalog.g.cs`，即 `static class VuetifyComponents` 上的 `extern static IVuetifyComponent VAlert { get; }`（带 `[ECMAScriptName("VAlert")]`），供 `H()` 按导出名引用。
+- **生成 shim 模块**：`dist/components.mjs` 从上游 bundle 重导出组件（`export const VAlert = components.VAlert;`），使 manifest 入口与 `H()` 使用的导出对齐；稳定版与 labs 拆成 `vuetify/components`、`vuetify/labs/components` 两个 specifier。
+- **基类复用**：多个组件共享的插槽/属性抽到基类，例如 `ElComponentBase` 承载 `CssClass`/`CssStyle`/`AdditionalAttributes`，`ElContentComponentBase` 再补 `ChildContent`。
+- **上游输入锁定**：`src/ECMAScript.Vue.Generator/upstream/<lib>/<version>/` 冻结 `contracts.json`、`web-types.json`、`package.json`；生成器不得用 `object`、`VueValue` 或占位类型伪造组件覆盖率。
+- **受控产物**：`V*.cs`、`VuetifyCatalog.g.cs`、`manifest.json`、`dist/` 由生成器维护；改契约要先改生成器或上游输入，再运行生成并用 `--check` 校验，禁止把生成文件当独立手工源码维护。
+- **样式资源**：组件库通常带全局样式，在 manifest `styles` 声明（`dist/vuetify.min.css`）。
+
+组件库的额外门禁（相对函数库）：
+
+- 契约漂移：`verify-vue-binding-contracts.cs` 跑各生成器 `--check`，并校验 manifest 版本、上游快照与文档来源；可输出 schema 1.0 fingerprint 报告，用 `--baseline` + `--fail-on-baseline-drift` 阻断 inventory 漂移。
+- 覆盖：`verify-vue-binding-coverage.cs` 要求每个目标 ≥90% 的已审计契约单元有作者面。
+- 文档：`verify-binding-documentation.cs` 要求公开声明有双语 XML，并保留上游 JSDoc/web-types/MDN 来源与版本、许可证、采集日期。
+
 ## 测试
 
-包专属测试项目 `src/ECMAScript.<Name>.Test` 覆盖五类，文件定位用 `[CallerFilePath]`（并行 lane 的 `BaseOutputPath` 差异不影响资源解析）：
+包专属测试项目 `src/ECMAScript.<Name>.Test` 覆盖六类，文件定位用 `[CallerFilePath]`（并行 lane 的 `BaseOutputPath` 差异不影响资源解析）：
 
 1. manifest：schema/libraryId/版本/inventory 一致、moduleDependencies 与 files moduleId 集合相等、全部声明文件哈希逐一复算。
 2. vendored 树：dist 实际文件集合与 manifest 声明闭包精确相等（双向差集为空）。
 3. 上游 drift：静态提取上游 barrel 的命名导出（`export function x` 与 `export { a, b as c }`，排除 default），断言 C# 绑定的每个 `@#` 导出名都存在；策展清单做生成文件、manifest 闭包、inventory 与 C# 契约的四方一致断言。
 4. inventory：fingerprint 复算覆盖除自身外的全部 payload。
 5. proxy 与编译边界：import 宿主与 Transform.Import、首期表面按参数类型逐位锁定、`object` 禁用扫描、枚举值域；编译器发射断言覆盖命名导入、选项对象字面量、枚举字面量与策展桥导入。
-6. 组件（有组件时）：代理与描述符两侧分别断言 Transform.Component 与 ExportName、必填参数的 `EditorRequired`、`[ECMAScriptName]` 还原名、默认槽的 `RenderFragment<TSlotScope>`、`EventCallback<T>`、`CaptureUnmatchedValues` 透传；再由编译器发射测试锁定 `H(Component, new XxxProps { ... }, new XxxSlots { ... })` 与作用域槽回调的 VNode 数组返回。另加布局守卫测试锁定 `Api/`、`Types/` 分片与 shell 文件只保留属性入口，防止组件代理被误并入 API 分片（见 `ECMAScript.VueRoute.Test/EcmaScriptVueRouteLayoutGuardTests.cs`）。
+6. 组件（有组件时）：
+   - 范型 A：代理与描述符两侧分别断言 `Transform.Component` 与 ExportName、必填参数的 `EditorRequired`、`[ECMAScriptName]` 还原名、默认槽的 `RenderFragment<TSlotScope>`、`EventCallback<T>`、`CaptureUnmatchedValues` 透传；发射测试锁定 `H(Component, new XxxProps { ... }, new XxxSlots { ... })` 与作用域槽回调的 VNode 数组返回。
+   - 范型 B：断言生成导出目录的组件数与代理类数一致、每个 `VuetifyComponents.X` 都有对应代理与 `[ECMAScriptName]`、shim 模块的导出与 manifest 入口对齐，并运行生成器 `--check` 作为陈旧检测。
+   - 两者都加布局守卫测试锁定目录结构与 shell 文件只保留属性入口，防止组件代理被误并入 API 分片（见 `ECMAScript.VueRoute.Test/EcmaScriptVueRouteLayoutGuardTests.cs`）。
 
 编译器发射的稳定格式（断言按此书写）：同一模块的命名导入合并为单条语句并按字母排序；三个及以上属性的对象字面量多行展开。 Emit 层在 `Jazor.EmitTest.LibraryMaterializerTests` 增加真实 materialization 测试：以 `requiredImports` 物化全部入口，断言 import path 指向 `vendor/<libraryId>/<version>/...`，并对 vendor 树内每个 JS 模块的相对导入逐一验证可解析（闭包自包含）。注意 `Load_AllRepositoryResourceManifests` 会自动加载 `src/` 下所有 manifest，新包接入后该项即自动获得 schema 与哈希校验。
 
@@ -121,6 +142,9 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 | `scripts/csharp/publish-nuget.cs` | `DefaultPublicPackageIds`、`PackageAliases`、catalog 条目、usage 与错误信息 | 本地打包 |
 | `scripts/csharp/verify-binding-documentation.cs` | `libraries` 数组纳入新包；csproj 开启 `GenerateDocumentationFile`，全部公开声明有非空双语 `summary` | 文档门禁 |
 | `src/ECMAScript.Pinia.Test/EcmaScriptPiniaLayoutGuardTests.cs` | 锁定 publish 脚本默认包集合字符串，新增包必须同步 | Pinia lane |
+| `src/ECMAScript.Vue.Generator/`（仅组件库） | 生成器命令、`upstream/<lib>/<version>/` 上游输入快照、`Program.cs` 分派 | 契约生成 |
+| `scripts/csharp/verify-vue-binding-contracts.cs` 的 `checks`/`targets`（仅组件库） | 生成器 `--check` 命令、`BindingTarget`（id/版本/包目录/上游目录/显示名） | 绑定契约门禁 |
+| `scripts/csharp/verify-vue-binding-coverage.cs` 的目标清单（仅组件库） | 每个目标的 ≥90% 已审计契约单元 | Vue 绑定覆盖门禁 |
 | 包目录 | `nuspec`（`jazor/<libraryId>/` 布局，必须携带 `lib/<tfm>/<包名>.xml`）、`buildTransitive/*.targets`（`JazorLibraryManifest`）、README | pack 与 consumer |
 | 文档 | CHANGELOG 日期章节、current-status 主线 lane、next-development、路线图计划状态 | 发版与评审 |
 
@@ -152,6 +176,7 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 ## 相关入口
 
 - 架构契约：[类库资源与引用契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md)
-- 参考实现：`src/ECMAScript.DateFns`（纯函数单包）、`src/ECMAScript.FloatingUi`（跨包闭包 + 分包版本）、`src/ECMAScript.VueUse`（多入口 bundle + 泛型 composable）、`src/ECMAScript.VueRoute`（组件库）、`src/ECMAScript.VuIcons`（生成式组件库）
+- 参考实现（函数/composable）：`src/ECMAScript.DateFns`（纯函数单包）、`src/ECMAScript.FloatingUi`（跨包闭包 + 分包版本）、`src/ECMAScript.VueUse`（多入口 bundle + 泛型 composable）
+- 参考实现（组件）：`src/ECMAScript.VueRoute`（范型 A 手写双表示）、`src/ECMAScript.Vuetify`（范型 B 全量代理 + 生成描述符，114 组件）、`src/ECMAScript.ElementPlus`（范型 B + 基类复用）、`src/ECMAScript.TDesign`、`src/ECMAScript.VuIcons`（图标式生成组件）
 - 生成器先例：`scripts/csharp/generate-date-fns.cs`、`scripts/csharp/generate-vueuse.cs`、`scripts/csharp/generate-floating-ui.cs`、`scripts/csharp/generate-vu-icons.cs`、`scripts/csharp/update-vue-binding-inputs.cs`
 - 计划与门槛：[P3 Vue 应用生态绑定扩展计划](../04-roadmap/p3-vue-application-bindings-plan.md)、[开发与测试](./development-and-testing.md)
