@@ -108,6 +108,84 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_FloatingUiClosure_ResolvesSiblingPackagesFromTheAuthorEntry()
+    {
+        // Floating UI's author entry re-exports sibling packages, wired through the package-dependency
+        // channel. Requesting only the author entry must still materialize the whole closure, and the
+        // declared vue3 peer must be supplied by the Vue resource library.
+        // Floating UI 作者入口通过 package 依赖通道引用兄弟包；只请求作者入口也必须物化完整闭包，vue3 peer 由 Vue 资源库提供。
+        var manifestPath = FindLibraryManifest("ECMAScript.FloatingUi");
+        var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
+        using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var version = manifest.RootElement.GetProperty("version").GetString()!;
+        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "floating-ui", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var result = new LibraryMaterializer().Materialize(
+                [manifestPath, vueManifestPath],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: ["@floating-ui/vue"]);
+
+            foreach (var specifier in new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "@floating-ui/utils/dom" })
+                Assert.IsTrue(result.ImportPaths.ContainsKey(specifier), $"Sibling closure member '{specifier}' was not selected.");
+
+            Assert.AreEqual($"vendor/floating-ui/{version}/dist/@floating-ui/vue/floating-ui.vue.mjs", result.ImportPaths["@floating-ui/vue"]);
+
+            var vendorModules = Directory.EnumerateFiles(
+                Path.Combine(outputRoot, "vendor", "floating-ui", version),
+                "*",
+                SearchOption.AllDirectories)
+                .Where(IsJavaScriptModule)
+                .ToArray();
+            Assert.AreEqual(5, vendorModules.Length, "The full Floating UI closure must materialize exactly the five declared bundles.");
+
+            foreach (var module in vendorModules)
+            {
+                foreach (var specifier in GetBareModuleSpecifiers(module))
+                {
+                    // Vue is the declared peer and resolves to the Vue vendor tree, not this closure.
+                    if (specifier == "vue")
+                        continue;
+                    Assert.IsTrue(result.ImportPaths.ContainsKey(specifier), $"Module '{Path.GetFileName(module)}' references '{specifier}' outside the selected closure.");
+                }
+            }
+        }
+        finally
+        {
+            Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Materialize_VueUseClosure_ResolvesSharedFromTheCoreEntry()
+    {
+        // @vueuse/core re-exports @vueuse/shared, so selecting core alone must also select shared.
+        // @vueuse/core 再导出 @vueuse/shared，因此只选 core 也必须同时选中 shared。
+        var manifestPath = FindLibraryManifest("ECMAScript.VueUse");
+        var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
+        using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var version = manifest.RootElement.GetProperty("version").GetString()!;
+        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "vueuse", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var result = new LibraryMaterializer().Materialize(
+                [manifestPath, vueManifestPath],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: ["@vueuse/core"]);
+
+            Assert.AreEqual($"vendor/vueuse/{version}/dist/@vueuse/core/index.js", result.ImportPaths["@vueuse/core"]);
+            Assert.AreEqual($"vendor/vueuse/{version}/dist/@vueuse/shared/index.js", result.ImportPaths["@vueuse/shared"]);
+            Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vueuse", version, "dist", "@vueuse", "shared", "index.js")));
+        }
+        finally
+        {
+            Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Load_ValidatesProductionEntryBeforeMaterialization()
     {
         using var workspace = new LibraryWorkspace();

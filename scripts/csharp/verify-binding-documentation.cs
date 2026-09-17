@@ -22,7 +22,7 @@ var libraries = new[]
 {
     "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue", "ECMAScript.VueContract",
     "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute",
-    "ECMAScript.DateFns", "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi", "ECMAScript.VuIcons",
+    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi", "ECMAScript.VuIcons",
     "ECMAScript.Style", "ECMAScript.ElementPlus", "ECMAScript.Vuetify", "ECMAScript.TDesign",
     "Jazor.AspNetCore", "Jazor.AspNetCore.Dev"
 };

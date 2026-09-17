@@ -97,6 +97,8 @@ Monaco 与 WangEditor 必须是两个独立包。Monaco 默认直接绑定核心
 
 | 日期 | 条目 | 状态 | 证据 |
 | --- | --- | --- | --- |
-| 2026-09-17 | `ECMAScript.DateFns`（date-fns 4.4.0） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.DateFns`（manifest schema 2、367 模块闭包、inventory fingerprint、MIT 许可证）、`ECMAScript.DateFns.Test` 15/15、`Jazor.EmitTest.Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries`、`test-dotnet.cs --project date-fns` |
+| 2026-09-17 | `ECMAScript.DateFns`（date-fns 4.4.0） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.DateFns`（manifest schema 2、367 模块闭包、inventory fingerprint、MIT 许可证）、`ECMAScript.DateFns.Test` 16/16、`Jazor.EmitTest.Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries`、`test-dotnet.cs --project date-fns` |
+| 2026-09-17 | `ECMAScript.VueUse`（VueUse 15.0.0） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueUse`（`@vueuse/core` + `@vueuse/shared` 闭包、69 策展 composable、MIT 许可证）、`ECMAScript.VueUse.Test` 16/16、`Jazor.EmitTest.Materialize_VueUseClosure_ResolvesSharedFromTheCoreEntry`、`test-dotnet.cs --project vueuse` |
+| 2026-09-17 | `ECMAScript.FloatingUi`（`@floating-ui/vue` 2.0.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FloatingUi`（4 包跨包闭包 + 分包版本、`useFloating` 与 9 个中间件、MIT 许可证）、`ECMAScript.FloatingUi.Test` 13/13、`Jazor.EmitTest.Materialize_FloatingUiClosure_ResolvesSiblingPackagesFromTheAuthorEntry`、`test-dotnet.cs --project floating-ui` |
 
 未通过对应测试、资源闭包和真实消费者验证的条目保持 Guidance，不进入当前 Support 矩阵。

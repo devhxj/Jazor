@@ -2,6 +2,8 @@ using System.Reflection;
 
 using ECMAScript;
 
+#pragma warning disable CA1416
+
 namespace ECMAScriptDateFnsTest;
 
 /// <summary>

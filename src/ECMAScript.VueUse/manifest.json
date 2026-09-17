@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "libraryId": "vueuse",
+  "version": "15.0.0",
+  "imports": {
+    "@vueuse/core": {
+      "type": "module",
+      "development": "dist/@vueuse/core/index.js",
+      "production": "dist/@vueuse/core/index.js",
+      "developmentHash": "7b7d1e38668706c5eb7156695410f0f3a9da0bdb6e2bd98ebd202a2dffd0ef79",
+      "productionHash": "7b7d1e38668706c5eb7156695410f0f3a9da0bdb6e2bd98ebd202a2dffd0ef79",
+      "developmentDependencies": [
+        "@vueuse/shared"
+      ],
+      "productionDependencies": [
+        "@vueuse/shared"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@vueuse/shared": {
+      "type": "module",
+      "development": "dist/@vueuse/shared/index.js",
+      "production": "dist/@vueuse/shared/index.js",
+      "developmentHash": "de57cc5fba7a2685ed9fd1b12a401266b8571a46add82ec2e9f68af47a6f6a47",
+      "productionHash": "de57cc5fba7a2685ed9fd1b12a401266b8571a46add82ec2e9f68af47a6f6a47",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    }
+  },
+  "requires": {
+    "vue3": "^3.5.0"
+  },
+  "styles": [],
+  "files": [
+    {
+      "type": "license",
+      "path": "licenses/core-LICENSE",
+      "hash": "0f844b1160603552a01662ac2999c14e5fb4df487e65619b9ed4406e43eb3c0b"
+    },
+    {
+      "type": "license",
+      "path": "licenses/shared-LICENSE",
+      "hash": "0f844b1160603552a01662ac2999c14e5fb4df487e65619b9ed4406e43eb3c0b"
+    }
+  ]
+}

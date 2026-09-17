@@ -1,0 +1,17 @@
+{
+  "upstream": "vueuse",
+  "version": "15.0.0",
+  "license": "MIT",
+  "packages": {
+    "@vueuse/core": "15.0.0",
+    "@vueuse/shared": "15.0.0"
+  },
+  "source": "https://registry.npmjs.org/@vueuse/core/15.0.0",
+  "documentation": "https://vueuse.org/functions.html",
+  "entryImports": [
+    "@vueuse/core",
+    "@vueuse/shared"
+  ],
+  "vendoredModuleCount": 2,
+  "fingerprint": "2C6FB10D704A6B70AB1933B5254901EA64FBFA0784DA768501C9ACE63737C8EB"
+}

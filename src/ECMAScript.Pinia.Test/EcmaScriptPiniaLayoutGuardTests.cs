@@ -88,7 +88,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
 		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
-		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
 		StringAssert.Contains(source, "Selected packages: ");
 		StringAssert.Contains(source, "case \"--package\"");
 		StringAssert.Contains(source, "case \"--package-version\"");

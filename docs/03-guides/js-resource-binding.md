@@ -112,6 +112,6 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 ## 相关入口
 
 - 架构契约：[类库资源与引用契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md)
-- 参考实现：`src/ECMAScript.DateFns`（纯函数库）、`src/ECMAScript.VueRoute`（组件库）、`src/ECMAScript.VuIcons`（生成式组件库）
-- 生成器先例：`scripts/csharp/generate-date-fns.cs`、`scripts/csharp/generate-vu-icons.cs`、`scripts/csharp/update-vue-binding-inputs.cs`
+- 参考实现：`src/ECMAScript.DateFns`（纯函数单包）、`src/ECMAScript.FloatingUi`（跨包闭包 + 分包版本）、`src/ECMAScript.VueUse`（多入口 bundle + 泛型 composable）、`src/ECMAScript.VueRoute`（组件库）、`src/ECMAScript.VuIcons`（生成式组件库）
+- 生成器先例：`scripts/csharp/generate-date-fns.cs`、`scripts/csharp/generate-vueuse.cs`、`scripts/csharp/generate-floating-ui.cs`、`scripts/csharp/generate-vu-icons.cs`、`scripts/csharp/update-vue-binding-inputs.cs`
 - 计划与门槛：[P3 Vue 应用生态绑定扩展计划](../04-roadmap/p3-vue-application-bindings-plan.md)、[开发与测试](./development-and-testing.md)

@@ -1,0 +1,22 @@
+{
+  "upstream": "floating-ui",
+  "version": "2.0.1",
+  "license": "MIT",
+  "packages": {
+    "@floating-ui/core": "1.8.0",
+    "@floating-ui/dom": "1.8.0",
+    "@floating-ui/utils": "0.2.12",
+    "@floating-ui/vue": "2.0.1"
+  },
+  "source": "https://registry.npmjs.org/@floating-ui/vue/2.0.1",
+  "documentation": "https://floating-ui.com/docs/vue",
+  "entryImports": [
+    "@floating-ui/core",
+    "@floating-ui/dom",
+    "@floating-ui/utils",
+    "@floating-ui/utils/dom",
+    "@floating-ui/vue"
+  ],
+  "vendoredModuleCount": 5,
+  "fingerprint": "C9DD38C5381417E89535FA0C1D60EB4B26D577CF164D974F30F079F80A5D4AE4"
+}
