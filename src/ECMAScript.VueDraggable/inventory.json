@@ -1,0 +1,15 @@
+{
+  "upstream": "vue-draggable-plus",
+  "version": "0.6.1",
+  "license": "MIT",
+  "packages": {
+    "vue-draggable-plus": "0.6.1"
+  },
+  "source": "https://registry.npmjs.org/vue-draggable-plus/0.6.1",
+  "documentation": "https://vue-draggable-plus.pages.dev/",
+  "entryImports": [
+    "vue-draggable-plus"
+  ],
+  "vendoredModuleCount": 1,
+  "fingerprint": "757CD9B43D7DD9CDD3D8BE805938353F7EEFE01E854038CCA4C456AF073F318C"
+}

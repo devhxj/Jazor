@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "libraryId": "vue-draggable",
+  "version": "0.6.1",
+  "imports": {
+    "vue-draggable-plus": {
+      "type": "module",
+      "development": "dist/vue-draggable-plus/vue-draggable-plus.js",
+      "production": "dist/vue-draggable-plus/vue-draggable-plus.js",
+      "developmentHash": "cd21295df5eff9ce5df91a4223178b597315353ef96054a734265556189a2aca",
+      "productionHash": "cd21295df5eff9ce5df91a4223178b597315353ef96054a734265556189a2aca",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    }
+  },
+  "requires": {
+    "vue3": "^3.0.0"
+  },
+  "styles": [],
+  "files": [
+    {
+      "type": "license",
+      "path": "licenses/vue-draggable-plus-LICENSE",
+      "hash": "9f9b01d267bbd93975accb18950dff35803207e0e93dc1392f1b7ef77eef44c2"
+    }
+  ]
+}

@@ -498,7 +498,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -541,6 +541,9 @@ internal static class PackageCatalog
         "ECMAScript.VeeValidate",
         "ECMAScript.VueI18n",
         "ECMAScript.VueQuery",
+        "ECMAScript.VueDraggable",
+        "ECMAScript.FilePond",
+        "ECMAScript.WangEditor",
         "ECMAScript.Vuetify",
         "ECMAScript.ElementPlus",
         "ECMAScript.TDesign"
@@ -589,6 +592,14 @@ internal static class PackageCatalog
         ["vue-query"] = "ECMAScript.VueQuery",
         ["vuequery"] = "ECMAScript.VueQuery",
         ["ECMAScript.VueQuery"] = "ECMAScript.VueQuery",
+        ["vue-draggable"] = "ECMAScript.VueDraggable",
+        ["ECMAScript.VueDraggable"] = "ECMAScript.VueDraggable",
+        ["file-pond"] = "ECMAScript.FilePond",
+        ["filepond"] = "ECMAScript.FilePond",
+        ["ECMAScript.FilePond"] = "ECMAScript.FilePond",
+        ["wang-editor"] = "ECMAScript.WangEditor",
+        ["wangeditor"] = "ECMAScript.WangEditor",
+        ["ECMAScript.WangEditor"] = "ECMAScript.WangEditor",
         ["vuetify"] = "ECMAScript.Vuetify",
         ["ECMAScript.Vuetify"] = "ECMAScript.Vuetify",
         ["admin"] = "Jazor.Admin",
@@ -717,6 +728,21 @@ internal static class PackageCatalog
             ["ECMAScript.VueQuery"] = new(
                 "ECMAScript.VueQuery",
                 Path.Combine(repoRoot, "src", "ECMAScript.VueQuery", "ECMAScript.VueQuery.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.VueDraggable"] = new(
+                "ECMAScript.VueDraggable",
+                Path.Combine(repoRoot, "src", "ECMAScript.VueDraggable", "ECMAScript.VueDraggable.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.FilePond"] = new(
+                "ECMAScript.FilePond",
+                Path.Combine(repoRoot, "src", "ECMAScript.FilePond", "ECMAScript.FilePond.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.WangEditor"] = new(
+                "ECMAScript.WangEditor",
+                Path.Combine(repoRoot, "src", "ECMAScript.WangEditor", "ECMAScript.WangEditor.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Vuetify"] = new(

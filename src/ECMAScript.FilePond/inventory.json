@@ -1,0 +1,17 @@
+{
+  "upstream": "file-pond",
+  "version": "8.0.0",
+  "license": "MIT",
+  "packages": {
+    "filepond": "4.32.12",
+    "vue-filepond": "8.0.0"
+  },
+  "source": "https://registry.npmjs.org/vue-filepond/8.0.0",
+  "documentation": "https://pqina.nl/filepond/docs/",
+  "entryImports": [
+    "filepond",
+    "vue-filepond"
+  ],
+  "vendoredModuleCount": 3,
+  "fingerprint": "E96EFEE070E592201F8BE475CEAD388583875A77D132E6103864EC496DACD49D"
+}

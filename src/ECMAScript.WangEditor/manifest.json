@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "libraryId": "wang-editor",
+  "version": "5.1.12",
+  "imports": {
+    "@wangeditor/editor": {
+      "type": "module",
+      "development": "dist/@wangeditor/editor/index.esm.js",
+      "production": "dist/@wangeditor/editor/index.esm.js",
+      "developmentHash": "8071cfbb6cece3709819578287244f6de37fb801c6a9438e9db04d828fbc03db",
+      "productionHash": "8071cfbb6cece3709819578287244f6de37fb801c6a9438e9db04d828fbc03db",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@wangeditor/editor-for-vue": {
+      "type": "module",
+      "development": "dist/@wangeditor/editor-for-vue/index.esm.js",
+      "production": "dist/@wangeditor/editor-for-vue/index.esm.js",
+      "developmentHash": "4d3865d84f9bc6a279c9241c342b7d4ee192dbf612e7213acc6f064be0754618",
+      "productionHash": "4d3865d84f9bc6a279c9241c342b7d4ee192dbf612e7213acc6f064be0754618",
+      "developmentDependencies": [
+        "@wangeditor/editor"
+      ],
+      "productionDependencies": [
+        "@wangeditor/editor"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    }
+  },
+  "requires": {
+    "vue3": "^3.0.0"
+  },
+  "styles": [
+    {
+      "type": "style",
+      "path": "dist/@wangeditor/editor/style.css",
+      "hash": "844a0952dd8406ecabd0dfbb602612c896a47712ba8abf0a6a17e4fb5940225c"
+    }
+  ],
+  "files": [
+    {
+      "type": "license",
+      "path": "licenses/wangeditor-editor-LICENSE",
+      "hash": "9dbd8b7b1ed874f5f115a166a06066123550619f4bad49deab1f7bfb6f59406b"
+    }
+  ]
+}

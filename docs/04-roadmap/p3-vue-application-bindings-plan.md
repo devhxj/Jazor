@@ -106,4 +106,7 @@ Monaco 与 WangEditor 必须是两个独立包。Monaco 默认直接绑定核心
 | 2026-09-17 | `ECMAScript.VueI18n`（vue-i18n 11.4.12） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueI18n`（`@intlify/*` 三包闭包、Composer 表面、MIT）、`ECMAScript.VueI18n.Test` 8/8、`test-dotnet.cs --project vue-i18n` |
 | 2026-09-17 | `ECMAScript.VueQuery`（`@tanstack/vue-query` 5.103.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueQuery`（46 模块闭包含 `vue-demi`、query/mutation 返回、MIT）、`ECMAScript.VueQuery.Test` 9/9、`Jazor.EmitTest.Materialize_P3BClosures_ResolveTheirEntryGraphs`、`test-dotnet.cs --project vue-query` |
 
+| 2026-09-17 | `ECMAScript.VueDraggable`（vue-draggable-plus 0.6.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueDraggable`（单包闭包、泛型组件代理 `VueDraggableList<TItem>`、MIT）、`ECMAScript.VueDraggable.Test` 12/12、`test-dotnet.cs --project vue-draggable` |
+| 2026-09-17 | `ECMAScript.FilePond`（vue-filepond 8.0.0 + filepond 4.32.12） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FilePond`（核心+适配器双入口闭包、默认导出工厂代理、`filepond.css`）、`ECMAScript.FilePond.Test` 13/13、`test-dotnet.cs --project file-pond` |
+| 2026-09-17 | `ECMAScript.WangEditor`（editor-for-vue 5.1.12 + editor 5.1.23） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.WangEditor`（Vue 3 适配器+核心闭包、Editor/Toolbar 代理、编辑器样式）、`ECMAScript.WangEditor.Test` 11/11、`test-dotnet.cs --project wang-editor` |
 未通过对应测试、资源闭包和真实消费者验证的条目保持 Guidance，不进入当前 Support 矩阵。

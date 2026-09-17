@@ -1,0 +1,21 @@
+{
+  "upstream": "wang-editor",
+  "version": "5.1.12",
+  "license": "MIT",
+  "packages": {
+    "@wangeditor/editor": "5.1.23",
+    "@wangeditor/editor-for-vue": "5.1.12"
+  },
+  "packageLicenses": {
+    "@wangeditor/editor": "MIT",
+    "@wangeditor/editor-for-vue": "MIT"
+  },
+  "source": "https://registry.npmjs.org/@wangeditor/editor-for-vue/5.1.12",
+  "documentation": "https://www.wangeditor.com/",
+  "entryImports": [
+    "@wangeditor/editor",
+    "@wangeditor/editor-for-vue"
+  ],
+  "vendoredModuleCount": 3,
+  "fingerprint": "B9FD181A4CCA57B97E6FA39E0E077B9A83BC288594C64E36D9675CDDE26B662B"
+}

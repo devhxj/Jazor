@@ -55,9 +55,9 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 - 枚举：数值域直接声明数值成员（发射为数字字面量）；字符串域标注 `[String]` 且每个成员显式 `[Description("@#<js字符串>")]`（发射为字符串字面量）。
 - 不透明宿主值（如 locale 对象）：`sealed class` + 私有构造器，不给成员。
 - 标量与日期参数优先复用核心宿主类型（`Number`、`string`、`Date`）；`Number` 自带从 CLR 数值的隐式转换，`AddDays(date, 3)` 形态可直接编写。
-- 上游 `unknown` 值域参数是 `object` 的唯一许可例外，遵循 `Global.TypeOf` 宿主约定，必须有专门的发射测试锁定。
+- **`object` 的判定标准是「能否更精确表达」，不是「是否出现」**：当值域本身开放、C# 无法给出更精确类型时，`object?` 是正当用法（仓库先例：`Global.TypeOf(object? value)`、`NumberValue(object?)`；绑定侧的 `isDate(value: unknown)`）。当值域可被具体类型、命名 record、不透明宿主类型或泛型表达时，禁止降级为 `object`。可精确表达却用了 `object` 才算过度降级。
 - 上游扩展缝（如 date-fns 的 `ContextOptions`/TZDate）可整体不绑定，但必须在包 README 的未绑定清单中写明。
-- 上游 `Object`/`Any` 域的 API 优先改为泛型（`CreateEventHook<T>`、`UseAsyncState<T>`），不要用 `object?` 兜底；类型擦除不是弱化 C# 作者面的理由。泛型参数不参与编译器特判时不会要求具体 runtime 语义。
+- 上游 `Object`/`Any` 域优先用泛型（`CreateEventHook<T>`、`UseAsyncState<T>`）或**不透明宿主类型**（`sealed class` + 私有构造器，如 `FloatingMiddleware`、`FilePondPlugin`）表达，这两种写法都比 `object?` 精确。类型擦除不是弱化 C# 作者面的理由；泛型参数不参与编译器特判时不会要求具体 runtime 语义。
 
 ## 组件绑定
 
@@ -123,7 +123,7 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 2. vendored 树：dist 实际文件集合与 manifest 声明闭包精确相等（双向差集为空）。
 3. 上游 drift：静态提取上游 barrel 的命名导出（`export function x` 与 `export { a, b as c }`，排除 default），断言 C# 绑定的每个 `@#` 导出名都存在；策展清单做生成文件、manifest 闭包、inventory 与 C# 契约的四方一致断言。
 4. inventory：fingerprint 复算覆盖除自身外的全部 payload。
-5. proxy 与编译边界：import 宿主与 Transform.Import、首期表面按参数类型逐位锁定、`object` 禁用扫描、枚举值域；编译器发射断言覆盖命名导入、选项对象字面量、枚举字面量与策展桥导入。
+5. proxy 与编译边界：import 宿主与 Transform.Import、首期表面按参数类型逐位锁定、`object` 降级扫描（**递归检查泛型实参**，捕获 `IVueRef<object>` 这类降级；对值域确实开放的参数显式列入例外并注释理由，见 `ECMAScript.VueRoute.Test/EcmaScriptVueRouteProxyTests.cs` 的 `AssertNotObject`）、枚举值域；编译器发射断言覆盖命名导入、选项对象字面量、枚举字面量与策展桥导入。
 6. 组件（有组件时）：
    - 范型 A：代理与描述符两侧分别断言 `Transform.Component` 与 ExportName、必填参数的 `EditorRequired`、`[ECMAScriptName]` 还原名、默认槽的 `RenderFragment<TSlotScope>`、`EventCallback<T>`、`CaptureUnmatchedValues` 透传；发射测试锁定 `H(Component, new XxxProps { ... }, new XxxSlots { ... })` 与作用域槽回调的 VNode 数组返回。
    - 范型 B：断言生成导出目录的组件数与代理类数一致、每个 `VuetifyComponents.X` 都有对应代理与 `[ECMAScriptName]`、shim 模块的导出与 manifest 入口对齐，并运行生成器 `--check` 作为陈旧检测。

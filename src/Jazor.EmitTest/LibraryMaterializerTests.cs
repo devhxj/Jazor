@@ -188,16 +188,17 @@ public sealed class LibraryMaterializerTests
     [TestMethod]
     public void Materialize_P3BClosures_ResolveTheirEntryGraphs()
     {
-        // vee-validate, vue-i18n, and vue-query each vendor a multi-package closure whose entry
-        // declares package edges (including the vue / @vue/devtools-api peers) rather than module
-        // edges. Selecting the author entry must materialize the whole graph and resolve every
-        // declared provider through the Vue resource library.
-        // 三个 P3-B 包各 vendor 一个多包闭包；entry 用 package 边（含 vue / @vue/devtools-api peer）
-        // 声明依赖。选择作者入口必须物化整图，并通过 Vue 资源库解析全部 provider。
+        // vee-validate, vue-i18n, and vue-query each vendor a closure whose entry declares package
+        // edges (including the vue / @vue/devtools-api peers) rather than module edges. Selecting the
+        // author entry must materialize the whole graph and resolve every declared provider through
+        // the Vue resource library. vue-i18n vendors a single browser build that inlines @intlify/*.
+        // 三个 P3-B 包各 vendor 一个闭包；entry 用 package 边（含 vue / @vue/devtools-api peer）声明
+        // 依赖。选择作者入口必须物化整图，并通过 Vue 资源库解析全部 provider；vue-i18n 使用已内联
+        // @intlify/* 的单一 browser 构建。
         var cases = new[]
         {
             (Manifest: "ECMAScript.VeeValidate", Id: "vee-validate", Specifier: "vee-validate", Entry: "dist/vee-validate/dist/vee-validate.mjs"),
-            (Manifest: "ECMAScript.VueI18n", Id: "vue-i18n", Specifier: "vue-i18n", Entry: "dist/vue-i18n/dist/vue-i18n.mjs"),
+            (Manifest: "ECMAScript.VueI18n", Id: "vue-i18n", Specifier: "vue-i18n", Entry: "dist/vue-i18n/dist/vue-i18n.esm-browser.js"),
             (Manifest: "ECMAScript.VueQuery", Id: "vue-query", Specifier: "@tanstack/vue-query", Entry: "dist/@tanstack/vue-query/build/modern/index.js")
         };
         var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
@@ -224,6 +225,64 @@ public sealed class LibraryMaterializerTests
 
                 // The vue provider must be materialized into its own vendor tree.
                 Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), $"{libraryId}: the vue provider was not resolved.");
+            }
+            finally
+            {
+                Directory.Delete(outputRoot, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void Materialize_P3CComponentClosures_ResolveTheirEntryGraphs()
+    {
+        // vue-draggable-plus、filepond 与 wangeditor 各自 vendor 一个多包闭包。选择作者入口必须
+        // 物化整图；FilePond/WangEditor 还必须在 manifest 中携带样式资源，vue 由 Vue 资源库提供。
+        // The P3-C packages each vendor a multi-package closure; selecting the author entry must
+        // materialize the whole graph, and FilePond/WangEditor must carry their stylesheet.
+        var cases = new[]
+        {
+            (Manifest: "ECMAScript.VueDraggable", Id: "vue-draggable", Specifier: "vue-draggable-plus", Entry: "dist/vue-draggable-plus/vue-draggable-plus.js"),
+            (Manifest: "ECMAScript.FilePond", Id: "file-pond", Specifier: "filepond", Entry: "dist/filepond/filepond.esm.js"),
+            (Manifest: "ECMAScript.WangEditor", Id: "wang-editor", Specifier: "@wangeditor/editor", Entry: "dist/@wangeditor/editor/index.esm.js")
+        };
+        var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
+
+        foreach (var (manifestName, libraryId, specifier, expectedEntry) in cases)
+        {
+            var manifestPath = FindLibraryManifest(manifestName);
+            using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var version = manifest.RootElement.GetProperty("version").GetString()!;
+            var expectedStyles = manifest.RootElement.GetProperty("styles").EnumerateArray()
+                .Select(static style => style.GetProperty("path").GetString()!)
+                .ToArray();
+            var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
+            try
+            {
+                var result = new LibraryMaterializer().Materialize(
+                    [manifestPath, vueManifestPath],
+                    outputRoot,
+                    BuildMode.Production,
+                    requiredImports: [specifier]);
+
+                Assert.AreEqual($"vendor/{libraryId}/{version}/{expectedEntry}", result.ImportPaths[specifier]);
+
+                // 请求入口必须连同其 package 依赖链一起被选中（含闭包内的核心包）。
+                var requested = manifest.RootElement.GetProperty("imports").GetProperty(specifier);
+                foreach (var dependency in requested.GetProperty("productionDependencies").EnumerateArray()
+                             .Select(static value => value.GetString()!)
+                             .Where(static value => value != "vue"))
+                    Assert.IsTrue(result.ImportPaths.ContainsKey(dependency), $"{libraryId}: dependency '{dependency}' was not selected.");
+
+                // 样式通过 manifest styles 通道物化（FilePond/WangEditor 有，VueDraggable 无）；
+                // StylePaths 是目标相对路径（vendor/<id>/<version>/...），按文件名断言。
+                Assert.AreEqual(expectedStyles.Length, result.StylePaths.Count, $"{libraryId}: style closure size mismatch.");
+                foreach (var style in expectedStyles)
+                {
+                    var fileName = style.Split('/')[^1];
+                    Assert.IsTrue(result.StylePaths.Any(path => string.Equals(Path.GetFileName(path), fileName, StringComparison.OrdinalIgnoreCase)),
+                        $"{libraryId}: style '{style}' was not materialized.");
+                }
             }
             finally
             {
