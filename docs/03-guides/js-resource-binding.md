@@ -57,6 +57,45 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 - 标量与日期参数优先复用核心宿主类型（`Number`、`string`、`Date`）；`Number` 自带从 CLR 数值的隐式转换，`AddDays(date, 3)` 形态可直接编写。
 - 上游 `unknown` 值域参数是 `object` 的唯一许可例外，遵循 `Global.TypeOf` 宿主约定，必须有专门的发射测试锁定。
 - 上游扩展缝（如 date-fns 的 `ContextOptions`/TZDate）可整体不绑定，但必须在包 README 的未绑定清单中写明。
+- 上游 `Object`/`Any` 域的 API 优先改为泛型（`CreateEventHook<T>`、`UseAsyncState<T>`），不要用 `object?` 兜底；类型擦除不是弱化 C# 作者面的理由。泛型参数不参与编译器特判时不会要求具体 runtime 语义。
+
+## 组件绑定：双表示模式
+
+当上游导出 **Vue 组件**（而非纯函数或 composable）时，绑定同时提供两套作者入口，二者映射到同一个上游组件。以 `ECMAScript.VueRoute` 的 `RouterLink`/`RouterView` 为准：
+
+| 表示 | 载体 | 面向 | 声明方式 |
+| --- | --- | --- | --- |
+| Razor 组件代理 | `sealed class : ComponentBase, IVueComponent` | `.razor` 标签作者 | `[ECMAScript("<specifier>", Transform.Component, "<ExportName>")]` |
+| 类型化组件描述符 | `static` 属性 `Vue.IVueComponent<TProps, TSlots>` | `H()` 渲染函数作者 | `[Description("@#<ExportName>")]` |
+
+组件代理承载 Razor 编译期契约（`[Parameter]` 属性绑定、render fragment、事件回调），描述符承载运行时渲染契约（`H` 重载按 `TProps`/`TSlots` 选择）。代理类不产生额外 JS 产物，发射时由 RazorVue 映射到同一上游组件。
+
+组件代理的固定形态：
+
+- 命名加库名前缀避免与项目自有组件冲突：代理类 `VueRouterLink`，描述符属性用上游原名 `RouterLink`。
+- 必填参数用 `[Parameter] [EditorRequired]`；C# 保留字或命名冲突用 `[ECMAScriptName("<js名>")]` 还原，例如 `CssClass` → `class`、`CssStyle` → `style`。
+- 默认插槽是 `[Parameter] [ECMAScriptName("default")] RenderFragment<TSlotScope>? ChildContent`；作用域类型是 `record XxxSlotScope : Vue.VueProps`。
+- 事件用 `[Parameter] EventCallback<TEvent>`，例如 `EventCallback<MouseEvent> OnClick`。
+- 透传属性固定为 `[Parameter(CaptureUnmatchedValues = true)] IReadOnlyDictionary<string, object?>? AdditionalAttributes`，键使用 Vue/HTML 实际属性名，使 `data-*`、`aria-*`、`role` 等原样落到宿主元素。
+
+类型化描述符的固定形态：
+
+- Props 用 `record XxxProps : Vue.VueProps`，公共选项抽到基类 `record XxxOptions : Vue.VueProps` 再由完整 Props 继承，避免重复。
+- Slots 用 `record XxxSlots : Vue.VueSlots`，默认槽是委托属性 `XxxSlotCallback? Default`。
+- 组件描述符声明为 `Vue.IVueComponent<XxxProps, XxxSlots>`；调用形态为 `H(RouterLink, new RouterLinkProps { ... }, new RouterLinkSlots { Default = scope => new IVNode[] { ... } })`。
+- 无 props 只有插槽时用 `Vue.IVueSlotComponent<TSlots>`，只有 props 时用 `Vue.IVueComponent<TProps>`；接口选择让编译器挑到正确的 `H` 重载。
+
+配套约束：
+
+- 两套表示的参数集、插槽名、事件名必须保持同步，否则 Razor 标签与 `H()` 调用的行为会漂移；代理测试与发射测试要分别锁定两侧。
+- `Transform.Component` 用于组件、`Transform.Import` 用于函数/Hook，不要混用。
+- 布局守卫测试锁定目录结构（`Api/`、`Types/` 分片）、shell 文件只保留属性入口、以及项目元数据，防止组件代理被误并入 API 分片。
+
+`ECMAScript.VueRoute` 的 `RouterLink` 作者面示例：
+
+```razor
+<VueRouterLink CssClass="@CssClassValue" To="@Target.Route" data-action-key="@Action.Key">@Text</VueRouterLink>
+```
 
 ## 测试
 
@@ -67,6 +106,7 @@ manifest 的模块依赖规则：entry 的 `developmentModuleDependencies`/`prod
 3. 上游 drift：静态提取上游 barrel 的命名导出（`export function x` 与 `export { a, b as c }`，排除 default），断言 C# 绑定的每个 `@#` 导出名都存在；策展清单做生成文件、manifest 闭包、inventory 与 C# 契约的四方一致断言。
 4. inventory：fingerprint 复算覆盖除自身外的全部 payload。
 5. proxy 与编译边界：import 宿主与 Transform.Import、首期表面按参数类型逐位锁定、`object` 禁用扫描、枚举值域；编译器发射断言覆盖命名导入、选项对象字面量、枚举字面量与策展桥导入。
+6. 组件（有组件时）：代理与描述符两侧分别断言 Transform.Component 与 ExportName、必填参数的 `EditorRequired`、`[ECMAScriptName]` 还原名、默认槽的 `RenderFragment<TSlotScope>`、`EventCallback<T>`、`CaptureUnmatchedValues` 透传；再由编译器发射测试锁定 `H(Component, new XxxProps { ... }, new XxxSlots { ... })` 与作用域槽回调的 VNode 数组返回。另加布局守卫测试锁定 `Api/`、`Types/` 分片与 shell 文件只保留属性入口，防止组件代理被误并入 API 分片（见 `ECMAScript.VueRoute.Test/EcmaScriptVueRouteLayoutGuardTests.cs`）。
 
 编译器发射的稳定格式（断言按此书写）：同一模块的命名导入合并为单条语句并按字母排序；三个及以上属性的对象字面量多行展开。 Emit 层在 `Jazor.EmitTest.LibraryMaterializerTests` 增加真实 materialization 测试：以 `requiredImports` 物化全部入口，断言 import path 指向 `vendor/<libraryId>/<version>/...`，并对 vendor 树内每个 JS 模块的相对导入逐一验证可解析（闭包自包含）。注意 `Load_AllRepositoryResourceManifests` 会自动加载 `src/` 下所有 manifest，新包接入后该项即自动获得 schema 与哈希校验。
 
