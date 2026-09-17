@@ -43,13 +43,13 @@ if (string.IsNullOrWhiteSpace(version))
     throw new ArgumentException("Provide --version on the first run; later runs reuse the manifest version.");
 
 // 逻辑 import → 上游包、锁定版本与入口文件。入口闭包由相对导入静态推导，跨包边由裸 specifier 推导。
-// 非作者入口包的版本是闭包锁定值；升级作者入口时在此同步评估。
+// 必须使用显式声明 browser 条件的构建：vue-i18n.mjs 等 bundler 变体在模块顶层引用
+// process.env.NODE_ENV，浏览器导入即抛 "process is not defined"。
+// esm-browser 构建已内联 @intlify/*，因此闭包只有一个作者入口。
+// 只使用 bare `browser` 条件的产物；bundler 变体在浏览器不可用。
 var entries = new (string Specifier, string Package, string PackageVersion, string File)[]
 {
-    ("vue-i18n", "vue-i18n", version, "dist/vue-i18n.mjs"),
-    ("@intlify/core-base", "@intlify/core-base", "11.4.12", "dist/core-base.mjs"),
-    ("@intlify/shared", "@intlify/shared", "11.4.12", "dist/shared.mjs"),
-    ("@intlify/message-compiler", "@intlify/message-compiler", "11.4.12", "dist/message-compiler.mjs"),
+    ("vue-i18n", "vue-i18n", version, "dist/vue-i18n.esm-browser.js"),
 };
 
 // 由 ECMAScript.Vue 资源库提供的 peer specifier；不进入本包闭包，只写入 dependencies 与 requires。
@@ -107,10 +107,14 @@ var licensesRoot = Path.Combine(projectRoot, "licenses");
 Directory.CreateDirectory(distRoot);
 Directory.CreateDirectory(licensesRoot);
 
-// 整体替换 dist，保证 manifest 与 vendored 文件始终一一对应。
+// 整体替换 dist 与 licenses，保证 manifest 与 vendored 文件始终一一对应；
+// 闭包收缩时（例如从 bundler 变体改为 browser 构建）不会残留旧包与旧许可证。
 if (Directory.Exists(distRoot))
     Directory.Delete(distRoot, recursive: true);
+if (Directory.Exists(licensesRoot))
+    Directory.Delete(licensesRoot, recursive: true);
 Directory.CreateDirectory(distRoot);
+Directory.CreateDirectory(licensesRoot);
 
 var vendored = new SortedDictionary<string, string>(StringComparer.Ordinal); // dist-relative -> source path
 foreach (var (specifier, package, _, _) in entries)

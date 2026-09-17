@@ -3,19 +3,13 @@
   "version": "11.4.12",
   "license": "MIT",
   "packages": {
-    "@intlify/core-base": "11.4.12",
-    "@intlify/message-compiler": "11.4.12",
-    "@intlify/shared": "11.4.12",
     "vue-i18n": "11.4.12"
   },
   "source": "https://registry.npmjs.org/vue-i18n/11.4.12",
   "documentation": "https://vue-i18n.intlify.dev/",
   "entryImports": [
-    "@intlify/core-base",
-    "@intlify/message-compiler",
-    "@intlify/shared",
     "vue-i18n"
   ],
-  "vendoredModuleCount": 4,
-  "fingerprint": "EF11D51E50F2074678BA0176CCEC0D2D6B2913E76F0DC6C9F3514C9E69D22744"
+  "vendoredModuleCount": 1,
+  "fingerprint": "BD557751951C20433218F3E1845CAFF1726CC4A36A866C58F050F6DFC09E7C47"
 }

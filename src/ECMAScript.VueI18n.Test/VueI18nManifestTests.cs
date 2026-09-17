@@ -15,7 +15,7 @@ namespace ECMAScriptVueI18nTest;
 public sealed class VueI18nManifestTests
 {
     [TestMethod]
-    public void VueI18n_Manifest_DeclaresLockedIntlifyClosureWithVerifiableHashes()
+    public void VueI18n_Manifest_DeclaresLockedBrowserBuildWithVerifiableHashes()
     {
         using var manifest = JsonDocument.Parse(File.ReadAllText(GetProjectPath("manifest.json")));
         var root = manifest.RootElement;
@@ -28,20 +28,18 @@ public sealed class VueI18nManifestTests
 
         var imports = root.GetProperty("imports");
         CollectionAssert.AreEquivalent(
-            new[] { "vue-i18n", "@intlify/core-base", "@intlify/message-compiler", "@intlify/shared" },
+            new[] { "vue-i18n" },
             imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
 
-        // vue-i18n's entry re-exports the @intlify packages through the package-dependency channel;
-        // @vue/devtools-api and vue are peers provided by the ECMAScript.Vue resource library.
-        // vue-i18n 入口通过 package 依赖通道引用 @intlify 包；devtools-api 与 vue 是 peer。
+        // The vendored artifact is the upstream `browser`-condition build
+        // (vue-i18n.esm-browser.js), which inlines @intlify/* and only needs the vue peer.
+        // The bundler variant (vue-i18n.mjs) references process.env at module top level and
+        // cannot load in a browser, so it must not be vendored.
         var entry = imports.GetProperty("vue-i18n");
+        Assert.AreEqual("dist/vue-i18n/dist/vue-i18n.esm-browser.js", entry.GetProperty("development").GetString());
         CollectionAssert.AreEquivalent(
-            new[] { "@intlify/core-base", "@intlify/shared", "@vue/devtools-api", "vue" },
+            new[] { "vue" },
             entry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
-        CollectionAssert.AreEquivalent(
-            new[] { "@intlify/message-compiler", "@intlify/shared" },
-            imports.GetProperty("@intlify/core-base").GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
-        Assert.AreEqual(0, imports.GetProperty("@intlify/shared").GetProperty("productionDependencies").EnumerateArray().Count());
 
         foreach (var declared in imports.EnumerateObject())
         {
@@ -85,7 +83,7 @@ public sealed class VueI18nManifestTests
             .ToHashSet(StringComparer.Ordinal);
         Assert.IsTrue(bound.Count >= 2, $"Expected the createI18n/useI18n entry pair, found {bound.Count}.");
 
-        var upstream = ReadNamedExports(GetProjectPath("dist", "vue-i18n", "dist", "vue-i18n.mjs"));
+        var upstream = ReadNamedExports(GetProjectPath("dist", "vue-i18n", "dist", "vue-i18n.esm-browser.js"));
         var missing = bound.Except(upstream).Order().ToArray();
         Assert.IsFalse(missing.Length > 0, $"Bound exports missing from the vendored upstream entry: {string.Join(", ", missing)}");
     }
@@ -113,7 +111,6 @@ public sealed class VueI18nManifestTests
     {
         var inventory = GetInventory();
         Assert.AreEqual(inventory.GetProperty("version").GetString(), inventory.GetProperty("packages").GetProperty("vue-i18n").GetString());
-        Assert.AreEqual(inventory.GetProperty("version").GetString(), inventory.GetProperty("packages").GetProperty("@intlify/core-base").GetString());
 
         var fingerprint = inventory.GetProperty("fingerprint").GetString()!;
         var payload = new Dictionary<string, object?>();
