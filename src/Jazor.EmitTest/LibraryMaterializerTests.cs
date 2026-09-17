@@ -62,6 +62,52 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries()
+    {
+        // The vendored date-fns tree is a real multi-module closure; materializing both entries
+        // must reproduce every declared module under vendor/ with a fully resolvable import graph.
+        // vendored date-fns 是真实多模块闭包；两个入口 materialize 后必须在 vendor/ 下完整复现且导入图自包含。
+        var manifestPath = FindLibraryManifest("ECMAScript.DateFns");
+        using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var version = manifest.RootElement.GetProperty("version").GetString()!;
+        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "date-fns", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var result = new LibraryMaterializer().Materialize(
+                [manifestPath],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: ["date-fns", "date-fns/locale"]);
+
+            Assert.AreEqual($"vendor/date-fns/{version}/dist/index.js", result.ImportPaths["date-fns"]);
+            Assert.AreEqual($"vendor/date-fns/{version}/dist/locale.mjs", result.ImportPaths["date-fns/locale"]);
+
+            var vendorModules = Directory.EnumerateFiles(
+                Path.Combine(outputRoot, "vendor", "date-fns", version),
+                "*.*",
+                SearchOption.AllDirectories)
+                .Where(IsJavaScriptModule)
+                .ToArray();
+            Assert.IsTrue(vendorModules.Length >= 367, $"Expected the full vendored closure, found {vendorModules.Length} JavaScript modules.");
+
+            foreach (var module in vendorModules)
+            {
+                foreach (var specifier in GetRelativeModuleSpecifiers(module))
+                {
+                    var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(module)!, specifier));
+                    Assert.IsTrue(
+                        File.Exists(resolved),
+                        $"Vendored module '{module}' imports '{specifier}' which is not part of the materialized closure.");
+                }
+            }
+        }
+        finally
+        {
+            Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Load_ValidatesProductionEntryBeforeMaterialization()
     {
         using var workspace = new LibraryWorkspace();

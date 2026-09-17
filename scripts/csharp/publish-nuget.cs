@@ -498,7 +498,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -535,6 +535,7 @@ internal static class PackageCatalog
         "ECMAScript.Pinia",
         "ECMAScript.Pinia.Testing",
         "ECMAScript.VueRoute",
+        "ECMAScript.DateFns",
         "ECMAScript.Vuetify",
         "ECMAScript.ElementPlus",
         "ECMAScript.TDesign"
@@ -566,6 +567,9 @@ internal static class PackageCatalog
         ["ECMAScript.Pinia.Testing"] = "ECMAScript.Pinia.Testing",
         ["vueroute"] = "ECMAScript.VueRoute",
         ["ECMAScript.VueRoute"] = "ECMAScript.VueRoute",
+        ["date-fns"] = "ECMAScript.DateFns",
+        ["datefns"] = "ECMAScript.DateFns",
+        ["ECMAScript.DateFns"] = "ECMAScript.DateFns",
         ["vuetify"] = "ECMAScript.Vuetify",
         ["ECMAScript.Vuetify"] = "ECMAScript.Vuetify",
         ["admin"] = "Jazor.Admin",
@@ -614,7 +618,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, jazor-vue, style, admin, devtools, dataui, vu-icons, pinia, pinia-testing, vueroute, vuetify, elementplus, tdesign.");
+            "jazor, jazor-vue, style, admin, devtools, dataui, vu-icons, pinia, pinia-testing, vueroute, date-fns, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -664,6 +668,11 @@ internal static class PackageCatalog
             ["ECMAScript.VueRoute"] = new(
                 "ECMAScript.VueRoute",
                 Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.DateFns"] = new(
+                "ECMAScript.DateFns",
+                Path.Combine(repoRoot, "src", "ECMAScript.DateFns", "ECMAScript.DateFns.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Vuetify"] = new(

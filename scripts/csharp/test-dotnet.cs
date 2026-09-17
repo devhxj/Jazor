@@ -15,6 +15,7 @@ var vuIconsTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VuIcons.Test"
 var piniaTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Test", "ECMAScript.Pinia.Test.csproj");
 var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing.Test", "ECMAScript.Pinia.Testing.Test.csproj");
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
+var dateFnsTestProject = Path.Combine(repoRoot, "src", "ECMAScript.DateFns.Test", "ECMAScript.DateFns.Test.csproj");
 var razorSgTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Sg.Test", "Jazor.RazorVue.Sg.Test.csproj");
 var emitTestProject = Path.Combine(repoRoot, "src", "Jazor.EmitTest", "Jazor.EmitTest.csproj");
 var styleBrowserTestScript = Path.Combine("scripts", "csharp", "verify-ecmascript-style-browser.cs");
@@ -82,6 +83,7 @@ var testTargets = options.Project switch
     "pinia" => new[] { piniaTestProject },
     "pinia-testing" => new[] { piniaTestingTestProject },
     "vueroute" => new[] { vueRouteTestProject },
+    "date-fns" => new[] { dateFnsTestProject },
     "razor-sg" => new[] { razorSgTestProject },
     "emit" => new[] { emitTestProject },
     "emit-consumer" => new[] { emitTestProject },
@@ -96,6 +98,7 @@ var testTargets = options.Project switch
         piniaTestProject,
         piniaTestingTestProject,
         vueRouteTestProject,
+        dateFnsTestProject,
         razorSgTestProject,
         emitTestProject
     }
@@ -209,7 +212,7 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "style", "devtools", "dataui", "vu-icons", "pinia", "pinia-testing", "vueroute", "razor-sg",
+            "all", "compiler", "clr", "style", "devtools", "dataui", "vu-icons", "pinia", "pinia-testing", "vueroute", "date-fns", "razor-sg",
             "emit", "emit-consumer", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
@@ -236,7 +239,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|razor-sg|emit|emit-consumer|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|date-fns|razor-sg|emit|emit-consumer|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

@@ -1,0 +1,28 @@
+{
+  "upstream": "date-fns",
+  "version": "4.4.0",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/date-fns/-/date-fns-4.4.0.tgz",
+  "documentation": "https://date-fns.org/docs/Getting-Started",
+  "entryImports": [
+    "date-fns",
+    "date-fns/locale"
+  ],
+  "vendoredModuleCount": 367,
+  "functionClosureModuleCount": 304,
+  "locales": [
+    "en-US",
+    "en-GB",
+    "zh-CN",
+    "zh-TW",
+    "ja",
+    "ko",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "ru",
+    "pt-BR"
+  ],
+  "fingerprint": "CA89063A9E72CCAC422684F5506469E3F4367D8FF39140C62397CA82EA4C037A"
+}

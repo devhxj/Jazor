@@ -50,6 +50,17 @@ P2 的执行顺序、Definition of Done 和当前证据见 [RazorVue P2 执行�
 | JS 互操作 | `IJSRuntime` 家族使用 Reject，JavaScript 能力通过 typed ECMAScript/WebIDL binding 表达。 | 已有稳定诊断与作者面回归 |
 | 性能与交付 | 以固定 benchmark 比较 render/update、gzip、clean/incremental/HMR/Release。 | 已完成运行时基线；主链路优化以可复现收益为准 |
 
+## P3：Vue 应用生态绑定扩展
+
+P3 的分阶段顺序、每个绑定的固定交付物与验证门槛见 [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md)。
+
+| 阶段 | 目标 | 当前状态 |
+| --- | --- | --- |
+| P3-A | `ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi` | DateFns 已交付包、测试与主线门禁；browser smoke 与真实 RazorVue consumer 待补，其余两包未开始 |
+| P3-B | `ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery` | 未开始 |
+| P3-C | `ECMAScript.VueDraggable`、`ECMAScript.FilePond`、`ECMAScript.WangEditor` | 未开始 |
+| P3-D | `ECMAScript.Monaco` | 未开始 |
+
 ## 稳定边界
 
 P2 的具体执行顺序、Definition of Done 和证据门槛见 [RazorVue P2 执行计划](./p2-plan.md)。

@@ -11,6 +11,7 @@
 | 执行 RazorVue P0 | [P0 执行计划](./p0-plan.md) |
 | 执行 RazorVue P1 | [P1 执行计划](./p1-plan.md) |
 | 执行 RazorVue P2 | [P2 执行计划](./p2-plan.md) |
+| 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |
 
 ## 维护准则
 

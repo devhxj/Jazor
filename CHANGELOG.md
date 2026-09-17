@@ -2,6 +2,20 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-17
+
+### Jazor Unreleased
+
+中文 | English
+
+#### 新增能力
+
+- 新增 `ECMAScript.DateFns` JS resource library（P3-A 首个交付物）：锁定 date-fns 4.4.0 上游（npm SHA-512 integrity + manifest schema 2 + 367 模块资源闭包 + MIT 许可证），提供解析、格式化、加减、比较、区间、模块默认选项共 59 个纯函数绑定与 12 个精选 locale（`date-fns/locale` 生成桥），日期参数统一使用 JavaScript `Date` 宿主类型。配套 `ECMAScript.DateFns.Test` 覆盖 manifest/哈希/inventory fingerprint、上游导出 drift 检查与编译器 emission；`Jazor.EmitTest` 验证真实 materialization 闭包自包含；`test-dotnet.cs` 新增 `date-fns` lane。真实 RazorVue 页面与浏览器 smoke 证据归属 P3-A 退出条件，进入 Support 矩阵前保持 Guidance。by @devhxj
+
+#### Features
+
+- Add the `ECMAScript.DateFns` JS resource library (first P3-A deliverable): locks date-fns 4.4.0 upstream (npm SHA-512 integrity, manifest schema 2, a 367-module resource closure, and the MIT license) and binds 59 pure functions across parsing, formatting, arithmetic, comparison, intervals, and module defaults, plus 12 curated locales through the generated `date-fns/locale` bridge; date arguments use the JavaScript `Date` host type. `ECMAScript.DateFns.Test` covers manifest/hash/inventory fingerprint checks, upstream export drift detection, and compiler emission; `Jazor.EmitTest` verifies the real materialization closure is self-contained; `test-dotnet.cs` gains a `date-fns` lane. Real RazorVue page and browser smoke evidence belongs to the P3-A exit criteria, so the package stays Guidance until it enters the Support matrix. by @devhxj
+
 ## 2026-09-16
 
 ### Jazor 1.0.0-preview.3

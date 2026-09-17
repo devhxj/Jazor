@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\date-fns\manifest.json" />
+  </ItemGroup>
+</Project>
