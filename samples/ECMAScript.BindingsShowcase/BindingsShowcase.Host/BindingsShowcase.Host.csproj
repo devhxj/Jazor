@@ -1,0 +1,100 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RazorLangVersion>11.0</RazorLangVersion>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+    <JazorMode>debug</JazorMode>
+    <!-- The showcase consumes the Jazor source tree so the P3 bindings under test are the
+         ones being built. Package mode is used by build-local.cs for the consumer proof. -->
+    <ShowcaseUsePackages Condition="'$(ShowcaseUsePackages)' == ''">false</ShowcaseUsePackages>
+    <NoWarn>$(NoWarn);CS0626;CS0824;IDE0130;CA1822;IDE0060;IDE1006</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\src\Jazor\build\Jazor.props"
+          Condition="'$(ShowcaseUsePackages)' != 'true'" />
+
+  <ItemGroup>
+    <Compile Remove="build-local.cs;../build-local.cs;verify-smoke.cs;../verify-smoke.cs" />
+    <Compile Remove="jazor\**" />
+    <Content Remove="jazor\**" />
+    <EmbeddedResource Remove="jazor\**" />
+    <None Remove="jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(ShowcaseUsePackages)' != 'true'">
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.Vue\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.DateFns\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.VueI18n\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.VueUse\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.FloatingUi\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.VeeValidate\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.VueQuery\manifest.json" />
+    <ProjectReference Include="..\..\..\src\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.DateFns\ECMAScript.DateFns.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.VueI18n\ECMAScript.VueI18n.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.VueUse\ECMAScript.VueUse.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.FloatingUi\ECMAScript.FloatingUi.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.VeeValidate\ECMAScript.VeeValidate.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.VueQuery\ECMAScript.VueQuery.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.Style\ECMAScript.Style.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.CLR\Jazor.CLR.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\src\Jazor.RazorVue\Jazor.RazorVue.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(ShowcaseUsePackages)' == 'true'">
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.DateFns" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VueI18n" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VueUse" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.FloatingUi" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VeeValidate" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VueQuery" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(ShowcaseUsePackages)' != 'true'">
+    <_ShowcaseRazorVueAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll</_ShowcaseRazorVueAnalyzerPath>
+    <_ShowcaseCompilerAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\..\src\Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll</_ShowcaseCompilerAnalyzerPath>
+    <_ShowcaseCommonAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll</_ShowcaseCommonAnalyzerPath>
+    <_ShowcaseContractAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll</_ShowcaseContractAnalyzerPath>
+
+    <_ShowcaseRazorVueAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll</_ShowcaseRazorVueAnalyzerPath>
+    <_ShowcaseCompilerAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll</_ShowcaseCompilerAnalyzerPath>
+    <_ShowcaseCommonAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll</_ShowcaseCommonAnalyzerPath>
+    <_ShowcaseContractAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll</_ShowcaseContractAnalyzerPath>
+  </PropertyGroup>
+
+  <Target Name="AddLocalShowcaseAnalyzerDependencies"
+          BeforeTargets="CoreCompile"
+          Condition="'$(ShowcaseUsePackages)' != 'true'">
+    <ItemGroup>
+      <Analyzer Include="$(_ShowcaseRazorVueAnalyzerPath)"
+                Condition="Exists('$(_ShowcaseRazorVueAnalyzerPath)')" />
+      <Analyzer Include="$(_ShowcaseCompilerAnalyzerPath)"
+                Condition="Exists('$(_ShowcaseCompilerAnalyzerPath)')" />
+      <Analyzer Include="$(_ShowcaseCommonAnalyzerPath)"
+                Condition="Exists('$(_ShowcaseCommonAnalyzerPath)')" />
+      <Analyzer Include="$(_ShowcaseContractAnalyzerPath)"
+                Condition="Exists('$(_ShowcaseContractAnalyzerPath)')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll"
+                Condition="Exists('$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\..\..\src\Jazor\build\Jazor.targets"
+          Condition="'$(ShowcaseUsePackages)' != 'true'" />
+</Project>

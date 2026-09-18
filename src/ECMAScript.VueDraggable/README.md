@@ -11,7 +11,7 @@ Strongly typed C# bindings for vue-draggable-plus, shipped as a Jazor JS resourc
 | npm 包 | `vue-draggable-plus` |
 | 版本 | 见 `manifest.json` / `inventory.json` |
 | 许可证 | MIT（`licenses/vue-draggable-plus-LICENSE`） |
-| 入口 | `vue-draggable-plus`（ESM 入口自包含 sortablejs） |
+| 入口 | `vue-draggable-plus`（组件、composable、指令和 Sortable 生命周期共享一个 ESM 运行时） |
 | peer 依赖 | `vue`（由 `ECMAScript.Vue` 资源库提供） |
 
 ## 首期范围 First slice
@@ -19,6 +19,8 @@ Strongly typed C# bindings for vue-draggable-plus, shipped as a Jazor JS resourc
 - 组合式函数：`useDraggable(element, list, options)`，返回 `start`/`pause`/`resume`/`destroy`
 - 组件代理：`VueDraggableList`（`ModelValue`、`Tag`、`Options`、默认插槽与透传属性）
 - 选项：SortableJS 常用集（`Animation`、`ChosenClass`、`GhostClass`、`Group`、`Handle`、`Filter`、`Direction`、`Disabled`、`Sort` 等）与 12 个 `on*` 事件回调
+
+`VueDraggableList<TItem>` 按 `Transform.Component` 封装上游 `VueDraggable` 组件，`VueDraggable.UseDraggable` 映射上游 `useDraggable` composable。两者使用同一个 `vue-draggable-plus` 入口；该库的拖拽核心、组件生命周期、指令和 composable 共享状态，因此完整运行时闭包是组件绑定的稳定交付单元。
 
 未绑定：`vDraggable` 指令（Razor 指令编排尚未建模）、`closest`/`save`/`toArray`/`option` 等 Sortable 实例方法。需要时按需扩充。
 

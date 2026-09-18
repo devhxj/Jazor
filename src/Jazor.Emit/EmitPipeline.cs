@@ -79,6 +79,10 @@ internal sealed class EmitPipeline
                 browserLibraries,
                 applicationManifest.Modules,
                 cancellationToken).ConfigureAwait(false);
+            // Keep the browser/debug artifact root package-aware as well. NetPack uses a
+            // temporary projection for release, while DenoHost and local diagnostics consume
+            // this same package.json/node_modules contract from jazor/.
+            LibraryPackageWriter.WritePackageProject(transaction.StagingRoot, browserLibraries);
 
             if (options.Mode == BuildMode.Production)
             {
@@ -187,11 +191,12 @@ internal sealed class EmitPipeline
             stagingRoot,
             mode: BuildMode.Production,
             sourceMaps: true,
-            minify: false,
+            minify: true,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
-                ToolchainCapability.SourceMaps
+                ToolchainCapability.SourceMaps,
+                ToolchainCapability.Minify
             },
             libraryManifests: options.LibraryManifests,
             materializedLibraries: materializedLibraries);
@@ -238,6 +243,7 @@ internal sealed class EmitPipeline
             requiredImports,
             modulePaths);
         await ImportMapWriter.WriteAsync(ssrRoot, libraries, manifest.Modules, cancellationToken).ConfigureAwait(false);
+        LibraryPackageWriter.WritePackageProject(ssrRoot, libraries);
         return EmitPipelineResult.Success(
             assemblyCount: 0,
             catalogCount: 0,

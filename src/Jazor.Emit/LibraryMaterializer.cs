@@ -17,6 +17,7 @@ internal sealed class LibraryMaterializer
     private const string StyleType = "style";
     private const string LicenseType = "license";
     private const string StaticType = "static";
+    private const string WorkerType = "worker";
 
     public LibraryAssets Materialize(
         IEnumerable<string> manifestPaths,
@@ -88,10 +89,54 @@ internal sealed class LibraryMaterializer
         }
 
         plan.Commit();
+        var packageReferences = plan.ImportPaths.Keys
+            .OrderBy(static specifier => specifier, StringComparer.Ordinal)
+            .ToDictionary(
+                static specifier => specifier,
+                specifier => importIndex[specifier][0].Manifest.GetPackageReference(specifier),
+                StringComparer.Ordinal);
+        var packageProjections = new Dictionary<string, LibraryPackageProjection>(StringComparer.Ordinal);
+        foreach (var selection in selectedImports.OrderBy(static item => item.Specifier, StringComparer.Ordinal))
+        {
+            if (!plan.ImportPaths.ContainsKey(selection.Specifier))
+                continue;
+
+            var reference = selection.Manifest.GetPackageReference(selection.Specifier);
+            var packageRoot = plan.GetPackageRootRelativePath(selection.Manifest);
+            var packageTarget = NormalizePath(
+                mode == BuildMode.Development ? selection.Entry.Development : selection.Entry.Production);
+            var exportName = GetPackageExportName(selection.Specifier, reference.Name);
+            if (!packageProjections.TryGetValue(reference.Name, out var projection))
+            {
+                projection = new LibraryPackageProjection(reference, packageRoot);
+                packageProjections.Add(reference.Name, projection);
+            }
+            else if (!Equals(projection.Reference, reference) ||
+                     !string.Equals(projection.RootRelativePath, packageRoot, StringComparison.Ordinal))
+            {
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_PACKAGE_CONFLICT",
+                    $"Package '{reference.Name}' resolves to conflicting materialized providers.");
+            }
+
+            if (projection.Exports.TryGetValue(exportName, out var existingTarget) &&
+                !string.Equals(existingTarget, "./" + packageTarget, StringComparison.Ordinal))
+            {
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_EXPORT_CONFLICT",
+                    $"Package '{reference.Name}' export '{exportName}' resolves to conflicting targets.");
+            }
+
+            projection.Exports[exportName] = "./" + packageTarget;
+        }
         return new LibraryAssets(
             new Dictionary<string, string>(plan.ImportPaths, StringComparer.Ordinal),
             plan.StylePaths.ToArray(),
-            selectedManifests.Select(static manifest => manifest.SourcePath).ToArray());
+            plan.PublishAssets.ToArray(),
+            plan.MaterializedPaths.ToArray(),
+            selectedManifests.Select(static manifest => manifest.SourcePath).ToArray(),
+            packageReferences,
+            packageProjections);
     }
 
     private static void ValidateUniqueLibraries(IReadOnlyList<LibraryManifest> manifests)
@@ -238,6 +283,8 @@ internal sealed class LibraryMaterializer
                a.ProductionDependencies.SequenceEqual(b.ProductionDependencies, StringComparer.Ordinal) &&
                a.DevelopmentModuleDependencies.SequenceEqual(b.DevelopmentModuleDependencies, StringComparer.Ordinal) &&
                a.ProductionModuleDependencies.SequenceEqual(b.ProductionModuleDependencies, StringComparer.Ordinal) &&
+               a.DevelopmentStyles.SequenceEqual(b.DevelopmentStyles) &&
+               a.ProductionStyles.SequenceEqual(b.ProductionStyles) &&
                a.Files.SequenceEqual(b.Files);
     }
 
@@ -356,6 +403,12 @@ internal sealed class LibraryMaterializer
             plan.Add(selection.Manifest, mainFile, owner: selection.Specifier);
             plan.AddImport(selection.Specifier, plan.GetTargetRelativePath(selection.Manifest, selectedPath), selectedHash);
 
+            foreach (var style in entry.GetStyles(mode))
+            {
+                plan.Add(selection.Manifest, style, owner: selection.Specifier);
+                plan.AddStyle(selection.Manifest, style.Path);
+            }
+
             foreach (var file in entry.Files)
                 plan.Add(selection.Manifest, file, owner: selection.Specifier);
 
@@ -448,6 +501,17 @@ internal sealed class LibraryMaterializer
         }
 
         return specifier;
+    }
+
+    private static string GetPackageExportName(string specifier, string packageName)
+    {
+        if (string.Equals(specifier, packageName, StringComparison.Ordinal))
+            return ".";
+        if (!specifier.StartsWith(packageName + "/", StringComparison.Ordinal))
+            throw new LibraryException(
+                "JAZOR_LIBRARY_IMPORT_INVALID",
+                $"Import '{specifier}' does not belong to package '{packageName}'.");
+        return "./" + specifier[(packageName.Length + 1)..];
     }
 
     private static bool Satisfies(string versionText, string rangeText)
@@ -580,12 +644,25 @@ internal sealed class LibraryMaterializer
         private readonly Dictionary<string, PlannedFile> _files = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _importHashes = new(StringComparer.Ordinal);
         private readonly List<string> _stylePaths = [];
+        private readonly List<LibraryPublishAsset> _publishAssets = [];
 
         public string DestinationRoot { get; } = destinationRoot;
 
         public Dictionary<string, string> ImportPaths { get; } = new(StringComparer.Ordinal);
 
         public IReadOnlyList<string> StylePaths => _stylePaths;
+
+        public IReadOnlyList<LibraryPublishAsset> PublishAssets => _publishAssets;
+
+        /// <summary>
+        /// The exact output closure selected by the manifest traversal. Consumers that reuse a
+        /// materialization must copy this list rather than scanning the vendor directory, which
+        /// would re-introduce unrelated entry points and assets into the bundle graph.
+        /// </summary>
+        public IReadOnlyList<string> MaterializedPaths
+            => _files.Keys
+                .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
         public HashSet<string> SelectedEntries { get; } = new(StringComparer.Ordinal);
 
@@ -623,13 +700,18 @@ internal sealed class LibraryMaterializer
             }
 
             _files.Add(targetRelativePath, new PlannedFile(sourcePath, targetRelativePath, expectedHash, owner));
+            if (file.Type is StaticType or WorkerType or LicenseType)
+                _publishAssets.Add(new LibraryPublishAsset(file.Type, targetRelativePath));
         }
 
         public string GetTargetRelativePath(LibraryManifest manifest, string packageRelativePath)
         {
             var normalized = NormalizePath(packageRelativePath);
-            return $"vendor/{manifest.LibraryId}/{manifest.Version}/{normalized}";
+            return GetPackageRootRelativePath(manifest) + "/" + normalized;
         }
+
+        public string GetPackageRootRelativePath(LibraryManifest manifest)
+            => $"vendor/{manifest.LibraryId}/{manifest.Version}";
 
         public void AddImport(string specifier, string targetRelativePath, string hash)
         {
@@ -715,7 +797,37 @@ internal sealed class LibraryMaterializer
 internal sealed record LibraryAssets(
     IReadOnlyDictionary<string, string> ImportPaths,
     IReadOnlyList<string> StylePaths,
-    IReadOnlyList<string> ManifestPaths);
+    IReadOnlyList<LibraryPublishAsset> PublishAssets,
+    IReadOnlyList<string> MaterializedPaths,
+    IReadOnlyList<string> ManifestPaths,
+    IReadOnlyDictionary<string, LibraryPackageReference> PackageReferences,
+    IReadOnlyDictionary<string, LibraryPackageProjection> PackageProjections);
+
+/// <summary>
+/// The package identity that owns a selected import. This is kept alongside the materialized
+/// path so package-project generation never has to infer a version from a vendor directory.
+/// </summary>
+internal sealed record LibraryPackageReference(
+    string Name,
+    string Version,
+    string Source,
+    string? Integrity = null);
+
+/// <summary>
+/// The selected package exports and their materialized package root. This is the package graph
+/// carrier used by NetPack and DenoHost; no consumer needs to infer it from vendor path names.
+/// </summary>
+internal sealed record LibraryPackageProjection(
+    LibraryPackageReference Reference,
+    string RootRelativePath)
+{
+    public SortedDictionary<string, string> Exports { get; } = new(StringComparer.Ordinal);
+}
+
+/// <summary>A selected non-bundled library asset that must retain its package-relative URL.</summary>
+internal sealed record LibraryPublishAsset(
+    string Type,
+    string RelativePath);
 
 /// <summary>One typed resource entry in a JS resource manifest.</summary>
 internal sealed record ManifestFile(
@@ -735,6 +847,8 @@ internal sealed record ImportEntry(
     IReadOnlyList<string> ProductionDependencies,
     IReadOnlyList<string> DevelopmentModuleDependencies,
     IReadOnlyList<string> ProductionModuleDependencies,
+    IReadOnlyList<ManifestFile> DevelopmentStyles,
+    IReadOnlyList<ManifestFile> ProductionStyles,
     IReadOnlyList<ManifestFile> Files)
 {
     public IReadOnlyList<string> GetPackageDependencies(BuildMode mode)
@@ -748,6 +862,9 @@ internal sealed record ImportEntry(
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToArray();
+
+    public IReadOnlyList<ManifestFile> GetStyles(BuildMode mode)
+        => mode == BuildMode.Development ? DevelopmentStyles : ProductionStyles;
 }
 
 /// <summary>Validated package manifest for one browser-ready binding library.</summary>
@@ -758,7 +875,8 @@ internal sealed record LibraryManifest(
     IReadOnlyDictionary<string, ImportEntry> Imports,
     IReadOnlyDictionary<string, string> Requires,
     IReadOnlyList<ManifestFile> Styles,
-    IReadOnlyList<ManifestFile> Files)
+    IReadOnlyList<ManifestFile> Files,
+    IReadOnlyDictionary<string, LibraryPackageReference> Packages)
 {
     public string Directory => Path.GetDirectoryName(SourcePath)!;
 
@@ -789,7 +907,8 @@ internal sealed record LibraryManifest(
             var imports = ReadImports(root, manifestPath);
             var requires = ReadRequires(root);
             var styles = ReadTypedFiles(root, "styles", "style");
-            var files = ReadTypedFiles(root, "files", "license", "static");
+            var files = ReadTypedFiles(root, "files", "license", "static", "worker");
+            var packages = ReadPackages(root, version);
             if (imports.Count == 0)
                 throw new InvalidOperationException($"Library manifest '{manifestPath}' does not declare an import.");
 
@@ -800,7 +919,8 @@ internal sealed record LibraryManifest(
                 imports,
                 requires,
                 styles,
-                files);
+                files,
+                packages);
             if (validateFiles)
                 manifest.ValidateAllFiles();
             return manifest;
@@ -813,6 +933,18 @@ internal sealed record LibraryManifest(
         {
             throw new InvalidOperationException($"Library manifest '{manifestPath}' is not valid JSON: {ex.Message}", ex);
         }
+    }
+
+    public LibraryPackageReference GetPackageReference(string specifier)
+    {
+        var packageName = GetPackageName(specifier);
+        if (Packages.TryGetValue(packageName, out var package))
+            return package;
+
+        // schemaVersion 2 manifests predate package-source metadata. Keep their materialized
+        // carrier usable while exposing the generated package project to package-aware tools.
+        // New manifests must declare `packages` so source/integrity are auditable.
+        return new LibraryPackageReference(packageName, Version, "embedded-mjs");
     }
 
     public ManifestFile? FindModule(string moduleId, BuildMode mode)
@@ -841,7 +973,9 @@ internal sealed record LibraryManifest(
             {
                 new ManifestFile(LibraryMaterializer.ModuleType, entry.Development, entry.DevelopmentHash, pair.Key),
                 new ManifestFile(LibraryMaterializer.ModuleType, entry.Production, entry.ProductionHash, pair.Key)
-            }.Concat(entry.Files);
+            }.Concat(entry.DevelopmentStyles)
+             .Concat(entry.ProductionStyles)
+             .Concat(entry.Files);
         });
 
         return Files.Concat(Styles).Concat(entryFiles)
@@ -1000,7 +1134,9 @@ internal sealed record LibraryManifest(
                 ReadPackageDependencies(property.Value, "productionDependencies"),
                 ReadModuleDependencies(property.Value, "developmentModuleDependencies"),
                 ReadModuleDependencies(property.Value, "productionModuleDependencies"),
-                ReadTypedFiles(property.Value, "files", "module", "source-map", "static", "license"));
+                ReadTypedFiles(property.Value, "developmentStyles", "style"),
+                ReadTypedFiles(property.Value, "productionStyles", "style"),
+                ReadTypedFiles(property.Value, "files", "module", "source-map", "static", "worker", "license"));
             imports.Add(specifier, entry);
         }
         return imports;
@@ -1016,6 +1152,61 @@ internal sealed record LibraryManifest(
         foreach (var property in element.EnumerateObject())
             requires.Add(property.Name, GetJsonString(property.Value, "requires"));
         return requires;
+    }
+
+    private static Dictionary<string, LibraryPackageReference> ReadPackages(JsonElement root, string defaultVersion)
+    {
+        var packages = new Dictionary<string, LibraryPackageReference>(StringComparer.Ordinal);
+        if (!root.TryGetProperty("packages", out var element) || element.ValueKind == JsonValueKind.Null)
+            return packages;
+        if (element.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException("Library manifest property 'packages' must be an object.");
+
+        foreach (var property in element.EnumerateObject())
+        {
+            var name = GetPackageName(property.Name);
+            if (!string.Equals(name, property.Name, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Library package metadata key '{property.Name}' must be a package name, not a subpath.");
+            }
+            if (property.Value.ValueKind != JsonValueKind.Object)
+                throw new InvalidOperationException($"Library package '{name}' must be an object.");
+
+            var source = GetRequiredString(property.Value, "source");
+            if (source is not ("npm" or "jsr" or "embedded-mjs"))
+            {
+                throw new InvalidOperationException(
+                    $"Library package '{name}' has unsupported source '{source}'.");
+            }
+
+            var version = TryGetString(property.Value, "version") ?? defaultVersion;
+            if (string.IsNullOrWhiteSpace(version))
+                throw new InvalidOperationException($"Library package '{name}' must declare a version.");
+            var integrity = TryGetString(property.Value, "integrity");
+            if (!string.IsNullOrWhiteSpace(integrity) && !integrity.StartsWith("sha", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Library package '{name}' integrity must use a standard sha digest.");
+            }
+
+            packages.Add(name, new LibraryPackageReference(name, version, source, integrity));
+        }
+
+        return packages;
+    }
+
+    private static string GetPackageName(string specifier)
+    {
+        var normalized = ECMAScriptModulePath.ValidateExternalImportSpecifier(specifier);
+        if (!ECMAScriptModulePath.IsPackageSpecifier(normalized))
+            throw new LibraryException("JAZOR_LIBRARY_IMPORT_INVALID", $"Library package '{specifier}' must be a package specifier.");
+
+        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var count = normalized.StartsWith('@') ? 2 : 1;
+        if (segments.Length < count || segments.Take(count).Any(static segment => string.IsNullOrWhiteSpace(segment)))
+            throw new LibraryException("JAZOR_LIBRARY_IMPORT_INVALID", $"Library package '{specifier}' is invalid.");
+        return string.Join('/', segments.Take(count));
     }
 
     private static IReadOnlyList<string> ReadPackageDependencies(JsonElement element, string name)

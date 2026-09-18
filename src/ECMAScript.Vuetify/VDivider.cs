@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 分隔线组件。
 /// Vuetify divider component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VDivider")]
+[ECMAScript("vuetify/components/VDivider", Transform.Component, "VDivider")]
 public sealed class VDivider : ComponentBase, IVuetifyComponent
 {
     /// <summary>

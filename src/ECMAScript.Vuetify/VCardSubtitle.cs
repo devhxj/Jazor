@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 卡片副标题组件。
 /// Vuetify card subtitle component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VCardSubtitle")]
+[ECMAScript("vuetify/components/VCardSubtitle", Transform.Component, "VCardSubtitle")]
 public sealed class VCardSubtitle : ComponentBase, IVuetifyComponent
 {
     /// <summary>

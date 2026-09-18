@@ -4,7 +4,7 @@
 
 本指南沉淀自 `ECMAScript.DateFns` 的完整交付，覆盖从上游锁定、入口设计、生成器、C# 契约到测试与门禁接线的全流程。纯函数库可直接照搬；组件库（含 props/slots 契约）在此基础上参考 `ECMAScript.VueRoute` 与 `ECMAScript.VuIcons` 的组件投影模式。分阶段选型与验收门槛见 [P3 Vue 应用生态绑定扩展计划](../04-roadmap/p3-vue-application-bindings-plan.md)。
 
-一个 JS resource library 绑定由四部分组成：锁定版本的上游 `dist/` 资源、`manifest.json`（schema 2）、C# 宿主契约（`[ECMAScript]` 映射）与包接线（nuspec、buildTransitive targets、测试与门禁）。绑定只描述上游库的公开运行时能力，不改写上游代码，不为编译器添加库特判。
+一个 JS resource library 绑定由四部分组成：锁定版本的上游 ESM 资源、`manifest.json`（schema 2）、C# 宿主契约（`[ECMAScript]` 映射）与包接线（nuspec、buildTransitive targets、测试与门禁）。绑定只描述上游库的公开运行时能力，不改写上游代码，不为编译器添加库特判。
 
 ## 上游分析与锁定
 
@@ -23,7 +23,15 @@
 
 ## 入口设计
 
-C# 代码使用的 import specifier 就是 manifest `imports` 的 key，也是 `[ECMAScript("<specifier>")]` 的参数。入口按上游形态选择：
+C# 代码使用的 import specifier 就是 manifest `imports` 的 key，也是 `[ECMAScript("<specifier>")]` 的参数。该特性参数是绑定入口的唯一真源，编译器会把它原样作为最终 ESM import specifier；manifest 负责校验它对应的 package、`exports`、版本和资源闭包。参数采用标准 package specifier/subpath，例如 `tdesign-vue-next/button/Button` 或 `date-fns/addDays`；物理资源路径、临时文件名和完整性信息由 manifest 管理。
+
+入口声明与 package identity 分开维护：
+
+- `[ECMAScript]` 的第一个参数表达模块入口；`Transform` 表达普通导入或组件导入；组件的 `ExportName` 表达 named/default export。
+- manifest 的 `libraryId`、`version`、来源、integrity、peer dependency、条件导出和 CSS/worker/static 资源表达包身份和依赖闭包。
+- 当一个宿主类型需要多个 ESM 入口时，在具体成员上标注 `[ECMAScript]`；成员入口优先于类型入口。类型级入口只作为未细分声明的默认入口。
+
+入口按上游形态选择：
 
 | 上游形态 | 入口策略 | 先例 |
 | --- | --- | --- |

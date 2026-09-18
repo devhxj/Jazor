@@ -1,0 +1,16 @@
+{
+  "upstream": "monaco-editor",
+  "version": "0.56.0",
+  "license": "MIT",
+  "packages": {
+    "monaco-editor": "0.56.0"
+  },
+  "source": "https://registry.npmjs.org/monaco-editor/0.56.0",
+  "documentation": "https://microsoft.github.io/monaco-editor/",
+  "entryImports": [
+    "monaco-editor"
+  ],
+  "vendoredModuleCount": 7,
+  "buildNote": "Bundled with esbuild from the upstream ESM tree: 120 of its modules import plain .css files, which a browser ESM loader rejects, and the upstream min/ build is AMD.",
+  "fingerprint": "914872B8FE4D915C680E2F0D26436566822BCBA9B817DDAAD7E91D4668FE9414"
+}

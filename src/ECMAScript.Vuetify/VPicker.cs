@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify Labs 选择器外壳组件的编写代理。
 /// Vuetify labs picker shell authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/labs/components", Transform.Component, "VPicker")]
+[ECMAScript("vuetify/labs/components/VPicker", Transform.Component, "VPicker")]
 public sealed class VPicker : ComponentBase, IVuetifyComponent
 {
     /// <summary>

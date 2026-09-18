@@ -1,7 +1,0 @@
-interface:
-  display_name: "Jazor Usage Guide"
-  short_description: "Guide Jazor setup, authoring, and troubleshooting"
-  default_prompt: "Use $jazor to guide this Jazor task from package selection through validation."
-
-policy:
-  allow_implicit_invocation: true

@@ -320,7 +320,7 @@ internal sealed class Toolchain
 
         foreach (var capability in request.RequiredCapabilities)
         {
-            if (capability is ToolchainCapability.ProductionBuild or ToolchainCapability.SourceMaps)
+            if (capability is ToolchainCapability.ProductionBuild or ToolchainCapability.SourceMaps or ToolchainCapability.Minify)
                 continue;
 
             return UnsupportedCapability(capability);
@@ -335,7 +335,9 @@ internal sealed class Toolchain
             request.BundleOutputPath,
             request.SourceRoot,
             request.LibraryManifests,
-            request.MaterializedLibraries));
+            request.MaterializedLibraries,
+            request.SourceMaps,
+            request.Minify));
 
         return bundleResult.IsSuccess
             ? ToolchainResult.Success(bundleResult.OutputPath!, bundleResult.ModuleCount)

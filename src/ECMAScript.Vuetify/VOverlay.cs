@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 遮罩层组件。
 /// Vuetify overlay component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VOverlay")]
+[ECMAScript("vuetify/components/VOverlay", Transform.Component, "VOverlay")]
 public sealed class VOverlay : ComponentBase, IVuetifyComponent
 {
     /// <summary>

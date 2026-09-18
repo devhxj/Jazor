@@ -9,6 +9,10 @@
 authoring contract。消费方编写的 RazorVue 组件仍按纯 Jazor 规则生成到消费程序集的
 `Jazor.Generated.ModuleCatalog`。
 
+组件使用独立的 `element-plus/<component>/<export>` 逻辑入口；Emit 只复制实际引用组件的
+ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完整插件安装、版本和指令 API，
+因此单独使用 `ElButton` 不会携带完整组件库或全量 CSS。
+
 公开的 `RouteLocationRaw` 参数由 `ECMAScript.VueRoute` 提供；NuGet 已声明该依赖并保留其
 资源 locator 的传递性，应用无需手工复制 Vue Router 资源。
 

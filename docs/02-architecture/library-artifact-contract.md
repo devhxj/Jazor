@@ -8,10 +8,12 @@
 
 | 形式 | 典型项目 | 携带方式 | C# 的作用 |
 | --- | --- | --- | --- |
-| JS resource library | `ECMAScript`、Vue、Vuetify、Pinia 等已有上游 `.mjs/.js` 的绑定库 | `manifest.json + dist/**` | 映射上游模块，提供强类型 authoring contract |
+| JS resource library | `ECMAScript`、Vue、Vuetify、Pinia 等已有上游 `.mjs/.js` 的绑定库 | `manifest.json +` 可按入口解析的 ESM 资源 | 映射上游模块，提供强类型 authoring contract |
 | 纯 Jazor library | 开发者编写 Jazor/C# 并由 Jazor 编译的类库 | `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 被 lowering 的源码和生成模块依赖 |
 
-两种形式都是 Emit 的一等输入。`ModuleCatalog` 是固定的 generated C# carrier，属于当前正式实现；`manifest.json + dist` 是已有 JS 资源的 package carrier，与前者职责并列。Emit 可以在内存中统一处理二者，但不产生第三种类库形式。
+两种形式都是 Emit 的一等输入。`ModuleCatalog` 是固定的 generated C# carrier，属于当前正式实现；`manifest.json +` 绑定包携带的 ESM 资源是已有 JS 资源的 package carrier，与前者职责并列。Emit 可以在内存中统一处理二者，但不产生第三种类库形式。
+
+绑定入口由 C# 的 `[ECMAScript("<specifier>")]` 声明。该字符串是最终 ESM import specifier，必须与资源 manifest 的 `imports` key 一致，并作为逻辑入口参与解析。物理资源路径、输出布局和完整性信息由 package metadata 管理；包名、版本、来源、integrity、`exports`、peer dependency 以及 CSS/worker/static 资源共同描述 package metadata，Emit 依据这些信息解析入口闭包。
 
 `ArtifactCatalog`、`RuntimeProviderCatalog` 和类似 provider/descriptor 名称不属于本契约。若历史实现中存在这些符号，其承载内容必须迁移到上述两种 carrier 或编译期 metadata，再删除旧读取入口。
 
@@ -107,7 +109,7 @@ Emit 的内部记录包含 owner、library/version、logical id/specifier、`typ
 
 ## Package 和输出边界
 
-- JS resource package 的包根是 `manifest.json + dist/**`；style、license 和 static 文件由 manifest 明确声明。
+- JS resource package 的包根是 `manifest.json +` 可按入口解析的 ESM 资源；style、license、worker 和 static 文件由 manifest 明确声明。
 - 纯 Jazor package 通过程序集携带 `Jazor.Generated.ModuleCatalog`；下游使用其已生成的 module 内容。
 - `jazor-manifest.json`、import map、bundle、SSR runner、HMR snapshot 是最终输出层的投影，描述本次选中的闭包。
 - Debug、Release、SSR、HMR 共用 discovery、identity、依赖和冲突规则，只改变 profile 的入口和物化方式。

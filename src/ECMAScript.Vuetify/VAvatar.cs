@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 头像组件。
 /// Vuetify avatar component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VAvatar")]
+[ECMAScript("vuetify/components/VAvatar", Transform.Component, "VAvatar")]
 public sealed class VAvatar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

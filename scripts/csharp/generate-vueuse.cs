@@ -57,6 +57,7 @@ if (packageVersions[primaryPackage] != version)
     throw new InvalidOperationException($"{primaryPackage} extracted version '{packageVersions[primaryPackage]}' does not match requested '{version}'.");
 
 var known = entries.Select(static entry => entry.Specifier).ToHashSet(StringComparer.Ordinal);
+var peerSpecifiers = new HashSet<string>(StringComparer.Ordinal) { "vue" };
 var dependencies = new Dictionary<string, string[]>(StringComparer.Ordinal);
 var unresolved = new SortedSet<string>(StringComparer.Ordinal);
 foreach (var (specifier, package, file, _) in entries)
@@ -65,10 +66,13 @@ foreach (var (specifier, package, file, _) in entries)
     if (!File.Exists(source))
         throw new InvalidOperationException($"Upstream entry '{file}' is missing from {package}.");
     var bare = ReadBareSpecifiers(source);
-    dependencies[specifier] = bare.Where(known.Contains).Order(StringComparer.Ordinal).ToArray();
-    // vue 是 peer 依赖，通过 requires 声明，不属于本闭包条目。
+    // requires 约束 provider 版本；dependencies 才是 NetPack 解析真实 bare import 的图边。
+    dependencies[specifier] = bare
+        .Where(value => known.Contains(value) || peerSpecifiers.Contains(value))
+        .Order(StringComparer.Ordinal)
+        .ToArray();
     foreach (var value in bare)
-        if (!known.Contains(value) && value != "vue")
+        if (!known.Contains(value) && !peerSpecifiers.Contains(value))
             unresolved.Add(specifier + " -> " + value);
 }
 
@@ -229,7 +233,7 @@ static JsonNode BuildManifest(
             ["production"] = "dist/" + target,
             ["developmentHash"] = hash,
             ["productionHash"] = hash,
-            // 兄弟条目通过 package 通道解析：materializer 用 import 索引递归闭包。
+            // 兄弟条目和 peer 都通过 package 通道解析；requires 只负责 provider 版本约束。
             ["developmentDependencies"] = (JsonArray)packageDependencies.DeepClone(),
             ["productionDependencies"] = packageDependencies,
             ["developmentModuleDependencies"] = new JsonArray(),
@@ -244,7 +248,7 @@ static JsonNode BuildManifest(
         ["libraryId"] = "vueuse",
         ["version"] = version,
         ["imports"] = imports,
-        // core 与 shared 都 peer 依赖 vue，由 Vue 资源库提供。
+        // core 与 shared 都 peer 依赖 vue，由 Vue 资源库提供；具体入口依赖边记录在 imports 中。
         ["requires"] = new JsonObject { ["vue3"] = "^3.5.0" },
         ["styles"] = new JsonArray(),
         ["files"] = licenseFiles,

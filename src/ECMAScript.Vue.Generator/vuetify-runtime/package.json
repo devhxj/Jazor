@@ -1,0 +1,11 @@
+{
+  "name": "jazor-vuetify-runtime-build",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vuetify": "4.2.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

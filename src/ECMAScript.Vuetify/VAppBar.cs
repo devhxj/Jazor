@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 应用栏组件。
 /// Vuetify app bar component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VAppBar")]
+[ECMAScript("vuetify/components/VAppBar", Transform.Component, "VAppBar")]
 public sealed class VAppBar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

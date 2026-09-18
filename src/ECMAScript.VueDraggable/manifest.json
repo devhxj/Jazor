@@ -9,8 +9,12 @@
       "production": "dist/vue-draggable-plus/vue-draggable-plus.js",
       "developmentHash": "cd21295df5eff9ce5df91a4223178b597315353ef96054a734265556189a2aca",
       "productionHash": "cd21295df5eff9ce5df91a4223178b597315353ef96054a734265556189a2aca",
-      "developmentDependencies": [],
-      "productionDependencies": [],
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
       "developmentModuleDependencies": [],
       "productionModuleDependencies": [],
       "files": []

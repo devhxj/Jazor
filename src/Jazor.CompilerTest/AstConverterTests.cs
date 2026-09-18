@@ -12215,8 +12215,8 @@ function SetupChild(props, context) {
         Assert.AreEqual(
 @"import { createApp } from ""vue"";
 import { createVuetify } from ""vuetify"";
-import { VBtn } from ""vuetify/components"";
-import { Ripple } from ""vuetify/directives"";
+import { VBtn } from ""vuetify/components/VBtn"";
+import { Ripple } from ""vuetify/directives/Ripple"";
 export function Boot(component) {
   let app = createApp(component);
   app.use(createVuetify({
@@ -12286,7 +12286,7 @@ export function Boot(component) {
 
         Assert.AreEqual(
 @"import { defineComponent } from ""vue"";
-import { Ripple } from ""vuetify/directives"";
+import { Ripple } from ""vuetify/directives/Ripple"";
 export function Create() {
   return defineComponent({
     name: ""ParentView"",

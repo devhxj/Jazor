@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 页脚组件。
 /// Vuetify footer component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VFooter")]
+[ECMAScript("vuetify/components/VFooter", Transform.Component, "VFooter")]
 public sealed class VFooter : ComponentBase, IVuetifyComponent
 {
     /// <summary>

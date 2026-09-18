@@ -10,9 +10,11 @@
       "developmentHash": "e91a46e0a986a7f80c3af95e469b7cc19733c2a73af13f7cd7e1a3ee89cc152b",
       "productionHash": "e91a46e0a986a7f80c3af95e469b7cc19733c2a73af13f7cd7e1a3ee89cc152b",
       "developmentDependencies": [
+        "@vue/devtools-api",
         "vue"
       ],
       "productionDependencies": [
+        "@vue/devtools-api",
         "vue"
       ],
       "developmentModuleDependencies": [],

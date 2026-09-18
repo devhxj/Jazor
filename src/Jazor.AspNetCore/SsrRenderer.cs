@@ -344,7 +344,8 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
                 [
                     "run",
                     "--no-config",
-                    "--no-npm",
+                    "--node-modules-dir=manual",
+                    "--frozen",
                     "--no-remote",
                     "--no-prompt",
                     "--allow-read=" + artifacts.RootPath,

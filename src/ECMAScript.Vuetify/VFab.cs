@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 浮动操作按钮创作代理。
 /// Vuetify floating action button authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VFab")]
+[ECMAScript("vuetify/components/VFab", Transform.Component, "VFab")]
 public sealed class VFab : ComponentBase, IVuetifyComponent
 {
     /// <summary>

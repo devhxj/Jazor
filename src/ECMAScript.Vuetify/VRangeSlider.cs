@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 范围滑块组件。
 /// Vuetify range slider component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VRangeSlider")]
+[ECMAScript("vuetify/components/VRangeSlider", Transform.Component, "VRangeSlider")]
 public sealed class VRangeSlider : ComponentBase, IVuetifyComponent
 {
     /// <summary>

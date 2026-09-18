@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 数据表格创作代理，用于 RazorVue。
 /// Vuetify data table authoring proxy for RazorVue.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VDataTable")]
+[ECMAScript("vuetify/components/VDataTable", Transform.Component, "VDataTable")]
 public sealed class VDataTable : ComponentBase, IVuetifyComponent
 {
     /// <summary>

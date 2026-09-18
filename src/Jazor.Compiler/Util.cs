@@ -456,6 +456,14 @@ public static class Util
     }
 
     internal static string? GetECMAScriptModuleImportPath(ITypeSymbol symbol)
+        => GetECMAScriptModuleImportPath((ISymbol)symbol);
+
+    /// <summary>
+    /// Reads an external ESM path from a declaration itself. Member-level paths are the
+    /// fine-grained import seam used by generated binding surfaces; callers may fall back to
+    /// the containing type when the member has no explicit path.
+    /// </summary>
+    internal static string? GetECMAScriptModuleImportPath(ISymbol symbol)
     {
         foreach (var attribute in symbol.GetAttributes())
         {
@@ -505,8 +513,18 @@ public static class Util
     }
 
     internal static bool IsExternalECMAScriptImport(ITypeSymbol symbol)
+        => IsExternalECMAScriptImport((ISymbol)symbol);
+
+    /// <summary>
+    /// Determines whether a declaration carries an external ESM import marker.
+    ///
+    /// Member-level paths are first-class binding seams. Keeping this overload on ISymbol lets
+    /// import ownership follow the declaration that supplied the path instead of inferring it
+    /// from the containing type or assembly carrier.
+    /// </summary>
+    internal static bool IsExternalECMAScriptImport(ISymbol symbol)
     {
-        for (var current = symbol; current is not null; current = current.ContainingType)
+        for (ISymbol? current = symbol; current is not null; current = current.ContainingType)
         {
             foreach (var attribute in current.GetAttributes())
             {

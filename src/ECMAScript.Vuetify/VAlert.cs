@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VAlert")]
+[ECMAScript("vuetify/components/VAlert", Transform.Component, "VAlert")]
 public sealed class VAlert : ComponentBase, IVuetifyComponent
 {
     /// <summary>

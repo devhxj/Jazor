@@ -187,14 +187,20 @@ public partial class SemanticWalker
 	/// path. A bare logical path can belong to either a JS resource manifest or a pure Jazor
 	/// ModuleCatalog, so the owning assembly is the only authoritative boundary.
 	/// </summary>
-	private bool UsesModuleCatalogImport(ITypeSymbol symbol)
+	private bool UsesModuleCatalogImport(ISymbol symbol)
 	{
-		for (var current = symbol; current is not null; current = current.ContainingType)
+		// A declaration-level external path is authoritative. This check must happen before
+		// assembly carrier probing because a binding assembly may also expose a ModuleCatalog for
+		// its own generated modules.
+		if (Util.IsExternalECMAScriptImport(symbol))
+			return false;
+
+		for (ISymbol? current = symbol; current is not null; current = current.ContainingType)
 		{
-			if (!Util.IsECMAScriptModuleType(current))
+			if (current is not ITypeSymbol currentType || !Util.IsECMAScriptModuleType(currentType))
 				continue;
 
-			var assembly = current.ContainingAssembly;
+			var assembly = currentType.ContainingAssembly;
 			if (_moduleRootType is not null &&
 				SymbolEqualityComparer.Default.Equals(assembly, _moduleRootType.ContainingAssembly))
 			{
@@ -205,9 +211,6 @@ public partial class SemanticWalker
 			// A current-assembly module may use the same metadata attributes as a resource
 			// library. Assembly ownership wins: it is emitted into this compilation's catalog,
 			// so it must not be reclassified as an external ESM import and import itself.
-			if (Util.IsExternalECMAScriptImport(current))
-				return false;
-
 			return assembly.GetTypeByMetadataName(ModuleCatalogMetadataName) is not null;
 		}
 
@@ -216,7 +219,7 @@ public partial class SemanticWalker
 
 	private Identifier BindResolvedModuleImport(
 		SenseArgument context,
-		ITypeSymbol symbol,
+		ISymbol symbol,
 		string modulePath,
 		string importedName)
 	{
@@ -387,10 +390,27 @@ public partial class SemanticWalker
 		}
 	}
 
-	private bool TryBuildImportedModuleMember(ITypeSymbol containingType, string memberName, SenseArgument context, out Expression? expression)
+	private bool TryBuildImportedModuleMember(
+		ITypeSymbol containingType,
+		string memberName,
+		SenseArgument context,
+		out Expression? expression)
+		=> TryBuildImportedModuleMember(containingType, memberName, context, out expression, member: null);
+
+	private bool TryBuildImportedModuleMember(
+		ITypeSymbol containingType,
+		string memberName,
+		SenseArgument context,
+		out Expression? expression,
+		ISymbol? member)
 	{
 		expression = null;
-		var modulePath = GetModuleImportPath(containingType);
+		// Generated bindings may put each export on its own ESM entry point. Resolve the
+		// declaration-level path first, then retain the historical containing-type fallback.
+		// 组件级入口优先，类型级入口作为兼容回退。
+		var modulePath = member is not null
+			? Util.GetECMAScriptModuleImportPath(member) ?? GetModuleImportPath(containingType)
+			: GetModuleImportPath(containingType);
 		if (string.IsNullOrWhiteSpace(modulePath))
 			return false;
 
@@ -401,7 +421,7 @@ public partial class SemanticWalker
 		// C# module member that attempts to declare `export default`, so importing an existing ESM
 		// default does not silently broaden Jazor's own module export contract.
 		// 这里只允许跨模块消费既有 default export；Jazor 自身模块仍只声明 named export。
-		expression = BindResolvedModuleImport(context, containingType, modulePath!, memberName);
+		expression = BindResolvedModuleImport(context, member ?? containingType, modulePath!, memberName);
 		return true;
 	}
 
@@ -645,10 +665,10 @@ public partial class SemanticWalker
 		expression = null;
 		var explicitImportName = Util.GetSymbolConfigName(property.GetMethod!) ?? Util.GetSymbolConfigName(property);
 		if (!string.IsNullOrEmpty(explicitImportName))
-			return TryBuildImportedModuleMember(property.ContainingType, explicitImportName!, context, out expression);
+			return TryBuildImportedModuleMember(property.ContainingType, explicitImportName!, context, out expression, property);
 
 		var getterName = GetMethodConfigOrWhiteListName(property.GetMethod!);
-		if (!TryBuildImportedModuleMember(property.ContainingType, getterName, context, out var getter) ||
+		if (!TryBuildImportedModuleMember(property.ContainingType, getterName, context, out var getter, property) ||
 			getter is null)
 			return false;
 
@@ -741,7 +761,7 @@ public partial class SemanticWalker
 			return false;
 
 		var setterName = GetMethodConfigOrWhiteListName(property.SetMethod);
-		if (!TryBuildImportedModuleMember(property.ContainingType, setterName, context, out var setter) ||
+		if (!TryBuildImportedModuleMember(property.ContainingType, setterName, context, out var setter, property) ||
 			setter is null)
 			return false;
 
@@ -1285,7 +1305,9 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			var inlineArguments = CreateLegacyWhiteListArguments(method, arguments, instance);
 			var importedIdentifierName = default(string);
 			Identifier? importedBinding = null;
-			var modulePath = method.IsStatic ? GetModuleImportPath(method.ContainingType) : null;
+			var modulePath = method.IsStatic
+				? Util.GetECMAScriptModuleImportPath(method) ?? GetModuleImportPath(method.ContainingType)
+				: null;
 			if (!string.IsNullOrWhiteSpace(modulePath))
 			{
 				importedIdentifierName = Util.GetConfigOrSymbolName(method);
@@ -2176,7 +2198,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		if (operation.Field.IsConst)
 			return WithOriginIfMissing(GetFieldName(operation.Field), operation);
 
-		if (TryBuildImportedModuleMember(namedRuntimeHost, fieldName!, argument, out var importedMember) &&
+		if (TryBuildImportedModuleMember(namedRuntimeHost, fieldName!, argument, out var importedMember, operation.Field) &&
 			importedMember is not null)
 			return WithOriginIfMissing(importedMember, operation);
 
@@ -2504,7 +2526,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		ITypeSymbol runtimeHostType)
 	{
 		if (runtimeHostType is INamedTypeSymbol namedRuntimeHost &&
-			TryBuildImportedModuleMember(namedRuntimeHost, methodName, argument, out var importedMethod) &&
+			TryBuildImportedModuleMember(namedRuntimeHost, methodName, argument, out var importedMethod, operation.Method) &&
 			importedMethod is not null)
 		{
 			return importedMethod;
@@ -2801,7 +2823,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			if (targetMethod.IsStatic)
 			{
 				if (hostType is INamedTypeSymbol namedRuntimeHost &&
-					TryBuildImportedModuleMember(namedRuntimeHost, methodName!, argument, out var importedMethod) &&
+					TryBuildImportedModuleMember(namedRuntimeHost, methodName!, argument, out var importedMethod, targetMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
 				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel!, methodName!, argument, out var preferredStaticCallee) &&

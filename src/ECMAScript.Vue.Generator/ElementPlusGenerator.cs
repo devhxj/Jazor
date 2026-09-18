@@ -489,7 +489,8 @@ internal static class ElementPlusGenerator
         EnsureFileExists(eventConstantsPath, "Element Plus event constants metadata");
 
         var attributeCatalog = ReadAttributeCatalog(attributesPath);
-        var installableComponentExports = ReadInstallableComponentExports(componentBaselinePath);
+        var componentModulePaths = ReadInstallableComponentModulePaths(componentBaselinePath);
+        var installableComponentExports = componentModulePaths.Keys.ToHashSet(StringComparer.Ordinal);
         ValidateRuntimeComponentExportOverrides(installableComponentExports);
         var updateModelEventName = ReadUpdateModelEventName(eventConstantsPath);
 
@@ -522,7 +523,7 @@ internal static class ElementPlusGenerator
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlusComponentExports.cs"),
-            RenderComponentExports(components));
+            RenderComponentExports(components, componentModulePaths));
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlusComponentRegistry.cs"),
@@ -530,7 +531,7 @@ internal static class ElementPlusGenerator
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlus.Components.generated.cs"),
-            RenderComponentDefinitions(components, webTypesPath, attributesPath, componentBaselinePath));
+            RenderComponentDefinitions(components, componentModulePaths, webTypesPath, attributesPath, componentBaselinePath));
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlusDirectiveExports.cs"),
@@ -546,7 +547,9 @@ internal static class ElementPlusGenerator
                 : $"Generated {components.Length} Element Plus components and {directives.Length} directives.");
     }
 
-    private static string RenderComponentExports(ElementPlusComponentMetadata[] components)
+    private static string RenderComponentExports(
+        ElementPlusComponentMetadata[] components,
+        IReadOnlyDictionary<string, string> componentModulePaths)
     {
         var builder = new StringBuilder();
         builder.AppendLine("#nullable enable");
@@ -564,6 +567,7 @@ internal static class ElementPlusGenerator
         {
             builder.AppendLine($"    /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref=\"{component.ClassName}\"/>。</summary>");
             builder.AppendLine($"    /// <remarks>{EscapeXml(component.Description)}</remarks>");
+            builder.AppendLine($"    [ECMAScript(\"{GetComponentImportSpecifier(component, componentModulePaths)}\")]");
             builder.AppendLine($"    [ECMAScriptName(\"{component.RuntimeExportName}\")]");
             builder.AppendLine($"    public extern static IElementPlusComponent {component.AuthoringName} {{ get; }}");
             builder.AppendLine();
@@ -603,6 +607,7 @@ internal static class ElementPlusGenerator
 
     private static string RenderComponentDefinitions(
         ElementPlusComponentMetadata[] components,
+        IReadOnlyDictionary<string, string> componentModulePaths,
         string webTypesPath,
         string attributesPath,
         string componentsIndexPath)
@@ -629,7 +634,7 @@ internal static class ElementPlusGenerator
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
-            builder.AppendLine($"[ECMAScript(\"element-plus\", Transform.Component, \"{component.RuntimeExportName}\")]");
+            builder.AppendLine($"[ECMAScript(\"{GetComponentImportSpecifier(component, componentModulePaths)}\", Transform.Component, \"{component.RuntimeExportName}\")]");
 
             builder.AppendLine($"public sealed class {component.ClassName} : {(component.HasDefaultSlot ? "ElContentComponentBase" : "ElComponentBase")}");
             builder.AppendLine("{");
@@ -826,23 +831,76 @@ internal static class ElementPlusGenerator
         return new ElementPlusAttributeCatalog(byTag);
     }
 
-    private static HashSet<string> ReadInstallableComponentExports(string path)
+    private static IReadOnlyDictionary<string, string> ReadInstallableComponentModulePaths(string path)
     {
         var content = File.ReadAllText(path);
-        var match = Regex.Match(
+        var imports = Regex.Matches(
+                content,
+                @"import\s*\{(?<exports>[^}]*)\}\s*from\s*""\.\/components\/(?<module>[^""\/]+)\/index\.mjs"";",
+                RegexOptions.CultureInvariant)
+            .Cast<Match>()
+            .SelectMany(match => match.Groups["exports"].Value
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(exportText =>
+                {
+                    var exportName = exportText.Split(" as ", StringSplitOptions.TrimEntries)[0].Trim();
+                    return (ExportName: exportName, Module: match.Groups["module"].Value);
+                }))
+            .Where(static item => item.ExportName.StartsWith("El", StringComparison.Ordinal))
+            .ToArray();
+        if (imports.Length == 0)
+        {
+            throw new InvalidOperationException(
+                $"Could not locate Element Plus component imports in '{path}'.");
+        }
+
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (exportName, module) in imports)
+        {
+            if (!result.TryAdd(exportName, module) &&
+                !string.Equals(result[exportName], module, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Element Plus export '{exportName}' is mapped to multiple component modules: '{result[exportName]}' and '{module}'.");
+            }
+        }
+
+        var componentList = Regex.Match(
             content,
             @"var\s+component_default\s*=\s*\[(?<items>[\s\S]*?)\];",
             RegexOptions.CultureInvariant);
-        if (!match.Success)
-        {
-            throw new InvalidOperationException(
-                $"Could not locate the Element Plus installable component baseline in '{path}'.");
-        }
+        if (!componentList.Success)
+            throw new InvalidOperationException($"Could not locate the Element Plus component list in '{path}'.");
 
-        return Regex.Matches(match.Groups["items"].Value, @"\bEl[A-Z][A-Za-z0-9]*\b", RegexOptions.CultureInvariant)
+        var listedExports = Regex.Matches(
+                componentList.Groups["items"].Value,
+                @"\bEl[A-Z][A-Za-z0-9]*\b",
+                RegexOptions.CultureInvariant)
+            .Cast<Match>()
             .Select(static match => match.Value)
             .Distinct(StringComparer.Ordinal)
-            .ToHashSet(StringComparer.Ordinal);
+            .ToArray();
+        foreach (var exportName in listedExports)
+        {
+            if (!result.ContainsKey(exportName))
+                throw new InvalidOperationException(
+                    $"Element Plus component '{exportName}' is listed as installable but has no component module import.");
+        }
+
+        return result;
+    }
+
+    private static string GetComponentImportSpecifier(
+        ElementPlusComponentMetadata component,
+        IReadOnlyDictionary<string, string> componentModulePaths)
+    {
+        if (!componentModulePaths.TryGetValue(component.RuntimeExportName, out var module))
+        {
+            throw new InvalidOperationException(
+                $"Element Plus component '{component.RuntimeExportName}' has no runtime module path.");
+        }
+
+        return "element-plus/" + module + "/" + component.RuntimeExportName;
     }
 
     private static void ValidateRuntimeComponentExportOverrides(HashSet<string> validComponentExports)

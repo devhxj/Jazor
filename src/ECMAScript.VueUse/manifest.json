@@ -10,10 +10,12 @@
       "developmentHash": "7b7d1e38668706c5eb7156695410f0f3a9da0bdb6e2bd98ebd202a2dffd0ef79",
       "productionHash": "7b7d1e38668706c5eb7156695410f0f3a9da0bdb6e2bd98ebd202a2dffd0ef79",
       "developmentDependencies": [
-        "@vueuse/shared"
+        "@vueuse/shared",
+        "vue"
       ],
       "productionDependencies": [
-        "@vueuse/shared"
+        "@vueuse/shared",
+        "vue"
       ],
       "developmentModuleDependencies": [],
       "productionModuleDependencies": [],
@@ -25,8 +27,12 @@
       "production": "dist/@vueuse/shared/index.js",
       "developmentHash": "de57cc5fba7a2685ed9fd1b12a401266b8571a46add82ec2e9f68af47a6f6a47",
       "productionHash": "de57cc5fba7a2685ed9fd1b12a401266b8571a46add82ec2e9f68af47a6f6a47",
-      "developmentDependencies": [],
-      "productionDependencies": [],
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
       "developmentModuleDependencies": [],
       "productionModuleDependencies": [],
       "files": []

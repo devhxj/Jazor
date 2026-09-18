@@ -33,10 +33,10 @@ public sealed class VeeValidateManifestTests
         var imports = root.GetProperty("imports");
         CollectionAssert.AreEquivalent(new[] { "vee-validate" }, imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
 
-        // vee-validate ships a self-contained bundle; its only bare import is the Vue peer.
+        // vee-validate imports Vue and its optional devtools package from the entry graph.
         var entry = imports.GetProperty("vee-validate");
         CollectionAssert.AreEquivalent(
-            new[] { "vue" },
+            new[] { "@vue/devtools-api", "vue" },
             entry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
         Assert.AreEqual(0, entry.GetProperty("developmentModuleDependencies").EnumerateArray().Count());
 

@@ -12,6 +12,7 @@
 | 执行 RazorVue P1 | [P1 执行计划](./p1-plan.md) |
 | 执行 RazorVue P2 | [P2 执行计划](./p2-plan.md) |
 | 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |
+| 执行绑定包标准化与细粒度 tree shaking 迁移 | [绑定包标准化与细粒度 tree shaking 迁移计划](./npm-jsr-binding-tree-shaking-plan.md) |
 
 ## 维护准则
 

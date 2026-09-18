@@ -41,7 +41,7 @@ var entries = new (string Specifier, string Package, string File)[]
     ("vue-draggable-plus", "vue-draggable-plus", "dist/vue-draggable-plus.js"),
 };
 
-// 由 ECMAScript.Vue 资源库提供的 peer specifier；不进入本包闭包，只写入 dependencies 与 requires。
+// 由 ECMAScript.Vue 资源库提供的 peer specifier；requires 约束版本，dependencies 记录真实解析边。
 var peerSpecifiers = new HashSet<string>(StringComparer.Ordinal) { "vue" };
 var peerRequires = new SortedDictionary<string, string>(StringComparer.Ordinal) { ["vue3"] = "^3.0.0" };
 
@@ -72,7 +72,10 @@ foreach (var (specifier, package, file) in entries)
     AssertBrowserSafe(source, specifier);
 
     var bare = ReadBareSpecifiers(source);
-    dependencies[specifier] = bare.Where(known.Contains).Order(StringComparer.Ordinal).ToArray();
+    dependencies[specifier] = bare
+        .Where(value => known.Contains(value) || peerSpecifiers.Contains(value))
+        .Order(StringComparer.Ordinal)
+        .ToArray();
     foreach (var value in bare)
         if (!known.Contains(value) && !peerSpecifiers.Contains(value))
             unresolved.Add(specifier + " -> " + value);
@@ -255,7 +258,7 @@ static JsonNode BuildManifest(
             ["production"] = "dist/" + relative,
             ["developmentHash"] = hash,
             ["productionHash"] = hash,
-            // 兄弟条目通过 package 通道解析；peer（vue）由 ECMAScript.Vue 资源库提供。
+            // 兄弟条目和 peer 都通过 package 通道解析；requires 只负责 provider 版本约束。
             ["developmentDependencies"] = (JsonArray)dependenciesNode.DeepClone(),
             ["productionDependencies"] = dependenciesNode,
             ["developmentModuleDependencies"] = new JsonArray(),

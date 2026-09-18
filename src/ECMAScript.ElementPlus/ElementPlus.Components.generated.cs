@@ -13,7 +13,7 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Fix the element to a specific visible area.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAffix")]
+[ECMAScript("element-plus/affix/ElAffix", Transform.Component, "ElAffix")]
 public sealed class ElAffix : ElContentComponentBase
 {
     /// <summary>
@@ -77,7 +77,7 @@ public sealed class ElAffix : ElContentComponentBase
 /// <summary>
 /// Displays important alert messages.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAlert")]
+[ECMAScript("element-plus/alert/ElAlert", Transform.Component, "ElAlert")]
 public sealed class ElAlert : ElContentComponentBase
 {
     /// <summary>
@@ -162,7 +162,7 @@ public sealed class ElAlert : ElContentComponentBase
 /// <summary>
 /// Through the anchor point, you can quickly find the position of the information content on the current page.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAnchor")]
+[ECMAScript("element-plus/anchor/ElAnchor", Transform.Component, "ElAnchor")]
 public sealed class ElAnchor : ElContentComponentBase
 {
     /// <summary>
@@ -184,7 +184,7 @@ public sealed class ElAnchor : ElContentComponentBase
 /// <summary>
 /// el-anchor-link
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAnchorLink")]
+[ECMAScript("element-plus/anchor/ElAnchorLink", Transform.Component, "ElAnchorLink")]
 public sealed class ElAnchorLink : ElContentComponentBase
 {
     /// <summary>
@@ -199,7 +199,7 @@ public sealed class ElAnchorLink : ElContentComponentBase
 /// <summary>
 /// el-aside
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAside")]
+[ECMAScript("element-plus/container/ElAside", Transform.Component, "ElAside")]
 public sealed class ElAside : ElContentComponentBase
 {
     /// <summary>
@@ -214,7 +214,7 @@ public sealed class ElAside : ElContentComponentBase
 /// <summary>
 /// ElAutoResizer
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAutoResizer")]
+[ECMAScript("element-plus/table-v2/ElAutoResizer", Transform.Component, "ElAutoResizer")]
 public sealed class ElAutoResizer : ElContentComponentBase
 {
     /// <summary>
@@ -243,7 +243,7 @@ public sealed class ElAutoResizer : ElContentComponentBase
 /// <summary>
 /// Get some recommended tips based on the current input.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAutocomplete")]
+[ECMAScript("element-plus/autocomplete/ElAutocomplete", Transform.Component, "ElAutocomplete")]
 public sealed class ElAutocomplete : ElContentComponentBase
 {
     /// <summary>
@@ -510,7 +510,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
 /// <summary>
 /// Avatars can be used to represent people or objects. It supports images, Icons, or characters.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAvatar")]
+[ECMAScript("element-plus/avatar/ElAvatar", Transform.Component, "ElAvatar")]
 public sealed class ElAvatar : ElContentComponentBase
 {
     /// <summary>
@@ -574,7 +574,7 @@ public sealed class ElAvatar : ElContentComponentBase
 /// <summary>
 /// el-avatar-group
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElAvatarGroup")]
+[ECMAScript("element-plus/avatar/ElAvatarGroup", Transform.Component, "ElAvatarGroup")]
 public sealed class ElAvatarGroup : ElComponentBase
 {
     /// <summary>
@@ -659,7 +659,7 @@ public sealed class ElAvatarGroup : ElComponentBase
 /// <summary>
 /// A button to back to top.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElBacktop")]
+[ECMAScript("element-plus/backtop/ElBacktop", Transform.Component, "ElBacktop")]
 public sealed class ElBacktop : ElContentComponentBase
 {
     /// <summary>
@@ -702,7 +702,7 @@ public sealed class ElBacktop : ElContentComponentBase
 /// <summary>
 /// A number or status mark on buttons and icons.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElBadge")]
+[ECMAScript("element-plus/badge/ElBadge", Transform.Component, "ElBadge")]
 public sealed class ElBadge : ElContentComponentBase
 {
     /// <summary>
@@ -787,7 +787,7 @@ public sealed class ElBadge : ElContentComponentBase
 /// <summary>
 /// Displays the location of the current page, making it easier to browser back.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElBreadcrumb")]
+[ECMAScript("element-plus/breadcrumb/ElBreadcrumb", Transform.Component, "ElBreadcrumb")]
 public sealed class ElBreadcrumb : ElContentComponentBase
 {
     /// <summary>
@@ -809,7 +809,7 @@ public sealed class ElBreadcrumb : ElContentComponentBase
 /// <summary>
 /// el-breadcrumb-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElBreadcrumbItem")]
+[ECMAScript("element-plus/breadcrumb/ElBreadcrumbItem", Transform.Component, "ElBreadcrumbItem")]
 public sealed class ElBreadcrumbItem : ElContentComponentBase
 {
     /// <summary>
@@ -831,7 +831,7 @@ public sealed class ElBreadcrumbItem : ElContentComponentBase
 /// <summary>
 /// Commonly used button.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElButton")]
+[ECMAScript("element-plus/button/ElButton", Transform.Component, "ElButton")]
 public sealed class ElButton : ElContentComponentBase
 {
     /// <summary>
@@ -993,7 +993,7 @@ public sealed class ElButton : ElContentComponentBase
 /// <summary>
 /// el-button-group
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElButtonGroup")]
+[ECMAScript("element-plus/button/ElButtonGroup", Transform.Component, "ElButtonGroup")]
 public sealed class ElButtonGroup : ElContentComponentBase
 {
     /// <summary>
@@ -1022,7 +1022,7 @@ public sealed class ElButtonGroup : ElContentComponentBase
 /// <summary>
 /// Display date.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCalendar")]
+[ECMAScript("element-plus/calendar/ElCalendar", Transform.Component, "ElCalendar")]
 public sealed class ElCalendar : ElComponentBase
 {
     /// <summary>
@@ -1079,7 +1079,7 @@ public sealed class ElCalendar : ElComponentBase
 /// <summary>
 /// Integrate information in a card container.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCard")]
+[ECMAScript("element-plus/card/ElCard", Transform.Component, "ElCard")]
 public sealed class ElCard : ElContentComponentBase
 {
     /// <summary>
@@ -1150,7 +1150,7 @@ public sealed class ElCard : ElContentComponentBase
 /// <summary>
 /// Loop a series of images or texts in a limited space
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCarousel")]
+[ECMAScript("element-plus/carousel/ElCarousel", Transform.Component, "ElCarousel")]
 public sealed class ElCarousel : ElContentComponentBase
 {
     /// <summary>
@@ -1256,7 +1256,7 @@ public sealed class ElCarousel : ElContentComponentBase
 /// <summary>
 /// el-carousel-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCarouselItem")]
+[ECMAScript("element-plus/carousel/ElCarouselItem", Transform.Component, "ElCarouselItem")]
 public sealed class ElCarouselItem : ElContentComponentBase
 {
     /// <summary>
@@ -1278,7 +1278,7 @@ public sealed class ElCarouselItem : ElContentComponentBase
 /// <summary>
 /// If the options have a clear hierarchical structure, Cascader can be used to view and select them.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCascader")]
+[ECMAScript("element-plus/cascader/ElCascader", Transform.Component, "ElCascader")]
 public sealed class ElCascader : ElContentComponentBase
 {
     /// <summary>
@@ -1636,7 +1636,7 @@ public sealed class ElCascader : ElContentComponentBase
 /// <summary>
 /// el-cascader-panel
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCascaderPanel")]
+[ECMAScript("element-plus/cascader-panel/ElCascaderPanel", Transform.Component, "ElCascaderPanel")]
 public sealed class ElCascaderPanel : ElContentComponentBase
 {
     /// <summary>
@@ -1721,7 +1721,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
 /// <summary>
 /// el-check-tag
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCheckTag")]
+[ECMAScript("element-plus/check-tag/ElCheckTag", Transform.Component, "ElCheckTag")]
 public sealed class ElCheckTag : ElContentComponentBase
 {
     /// <summary>
@@ -1757,7 +1757,7 @@ public sealed class ElCheckTag : ElContentComponentBase
 /// <summary>
 /// A group of options for multiple choices.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCheckbox")]
+[ECMAScript("element-plus/checkbox/ElCheckbox", Transform.Component, "ElCheckbox")]
 public sealed class ElCheckbox : ElContentComponentBase
 {
     /// <summary>
@@ -1912,7 +1912,7 @@ public sealed class ElCheckbox : ElContentComponentBase
 /// <summary>
 /// el-checkbox-button
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCheckboxButton")]
+[ECMAScript("element-plus/checkbox/ElCheckboxButton", Transform.Component, "ElCheckboxButton")]
 public sealed class ElCheckboxButton : ElContentComponentBase
 {
     /// <summary>
@@ -1983,7 +1983,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
 /// <summary>
 /// el-checkbox-group
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCheckboxGroup")]
+[ECMAScript("element-plus/checkbox/ElCheckboxGroup", Transform.Component, "ElCheckboxGroup")]
 public sealed class ElCheckboxGroup : ElContentComponentBase
 {
     /// <summary>
@@ -2103,7 +2103,7 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
 /// <summary>
 /// el-col
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCol")]
+[ECMAScript("element-plus/col/ElCol", Transform.Component, "ElCol")]
 public sealed class ElCol : ElContentComponentBase
 {
     /// <summary>
@@ -2181,7 +2181,7 @@ public sealed class ElCol : ElContentComponentBase
 /// <summary>
 /// Use Collapse to store contents.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCollapse")]
+[ECMAScript("element-plus/collapse/ElCollapse", Transform.Component, "ElCollapse")]
 public sealed class ElCollapse : ElContentComponentBase
 {
     /// <summary>
@@ -2231,7 +2231,7 @@ public sealed class ElCollapse : ElContentComponentBase
 /// <summary>
 /// el-collapse-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCollapseItem")]
+[ECMAScript("element-plus/collapse/ElCollapseItem", Transform.Component, "ElCollapseItem")]
 public sealed class ElCollapseItem : ElComponentBase
 {
     /// <summary>
@@ -2267,7 +2267,7 @@ public sealed class ElCollapseItem : ElComponentBase
 /// <summary>
 /// ElCollapseTransition
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCollapseTransition")]
+[ECMAScript("element-plus/collapse-transition/ElCollapseTransition", Transform.Component, "ElCollapseTransition")]
 public sealed class ElCollapseTransition : ElContentComponentBase
 {
 }
@@ -2275,7 +2275,7 @@ public sealed class ElCollapseTransition : ElContentComponentBase
 /// <summary>
 /// ColorPicker is a color selector supporting multiple color formats.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElColorPicker")]
+[ECMAScript("element-plus/color-picker/ElColorPicker", Transform.Component, "ElColorPicker")]
 public sealed class ElColorPicker : ElComponentBase
 {
     /// <summary>
@@ -2458,7 +2458,7 @@ public sealed class ElColorPicker : ElComponentBase
 /// <summary>
 /// `ColorPickerPanel` is the core component of `ColorPicker`.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElColorPickerPanel")]
+[ECMAScript("element-plus/color-picker-panel/ElColorPickerPanel", Transform.Component, "ElColorPickerPanel")]
 public sealed class ElColorPickerPanel : ElComponentBase
 {
     /// <summary>
@@ -2543,7 +2543,7 @@ public sealed class ElColorPickerPanel : ElComponentBase
 /// <summary>
 /// Config Provider is used for providing global configurations, which enables your entire application to access these configurations everywhere.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElConfigProvider")]
+[ECMAScript("element-plus/config-provider/ElConfigProvider", Transform.Component, "ElConfigProvider")]
 public sealed class ElConfigProvider : ElContentComponentBase
 {
     /// <summary>
@@ -2656,7 +2656,7 @@ public sealed class ElConfigProvider : ElContentComponentBase
 /// <summary>
 /// Container components for scaffolding basic structure of the page:
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElContainer")]
+[ECMAScript("element-plus/container/ElContainer", Transform.Component, "ElContainer")]
 public sealed class ElContainer : ElContentComponentBase
 {
     /// <summary>
@@ -2671,7 +2671,7 @@ public sealed class ElContainer : ElContentComponentBase
 /// <summary>
 /// :::demo Countdown component, support to add other components control countdown.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElCountdown")]
+[ECMAScript("element-plus/countdown/ElCountdown", Transform.Component, "ElCountdown")]
 public sealed class ElCountdown : ElComponentBase
 {
     /// <summary>
@@ -2714,7 +2714,7 @@ public sealed class ElCountdown : ElComponentBase
 /// <summary>
 /// Use Date Picker for date input.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDatePicker")]
+[ECMAScript("element-plus/date-picker/ElDatePicker", Transform.Component, "ElDatePicker")]
 public sealed class ElDatePicker : ElContentComponentBase
 {
     /// <summary>
@@ -3086,7 +3086,7 @@ public sealed class ElDatePicker : ElContentComponentBase
 /// <summary>
 /// `DatePickerPanel` is the core component of `DatePicker`.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDatePickerPanel")]
+[ECMAScript("element-plus/date-picker-panel/ElDatePickerPanel", Transform.Component, "ElDatePickerPanel")]
 public sealed class ElDatePickerPanel : ElContentComponentBase
 {
     /// <summary>
@@ -3283,7 +3283,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
 /// <summary>
 /// Display multiple fields in list form.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDescriptions")]
+[ECMAScript("element-plus/descriptions/ElDescriptions", Transform.Component, "ElDescriptions")]
 public sealed class ElDescriptions : ElContentComponentBase
 {
     /// <summary>
@@ -3354,7 +3354,7 @@ public sealed class ElDescriptions : ElContentComponentBase
 /// <summary>
 /// el-descriptions-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDescriptionsItem")]
+[ECMAScript("element-plus/descriptions/ElDescriptionsItem", Transform.Component, "ElDescriptionsItem")]
 public sealed class ElDescriptionsItem : ElContentComponentBase
 {
     /// <summary>
@@ -3439,7 +3439,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
 /// <summary>
 /// Informs users while preserving the current page state.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDialog")]
+[ECMAScript("element-plus/dialog/ElDialog", Transform.Component, "ElDialog")]
 public sealed class ElDialog : ElContentComponentBase
 {
     /// <summary>
@@ -3727,7 +3727,7 @@ public sealed class ElDialog : ElContentComponentBase
 /// <summary>
 /// The dividing line that separates the content.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDivider")]
+[ECMAScript("element-plus/divider/ElDivider", Transform.Component, "ElDivider")]
 public sealed class ElDivider : ElContentComponentBase
 {
     /// <summary>
@@ -3756,7 +3756,7 @@ public sealed class ElDivider : ElContentComponentBase
 /// <summary>
 /// Sometimes, `Dialog` does not always satisfy our requirements, let's say you have a massive form, or you need space to display something like `terms &amp; conditions`, `Drawer` has almost identical API with `Dialog`, but it introduces different user experience.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDrawer")]
+[ECMAScript("element-plus/drawer/ElDrawer", Transform.Component, "ElDrawer")]
 public sealed class ElDrawer : ElContentComponentBase
 {
     /// <summary>
@@ -4030,7 +4030,7 @@ public sealed class ElDrawer : ElContentComponentBase
 /// <summary>
 /// Toggleable menu for displaying lists of links and actions.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDropdown")]
+[ECMAScript("element-plus/dropdown/ElDropdown", Transform.Component, "ElDropdown")]
 public sealed class ElDropdown : ElContentComponentBase
 {
     /// <summary>
@@ -4234,7 +4234,7 @@ public sealed class ElDropdown : ElContentComponentBase
 /// <summary>
 /// el-dropdown-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDropdownItem")]
+[ECMAScript("element-plus/dropdown/ElDropdownItem", Transform.Component, "ElDropdownItem")]
 public sealed class ElDropdownItem : ElContentComponentBase
 {
     /// <summary>
@@ -4277,7 +4277,7 @@ public sealed class ElDropdownItem : ElContentComponentBase
 /// <summary>
 /// el-dropdown-menu
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElDropdownMenu")]
+[ECMAScript("element-plus/dropdown/ElDropdownMenu", Transform.Component, "ElDropdownMenu")]
 public sealed class ElDropdownMenu : ElContentComponentBase
 {
 }
@@ -4285,7 +4285,7 @@ public sealed class ElDropdownMenu : ElContentComponentBase
 /// <summary>
 /// Placeholder hints for empty states.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElEmpty")]
+[ECMAScript("element-plus/empty/ElEmpty", Transform.Component, "ElEmpty")]
 public sealed class ElEmpty : ElContentComponentBase
 {
     /// <summary>
@@ -4328,7 +4328,7 @@ public sealed class ElEmpty : ElContentComponentBase
 /// <summary>
 /// el-footer
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElFooter")]
+[ECMAScript("element-plus/container/ElFooter", Transform.Component, "ElFooter")]
 public sealed class ElFooter : ElContentComponentBase
 {
     /// <summary>
@@ -4343,7 +4343,7 @@ public sealed class ElFooter : ElContentComponentBase
 /// <summary>
 /// Form consists of `input`, `radio`, `select`, `checkbox` and so on. With form, you can collect, verify and submit data.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElForm")]
+[ECMAScript("element-plus/form/ElForm", Transform.Component, "ElForm")]
 public sealed class ElForm : ElContentComponentBase
 {
     /// <summary>
@@ -4470,7 +4470,7 @@ public sealed class ElForm : ElContentComponentBase
 /// <summary>
 /// el-form-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElFormItem")]
+[ECMAScript("element-plus/form/ElFormItem", Transform.Component, "ElFormItem")]
 public sealed class ElFormItem : ElContentComponentBase
 {
     /// <summary>
@@ -4576,7 +4576,7 @@ public sealed class ElFormItem : ElContentComponentBase
 /// <summary>
 /// el-header
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElHeader")]
+[ECMAScript("element-plus/container/ElHeader", Transform.Component, "ElHeader")]
 public sealed class ElHeader : ElContentComponentBase
 {
     /// <summary>
@@ -4591,7 +4591,7 @@ public sealed class ElHeader : ElContentComponentBase
 /// <summary>
 /// Element Plus provides a set of common icons.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElIcon")]
+[ECMAScript("element-plus/icon/ElIcon", Transform.Component, "ElIcon")]
 public sealed class ElIcon : ElContentComponentBase
 {
     /// <summary>
@@ -4613,7 +4613,7 @@ public sealed class ElIcon : ElContentComponentBase
 /// <summary>
 /// Besides the native features of img, support lazy load, custom placeholder and load failure, etc.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElImage")]
+[ECMAScript("element-plus/image/ElImage", Transform.Component, "ElImage")]
 public sealed class ElImage : ElComponentBase
 {
     /// <summary>
@@ -4810,7 +4810,7 @@ public sealed class ElImage : ElComponentBase
 /// <summary>
 /// el-image-viewer
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElImageViewer")]
+[ECMAScript("element-plus/image-viewer/ElImageViewer", Transform.Component, "ElImageViewer")]
 public sealed class ElImageViewer : ElComponentBase
 {
     /// <summary>
@@ -4958,7 +4958,7 @@ public sealed class ElImageViewer : ElComponentBase
 /// <summary>
 /// Input data using mouse or keyboard.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElInput")]
+[ECMAScript("element-plus/input/ElInput", Transform.Component, "ElInput")]
 public sealed class ElInput : ElComponentBase
 {
     /// <summary>
@@ -5330,7 +5330,7 @@ public sealed class ElInput : ElComponentBase
 /// <summary>
 /// Input numerical values with a customizable range.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElInputNumber")]
+[ECMAScript("element-plus/input-number/ElInputNumber", Transform.Component, "ElInputNumber")]
 public sealed class ElInputNumber : ElComponentBase
 {
     /// <summary>
@@ -5562,7 +5562,7 @@ public sealed class ElInputNumber : ElComponentBase
 /// <summary>
 /// Used to enter a one-time password
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElInputOtp")]
+[ECMAScript("element-plus/input-otp/ElInputOtp", Transform.Component, "ElInputOtp")]
 public sealed class ElInputOtp : ElComponentBase
 {
     /// <summary>
@@ -5703,7 +5703,7 @@ public sealed class ElInputOtp : ElComponentBase
 /// <summary>
 /// The InputTag component allows users to add content as tags.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElInputTag")]
+[ECMAScript("element-plus/input-tag/ElInputTag", Transform.Component, "ElInputTag")]
 public sealed class ElInputTag : ElComponentBase
 {
     /// <summary>
@@ -5977,7 +5977,7 @@ public sealed class ElInputTag : ElComponentBase
 /// <summary>
 /// Text hyperlink
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElLink")]
+[ECMAScript("element-plus/link/ElLink", Transform.Component, "ElLink")]
 public sealed class ElLink : ElContentComponentBase
 {
     /// <summary>
@@ -6034,7 +6034,7 @@ public sealed class ElLink : ElContentComponentBase
 /// <summary>
 /// el-main
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElMain")]
+[ECMAScript("element-plus/container/ElMain", Transform.Component, "ElMain")]
 public sealed class ElMain : ElContentComponentBase
 {
 }
@@ -6042,7 +6042,7 @@ public sealed class ElMain : ElContentComponentBase
 /// <summary>
 /// Used to mention someone or something in an input.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElMention")]
+[ECMAScript("element-plus/mention/ElMention", Transform.Component, "ElMention")]
 public sealed class ElMention : ElComponentBase
 {
     /// <summary>
@@ -6211,7 +6211,7 @@ public sealed class ElMention : ElComponentBase
 /// <summary>
 /// Menu that provides navigation for your website.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElMenu")]
+[ECMAScript("element-plus/menu/ElMenu", Transform.Component, "ElMenu")]
 public sealed class ElMenu : ElContentComponentBase
 {
     /// <summary>
@@ -6387,7 +6387,7 @@ public sealed class ElMenu : ElContentComponentBase
 /// <summary>
 /// el-menu-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElMenuItem")]
+[ECMAScript("element-plus/menu/ElMenuItem", Transform.Component, "ElMenuItem")]
 public sealed class ElMenuItem : ElContentComponentBase
 {
     /// <summary>
@@ -6430,7 +6430,7 @@ public sealed class ElMenuItem : ElContentComponentBase
 /// <summary>
 /// el-menu-item-group
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElMenuItemGroup")]
+[ECMAScript("element-plus/menu/ElMenuItemGroup", Transform.Component, "ElMenuItemGroup")]
 public sealed class ElMenuItemGroup : ElContentComponentBase
 {
     /// <summary>
@@ -6452,7 +6452,7 @@ public sealed class ElMenuItemGroup : ElContentComponentBase
 /// <summary>
 /// el-option
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElOption")]
+[ECMAScript("element-plus/select/ElOption", Transform.Component, "ElOption")]
 public sealed class ElOption : ElContentComponentBase
 {
     /// <summary>
@@ -6481,7 +6481,7 @@ public sealed class ElOption : ElContentComponentBase
 /// <summary>
 /// el-option-group
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElOptionGroup")]
+[ECMAScript("element-plus/select/ElOptionGroup", Transform.Component, "ElOptionGroup")]
 public sealed class ElOptionGroup : ElContentComponentBase
 {
     /// <summary>
@@ -6503,7 +6503,7 @@ public sealed class ElOptionGroup : ElContentComponentBase
 /// <summary>
 /// If path of the page is simple, it is recommended to use PageHeader instead of the Breadcrumb.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElPageHeader")]
+[ECMAScript("element-plus/page-header/ElPageHeader", Transform.Component, "ElPageHeader")]
 public sealed class ElPageHeader : ElContentComponentBase
 {
     /// <summary>
@@ -6574,7 +6574,7 @@ public sealed class ElPageHeader : ElContentComponentBase
 /// <summary>
 /// If you have too much data to display in one page, use pagination.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElPagination")]
+[ECMAScript("element-plus/pagination/ElPagination", Transform.Component, "ElPagination")]
 public sealed class ElPagination : ElContentComponentBase
 {
     /// <summary>
@@ -6771,7 +6771,7 @@ public sealed class ElPagination : ElContentComponentBase
 /// <summary>
 /// A simple confirmation dialog of an element click action.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElPopconfirm")]
+[ECMAScript("element-plus/popconfirm/ElPopconfirm", Transform.Component, "ElPopconfirm")]
 public sealed class ElPopconfirm : ElComponentBase
 {
     /// <summary>
@@ -6898,7 +6898,7 @@ public sealed class ElPopconfirm : ElComponentBase
 /// <summary>
 /// el-popover
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElPopover")]
+[ECMAScript("element-plus/popover/ElPopover", Transform.Component, "ElPopover")]
 public sealed class ElPopover : ElContentComponentBase
 {
     /// <summary>
@@ -7123,7 +7123,7 @@ public sealed class ElPopover : ElContentComponentBase
 /// <summary>
 /// ElPopper
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElPopper")]
+[ECMAScript("element-plus/popper/ElPopper", Transform.Component, "ElPopper")]
 public sealed class ElPopper : ElContentComponentBase
 {
     /// <summary>
@@ -7138,7 +7138,7 @@ public sealed class ElPopper : ElContentComponentBase
 /// <summary>
 /// Progress is used to show the progress of current operation, and inform the user the current status.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElProgress")]
+[ECMAScript("element-plus/progress/ElProgress", Transform.Component, "ElProgress")]
 public sealed class ElProgress : ElContentComponentBase
 {
     /// <summary>
@@ -7244,7 +7244,7 @@ public sealed class ElProgress : ElContentComponentBase
 /// <summary>
 /// Single selection among multiple options.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElRadio")]
+[ECMAScript("element-plus/radio/ElRadio", Transform.Component, "ElRadio")]
 public sealed class ElRadio : ElContentComponentBase
 {
     /// <summary>
@@ -7315,7 +7315,7 @@ public sealed class ElRadio : ElContentComponentBase
 /// <summary>
 /// el-radio-button
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElRadioButton")]
+[ECMAScript("element-plus/radio/ElRadioButton", Transform.Component, "ElRadioButton")]
 public sealed class ElRadioButton : ElContentComponentBase
 {
     /// <summary>
@@ -7351,7 +7351,7 @@ public sealed class ElRadioButton : ElContentComponentBase
 /// <summary>
 /// el-radio-group
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElRadioGroup")]
+[ECMAScript("element-plus/radio/ElRadioGroup", Transform.Component, "ElRadioGroup")]
 public sealed class ElRadioGroup : ElContentComponentBase
 {
     /// <summary>
@@ -7464,7 +7464,7 @@ public sealed class ElRadioGroup : ElContentComponentBase
 /// <summary>
 /// Used for rating
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElRate")]
+[ECMAScript("element-plus/rate/ElRate", Transform.Component, "ElRate")]
 public sealed class ElRate : ElComponentBase
 {
     /// <summary>
@@ -7640,7 +7640,7 @@ public sealed class ElRate : ElComponentBase
 /// <summary>
 /// Used to give feedback on the result of user's operation or access exception.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElResult")]
+[ECMAScript("element-plus/result/ElResult", Transform.Component, "ElResult")]
 public sealed class ElResult : ElComponentBase
 {
     /// <summary>
@@ -7697,7 +7697,7 @@ public sealed class ElResult : ElComponentBase
 /// <summary>
 /// el-row
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElRow")]
+[ECMAScript("element-plus/row/ElRow", Transform.Component, "ElRow")]
 public sealed class ElRow : ElContentComponentBase
 {
     /// <summary>
@@ -7733,7 +7733,7 @@ public sealed class ElRow : ElContentComponentBase
 /// <summary>
 /// Used to replace the browser's native scrollbar.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElScrollbar")]
+[ECMAScript("element-plus/scrollbar/ElScrollbar", Transform.Component, "ElScrollbar")]
 public sealed class ElScrollbar : ElContentComponentBase
 {
     /// <summary>
@@ -7874,7 +7874,7 @@ public sealed class ElScrollbar : ElContentComponentBase
 /// <summary>
 /// Display multiple options and allow users to select a single option.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSegmented")]
+[ECMAScript("element-plus/segmented/ElSegmented", Transform.Component, "ElSegmented")]
 public sealed class ElSegmented : ElContentComponentBase
 {
     /// <summary>
@@ -7973,7 +7973,7 @@ public sealed class ElSegmented : ElContentComponentBase
 /// <summary>
 /// When there are plenty of options, use a drop-down menu to display and select desired ones.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSelect")]
+[ECMAScript("element-plus/select/ElSelect", Transform.Component, "ElSelect")]
 public sealed class ElSelect : ElContentComponentBase
 {
     /// <summary>
@@ -8464,7 +8464,7 @@ public sealed class ElSelect : ElContentComponentBase
 /// <summary>
 /// When loading data, and you need a rich experience for visual and interactions for your end users, you can choose `skeleton`.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSkeleton")]
+[ECMAScript("element-plus/skeleton/ElSkeleton", Transform.Component, "ElSkeleton")]
 public sealed class ElSkeleton : ElContentComponentBase
 {
     /// <summary>
@@ -8514,7 +8514,7 @@ public sealed class ElSkeleton : ElContentComponentBase
 /// <summary>
 /// el-skeleton-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSkeletonItem")]
+[ECMAScript("element-plus/skeleton/ElSkeletonItem", Transform.Component, "ElSkeletonItem")]
 public sealed class ElSkeletonItem : ElComponentBase
 {
     /// <summary>
@@ -8529,7 +8529,7 @@ public sealed class ElSkeletonItem : ElComponentBase
 /// <summary>
 /// Drag the slider within a fixed range.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSlider")]
+[ECMAScript("element-plus/slider/ElSlider", Transform.Component, "ElSlider")]
 public sealed class ElSlider : ElComponentBase
 {
     /// <summary>
@@ -8733,7 +8733,7 @@ public sealed class ElSlider : ElComponentBase
 /// <summary>
 /// Even though we have [Divider]
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSpace")]
+[ECMAScript("element-plus/space/ElSpace", Transform.Component, "ElSpace")]
 public sealed class ElSpace : ElComponentBase
 {
     /// <summary>
@@ -8797,7 +8797,7 @@ public sealed class ElSpace : ElComponentBase
 /// <summary>
 /// el-splitter
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSplitter")]
+[ECMAScript("element-plus/splitter/ElSplitter", Transform.Component, "ElSplitter")]
 public sealed class ElSplitter : ElComponentBase
 {
     /// <summary>
@@ -8847,7 +8847,7 @@ public sealed class ElSplitter : ElComponentBase
 /// <summary>
 /// el-splitter-panel
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSplitterPanel")]
+[ECMAScript("element-plus/splitter/ElSplitterPanel", Transform.Component, "ElSplitterPanel")]
 public sealed class ElSplitterPanel : ElContentComponentBase
 {
     /// <summary>
@@ -8911,7 +8911,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
 /// <summary>
 /// Display statistics.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElStatistic")]
+[ECMAScript("element-plus/statistic/ElStatistic", Transform.Component, "ElStatistic")]
 public sealed class ElStatistic : ElComponentBase
 {
     /// <summary>
@@ -8940,7 +8940,7 @@ public sealed class ElStatistic : ElComponentBase
 /// <summary>
 /// el-step
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElStep")]
+[ECMAScript("element-plus/steps/ElStep", Transform.Component, "ElStep")]
 public sealed class ElStep : ElComponentBase
 {
     /// <summary>
@@ -8997,7 +8997,7 @@ public sealed class ElStep : ElComponentBase
 /// <summary>
 /// Guide the user to complete tasks in accordance with the process. Its steps can be set according to the actual application scenario and the number of the steps can't be less than 2.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSteps")]
+[ECMAScript("element-plus/steps/ElSteps", Transform.Component, "ElSteps")]
 public sealed class ElSteps : ElContentComponentBase
 {
     /// <summary>
@@ -9061,7 +9061,7 @@ public sealed class ElSteps : ElContentComponentBase
 /// <summary>
 /// el-sub-menu
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSubMenu")]
+[ECMAScript("element-plus/menu/ElSubMenu", Transform.Component, "ElSubMenu")]
 public sealed class ElSubMenu : ElContentComponentBase
 {
     /// <summary>
@@ -9160,7 +9160,7 @@ public sealed class ElSubMenu : ElContentComponentBase
 /// <summary>
 /// Switch is used for switching between two opposing states.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSwitch")]
+[ECMAScript("element-plus/switch/ElSwitch", Transform.Component, "ElSwitch")]
 public sealed class ElSwitch : ElComponentBase
 {
     /// <summary>
@@ -9378,7 +9378,7 @@ public sealed class ElSwitch : ElComponentBase
 /// <summary>
 /// el-tab-pane
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTabPane")]
+[ECMAScript("element-plus/tabs/ElTabPane", Transform.Component, "ElTabPane")]
 public sealed class ElTabPane : ElContentComponentBase
 {
     /// <summary>
@@ -9428,7 +9428,7 @@ public sealed class ElTabPane : ElContentComponentBase
 /// <summary>
 /// Display multiple data with similar format. You can sort, filter, compare your data in a table.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTable")]
+[ECMAScript("element-plus/table/ElTable", Transform.Component, "ElTable")]
 public sealed class ElTable : ElContentComponentBase
 {
     /// <summary>
@@ -9898,7 +9898,7 @@ public sealed class ElTable : ElContentComponentBase
 /// <summary>
 /// el-table-column
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTableColumn")]
+[ECMAScript("element-plus/table/ElTableColumn", Transform.Component, "ElTableColumn")]
 public sealed class ElTableColumn : ElContentComponentBase
 {
     /// <summary>
@@ -10130,7 +10130,7 @@ public sealed class ElTableColumn : ElContentComponentBase
 /// <summary>
 /// el-table-v2
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTableV2")]
+[ECMAScript("element-plus/table-v2/ElTableV2", Transform.Component, "ElTableV2")]
 public sealed class ElTableV2 : ElComponentBase
 {
     /// <summary>
@@ -10439,7 +10439,7 @@ public sealed class ElTableV2 : ElComponentBase
 /// <summary>
 /// Divide data collections which are related yet belong to different types.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTabs")]
+[ECMAScript("element-plus/tabs/ElTabs", Transform.Component, "ElTabs")]
 public sealed class ElTabs : ElContentComponentBase
 {
     /// <summary>
@@ -10566,7 +10566,7 @@ public sealed class ElTabs : ElContentComponentBase
 /// <summary>
 /// Used for marking and selection.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTag")]
+[ECMAScript("element-plus/tag/ElTag", Transform.Component, "ElTag")]
 public sealed class ElTag : ElContentComponentBase
 {
     /// <summary>
@@ -10644,7 +10644,7 @@ public sealed class ElTag : ElContentComponentBase
 /// <summary>
 /// Used for text.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElText")]
+[ECMAScript("element-plus/text/ElText", Transform.Component, "ElText")]
 public sealed class ElText : ElContentComponentBase
 {
     /// <summary>
@@ -10687,7 +10687,7 @@ public sealed class ElText : ElContentComponentBase
 /// <summary>
 /// Use Time Picker for time input.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTimePicker")]
+[ECMAScript("element-plus/time-picker/ElTimePicker", Transform.Component, "ElTimePicker")]
 public sealed class ElTimePicker : ElComponentBase
 {
     /// <summary>
@@ -10996,7 +10996,7 @@ public sealed class ElTimePicker : ElComponentBase
 /// <summary>
 /// Use Time Select for time input.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTimeSelect")]
+[ECMAScript("element-plus/time-select/ElTimeSelect", Transform.Component, "ElTimeSelect")]
 public sealed class ElTimeSelect : ElComponentBase
 {
     /// <summary>
@@ -11186,7 +11186,7 @@ public sealed class ElTimeSelect : ElComponentBase
 /// <summary>
 /// Visually display timeline.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTimeline")]
+[ECMAScript("element-plus/timeline/ElTimeline", Transform.Component, "ElTimeline")]
 public sealed class ElTimeline : ElContentComponentBase
 {
     /// <summary>
@@ -11208,7 +11208,7 @@ public sealed class ElTimeline : ElContentComponentBase
 /// <summary>
 /// el-timeline-item
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTimelineItem")]
+[ECMAScript("element-plus/timeline/ElTimelineItem", Transform.Component, "ElTimelineItem")]
 public sealed class ElTimelineItem : ElContentComponentBase
 {
     /// <summary>
@@ -11286,7 +11286,7 @@ public sealed class ElTimelineItem : ElContentComponentBase
 /// <summary>
 /// Display prompt information for mouse hover.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTooltip")]
+[ECMAScript("element-plus/tooltip/ElTooltip", Transform.Component, "ElTooltip")]
 public sealed class ElTooltip : ElContentComponentBase
 {
     /// <summary>
@@ -11518,7 +11518,7 @@ public sealed class ElTooltip : ElContentComponentBase
 /// <summary>
 /// A popup component for guiding users through a product. Use when you want to guide users through a product.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTour")]
+[ECMAScript("element-plus/tour/ElTour", Transform.Component, "ElTour")]
 public sealed class ElTour : ElComponentBase
 {
 }
@@ -11526,7 +11526,7 @@ public sealed class ElTour : ElComponentBase
 /// <summary>
 /// el-tour-step
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTourStep")]
+[ECMAScript("element-plus/tour/ElTourStep", Transform.Component, "ElTourStep")]
 public sealed class ElTourStep : ElComponentBase
 {
 }
@@ -11534,7 +11534,7 @@ public sealed class ElTourStep : ElComponentBase
 /// <summary>
 /// el-transfer
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTransfer")]
+[ECMAScript("element-plus/transfer/ElTransfer", Transform.Component, "ElTransfer")]
 public sealed class ElTransfer : ElContentComponentBase
 {
     /// <summary>
@@ -11710,7 +11710,7 @@ public sealed class ElTransfer : ElContentComponentBase
 /// <summary>
 /// Display a set of data with hierarchies.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTree")]
+[ECMAScript("element-plus/tree/ElTree", Transform.Component, "ElTree")]
 public sealed class ElTree : ElContentComponentBase
 {
     /// <summary>
@@ -11998,7 +11998,7 @@ public sealed class ElTree : ElContentComponentBase
 /// <summary>
 /// ElTreeSelect
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTreeSelect")]
+[ECMAScript("element-plus/tree-select/ElTreeSelect", Transform.Component, "ElTreeSelect")]
 public sealed class ElTreeSelect : ElContentComponentBase
 {
     /// <summary>
@@ -12762,7 +12762,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
 /// <summary>
 /// el-tree-v2
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElTreeV2")]
+[ECMAScript("element-plus/tree-v2/ElTreeV2", Transform.Component, "ElTreeV2")]
 public sealed class ElTreeV2 : ElContentComponentBase
 {
     /// <summary>
@@ -12959,7 +12959,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
 /// <summary>
 /// Upload files by clicking or drag-and-drop.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElUpload")]
+[ECMAScript("element-plus/upload/ElUpload", Transform.Component, "ElUpload")]
 public sealed class ElUpload : ElContentComponentBase
 {
     /// <summary>
@@ -13177,7 +13177,7 @@ public sealed class ElUpload : ElContentComponentBase
 /// <summary>
 /// :::tip
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElSelectV2")]
+[ECMAScript("element-plus/select-v2/ElSelectV2", Transform.Component, "ElSelectV2")]
 public sealed class ElVirtualizedSelect : ElContentComponentBase
 {
     /// <summary>
@@ -13689,7 +13689,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
 /// <summary>
 /// Add specific text or patterns to the page.
 /// </summary>
-[ECMAScript("element-plus", Transform.Component, "ElWatermark")]
+[ECMAScript("element-plus/watermark/ElWatermark", Transform.Component, "ElWatermark")]
 public sealed class ElWatermark : ElContentComponentBase
 {
     /// <summary>

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 标签页组件的编写代理。
 /// Vuetify tab authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VTab")]
+[ECMAScript("vuetify/components/VTab", Transform.Component, "VTab")]
 public sealed class VTab : ComponentBase, IVuetifyComponent
 {
     /// <summary>

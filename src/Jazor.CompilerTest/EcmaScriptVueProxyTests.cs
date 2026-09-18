@@ -61,9 +61,18 @@ public sealed class EcmaScriptVueProxyTests
     public void Vuetify_ImportHosts_UseEcmaScriptImports_InsteadOfModuleEntryMarkers()
     {
         AssertEcmaScriptImport(typeof(Vuetify), "vuetify");
-        AssertEcmaScriptImport(typeof(VuetifyComponents), "vuetify/components");
-        AssertEcmaScriptImport(typeof(VuetifyLabsComponents), "vuetify/labs/components");
-        AssertEcmaScriptImport(typeof(VuetifyDirectives), "vuetify/directives");
+        AssertEcmaScriptSupport(typeof(VuetifyComponents));
+        AssertEcmaScriptSupport(typeof(VuetifyLabsComponents));
+        AssertEcmaScriptSupport(typeof(VuetifyDirectives));
+        AssertEcmaScriptImport(
+            typeof(VuetifyComponents).GetProperty(nameof(VuetifyComponents.VBtn))!,
+            "vuetify/components/VBtn");
+        AssertEcmaScriptImport(
+            typeof(VuetifyLabsComponents).GetProperty(nameof(VuetifyLabsComponents.VCalendar))!,
+            "vuetify/labs/components/VCalendar");
+        AssertEcmaScriptImport(
+            typeof(VuetifyDirectives).GetProperty(nameof(VuetifyDirectives.Ripple))!,
+            "vuetify/directives/Ripple");
     }
 
     [TestMethod]
@@ -3312,7 +3321,10 @@ public sealed class EcmaScriptVueProxyTests
             var contract = catalog.Components[componentType.Name];
             var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
             Assert.IsNotNull(component, componentType.FullName);
-            Assert.AreEqual("tdesign-vue-next", component!.Import, componentType.FullName);
+            Assert.AreEqual(
+                $"tdesign-vue-next/{contract.Module}/{contract.RuntimeExport}",
+                component!.Import,
+                componentType.FullName);
             Assert.AreEqual(Transform.Component, component.Transform, componentType.FullName);
             Assert.AreEqual(contract.RuntimeExport, component.ExportName, componentType.FullName);
             CollectionAssert.Contains(runtimeExports, component.ExportName, componentType.FullName);
@@ -4191,8 +4203,10 @@ public sealed class EcmaScriptVueProxyTests
             .GroupBy(static element => element.GetProperty("authoringType").GetString()!, StringComparer.Ordinal)
             .ToDictionary(
                 static group => group.Key,
-                static group => group.Select(static element => element.GetProperty("runtimeExport").GetString()!)
-                    .Distinct(StringComparer.Ordinal)
+                static group => group.Select(static element => (
+                        Module: element.GetProperty("module").GetString()!,
+                        RuntimeExport: element.GetProperty("runtimeExport").GetString()!))
+                    .Distinct()
                     .Single(),
                 StringComparer.Ordinal);
         var sourceEntries = document.RootElement.GetProperty("components").EnumerateArray().ToArray();
@@ -4201,7 +4215,8 @@ public sealed class EcmaScriptVueProxyTests
             .ToDictionary(
                 static group => group.Key,
                 group => new TDesignCatalogComponent(
-                    runtimeExports[group.Key],
+                    runtimeExports[group.Key].Module,
+                    runtimeExports[group.Key].RuntimeExport,
                     group.SelectMany(static element => GetNames(element, "props")).ToHashSet(StringComparer.Ordinal),
                     group.SelectMany(static element => GetNames(element, "slots")).ToHashSet(StringComparer.Ordinal),
                     group.SelectMany(static element => GetNames(element, "events")).ToHashSet(StringComparer.Ordinal)),
@@ -4217,18 +4232,30 @@ public sealed class EcmaScriptVueProxyTests
 
     private static string[] ReadTDesignRuntimeExports(string repositoryRoot)
     {
-        var source = System.IO.File.ReadAllText(Path.Combine(
+        var manifestPath = Path.Combine(
             repositoryRoot,
             "src",
             "ECMAScript.TDesign",
-            "dist",
-            "tdesign.mjs"));
-        var match = Regex.Match(source, @"export\s*\{(?<members>[\s\S]*?)\};\s*/\*! Bundled license", RegexOptions.CultureInvariant);
-        Assert.IsTrue(match.Success, "Cannot locate the terminal TDesign ESM export declaration.");
+            "manifest.json");
+        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(manifestPath));
+        var imports = document.RootElement.GetProperty("imports");
+        var exports = new List<string>();
+        foreach (var entry in imports.EnumerateObject().Where(static entry => entry.Name != "tdesign-vue-next"))
+        {
+            var relativePath = entry.Value.GetProperty("development").GetString()!;
+            var source = System.IO.File.ReadAllText(Path.Combine(
+                repositoryRoot,
+                "src",
+                "ECMAScript.TDesign",
+                relativePath.Replace('/', Path.DirectorySeparatorChar)));
+            var match = Regex.Match(source, @"export\s*\{(?<members>[\s\S]*?)\};", RegexOptions.CultureInvariant);
+            Assert.IsTrue(match.Success, $"Cannot locate the ESM export declaration for '{entry.Name}'.");
+            exports.AddRange(match.Groups["members"].Value
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(static member => member.Split(" as ", StringSplitOptions.TrimEntries).Last()));
+        }
 
-        return match.Groups["members"].Value
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(static member => member.Split(" as ", StringSplitOptions.TrimEntries).Last())
+        return exports
             .OrderBy(static member => member, StringComparer.Ordinal)
             .ToArray();
     }
@@ -4320,6 +4347,7 @@ public sealed class EcmaScriptVueProxyTests
         IReadOnlyDictionary<string, TDesignCatalogComponent> Components);
 
     private sealed record TDesignCatalogComponent(
+        string Module,
         string RuntimeExport,
         HashSet<string> Props,
         HashSet<string> Slots,
@@ -4436,6 +4464,15 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(runtime, type.FullName);
         Assert.IsNull(module, type.FullName);
         Assert.AreEqual(expectedImport, runtime!.Import, type.FullName);
+    }
+
+    private static void AssertEcmaScriptImport(MemberInfo member, string expectedImport)
+    {
+        var runtime = member.GetCustomAttribute<ECMAScriptAttribute>();
+
+        Assert.IsNotNull(runtime, member.Name);
+        Assert.AreEqual(expectedImport, runtime!.Import, member.Name);
+        Assert.AreEqual(Transform.Import, runtime.Transform, member.Name);
     }
 
     private static void AssertEcmaScriptSupport(Type type)

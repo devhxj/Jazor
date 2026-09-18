@@ -1,5 +1,7 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Jazor.Common;
 using Jazor.Emit;
 
@@ -291,17 +293,12 @@ public sealed class ToolchainTests
         Assert.IsTrue(File.Exists(request.BundleOutputPath));
         Assert.IsTrue(File.Exists(request.BundleOutputPath + ".map"));
 
-        // Browser graph requests only the Vue runtime; SSR/devtools stay outside its vendor closure.
-        // 该断言经真实 Toolchain 路径验证，而非只测 LibraryMaterializer 的拷贝逻辑。
-        var vueVendorRoot = Path.Combine(workspace.OutputRoot, "vendor", "vue3", "3.5.42", "dist");
-        Assert.IsTrue(File.Exists(Path.Combine(vueVendorRoot, "vue.runtime.esm-browser.prod.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "server-renderer.esm-browser.prod.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "devtools-api", "vue-devtools-api.esm-browser.js")));
-
         var script = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("NetpackLocalCard", script);
         Assert.Contains("Netpack SFC", script);
         Assert.DoesNotContain("./LocalCard.vue.mjs", script);
+        Assert.DoesNotContain("server-renderer.esm-browser.prod.js", script);
+        Assert.DoesNotContain("vue-devtools-api.esm-browser.js", script);
         Assert.IsFalse(Directory.Exists(Path.Combine(workspace.SourceRoot, "node_modules")));
     }
 
@@ -345,6 +342,235 @@ public sealed class ToolchainTests
         Assert.IsTrue(File.Exists(outputAssetPath), $"Expected static asset output: {outputAssetPath}");
         var asset = await File.ReadAllTextAsync(outputAssetPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("<svg", asset);
+    }
+
+    [TestMethod]
+    public async Task BuildAsync_MinifiedLibraryGraph_ShakesUnusedExportsAndPreservesReachableResources()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+            """
+            import { used } from "tree-lib/used";
+
+            export const result = used();
+            """);
+        WriteManifest(workspace, "host/app.mjs", packageImports: ["tree-lib/used"]);
+
+        var libraryRoot = Path.Combine(workspace.RootPath, "tree-lib");
+        WriteModule(libraryRoot, "dist/used.mjs",
+            """
+            import { dependency } from "./dependency.mjs";
+
+            export function used() { return "USED_SENTINEL:" + dependency; }
+            export function dead() { return "DEAD_SENTINEL"; }
+            """);
+        WriteModule(libraryRoot, "dist/dependency.mjs",
+            """
+            export const dependency = "INTERNAL_DEPENDENCY_SENTINEL";
+            """);
+        WriteModule(libraryRoot, "dist/unreachable.mjs",
+            """
+            export const unreachable = "UNREACHABLE_SENTINEL";
+            """);
+        WriteModule(libraryRoot, "dist/unused.mjs",
+            """
+            export const unusedEntry = "UNUSED_ENTRY_SENTINEL";
+            """);
+        WriteModule(libraryRoot, "dist/editor.worker.mjs",
+            """
+            globalThis.onmessage = () => "WORKER_SENTINEL";
+            """);
+        WriteModule(libraryRoot, "dist/used.css", ".used-style { color: green; }");
+        WriteModule(libraryRoot, "dist/unused.css", ".unused-style { color: red; }");
+
+        var libraryManifest = WriteSyntheticTreeShakingManifest(libraryRoot);
+        var request = ToolchainRequest.Create(
+            workspace.ManifestPath,
+            workspace.ArtifactRoot,
+            workspace.SourceRoot,
+            workspace.OutputRoot,
+            minify: true,
+            requiredCapabilities: new HashSet<ToolchainCapability>
+            {
+                ToolchainCapability.ProductionBuild,
+                ToolchainCapability.SourceMaps,
+                ToolchainCapability.Minify
+            },
+            libraryManifests: [libraryManifest]);
+
+        var result = await new Toolchain().BuildAsync(request);
+
+        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
+        var bundle = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("USED_SENTINEL", bundle, StringComparison.Ordinal);
+        Assert.Contains("INTERNAL_DEPENDENCY_SENTINEL", bundle, StringComparison.Ordinal);
+        Assert.DoesNotContain("DEAD_SENTINEL", bundle, StringComparison.Ordinal);
+        Assert.DoesNotContain("UNREACHABLE_SENTINEL", bundle, StringComparison.Ordinal);
+        Assert.DoesNotContain("UNUSED_ENTRY_SENTINEL", bundle, StringComparison.Ordinal);
+        Assert.IsFalse(Directory.EnumerateFiles(workspace.OutputRoot, "*.mjs", SearchOption.AllDirectories)
+            .Any(path => path.EndsWith("used.mjs", StringComparison.OrdinalIgnoreCase) ||
+                         path.EndsWith("dependency.mjs", StringComparison.OrdinalIgnoreCase) ||
+                         path.EndsWith("unreachable.mjs", StringComparison.OrdinalIgnoreCase)));
+
+        var css = await File.ReadAllTextAsync(
+            Path.ChangeExtension(request.BundleOutputPath, ".css"),
+            TestContext.CancellationTokenSource.Token);
+        Assert.Contains(".used-style", css, StringComparison.Ordinal);
+        Assert.DoesNotContain(".unused-style", css, StringComparison.Ordinal);
+
+        var workerPath = Path.Combine(
+            workspace.OutputRoot,
+            "vendor",
+            "tree-lib",
+            "1.0.0",
+            "dist",
+            "editor.worker.mjs");
+        Assert.IsTrue(File.Exists(workerPath), $"Expected selected worker output: {workerPath}");
+        Assert.Contains("WORKER_SENTINEL", await File.ReadAllTextAsync(workerPath), StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task BuildAsync_NetpackProduction_BundlesOnlySelectedVueDataUiCssClosure()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+            """
+            import { VueUiDonut } from "vue-data-ui/vue-ui-donut";
+
+            export const selectedChart = VueUiDonut;
+            """);
+        WriteManifest(workspace, "host/app.mjs", packageImports: ["vue-data-ui/vue-ui-donut"]);
+
+        var request = ToolchainRequest.Create(
+            workspace.ManifestPath,
+            workspace.ArtifactRoot,
+            workspace.SourceRoot,
+            workspace.OutputRoot,
+            minify: true,
+            requiredCapabilities: new HashSet<ToolchainCapability>
+            {
+                ToolchainCapability.ProductionBuild,
+                ToolchainCapability.SourceMaps,
+                ToolchainCapability.Minify
+            },
+            libraryManifests:
+            [
+                FindLibraryManifest("ECMAScript.Vue"),
+                FindLibraryManifest("ECMAScript.VueDataUi")
+            ]);
+
+        var result = await new Toolchain().BuildAsync(request);
+
+        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
+        Assert.IsTrue(File.Exists(request.BundleOutputPath));
+        var css = await File.ReadAllTextAsync(
+            Path.ChangeExtension(request.BundleOutputPath, ".css"),
+            TestContext.CancellationTokenSource.Token);
+        Assert.Contains(".vue-ui-donut", css, StringComparison.Ordinal);
+        Assert.DoesNotContain(".vue-ui-xy[", css, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    [DataRow("ECMAScript.VueUse", "@vueuse/core", "useToggle", "dragover")]
+    [DataRow("ECMAScript.VueI18n", "vue-i18n", "useI18n", "globalInjection")]
+    [DataRow("ECMAScript.VeeValidate", "vee-validate", "configure", "No vee-validate <Form /> or `useForm` was detected in the component tree")]
+    public async Task BuildAsync_NetpackProduction_ShakesUnusedAggregateBindingExports(
+        string manifestName,
+        string specifier,
+        string selectedExport,
+        string excludedMarker)
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(
+            workspace.ArtifactRoot,
+            "host/app.mjs",
+            $"import {{ {selectedExport} }} from \"{specifier}\";\n\n" +
+            $"export const selectedBinding = {selectedExport};\n");
+        WriteManifest(workspace, "host/app.mjs", packageImports: [specifier]);
+
+        var request = ToolchainRequest.Create(
+            workspace.ManifestPath,
+            workspace.ArtifactRoot,
+            workspace.SourceRoot,
+            workspace.OutputRoot,
+            minify: true,
+            requiredCapabilities: new HashSet<ToolchainCapability>
+            {
+                ToolchainCapability.ProductionBuild,
+                ToolchainCapability.SourceMaps,
+                ToolchainCapability.Minify
+            },
+            libraryManifests:
+            [
+                FindLibraryManifest("ECMAScript.Vue"),
+                FindLibraryManifest(manifestName)
+            ]);
+
+        var result = await new Toolchain().BuildAsync(request);
+
+        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
+        var bundle = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("selectedBinding", bundle, StringComparison.Ordinal);
+        Assert.DoesNotContain(excludedMarker, bundle, StringComparison.Ordinal);
+
+        var bareImports = Regex.Matches(
+                bundle,
+                """\b(?:from\s*|import\s*\(\s*)['"](?<specifier>[^'"]+)['"]""")
+            .Select(static match => match.Groups["specifier"].Value)
+            .Where(static value => !value.StartsWith('.', StringComparison.Ordinal) &&
+                                   !value.StartsWith('/', StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        Assert.IsEmpty(bareImports, "Final NetPack bundle retains bare imports: " + string.Join(", ", bareImports));
+    }
+
+    [TestMethod]
+    public async Task BuildAsync_NetpackProduction_PreservesCoupledVueDraggableRuntime()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(
+            workspace.ArtifactRoot,
+            "host/app.mjs",
+            "import { useDraggable } from \"vue-draggable-plus\";\n\n" +
+            "export const selectedBinding = useDraggable;\n");
+        WriteManifest(workspace, "host/app.mjs", packageImports: ["vue-draggable-plus"]);
+
+        var request = ToolchainRequest.Create(
+            workspace.ManifestPath,
+            workspace.ArtifactRoot,
+            workspace.SourceRoot,
+            workspace.OutputRoot,
+            minify: true,
+            requiredCapabilities: new HashSet<ToolchainCapability>
+            {
+                ToolchainCapability.ProductionBuild,
+                ToolchainCapability.SourceMaps,
+                ToolchainCapability.Minify
+            },
+            libraryManifests:
+            [
+                FindLibraryManifest("ECMAScript.Vue"),
+                FindLibraryManifest("ECMAScript.VueDraggable")
+            ]);
+
+        var result = await new Toolchain().BuildAsync(request);
+
+        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
+        var bundle = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
+        Assert.Contains("selectedBinding", bundle, StringComparison.Ordinal);
+        // vue-draggable-plus ships one coupled runtime: the component, directive, composable,
+        // and Sortable lifecycle share state, so the aggregate entry is the supported closure.
+        Assert.Contains("VueDraggable", bundle, StringComparison.Ordinal);
+        var bareImports = Regex.Matches(
+                bundle,
+                "\\b(?:from\\s*|import\\s*\\(\\s*)['\"](?<specifier>[^'\"]+)['\"]")
+            .Select(static match => match.Groups["specifier"].Value)
+            .Where(static value => !value.StartsWith('.', StringComparison.Ordinal) &&
+                                   !value.StartsWith('/', StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        Assert.IsEmpty(bareImports, "Coupled VueDraggable bundle retains bare imports: " + string.Join(", ", bareImports));
     }
 
     [TestMethod]
@@ -457,7 +683,7 @@ public sealed class ToolchainTests
 
         WriteModule(workspace.ArtifactRoot, "host/app.mjs",
             """
-            import { VBtn } from "vuetify/components";
+            import { VBtn } from "vuetify/components/VBtn";
 
             export async function mount(selector) {
               const target = document.querySelector(selector);
@@ -472,7 +698,7 @@ public sealed class ToolchainTests
               target.append(button);
             }
             """);
-        WriteManifest(workspace, "host/app.mjs", packageImports: ["vuetify/components"]);
+        WriteManifest(workspace, "host/app.mjs", packageImports: ["vuetify/components/VBtn"]);
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
@@ -482,7 +708,8 @@ public sealed class ToolchainTests
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
-                ToolchainCapability.SourceMaps
+                ToolchainCapability.SourceMaps,
+                ToolchainCapability.Minify
             },
             libraryManifests:
             [
@@ -509,6 +736,10 @@ public sealed class ToolchainTests
             "Browser Netpack Vuetify smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
         Assert.AreEqual("VBtn", smoke.GetProperty("text").GetString(), smoke.GetRawText());
         Assert.IsTrue(smoke.GetProperty("styleSheetCount").GetInt32() > 0, smoke.GetRawText());
+
+        var css = File.ReadAllText(Path.Combine(workspace.OutputRoot, "bundle.css"));
+        StringAssert.Contains(css, ".v-btn");
+        Assert.IsFalse(css.Contains(".v-alert", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -579,6 +810,67 @@ public sealed class ToolchainTests
             Directory.CreateDirectory(directory);
 
         File.WriteAllText(fullPath, content.ReplaceLineEndings("\n"), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    }
+
+    private static string WriteSyntheticTreeShakingManifest(string libraryRoot)
+    {
+        JsonObject FileRecord(string type, string relativePath, bool module = false)
+        {
+            var record = new JsonObject
+            {
+                ["type"] = type,
+                ["path"] = relativePath,
+                ["hash"] = ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(libraryRoot, relativePath)))
+            };
+            if (module)
+                record["moduleId"] = relativePath;
+            return record;
+        }
+
+        JsonObject Entry(string modulePath, string? stylePath = null, JsonArray? files = null)
+        {
+            var hash = ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(libraryRoot, modulePath)));
+            var styles = stylePath is null
+                ? new JsonArray()
+                : new JsonArray(FileRecord("style", stylePath));
+            return new JsonObject
+            {
+                ["type"] = "module",
+                ["development"] = modulePath,
+                ["production"] = modulePath,
+                ["developmentHash"] = hash,
+                ["productionHash"] = hash,
+                ["developmentDependencies"] = new JsonArray(),
+                ["productionDependencies"] = new JsonArray(),
+                ["developmentModuleDependencies"] = new JsonArray(),
+                ["productionModuleDependencies"] = new JsonArray(),
+                ["developmentStyles"] = styles.DeepClone(),
+                ["productionStyles"] = styles.DeepClone(),
+                ["files"] = files ?? new JsonArray()
+            };
+        }
+
+        var usedFiles = new JsonArray(
+            FileRecord("module", "dist/dependency.mjs", module: true),
+            FileRecord("module", "dist/unreachable.mjs", module: true),
+            FileRecord("worker", "dist/editor.worker.mjs"));
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = 2,
+            ["libraryId"] = "tree-lib",
+            ["version"] = "1.0.0",
+            ["imports"] = new JsonObject
+            {
+                ["tree-lib/used"] = Entry("dist/used.mjs", "dist/used.css", usedFiles),
+                ["tree-lib/unused"] = Entry("dist/unused.mjs", "dist/unused.css")
+            },
+            ["requires"] = new JsonObject(),
+            ["styles"] = new JsonArray(),
+            ["files"] = new JsonArray()
+        };
+        var path = Path.Combine(libraryRoot, "manifest.json");
+        File.WriteAllText(path, manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");
+        return path;
     }
 
     private static void WriteBrowserSmokeHarness(string rootPath)

@@ -5219,6 +5219,69 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_StaticExternalMembers_PreferMemberImportPathsAndRetainTypeFallback()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScript(""./fallback-host"")]
+            public static class ExternalHost
+            {
+                [ECMAScript(""./members/field"")]
+                public static int Field = 1;
+
+                [ECMAScript(""./members/property"")]
+                public static int Property { get; }
+
+                [ECMAScript(""./members/method"")]
+                public static int Method(int value) => value;
+
+                public static int Fallback(int value) => value;
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var field = ExternalHost.Field;
+                    var property = ExternalHost.Property;
+                    var method = ExternalHost.Method(1);
+                    Func<int, int> methodGroup = ExternalHost.Method;
+                    var fallback = ExternalHost.Fallback(2);
+                }
+            }
+        ");
+
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let field = Field;
+  let property = get_Property();
+  let method = Method(1);
+  let methodGroup = Method;
+  let fallback = Fallback(2);
+}", script);
+
+		var imports = argument.FlushImportSpecifiers()
+			.ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(4, imports, script);
+		AssertImport(imports, "./members/field", "Field", script);
+		AssertImport(imports, "./members/property", "get_Property", script);
+		AssertImport(imports, "./members/method", "Method", script);
+		AssertImport(imports, "./fallback-host", "Fallback", script);
+	}
+
+	private static void AssertImport(
+		IReadOnlyDictionary<string, Acornima.Ast.NodeList<Acornima.Ast.ImportDeclarationSpecifier>> imports,
+		string modulePath,
+		string exportName,
+		string? script)
+	{
+		Assert.IsTrue(imports.TryGetValue(modulePath, out var specifiers), script);
+		Assert.HasCount(1, specifiers, script);
+		Assert.AreEqual(exportName, specifiers[0].ToECMAScript(), script);
+	}
+
+	[TestMethod]
 	public void Visit_Invocation_FakeSupportMarkerOnExternalHost_Throws()
 	{
 		var block = GetBlockOperation(@"

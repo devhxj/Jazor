@@ -1,7 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Security.Cryptography;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -52,17 +50,6 @@ internal static class VuetifyCatalogGenerator
         outputs.Add(new GeneratedFile(
             Path.Combine(projectRoot, "VuetifyCatalog.g.cs"),
             RenderCatalog(components)));
-        var componentsModule = RenderComponentShim(components, StableModule, "./vuetify.esm.js");
-        var labsModule = RenderComponentShim(components, LabsModule, "./vuetify-labs.esm.js");
-        outputs.Add(new GeneratedFile(
-            Path.Combine(projectRoot, "dist", "components.mjs"),
-            componentsModule));
-        outputs.Add(new GeneratedFile(
-            Path.Combine(projectRoot, "dist", "labs.mjs"),
-            labsModule));
-        outputs.Add(new GeneratedFile(
-            Path.Combine(projectRoot, "manifest.json"),
-            RenderManifest(projectRoot, componentsModule, labsModule)));
 
         if (check)
         {
@@ -137,15 +124,14 @@ internal static class VuetifyCatalogGenerator
                         $"ECMAScript Component binding on {Path.GetFileName(path)} must declare module and export string literals.");
                 }
 
-                if (module is not StableModule and not LabsModule)
-                    throw new InvalidOperationException($"Unsupported Vuetify component module '{module}' on {declaration.Identifier.ValueText}.");
-                if (!seenExports.Add((module, export)))
-                    throw new InvalidOperationException($"Duplicate Vuetify component export '{module}:{export}'.");
+                var family = NormalizeComponentFamily(module, export);
+                if (!seenExports.Add((family, export)))
+                    throw new InvalidOperationException($"Duplicate Vuetify component export '{family}:{export}'.");
 
                 components.Add(new Component(
                     path,
                     NormalizeRelativePath(repositoryRoot, path),
-                    module,
+                    family,
                     export,
                     declaration.Identifier.ValueText));
             }
@@ -180,8 +166,6 @@ internal static class VuetifyCatalogGenerator
         }
 
         var webTypeTags = ReadWebTypeTags(Path.Combine(upstreamRoot, "web-types.json"));
-        var stableBundleExports = ReadBundleComponentExports(Path.Combine(projectRoot, "dist", "vuetify.esm.js"));
-        var labsBundleExports = ReadBundleComponentExports(Path.Combine(projectRoot, "dist", "vuetify-labs.esm.js"));
         foreach (var component in components)
         {
             var key = GetContractKey(component.SourceFile, component.TypeName);
@@ -191,7 +175,7 @@ internal static class VuetifyCatalogGenerator
                     $"Vuetify contract schema does not describe '{component.SourceFile}:{component.TypeName}'.");
             }
 
-            if (!string.Equals(contract.Module, component.Module, StringComparison.Ordinal) ||
+            if (!string.Equals(NormalizeComponentFamily(contract.Module, contract.Export), component.Module, StringComparison.Ordinal) ||
                 !string.Equals(contract.Export, component.Export, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException(
@@ -199,13 +183,6 @@ internal static class VuetifyCatalogGenerator
             }
             if (!webTypeTags.Contains(component.Export))
                 throw new InvalidOperationException($"Vuetify web-types {Version} does not contain tag '{component.Export}'.");
-
-            var bundleExports = component.Module == StableModule ? stableBundleExports : labsBundleExports;
-            if (!bundleExports.Contains(component.Export))
-            {
-                throw new InvalidOperationException(
-                    $"Vuetify {Version} bundle '{component.Module}' does not export component '{component.Export}'.");
-            }
 
             if (contract.Members is null || contract.Members.Count == 0)
                 throw new InvalidOperationException($"Vuetify contract '{component.TypeName}' has no parameter metadata.");
@@ -226,6 +203,28 @@ internal static class VuetifyCatalogGenerator
         if (!string.Equals(version, Version, StringComparison.Ordinal))
             throw new InvalidOperationException($"Vuetify package metadata must declare version {Version}, found '{version}'.");
     }
+
+    private static string NormalizeComponentFamily(string module, string export)
+    {
+        if (string.Equals(module, StableModule, StringComparison.Ordinal) ||
+            string.Equals(module, StableModule + "/" + export, StringComparison.Ordinal))
+        {
+            return StableModule;
+        }
+
+        if (string.Equals(module, LabsModule, StringComparison.Ordinal) ||
+            string.Equals(module, LabsModule + "/" + export, StringComparison.Ordinal))
+        {
+            return LabsModule;
+        }
+
+        throw new InvalidOperationException(
+            $"Unsupported Vuetify component module '{module}' for export '{export}'. " +
+            "A component module must be its aggregate contract family or its exact export subpath.");
+    }
+
+    private static string GetComponentImportPath(Component component)
+        => component.Module + "/" + component.Export;
 
     private static HashSet<string> ReadWebTypeTags(string path)
     {
@@ -262,27 +261,6 @@ internal static class VuetifyCatalogGenerator
         return result;
     }
 
-    private static HashSet<string> ReadBundleComponentExports(string path)
-    {
-        if (!SystemFile.Exists(path))
-            throw new InvalidOperationException($"Missing Vuetify component bundle: {path}");
-
-        var source = SystemFile.ReadAllText(path);
-        const string marker = "var components = /*#__PURE__*/Object.freeze({";
-        var start = source.IndexOf(marker, StringComparison.Ordinal);
-        if (start < 0)
-            throw new InvalidOperationException($"Cannot locate the components export object in {path}.");
-
-        start += marker.Length;
-        var end = source.IndexOf("\n});", start, StringComparison.Ordinal);
-        if (end < 0)
-            throw new InvalidOperationException($"Cannot locate the end of the components export object in {path}.");
-
-        return Regex.Matches(source[start..end], @"(?m)^\s*(?<name>[$A-Za-z_][$\w]*)\s*:")
-            .Select(static match => match.Groups["name"].Value)
-            .ToHashSet(StringComparer.Ordinal);
-    }
-
     private static string RenderComponentSource(Component component, VuetifyContract contract, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> descriptions)
     {
         var source = BindingDocumentationGenerator.NormalizeDocumentationPlacement(SystemFile.ReadAllText(component.SourcePath));
@@ -307,9 +285,10 @@ internal static class VuetifyCatalogGenerator
             .SingleOrDefault(IsComponentBinding);
         if (componentAttribute is not null &&
             componentAttribute.ArgumentList?.Arguments is { Count: 2 or 3 } componentArguments &&
-            TryReadString(componentArguments[0], out var componentModule) &&
+            TryReadString(componentArguments[0], out _) &&
             TryReadComponentExport(componentArguments, out var componentExport))
         {
+            var componentModule = GetComponentImportPath(component);
             var replacement = componentArguments.Count == 2 && IsComponentTransform(componentArguments[1])
                 ? $"ECMAScript(\"{EscapeCSharpString(componentModule)}\", Transform.Component)"
                 : $"ECMAScript(\"{EscapeCSharpString(componentModule)}\", Transform.Component, \"{EscapeCSharpString(componentExport)}\")";
@@ -428,14 +407,14 @@ internal static class VuetifyCatalogGenerator
     private static void RenderExports(StringBuilder builder, IEnumerable<Component> components, string catalogName)
     {
         var materialized = components.OrderBy(static component => component.Export, StringComparer.Ordinal).ToArray();
-        var module = materialized[0].Module;
         builder.AppendLine("/// <summary>供 Vue render/h 调用的组件导出；将所需导出传给渲染函数或应用组件注册表。</summary>");
-        builder.AppendLine($"[ECMAScript(\"{module}\")]");
+        builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"public static class {catalogName}");
         builder.AppendLine("{");
         foreach (var component in materialized)
         {
             builder.AppendLine($"    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref=\"{component.Export}\"/>。</summary>");
+            builder.AppendLine($"    [ECMAScript(\"{GetComponentImportPath(component)}\")]");
             builder.AppendLine($"    [ECMAScriptName(\"{component.Export}\")]");
             builder.AppendLine($"    public extern static IVuetifyComponent {component.Export} {{ get; }}");
             builder.AppendLine();
@@ -469,124 +448,6 @@ internal static class VuetifyCatalogGenerator
         builder.Length -= Environment.NewLine.Length;
         builder.AppendLine("}");
     }
-
-    private static string RenderComponentShim(
-        IEnumerable<Component> components,
-        string module,
-        string bundlePath)
-    {
-        var builder = new StringBuilder();
-        builder.AppendLine($"import {{ components }} from \"{bundlePath}\";");
-        builder.AppendLine();
-        foreach (var component in components
-                     .Where(component => component.Module == module)
-                     .OrderBy(static component => component.Export, StringComparer.Ordinal))
-        {
-            builder.AppendLine($"export const {component.Export} = components.{component.Export};");
-        }
-
-        return builder.ToString();
-    }
-
-    private static string RenderManifest(
-        string projectRoot,
-        string componentsModule,
-        string labsModule)
-    {
-        var imports = new SortedDictionary<string, object>(StringComparer.Ordinal)
-        {
-            ["vuetify"] = CreateModuleEntry(
-                "dist/vuetify.esm.js",
-                HashFile(projectRoot, "dist/vuetify.esm.js"),
-                ["vue"],
-                []),
-            ["vuetify/components"] = CreateModuleEntry(
-                "dist/components.mjs",
-                HashContent(componentsModule),
-                ["vuetify"],
-                ["vuetify"]),
-            ["vuetify/directives"] = CreateModuleEntry(
-                "dist/directives.mjs",
-                HashFile(projectRoot, "dist/directives.mjs"),
-                ["vuetify"],
-                ["vuetify"]),
-            ["vuetify/labs/components"] = CreateModuleEntry(
-                "dist/labs.mjs",
-                HashContent(labsModule),
-                ["vuetify"],
-                ["dist/vuetify-labs.esm.js"],
-                new object[]
-                {
-                    new
-                    {
-                        type = "module",
-                        path = "dist/vuetify-labs.esm.js",
-                        hash = HashFile(projectRoot, "dist/vuetify-labs.esm.js"),
-                        moduleId = "dist/vuetify-labs.esm.js"
-                    }
-                })
-        };
-
-        var manifest = new
-        {
-            schemaVersion = 2,
-            libraryId = "vuetify",
-            version = Version,
-            imports,
-            requires = new SortedDictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["vue3"] = "^3.5.0"
-            },
-            styles = new object[]
-            {
-                new
-                {
-                    type = "style",
-                    path = "dist/vuetify.min.css",
-                    hash = HashFile(projectRoot, "dist/vuetify.min.css")
-                }
-            },
-            files = new object[]
-            {
-                new
-                {
-                    type = "license",
-                    path = "licenses/LICENSE.md",
-                    hash = HashFile(projectRoot, "licenses/LICENSE.md")
-                }
-            }
-        };
-
-        return JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine;
-    }
-
-    private static object CreateModuleEntry(
-        string path,
-        string hash,
-        IReadOnlyList<string> packageDependencies,
-        IReadOnlyList<string> moduleDependencies,
-        IReadOnlyList<object>? files = null)
-        => new
-        {
-            type = "module",
-            development = path,
-            production = path,
-            developmentHash = hash,
-            productionHash = hash,
-            developmentDependencies = packageDependencies,
-            productionDependencies = packageDependencies,
-            developmentModuleDependencies = moduleDependencies,
-            productionModuleDependencies = moduleDependencies,
-            files = files ?? Array.Empty<object>()
-        };
-
-    private static string HashFile(string projectRoot, string relativePath)
-        => Convert.ToHexString(SHA256.HashData(SystemFile.ReadAllBytes(Path.Combine(
-            projectRoot,
-            relativePath.Replace('/', Path.DirectorySeparatorChar))))).ToLowerInvariant();
-
-    private static string HashContent(string content)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(NormalizeGeneratedText(content)))).ToLowerInvariant();
 
     private static string NormalizeGeneratedText(string content)
         => content.Replace("\r\n", "\n", StringComparison.Ordinal);

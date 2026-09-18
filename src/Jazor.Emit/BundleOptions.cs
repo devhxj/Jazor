@@ -7,4 +7,6 @@ internal sealed record BundleOptions(
     string OutputPath,
     string? SourceRoot = null,
     IReadOnlyList<string>? LibraryManifests = null,
-    LibraryAssets? MaterializedLibraries = null);
+    LibraryAssets? MaterializedLibraries = null,
+    bool SourceMaps = true,
+    bool Minify = false);

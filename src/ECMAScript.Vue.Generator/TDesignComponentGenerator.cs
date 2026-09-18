@@ -120,6 +120,7 @@ internal static class TDesignComponentGenerator
             .Select(element => new Binding(
                 element.GetProperty("tag").GetString()!,
                 element.GetProperty("runtimeExport").GetString()!,
+                element.GetProperty("module").GetString()!,
                 element.GetProperty("propsDeclaration").GetString(),
                 element.GetProperty("propsSource").GetString(),
                 element.GetProperty("slots").EnumerateArray().Select(static slot => slot.GetString()!).ToHashSet(StringComparer.Ordinal)))
@@ -217,7 +218,7 @@ internal static class TDesignComponentGenerator
         {
             builder.AppendLine();
             AppendXmlSummary(builder, component.Component.Contract.Description);
-            builder.AppendLine($"[ECMAScript(\"tdesign-vue-next\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
+            builder.AppendLine($"[ECMAScript(\"tdesign-vue-next/{component.Component.Binding.Module}/{component.Component.Binding.RuntimeExport}\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
             var genericSuffix = component.TypeParameters.Length == 0
                 ? string.Empty
                 : "<" + string.Join(", ", component.TypeParameters.Select(static parameter => parameter.Name)) + ">";
@@ -272,7 +273,7 @@ internal static class TDesignComponentGenerator
             if (component.TypeParameters.Length > 0 && component.DefaultTypeArguments.Length == component.TypeParameters.Length)
             {
                 builder.AppendLine();
-                builder.AppendLine($"[ECMAScript(\"tdesign-vue-next\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
+                builder.AppendLine($"[ECMAScript(\"tdesign-vue-next/{component.Component.Binding.Module}/{component.Component.Binding.RuntimeExport}\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
                 // Razor's component discovery cannot disambiguate a generic component and a
                 // same-named closed alias. Keep the generated alias for assembly-internal
                 // metadata compatibility, while typed Razor markup uses the generic component
@@ -291,6 +292,7 @@ internal static class TDesignComponentGenerator
             foreach (var component in components)
             {
                 AppendXmlSummary(builder, component.Component.Contract.Description, "    ");
+                builder.AppendLine($"    [ECMAScript(\"tdesign-vue-next/{component.Component.Binding.Module}/{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"    [ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"    public extern static ITDesignComponent {component.Component.Contract.AuthoringType} {{ get; }}");
                 builder.AppendLine();
@@ -425,6 +427,7 @@ internal static class TDesignComponentGenerator
     sealed record Binding(
         string Tag,
         string RuntimeExport,
+        string Module,
         string? PropsDeclaration,
         string? PropsSource,
         HashSet<string> Slots);

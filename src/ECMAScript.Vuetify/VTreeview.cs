@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 实验室树形视图组件的创作代理。
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/labs/components", Transform.Component, "VTreeview")]
+[ECMAScript("vuetify/labs/components/VTreeview", Transform.Component, "VTreeview")]
 public sealed class VTreeview : ComponentBase, IVuetifyComponent
 {
     /// <summary>

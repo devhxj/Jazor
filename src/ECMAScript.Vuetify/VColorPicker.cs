@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 颜色选择器创作代理。
 /// Vuetify color-picker authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VColorPicker")]
+[ECMAScript("vuetify/components/VColorPicker", Transform.Component, "VColorPicker")]
 public sealed class VColorPicker : ComponentBase, IVuetifyComponent
 {
     /// <summary>

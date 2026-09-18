@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 代码组件创作代理，用于内联或块级代码容器。
 /// Vuetify code authoring proxy for inline or block code containers.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VCode")]
+[ECMAScript("vuetify/components/VCode", Transform.Component, "VCode")]
 public sealed class VCode : ComponentBase, IVuetifyComponent
 {
     /// <summary>

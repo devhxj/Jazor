@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 底部抽屉组件。
 /// Vuetify bottom sheet component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VBottomSheet")]
+[ECMAScript("vuetify/components/VBottomSheet", Transform.Component, "VBottomSheet")]
 public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
 {
     /// <summary>

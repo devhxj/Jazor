@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 自动补全组件。
 /// Vuetify autocomplete component.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VAutocomplete")]
+[ECMAScript("vuetify/components/VAutocomplete", Transform.Component, "VAutocomplete")]
 public sealed class VAutocomplete : VSelectLikeComponentBase, IVuetifyComponent
 {
     /// <summary>

@@ -1,0 +1,44 @@
+@page "/"
+@namespace BindingsShowcase.Host
+
+<main data-showcase="landing">
+    <header data-showcase-header="landing">
+        <p data-showcase-eyebrow="true">P3 application bindings</p>
+        <h1>Vue ecosystem bindings showcase</h1>
+        <p data-showcase-subtitle="true">Real RazorVue page exercising DateFns, VueI18n, VueUse, Floating UI, VeeValidate, and Vue Query.</p>
+    </header>
+
+    <section data-showcase-card="date-fns">
+        <h2>DateFns</h2>
+        <p data-datefns-iso="@IsoDate">@IsoDate</p>
+        <p data-datefns-formatted="@FormattedDate">@FormattedDate</p>
+    </section>
+
+    <section data-showcase-card="vue-i18n">
+        <h2>VueI18n</h2>
+        <p data-i18n-locale="@CurrentLocale">@CurrentLocale</p>
+        <p data-i18n-greeting="@Greeting">@Greeting</p>
+        <button type="button" data-i18n-action="switch-locale" @onclick="@SwitchLocale">Switch locale</button>
+    </section>
+
+    <section data-showcase-card="vueuse">
+        <h2>VueUse</h2>
+        <p data-vueuse-query="@MediaQueryValue">@MediaQueryValue</p>
+        <p data-vueuse-prefers-dark="@PrefersDarkValue">@PrefersDarkValue</p>
+    </section>
+
+    <section data-showcase-card="floating-ui">
+        <h2>Floating UI</h2>
+        <p data-floating-loaded="@FloatingLoaded">@FloatingLoaded</p>
+    </section>
+
+    <section data-showcase-card="vee-validate">
+        <h2>VeeValidate</h2>
+        <p data-vee-validate-loaded="@VeeValidateLoaded">@VeeValidateLoaded</p>
+    </section>
+
+    <section data-showcase-card="vue-query">
+        <h2>Vue Query</h2>
+        <p data-vue-query-loaded="@VueQueryLoaded">@VueQueryLoaded</p>
+    </section>
+</main>

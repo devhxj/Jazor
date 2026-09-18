@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 迷你图表组件的编写代理，用于紧凑趋势和柱状可视化。
 /// Vuetify sparkline authoring proxy for compact trend and bar visualizations.
 /// </summary>
-[ECMAScript("vuetify/components", Transform.Component, "VSparkline")]
+[ECMAScript("vuetify/components/VSparkline", Transform.Component, "VSparkline")]
 public sealed class VSparkline : ComponentBase, IVuetifyComponent
 {
     /// <summary>

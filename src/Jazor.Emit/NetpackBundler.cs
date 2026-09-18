@@ -8,8 +8,7 @@ using NetPack.Graph;
 namespace Jazor.Emit;
 
 /// <summary>
-/// Bundles application modules with Netpack while preserving packaged library ESM as local external files.
-/// Netpack never parses or rewrites third-party library syntax.
+/// Bundles application and selected library modules through one Netpack graph.
 /// </summary>
 internal sealed class NetpackBundler
 {
@@ -83,12 +82,11 @@ internal sealed class NetpackBundler
             var assets = useMaterializedLibraries
                 ? CopyMaterializedAssets(manifest, options.InputDirectory, bundleWorkspace)
                 : CopyAssets(manifest, options, bundleWorkspace);
-            // Keep package ESM external to Netpack. Its printer is not a lossless pass-through
-            // for modern nullish/async syntax; the assets remain local and are relinked below.
             var importRewrites = new Dictionary<string, string>(
                 CreateImportRewrites(relativePaths, assets.ImportRewrites),
                 StringComparer.OrdinalIgnoreCase);
             PrepareBundledRouteRuntime(bundleWorkspace, libraries.ImportPaths, relativePaths, importRewrites);
+            LibraryPackageWriter.WritePackageProject(bundleWorkspace, libraries);
             foreach (var relativePath in relativePaths)
             {
                 var sourcePath = GetSafePath(options.InputDirectory, relativePath);
@@ -101,11 +99,6 @@ internal sealed class NetpackBundler
                 var rewritten = RewriteModuleImports(content, relativePath, importRewrites);
                 await File.WriteAllTextAsync(targetPath, rewritten, Utf8WithoutBom);
             }
-
-            var externalImportRewrites = PrepareExternalPackageImports(
-                bundleWorkspace,
-                libraries.ImportPaths);
-            RewriteImports(bundleWorkspace, libraries.ImportPaths);
 
             var rootAssemblyName = GetRootAssemblyName(manifest);
             var entryRelativePaths = manifest.Modules
@@ -130,10 +123,12 @@ internal sealed class NetpackBundler
                 {
                     Format = ModuleFormat.Esm,
                     Platform = Platform.Web,
-                    SourceMaps = true,
+                    SourceMaps = options.SourceMaps,
+                    Minify = options.Minify,
                     EntryNames = Path.GetFileNameWithoutExtension(options.OutputPath),
-                    ExternalPackages = true,
-                    Alias = new Dictionary<string, string>(StringComparer.Ordinal)
+                    // Selected entries are exposed through generated package.json `exports` maps.
+                    // NetPack therefore validates the same standard package graph used by Deno.
+                    ExternalPackages = false
                 });
 
             var wroteBundle = WriteOutputs(result.Outputs, options.OutputPath);
@@ -146,11 +141,7 @@ internal sealed class NetpackBundler
                         : $"Netpack did not emit a JavaScript entry bundle. Outputs: {string.Join(", ", result.Outputs.Keys.OrderBy(static key => key, StringComparer.Ordinal))}.");
             }
 
-            CopyVendorAssetsToOutput(options.OutputPath, bundleWorkspace, libraries.ImportPaths);
-            RewritePublishedImports(
-                Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))!,
-                libraries.ImportPaths,
-                externalImportRewrites);
+            CopyLibraryPublishAssetsToOutput(options.OutputPath, bundleWorkspace, libraries.PublishAssets);
             CopyStaticAssetsToOutput(options.OutputPath, assets.StaticAssets);
             await WriteBundleCssAsync(
                 options.OutputPath,
@@ -184,10 +175,8 @@ internal sealed class NetpackBundler
         const string routeCatalogSpecifier = "@jazor/vue-runtime/routes.mjs";
         const string bundledRoutingPath = "__jazor_runtime/blazor-routing.mjs";
 
-        // The routing helper imports the generated route catalog. In a Debug graph both are
-        // import-map entries, but a Release bundle keeps package ESM external. Copy the helper
-        // into the local Netpack workspace and rebase only its route edge so the final bundle
-        // owns the route table and no bare route specifier leaks into the browser.
+        // The routing helper imports the generated route catalog. The catalog is an application
+        // module rather than a library alias, so rebase this one reverse edge into the graph.
         if (!moduleRelativePaths.Contains(routeCatalogSpecifier, StringComparer.OrdinalIgnoreCase) ||
             !libraryImportPaths.TryGetValue(routingSpecifier, out var routingRelativePath))
         {
@@ -299,22 +288,13 @@ internal sealed class NetpackBundler
         string bundleWorkspace,
         LibraryAssets libraries)
     {
-        foreach (var relativePath in libraries.ImportPaths.Values.Concat(libraries.StylePaths)
+        foreach (var relativePath in libraries.MaterializedPaths
                      .Distinct(StringComparer.OrdinalIgnoreCase)
                      .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
         {
             var sourcePath = GetSafePath(artifactRoot, relativePath);
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException($"Materialized library file was not found: '{relativePath}'.", sourcePath);
-        }
-
-        var sourceVendorRoot = Path.Combine(artifactRoot, "vendor");
-        if (!Directory.Exists(sourceVendorRoot))
-            return;
-
-        foreach (var sourcePath in Directory.EnumerateFiles(sourceVendorRoot, "*", SearchOption.AllDirectories))
-        {
-            var relativePath = Path.GetRelativePath(artifactRoot, sourcePath).Replace('\\', '/');
             var targetPath = GetSafePath(bundleWorkspace, relativePath);
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrWhiteSpace(targetDirectory))
@@ -337,150 +317,35 @@ internal sealed class NetpackBundler
         return rewrites;
     }
 
-    private static void CopyVendorAssetsToOutput(
+    private static void CopyLibraryPublishAssetsToOutput(
         string outputPath,
         string bundleWorkspace,
-        IReadOnlyDictionary<string, string> importPaths)
+        IReadOnlyList<LibraryPublishAsset> publishAssets)
     {
-        var sourceRoot = Path.Combine(bundleWorkspace, "vendor");
-        if (!Directory.Exists(sourceRoot))
+        if (publishAssets.Count == 0)
             return;
 
         var outputRoot = Path.GetDirectoryName(Path.GetFullPath(outputPath)) ?? string.Empty;
-        foreach (var sourcePath in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
+        foreach (var asset in publishAssets
+                     .DistinctBy(static asset => asset.RelativePath, StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(static asset => asset.RelativePath, StringComparer.OrdinalIgnoreCase))
         {
-            var relativePath = Path.GetRelativePath(bundleWorkspace, sourcePath).Replace('\\', '/');
-            var targetPath = GetSafePath(outputRoot, relativePath);
+            var sourcePath = GetSafePath(bundleWorkspace, asset.RelativePath);
+            var targetPath = GetSafePath(outputRoot, asset.RelativePath);
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrWhiteSpace(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
 
-            if (sourcePath.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
-                sourcePath.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(targetPath))
             {
-                var content = RewriteModuleImports(File.ReadAllText(sourcePath), relativePath, importPaths);
-                File.WriteAllText(targetPath, content, Utf8WithoutBom);
+                if (!File.ReadAllBytes(sourcePath).AsSpan().SequenceEqual(File.ReadAllBytes(targetPath)))
+                    throw new InvalidOperationException($"Library asset '{asset.RelativePath}' conflicts with a Netpack output.");
                 continue;
             }
 
             File.Copy(sourcePath, targetPath, overwrite: true);
         }
     }
-
-    private static void RewritePublishedImports(
-        string outputRoot,
-        IReadOnlyDictionary<string, string> importPaths,
-        IReadOnlyDictionary<string, string> additionalImportPaths)
-    {
-        var allImportPaths = new Dictionary<string, string>(importPaths, StringComparer.Ordinal);
-        foreach (var (specifier, target) in additionalImportPaths)
-            allImportPaths[specifier] = target;
-
-        foreach (var path in Directory.EnumerateFiles(outputRoot, "*.*", SearchOption.AllDirectories)
-                     .Where(static path => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)))
-        {
-            var relativePath = Path.GetRelativePath(outputRoot, path).Replace('\\', '/');
-            var source = File.ReadAllText(path);
-            var rewritten = RewriteModuleImports(source, relativePath, allImportPaths);
-            if (!string.Equals(source, rewritten, StringComparison.Ordinal))
-                File.WriteAllText(path, rewritten, Utf8WithoutBom);
-        }
-    }
-
-    private static void RewriteImports(
-        string bundleWorkspace,
-        IReadOnlyDictionary<string, string> libraryImportRewrites)
-    {
-        if (libraryImportRewrites.Count == 0)
-            return;
-
-        var vendorRoot = Path.Combine(bundleWorkspace, "vendor");
-        if (!Directory.Exists(vendorRoot))
-            return;
-
-        foreach (var path in Directory.EnumerateFiles(vendorRoot, "*.*", SearchOption.AllDirectories)
-                     .Where(static path => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)))
-        {
-            var relativePath = Path.GetRelativePath(bundleWorkspace, path).Replace('\\', '/');
-            var source = File.ReadAllText(path);
-            var rewritten = RewriteModuleImports(source, relativePath, libraryImportRewrites);
-            if (!string.Equals(source, rewritten, StringComparison.Ordinal))
-                File.WriteAllText(path, rewritten, Utf8WithoutBom);
-        }
-    }
-
-    private static IReadOnlyDictionary<string, string> PrepareExternalPackageImports(
-        string bundleWorkspace,
-        IReadOnlyDictionary<string, string> packageImportPaths)
-    {
-        if (packageImportPaths.Count == 0)
-            return new Dictionary<string, string>(StringComparer.Ordinal);
-
-        var externalImportRewrites = new Dictionary<string, string>(StringComparer.Ordinal);
-        var files = Directory.EnumerateFiles(bundleWorkspace, "*.*", SearchOption.AllDirectories)
-            .Where(static path =>
-                (path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
-                 path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)) &&
-                !path.Contains($"{Path.DirectorySeparatorChar}vendor{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) &&
-                !path.Contains("/vendor/", StringComparison.OrdinalIgnoreCase))
-            .Select(path =>
-            {
-                var relativePath = Path.GetRelativePath(bundleWorkspace, path).Replace('\\', '/');
-                return (Path: path, RelativePath: relativePath);
-            })
-            .OrderBy(static item => item.RelativePath, StringComparer.Ordinal)
-            .ToArray();
-
-        foreach (var file in files)
-        {
-            var source = File.ReadAllText(file.Path);
-            var rewritten = RewriteExternalPackageImports(
-                source,
-                file.RelativePath,
-                packageImportPaths,
-                externalImportRewrites);
-            if (!string.Equals(source, rewritten, StringComparison.Ordinal))
-                File.WriteAllText(file.Path, rewritten, Utf8WithoutBom);
-        }
-
-        return externalImportRewrites;
-    }
-
-    private static string RewriteExternalPackageImports(
-        string content,
-        string importerRelativePath,
-        IReadOnlyDictionary<string, string> packageImportPaths,
-        IDictionary<string, string> externalImportRewrites)
-    {
-        var occurrence = 0;
-
-        string Rewrite(Match match)
-        {
-            var importPath = match.Groups["path"].Value;
-            if (!packageImportPaths.TryGetValue(importPath, out var targetRelativePath))
-                return match.Value;
-
-            var externalSpecifier = CreateExternalPackageSpecifier(
-                importerRelativePath,
-                importPath,
-                occurrence++);
-            externalImportRewrites[externalSpecifier] = targetRelativePath;
-            return match.Groups["prefix"].Value + externalSpecifier + match.Groups["suffix"].Value;
-        }
-
-        // Netpack 0.8.2 registers external nodes from parallel import visitors. Distinct
-        // per-importer specifiers avoid its non-atomic same-name registration race while
-        // the published bundle still rewrites every edge back to the one vendor asset.
-        var rewritten = ImportOnlyPattern.Replace(ImportFromPattern.Replace(content, Rewrite), Rewrite);
-        return ImportExpressionPattern.Replace(rewritten, Rewrite);
-    }
-
-    private static string CreateExternalPackageSpecifier(
-        string importerRelativePath,
-        string importPath,
-        int occurrence)
-        => "__jazor_external__/" + Format.HashName(
-            importerRelativePath + "\n" + importPath + "\n" + occurrence).TrimStart('_');
 
     private static async Task WriteBundleCssAsync(string outputPath, IReadOnlyList<string> stylePaths)
     {

@@ -1,0 +1,11 @@
+{
+  "name": "jazor-element-plus-runtime-build",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "element-plus": "2.14.5"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

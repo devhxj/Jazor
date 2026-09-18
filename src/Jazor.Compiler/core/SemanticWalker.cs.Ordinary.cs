@@ -2151,7 +2151,7 @@ public partial class SemanticWalker
 			return false;
 
 		var fieldName = Util.GetConfigOrSymbolName(fieldReference.Field);
-		return TryBuildImportedModuleMember(fieldReference.Field.ContainingType, fieldName, argument, out var importedMember) &&
+		return TryBuildImportedModuleMember(fieldReference.Field.ContainingType, fieldName, argument, out var importedMember, fieldReference.Field) &&
 			importedMember is not null;
 	}
 

@@ -492,3 +492,8 @@ dist-prod-optimized/
 
 .playwright-cli/
 .zcode/
+src/ECMAScript.ElementPlus/dist/
+src/ECMAScript.Monaco/dist/
+src/ECMAScript.TDesign/dist/
+src/ECMAScript.Vuetify/dist/
+src/ECMAScript.VueDataUi/dist/

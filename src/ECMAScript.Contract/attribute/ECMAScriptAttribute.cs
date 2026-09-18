@@ -22,13 +22,18 @@ public enum Transform
 /// </summary>
 /// <remarks>
 /// The parameterless form is an ambient <see cref="Transform.Allow"/> declaration. The
-/// one-string form preserves the existing ordinary import contract. Component declarations
-/// may provide an optional export name; an omitted name means the module default export.
+/// one-string form declares the exact external ESM import specifier that must appear in emitted
+/// JavaScript. Component declarations may provide an optional export name; an omitted name means
+/// the module default export. Package identity, version and resource metadata are supplied by the
+/// binding package manifest alongside this declaration.
+///
+/// 当特性标在具体成员上时，该成员的 specifier 优先于宿主类型上的 specifier。这样一个
+/// C# 宿主类型可以映射多个细粒度 ESM 入口，而编译器和 Emit 仍能按调用点收集 tree-shaking roots。
 /// </remarks>
 [AttributeUsage(AttributeTargets.All, Inherited = false)]
 public class ECMAScriptAttribute : Attribute
 {
-    /// <summary>Gets the ESM import specifier, or <see langword="null"/> for <see cref="Transform.Allow"/>.</summary>
+    /// <summary>Gets the exact ESM import specifier, or <see langword="null"/> for <see cref="Transform.Allow"/>.</summary>
     public string? Import { get; }
 
     /// <summary>Gets the intended lowering category.</summary>
@@ -44,14 +49,14 @@ public class ECMAScriptAttribute : Attribute
     }
 
     /// <summary>Creates an ordinary external <see cref="Transform.Import"/> declaration.</summary>
-    /// <param name="import">The ESM import specifier preserved in generated JavaScript.</param>
+    /// <param name="import">The exact package or module import specifier preserved in generated JavaScript.</param>
     public ECMAScriptAttribute(string import)
         : this(import, Transform.Import)
     {
     }
 
     /// <summary>Creates a declaration with an explicit transform category.</summary>
-    /// <param name="import">The ESM import specifier.</param>
+    /// <param name="import">The exact package or module import specifier.</param>
     /// <param name="transform">The intended host transform.</param>
     public ECMAScriptAttribute(string import, Transform transform)
         : this(import, transform, null)
@@ -59,7 +64,7 @@ public class ECMAScriptAttribute : Attribute
     }
 
     /// <summary>Creates a declaration with an explicit category and optional component export.</summary>
-    /// <param name="import">The ESM import specifier.</param>
+    /// <param name="import">The exact package or module import specifier.</param>
     /// <param name="transform">The intended host transform.</param>
     /// <param name="exportName">The component named export; <see langword="null"/> means default.</param>
     public ECMAScriptAttribute(string import, Transform transform, string? exportName)

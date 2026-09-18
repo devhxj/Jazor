@@ -33,7 +33,12 @@ public sealed class VueDraggableManifestTests
             new[] { "vue-draggable-plus" },
             imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
 
-        Assert.AreEqual(0, imports.GetProperty("vue-draggable-plus").GetProperty("productionDependencies").EnumerateArray().Count());
+        CollectionAssert.AreEquivalent(
+            new[] { "vue" },
+            imports.GetProperty("vue-draggable-plus").GetProperty("productionDependencies")
+                .EnumerateArray()
+                .Select(static value => value.GetString())
+                .ToArray());
         foreach (var entry in imports.EnumerateObject())
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
