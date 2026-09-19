@@ -23,7 +23,6 @@ var artifactRoot = Path.Combine(workspace, "jazor");
 var componentPath = Path.Combine(artifactRoot, "component.mjs");
 var componentSourceMapPath = componentPath + ".map";
 var manifestPath = Path.Combine(artifactRoot, "jazor-manifest.json");
-var vueRuntimeSourcePath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "vue.runtime.esm-browser.js");
 var vueRuntimePath = Path.Combine(webRoot, "vue.runtime.esm-browser.js");
 var browserSessionName = "jazor-development-hmr-" + Guid.NewGuid().ToString("N");
 var browserSessionOpened = false;
@@ -33,9 +32,15 @@ try
 {
     Directory.CreateDirectory(webRoot);
     Directory.CreateDirectory(artifactRoot);
+    await RestoreVueRuntimeAsync(repoRoot, artifactRoot);
+    var vueRuntimeSourcePath = Path.Combine(
+        artifactRoot,
+        "node_modules",
+        "vue",
+        "dist",
+        "vue.runtime.esm-browser.js");
     if (!File.Exists(vueRuntimeSourcePath))
-        throw new InvalidOperationException("Vue browser runtime was not found at '" + vueRuntimeSourcePath + "'.");
-
+        throw new InvalidOperationException("Deno restore did not produce the Vue browser runtime at '" + vueRuntimeSourcePath + "'.");
     File.Copy(vueRuntimeSourcePath, vueRuntimePath);
     await WriteFixtureAsync(componentPath, componentSourceMapPath, manifestPath, "v1", "content-v1", "template-v1");
     var indexPath = Path.Combine(webRoot, "index.html");
@@ -418,6 +423,64 @@ static async Task VerifyBrowserSourceMapAsync(HttpClient httpClient, Uri baseAdd
     {
         throw new InvalidOperationException("Development HMR fixture source map did not expose authored Razor v" + expectedVersion + ".");
     }
+}
+
+static async Task RestoreVueRuntimeAsync(string repoRoot, string artifactRoot)
+{
+    var packageJsonPath = Path.Combine(artifactRoot, "package.json");
+    await File.WriteAllTextAsync(
+        packageJsonPath,
+        """
+        {
+          "name": "@jazor/development-hmr-fixture",
+          "private": true,
+          "type": "module",
+          "dependencies": {
+            "vue": "3.5.42"
+          }
+        }
+        """ + Environment.NewLine,
+        new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+    var deno = ResolveDenoExecutable(repoRoot);
+    var restore = await RunProcessAsync(
+        deno,
+        artifactRoot,
+        ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
+        TimeSpan.FromSeconds(90));
+    EnsureProcessSucceeded(restore, "Deno could not restore the Vue runtime for the development HMR fixture.");
+}
+
+static string ResolveDenoExecutable(string repoRoot)
+{
+    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_PATH");
+    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
+        return Path.GetFullPath(explicitPath);
+
+    var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+    var rid = OperatingSystem.IsWindows()
+        ? "win-x64"
+        : OperatingSystem.IsMacOS()
+            ? "osx-x64"
+            : "linux-x64";
+    foreach (var project in new[] { "Jazor.EmitTest", "Jazor.AspNetCore" })
+    {
+        var candidate = Path.Combine(
+            repoRoot,
+            "src",
+            project,
+            "bin",
+            "Debug",
+            "net11.0",
+            "runtimes",
+            rid,
+            "native",
+            runtimeName);
+        if (File.Exists(candidate))
+            return candidate;
+    }
+
+    return runtimeName;
 }
 
 static string ResolveNpxExecutable()

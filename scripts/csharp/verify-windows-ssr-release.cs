@@ -860,12 +860,15 @@ internal static class SsrReleaseVerifier
         var bundle = File.ReadAllText(Path.Combine(jazorRoot, "bundle.js"));
         RequireContains(bundle, "todo-template-v1", "TodoApp template marker in release bundle");
 
-        // The browser bundle stays a complete release surface of its own: it carries the Vue
-        // runtime but must never materialize the server renderer reserved for the SSR graph.
-        RequireAnyFile(jazorRoot, "vendor", "vue.runtime.esm-browser.prod.js", "browser Vue runtime");
-        if (FindFiles(Path.Combine(jazorRoot, "vendor"), "server-renderer*").Count > 0)
+        // Browser and SSR consume one standard project graph. The restored packages remain
+        // available to both profiles while NetPack decides which browser exports enter bundle.js.
+        RequireFile(Path.Combine(jazorRoot, "package.json"), "Jazor package project");
+        RequireFile(Path.Combine(jazorRoot, "deno.lock"), "frozen Deno package graph");
+        RequireFile(Path.Combine(jazorRoot, "node_modules", "vue", "package.json"), "restored Vue package");
+        RequireFile(Path.Combine(jazorRoot, "node_modules", "@vue", "server-renderer", "package.json"), "restored Vue server-renderer package");
+        if (bundle.Contains("server-renderer", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Browser vendor graph must not contain the SSR server renderer.");
+            throw new InvalidOperationException("Browser release bundle must not contain the SSR server-renderer entry.");
         }
 
         var ssrRoot = Path.Combine(jazorRoot, "ssr");
@@ -877,11 +880,6 @@ internal static class SsrReleaseVerifier
         RequireFile(Path.Combine(ssrRoot, "importmap.json"), "SSR browser import map");
         RequireFile(Path.Combine(ssrRoot, "ssr-importmap.json"), "SSR server import map");
         RequireFile(Path.Combine(ssrRoot, "manifest.json"), "SSR asset manifest");
-
-        // The SSR graph is the only surface allowed to carry the server renderer; its presence
-        // proves the packaged runner's declared runtime closure materialized in the publish.
-        RequireAnyFile(ssrRoot, "vendor", "server-renderer.esm-browser.prod.js", "SSR server renderer");
-        RequireAnyFile(ssrRoot, "vendor", "vue.runtime.esm-browser.prod.js", "SSR Vue runtime");
 
         var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.mjs"));
         RequireContains(rootComponent, "runSetParametersAsync", "ParameterView queue in SSR component module");
@@ -918,7 +916,7 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "<script type=\"importmap\">", "browser import map");
         RequireContains(html, "createSSRApp", "hydration bootstrap");
         RequireContains(html, "\"" + pathBase + "/jazor/ssr/components/todo-app.mjs\"", "hydration component URL under the request path base");
-        RequireContains(html, "\"" + pathBase + "/jazor/ssr/vendor/", "rewritten import map URLs under the request path base");
+        RequireContains(html, "\"" + pathBase + "/jazor/node_modules/", "rewritten restored package URLs under the request path base");
     }
 
     private static void RequireFile(string path, string description)
@@ -937,21 +935,4 @@ internal static class SsrReleaseVerifier
         }
     }
 
-    private static void RequireAnyFile(string root, string directory, string fileName, string description)
-    {
-        if (FindFiles(Path.Combine(root, directory), fileName).Count == 0)
-        {
-            throw new InvalidOperationException("Missing " + description + " under " + Path.Combine(root, directory));
-        }
-    }
-
-    private static List<string> FindFiles(string root, string pattern)
-    {
-        if (!Directory.Exists(root))
-        {
-            return [];
-        }
-
-        return Directory.EnumerateFiles(root, pattern, SearchOption.AllDirectories).ToList();
-    }
 }

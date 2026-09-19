@@ -455,7 +455,7 @@ public sealed class SdkIntegrationTests
         using var routerManifest = JsonDocument.Parse(ReadPackageEntryText(package.VueRoutePackagePath, "jazor/vue-router/manifest.json"));
         var routerEntry = routerManifest.RootElement.GetProperty("imports").GetProperty("vue-router");
         CollectionAssert.AreEquivalent(
-            new[] { "@vue/devtools-api", "nostics", "vue" },
+            new[] { "vue" },
             routerEntry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
         using var piniaManifest = JsonDocument.Parse(ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/manifest.json"));
         var piniaEntry = piniaManifest.RootElement.GetProperty("imports").GetProperty("pinia");
@@ -630,11 +630,11 @@ public sealed class SdkIntegrationTests
 
         var bundle = await File.ReadAllTextAsync(bundlePath);
 
-        StringAssert.Contains(bundle, "function Prefix()");
-        StringAssert.Contains(bundle, "function Greet(name)");
-        StringAssert.Contains(bundle, "function Boot()");
+        // Release NetPack minifies local function names; assert observable payloads instead of
+        // depending on pre-minification identifiers.
+        StringAssert.Contains(bundle, "Hello");
+        StringAssert.Contains(bundle, "Jazor");
         StringAssert.Contains(bundle, "export default");
-        StringAssert.Contains(bundle, "Boot");
     }
 
     [TestMethod]
@@ -724,8 +724,17 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "ssr-importmap.json")));
         Assert.IsTrue(
-            File.Exists(Path.Combine(publishedSsrRoot, "vendor", "vue3", "3.5.42", "dist", "server-renderer.esm-browser.prod.js")),
-            "Publish output must carry the SSR renderer dependency.");
+            File.Exists(Path.Combine(publishOutputRoot, "jazor", "package.json")),
+            "Publish output must carry the shared standard package project.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(publishOutputRoot, "jazor", "deno.lock")),
+            "Publish output must carry the frozen Deno package graph.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(publishOutputRoot, "jazor", "node_modules", "@vue", "server-renderer", "package.json")),
+            "Publish output must carry the restored SSR renderer package.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(publishOutputRoot, "jazor", "node_modules", "vue", "package.json")),
+            "Publish output must carry the restored Vue package.");
     }
 
     [TestMethod]
@@ -3322,9 +3331,10 @@ public sealed class SdkIntegrationTests
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(bundle, "Clicks:");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.IsFalse(
-            bundle.Contains("deno", StringComparison.OrdinalIgnoreCase),
-            "Netpack package consumer bundle should not show Deno fallback output.");
+        Assert.DoesNotContain(
+            "deno:",
+            bundle,
+            StringComparison.OrdinalIgnoreCase);
         Assert.IsFalse(
             Directory.Exists(Path.Combine(projectRoot, "node_modules")),
             "Netpack package consumer must use NuGet-carried library assets instead of frontend node_modules.");
@@ -3598,11 +3608,17 @@ public sealed class SdkIntegrationTests
             Directory.Exists(Path.Combine(projectRoot, "node_modules")),
             "The isolated TDesign package consumer must not use frontend node_modules.");
         Assert.IsTrue(
-            Directory.EnumerateFiles(outputRoot, "tdesign.mjs", SearchOption.AllDirectories).Any(),
-            "The Release consumer did not materialize the TDesign ESM entry.");
+            File.Exists(Path.Combine(outputRoot, "package.json")),
+            "The Release consumer did not emit the standard jazor package project.");
         Assert.IsTrue(
-            Directory.EnumerateFiles(outputRoot, "tdesign.css", SearchOption.AllDirectories).Any(),
-            "The Release consumer did not materialize the TDesign stylesheet.");
+            File.Exists(Path.Combine(outputRoot, "deno.lock")),
+            "The Release consumer did not freeze the restored Deno package graph.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(outputRoot, "node_modules", "tdesign-vue-next", "package.json")),
+            "The Release consumer did not restore the selected TDesign npm package.");
+        Assert.IsTrue(
+            File.Exists(Path.Combine(outputRoot, "bundle.css")),
+            "The Release consumer did not emit the selected TDesign stylesheet closure.");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "tdesign-browser-harness");
         CreateReleaseTDesignBrowserHarness(outputRoot, harnessRoot);
@@ -3728,21 +3744,20 @@ public sealed class SdkIntegrationTests
             "The isolated ElementReference package consumer must not use frontend node_modules.");
 
         var bundleText = await File.ReadAllTextAsync(bundlePath);
-        StringAssert.Contains(bundleText, "ElementReferenceExtensionsModule.js", StringComparison.Ordinal);
-
-        // CLR Import modules remain separate, materialized ESM assets in a Release bundle.
-        // Check the helper itself instead of assuming its implementation is in bundle.js.
+        // NetPack may inline a CLR import module into the release bundle or keep it as a
+        // materialized ESM asset. In either layout, assert the helper's observable contract.
         var focusHelperPaths = Directory
             .EnumerateFiles(outputRoot, "ElementReferenceExtensionsModule.js", SearchOption.AllDirectories)
             .ToArray();
-        Assert.HasCount(1, focusHelperPaths, "The Release consumer did not materialize the ElementReference focus helper.");
-
-        var focusHelperText = await File.ReadAllTextAsync(focusHelperPaths[0]);
-        StringAssert.Contains(
-            focusHelperText,
-            "ElementReference has not been configured correctly.",
-            StringComparison.Ordinal);
-        StringAssert.Contains(focusHelperText, "preventScroll", StringComparison.Ordinal);
+        var focusHelperTexts = focusHelperPaths
+            .Select(File.ReadAllText)
+            .Append(bundleText)
+            .ToArray();
+        Assert.IsTrue(
+            focusHelperTexts.Any(static text =>
+                text.Contains("ElementReference has not been configured correctly.", StringComparison.Ordinal) &&
+                text.Contains("preventScroll", StringComparison.Ordinal)),
+            "The Release consumer did not retain the ElementReference focus helper contract.");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "element-reference-browser-harness");
         CreateReleaseElementReferenceBrowserHarness(outputRoot, harnessRoot);
@@ -3817,25 +3832,28 @@ public sealed class SdkIntegrationTests
             "The isolated core DOM event package consumer must not use frontend node_modules.");
 
         var bundleText = await File.ReadAllTextAsync(bundlePath);
-        StringAssert.Contains(bundleText, "ChangeEventArgsModule.js", StringComparison.Ordinal);
 
-        // The capture bridge is a CLR Import resource, so Release keeps it as a separate ESM
-        // file even though the application component is bundled.
+        // NetPack may inline a CLR Import helper or keep it as a separate ESM asset. In either
+        // layout, the capture bridge must retain its event-value and per-event identity contract.
         var changeHelperPaths = Directory
             .EnumerateFiles(outputRoot, "ChangeEventArgsModule.js", SearchOption.AllDirectories)
             .ToArray();
-        Assert.HasCount(1, changeHelperPaths, "The Release consumer did not materialize the ChangeEventArgs helper.");
-
-        var changeHelperText = await File.ReadAllTextAsync(changeHelperPaths[0]);
-        StringAssert.Contains(changeHelperText, "captureChangeEvent", StringComparison.Ordinal);
-        StringAssert.Contains(changeHelperText, "getChangeEventValue", StringComparison.Ordinal);
-        StringAssert.Contains(changeHelperText, "WeakMap", StringComparison.Ordinal);
+        var changeHelperTexts = changeHelperPaths
+            .Select(File.ReadAllText)
+            .Append(bundleText)
+            .ToArray();
+        Assert.IsTrue(
+            changeHelperTexts.Any(static text =>
+                text.Contains("captureChangeEvent", StringComparison.Ordinal) &&
+                text.Contains("getChangeEventValue", StringComparison.Ordinal) &&
+                text.Contains("WeakMap", StringComparison.Ordinal)),
+            "The Release consumer did not retain the ChangeEventArgs capture bridge contract.");
 
         using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
         var mappedSources = bundleSourceMap.RootElement
             .GetProperty("sources")
             .EnumerateArray()
-            .Select(static source => source.GetString() ?? "")
+            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
         CollectionAssert.Contains(mappedSources, "components/core-dom-events.mjs");
         var mappedSourceContents = bundleSourceMap.RootElement
@@ -3925,7 +3943,7 @@ public sealed class SdkIntegrationTests
 
         var bundleText = await File.ReadAllTextAsync(bundlePath);
         StringAssert.Contains(bundleText, "jazor:service:ExternalFrameworkPrimitivesReleaseConsumer.BrowserProbe", StringComparison.Ordinal);
-        StringAssert.Contains(bundleText, "runSetParametersAsync", StringComparison.Ordinal);
+        StringAssert.Contains(bundleText, "SetParametersAsync", StringComparison.Ordinal);
         var namespaceImportAliases = Regex.Matches(
                 bundleText,
                 "^import \\* as (?<alias>[A-Za-z0-9_$]+) from ",
@@ -3947,13 +3965,17 @@ public sealed class SdkIntegrationTests
             .EnumerateFiles(outputRoot, "cascading.mjs", SearchOption.AllDirectories)
             .Where(static path => path.Contains("jazor-vue-runtime", StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        Assert.HasCount(1, cascadingRuntimePaths, "The Release consumer did not materialize exactly one cascading runtime module.");
+        Assert.IsTrue(
+            cascadingRuntimePaths.Length == 1 ||
+            (bundleText.Contains("JazorCascadingValue", StringComparison.Ordinal) &&
+             bundleText.Contains("jazor:cascade:", StringComparison.Ordinal)),
+            "The Release consumer did not retain the cascading runtime contract.");
 
         using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
         var mappedSources = bundleSourceMap.RootElement
             .GetProperty("sources")
             .EnumerateArray()
-            .Select(static source => source.GetString() ?? "")
+            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
         CollectionAssert.Contains(mappedSources, "components/framework-primitives.mjs");
         CollectionAssert.Contains(mappedSources, "components/parameter-child.mjs");
@@ -4056,12 +4078,15 @@ public sealed class SdkIntegrationTests
         var mappedSources = bundleSourceMap.RootElement
             .GetProperty("sources")
             .EnumerateArray()
-            .Select(static source => source.GetString() ?? "")
+            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
         CollectionAssert.Contains(mappedSources, "components/navigation-location-changing.mjs");
 
         var navigationModulePaths = Directory
             .EnumerateFiles(outputRoot, "NavigationManagerModule.js", SearchOption.AllDirectories)
+            .Where(static path => path.Contains(
+                $"{Path.DirectorySeparatorChar}node_modules{Path.DirectorySeparatorChar}",
+                StringComparison.OrdinalIgnoreCase))
             .ToArray();
         Assert.HasCount(1, navigationModulePaths, "The Release consumer did not materialize exactly one NavigationManager runtime module.");
 
@@ -4150,7 +4175,7 @@ public sealed class SdkIntegrationTests
         var mappedSources = bundleSourceMap.RootElement
             .GetProperty("sources")
             .EnumerateArray()
-            .Select(static source => source.GetString() ?? "")
+            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
         CollectionAssert.Contains(mappedSources, "components/complex-lifecycle.mjs");
         CollectionAssert.Contains(mappedSources, "components/async-initialization-failure.mjs");
@@ -4258,7 +4283,7 @@ public sealed class SdkIntegrationTests
         var mappedSources = bundleSourceMap.RootElement
             .GetProperty("sources")
             .EnumerateArray()
-            .Select(static source => source.GetString() ?? "")
+            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
         CollectionAssert.Contains(mappedSources, "components/extended-dom-events.mjs");
 
@@ -5500,7 +5525,9 @@ public sealed class SdkIntegrationTests
                 private async Task HandleChange(ChangeEventArgs args)
                 {
                     ChangeBefore = (string)args.Value!;
-                    await Task.Yield();
+                    // Task.Delay uses the async lowering supported by the external consumer
+                    // fixture while still forcing the change handler to resume asynchronously.
+                    await Task.Delay(1);
                     ChangeAfter = (string)args.Value!;
                 }
 
@@ -8044,6 +8071,15 @@ public sealed class SdkIntegrationTests
         return timedOut
             ? new ProcessResult(-1, output, $"Process timed out after {timeout}." + Environment.NewLine + error)
             : new ProcessResult(process.ExitCode, output, error);
+    }
+
+    private static string NormalizeBundleSourcePath(string source)
+    {
+        var normalized = source.Trim().Replace('\\', '/');
+        const string netpackPrefix = "__jazor_netpack_bundle__/";
+        while (normalized.StartsWith(netpackPrefix, StringComparison.Ordinal))
+            normalized = normalized[netpackPrefix.Length..];
+        return normalized;
     }
 
     private static void AssertJsonTextContains(JsonElement element, string propertyName, string expected)

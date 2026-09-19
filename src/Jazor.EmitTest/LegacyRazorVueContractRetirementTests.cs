@@ -99,7 +99,7 @@ public sealed class LegacyRazorVueContractRetirementTests
         StringAssert.Contains(targets, "..\\tools\\net11.0\\Jazor.Emit.dll", StringComparison.Ordinal);
         StringAssert.Contains(targets, "<MSBuild Projects=\"@(_JazorEmitToolProjectReference)\"", StringComparison.Ordinal);
         StringAssert.Contains(targets, "Targets=\"GetTargetPath\"", StringComparison.Ordinal);
-        StringAssert.Contains(targets, "DependsOnTargets=\"_ResolveJazorEmitTool\"", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "DependsOnTargets=\"_ResolveJazorEmitTool;_ResolveJazorDeno\"", StringComparison.Ordinal);
         StringAssert.Contains(targets, "Could not locate Jazor.Emit.", StringComparison.Ordinal);
     }
 

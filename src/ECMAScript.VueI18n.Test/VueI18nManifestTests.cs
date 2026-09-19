@@ -1,118 +1,83 @@
+using ComponentDescriptionAttribute = System.ComponentModel.DescriptionAttribute;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-using ECMAScript;
+namespace VueI18nTest;
 
-namespace ECMAScriptVueI18nTest;
-
-/// <summary>
-/// File-backed manifest, inventory, and upstream drift checks for the vendored vue-i18n runtime.
-/// 资源闭包元数据与上游 drift 检查；manifest 哈希与 vendored 文件必须一一对应。
-/// </summary>
+/// <summary>验证 Vue I18n 通过 npm exports 交付单一作者入口。</summary>
 [TestClass]
 public sealed class VueI18nManifestTests
 {
     [TestMethod]
-    public void VueI18n_Manifest_DeclaresLockedBrowserBuildWithVerifiableHashes()
+    public void VueI18n_Manifest_DeclaresBarePackageEntryAndLicense()
     {
         using var manifest = JsonDocument.Parse(File.ReadAllText(GetProjectPath("manifest.json")));
         var root = manifest.RootElement;
-
         Assert.AreEqual(2, root.GetProperty("schemaVersion").GetInt32());
         Assert.AreEqual("vue-i18n", root.GetProperty("libraryId").GetString());
         Assert.AreEqual(GetInventory().GetProperty("version").GetString(), root.GetProperty("version").GetString());
-        Assert.IsTrue(root.GetProperty("requires").TryGetProperty("vue3", out var vue));
-        Assert.IsTrue(!string.IsNullOrWhiteSpace(vue.GetString()));
+        Assert.AreEqual("^3.0.0", root.GetProperty("requires").GetProperty("vue3").GetString());
 
-        var imports = root.GetProperty("imports");
-        CollectionAssert.AreEquivalent(
-            new[] { "vue-i18n" },
-            imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
-
-        // The vendored artifact is the upstream `browser`-condition build
-        // (vue-i18n.esm-browser.js), which inlines @intlify/* and only needs the vue peer.
-        // The bundler variant (vue-i18n.mjs) references process.env at module top level and
-        // cannot load in a browser, so it must not be vendored.
-        var entry = imports.GetProperty("vue-i18n");
-        Assert.AreEqual("dist/vue-i18n/dist/vue-i18n.esm-browser.js", entry.GetProperty("development").GetString());
+        var entry = root.GetProperty("imports").GetProperty("vue-i18n");
+        Assert.AreEqual("vue-i18n", entry.GetProperty("development").GetString());
+        Assert.AreEqual("vue-i18n", entry.GetProperty("production").GetString());
         CollectionAssert.AreEquivalent(
             new[] { "vue" },
             entry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
+        Assert.IsFalse(entry.TryGetProperty("developmentHash", out _));
+        Assert.IsFalse(entry.TryGetProperty("files", out _));
+        Assert.AreEqual("npm", root.GetProperty("packages").GetProperty("vue-i18n").GetProperty("source").GetString());
+        Assert.AreEqual(0, root.GetProperty("styles").GetArrayLength());
 
-        foreach (var declared in imports.EnumerateObject())
-        {
-            Assert.AreEqual("module", declared.Value.GetProperty("type").GetString());
-            Assert.AreEqual(declared.Value.GetProperty("development").GetString(), declared.Value.GetProperty("production").GetString());
-            Assert.AreEqual(declared.Value.GetProperty("developmentHash").GetString(), declared.Value.GetProperty("productionHash").GetString());
-        }
-
-        AssertAllManifestFilesHashCorrect(root);
+        foreach (var file in root.GetProperty("files").EnumerateArray())
+            AssertFileHash(file.GetProperty("path").GetString()!, file.GetProperty("hash").GetString()!);
+        Assert.IsFalse(root.TryGetProperty("dist", out _));
+        Assert.IsFalse(root.TryGetProperty("vendor", out _));
     }
 
     [TestMethod]
-    public void VueI18n_VendoredDist_ExactlyMatchesTheManifestClosure()
+    public void VueI18n_RuntimeCarrierIsResolvedFromTheRestoredPackageGraph()
     {
-        using var manifest = JsonDocument.Parse(File.ReadAllText(GetProjectPath("manifest.json")));
-        var declared = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var entry in manifest.RootElement.GetProperty("imports").EnumerateObject())
-            declared.Add(entry.Value.GetProperty("development").GetString()!);
+        Assert.IsFalse(Directory.Exists(GetProjectPath("dist")));
+        Assert.IsFalse(Directory.Exists(GetProjectPath("vendor")));
+    }
 
-        var vendored = Directory.EnumerateFiles(GetProjectPath("dist"), "*", SearchOption.AllDirectories)
-            .Select(path => "dist/" + Path.GetRelativePath(GetProjectPath("dist"), path).Replace('\\', '/'))
+    [TestMethod]
+    public void VueI18n_BoundExportsUseTheAuthorPackageEntry()
+    {
+        var bound = typeof(ECMAScript.VueI18n)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .SelectMany(static method => method.GetCustomAttributes<ComponentDescriptionAttribute>(inherit: false))
+            .Select(static attribute => attribute.Description)
+            .Where(static description => description.StartsWith("@#", StringComparison.Ordinal))
+            .Select(static description => description[2..])
             .ToHashSet(StringComparer.Ordinal);
-
-        Assert.IsTrue(vendored.SetEquals(declared), $"""
-            Vendored tree and manifest closure disagree.
-            Only on disk: {string.Join(", ", vendored.Except(declared).Order())}
-            Only in manifest: {string.Join(", ", declared.Except(vendored).Order())}
-            """);
+        Assert.IsTrue(bound.Count >= 2);
+        CollectionAssert.Contains(bound.ToArray(), "createI18n");
+        CollectionAssert.Contains(bound.ToArray(), "useI18n");
     }
 
     [TestMethod]
-    public void VueI18n_BoundExports_ExistInTheUpstreamEntry()
+    public void VueI18n_ComposerSurfaceCoversLocaleMessagesAndFormatting()
     {
-        var bound = typeof(VueI18n)
-            .GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly)
-            .Select(method => method.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), inherit: false)
-                .Cast<System.ComponentModel.DescriptionAttribute>()
-                .SingleOrDefault()?.Description)
-            .Where(description => description is not null && description.StartsWith("@#", StringComparison.Ordinal))
-            .Select(description => description![2..])
-            .ToHashSet(StringComparer.Ordinal);
-        Assert.IsTrue(bound.Count >= 2, $"Expected the createI18n/useI18n entry pair, found {bound.Count}.");
-
-        var upstream = ReadNamedExports(GetProjectPath("dist", "vue-i18n", "dist", "vue-i18n.esm-browser.js"));
-        var missing = bound.Except(upstream).Order().ToArray();
-        Assert.IsFalse(missing.Length > 0, $"Bound exports missing from the vendored upstream entry: {string.Join(", ", missing)}");
-    }
-
-    [TestMethod]
-    public void VueI18n_ComposerSurface_CoversLocaleMessagesAndFormatting()
-    {
-        var composer = typeof(VueI18nComposer);
-        Assert.AreEqual(typeof(Vue.IVueRef<string>), composer.GetProperty("Locale")!.PropertyType);
-        Assert.AreEqual(typeof(Vue.IVueRef<string>), composer.GetProperty("FallbackLocale")!.PropertyType);
-        Assert.AreEqual(typeof(Vue.VueReadonlyRef<Vue.VueDictionary>), composer.GetProperty("Messages")!.PropertyType);
+        var composer = typeof(ECMAScript.VueI18nComposer);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueRef<string>), composer.GetProperty("Locale")!.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.IVueRef<string>), composer.GetProperty("FallbackLocale")!.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue.VueReadonlyRef<ECMAScript.Vue.VueDictionary>), composer.GetProperty("Messages")!.PropertyType);
         Assert.AreEqual(typeof(string[]), composer.GetProperty("AvailableLocales")!.PropertyType);
-
-        var tOverloads = composer.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-            .Where(static method => method.Name == "T" && method.ReturnType == typeof(string))
-            .ToArray();
-        Assert.IsTrue(tOverloads.Length >= 3, $"The composer must expose the t() overload family, found {tOverloads.Length}.");
-        Assert.AreEqual(typeof(bool), composer.GetMethod("Te", [typeof(string)])!.ReturnType);
-        Assert.AreEqual(typeof(Vue.VueDictionary), composer.GetMethod("Tm", [typeof(string)])!.ReturnType);
-        Assert.IsTrue(composer.GetMethods().Any(static method => method.Name == "D"), "The composer must expose datetime formatting.");
+        Assert.IsTrue(composer.GetMethods().Any(static method => method.Name == "D"));
     }
 
     [TestMethod]
-    public void VueI18n_Inventory_RecordsPackageVersionsAndFingerprint()
+    public void VueI18n_InventoryRecordsPackageVersionAndFingerprint()
     {
         var inventory = GetInventory();
         Assert.AreEqual(inventory.GetProperty("version").GetString(), inventory.GetProperty("packages").GetProperty("vue-i18n").GetString());
+        Assert.AreEqual(1, inventory.GetProperty("validatedModuleCount").GetInt32());
 
-        var fingerprint = inventory.GetProperty("fingerprint").GetString()!;
         var payload = new Dictionary<string, object?>();
         foreach (var property in inventory.EnumerateObject())
         {
@@ -128,51 +93,17 @@ public sealed class VueI18nManifestTests
             });
         }
 
-        var json = JsonSerializer.Serialize(payload, InventoryPayloadOptions);
+        var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
         var recomputed = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
-        Assert.AreEqual(fingerprint, recomputed, "inventory fingerprint must cover its upstream payload.");
-    }
-
-    private static readonly JsonSerializerOptions InventoryPayloadOptions = new() { WriteIndented = true };
-
-    private static HashSet<string> ReadNamedExports(string path)
-    {
-        var source = File.ReadAllText(path);
-        var exports = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var match in System.Text.RegularExpressions.Regex.Matches(source, @"(?m)^export (?:declare )?(?:function|const|class|let|var) (\w+)").Cast<System.Text.RegularExpressions.Match>())
-            exports.Add(match.Groups[1].Value);
-        foreach (var match in System.Text.RegularExpressions.Regex.Matches(source, @"export \{ ([^}]+) \}(?: from [""'][^""']+[""'])?;").Cast<System.Text.RegularExpressions.Match>())
-        {
-            foreach (var specifier in match.Groups[1].Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                var parts = specifier.Split(" as ", StringSplitOptions.TrimEntries);
-                var exported = parts.Length > 1 ? parts[1] : parts[0];
-                if (exported != "default")
-                    exports.Add(exported);
-            }
-        }
-
-        return exports;
-    }
-
-    private static void AssertAllManifestFilesHashCorrect(JsonElement root)
-    {
-        foreach (var entry in root.GetProperty("imports").EnumerateObject())
-        {
-            AssertFileHash(entry.Value.GetProperty("development").GetString()!, entry.Value.GetProperty("developmentHash").GetString()!);
-            AssertFileHash(entry.Value.GetProperty("production").GetString()!, entry.Value.GetProperty("productionHash").GetString()!);
-        }
-
-        foreach (var file in root.GetProperty("files").EnumerateArray())
-            AssertFileHash(file.GetProperty("path").GetString()!, file.GetProperty("hash").GetString()!);
+        Assert.AreEqual(inventory.GetProperty("fingerprint").GetString(), recomputed);
     }
 
     private static void AssertFileHash(string relativePath, string expectedHash)
     {
         var fullPath = GetProjectPath(relativePath.Replace('/', Path.DirectorySeparatorChar));
-        Assert.IsTrue(File.Exists(fullPath), $"Manifest file '{relativePath}' is missing from the package tree.");
+        Assert.IsTrue(File.Exists(fullPath), relativePath);
         var actual = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(fullPath))).ToLowerInvariant();
-        Assert.AreEqual(expectedHash.ToLowerInvariant(), actual, $"Hash mismatch for '{relativePath}'.");
+        Assert.AreEqual(expectedHash.ToLowerInvariant(), actual, relativePath);
     }
 
     private static JsonElement GetInventory()

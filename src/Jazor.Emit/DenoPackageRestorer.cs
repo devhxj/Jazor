@@ -229,19 +229,16 @@ internal static class DenoPackageRestorer
         if (libraries.PackageReferences.TryGetValue(specifier, out var exactReference) &&
             exactReference.Source is "npm" or "jsr")
         {
-            // Preserve an authored upstream package export target. Mapping it to a guessed
-            // node_modules file would bypass wildcard/conditional exports (for example
-            // monaco-editor/editor/editor.api.js -> esm/vs/editor/editor.api.js).
-            if (ECMAScriptModulePath.IsPackageSpecifier(fallbackTarget))
-                return fallbackTarget;
+            // Import-map targets are URLs, never bare package specifiers. The authored logical
+            // name is still used as the map key; point its fallback at the restored package
+            // tree so Deno can validate it offline even when the package exports map is absent.
+            // Conditional exports remain available for ordinary authored package imports.
             return "./node_modules/" + packageName + GetPackageTargetSuffix(packageName, fallbackTarget);
         }
 
         if (libraries.PackageReferences.TryGetValue(packageName, out var packageReference) &&
             packageReference.Source is "npm" or "jsr")
         {
-            if (ECMAScriptModulePath.IsPackageSpecifier(fallbackTarget))
-                return fallbackTarget;
             return "./node_modules/" + packageName + GetPackageTargetSuffix(packageName, fallbackTarget);
         }
 

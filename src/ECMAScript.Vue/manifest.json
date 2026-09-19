@@ -14,7 +14,7 @@
     },
     "@vue/devtools-api": {
       "source": "npm",
-      "version": "6.6.4"
+      "version": "8.1.5"
     },
     "perfect-debounce": {
       "source": "npm",

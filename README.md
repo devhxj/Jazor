@@ -94,7 +94,7 @@ pure Jazor form, not a third carrier.
 
 | Library form | Carrier | Direct reference rule |
 | --- | --- | --- |
-| JS resource library (`ECMAScript`, Vue, Vuetify, Pinia, and other libraries that already own `.mjs`/`.js`) | Package-local `manifest.json + dist/**` | The package declares its resource dependencies. A consumer does not acquire Jazor tooling transitively. |
+| JS resource library (`ECMAScript`, Vue, Vuetify, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `deno.lock`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
 | Pure Jazor library (`ECMAScript.Style`, `Jazor.Admin`, or other developer-authored C# and RazorVue) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | A pure Jazor authoring project directly references `Jazor`; a RazorVue authoring project directly references both `Jazor` and `Jazor.Vue`. |
 
 The final executable or web host directly references `Jazor` when it runs Emit. It collects the

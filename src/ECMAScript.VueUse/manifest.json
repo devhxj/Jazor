@@ -6,11 +6,11 @@
   "packages": {
     "@vueuse/core": {
       "source": "npm",
-      "version": "13.9.0"
+      "version": "15.0.0"
     },
     "@vueuse/shared": {
       "source": "npm",
-      "version": "13.9.0"
+      "version": "15.0.0"
     },
     "vue": {
       "source": "npm",

@@ -16,7 +16,7 @@
 </ItemGroup>
 ```
 
-所有 Jazor、`Jazor.Vue` 和 `ECMAScript.*` 包应使用相同版本。`Jazor.Vue` 提供 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的本地 runtime closure；本包不会重复携带 browser ESM 或 Devtools extension internals。
+所有 Jazor、`Jazor.Vue` 和 `ECMAScript.*` 包应使用相同版本。Emit 根据各 binding manifest 将 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的 npm identity 写入标准 `jazor/package.json`，由 Deno 恢复共享 `node_modules`；本包只提供 authoring contract。
 
 ## 使用
 

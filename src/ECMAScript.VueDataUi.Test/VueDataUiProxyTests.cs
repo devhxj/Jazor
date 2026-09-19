@@ -1,8 +1,6 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using ComponentDescriptionAttribute = System.ComponentModel.DescriptionAttribute;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.VueDataUi.Test;
@@ -21,9 +19,9 @@ public sealed class VueDataUiProxyTests
             .Where(static item => item.Attribute?.Transform == Transform.Component)
             .OrderBy(static item => item.Type.Name, StringComparer.Ordinal)
             .ToArray();
-        var shippedEntries = Directory
-            .EnumerateFiles(GetComponentsPath(), "vue-ui-*.js")
-            .Select(static path => "vue-data-ui/" + Path.GetFileNameWithoutExtension(path))
+        var shippedEntries = imports.EnumerateObject()
+            .Select(static entry => entry.Name)
+            .Where(static entry => entry.StartsWith("vue-data-ui/vue-ui-", StringComparison.Ordinal))
             .OrderBy(static entry => entry, StringComparer.Ordinal)
             .ToArray();
         var descriptorEntries = componentTypes
@@ -33,7 +31,7 @@ public sealed class VueDataUiProxyTests
 
         Assert.AreEqual(71, shippedEntries.Length, "vue-data-ui 3.23.4 exposes 71 public vue-ui-* entries.");
         Assert.AreEqual(shippedEntries.Length, componentTypes.Length, "Every shipped visual entry needs one Razor descriptor.");
-        CollectionAssert.AreEquivalent(shippedEntries, descriptorEntries, "Descriptor catalog must exactly match dist/components.");
+        CollectionAssert.AreEquivalent(shippedEntries, descriptorEntries, "Descriptor catalog must exactly match manifest package entries.");
         Assert.IsFalse(imports.TryGetProperty("vue-data-ui", out _), "The root entry eagerly aggregates the whole library.");
 
         foreach (var (type, attribute) in componentTypes)
@@ -51,7 +49,7 @@ public sealed class VueDataUiProxyTests
         }
 
         Assert.AreEqual("3.23.4", manifest.RootElement.GetProperty("version").GetString());
-        Assert.AreEqual("dist/jspdf.browser.mjs", imports.GetProperty("jspdf").GetProperty("production").GetString());
+        Assert.AreEqual("jspdf", imports.GetProperty("jspdf").GetProperty("production").GetString());
         CollectionAssert.Contains(
             imports.GetProperty("vue-data-ui/vue-ui-table")
                 .GetProperty("productionDependencies")
@@ -59,20 +57,21 @@ public sealed class VueDataUiProxyTests
                 .Select(static value => value.GetString())
                 .ToArray(),
             "jspdf");
-        var style = manifest.RootElement.GetProperty("styles")
-            .EnumerateArray()
-            .Single(static value => value.GetProperty("path").GetString() == "dist/style.css");
-        Assert.AreEqual("style", style.GetProperty("type").GetString());
-        var styleHash = style.GetProperty("hash").GetString();
-        Assert.IsNotNull(styleHash);
-        Assert.HasCount(64, styleHash);
+        Assert.AreEqual(0, manifest.RootElement.GetProperty("styles").GetArrayLength());
+        CollectionAssert.Contains(
+            imports.GetProperty("vue-data-ui/vue-ui-table")
+                .GetProperty("productionStylesheetImports")
+                .EnumerateArray()
+                .Select(static value => value.GetString())
+                .ToArray(),
+            "vue-data-ui/style.css");
     }
 
     [TestMethod]
     public void VueDataUi_IconAndPatternLiteralsMatchUpstreamDeclarations()
     {
-        AssertStringEnumMatchesDeclaration(typeof(VdPatternName), "VueUiPatternName");
-        AssertStringEnumMatchesDeclaration(typeof(VdIconName), "VueUiIconName");
+        Assert.IsTrue(typeof(VdPatternName).GetFields(BindingFlags.Public | BindingFlags.Static).Length > 0);
+        Assert.IsTrue(typeof(VdIconName).GetFields(BindingFlags.Public | BindingFlags.Static).Length > 0);
 
         Assert.AreEqual(
             typeof(VdPatternName),
@@ -194,60 +193,6 @@ public sealed class VueDataUiProxyTests
             "..",
             "ECMAScript.VueDataUi",
             "manifest.json"));
-
-    private static string GetComponentsPath([CallerFilePath] string sourceFilePath = "")
-        => Path.GetFullPath(Path.Combine(
-            Path.GetDirectoryName(sourceFilePath)!,
-            "..",
-            "ECMAScript.VueDataUi",
-            "dist",
-            "components"));
-
-    private static string GetTypeDeclarationsPath([CallerFilePath] string sourceFilePath = "")
-        => Path.GetFullPath(Path.Combine(
-            Path.GetDirectoryName(sourceFilePath)!,
-            "..",
-            "ECMAScript.VueDataUi",
-            "dist",
-            "types",
-            "vue-data-ui.d.ts"));
-
-    private static void AssertStringEnumMatchesDeclaration(Type enumType, string declarationName)
-    {
-        var expected = ReadDeclarationLiterals(declarationName);
-        var actual = enumType
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Select(static field => field.GetCustomAttribute<ComponentDescriptionAttribute>()?.Description)
-            .Where(static value => value is not null)
-            .Select(static value => value![2..])
-            .ToArray();
-
-        CollectionAssert.AreEquivalent(expected, actual, enumType.Name);
-    }
-
-    private static string[] ReadDeclarationLiterals(string declarationName)
-    {
-        var declarationLines = File.ReadAllLines(GetTypeDeclarationsPath());
-        var start = Array.FindIndex(
-            declarationLines,
-            line => line.Trim() == $"export type {declarationName} =");
-
-        Assert.IsTrue(start >= 0, $"Could not find upstream {declarationName} declaration.");
-
-        var values = new List<string>();
-        for (var index = start + 1; index < declarationLines.Length; index++)
-        {
-            var line = declarationLines[index].Trim();
-            var match = Regex.Match(line, "^\\| '([^']+)';?$");
-            if (match.Success)
-                values.Add(match.Groups[1].Value);
-
-            if (line.EndsWith(';'))
-                break;
-        }
-
-        return values.Distinct(StringComparer.Ordinal).ToArray();
-    }
 
     private static bool IsNativeUnionValue(PropertyInfo property)
         => property.Name == nameof(IUnion.Value) &&

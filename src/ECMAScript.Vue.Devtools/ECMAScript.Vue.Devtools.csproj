@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Strongly typed C# bindings for the Vue Devtools Plugin API with runtime resources owned by Jazor.Vue manifest.json and dist assets.</Description>
+    <Description>Strongly typed C# bindings for the Vue Devtools Plugin API with runtime resources described by Jazor.Vue package metadata and restored npm/JSR packages.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

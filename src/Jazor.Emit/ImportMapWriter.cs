@@ -50,6 +50,7 @@ internal static class ImportMapWriter
                     ? explicitTarget
                     : pair.Value;
                 AddImport(browserImports, pair.Key, ResolveNodeModulesTarget(outputRoot, materialization, pair.Key, browserTarget, browser: true));
+                AddImport(ssrImports, pair.Key, ResolveNodeModulesTarget(outputRoot, materialization, pair.Key, pair.Value, browser: false));
                 continue;
             }
 
@@ -61,6 +62,7 @@ internal static class ImportMapWriter
         }
 
         AddRestoredBrowserPackageImports(outputRoot, browserImports);
+        AddRestoredPackageImports(outputRoot, ssrImports, browser: false);
 
         // Generated modules are the pure-Jazor carrier's logical imports. They are not package
         // manifest entries, but resource-library modules may legitimately import them (for
@@ -135,6 +137,7 @@ internal static class ImportMapWriter
                     ? explicitTarget
                     : pair.Value;
                 AddImport(browserImports, pair.Key, ResolveNodeModulesTarget(outputRoot, materialization, pair.Key, browserTarget, browser: true));
+                AddImport(ssrImports, pair.Key, ResolveNodeModulesTarget(outputRoot, materialization, pair.Key, pair.Value, browser: false));
                 continue;
             }
 
@@ -142,13 +145,14 @@ internal static class ImportMapWriter
             if (string.IsNullOrWhiteSpace(path))
                 throw new InvalidOperationException($"Import map target for '{pair.Key}' is empty.");
 
-            // The copied vendor view keeps the existing browser/debug URL contract. SSR itself
-            // resolves the same logical entry through the restored parent node_modules tree.
+            // Generated embedded modules keep the browser/debug URL contract. SSR resolves the
+            // same logical entry through the restored package workspace.
             AddImport(browserImports, pair.Key, "/jazor/" + path);
             AddImport(ssrImports, pair.Key, "./" + path);
         }
 
         AddRestoredBrowserPackageImports(outputRoot, browserImports);
+        AddRestoredPackageImports(outputRoot, ssrImports, browser: false);
 
         foreach (var module in (generatedModules ?? [])
                      .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
@@ -187,6 +191,12 @@ internal static class ImportMapWriter
     private static void AddRestoredBrowserPackageImports(
         string outputRoot,
         IDictionary<string, string> browserImports)
+        => AddRestoredPackageImports(outputRoot, browserImports, browser: true);
+
+    private static void AddRestoredPackageImports(
+        string outputRoot,
+        IDictionary<string, string> imports,
+        bool browser)
     {
         var packageWorkspace = GetPackageWorkspace(outputRoot);
         var nodeModulesRoot = Path.Combine(packageWorkspace, "node_modules");
@@ -210,17 +220,17 @@ internal static class ImportMapWriter
                 }
 
                 var packageName = nameElement.GetString()!;
-                var entry = ResolveRestoredPackageTarget(packageRoot, ".", browser: true);
-                if (entry is not null && !browserImports.ContainsKey(packageName))
+                var entry = ResolveRestoredPackageTarget(packageRoot, ".", browser);
+                if (entry is not null && !imports.ContainsKey(packageName))
                 {
                     var entryPath = Path.Combine(packageRoot, entry.Replace('/', Path.DirectorySeparatorChar));
-                    AddImport(browserImports, packageName, ToBrowserPackageUrl(packageWorkspace, entryPath));
+                    AddImport(imports, packageName, ToPackageUrl(outputRoot, packageWorkspace, entryPath, browser));
                 }
 
                 // Exact manifest entries still follow exports. The prefix lets browser-loaded
                 // ESM resolve ordinary package file subpaths used by transitive dependencies.
-                if (!browserImports.ContainsKey(packageName + "/"))
-                    AddImport(browserImports, packageName + "/", ToBrowserPackageUrl(packageWorkspace, packageRoot) + "/");
+                if (!imports.ContainsKey(packageName + "/"))
+                    AddImport(imports, packageName + "/", ToPackageUrl(outputRoot, packageWorkspace, packageRoot, browser) + "/");
             }
             catch (JsonException)
             {
@@ -265,6 +275,16 @@ internal static class ImportMapWriter
         if (relative.StartsWith("../", StringComparison.Ordinal) || string.Equals(relative, "..", StringComparison.Ordinal))
             throw new InvalidOperationException($"Restored browser package path escaped the package workspace: '{path}'.");
         return "/jazor/" + relative.TrimStart('/');
+    }
+
+    private static string ToPackageUrl(string outputRoot, string packageWorkspace, string path, bool browser)
+    {
+        var relative = Path.GetRelativePath(
+            browser ? packageWorkspace : Path.GetFullPath(outputRoot),
+            path).Replace('\\', '/');
+        if (browser && (relative.StartsWith("../", StringComparison.Ordinal) || string.Equals(relative, "..", StringComparison.Ordinal)))
+            throw new InvalidOperationException($"Restored package path escaped the package workspace: '{path}'.");
+        return browser ? "/jazor/" + relative.TrimStart('/') : (relative.StartsWith(".", StringComparison.Ordinal) ? relative : "./" + relative);
     }
 
     private static string ResolveNodeModulesTarget(
@@ -322,11 +342,21 @@ internal static class ImportMapWriter
             // useful for packages whose export target is generated at install time; the package
             // graph still remains visible to the browser under the restored node_modules tree.
             var unresolved = "node_modules/" + mappedSpecifier.TrimStart('.', '/');
-            return browser ? "/jazor/" + unresolved : "../" + unresolved;
+            if (browser)
+                return "/jazor/" + unresolved;
+
+            var unresolvedWorkspace = GetPackageWorkspace(outputRoot);
+            var unresolvedPath = Path.Combine(unresolvedWorkspace, unresolved.Replace('/', Path.DirectorySeparatorChar));
+            return ToPackageUrl(outputRoot, unresolvedWorkspace, unresolvedPath, browser: false);
         }
 
         var relative = "node_modules/" + packageName + "/" + target.TrimStart('.', '/');
-        return browser ? "/jazor/" + relative : "../" + relative;
+        if (browser)
+            return "/jazor/" + relative;
+
+        var resolvedWorkspace = GetPackageWorkspace(outputRoot);
+        var resolvedPath = Path.Combine(resolvedWorkspace, relative.Replace('/', Path.DirectorySeparatorChar));
+        return ToPackageUrl(outputRoot, resolvedWorkspace, resolvedPath, browser: false);
     }
 
     private static string? ResolveRestoredPackageTarget(string packageRoot, string subpath, bool browser)

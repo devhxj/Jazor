@@ -124,6 +124,54 @@ public sealed class LibraryMaterializerTests
         Assert.AreEqual("./dist/index.mjs", exports.GetProperty(".").GetString());
         Assert.AreEqual("./dist/feature.mjs", exports.GetProperty("./feature").GetString());
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "widget", "dist", "feature.mjs")));
+
+        using var packageLock = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package-lock.json")));
+        Assert.AreEqual(3, packageLock.RootElement.GetProperty("lockfileVersion").GetInt32());
+        Assert.AreEqual(
+            "file:./packages/widget",
+            packageLock.RootElement.GetProperty("packages")
+                .GetProperty("")
+                .GetProperty("dependencies")
+                .GetProperty("widget")
+                .GetString());
+        Assert.AreEqual(
+            "file:./packages/widget",
+            packageLock.RootElement.GetProperty("packages")
+                .GetProperty("node_modules/widget")
+                .GetProperty("resolved")
+                .GetString());
+    }
+
+    [TestMethod]
+    public void Materialize_ExternalPackageProjectLeavesPackageLockToDeno()
+    {
+        var tdesignManifest = FindLibraryManifest("ECMAScript.TDesign");
+        var vueManifest = FindLibraryManifest("ECMAScript.Vue");
+        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "external-package-lock", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(outputRoot);
+        try
+        {
+            var libraries = new LibraryMaterializer().Materialize(
+                [tdesignManifest, vueManifest],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: ["tdesign-vue-next/button/Button"]);
+
+            // A stale lock must not survive when the root contains external identities. Deno's
+            // resolved graph is the complete lock source for npm/JSR packages.
+            File.WriteAllText(Path.Combine(outputRoot, "package-lock.json"), "{\"stale\":true}\n");
+            LibraryPackageWriter.WritePackageProject(outputRoot, libraries);
+
+            using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package.json")));
+            Assert.AreEqual("1.20.7", package.RootElement.GetProperty("dependencies").GetProperty("tdesign-vue-next").GetString());
+            Assert.AreEqual("npm", package.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("tdesign-vue-next").GetProperty("source").GetString());
+            Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "package-lock.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(outputRoot))
+                Directory.Delete(outputRoot, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -813,6 +861,54 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public async Task ImportMapWriter_ResolvesExternalExportsFromSharedNodeModulesAtRootAndSsr()
+    {
+        var tdesignManifest = FindLibraryManifest("ECMAScript.TDesign");
+        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "external-import-map", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(outputRoot);
+        try
+        {
+            var materialization = new LibraryMaterializer().Materialize(
+                [tdesignManifest],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: ["tdesign-vue-next/button/Button"]);
+
+            WriteRestoredPackage(
+                outputRoot,
+                "tdesign-vue-next",
+                "1.20.7",
+                "./es/button/index.mjs",
+                "./es/button/index.mjs");
+
+            await ImportMapWriter.WriteAsync(outputRoot, materialization);
+            using var browserMap = JsonDocument.Parse(
+                await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
+            using var rootSsrMap = JsonDocument.Parse(
+                await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
+            Assert.AreEqual(
+                "/jazor/node_modules/tdesign-vue-next/es/button/index.mjs",
+                browserMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/button/Button").GetString());
+            Assert.AreEqual(
+                "./node_modules/tdesign-vue-next/es/button/index.mjs",
+                rootSsrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/button/Button").GetString());
+
+            var ssrRoot = Path.Combine(outputRoot, "ssr");
+            await ImportMapWriter.WriteSsrAsync(ssrRoot, materialization);
+            using var ssrMap = JsonDocument.Parse(
+                await File.ReadAllTextAsync(Path.Combine(ssrRoot, ImportMapWriter.SsrImportMapFileName)));
+            Assert.AreEqual(
+                "../node_modules/tdesign-vue-next/es/button/index.mjs",
+                ssrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/button/Button").GetString());
+        }
+        finally
+        {
+            if (Directory.Exists(outputRoot))
+                Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Materialize_RejectsDifferentProvidersForSameLogicalImport()
     {
         using var workspace = new LibraryWorkspace();
@@ -1366,6 +1462,39 @@ public sealed class LibraryMaterializerTests
         }
 
         throw new FileNotFoundException("Could not locate the Jazor repository root.");
+    }
+
+    private static void WriteRestoredPackage(
+        string outputRoot,
+        string packageName,
+        string version,
+        string importTarget,
+        string defaultTarget)
+    {
+        var packageRoot = Path.Combine(
+            outputRoot,
+            "node_modules",
+            packageName.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.Combine(packageRoot, "es", "button"));
+        File.WriteAllText(
+            Path.Combine(packageRoot, "package.json"),
+            $$"""
+            {
+              "name": "{{packageName}}",
+              "version": "{{version}}",
+              "type": "module",
+              "exports": {
+                ".": "{{defaultTarget}}",
+                "./button/Button": "{{importTarget}}"
+              }
+            }
+            """.Replace("\r\n", "\n", StringComparison.Ordinal));
+        File.WriteAllText(
+            Path.Combine(packageRoot, importTarget.TrimStart('.', '/').Replace('/', Path.DirectorySeparatorChar)),
+            "export const Button = true;\n");
+        File.WriteAllText(
+            Path.Combine(packageRoot, defaultTarget.TrimStart('.', '/').Replace('/', Path.DirectorySeparatorChar)),
+            "export const root = true;\n");
     }
 
     private static string FindLibraryManifest(string projectName)

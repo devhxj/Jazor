@@ -12,8 +12,8 @@
 
 - 从 `https://registry.npmjs.org/<package>/<version>` 读取 `dist.integrity`（SHA-512）与 `dist.tarball`；下载后先校验 integrity 再解包。tarball 缓存于 `.tmp/packages/<package>-<version>.tgz`，`.tmp/` 不进版本库。
 - 判定上游分发形态并记录可 tree shake 的边界：
-  - 扁平 ESM（每函数一个文件，`index.js` barrel，如 date-fns）——原样 vendor，闭包即依赖图。
-  - 预打包浏览器构建（`*.esm-browser.js` 与 `*.prod.js`，如 vue-router）——vendor 构建产物，dev/prod 双 profile。
+  - 扁平 ESM（每函数一个文件，`index.js` barrel，如 date-fns）——保留上游 package exports，入口闭包即依赖图。
+  - 预打包浏览器构建（`*.esm-browser.js` 与 `*.prod.js`，如 vue-router）——使用上游条件导出选择 dev/prod profile。
   - UMD-only（如 TDesign）——绑定生成经过验证的 ESM adapter，并把 Vue 等共享运行时标为 peer dependency；当上游提供细粒度 ESM 入口后，按入口迁移，先例见 `update-vue-binding-inputs.cs`。
 - 上游运行时依赖进入 package metadata。date-fns 类零依赖库的闭包只含相对路径；存在包依赖时分别记录 package dependency、peer dependency 和 profile 条件，由 Emit 统一解析。
 - 闭包计算保留真实模块边：先剥离块注释与行注释（JSDoc 示例中的裸 specifier不参与依赖图）；相对路径按词法解析 `.`/`..` 段，使同一模块保持稳定 identity。
@@ -31,7 +31,7 @@
 | `jsr` | `jsr:` identity、精确版本或 integrity、入口和导出；需要时附本地 adapter fingerprint | JSR npm 兼容 package 或校验后的本地 package，供 Deno 与 NetPack 使用同一入口和字节 |
 | `embedded-mjs` | 明确声明的本地 MJS carrier、版本、入口、导出、相对依赖、`sideEffects`、CSS/worker/static 资源 | `packages/<name>` 与 `node_modules/<name>` 下的标准本地 package，按 roots 物化资源闭包 |
 
-`embedded-mjs` 是标准 package graph 支持的受控来源。当前仓库自有 ECMAScript 源码位于 `src/ECMAScript/clr/**`；映射库历史 `dist/**` 不属于当前交付。需要随包交付的独立运行时桥接可以显式声明 `embedded-mjs` carrier。metadata 记录逻辑 specifier 到文件的映射、哈希与资源边；Emit 生成该 package 的 `package.json`/`exports`，再把它和同一绑定声明的 npm/JSR 依赖连接起来。作者代码始终引用逻辑 package specifier，carrier 路径只由 metadata 和 materializer 管理。
+`embedded-mjs` 是标准 package graph 支持的本地来源。当前仓库自有 ECMAScript 源码位于 `src/ECMAScript/clr/**`；映射库运行时入口使用上游 npm/JSR package，独立运行时桥接按需声明为 `embedded-mjs` carrier。metadata 记录逻辑 specifier 到文件的映射、哈希与资源边；Emit 生成该 package 的 `package.json`/`exports`，再把它和同一绑定声明的 npm/JSR 依赖连接起来。作者代码始终引用逻辑 package specifier，carrier 路径只由 metadata 和 materializer 管理。
 
 ## 入口设计
 
@@ -47,7 +47,7 @@ C# 代码使用的 import specifier 就是 package metadata 的入口 key，也�
 
 | 上游形态 | 入口策略 | 先例 |
 | --- | --- | --- |
-| 干净 barrel 且全量可接受 | specifier 直接指向上游 barrel，全闭包 vendor | `date-fns` → `dist/index.js` |
+| 干净 barrel 且全量可接受 | specifier 直接指向上游 barrel，由 package graph 保留完整闭包 | `date-fns` → 上游 `dist/index.js` |
 | barrel 过大或需策展子集 | 生成 re-export 桥模块，只导出策展清单 | 使用 package 的 `exports` 子路径（例如 `date-fns/locale`），或在 metadata 中声明明确的 embedded carrier |
 | 子树天然独立 | 拆为多个 specifier，各自闭包 | `date-fns` 与 `date-fns/locale` |
 | dev/prod 分离构建 | 同一 specifier 的 development/production 指向不同文件与哈希 | `vue-router` |
@@ -63,7 +63,7 @@ package metadata 的模块依赖规则：entry 的 `developmentModuleDependencie
 
 - 命名 `generate-<library>.cs` 或 `update-<library>-inputs.cs`；参数 `--version <v>`（首次必填，之后复用 manifest 版本）与 `--source <dir>`（本地解包目录，用于离线复跑）。
 - 生成器读取并校验上游包，生成 package metadata（`manifest.json`/`inventory.json`）、许可证副本，以及需要生成式维护的 C# 契约（如 locale 属性表）。确实需要自有 MJS 时，将其写入 manifest 声明的 embedded carrier，并为每个入口记录哈希和资源边。
-- 入口文件的哈希取自项目树中刚写入的文件——vendor 入口来自上游复制，桥入口是生成内容，两者都不应回上游目录取哈希。
+- npm/JSR 入口记录上游 package identity、exports、sideEffects 和版本完整性；embedded carrier 的哈希取自项目树中刚写入的文件，确保本地 package projection 可复现。
 - 输出统计与“复核 contract drift”提示；生成器不猜 C# 表面，人工编写的 API 契约永远手写并评审。
 
 ## C# 契约
@@ -187,12 +187,12 @@ package metadata 的模块依赖规则：entry 的 `developmentModuleDependencie
 
 - 测试项目命名空间不能是 `ECMAScript.<Name>.Test`——外层命名空间会让 `DateFns` 解析到命名空间而非类型；用无点形式 `ECMAScript<Name>Test`。
 - `typeof(NullableType)` 非法；反射中 `T?` 就是 `typeof(T)`，直接比较即可。
-- 闭包扫描不剥注释会把 JSDoc 示例当依赖；不词法解析 `..` 会重复 vendor 同一文件。
+- 闭包扫描不剥注释会把 JSDoc 示例当依赖；不词法解析 `..` 会重复解析同一 package 文件。
 - package metadata 中 `moduleDependencies` 的每个值必须能通过 `files` 的 `moduleId` 或入口 key 解析，否则 materialization 报 `JAZOR_LIBRARY_MODULE_DEPENDENCY_MISSING`；embedded carrier 与外部 package dependency 都要沿同一资源图验证。
 - `slnx` 顶层项目与 folder 内项目缩进不同，字符串替换会静默失败；改完必须 `grep` 验证条目存在。
 - `String` 枚举成员必须逐个给 `[Description("@#...")]`，不要依赖成员名的大小写推断。
 - 新增包进 `publish-nuget.cs` 默认集合时，Pinia 布局守卫的断言字符串要同步更新，否则主线门禁在 Pinia lane 失败。
-- 上游有额外构建产物（`.cjs`、`.d.ts`、`fp/` 等）时只 vendor 闭包需要的 ESM 文件，其余留在 tarball 缓存里。
+- 上游有额外构建产物（`.cjs`、`.d.ts`、`fp/` 等）时由 package exports/条件选择实际入口；只有明确声明的 embedded carrier 文件进入本地 package projection。
 
 ## 相关入口
 

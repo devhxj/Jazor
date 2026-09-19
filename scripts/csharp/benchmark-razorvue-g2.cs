@@ -87,7 +87,7 @@ static async Task<DirectRuntimeReport> RunNodeBenchmarkAsync(string repoRoot, Be
     var scriptPath = Path.Combine(directory, "direct-benchmark.mjs");
     WriteText(scriptPath, CreateNodeBenchmark(options));
 
-    var result = await RunProcessAsync("node", "--expose-gc \"" + scriptPath + "\"");
+    var result = await RunProcessAsync("node", ["--expose-gc", scriptPath], directory);
     if (result.ExitCode != 0)
         throw new InvalidOperationException("Direct render Node benchmark failed." + Environment.NewLine + result.StandardError);
 
@@ -287,7 +287,10 @@ static async Task<BrowserProbeReport> RunBrowserProbeAsync(string repoRoot, Benc
     Directory.CreateDirectory(directory);
     var htmlPath = Path.Combine(directory, "direct-benchmark.html");
     WriteText(htmlPath, CreateBrowserBenchmark(options));
-    var result = await RunProcessAsync(browser, "--headless --disable-gpu --no-sandbox --allow-file-access-from-files --dump-dom \"" + htmlPath + "\"");
+    var result = await RunProcessAsync(
+        browser,
+        ["--headless", "--disable-gpu", "--no-sandbox", "--allow-file-access-from-files", "--dump-dom", htmlPath],
+        directory);
     if (result.ExitCode != 0)
         return new BrowserProbeReport("razorvue-g2-direct-browser-v1", "failed", browser, result.StandardError, "direct render-function calls only; no DOM patch or hydration");
 
@@ -331,26 +334,7 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
 
     var directory = Path.Combine(repoRoot, ".tmp", "razorvue-production-vue", Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(directory);
-    var vueRuntimePath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "vue.runtime.esm-browser.prod.js");
-    var serverRendererPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "server-renderer.esm-browser.prod.js");
-    if (!File.Exists(vueRuntimePath) || !File.Exists(serverRendererPath))
-    {
-        return new ProductionVueRuntimeVerification(
-            "razorvue-production-vue-runtime-v1",
-            false,
-            "unavailable",
-            browser,
-            "Production Vue runtime assets were not found under src/ECMAScript.Vue/dist.");
-    }
-
-    File.Copy(vueRuntimePath, Path.Combine(directory, "vue.mjs"), overwrite: true);
-    File.Copy(serverRendererPath, Path.Combine(directory, "server-renderer.mjs"), overwrite: true);
-    WriteText(Path.Combine(directory, "package.json"), "{\"type\":\"module\"}");
-    // Exercise the exact embedded runtime resource that Emit materializes. The probe only
-    // rewrites Vue's package import to its colocated production asset; maintaining a copied
-    // helper here previously let the benchmark validate a different implementation.
-    // 基准必须验证 production runtime 原文件，不能再维护一份容易漂移的简化版 helper。
-    var rawMarkupRuntimePath = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Runtime", "raw-markup.mjs");
+    var rawMarkupRuntimePath = Path.Combine(repoRoot, "src", "Jazor.Vue", "dist", "raw-markup.mjs");
     if (!File.Exists(rawMarkupRuntimePath))
     {
         return new ProductionVueRuntimeVerification(
@@ -358,16 +342,44 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
             false,
             "unavailable",
             browser,
-            "RazorVue raw-markup runtime resource was not found under src/Jazor.RazorVue/Runtime.");
+            "Jazor.Vue raw-markup embedded carrier was not found under src/Jazor.Vue/dist.");
     }
 
     WriteText(
-        Path.Combine(directory, "raw-markup.mjs"),
-        File.ReadAllText(rawMarkupRuntimePath)
-            .Replace("from \"vue\"", "from \"./vue.mjs\"", StringComparison.Ordinal));
+        Path.Combine(directory, "package.json"),
+        "{\"name\":\"@jazor/production-vue-verification\",\"private\":true,\"type\":\"module\",\"dependencies\":{\"vue\":\"3.5.42\",\"@vue/server-renderer\":\"3.5.42\",\"@jazor/vue-runtime\":\"file:./packages/@jazor/vue-runtime\"}}\n");
+    var embeddedPackageRoot = Path.Combine(directory, "packages", "@jazor", "vue-runtime");
+    Directory.CreateDirectory(embeddedPackageRoot);
+    File.Copy(rawMarkupRuntimePath, Path.Combine(embeddedPackageRoot, "raw-markup.mjs"), overwrite: true);
+    WriteText(
+        Path.Combine(embeddedPackageRoot, "package.json"),
+        "{\"name\":\"@jazor/vue-runtime\",\"version\":\"1.0.0-preview.1\",\"type\":\"module\",\"exports\":{\"./raw-markup.mjs\":\"./raw-markup.mjs\"}}\n");
+    var deno = ResolveDenoExecutable(repoRoot);
+    var install = await RunProcessAsync(
+        deno,
+        ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
+        directory);
+    if (install.ExitCode != 0)
+        return new ProductionVueRuntimeVerification(
+            "razorvue-production-vue-runtime-v1",
+            false,
+            "failed",
+            deno,
+            "Deno package restore failed.\n" + install.StandardError);
     var ssrScript = Path.Combine(directory, "verify-ssr.mjs");
     WriteText(ssrScript, CreateProductionVueSsrScript());
-    var ssrResult = await RunProcessAsync("node", "\"" + ssrScript + "\"");
+    var check = await RunProcessAsync(
+        deno,
+        ["check", "--node-modules-dir=manual", "--no-config", "--no-remote", "--frozen-lockfile", "verify-ssr.mjs"],
+        directory);
+    if (check.ExitCode != 0)
+        return new ProductionVueRuntimeVerification(
+            "razorvue-production-vue-runtime-v1",
+            false,
+            "failed",
+            deno,
+            "Deno package check failed.\n" + check.StandardError);
+    var ssrResult = await RunProcessAsync("node", [ssrScript], directory);
     if (ssrResult.ExitCode != 0)
     {
         return new ProductionVueRuntimeVerification(
@@ -382,7 +394,8 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
     WriteText(htmlPath, CreateProductionVueBrowserHtml());
     var browserResult = await RunProcessAsync(
         browser,
-        "--headless --disable-gpu --no-sandbox --allow-file-access-from-files --dump-dom \"" + htmlPath + "\"");
+        ["--headless", "--disable-gpu", "--no-sandbox", "--allow-file-access-from-files", "--dump-dom", htmlPath],
+        directory);
     var passed = browserResult.ExitCode == 0 &&
                  browserResult.StandardOutput.Contains("data-jazor-production-vue=\"passed\"", StringComparison.Ordinal);
     return new ProductionVueRuntimeVerification(
@@ -395,9 +408,9 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
 
 static string CreateProductionVueSsrScript()
     => """
-        import { createSSRApp, createStaticVNode, h } from "./vue.mjs";
-        import { renderToString } from "./server-renderer.mjs";
-        import { createRawMarkup } from "./raw-markup.mjs";
+        import { createSSRApp, createStaticVNode, h } from "vue";
+        import { renderToString } from "@vue/server-renderer";
+        import { createRawMarkup } from "@jazor/vue-runtime/raw-markup.mjs";
 
         const cases = [
           ["single", "<strong>one</strong>", 1],
@@ -422,9 +435,17 @@ static string CreateProductionVueBrowserHtml()
         <!doctype html>
         <meta charset="utf-8">
         <div id="app"></div>
+        <script type="importmap">
+        {
+          "imports": {
+            "vue": "./node_modules/vue/dist/vue.runtime.esm-browser.prod.js",
+            "@jazor/vue-runtime/raw-markup.mjs": "./node_modules/@jazor/vue-runtime/raw-markup.mjs"
+          }
+        }
+        </script>
         <script type="module">
-        import { Fragment, createApp, createBlock, createElementBlock, createSlots, createSSRApp, createStaticVNode, createTextVNode, h, nextTick, openBlock, reactive, ref, render, renderList, watch, withCtx } from "./vue.mjs";
-        import { createRawMarkup } from "./raw-markup.mjs";
+        import { Fragment, createApp, createBlock, createElementBlock, createSlots, createSSRApp, createStaticVNode, createTextVNode, h, nextTick, openBlock, reactive, ref, render, renderList, watch, withCtx } from "vue";
+        import { createRawMarkup } from "@jazor/vue-runtime/raw-markup.mjs";
 
         const cases = [
           ["single", "<strong>one</strong>", 1],
@@ -637,20 +658,57 @@ static string? ResolveBrowserExecutable()
     return candidates.FirstOrDefault(File.Exists);
 }
 
-static async Task<ProcessResult> RunProcessAsync(string fileName, string arguments)
+static string ResolveDenoExecutable(string repoRoot)
+{
+    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_PATH");
+    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
+        return Path.GetFullPath(explicitPath);
+
+    var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+    var rid = OperatingSystem.IsWindows()
+        ? "win-x64"
+        : OperatingSystem.IsMacOS()
+            ? "osx-x64"
+            : "linux-x64";
+    foreach (var project in new[] { "Jazor.EmitTest", "Jazor.AspNetCore" })
+    {
+        var candidate = Path.Combine(
+            repoRoot,
+            "src",
+            project,
+            "bin",
+            "Debug",
+            "net11.0",
+            "runtimes",
+            rid,
+            "native",
+            runtimeName);
+        if (File.Exists(candidate))
+            return candidate;
+    }
+
+    return runtimeName;
+}
+
+static async Task<ProcessResult> RunProcessAsync(
+    string fileName,
+    IReadOnlyList<string> arguments,
+    string workingDirectory)
 {
     using var process = new Process
     {
         StartInfo = new ProcessStartInfo
         {
             FileName = fileName,
-            Arguments = arguments,
+            WorkingDirectory = workingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true
         }
     };
+    foreach (var argument in arguments)
+        process.StartInfo.ArgumentList.Add(argument);
     process.Start();
     var stdout = process.StandardOutput.ReadToEndAsync();
     var stderr = process.StandardError.ReadToEndAsync();

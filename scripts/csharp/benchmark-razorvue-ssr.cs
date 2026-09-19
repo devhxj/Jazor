@@ -25,7 +25,7 @@ Directory.CreateDirectory(outputRoot);
 
 try
 {
-    var artifactRoot = MaterializeArtifactGraph(repoRoot, workspace);
+    var artifactRoot = await MaterializeArtifactGraphAsync(repoRoot, workspace);
     var coldSamples = new List<double>(options.Samples);
     var coldProcessIds = new List<int>(options.Samples);
     for (var index = 0; index < options.Samples; index++)
@@ -119,37 +119,25 @@ static WebApplication CreateApplication(string contentRoot, string artifactRoot,
     return builder.Build();
 }
 
-static string MaterializeArtifactGraph(string repoRoot, string workspace)
+static async Task<string> MaterializeArtifactGraphAsync(string repoRoot, string workspace)
 {
-    var manifestPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "manifest.json");
-    using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
-    var root = manifest.RootElement;
-    var libraryId = root.GetProperty("libraryId").GetString()
-        ?? throw new InvalidOperationException("Vue manifest has no libraryId.");
-    var version = root.GetProperty("version").GetString()
-        ?? throw new InvalidOperationException("Vue manifest has no version.");
-    var imports = root.GetProperty("imports");
-    var vueSource = imports.GetProperty("vue").GetProperty("production").GetString()
-        ?? throw new InvalidOperationException("Vue manifest has no production Vue entry.");
-    var rendererSource = imports.GetProperty("@vue/server-renderer").GetProperty("production").GetString()
-        ?? throw new InvalidOperationException("Vue manifest has no production server-renderer entry.");
-
     var artifactRoot = Path.Combine(workspace, "jazor");
-    var vendorRoot = Path.Combine(artifactRoot, "vendor", libraryId, version);
-    CopyManifestFile(manifestPath, vueSource, vendorRoot);
-    CopyManifestFile(manifestPath, rendererSource, vendorRoot);
-
-    var vueTarget = "./vendor/" + libraryId + "/" + version + "/" + vueSource.Replace('\\', '/');
-    var rendererTarget = "./vendor/" + libraryId + "/" + version + "/" + rendererSource.Replace('\\', '/');
-    var importMap = JsonSerializer.Serialize(
-        new ImportMapDocument(new Dictionary<string, string>(StringComparer.Ordinal)
+    WriteText(
+        Path.Combine(artifactRoot, "package.json"),
+        """
         {
-            ["vue"] = vueTarget,
-            ["@vue/server-renderer"] = rendererTarget
-        }),
-        BenchmarkJsonContext.Default.ImportMapDocument);
-    WriteText(Path.Combine(artifactRoot, "importmap.json"), importMap);
-    WriteText(Path.Combine(artifactRoot, "ssr-importmap.json"), importMap);
+          "name": "@jazor/ssr-benchmark",
+          "private": true,
+          "type": "module",
+          "dependencies": {
+            "vue": "3.5.42",
+            "@vue/server-renderer": "3.5.42"
+          }
+        }
+        """.Replace("\r\n", "\n", StringComparison.Ordinal));
+    // Bare package imports resolve through the restored package.json exports map.
+    WriteText(Path.Combine(artifactRoot, "importmap.json"), "{\"imports\":{}}\n");
+    WriteText(Path.Combine(artifactRoot, "ssr-importmap.json"), "{\"imports\":{}}\n");
     WriteText(Path.Combine(artifactRoot, "manifest.json"), "{\"styles\":[]}");
     WriteText(Path.Combine(artifactRoot, "jazor-manifest.json"), "{\"generation\":\"benchmark-v1\"}");
     WriteText(
@@ -164,15 +152,77 @@ static string MaterializeArtifactGraph(string repoRoot, string workspace)
           }
         });
         """);
+    var deno = ResolveDenoExecutable(repoRoot);
+    var install = await RunProcessAsync(
+        deno,
+        ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
+        artifactRoot);
+    if (install.ExitCode != 0)
+        throw new InvalidOperationException("SSR benchmark Deno restore failed." + Environment.NewLine + install.StandardError);
+
+    var check = await RunProcessAsync(
+        deno,
+        ["check", "--node-modules-dir=manual", "--no-remote", "--frozen-lockfile", "components/benchmark.mjs"],
+        artifactRoot);
+    if (check.ExitCode != 0)
+        throw new InvalidOperationException("SSR benchmark Deno offline check failed." + Environment.NewLine + check.StandardError);
+
+    if (!File.Exists(Path.Combine(artifactRoot, "deno.lock")) ||
+        !File.Exists(Path.Combine(artifactRoot, "node_modules", "vue", "package.json")) ||
+        !File.Exists(Path.Combine(artifactRoot, "node_modules", "@vue", "server-renderer", "package.json")))
+    {
+        throw new InvalidOperationException("SSR benchmark did not produce the frozen package graph.");
+    }
+
     return artifactRoot;
 }
 
-static void CopyManifestFile(string manifestPath, string relativePath, string destinationRoot)
+static string ResolveDenoExecutable(string repoRoot)
 {
-    var sourcePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(manifestPath)!, relativePath));
-    var targetPath = Path.GetFullPath(Path.Combine(destinationRoot, relativePath));
-    Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-    File.Copy(sourcePath, targetPath, overwrite: true);
+    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_PATH");
+    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
+        return Path.GetFullPath(explicitPath);
+
+    var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+    var rid = OperatingSystem.IsWindows()
+        ? "win-x64"
+        : OperatingSystem.IsMacOS()
+            ? "osx-x64"
+            : "linux-x64";
+    foreach (var project in new[] { "Jazor.EmitTest", "Jazor.AspNetCore" })
+    {
+        var candidate = Path.Combine(repoRoot, "src", project, "bin", "Debug", "net11.0", "runtimes", rid, "native", runtimeName);
+        if (File.Exists(candidate))
+            return candidate;
+    }
+
+    return runtimeName;
+}
+
+static async Task<ProcessResult> RunProcessAsync(
+    string fileName,
+    IReadOnlyList<string> arguments,
+    string workingDirectory)
+{
+    using var process = new Process
+    {
+        StartInfo = new ProcessStartInfo
+        {
+            FileName = fileName,
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        }
+    };
+    foreach (var argument in arguments)
+        process.StartInfo.ArgumentList.Add(argument);
+    process.Start();
+    var stdout = process.StandardOutput.ReadToEndAsync();
+    var stderr = process.StandardError.ReadToEndAsync();
+    await process.WaitForExitAsync();
+    return new ProcessResult(process.ExitCode, await stdout, await stderr);
 }
 
 static int ParseProcessId(string html)
@@ -342,3 +392,5 @@ internal sealed record SsrBenchmarkReport(
 [JsonSerializable(typeof(ImportMapDocument))]
 [JsonSerializable(typeof(SsrBenchmarkReport))]
 internal sealed partial class BenchmarkJsonContext : JsonSerializerContext;
+
+internal sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);

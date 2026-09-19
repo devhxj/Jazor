@@ -19,15 +19,16 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
         try
         {
             await WriteUtf8Async(Path.Combine(root, "devtools-binding.mjs"), script!);
-            await CopyRuntimeAssetAsync(root, "vue-devtools-api.esm-browser.js");
-            await CopyRuntimeAssetAsync(root, "perfect-debounce.mjs");
             await WriteUtf8Async(
-                Path.Combine(root, "deno.json"),
+                Path.Combine(root, "package.json"),
                 """
                 {
-                  "imports": {
-                    "@vue/devtools-api": "./vendor/vue-devtools-api.esm-browser.js",
-                    "perfect-debounce": "./vendor/perfect-debounce.mjs"
+                  "name": "@jazor/vue-devtools-runtime-test",
+                  "private": true,
+                  "type": "module",
+                  "dependencies": {
+                    "@vue/devtools-api": "8.1.5",
+                    "perfect-debounce": "1.0.0"
                   }
                 }
                 """);
@@ -36,7 +37,11 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--config", Path.Combine(root, "deno.json"), "--quiet", "--allow-read", Path.Combine(root, "devtools-runtime.test.mjs")],
+                ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
+                timeout.Token);
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--node-modules-dir=manual", "--no-config", "--no-remote", "--frozen-lockfile", "--quiet", "--allow-read", Path.Combine(root, "devtools-runtime.test.mjs")],
                 timeout.Token);
         }
         finally
@@ -44,19 +49,6 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
             if (Directory.Exists(root))
                 Directory.Delete(root, recursive: true);
         }
-    }
-
-    private static async Task CopyRuntimeAssetAsync(string root, string assetName)
-    {
-        var repoRoot = FindRepositoryRoot();
-        var source = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "devtools-api", assetName);
-        Assert.IsTrue(File.Exists(source), $"Vendored Vue Devtools asset was not found: {source}");
-
-        var target = Path.Combine(root, "vendor", assetName);
-        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        await using var input = File.OpenRead(source);
-        await using var output = File.Create(target);
-        await input.CopyToAsync(output);
     }
 
     private static Task WriteUtf8Async(string path, string content)

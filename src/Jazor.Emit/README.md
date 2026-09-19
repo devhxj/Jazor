@@ -59,10 +59,11 @@ import-map writer 仍作为 Emit 内部实现参与同一事务，不能被 MSBu
 
 ## 输出
 
-Debug 输出生成模块、source map、资源 vendor、`jazor-manifest.json`、`importmap.json`、
-`ssr-importmap.json` 和资源 `manifest.json`。Release 在同一目录增加 bundle 及其 source map；
-启用 `--ssr` 时在 `ssr/` 下生成独立的 SSR 模块图和资源闭包。输出文件属于宿主 profile，
-不改变上游类库 carrier 的形式。
+Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules`、`deno.lock`、
+`jazor-manifest.json`、`importmap.json`、`ssr-importmap.json` 和资源 `manifest.json`；显式
+`embedded-mjs` carrier 进入 `packages/` 并通过本地 package 依赖连接。Release 在同一目录增加
+bundle 及其 source map；启用 `--ssr` 时在 `ssr/` 下生成独立的 SSR 模块图和资源闭包。输出
+文件属于宿主 profile，上游 npm/JSR package 的 exports、sideEffects 和依赖关系保持在共享图中。
 
 ## 验证
 

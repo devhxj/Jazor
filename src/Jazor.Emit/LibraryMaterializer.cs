@@ -912,7 +912,7 @@ internal sealed class LibraryMaterializer
 
         /// <summary>
         /// The exact output closure selected by the manifest traversal. Consumers that reuse a
-        /// materialization must copy this list rather than scanning the vendor directory, which
+        /// materialization must copy this list rather than scanning a package workspace, which
         /// would re-introduce unrelated entry points and assets into the bundle graph.
         /// </summary>
         public IReadOnlyList<string> MaterializedPaths
@@ -1204,7 +1204,7 @@ internal sealed record LibraryAssets(
 
 /// <summary>
 /// The package identity that owns a selected import. This is kept alongside the materialized
-/// path so package-project generation never has to infer a version from a vendor directory.
+/// path so package-project generation never has to infer a version from a materialized path.
 /// </summary>
 internal sealed record LibraryPackageReference(
     string Name,
@@ -1214,7 +1214,7 @@ internal sealed record LibraryPackageReference(
 
 /// <summary>
 /// The selected package exports and their materialized package root. This is the package graph
-/// carrier used by NetPack and DenoHost; no consumer needs to infer it from vendor path names.
+/// carrier used by NetPack and DenoHost; consumers resolve it through package exports.
 /// </summary>
 internal sealed record LibraryPackageProjection(
     LibraryPackageReference Reference,
