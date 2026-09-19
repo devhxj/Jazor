@@ -10,7 +10,7 @@
   "entryImports": [
     "monaco-editor"
   ],
-  "vendoredModuleCount": 7,
-  "buildNote": "Bundled with esbuild from the upstream ESM tree: 120 of its modules import plain .css files, which a browser ESM loader rejects, and the upstream min/ build is AMD.",
-  "fingerprint": "914872B8FE4D915C680E2F0D26436566822BCBA9B817DDAAD7E91D4668FE9414"
+  "validatedEntryCount": 6,
+  "runtimeNote": "NetPack resolves the upstream ESM exports, CSS edges, and worker modules from node_modules.",
+  "fingerprint": "90E1CC77CAA92655C5866DC6D43A4A1725B4316648C6A08E706F08207EECC1C5"
 }

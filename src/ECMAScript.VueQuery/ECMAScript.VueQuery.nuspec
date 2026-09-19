@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.VueQuery.targets" target="buildTransitive\ECMAScript.VueQuery.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vue-query" />
     <file src="$projectDir$inventory.json" target="jazor\vue-query" />
-    <file src="$projectDir$dist\**\*" target="jazor\vue-query\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vue-query\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

@@ -2,6 +2,13 @@
   "schemaVersion": 2,
   "libraryId": "jazor-vue-runtime",
   "version": "1.0.0-preview.1",
+  "source": "embedded-mjs",
+  "packages": {
+    "@jazor/vue-runtime": {
+      "source": "embedded-mjs",
+      "version": "1.0.0-preview.1"
+    }
+  },
   "imports": {
     "@jazor/vue-runtime/blazor-routing.mjs": {
       "type": "module",

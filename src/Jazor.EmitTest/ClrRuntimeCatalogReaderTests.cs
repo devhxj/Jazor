@@ -382,8 +382,9 @@ public sealed class ClrRuntimeCatalogReaderTests
     {
         var assembly = typeof(ECMAScript.Number).Assembly;
 
-        // ECMAScript is a JS-resource library. Its generated runtime modules are validated from
-        // manifest.json + dist rather than through the pure-Jazor ModuleCatalog carrier.
+        // ECMAScript is the repository-owned embedded JS-resource carrier. Its generated runtime
+        // modules are validated from the manifest and src/ECMAScript/clr rather than through the
+        // pure-Jazor ModuleCatalog carrier.
         var modules = ReadEcmascriptResourceModules();
 
         var timeSpanModule = modules.Single(module => string.Equals(module.RelativePath, "System/TimeSpanModule.js", StringComparison.OrdinalIgnoreCase));
@@ -440,9 +441,9 @@ public sealed class ClrRuntimeCatalogReaderTests
         {
             var entry = import.Value;
             var relativeFile = entry.GetProperty("production").GetString()!;
-            var distPrefix = "dist/";
-            Assert.IsTrue(relativeFile.StartsWith(distPrefix, StringComparison.Ordinal), relativeFile);
-            var relativePath = relativeFile.Substring(distPrefix.Length);
+            var clrPrefix = "clr/";
+            Assert.IsTrue(relativeFile.StartsWith(clrPrefix, StringComparison.Ordinal), relativeFile);
+            var relativePath = relativeFile.Substring(clrPrefix.Length);
             var sourcePath = Path.Combine(packageRoot, relativeFile.Replace('/', Path.DirectorySeparatorChar));
             var content = File.ReadAllText(sourcePath).ReplaceLineEndings("\n");
             modules.Add(new ModuleRecord(

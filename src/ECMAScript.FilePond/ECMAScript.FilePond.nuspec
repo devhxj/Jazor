@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.FilePond.targets" target="buildTransitive\ECMAScript.FilePond.targets" />
     <file src="$projectDir$manifest.json" target="jazor\file-pond" />
     <file src="$projectDir$inventory.json" target="jazor\file-pond" />
-    <file src="$projectDir$dist\**\*" target="jazor\file-pond\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\file-pond\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

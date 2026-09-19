@@ -137,9 +137,9 @@ internal static class ClrRuntimeCatalog
 
             var relativeFile = entry.GetProperty("production").GetString()
                 ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production file.");
-            const string distPrefix = "dist/";
-            if (!relativeFile.StartsWith(distPrefix, StringComparison.Ordinal))
-                throw new InvalidOperationException($"ECMAScript import '{import.Name}' must resolve from dist: '{relativeFile}'.");
+            const string clrPrefix = "clr/";
+            if (!relativeFile.StartsWith(clrPrefix, StringComparison.Ordinal))
+                throw new InvalidOperationException($"ECMAScript import '{import.Name}' must resolve from clr: '{relativeFile}'.");
 
             var sourcePath = Path.GetFullPath(Path.Combine(
                 packageRoot,

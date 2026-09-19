@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>date-fns 4 C# bindings backed by package-local manifest.json and dist runtime resources.</Description>
+    <Description>date-fns 4 C# bindings backed by package metadata and the restored npm package.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

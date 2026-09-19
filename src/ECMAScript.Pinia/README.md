@@ -2,10 +2,10 @@
 
 > 定位：Pinia runtime 的独立强类型 C# binding，不向 compiler 引入 Pinia 特判。
 
-本包属于 JS resource library：Pinia 的已有 runtime ESM 位于包内
-`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
-authoring contract。消费方编写的 RazorVue 模块生成到消费程序集的
-`Jazor.Generated.ModuleCatalog`，不会改写本包资源。
+本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Pinia npm
+package、入口和依赖元数据；运行时由 Emit 生成的标准 `jazor/package.json` 声明，随后由
+Deno 恢复到 `jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的
+RazorVue 模块生成到消费程序集的 `Jazor.Generated.ModuleCatalog`，不会改写上游 package。
 
 ## 安装
 

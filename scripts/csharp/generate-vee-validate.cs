@@ -61,6 +61,7 @@ foreach (var package in sources.Keys.Order(StringComparer.Ordinal))
     var packageJson = JsonNode.Parse(File.ReadAllText(Path.Combine(sources[package], "package.json")))!;
     packageVersions[package] = packageJson["version"]!.GetValue<string>()!;
 }
+CopyExistingPackageVersions(manifestPath, packageVersions);
 
 if (packageVersions[primaryPackage] != version)
     throw new InvalidOperationException($"{primaryPackage} extracted version '{packageVersions[primaryPackage]}' does not match requested '{version}'.");
@@ -96,32 +97,8 @@ foreach (var (specifier, package, _, file) in entries)
 if (unresolved.Count > 0)
     throw new InvalidOperationException("Upstream adds references outside the declared closure: " + string.Join(", ", unresolved));
 
-var distRoot = Path.Combine(projectRoot, "dist");
 var licensesRoot = Path.Combine(projectRoot, "licenses");
-Directory.CreateDirectory(distRoot);
 Directory.CreateDirectory(licensesRoot);
-
-// 整体替换 dist，保证 manifest 与 vendored 文件始终一一对应。
-if (Directory.Exists(distRoot))
-    Directory.Delete(distRoot, recursive: true);
-Directory.CreateDirectory(distRoot);
-
-var vendored = new SortedDictionary<string, string>(StringComparer.Ordinal); // dist-relative -> source path
-foreach (var (specifier, package, _, _) in entries)
-{
-    foreach (var relative in closures[specifier].Keys)
-    {
-        // Keys are dist-relative logical paths and must stay forward-slashed across platforms.
-        vendored[package + "/" + relative] = Path.Combine(sources[package], relative.Replace('/', Path.DirectorySeparatorChar));
-    }
-}
-
-foreach (var (relative, source) in vendored)
-{
-    var destination = Path.Combine(distRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-    File.Copy(source, destination, overwrite: false);
-}
 
 var packages = entries.Select(static entry => entry.Package).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
 var licenseFiles = new JsonArray();
@@ -140,13 +117,27 @@ foreach (var package in packages)
     });
 }
 
-var manifest = BuildManifest(libraryId, version, entries, closures, packageEdges, vendored, peerRequires, licenseFiles);
+var manifest = BuildManifest(libraryId, version, entries, packageEdges, packageVersions, peerRequires, licenseFiles);
 WriteLfText(manifestPath, manifest.ToJsonString(GeneratorJson.Manifest) + "\n");
 
-WriteInventory(projectRoot, libraryId, version, licenseId, documentation, vendored.Count, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions);
+WriteInventory(projectRoot, libraryId, version, licenseId, documentation, closures.Values.Sum(static closure => closure.Count), entries.Select(static entry => entry.Specifier).ToArray(), packageVersions);
 
-Console.WriteLine($"Vendored {vendored.Count} {libraryId} {version} module(s); license: {licenseId}.");
+Console.WriteLine($"Validated {closures.Values.Sum(static closure => closure.Count)} {libraryId} ESM modules; license: {licenseId}.");
 Console.WriteLine("Review contract drift for bound exports before committing.");
+
+static void CopyExistingPackageVersions(string manifestPath, IDictionary<string, string> packageVersions)
+{
+    if (!File.Exists(manifestPath))
+        return;
+    var packages = JsonNode.Parse(File.ReadAllText(manifestPath))?["packages"] as JsonObject;
+    if (packages is null)
+        return;
+    foreach (var property in packages)
+    {
+        if (!packageVersions.ContainsKey(property.Key) && property.Value?["version"]?.GetValue<string>() is { } version)
+            packageVersions[property.Key] = version;
+    }
+}
 
 static SortedDictionary<string, string> ComputeClosure(string sourceRoot, string entry)
 {
@@ -322,50 +313,25 @@ static JsonNode BuildManifest(
     string libraryId,
     string version,
     (string Specifier, string Package, string PackageVersion, string File)[] entries,
-    Dictionary<string, SortedDictionary<string, string>> closures,
     Dictionary<string, string[]> packageEdges,
-    SortedDictionary<string, string> vendored,
+    SortedDictionary<string, string> packageVersions,
     SortedDictionary<string, string> peerRequires,
     JsonArray licenseFiles)
 {
     var imports = new JsonObject();
-    foreach (var (specifier, package, _, file) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
+    foreach (var (specifier, _, _, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
     {
-        var closure = closures[specifier];
-        var moduleDependencies = new JsonArray();
-        var files = new JsonArray();
-        foreach (var relative in closure.Keys.Where(key => !string.Equals(key, file, StringComparison.Ordinal)))
-        {
-            var distPath = "dist/" + package + "/" + relative;
-            moduleDependencies.Add((JsonNode)distPath);
-            files.Add(new JsonObject
-            {
-                ["type"] = "module",
-                ["path"] = distPath,
-                ["hash"] = HashFile(vendored[package + "/" + relative]),
-                ["moduleId"] = distPath,
-            });
-        }
-
         var entryDependencies = new JsonArray();
         foreach (var dependency in packageEdges[specifier])
             entryDependencies.Add((JsonNode)dependency);
 
-        var entryPath = "dist/" + package + "/" + file;
-        var entryHash = HashFile(vendored[package + "/" + file]);
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = entryPath,
-            ["production"] = entryPath,
-            ["developmentHash"] = entryHash,
-            ["productionHash"] = entryHash,
-            // 兄弟条目通过 package 通道解析；materializer 会用 import 索引递归闭包。
+            ["development"] = specifier,
+            ["production"] = specifier,
             ["developmentDependencies"] = (JsonArray)entryDependencies.DeepClone(),
             ["productionDependencies"] = entryDependencies,
-            ["developmentModuleDependencies"] = (JsonArray)moduleDependencies.DeepClone(),
-            ["productionModuleDependencies"] = moduleDependencies,
-            ["files"] = files,
         };
     }
 
@@ -378,11 +344,21 @@ static JsonNode BuildManifest(
         ["schemaVersion"] = 2,
         ["libraryId"] = libraryId,
         ["version"] = version,
+        ["source"] = "npm",
+        ["packages"] = BuildPackages(packageVersions),
         ["imports"] = imports,
         ["requires"] = requiresNode,
         ["styles"] = new JsonArray(),
         ["files"] = licenseFiles,
     };
+}
+
+static JsonObject BuildPackages(SortedDictionary<string, string> packageVersions)
+{
+    var packages = new JsonObject();
+    foreach (var (name, packageVersion) in packageVersions.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        packages[name] = new JsonObject { ["source"] = "npm", ["version"] = packageVersion };
+    return packages;
 }
 
 static void WriteInventory(
@@ -391,7 +367,7 @@ static void WriteInventory(
     string version,
     string licenseId,
     string documentation,
-    int vendoredCount,
+    int validatedModuleCount,
     string[] specifiers,
     SortedDictionary<string, string> packageVersions)
 {
@@ -408,7 +384,7 @@ static void WriteInventory(
         ["source"] = $"https://registry.npmjs.org/{libraryId}/{version}",
         ["documentation"] = documentation,
         ["entryImports"] = new JsonArray(specifiers.Order(StringComparer.Ordinal).Select(static value => (JsonNode)value).ToArray()),
-        ["vendoredModuleCount"] = vendoredCount,
+        ["validatedModuleCount"] = validatedModuleCount,
     };
     var payload = inventory.ToJsonString(GeneratorJson.Manifest);
     inventory["fingerprint"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

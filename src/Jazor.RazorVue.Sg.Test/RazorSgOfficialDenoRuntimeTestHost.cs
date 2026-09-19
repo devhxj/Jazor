@@ -403,10 +403,10 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         {
             var production = entry.Value.GetProperty("production").GetString();
             if (string.IsNullOrWhiteSpace(production) ||
-                !production.StartsWith("dist/", StringComparison.Ordinal))
+                !production.StartsWith("clr/", StringComparison.Ordinal))
                 continue;
 
-            var relativePath = production["dist/".Length..];
+            var relativePath = production["clr/".Length..];
             var sourcePath = Path.Combine(packageRoot, production.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException($"ECMAScript resource module '{production}' was not found.", sourcePath);

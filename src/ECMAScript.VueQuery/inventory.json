@@ -6,6 +6,7 @@
     "@tanstack/match-sorter-utils": "8.19.4",
     "@tanstack/query-core": "5.103.1",
     "@tanstack/vue-query": "5.103.1",
+    "vue": "3.5.42",
     "vue-demi": "0.14.10"
   },
   "source": "https://registry.npmjs.org/vue-query/5.103.1",
@@ -16,6 +17,6 @@
     "@tanstack/vue-query",
     "vue-demi"
   ],
-  "vendoredModuleCount": 46,
-  "fingerprint": "7AA138B9BBCF3948000A7CE042C6EA5B178AE129A2A3FF29095C235ED4C3F8BD"
+  "validatedModuleCount": 46,
+  "fingerprint": "7D4CDD24B582F7D7B4E2859F7E89BC00EFE728AFDCAA1664FF92F8ED7A3BF446"
 }

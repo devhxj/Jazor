@@ -2,46 +2,47 @@
   "schemaVersion": 2,
   "libraryId": "file-pond",
   "version": "8.0.0",
+  "source": "npm",
+  "packages": {
+    "filepond": {
+      "source": "npm",
+      "version": "4.32.12"
+    },
+    "vue-filepond": {
+      "source": "npm",
+      "version": "8.0.0"
+    }
+  },
   "imports": {
     "filepond": {
       "type": "module",
-      "development": "dist/filepond/filepond.esm.js",
-      "production": "dist/filepond/filepond.esm.js",
-      "developmentHash": "31ed2448c1214d9ea2220fc527f64684c8001adb6fcddaa72a6e8988903e068d",
-      "productionHash": "31ed2448c1214d9ea2220fc527f64684c8001adb6fcddaa72a6e8988903e068d",
+      "development": "filepond",
+      "production": "filepond",
       "developmentDependencies": [],
       "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "developmentStylesheetImports": [
+        "filepond/dist/filepond.css"
+      ],
+      "productionStylesheetImports": [
+        "filepond/dist/filepond.css"
+      ]
     },
     "vue-filepond": {
       "type": "module",
-      "development": "dist/vue-filepond/vue-filepond.esm.js",
-      "production": "dist/vue-filepond/vue-filepond.esm.js",
-      "developmentHash": "ea8ed39bbd1f812a60377ff8b5304714819395612cd786e65c1c8e153cec3e5e",
-      "productionHash": "ea8ed39bbd1f812a60377ff8b5304714819395612cd786e65c1c8e153cec3e5e",
+      "development": "vue-filepond",
+      "production": "vue-filepond",
       "developmentDependencies": [
         "filepond"
       ],
       "productionDependencies": [
         "filepond"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     }
   },
   "requires": {
     "vue3": "^3.0.0"
   },
-  "styles": [
-    {
-      "type": "style",
-      "path": "dist/filepond/filepond.css",
-      "hash": "6a1f92600d0dd516770bb162f79e075a4ac270575fcc2b29f9c2480a6d071538"
-    }
-  ],
+  "styles": [],
   "files": [
     {
       "type": "license",

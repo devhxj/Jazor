@@ -2,90 +2,62 @@
   "schemaVersion": 2,
   "libraryId": "vue3",
   "version": "3.5.42",
+  "source": "npm",
+  "packages": {
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
+    },
+    "@vue/server-renderer": {
+      "source": "npm",
+      "version": "3.5.42"
+    },
+    "@vue/devtools-api": {
+      "source": "npm",
+      "version": "6.6.4"
+    },
+    "perfect-debounce": {
+      "source": "npm",
+      "version": "1.0.0"
+    }
+  },
   "imports": {
     "@vue/devtools-api": {
       "type": "module",
-      "development": "dist/devtools-api/vue-devtools-api.esm-browser.js",
-      "production": "dist/devtools-api/vue-devtools-api.esm-browser.js",
-      "developmentHash": "d902a0d2a3d53df19aad52c88e0e4c70fe4abdd7276d31c8a7b32022aee171d3",
-      "productionHash": "d902a0d2a3d53df19aad52c88e0e4c70fe4abdd7276d31c8a7b32022aee171d3",
+      "development": "@vue/devtools-api",
+      "production": "@vue/devtools-api",
       "developmentDependencies": [
         "perfect-debounce"
       ],
       "productionDependencies": [
         "perfect-debounce"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": [
-        {
-          "type": "license",
-          "path": "licenses/VUE-DEVTOOLS-API-LICENSE",
-          "hash": "d0ac09e8df2b54625ea1606dfae75d5b6af1cbc5d28a17eca1350be9c367175c"
-        }
       ]
     },
     "@vue/server-renderer": {
       "type": "module",
-      "development": "dist/server-renderer.esm-browser.js",
-      "production": "dist/server-renderer.esm-browser.prod.js",
-      "developmentHash": "6e7ec164b4a8a3e50245b5cde34257dd3825302f6f152ef6e65f68ac601ca63a",
-      "productionHash": "e437e2c2b46d00e96bb82dfee68d2212b8ee4812a8166d26acaed0689ec35830",
+      "development": "@vue/server-renderer",
+      "production": "@vue/server-renderer",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": [
-        {
-          "type": "license",
-          "path": "licenses/VUE-SERVER-RENDERER-LICENSE",
-          "hash": "1bb85cc9b13b81ef41c81c51866172fc345e0503c86726a6755b796590b70175"
-        }
-      ]
+      "productionDependencies": []
     },
     "perfect-debounce": {
       "type": "module",
-      "development": "dist/devtools-api/perfect-debounce.mjs",
-      "production": "dist/devtools-api/perfect-debounce.mjs",
-      "developmentHash": "94785b6e9d390622cc08320c75e6eedd8b32f0a6608ba3751a00942593d6c228",
-      "productionHash": "94785b6e9d390622cc08320c75e6eedd8b32f0a6608ba3751a00942593d6c228",
+      "development": "perfect-debounce",
+      "production": "perfect-debounce",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": [
-        {
-          "type": "license",
-          "path": "licenses/PERFECT-DEBOUNCE-LICENSE",
-          "hash": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082"
-        }
-      ]
+      "productionDependencies": []
     },
     "vue": {
       "type": "module",
-      "development": "dist/vue.runtime.esm-browser.js",
-      "production": "dist/vue.runtime.esm-browser.prod.js",
-      "developmentHash": "279bb17c041aae672a190377ed95293cd20648dd9a890f46fea0a38adeabb293",
-      "productionHash": "85c5bc17be41da2f3491c25a6930d94a9e54d7ad878dcfa67e2fca3b55ee8cc9",
+      "development": "vue",
+      "production": "vue",
+      "browserDevelopment": "vue/dist/vue.runtime.esm-browser.js",
+      "browserProduction": "vue/dist/vue.runtime.esm-browser.prod.js",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "productionDependencies": []
     }
   },
   "requires": {},
   "styles": [],
-  "files": [
-    {
-      "type": "license",
-      "path": "licenses/LICENSE",
-      "hash": "1bb85cc9b13b81ef41c81c51866172fc345e0503c86726a6755b796590b70175"
-    }
-  ]
+  "files": []
 }
-
-
-
-
-

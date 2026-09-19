@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.Monaco.targets" target="buildTransitive\ECMAScript.Monaco.targets" />
     <file src="$projectDir$manifest.json" target="jazor\monaco" />
     <file src="$projectDir$inventory.json" target="jazor\monaco" />
-    <file src="$projectDir$dist\**\*" target="jazor\monaco\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\monaco\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

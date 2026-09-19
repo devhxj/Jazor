@@ -3,8 +3,8 @@
 > 定位：`@vue/devtools-api` 8.1.5 的独立强类型 C# binding，用于 author custom Vue Devtools plugin，而不是浏览器扩展或 Devtools 内部实现的封装。
 
 本包只提供 `@vue/devtools-api` 的 C# authoring contract，不重复携带运行时文件。运行时
-资源由 `Jazor.Vue` 的 JS resource carrier（`manifest.json + dist/**`）提供；调用方编写的
-插件模块仍由自身的 Jazor 工具生成到程序集 `Jazor.Generated.ModuleCatalog`。
+资源由 `Jazor.Vue` manifest 声明的 embedded Vue runtime bridge 提供；调用方编写的插件模块
+仍由自身的 Jazor 工具生成到程序集 `Jazor.Generated.ModuleCatalog`。
 
 ## 安装
 

@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Floating UI 2 C# bindings backed by package-local manifest.json and dist runtime resources.</Description>
+    <Description>Floating UI 2 C# bindings backed by package metadata and restored npm packages.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

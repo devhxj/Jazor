@@ -2,9 +2,9 @@
 
 > `vu-icons` 1.5.4 的 RazorVue 强类型 binding，完整覆盖上游 1,821 个 Vue 3 `Vu*` wrapper。已知图标走单图标 ESM entry；仅运行时选择名称时才加载完整 icon catalog。
 
-本包属于 JS resource library：`vu-icons` 的已有 ESM 和 CSS 位于包内
-`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
-RazorVue authoring contract。消费方生成的图标组件模块进入消费程序集的
+本包属于 JS resource library：上游 raw Vue wrapper 不能直接作为浏览器 ESM 入口，因此包内
+由生成器维护明确的 `embedded-mjs` carrier（`manifest.json + runtime/vu-icons/**`）；许可证等
+附属文件由 manifest 显式声明。C# 程序集只提供映射和 RazorVue authoring contract。消费方生成的图标组件模块进入消费程序集的
 `Jazor.Generated.ModuleCatalog`。
 
 ## 安装
@@ -49,8 +49,8 @@ RazorVue authoring contract。消费方生成的图标组件模块进入消费�
 
 ## 按需运行时
 
-- 静态 `<VuSearch />` emits `import { VuSearch } from "vu-icons/VuSearch";`。Emit 只物化该 SVG module、共享 renderer、样式和许可证，不复制其余 1,820 个图标或 `icons-data.js`。
-- 动态 `<VuIcon Name="@currentIcon" />` emits `import { VuIcon } from "vu-icons";`。由于名称在运行时才能确定，manifest 的 package entry 闭包会物化完整 `icons-data.js` catalog。这是动态选择的必要成本。
+- 静态 `<VuSearch />` emits `import { VuSearch } from "vu-icons/VuSearch";`。Emit 只物化该 SVG module、共享 renderer、样式和许可证，不复制其余 1,820 个图标或 `icons-data.js`。逻辑入口由 manifest 的 package export 映射到 `runtime/vu-icons/components/VuSearch.mjs`。
+- 动态 `<VuIcon Name="@currentIcon" />` emits `import { VuIcon } from "vu-icons";`。由于名称在运行时才能确定，manifest 的 package entry 闭包会物化 `runtime/vu-icons/index.mjs`、共享 runtime 和完整 `icons-data.js` catalog。这是动态选择的必要成本。
 - 两条路径均使用浏览器可执行的本地 `.mjs` bridge，而不是上游 raw `.vue` SFC；`Jazor.Emit` 无需额外 SFC compiler。
 
 应优先使用静态 `Vu*` component。只有图标名称确实来自运行时状态、配置或服务端数据时，才使用动态 `VuIcon`。

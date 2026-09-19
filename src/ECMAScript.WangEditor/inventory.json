@@ -4,7 +4,8 @@
   "license": "MIT",
   "packages": {
     "@wangeditor/editor": "5.1.23",
-    "@wangeditor/editor-for-vue": "5.1.12"
+    "@wangeditor/editor-for-vue": "5.1.12",
+    "vue": "3.5.42"
   },
   "packageLicenses": {
     "@wangeditor/editor": "MIT",
@@ -16,6 +17,6 @@
     "@wangeditor/editor",
     "@wangeditor/editor-for-vue"
   ],
-  "vendoredModuleCount": 3,
-  "fingerprint": "B9FD181A4CCA57B97E6FA39E0E077B9A83BC288594C64E36D9675CDDE26B662B"
+  "validatedModuleCount": 2,
+  "fingerprint": "DF23A184AD26679B1955B6FE34A96BD34EDE9BE69586EECE8DEC9109CAF17DEA"
 }

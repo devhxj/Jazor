@@ -26,7 +26,6 @@
     <file src="$buildOutputDir$ECMAScript.Vuetify.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.Vuetify.targets" target="buildTransitive\ECMAScript.Vuetify.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vuetify" />
-    <file src="$projectDir$dist\**\*" target="jazor\vuetify\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vuetify\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

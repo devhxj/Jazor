@@ -13,7 +13,7 @@
 | 能力 | 当前范围 | 详细入口 |
 | --- | --- | --- |
 | C# 到 ECMAScript | 受支持的 Roslyn `IOperation` 经 `Jazor.Compiler` 降低为 ESTree 和确定性 ECMAScript 模块；导入、临时名、source origin、source map 与宿主映射由编译主线统一负责。 | [编译器](../02-architecture/compiler.md) |
-| 模块与资源交付 | 最终宿主只消费两类类库输入：JS resource library 的 `manifest.json + dist/**`，以及纯 Jazor library 的 `Jazor.Generated.ModuleCatalog`。`Jazor.Emit` 解析显式依赖闭包后物化 Debug、Release、SSR 或 HMR 输出。 | [类库资源与引用契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md) |
+| 模块与资源交付 | 最终宿主消费 JS resource library 的 package metadata（npm/JSR identity、明确声明的 embedded carrier 与资源边）以及纯 Jazor library 的 `Jazor.Generated.ModuleCatalog`。`Jazor.Emit` 生成标准 `jazor/` 项目，由 DenoHost 恢复并冻结依赖，再物化 Debug、Release、SSR 或 HMR 输出。 | [类库资源与引用契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md) |
 | Razor-to-Vue | 官方 Razor Source Generator 生成的最终 `Compilation` 经 `Jazor.RazorVue` 绑定为 Vue render-function `.mjs`；C# 表达式、成员和调用语义仍通过核心编译器 lowering。 | [Razor-to-Vue 架构](../02-architecture/razor-to-vue.md) |
 | CLR 与外部 API | CLR/ECMAScript 映射、白名单和 runtime helper 共同定义受支持的运行时语义。映射缺失的类型或成员在使用点提供明确诊断，原始 JavaScript 通过显式 host mapping 进入模块。 | [编译器](../02-architecture/compiler.md) |
 

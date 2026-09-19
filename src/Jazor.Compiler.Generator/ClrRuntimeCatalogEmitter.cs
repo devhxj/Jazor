@@ -13,8 +13,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 /// </summary>
 /// <remarks>
 /// Roslyn source discovery and <see cref="AstConverter"/> remain the source of runtime semantics.
-/// This emitter owns only package materialization: <c>manifest.json + dist/**</c>. It must never
-/// generate a second managed catalog carrier for the ECMAScript project.
+/// This emitter owns the embedded ECMAScript package carrier declared by the package manifest.
+/// It must never generate a second managed catalog carrier for the ECMAScript project.
 /// </remarks>
 internal static class ClrRuntimeCatalogEmitter
 {
@@ -182,7 +182,7 @@ internal static class ClrRuntimeCatalogEmitter
         var imports = new SortedDictionary<string, object>(StringComparer.Ordinal);
         foreach (var module in modules)
         {
-            var path = "dist/" + module.RelativePath;
+            var path = "clr/" + module.RelativePath;
             imports[module.RelativePath] = new
             {
                 type = "module",
@@ -203,6 +203,7 @@ internal static class ClrRuntimeCatalogEmitter
             schemaVersion = ManifestSchemaVersion,
             libraryId = LibraryId,
             version,
+            source = "embedded-mjs",
             imports,
             requires = new SortedDictionary<string, string>(StringComparer.Ordinal),
             styles = Array.Empty<object>(),
@@ -220,20 +221,20 @@ internal static class ClrRuntimeCatalogEmitter
             ?? throw new InvalidOperationException($"Could not determine package parent for '{packageRoot}'.");
         Directory.CreateDirectory(parent);
         var staging = Path.Combine(parent, ".ecmascript-resource-" + Guid.NewGuid().ToString("N"));
-        var stagedDist = Path.Combine(staging, "dist");
+        var stagedClr = Path.Combine(staging, "clr");
         var stagedManifest = Path.Combine(staging, "manifest.json");
-        var distRoot = Path.Combine(packageRoot, "dist");
-        var backupDist = Path.Combine(parent, ".ecmascript-resource-backup-" + Guid.NewGuid().ToString("N"));
+        var clrRoot = Path.Combine(packageRoot, "clr");
+        var backupClr = Path.Combine(parent, ".ecmascript-resource-backup-" + Guid.NewGuid().ToString("N"));
         var backupManifest = Path.Combine(parent, ".ecmascript-manifest-backup-" + Guid.NewGuid().ToString("N"));
-        var distMoved = false;
+        var clrMoved = false;
         var manifestMoved = false;
 
         try
         {
-            Directory.CreateDirectory(stagedDist);
+            Directory.CreateDirectory(stagedClr);
             foreach (var module in modules)
             {
-                var stagedPath = GetSafePath(stagedDist, module.RelativePath);
+                var stagedPath = GetSafePath(stagedClr, module.RelativePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(stagedPath)!);
                 File.WriteAllText(stagedPath, module.Content, Utf8WithoutBom);
                 if (!string.Equals(ComputeSha256Hex(File.ReadAllBytes(stagedPath)), module.Hash, StringComparison.OrdinalIgnoreCase))
@@ -248,17 +249,17 @@ internal static class ClrRuntimeCatalogEmitter
             {
             }
 
-            if (Directory.Exists(distRoot))
-                Directory.Move(distRoot, backupDist);
-            distMoved = true;
-            Directory.Move(stagedDist, distRoot);
+            if (Directory.Exists(clrRoot))
+                Directory.Move(clrRoot, backupClr);
+            clrMoved = true;
+            Directory.Move(stagedClr, clrRoot);
 
             if (File.Exists(manifestPath))
                 File.Move(manifestPath, backupManifest);
             manifestMoved = true;
             File.Move(stagedManifest, manifestPath);
 
-            DeleteDirectory(backupDist);
+            DeleteDirectory(backupClr);
             DeleteFile(backupManifest);
         }
         catch
@@ -267,16 +268,16 @@ internal static class ClrRuntimeCatalogEmitter
                 DeleteFile(manifestPath);
             if (File.Exists(backupManifest) && !File.Exists(manifestPath))
                 File.Move(backupManifest, manifestPath);
-            if (Directory.Exists(distRoot) && distMoved)
-                DeleteDirectory(distRoot);
-            if (Directory.Exists(backupDist) && !Directory.Exists(distRoot))
-                Directory.Move(backupDist, distRoot);
+            if (Directory.Exists(clrRoot) && clrMoved)
+                DeleteDirectory(clrRoot);
+            if (Directory.Exists(backupClr) && !Directory.Exists(clrRoot))
+                Directory.Move(backupClr, clrRoot);
             throw;
         }
         finally
         {
             DeleteDirectory(staging);
-            DeleteDirectory(backupDist);
+            DeleteDirectory(backupClr);
             DeleteFile(backupManifest);
         }
     }

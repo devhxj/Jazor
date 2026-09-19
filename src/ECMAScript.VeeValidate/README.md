@@ -1,8 +1,11 @@
 # ECMAScript.VeeValidate
 
-vee-validate 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本、`manifest.json`（schema 2）、`dist/` 资源、许可证与 inventory。
+vee-validate 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本，
+`manifest.json`（schema 2）和 `inventory.json` 记录 npm package、入口、完整性与许可证元数据。
 
-Strongly typed C# bindings for vee-validate, shipped as a Jazor JS resource library with a locked upstream version, package-local `manifest.json` (schema 2), `dist/` runtime assets, licenses, and inventory.
+Strongly typed C# bindings for vee-validate, shipped as a Jazor JS resource library with a locked
+upstream npm version. Runtime files remain in npm; the package metadata records the entry and
+dependency graph for the generated `jazor` project.
 
 ## 上游锁定 Upstream lock
 
@@ -13,7 +16,8 @@ Strongly typed C# bindings for vee-validate, shipped as a Jazor JS resource libr
 | 许可证 | MIT（`licenses/vee-validate-LICENSE`） |
 | peer 依赖 | `vue`（由 `ECMAScript.Vue` 资源库提供） |
 
-上游发布自包含 ESM bundle（`dist/vee-validate.mjs`），闭包只有该入口一个模块，唯一裸导入是 `vue`。
+上游发布自包含 ESM entry（`vee-validate/dist/vee-validate.mjs`），闭包只有该入口一个模块，
+唯一裸导入是 `vue`；Emit 按 npm exports 解析该 package subpath。
 
 ## 首期范围 First slice
 
@@ -57,4 +61,4 @@ dotnet run --file scripts/csharp/generate-vee-validate.cs -- --source .tmp/p3b/n
 
 ## 测试 Tests
 
-`src/ECMAScript.VeeValidate.Test` 覆盖 import/manifest/inventory 元数据、vendored 哈希、上游导出 drift 与编译器 emission；`Jazor.EmitTest` 覆盖真实 materialization 闭包。
+`src/ECMAScript.VeeValidate.Test` 覆盖 import/manifest/inventory 元数据、npm integrity、上游导出 drift 与编译器 emission；`Jazor.EmitTest` 覆盖真实 package graph materialization。

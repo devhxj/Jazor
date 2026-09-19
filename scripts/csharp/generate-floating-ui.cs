@@ -8,10 +8,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-// Vendor the locked Floating UI ESM runtime into src/ECMAScript.FloatingUi and regenerate the
-// package-local manifest and upstream inventory. Each logical import is a self-contained
-// upstream bundle that only references the sibling entries or the declared peer (vue).
-// 上游以 npm registry integrity 锁定版本；每个入口是自包含 bundle，只引用同闭包条目或声明的 peer。
+// Validate the locked Floating UI ESM entry graph and regenerate package metadata. Runtime bytes
+// remain in the upstream npm packages; this generator does not recreate a binding-owned dist.
 //
 // Usage:
 //   dotnet run --file scripts/csharp/generate-floating-ui.cs -- --version 2.0.1
@@ -88,29 +86,8 @@ foreach (var (specifier, package, file) in entries)
 if (unresolved.Count > 0)
     throw new InvalidOperationException("Upstream adds references outside the declared closure: " + string.Join(", ", unresolved));
 
-var distRoot = Path.Combine(projectRoot, "dist");
 var licensesRoot = Path.Combine(projectRoot, "licenses");
-Directory.CreateDirectory(distRoot);
 Directory.CreateDirectory(licensesRoot);
-
-// 整体替换 dist，保证 manifest 与 vendored 文件始终一一对应。
-if (Directory.Exists(distRoot))
-    Directory.Delete(distRoot, recursive: true);
-Directory.CreateDirectory(distRoot);
-
-var vendored = new SortedDictionary<string, string>(StringComparer.Ordinal); // dist-relative path -> source path
-foreach (var (_, package, file) in entries)
-{
-    // Keys are dist-relative logical paths and must stay forward-slashed across platforms.
-    vendored[package + "/" + Path.GetFileName(file)] = Path.Combine(sources[package], file.Replace('/', Path.DirectorySeparatorChar));
-}
-
-foreach (var (relative, source) in vendored)
-{
-    var destination = Path.Combine(distRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-    File.Copy(source, destination, overwrite: false);
-}
 
 var licenses = entries.Select(static entry => entry.Package).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
 var licenseFiles = new JsonArray();
@@ -129,12 +106,12 @@ foreach (var package in licenses)
     });
 }
 
-var manifest = BuildManifest(version, entries, dependencies, vendored, licenseFiles);
+var manifest = BuildManifest(version, entries, dependencies, packageVersions, licenseFiles);
 WriteLfText(manifestPath, manifest.ToJsonString(GeneratorJson.Manifest) + "\n");
 
-WriteInventory(projectRoot, version, vendored.Count, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions);
+WriteInventory(projectRoot, version, entries.Length, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions);
 
-Console.WriteLine($"Vendored {vendored.Count} Floating UI {version} bundle(s); license: MIT.");
+Console.WriteLine($"Validated {entries.Length} Floating UI {version} npm entries; license: MIT.");
 Console.WriteLine("Review contract drift for bound exports before committing.");
 
 static HashSet<string> ReadBareSpecifiers(string path)
@@ -230,14 +207,12 @@ static JsonNode BuildManifest(
     string version,
     (string Specifier, string Package, string File)[] entries,
     Dictionary<string, string[]> dependencies,
-    SortedDictionary<string, string> vendored,
+    SortedDictionary<string, string> packageVersions,
     JsonArray licenseFiles)
 {
     var imports = new JsonObject();
-    foreach (var (specifier, package, file) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
+    foreach (var (specifier, _, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
     {
-        var relative = package + "/" + Path.GetFileName(file);
-        var hash = HashFile(vendored[relative]);
         var packageDependencies = new JsonArray();
         foreach (var dependency in dependencies[specifier])
             packageDependencies.Add(dependency);
@@ -245,16 +220,10 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = "dist/" + relative,
-            ["production"] = "dist/" + relative,
-            ["developmentHash"] = hash,
-            ["productionHash"] = hash,
-            // 兄弟条目通过 package 通道解析：materializer 会用 import 索引递归闭包。
+            ["development"] = specifier,
+            ["production"] = specifier,
             ["developmentDependencies"] = (JsonArray)packageDependencies.DeepClone(),
             ["productionDependencies"] = packageDependencies,
-            ["developmentModuleDependencies"] = new JsonArray(),
-            ["productionModuleDependencies"] = new JsonArray(),
-            ["files"] = new JsonArray(),
         };
     }
 
@@ -263,6 +232,8 @@ static JsonNode BuildManifest(
         ["schemaVersion"] = 2,
         ["libraryId"] = "floating-ui",
         ["version"] = version,
+        ["source"] = "npm",
+        ["packages"] = BuildPackages(packageVersions),
         ["imports"] = imports,
         // @floating-ui/vue 的 peer 依赖；core/dom/utils 不需要 vue，但 manifest 级 requires 是统一闭包。
         ["requires"] = new JsonObject { ["vue3"] = "^3.5.0" },
@@ -271,10 +242,18 @@ static JsonNode BuildManifest(
     };
 }
 
+static JsonObject BuildPackages(SortedDictionary<string, string> packageVersions)
+{
+    var packages = new JsonObject();
+    foreach (var (name, packageVersion) in packageVersions.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        packages[name] = new JsonObject { ["source"] = "npm", ["version"] = packageVersion };
+    return packages;
+}
+
 static void WriteInventory(
     string projectRoot,
     string version,
-    int vendoredCount,
+    int validatedEntryCount,
     string[] specifiers,
     SortedDictionary<string, string> packageVersions)
 {
@@ -291,7 +270,7 @@ static void WriteInventory(
         ["source"] = $"https://registry.npmjs.org/@floating-ui/vue/{version}",
         ["documentation"] = "https://floating-ui.com/docs/vue",
         ["entryImports"] = new JsonArray(specifiers.Order(StringComparer.Ordinal).Select(static value => (JsonNode)value).ToArray()),
-        ["vendoredModuleCount"] = vendoredCount,
+        ["validatedEntryCount"] = validatedEntryCount,
     };
     var payload = inventory.ToJsonString(GeneratorJson.Manifest);
     inventory["fingerprint"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

@@ -2,216 +2,48 @@
   "schemaVersion": 2,
   "libraryId": "vue-query",
   "version": "5.103.1",
+  "source": "npm",
+  "packages": {
+    "@tanstack/match-sorter-utils": {
+      "source": "npm",
+      "version": "8.19.4"
+    },
+    "@tanstack/query-core": {
+      "source": "npm",
+      "version": "5.103.1"
+    },
+    "@tanstack/vue-query": {
+      "source": "npm",
+      "version": "5.103.1"
+    },
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
+    },
+    "vue-demi": {
+      "source": "npm",
+      "version": "0.14.10"
+    }
+  },
   "imports": {
     "@tanstack/match-sorter-utils": {
       "type": "module",
-      "development": "dist/@tanstack/match-sorter-utils/build/lib/index.mjs",
-      "production": "dist/@tanstack/match-sorter-utils/build/lib/index.mjs",
-      "developmentHash": "115fb40c76571615c4f7ff26a524e1f577cf68df70bb2090401f1efbde794fa6",
-      "productionHash": "115fb40c76571615c4f7ff26a524e1f577cf68df70bb2090401f1efbde794fa6",
+      "development": "@tanstack/match-sorter-utils",
+      "production": "@tanstack/match-sorter-utils",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "productionDependencies": []
     },
     "@tanstack/query-core": {
       "type": "module",
-      "development": "dist/@tanstack/query-core/build/modern/index.js",
-      "production": "dist/@tanstack/query-core/build/modern/index.js",
-      "developmentHash": "352dd072f5121a8078a2b5f14542e8b4bb284f160e1cdbc8afbc711cb9e062e6",
-      "productionHash": "352dd072f5121a8078a2b5f14542e8b4bb284f160e1cdbc8afbc711cb9e062e6",
+      "development": "@tanstack/query-core",
+      "production": "@tanstack/query-core",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
-        "dist/@tanstack/query-core/build/modern/environmentManager.js",
-        "dist/@tanstack/query-core/build/modern/focusManager.js",
-        "dist/@tanstack/query-core/build/modern/hydration.js",
-        "dist/@tanstack/query-core/build/modern/infiniteQueryBehavior.js",
-        "dist/@tanstack/query-core/build/modern/infiniteQueryObserver.js",
-        "dist/@tanstack/query-core/build/modern/mutation.js",
-        "dist/@tanstack/query-core/build/modern/mutationCache.js",
-        "dist/@tanstack/query-core/build/modern/mutationObserver.js",
-        "dist/@tanstack/query-core/build/modern/notifyManager.js",
-        "dist/@tanstack/query-core/build/modern/onlineManager.js",
-        "dist/@tanstack/query-core/build/modern/queriesObserver.js",
-        "dist/@tanstack/query-core/build/modern/query.js",
-        "dist/@tanstack/query-core/build/modern/queryCache.js",
-        "dist/@tanstack/query-core/build/modern/queryClient.js",
-        "dist/@tanstack/query-core/build/modern/queryObserver.js",
-        "dist/@tanstack/query-core/build/modern/removable.js",
-        "dist/@tanstack/query-core/build/modern/retryer.js",
-        "dist/@tanstack/query-core/build/modern/streamedQuery.js",
-        "dist/@tanstack/query-core/build/modern/subscribable.js",
-        "dist/@tanstack/query-core/build/modern/timeoutManager.js",
-        "dist/@tanstack/query-core/build/modern/types.js",
-        "dist/@tanstack/query-core/build/modern/utils.js"
-      ],
-      "productionModuleDependencies": [
-        "dist/@tanstack/query-core/build/modern/environmentManager.js",
-        "dist/@tanstack/query-core/build/modern/focusManager.js",
-        "dist/@tanstack/query-core/build/modern/hydration.js",
-        "dist/@tanstack/query-core/build/modern/infiniteQueryBehavior.js",
-        "dist/@tanstack/query-core/build/modern/infiniteQueryObserver.js",
-        "dist/@tanstack/query-core/build/modern/mutation.js",
-        "dist/@tanstack/query-core/build/modern/mutationCache.js",
-        "dist/@tanstack/query-core/build/modern/mutationObserver.js",
-        "dist/@tanstack/query-core/build/modern/notifyManager.js",
-        "dist/@tanstack/query-core/build/modern/onlineManager.js",
-        "dist/@tanstack/query-core/build/modern/queriesObserver.js",
-        "dist/@tanstack/query-core/build/modern/query.js",
-        "dist/@tanstack/query-core/build/modern/queryCache.js",
-        "dist/@tanstack/query-core/build/modern/queryClient.js",
-        "dist/@tanstack/query-core/build/modern/queryObserver.js",
-        "dist/@tanstack/query-core/build/modern/removable.js",
-        "dist/@tanstack/query-core/build/modern/retryer.js",
-        "dist/@tanstack/query-core/build/modern/streamedQuery.js",
-        "dist/@tanstack/query-core/build/modern/subscribable.js",
-        "dist/@tanstack/query-core/build/modern/timeoutManager.js",
-        "dist/@tanstack/query-core/build/modern/types.js",
-        "dist/@tanstack/query-core/build/modern/utils.js"
-      ],
-      "files": [
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/environmentManager.js",
-          "hash": "5fc78f10416652df3703338f2c9bb0a426e93885438bb9a305eafb8a097b374c",
-          "moduleId": "dist/@tanstack/query-core/build/modern/environmentManager.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/focusManager.js",
-          "hash": "eb7b27b1ffd21b3fa684650ec6fb219a9989a5ebf28d1f6b4105257a0bf1ef25",
-          "moduleId": "dist/@tanstack/query-core/build/modern/focusManager.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/hydration.js",
-          "hash": "49057b91180dedaba3b2f4935ba3dd034fceae66f0b1496503b2bb21a22fb225",
-          "moduleId": "dist/@tanstack/query-core/build/modern/hydration.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/infiniteQueryBehavior.js",
-          "hash": "3c4f7c8ecb6dddea35086fa175eb8fb00565c8cba39feae1838a719c60c4624e",
-          "moduleId": "dist/@tanstack/query-core/build/modern/infiniteQueryBehavior.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/infiniteQueryObserver.js",
-          "hash": "31e822221bd3ef5f680da5c762acc530dbc994d4ab9c8d7149a8d7ecda0c2dba",
-          "moduleId": "dist/@tanstack/query-core/build/modern/infiniteQueryObserver.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/mutation.js",
-          "hash": "0a05c7bf98e22fc2ebcc2247e63581b76b2ba66570b6742d04272101d1bc189b",
-          "moduleId": "dist/@tanstack/query-core/build/modern/mutation.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/mutationCache.js",
-          "hash": "a78221f9fc82fe14e64c5c35ba12a52f606160d28dc5a4e7ead1f1539017426f",
-          "moduleId": "dist/@tanstack/query-core/build/modern/mutationCache.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/mutationObserver.js",
-          "hash": "c9777be45d3160f64880369312e8b2928a0a765434abe3dd99556fc3de306510",
-          "moduleId": "dist/@tanstack/query-core/build/modern/mutationObserver.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/notifyManager.js",
-          "hash": "72485225d3f397dcc662b4d234325e7795ea70645ee3a14ce4e654a5a82de776",
-          "moduleId": "dist/@tanstack/query-core/build/modern/notifyManager.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/onlineManager.js",
-          "hash": "b9fb32ee6790ba4b8757a7cc7d05d30ba02499907dae278f1dd5f39f577b2e6e",
-          "moduleId": "dist/@tanstack/query-core/build/modern/onlineManager.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/queriesObserver.js",
-          "hash": "afa74af0471713670e9bc82eea536814febcfd42b816ca215de6880ef9e79b06",
-          "moduleId": "dist/@tanstack/query-core/build/modern/queriesObserver.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/query.js",
-          "hash": "e196e6554fb1d89c3bf1a0ab666d9ed60d9b3097ba7872f95cb8bc8cf246be55",
-          "moduleId": "dist/@tanstack/query-core/build/modern/query.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/queryCache.js",
-          "hash": "40cd028ddb90eb1d11959621e534430bf12e44472a6f949d4022e07142327ace",
-          "moduleId": "dist/@tanstack/query-core/build/modern/queryCache.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/queryClient.js",
-          "hash": "3803883524df6a13d0bd02ec51bdc4adf8452ce56c51d293abb2eb44142bd61b",
-          "moduleId": "dist/@tanstack/query-core/build/modern/queryClient.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/queryObserver.js",
-          "hash": "63bc3b3c8c8c3b6e5b58164732526334da666045e2cfdf15e864305722b3e8c6",
-          "moduleId": "dist/@tanstack/query-core/build/modern/queryObserver.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/removable.js",
-          "hash": "cacf9e71a47e1835a0ab327996b9ab635cf7b7817ba1c81e60e33e9e0284a073",
-          "moduleId": "dist/@tanstack/query-core/build/modern/removable.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/retryer.js",
-          "hash": "4d416bc0b07a9964b7ffecebe814124e3b7d9ff74f10f140dd3a99d785624d73",
-          "moduleId": "dist/@tanstack/query-core/build/modern/retryer.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/streamedQuery.js",
-          "hash": "41bffb3d8745f4cf0d87e3a076662c300a3ba5abaa5ed4370f59180aef8ee916",
-          "moduleId": "dist/@tanstack/query-core/build/modern/streamedQuery.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/subscribable.js",
-          "hash": "4d7be4d0d98765815a9633aeec22b3be5787fcd03288ff07f7ba795e66e7e1bd",
-          "moduleId": "dist/@tanstack/query-core/build/modern/subscribable.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/timeoutManager.js",
-          "hash": "bd9294467f158d208a6f675301d0864cc8c00503d6f406b641bc2053757c63dc",
-          "moduleId": "dist/@tanstack/query-core/build/modern/timeoutManager.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/types.js",
-          "hash": "3e3b015c5e96160b2b202cf8ebe2c9d0d9ce25253e28366e5bdd0df4b9e8bd4a",
-          "moduleId": "dist/@tanstack/query-core/build/modern/types.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/query-core/build/modern/utils.js",
-          "hash": "3402d56163cc598399a9b928bb5d7b791e97d8d2895c82df33723499542e6305",
-          "moduleId": "dist/@tanstack/query-core/build/modern/utils.js"
-        }
-      ]
+      "productionDependencies": []
     },
     "@tanstack/vue-query": {
       "type": "module",
-      "development": "dist/@tanstack/vue-query/build/modern/index.js",
-      "production": "dist/@tanstack/vue-query/build/modern/index.js",
-      "developmentHash": "61a5c653ebd69886b64ae59cdec11d8ec3889ab63647abeac1ecce209c9f87f2",
-      "productionHash": "61a5c653ebd69886b64ae59cdec11d8ec3889ab63647abeac1ecce209c9f87f2",
+      "development": "@tanstack/vue-query",
+      "production": "@tanstack/vue-query",
       "developmentDependencies": [
         "@tanstack/match-sorter-utils",
         "@tanstack/query-core",
@@ -223,189 +55,18 @@
         "@tanstack/query-core",
         "@vue/devtools-api",
         "vue-demi"
-      ],
-      "developmentModuleDependencies": [
-        "dist/@tanstack/vue-query/build/modern/devtools/devtools.js",
-        "dist/@tanstack/vue-query/build/modern/devtools/utils.js",
-        "dist/@tanstack/vue-query/build/modern/infiniteQueryOptions.js",
-        "dist/@tanstack/vue-query/build/modern/mutationCache.js",
-        "dist/@tanstack/vue-query/build/modern/mutationOptions.js",
-        "dist/@tanstack/vue-query/build/modern/queryCache.js",
-        "dist/@tanstack/vue-query/build/modern/queryClient.js",
-        "dist/@tanstack/vue-query/build/modern/queryOptions.js",
-        "dist/@tanstack/vue-query/build/modern/useBaseQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useInfiniteQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useIsFetching.js",
-        "dist/@tanstack/vue-query/build/modern/useMutation.js",
-        "dist/@tanstack/vue-query/build/modern/useMutationState.js",
-        "dist/@tanstack/vue-query/build/modern/usePrefetchInfiniteQuery.js",
-        "dist/@tanstack/vue-query/build/modern/usePrefetchQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useQueries.js",
-        "dist/@tanstack/vue-query/build/modern/useQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useQueryClient.js",
-        "dist/@tanstack/vue-query/build/modern/utils.js",
-        "dist/@tanstack/vue-query/build/modern/vueQueryPlugin.js"
-      ],
-      "productionModuleDependencies": [
-        "dist/@tanstack/vue-query/build/modern/devtools/devtools.js",
-        "dist/@tanstack/vue-query/build/modern/devtools/utils.js",
-        "dist/@tanstack/vue-query/build/modern/infiniteQueryOptions.js",
-        "dist/@tanstack/vue-query/build/modern/mutationCache.js",
-        "dist/@tanstack/vue-query/build/modern/mutationOptions.js",
-        "dist/@tanstack/vue-query/build/modern/queryCache.js",
-        "dist/@tanstack/vue-query/build/modern/queryClient.js",
-        "dist/@tanstack/vue-query/build/modern/queryOptions.js",
-        "dist/@tanstack/vue-query/build/modern/useBaseQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useInfiniteQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useIsFetching.js",
-        "dist/@tanstack/vue-query/build/modern/useMutation.js",
-        "dist/@tanstack/vue-query/build/modern/useMutationState.js",
-        "dist/@tanstack/vue-query/build/modern/usePrefetchInfiniteQuery.js",
-        "dist/@tanstack/vue-query/build/modern/usePrefetchQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useQueries.js",
-        "dist/@tanstack/vue-query/build/modern/useQuery.js",
-        "dist/@tanstack/vue-query/build/modern/useQueryClient.js",
-        "dist/@tanstack/vue-query/build/modern/utils.js",
-        "dist/@tanstack/vue-query/build/modern/vueQueryPlugin.js"
-      ],
-      "files": [
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/devtools/devtools.js",
-          "hash": "e53cf79af9f1cca0fb82a235f5250f12aaf8245cb77d983ee4929eb9c1392561",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/devtools/devtools.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/devtools/utils.js",
-          "hash": "fd60ecda1fab334ce87eb7a3f855d6c46c7e82794a9e82e44e088b6acbc7c944",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/devtools/utils.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/infiniteQueryOptions.js",
-          "hash": "16ec2b8221c03e605a2bff391c581136127fb1ef30181bf661596e8662ed99fc",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/infiniteQueryOptions.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/mutationCache.js",
-          "hash": "f079c635c9471a13e2be17f23a88e4e0dfe70ddff69d1c11f4c389f32acc3d6d",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/mutationCache.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/mutationOptions.js",
-          "hash": "8553ff6af5b678c17c57d4e637ab1726303a5e29ec07d0b49f8c00538ffc2875",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/mutationOptions.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/queryCache.js",
-          "hash": "b2a2693158945b2900cebbe01388b36aa5b935a7c0a17f5916782092f9063b14",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/queryCache.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/queryClient.js",
-          "hash": "9824343791ce651fda998863f1b84d446366569d28d5e98f1ae5361e2d86f8f0",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/queryClient.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/queryOptions.js",
-          "hash": "de5f2f7c6ce95257ea750c5fcabe65dd6fc150ae448f531685dafc16c4057205",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/queryOptions.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useBaseQuery.js",
-          "hash": "9a84ce8ef75dadecf297ebe663c6676f099023ae5896f4ecce6867f6484197da",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useBaseQuery.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useInfiniteQuery.js",
-          "hash": "3086afdfbae54a94656077e3423db3c27e7f3df873539e9ec296f61aa72b51bc",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useInfiniteQuery.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useIsFetching.js",
-          "hash": "e3445ee474dcaf5d4fe594f4e6961afc8c45e2f73fc73c08a253b7f2b1e26ac4",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useIsFetching.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useMutation.js",
-          "hash": "c78de0121e311556f41dde73bec49b103a93c7fdf23c8fd113d43695149b852a",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useMutation.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useMutationState.js",
-          "hash": "90adb3005bb545ac7ca07384232c730249c6d21a0fd0927d285582d3be53d535",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useMutationState.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/usePrefetchInfiniteQuery.js",
-          "hash": "4ae2a9e66dc6e7679a46eac9fb1ac32a604a95d7b3b19c239eaa51c9231e072d",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/usePrefetchInfiniteQuery.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/usePrefetchQuery.js",
-          "hash": "9fcad40604d6bf4c3a1223ad8ec356980d2620c646db6408c424a39dc2207cb1",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/usePrefetchQuery.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useQueries.js",
-          "hash": "33c7ce50bc573236e51c3eef21c4801363d75f0c0c2f9d8f19e42a9b5d360f18",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useQueries.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useQuery.js",
-          "hash": "e65cf62cac77e29e41bf7ec7ab14b3b6b22acfeae6992f659562fa4697f3a5c8",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useQuery.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/useQueryClient.js",
-          "hash": "2d6d8571662f2423e6e69ad8b8981b92b803554b19df1c573cf463c783cb43e3",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/useQueryClient.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/utils.js",
-          "hash": "dd302a49df499d956bdb889141a2bc317c5b842bfd481d896d80d05adc3f17f2",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/utils.js"
-        },
-        {
-          "type": "module",
-          "path": "dist/@tanstack/vue-query/build/modern/vueQueryPlugin.js",
-          "hash": "649774f88069bf426408b1c61c8d490b2e50c93a9ac9f9f78626496d89477ce0",
-          "moduleId": "dist/@tanstack/vue-query/build/modern/vueQueryPlugin.js"
-        }
       ]
     },
     "vue-demi": {
       "type": "module",
-      "development": "dist/vue-demi/lib/index.mjs",
-      "production": "dist/vue-demi/lib/index.mjs",
-      "developmentHash": "56d7ae0357883150b7ee577ee74246a4a29fd464c012f7c3bad524f639e2c802",
-      "productionHash": "56d7ae0357883150b7ee577ee74246a4a29fd464c012f7c3bad524f639e2c802",
+      "development": "vue-demi",
+      "production": "vue-demi",
       "developmentDependencies": [
         "vue"
       ],
       "productionDependencies": [
         "vue"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     }
   },
   "requires": {

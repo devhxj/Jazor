@@ -37,21 +37,28 @@ var usedIconNames = icons.Select(static icon => icon.IconName).ToHashSet(StringC
 if (!usedIconNames.SetEquals(iconData.Keys))
     throw new InvalidOperationException("Wrapper components and iconData entries must have an exact one-to-one mapping.");
 
-var componentsDirectory = Path.Combine(outputRoot, "dist", "components");
+// The upstream package contains raw Vue SFC wrappers, so its component exports cannot be
+// consumed directly by the browser artifact graph. Keep the small browser bridge in an explicit
+// embedded-mjs carrier; the npm package remains the authoritative source for icon metadata.
+var runtimeRoot = Path.Combine(outputRoot, "runtime", "vu-icons");
+var componentsDirectory = Path.Combine(runtimeRoot, "components");
+var historicalDist = Path.Combine(outputRoot, "dist");
+if (Directory.Exists(historicalDist))
+    Directory.Delete(historicalDist, recursive: true);
+if (Directory.Exists(componentsDirectory))
+    Directory.Delete(componentsDirectory, recursive: true);
 Directory.CreateDirectory(componentsDirectory);
 Directory.CreateDirectory(Path.Combine(outputRoot, "licenses"));
-foreach (var path in Directory.EnumerateFiles(componentsDirectory, "*.mjs"))
-    File.Delete(path);
 
 WriteFile(Path.Combine(outputRoot, "Types", "VuIconName.generated.cs"), GenerateIconNames(version, icons));
 WriteFile(Path.Combine(outputRoot, "Components", "VuIcons.generated.cs"), GenerateComponents(icons));
 foreach (var icon in icons)
     WriteFile(Path.Combine(componentsDirectory, icon.ComponentName + ".mjs"), GenerateStaticIconModule(icon));
 
-WriteFile(Path.Combine(outputRoot, "dist", "jazor-vu-icon-runtime.mjs"), GetRuntimeModule());
-WriteFile(Path.Combine(outputRoot, "dist", "jazor-vu-icon.mjs"), GetDynamicIconModule());
-WriteFile(Path.Combine(outputRoot, "dist", "jazor-vu-icon.css"), GetIconStyleSheet());
-File.Copy(iconDataPath, Path.Combine(outputRoot, "dist", "icons-data.js"), overwrite: true);
+WriteFile(Path.Combine(runtimeRoot, "runtime.mjs"), GetRuntimeModule());
+WriteFile(Path.Combine(runtimeRoot, "index.mjs"), GetDynamicIconModule());
+WriteFile(Path.Combine(runtimeRoot, "vu-icons.css"), GetIconStyleSheet());
+File.Copy(iconDataPath, Path.Combine(runtimeRoot, "icons-data.js"), overwrite: true);
 File.Copy(Path.Combine(sourceRoot, "LICENSE"), Path.Combine(outputRoot, "licenses", "VU-ICONS-LICENSE"), overwrite: true);
 WriteFile(Path.Combine(outputRoot, "manifest.json"), GenerateManifest(version, icons, outputRoot));
 
@@ -187,9 +194,9 @@ static string GenerateComponents(IReadOnlyList<Icon> icons)
     {
         var icon = icons[index];
         builder.Append("/// <summary>").Append(XmlText(icon.Documentation.Description ?? icon.ComponentName)).AppendLine("</summary>");
-        builder.Append("/// <remarks>按需 static renderer for upstream <c>")
+        builder.Append("/// <remarks>Embedded browser bridge for upstream <c>")
             .Append(icon.ComponentName)
-            .AppendLine("</c>; only its SVG module is materialized.</remarks>");
+            .AppendLine("</c>; only this SVG module is materialized for static usage.</remarks>");
         builder.Append("[ECMAScript(\"vu-icons/").Append(icon.ComponentName).Append("\", Transform.Component, \"").Append(icon.ComponentName).AppendLine("\")]");
         builder.Append("public sealed class ").Append(icon.ComponentName).AppendLine(" : VuIconComponentBase;");
         if (index != icons.Count - 1)
@@ -200,7 +207,7 @@ static string GenerateComponents(IReadOnlyList<Icon> icons)
 }
 
 static string GenerateStaticIconModule(Icon icon)
-    => "import { createVuIcon } from \"../jazor-vu-icon-runtime.mjs\";\n\n" +
+    => "import { createVuIcon } from \"../runtime.mjs\";\n\n" +
        "export const " + icon.ComponentName + " = createVuIcon(\"" + icon.ComponentName + "\", \"" + icon.Data.ViewBox + "\", '" + icon.Data.Content + "');\n";
 
 static string GenerateManifest(string version, IReadOnlyList<Icon> icons, string outputRoot)
@@ -208,34 +215,49 @@ static string GenerateManifest(string version, IReadOnlyList<Icon> icons, string
     using var stream = new MemoryStream();
     using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
     {
-        // Stable writer order keeps the package manifest deterministic without reflection serialization.
         writer.WriteStartObject();
         writer.WriteNumber("schemaVersion", 2);
         writer.WriteString("libraryId", "vu-icons");
         writer.WriteString("version", version);
+        writer.WriteString("source", "embedded-mjs");
+        writer.WritePropertyName("packages");
+        writer.WriteStartObject();
+        writer.WritePropertyName("vu-icons");
+        writer.WriteStartObject();
+        writer.WriteString("source", "embedded-mjs");
+        writer.WriteString("version", version);
+        writer.WriteEndObject();
+        writer.WritePropertyName("vue");
+        writer.WriteStartObject();
+        writer.WriteString("source", "npm");
+        writer.WriteString("version", "3.5.42");
+        writer.WriteEndObject();
+        writer.WriteEndObject();
         writer.WritePropertyName("imports");
         writer.WriteStartObject();
         WriteManifestImport(
             writer,
             "vu-icons",
-            "dist/jazor-vu-icon.mjs",
+            "runtime/vu-icons/index.mjs",
             outputRoot,
             ["vue"],
-            ["dist/icons-data.js", "dist/jazor-vu-icon-runtime.mjs"],
+            ["runtime/vu-icons/icons-data.js", "runtime/vu-icons/runtime.mjs"],
             [
-                ("dist/icons-data.js", "module"),
-                ("dist/jazor-vu-icon-runtime.mjs", "module")
-            ]);
+                ("runtime/vu-icons/icons-data.js", "module"),
+                ("runtime/vu-icons/runtime.mjs", "module")
+            ],
+            "runtime/vu-icons/vu-icons.css");
         foreach (var icon in icons)
         {
             WriteManifestImport(
                 writer,
                 "vu-icons/" + icon.ComponentName,
-                "dist/components/" + icon.ComponentName + ".mjs",
+                "runtime/vu-icons/components/" + icon.ComponentName + ".mjs",
                 outputRoot,
                 ["vue"],
-                ["dist/jazor-vu-icon-runtime.mjs"],
-                [("dist/jazor-vu-icon-runtime.mjs", "module")]);
+                ["runtime/vu-icons/runtime.mjs"],
+                [("runtime/vu-icons/runtime.mjs", "module")],
+                "runtime/vu-icons/vu-icons.css");
         }
 
         writer.WriteEndObject();
@@ -245,18 +267,13 @@ static string GenerateManifest(string version, IReadOnlyList<Icon> icons, string
         writer.WriteEndObject();
         writer.WritePropertyName("styles");
         writer.WriteStartArray();
-        writer.WriteStartObject();
-        writer.WriteString("type", "style");
-        writer.WriteString("path", "dist/jazor-vu-icon.css");
-        writer.WriteString("hash", ComputeHash(outputRoot, "dist/jazor-vu-icon.css"));
-        writer.WriteEndObject();
         writer.WriteEndArray();
         writer.WritePropertyName("files");
         writer.WriteStartArray();
         writer.WriteStartObject();
         writer.WriteString("type", "license");
         writer.WriteString("path", "licenses/VU-ICONS-LICENSE");
-        writer.WriteString("hash", ComputeHash(outputRoot, "licenses/VU-ICONS-LICENSE"));
+        writer.WriteString("hash", HashFile(Path.Combine(outputRoot, "licenses", "VU-ICONS-LICENSE")));
         writer.WriteEndObject();
         writer.WriteEndArray();
         writer.WriteEndObject();
@@ -272,7 +289,8 @@ static void WriteManifestImport(
     string outputRoot,
     IReadOnlyList<string> packageDependencies,
     IReadOnlyList<string> moduleDependencies,
-    IReadOnlyList<(string Path, string Type)> files)
+    IReadOnlyList<(string Path, string Type)> files,
+    string stylePath)
 {
     writer.WriteStartObject(importSpecifier);
     writer.WriteString("type", "module");
@@ -300,19 +318,33 @@ static void WriteManifestImport(
     foreach (var dependency in moduleDependencies)
         writer.WriteStringValue(dependency);
     writer.WriteEndArray();
+    writer.WritePropertyName("developmentStyles");
+    writer.WriteStartArray();
+    WriteManifestFile(writer, outputRoot, stylePath, "style", null);
+    writer.WriteEndArray();
+    writer.WritePropertyName("productionStyles");
+    writer.WriteStartArray();
+    WriteManifestFile(writer, outputRoot, stylePath, "style", null);
+    writer.WriteEndArray();
     writer.WritePropertyName("files");
     writer.WriteStartArray();
     foreach (var file in files)
     {
-        writer.WriteStartObject();
-        writer.WriteString("type", file.Type);
-        writer.WriteString("path", file.Path);
-        writer.WriteString("hash", ComputeHash(outputRoot, file.Path));
-        if (file.Type is "module" or "source-map")
-            writer.WriteString("moduleId", file.Path);
-        writer.WriteEndObject();
+        var moduleId = file.Type is "module" or "source-map" ? file.Path : null;
+        WriteManifestFile(writer, outputRoot, file.Path, file.Type, moduleId);
     }
     writer.WriteEndArray();
+    writer.WriteEndObject();
+}
+
+static void WriteManifestFile(Utf8JsonWriter writer, string outputRoot, string path, string type, string? moduleId)
+{
+    writer.WriteStartObject();
+    writer.WriteString("type", type);
+    writer.WriteString("path", path);
+    writer.WriteString("hash", ComputeHash(outputRoot, path));
+    if (!string.IsNullOrWhiteSpace(moduleId))
+        writer.WriteString("moduleId", moduleId);
     writer.WriteEndObject();
 }
 
@@ -320,6 +352,9 @@ static string ComputeHash(string root, string relativePath)
     => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(
         root,
         relativePath.Replace('/', Path.DirectorySeparatorChar))))).ToLowerInvariant();
+
+static string HashFile(string path)
+    => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
 
 static void WriteFile(string path, string content)
 {
@@ -377,7 +412,7 @@ static string GetDynamicIconModule()
     => """
 import { computed, defineComponent, h } from "vue";
 import { iconData } from "./icons-data.js";
-import { createIconStyle } from "./jazor-vu-icon-runtime.mjs";
+import { createIconStyle } from "./runtime.mjs";
 
 export const VuIcon = defineComponent({
     name: "VuIcon",
@@ -436,6 +471,7 @@ static string GetIconStyleSheet()
     to { transform: rotate(360deg); }
 }
 """;
+
 
 static string XmlText(string value)
     => value.Replace("&", "&amp;", StringComparison.Ordinal)

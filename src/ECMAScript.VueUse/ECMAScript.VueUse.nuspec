@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.VueUse.targets" target="buildTransitive\ECMAScript.VueUse.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vueuse" />
     <file src="$projectDir$inventory.json" target="jazor\vueuse" />
-    <file src="$projectDir$dist\**\*" target="jazor\vueuse\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vueuse\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

@@ -9,7 +9,8 @@
 - 临时 bundle workspace 中的跨模块 import 改写。
 - 静态模块、chained bundle 与 writer source map 行为。
 - `ECMAScript.Style` 的 debug 物化、source map、manifest 与 release bundle。
-- Emit 只消费 `ModuleCatalog` 和 `manifest.json + dist/**` 两种输入的契约守护。
+- Emit 同时验证 `ModuleCatalog`、binding package metadata、embedded carrier 和生成的
+  `jazor/package.json` 项目契约。
 
 测试直接检查生成的 JavaScript 输出，不只检查进程退出码。
 

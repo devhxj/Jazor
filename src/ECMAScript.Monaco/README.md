@@ -1,8 +1,11 @@
 # ECMAScript.Monaco
 
-Monaco Editor 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本、`manifest.json`（schema 2）、打包后的 `dist/` 资源、样式、worker、许可证与 inventory。
+Monaco Editor 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本，
+`manifest.json`（schema 2）和 `inventory.json` 记录 npm exports、worker 入口、完整性与许可证元数据。
 
-Strongly typed C# bindings for Monaco Editor, shipped as a Jazor JS resource library with a locked upstream version, package-local `manifest.json` (schema 2), bundled `dist/` assets, stylesheet, workers, licenses, and inventory.
+Strongly typed C# bindings for Monaco Editor, shipped as a Jazor JS resource library with a locked
+upstream npm version. Runtime ESM, workers and styles remain in the npm package; metadata describes
+the entries for the generated `jazor` project.
 
 ## 上游锁定 Upstream lock
 
@@ -14,16 +17,11 @@ Strongly typed C# bindings for Monaco Editor, shipped as a Jazor JS resource lib
 | 作者入口 | `monaco-editor` |
 | 构建输入 | `src/ECMAScript.Vue.Generator/monaco-runtime/`（package.json + lockfile 锁定版本） |
 
-### 为什么需要打包
+### 入口解析
 
-上游 `esm/vs/**` 树**不能被浏览器直接加载**：其中 120 个模块 `import` 纯 `.css` 文件，浏览器原生 ESM 会拒绝；上游 `min/` 是 AMD 格式。因此本包沿用仓库 TDesign 先例，用 esbuild 把上游 ESM 入口打成自包含 ESM，并由 esbuild 抽出样式。产物：
-
-| 产物 | 说明 |
-| --- | --- |
-| `dist/monaco-editor/editor.api.mjs` | 编辑器入口（≈5 MB，含全部依赖） |
-| `dist/monaco-editor/editor.api.css` | 编辑器样式（manifest `styles` 声明） |
-| `editor.worker.start.mjs` | 基础 editor worker |
-| `json.worker.mjs` / `css.worker.mjs` / `html.worker.mjs` / `ts.worker.mjs` | 语言服务 worker（manifest 模块依赖声明） |
+绑定保留 Monaco npm package 的 ESM 与 worker 入口，让 NetPack 根据 package `exports`、相对
+依赖和 `sideEffects` 在应用入口处做裁剪。Emit 不复制绑定库自己的 bundle；Deno restore
+负责把锁定的 npm package 放入 `jazor/node_modules`。
 
 ## 首期范围 First slice
 
@@ -62,8 +60,10 @@ var disposable = model.OnDidChangeContent(change => { /* versionId 递增 */ });
 dotnet run --file scripts/csharp/generate-monaco.cs -- --version 0.56.0
 ```
 
-生成器先用 `npm ci` 安装锁定的构建输入，再用 esbuild 打包编辑器与四个语言 worker，并执行浏览器安全闸门（`process.env` 必须带环境守卫）。
+生成器用锁定的 package 输入验证编辑器与四个语言 worker 的 exports，并执行浏览器安全闸门
+（`process.env` 必须带环境守卫）；应用构建由 Emit/Deno 完成 package restore。
 
 ## 测试 Tests
 
-`src/ECMAScript.Monaco.Test` 覆盖 manifest/inventory 元数据、全部产物哈希、样式与 worker 依赖声明、浏览器安全、上游导出 drift、契约形状与编译器 emission。
+`src/ECMAScript.Monaco.Test` 覆盖 manifest/inventory 元数据、npm integrity、样式与 worker
+依赖声明、浏览器安全、上游导出 drift、契约形状与编译器 emission。

@@ -9,4 +9,5 @@ internal sealed record BundleOptions(
     IReadOnlyList<string>? LibraryManifests = null,
     LibraryAssets? MaterializedLibraries = null,
     bool SourceMaps = true,
-    bool Minify = false);
+    bool Minify = false,
+    string? PackageRoot = null);

@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.VueDraggable.targets" target="buildTransitive\ECMAScript.VueDraggable.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vue-draggable" />
     <file src="$projectDir$inventory.json" target="jazor\vue-draggable" />
-    <file src="$projectDir$dist\**\*" target="jazor\vue-draggable\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vue-draggable\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

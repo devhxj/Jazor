@@ -5,7 +5,7 @@
 `ECMAScript.Style` 将结构化 C# 值转换为标准 `style.mjs` runtime 模块。它保持普通 ECMAScript import、Razor-to-Vue 互操作、基于内容的稳定命名、隔离 registry、Shadow DOM 所有权、SSR snapshot、CSP nonce 与幂等 hydration。
 
 本包是纯 Jazor 类库：`style.mjs` 由 Jazor 编译并写入程序集内的
-`Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`），不携带外部 `manifest.json + dist/**`
+`Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`），不携带外部 npm/JSR runtime package
 资源。编写或组合 Jazor 模块的项目应直接引用 `Jazor`；RazorVue 项目还应直接引用
 `Jazor.Vue`。最终宿主只通过一次 Emit 物化选中的 catalog 依赖闭包。
 

@@ -4,10 +4,10 @@
 
 该包提供经过验证的 Element Plus runtime 导入、组件代理和 props/slot 契约。它只覆盖当前发布的稳定 authoring surface，不以 `object` 或弱类型选择器补齐未建模 API。
 
-本包属于 JS resource library：已有 Element Plus ESM 和 CSS 位于包内
-`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
-authoring contract。消费方编写的 RazorVue 组件仍按纯 Jazor 规则生成到消费程序集的
-`Jazor.Generated.ModuleCatalog`。
+本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Element Plus
+npm package、入口、样式和依赖元数据；Emit 生成标准 `jazor/package.json`，Deno 将运行时恢复
+到 `jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的 RazorVue
+组件仍按纯 Jazor 规则生成到消费程序集的 `Jazor.Generated.ModuleCatalog`。
 
 组件使用独立的 `element-plus/<component>/<export>` 逻辑入口；Emit 只复制实际引用组件的
 ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完整插件安装、版本和指令 API，

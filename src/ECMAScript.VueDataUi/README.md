@@ -2,10 +2,10 @@
 
 > `vue-data-ui` 3.23.4 的 RazorVue 强类型 binding，完整覆盖上游 71 个公开 `vue-ui-*` entry。每个 Razor component 指向单独的 upstream ESM entry，因此不会因为使用一个图表而导入整个 chart bundle。
 
-本包属于 JS resource library：`vue-data-ui` 的已有 ESM 和 CSS 位于包内
-`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
-RazorVue authoring contract。消费方生成的组件模块进入消费程序集的
-`Jazor.Generated.ModuleCatalog`。
+本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 `vue-data-ui`
+npm package、组件入口、全局样式和依赖元数据；Emit 生成标准 `jazor/package.json`，Deno 将
+运行时恢复到 `jazor/node_modules`。C# 程序集只提供映射和 RazorVue authoring contract。
+消费方生成的组件模块进入消费程序集的 `Jazor.Generated.ModuleCatalog`。
 
 ## 安装
 
@@ -66,9 +66,9 @@ Dataset 与稳定 config 字段都有具体 C# 类型。对于 upstream 仍在�
 
 ## 完整组件目录
 
-文档来源需要区分：`vue-data-ui` 3.23.4 npm 包没有 JetBrains `web-types.json`，组件 `.d.ts` 的 `Props` 类型也没有逐组件 JSDoc；因此本包不会把本地概括说明伪装成上游原始注释。上游可追溯的原文随包保存在 `dist/types/vue-data-ui.d.ts`、各组件 `.d.ts`、`README.md` 和 `dist/llms.txt` 中。当前 C# XML 注释只在上游有对应文字时保留原文，其余组件说明属于 binding contract 说明。后续若上游发布结构化组件文档，应将该快照接入生成器并补齐逐 prop 原文。
+文档来源需要区分：`vue-data-ui` 3.23.4 npm 包没有 JetBrains `web-types.json`，组件 `.d.ts` 的 `Props` 类型也没有逐组件 JSDoc；因此本包不会把本地概括说明伪装成上游原始注释。组件类型和说明以锁定 npm tarball 中的类型声明、`README.md` 与上游文档为依据；当前 C# XML 注释只在上游有对应文字时保留原文，其余组件说明属于 binding contract 说明。后续若上游发布结构化组件文档，应将该快照接入生成器并补齐逐 prop 原文。
 
-当前包与 `dist/components/vue-ui-*.js` 一一对应，共 71 个公开 Razor component：
+当前绑定与 npm package 的 `vue-data-ui/vue-ui-*` 入口一一对应，共 71 个公开 Razor component：
 
 - 基础与 Cartesian：`VdXy`、`VdXyCanvas`、`VdVerticalBar`、`VdHorizontalBar`、`Vd3dBar`、`VdBump`、`VdCandlestick`、`VdDumbbell`、`VdHeatmap`、`VdHistoryPlot`、`VdRidgeline`、`VdScatter`、`VdSparkline`、`VdSparkTrend`、`VdStackbar`、`VdStackline`、`VdStripPlot`。
 - 比例、层级与关系：`VdBullet`、`VdChestnut`、`VdChord`、`VdCirclePack`、`VdDonut`、`VdDonutEvolution`、`VdFunnel`、`VdGalaxy`、`VdGauge`、`VdNestedDonuts`、`VdOnion`、`VdRings`、`VdTreemap`、`VdWaffle`、`VdWheel`、`VdWordCloud`。

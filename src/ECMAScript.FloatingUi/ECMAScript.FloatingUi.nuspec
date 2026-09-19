@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.FloatingUi.targets" target="buildTransitive\ECMAScript.FloatingUi.targets" />
     <file src="$projectDir$manifest.json" target="jazor\floating-ui" />
     <file src="$projectDir$inventory.json" target="jazor\floating-ui" />
-    <file src="$projectDir$dist\**\*" target="jazor\floating-ui\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\floating-ui\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

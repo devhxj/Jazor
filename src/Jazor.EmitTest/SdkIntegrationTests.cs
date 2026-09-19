@@ -275,9 +275,9 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(piniaEntryNames, "lib/net11.0/ECMAScript.Pinia.dll");
         CollectionAssert.Contains(piniaEntryNames, "ECMAScript.Pinia.nuspec");
         CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/manifest.json");
-        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/pinia.esm-browser.js");
-        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/pinia.esm-browser.prod.js");
-        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/nostics/index.mjs");
+        Assert.IsFalse(
+            piniaEntryNames.Any(static path => path.StartsWith("jazor/pinia/dist/", StringComparison.OrdinalIgnoreCase)),
+            "Pinia runtime modules belong to the restored npm package, not the binding archive.");
         CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/licenses/NOSTICS-LICENSE");
         StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor\"");
         StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor.Vue\"");
@@ -291,7 +291,9 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(piniaTestingEntryNames, "ECMAScript.Pinia.Testing.nuspec");
         CollectionAssert.Contains(piniaTestingEntryNames, "buildTransitive/ECMAScript.Pinia.Testing.targets");
         CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/manifest.json");
-        CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/dist/index.mjs");
+        Assert.IsFalse(
+            piniaTestingEntryNames.Any(static path => path.StartsWith("jazor/pinia-testing/dist/", StringComparison.OrdinalIgnoreCase)),
+            "Pinia Testing runtime modules belong to the restored npm package, not the binding archive.");
         CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/licenses/LICENSE");
         StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"ECMAScript.Pinia\"");
         StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"Jazor.Vue\"");
@@ -350,12 +352,6 @@ public sealed class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Vue.dll",
             "lib/net11.0/ECMAScript.VueContract.dll",
             "jazor/vue3/manifest.json",
-            "jazor/vue3/dist/vue.runtime.esm-browser.js",
-            "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
-            "jazor/vue3/dist/server-renderer.esm-browser.js",
-            "jazor/vue3/dist/server-renderer.esm-browser.prod.js",
-            "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js",
-            "jazor/vue3/dist/devtools-api/perfect-debounce.mjs",
             "jazor/vue3/licenses/LICENSE",
             "jazor/vue3/licenses/VUE-DEVTOOLS-API-LICENSE",
             "jazor/vue3/licenses/PERFECT-DEBOUNCE-LICENSE",
@@ -365,8 +361,8 @@ public sealed class SdkIntegrationTests
         AssertPackageEntries(
             package.PackagePath,
             "jazor/ecmascript/manifest.json",
-            "jazor/ecmascript/dist/System/RuntimeModule.js",
-            "jazor/ecmascript/dist/System/StringModule.js");
+            "jazor/ecmascript/clr/System/RuntimeModule.js",
+            "jazor/ecmascript/clr/System/StringModule.js");
         AssertPackageEntries(
             package.VuePackagePath,
             "jazor/vue-runtime/manifest.json",
@@ -378,18 +374,12 @@ public sealed class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Vuetify.dll",
             "buildTransitive/ECMAScript.Vuetify.targets",
             "jazor/vuetify/manifest.json",
-            "jazor/vuetify/dist/vuetify.esm.js",
-            "jazor/vuetify/dist/components.mjs",
-            "jazor/vuetify/dist/directives.mjs",
-            "jazor/vuetify/dist/vuetify.min.css",
             "jazor/vuetify/licenses/LICENSE.md");
         AssertPackageEntries(
             package.VueRoutePackagePath,
             "lib/net11.0/ECMAScript.VueRoute.dll",
             "buildTransitive/ECMAScript.VueRoute.targets",
             "jazor/vue-router/manifest.json",
-            "jazor/vue-router/dist/vue-router.esm-browser.prod.js",
-            "jazor/vue-router/dist/nostics/index.mjs",
             "jazor/vue-router/licenses/NOSTICS-LICENSE",
             "jazor/vue-router/licenses/LICENSE");
         AssertPackageEntries(
@@ -397,9 +387,6 @@ public sealed class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Pinia.dll",
             "buildTransitive/ECMAScript.Pinia.targets",
             "jazor/pinia/manifest.json",
-            "jazor/pinia/dist/pinia.esm-browser.js",
-            "jazor/pinia/dist/pinia.esm-browser.prod.js",
-            "jazor/pinia/dist/nostics/index.mjs",
             "jazor/pinia/licenses/NOSTICS-LICENSE",
             "jazor/pinia/licenses/LICENSE");
         AssertPackageEntries(
@@ -407,35 +394,48 @@ public sealed class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Pinia.Testing.dll",
             "buildTransitive/ECMAScript.Pinia.Testing.targets",
             "jazor/pinia-testing/manifest.json",
-            "jazor/pinia-testing/dist/index.mjs",
             "jazor/pinia-testing/licenses/LICENSE");
         AssertPackageEntries(
             package.TDesignPackagePath,
             "lib/net11.0/ECMAScript.TDesign.dll",
             "buildTransitive/ECMAScript.TDesign.targets",
             "jazor/tdesign-vue-next/manifest.json",
-            "jazor/tdesign-vue-next/dist/tdesign.mjs",
-            "jazor/tdesign-vue-next/dist/tdesign.css",
             "jazor/tdesign-vue-next/licenses/LICENSE");
         AssertPackageEntries(
             package.ElementPlusPackagePath,
             "lib/net11.0/ECMAScript.ElementPlus.dll",
             "buildTransitive/ECMAScript.ElementPlus.targets",
             "jazor/element-plus/manifest.json",
-            "jazor/element-plus/dist/index.full.min.mjs",
-            "jazor/element-plus/dist/index.css",
             "jazor/element-plus/licenses/LICENSE");
+
+        foreach (var (packagePath, libraryId) in new[]
+                 {
+                     (package.VuePackagePath, "vue3"),
+                     (package.VuetifyPackagePath, "vuetify"),
+                     (package.VueRoutePackagePath, "vue-router"),
+                     (package.PiniaPackagePath, "pinia"),
+                     (package.PiniaTestingPackagePath, "pinia-testing"),
+                     (package.TDesignPackagePath, "tdesign-vue-next"),
+                     (package.ElementPlusPackagePath, "element-plus")
+                 })
+        {
+            using var bindingArchive = ZipFile.OpenRead(packagePath);
+            Assert.IsFalse(
+                bindingArchive.Entries.Any(entry =>
+                    entry.FullName.Replace('\\', '/').StartsWith($"jazor/{libraryId}/dist/", StringComparison.OrdinalIgnoreCase)),
+                $"Binding package '{libraryId}' must not carry a historical dist snapshot.");
+        }
     }
 
     [TestMethod]
-    public async Task CreateLocalPackage_VueDevtoolsApi_SatisfiesVueRouterAndPiniaDevelopmentImports()
+    public async Task CreateLocalPackage_VueDevtoolsApi_DeclaresVueRouterAndPiniaDevelopmentImports()
     {
         var package = await LocalPackage.Value;
         using var manifest = JsonDocument.Parse(ReadPackageEntryText(package.VuePackagePath, "jazor/vue3/manifest.json"));
 
         var devtools = manifest.RootElement.GetProperty("imports").GetProperty("@vue/devtools-api");
-        Assert.AreEqual("dist/devtools-api/vue-devtools-api.esm-browser.js", devtools.GetProperty("development").GetString());
-        Assert.AreEqual("dist/devtools-api/vue-devtools-api.esm-browser.js", devtools.GetProperty("production").GetString());
+        Assert.AreEqual("@vue/devtools-api", devtools.GetProperty("development").GetString());
+        Assert.AreEqual("@vue/devtools-api", devtools.GetProperty("production").GetString());
         CollectionAssert.AreEquivalent(
             new[] { "perfect-debounce" },
             devtools.GetProperty("developmentDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
@@ -443,28 +443,32 @@ public sealed class SdkIntegrationTests
             new[] { "perfect-debounce" },
             devtools.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
         var serverRenderer = manifest.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer");
-        Assert.AreEqual("dist/server-renderer.esm-browser.js", serverRenderer.GetProperty("development").GetString());
-        Assert.AreEqual("dist/server-renderer.esm-browser.prod.js", serverRenderer.GetProperty("production").GetString());
-        AssertManifestFile(
-            devtools.GetProperty("files"),
-            "license",
-            "licenses/VUE-DEVTOOLS-API-LICENSE");
-        AssertManifestFile(
-            serverRenderer.GetProperty("files"),
-            "license",
-            "licenses/VUE-SERVER-RENDERER-LICENSE");
+        Assert.AreEqual("@vue/server-renderer", serverRenderer.GetProperty("development").GetString());
+        Assert.AreEqual("@vue/server-renderer", serverRenderer.GetProperty("production").GetString());
+        using (var vueArchive = ZipFile.OpenRead(package.VuePackagePath))
+        {
+            Assert.IsFalse(
+                vueArchive.Entries.Any(entry =>
+                    entry.FullName.Replace('\\', '/').StartsWith("jazor/vue3/dist/", StringComparison.OrdinalIgnoreCase)));
+        }
 
-        var devtoolsApi = ReadPackageEntryText(package.VuePackagePath, "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js");
-        StringAssert.Contains(devtoolsApi, "from 'perfect-debounce'", StringComparison.Ordinal);
+        using var routerManifest = JsonDocument.Parse(ReadPackageEntryText(package.VueRoutePackagePath, "jazor/vue-router/manifest.json"));
+        var routerEntry = routerManifest.RootElement.GetProperty("imports").GetProperty("vue-router");
+        CollectionAssert.AreEquivalent(
+            new[] { "@vue/devtools-api", "nostics", "vue" },
+            routerEntry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
+        using var piniaManifest = JsonDocument.Parse(ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/manifest.json"));
+        var piniaEntry = piniaManifest.RootElement.GetProperty("imports").GetProperty("pinia");
+        CollectionAssert.AreEquivalent(
+            new[] { "@vue/devtools-api", "nostics", "vue" },
+            piniaEntry.GetProperty("developmentDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
 
-        var router = ReadPackageEntryText(package.VueRoutePackagePath, "jazor/vue-router/dist/vue-router.esm-browser.js");
-        var piniaDevelopment = ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/dist/pinia.esm-browser.js");
-        var piniaProduction = ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/dist/pinia.esm-browser.prod.js");
-        StringAssert.Contains(router, "from \"@vue/devtools-api\"", StringComparison.Ordinal);
-        StringAssert.Contains(piniaDevelopment, "from \"@vue/devtools-api\"", StringComparison.Ordinal);
-        StringAssert.Contains(piniaDevelopment, "from \"nostics\"", StringComparison.Ordinal);
-        Assert.IsFalse(piniaProduction.Contains("@vue/devtools-api", StringComparison.Ordinal));
-        Assert.IsFalse(piniaProduction.Contains("nostics", StringComparison.Ordinal));
+        using (var piniaArchive = ZipFile.OpenRead(package.PiniaPackagePath))
+        {
+            Assert.IsFalse(
+                piniaArchive.Entries.Any(entry =>
+                    entry.FullName.Replace('\\', '/').StartsWith("jazor/pinia/dist/", StringComparison.OrdinalIgnoreCase)));
+        }
     }
 
     [TestMethod]
@@ -479,22 +483,21 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual("tdesign-vue-next", root.GetProperty("libraryId").GetString());
         Assert.AreEqual("1.20.7", root.GetProperty("version").GetString());
         var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next");
-        Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("development").GetString());
-        Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("production").GetString());
-        Assert.AreEqual("^3.5.0", root.GetProperty("requires").GetProperty("vue3").GetString());
-        AssertManifestFile(root.GetProperty("styles"), "style", "dist/tdesign.css");
-        AssertManifestFile(root.GetProperty("files"), "license", "licenses/LICENSE");
-
-        var esm = ReadPackageEntryText(package.TDesignPackagePath, "jazor/tdesign-vue-next/dist/tdesign.mjs");
-        var imports = Regex.Matches(esm, "\\b(?:from|import)\\s+[\\\"'](?<specifier>[^\\\"']+)[\\\"']", RegexOptions.CultureInvariant)
-            .Select(static match => match.Groups["specifier"].Value)
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static specifier => specifier, StringComparer.Ordinal)
-            .ToArray();
-        CollectionAssert.AreEqual(new[] { "vue" }, imports);
-
-        var css = ReadPackageEntryText(package.TDesignPackagePath, "jazor/tdesign-vue-next/dist/tdesign.css");
-        Assert.IsFalse(Regex.IsMatch(css, "https?://", RegexOptions.CultureInvariant), "TDesign CSS must not fetch remote assets.");
+        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("development").GetString());
+        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("production").GetString());
+        Assert.AreEqual(">=3.1.0", root.GetProperty("requires").GetProperty("vue3").GetString());
+        CollectionAssert.AreEquivalent(
+            new[] { "tdesign-vue-next/es/style/index.css" },
+            entry.GetProperty("productionStylesheetImports").EnumerateArray().Select(static value => value.GetString()).ToArray());
+        using (var tdesignArchive = ZipFile.OpenRead(package.TDesignPackagePath))
+        {
+            CollectionAssert.Contains(
+                tdesignArchive.Entries.Select(static entry => entry.FullName.Replace('\\', '/')).ToArray(),
+                "jazor/tdesign-vue-next/licenses/LICENSE");
+        }
+        Assert.IsFalse(
+            ZipFile.OpenRead(package.TDesignPackagePath).Entries.Any(entry =>
+                entry.FullName.Replace('\\', '/').StartsWith("jazor/tdesign-vue-next/dist/", StringComparison.OrdinalIgnoreCase)));
     }
 
     [TestMethod]
@@ -669,24 +672,20 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "ssr-importmap.json")), "SSR local import map was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "manifest.json")), "SSR asset manifest was not generated.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.42", "dist", "server-renderer.esm-browser.prod.js")),
-            "SSR server renderer was not materialized.");
+            File.Exists(Path.Combine(browserRoot, "node_modules", "@vue", "server-renderer", "package.json")),
+            "SSR server renderer must be restored in the shared node_modules graph.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.42", "licenses", "VUE-SERVER-RENDERER-LICENSE")),
-            "SSR server renderer license was not materialized.");
+            File.Exists(Path.Combine(browserRoot, "node_modules", "vue", "package.json")),
+            "Vue must be restored in the shared node_modules graph.");
         Assert.IsFalse(
-            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.42", "dist", "server-renderer.esm-browser.prod.js")),
-            "Browser release must not carry the SSR-only renderer entry.");
-        Assert.IsFalse(
-            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.42", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
-            "Browser release must not carry unused Vue devtools assets.");
-        Assert.IsFalse(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.42", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
-            "SSR release must not carry browser-only Vue devtools assets.");
+            Directory.Exists(Path.Combine(browserRoot, "vendor")),
+            "External npm packages must not be copied into a binding-owned vendor snapshot.");
 
         var ssrImportMap = await File.ReadAllTextAsync(Path.Combine(ssrRoot, "ssr-importmap.json"));
         StringAssert.Contains(ssrImportMap, "\"@vue/server-renderer\"");
-        Assert.IsFalse(ssrImportMap.Contains("node_modules", StringComparison.Ordinal));
+        StringAssert.Contains(ssrImportMap, "../node_modules/");
+        Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "package.json")), "The shared package project was not emitted.");
+        Assert.IsTrue(Directory.Exists(Path.Combine(browserRoot, "node_modules")), "The shared Deno node_modules graph was not restored.");
     }
 
     [TestMethod]
@@ -3275,9 +3274,9 @@ public sealed class SdkIntegrationTests
             """);
 
         await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
-        Assert.IsFalse(
+        Assert.IsTrue(
             Directory.Exists(Path.Combine(outputRoot, "node_modules")),
-            "The materialized RazorVue consumer test must resolve Vue without frontend node_modules.");
+            "The materialized RazorVue consumer test must resolve Vue from the Emit-owned jazor/node_modules graph.");
     }
 
     [TestMethod]
@@ -4477,15 +4476,11 @@ public sealed class SdkIntegrationTests
         AssertPackageEntries(
             tdesignPackagePath,
             "lib/net11.0/ECMAScript.TDesign.dll",
-            "jazor/tdesign-vue-next/manifest.json",
-            "jazor/tdesign-vue-next/dist/tdesign.mjs",
-            "jazor/tdesign-vue-next/dist/tdesign.css");
+            "jazor/tdesign-vue-next/manifest.json");
         AssertPackageEntries(
             elementPlusPackagePath,
             "lib/net11.0/ECMAScript.ElementPlus.dll",
-            "jazor/element-plus/manifest.json",
-            "jazor/element-plus/dist/index.full.min.mjs",
-            "jazor/element-plus/dist/index.css");
+            "jazor/element-plus/manifest.json");
 
         return new LocalReleasePackageFixture(
             repoRoot,
@@ -5251,9 +5246,9 @@ public sealed class SdkIntegrationTests
         var importMapPath = Path.Combine(harnessRoot, "jazor", "importmap.json");
         var importMapScript = File.Exists(importMapPath)
             ? "<script type=\"importmap\">" + File.ReadAllText(importMapPath) + "</script>"
-            : "<script type=\"importmap\">{\"imports\":{\"vue\":\"./jazor/vue3/dist/vue.runtime.esm-browser.prod.js\",\"element-plus\":\"./jazor/element-plus/dist/index.full.min.mjs\"}}</script>";
+            : "<script type=\"importmap\">{\"imports\":{\"vue\":\"./jazor/node_modules/vue/dist/vue.runtime.esm-browser.prod.js\",\"element-plus\":\"./jazor/node_modules/element-plus/es/index.mjs\"}}</script>";
         WriteFile(Path.Combine(harnessRoot, "index.html"), $"""
-            <!doctype html><html><head><meta charset="utf-8"><link id="element-plus-css" rel="stylesheet" href="./jazor/element-plus/dist/index.css">{importMapScript}<script>
+            <!doctype html><html><head><meta charset="utf-8"><link id="element-plus-css" rel="stylesheet" href="./jazor/node_modules/element-plus/dist/index.css">{importMapScript}<script>
             window.__jazorSmokeFailures=[]; addEventListener("error",e=>window.__jazorSmokeFailures.push(e.message||"error")); addEventListener("unhandledrejection",e=>window.__jazorSmokeFailures.push(String(e.reason||"rejection")));
             </script></head><body><div id="app"></div><script type="module" src="./smoke.mjs"></script></body></html>
             """);

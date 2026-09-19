@@ -40,14 +40,14 @@
           Pack="true"
           PackagePath="buildTransitive\Jazor.Resources.targets" />
     <!-- ECMAScript is an external JS-resource library. Keep its managed projection and its
-         manifest/dist carrier separate so Emit discovers it through the same locator contract as
+         manifest/clr carrier separate so Emit discovers it through the same locator contract as
          Vue, Vuetify and other resource packages. -->
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript\manifest.json"
           Pack="true"
           PackagePath="jazor\ecmascript\manifest.json" />
-    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript\dist\**\*"
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript\clr\**\*"
           Pack="true"
-          PackagePath="jazor\ecmascript\dist\%(RecursiveDir)%(Filename)%(Extension)" />
+          PackagePath="jazor\ecmascript\clr\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +55,9 @@
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
     <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
+    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
 
   <ItemGroup>

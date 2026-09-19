@@ -2,29 +2,45 @@
   "schemaVersion": 2,
   "libraryId": "floating-ui",
   "version": "2.0.1",
+  "source": "npm",
+  "packages": {
+    "@floating-ui/core": {
+      "source": "npm",
+      "version": "1.7.2"
+    },
+    "@floating-ui/dom": {
+      "source": "npm",
+      "version": "1.7.2"
+    },
+    "@floating-ui/utils": {
+      "source": "npm",
+      "version": "0.2.9"
+    },
+    "@floating-ui/vue": {
+      "source": "npm",
+      "version": "1.1.9"
+    },
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
+    }
+  },
   "imports": {
     "@floating-ui/core": {
       "type": "module",
-      "development": "dist/@floating-ui/core/floating-ui.core.mjs",
-      "production": "dist/@floating-ui/core/floating-ui.core.mjs",
-      "developmentHash": "c6c359d91fbc6636f6143aae9ff47105eeacea869b14afe7d54e120444ab8f37",
-      "productionHash": "c6c359d91fbc6636f6143aae9ff47105eeacea869b14afe7d54e120444ab8f37",
+      "development": "@floating-ui/core",
+      "production": "@floating-ui/core",
       "developmentDependencies": [
         "@floating-ui/utils"
       ],
       "productionDependencies": [
         "@floating-ui/utils"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     },
     "@floating-ui/dom": {
       "type": "module",
-      "development": "dist/@floating-ui/dom/floating-ui.dom.mjs",
-      "production": "dist/@floating-ui/dom/floating-ui.dom.mjs",
-      "developmentHash": "a1c916ed18ed8bb2c586079f7946d35797b45bc79eafae1d99ec6f812672ef54",
-      "productionHash": "a1c916ed18ed8bb2c586079f7946d35797b45bc79eafae1d99ec6f812672ef54",
+      "development": "@floating-ui/dom",
+      "production": "@floating-ui/dom",
       "developmentDependencies": [
         "@floating-ui/core",
         "@floating-ui/utils",
@@ -34,41 +50,26 @@
         "@floating-ui/core",
         "@floating-ui/utils",
         "@floating-ui/utils/dom"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     },
     "@floating-ui/utils": {
       "type": "module",
-      "development": "dist/@floating-ui/utils/floating-ui.utils.mjs",
-      "production": "dist/@floating-ui/utils/floating-ui.utils.mjs",
-      "developmentHash": "f53b3ea1eec15af77ca9def295b8f40f6d65706acfc5aaac4801ca3ca21ef7bd",
-      "productionHash": "f53b3ea1eec15af77ca9def295b8f40f6d65706acfc5aaac4801ca3ca21ef7bd",
+      "development": "@floating-ui/utils",
+      "production": "@floating-ui/utils",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "productionDependencies": []
     },
     "@floating-ui/utils/dom": {
       "type": "module",
-      "development": "dist/@floating-ui/utils/floating-ui.utils.dom.mjs",
-      "production": "dist/@floating-ui/utils/floating-ui.utils.dom.mjs",
-      "developmentHash": "b6658b1eac47e2917e6d10ebbeefb9c4ac9a166f0052bed6e08c871ed848b680",
-      "productionHash": "b6658b1eac47e2917e6d10ebbeefb9c4ac9a166f0052bed6e08c871ed848b680",
+      "development": "@floating-ui/utils/dom",
+      "production": "@floating-ui/utils/dom",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "productionDependencies": []
     },
     "@floating-ui/vue": {
       "type": "module",
-      "development": "dist/@floating-ui/vue/floating-ui.vue.mjs",
-      "production": "dist/@floating-ui/vue/floating-ui.vue.mjs",
-      "developmentHash": "03221050694ea1fb4e7290cee6a54b5844f879a09ee6806714fd5b404641056a",
-      "productionHash": "03221050694ea1fb4e7290cee6a54b5844f879a09ee6806714fd5b404641056a",
+      "development": "@floating-ui/vue",
+      "production": "@floating-ui/vue",
       "developmentDependencies": [
         "@floating-ui/dom",
         "@floating-ui/utils/dom"
@@ -76,36 +77,10 @@
       "productionDependencies": [
         "@floating-ui/dom",
         "@floating-ui/utils/dom"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     }
   },
-  "requires": {
-    "vue3": "^3.5.0"
-  },
+  "requires": {},
   "styles": [],
-  "files": [
-    {
-      "type": "license",
-      "path": "licenses/core-LICENSE",
-      "hash": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce"
-    },
-    {
-      "type": "license",
-      "path": "licenses/dom-LICENSE",
-      "hash": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce"
-    },
-    {
-      "type": "license",
-      "path": "licenses/utils-LICENSE",
-      "hash": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce"
-    },
-    {
-      "type": "license",
-      "path": "licenses/vue-LICENSE",
-      "hash": "46c97b198a78dc0befc1a823ba7bcdf993726a887d0215edcce575a61b947115"
-    }
-  ]
+  "files": []
 }

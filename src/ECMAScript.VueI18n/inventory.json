@@ -3,6 +3,7 @@
   "version": "11.4.12",
   "license": "MIT",
   "packages": {
+    "vue": "3.5.42",
     "vue-i18n": "11.4.12"
   },
   "source": "https://registry.npmjs.org/vue-i18n/11.4.12",
@@ -10,6 +11,6 @@
   "entryImports": [
     "vue-i18n"
   ],
-  "vendoredModuleCount": 1,
-  "fingerprint": "BD557751951C20433218F3E1845CAFF1726CC4A36A866C58F050F6DFC09E7C47"
+  "validatedModuleCount": 1,
+  "fingerprint": "8F0F8CABE91BF8D78CCB46F5536D340F82D44638B1CD13D883F3AD87ADDFA128"
 }

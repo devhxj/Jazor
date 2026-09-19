@@ -1,8 +1,11 @@
 # ECMAScript.VueI18n
 
-vue-i18n 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游多包版本、`manifest.json`（schema 2）、`dist/` 资源、许可证与 inventory。
+vue-i18n 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游多包版本，
+`manifest.json`（schema 2）和 `inventory.json` 记录 npm package、入口、完整性与许可证元数据。
 
-Strongly typed C# bindings for vue-i18n, shipped as a Jazor JS resource library with locked upstream package versions, package-local `manifest.json` (schema 2), `dist/` runtime assets, licenses, and inventory.
+Strongly typed C# bindings for vue-i18n, shipped as a Jazor JS resource library with locked upstream
+package versions. Runtime files remain in npm; metadata describes the dependency graph for the
+generated `jazor` project.
 
 ## 上游锁定 Upstream lock
 
@@ -63,4 +66,4 @@ dotnet run --file scripts/csharp/generate-vue-i18n.cs -- --source .tmp/p3b/node_
 
 ## 测试 Tests
 
-`src/ECMAScript.VueI18n.Test` 覆盖 import/manifest/inventory 元数据、vendored 哈希、上游导出 drift 与编译器 emission；`Jazor.EmitTest` 覆盖真实 materialization 闭包。
+`src/ECMAScript.VueI18n.Test` 覆盖 import/manifest/inventory 元数据、npm integrity、上游导出 drift 与编译器 emission；`Jazor.EmitTest` 覆盖真实 package graph materialization。

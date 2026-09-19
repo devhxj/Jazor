@@ -26,7 +26,6 @@
     <file src="$buildOutputDir$ECMAScript.VueDataUi.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.VueDataUi.targets" target="buildTransitive\ECMAScript.VueDataUi.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vue-data-ui" />
-    <file src="$projectDir$dist\**\*" target="jazor\vue-data-ui\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vue-data-ui\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

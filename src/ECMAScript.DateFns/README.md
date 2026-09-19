@@ -1,8 +1,11 @@
 # ECMAScript.DateFns
 
-date-fns 4 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本、`manifest.json`（schema 2）、`dist/` 资源、许可证与 inventory。
+date-fns 4 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本，
+`manifest.json`（schema 2）和 `inventory.json` 记录 npm package、入口、完整性与许可证元数据。
 
-Strongly typed C# bindings for date-fns 4, shipped as a Jazor JS resource library with a locked upstream version, package-local `manifest.json` (schema 2), `dist/` runtime assets, license, and inventory.
+Strongly typed C# bindings for date-fns 4, shipped as a Jazor JS resource library with a locked
+upstream npm version. The package carries metadata in `manifest.json` (schema 2) and
+`inventory.json`; Emit restores the runtime package into the generated `jazor/node_modules` project.
 
 ## 上游锁定 Upstream lock
 
@@ -13,7 +16,8 @@ Strongly typed C# bindings for date-fns 4, shipped as a Jazor JS resource librar
 | 许可证 | MIT（`licenses/LICENSE`） |
 | 入口 | `date-fns`（函数 barrel）、`date-fns/locale`（精选 locale 桥） |
 
-上游以 npm registry SHA-512 integrity 锁定，vendored 文件与 manifest 哈希一一对应；`date-fns/locale` 是从上游 locale 目录精选的 re-export 桥，由生成器维护。
+上游以 npm registry SHA-512 integrity 锁定；`date-fns/locale` 是按上游 exports 验证的精选
+locale 入口，由生成器维护。
 
 ## 首期范围 First slice
 
@@ -46,8 +50,10 @@ var left = FormatDistanceToNow(ParseISO("2026-01-01"), new DateFnsFormatDistance
 dotnet run --file scripts/csharp/generate-date-fns.cs -- --version <upstream-version>
 ```
 
-生成器会重新下载并校验 npm tarball、重建 `dist/`、`manifest.json`、`inventory.json` 与 locale 契约；升级上游时必须复核 bound 函数与 locale 清单的 contract drift。
+生成器会重新下载并校验 npm tarball，更新 `manifest.json`、`inventory.json` 与 locale 契约；
+升级上游时必须复核 bound 函数与 locale 清单的 contract drift。
 
 ## 测试 Tests
 
-`src/ECMAScript.DateFns.Test` 覆盖：import/manifest/inventory 元数据一致性、vendored 哈希、上游导出 drift 检查、编译器 emission（对象字面量、枚举选项、locale 导入）。
+`src/ECMAScript.DateFns.Test` 覆盖：import/manifest/inventory 元数据一致性、npm integrity、
+上游导出 drift 检查、编译器 emission（对象字面量、枚举选项、locale 导入）。

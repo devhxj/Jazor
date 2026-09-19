@@ -55,9 +55,37 @@
            Text="Could not locate Jazor.Emit. Install the Jazor package with its tools assets, or add a ProjectReference to Jazor.Emit for repository source builds." />
   </Target>
 
+  <!-- Resolve the DenoHost runtime carried by the final application. Emit owns restore; this
+       target only supplies an explicit executable path when the runtime asset is present. -->
+  <Target Name="_ResolveJazorDeno">
+    <PropertyGroup>
+      <_JazorDenoOverride Condition="'$(JazorDenoPath)' != ''">$([System.IO.Path]::GetFullPath('$(JazorDenoPath)'))</_JazorDenoOverride>
+      <_JazorDenoRuntimeName Condition="'$(OS)' == 'Windows_NT'">deno.exe</_JazorDenoRuntimeName>
+      <_JazorDenoRuntimeName Condition="'$(_JazorDenoRuntimeName)' == ''">deno</_JazorDenoRuntimeName>
+      <_JazorDenoCandidateRid Condition="'$(RuntimeIdentifier)' != ''">$(TargetDir)runtimes\$(RuntimeIdentifier)\native\$(_JazorDenoRuntimeName)</_JazorDenoCandidateRid>
+      <_JazorDenoCandidateWinX64>$(TargetDir)runtimes\win-x64\native\deno.exe</_JazorDenoCandidateWinX64>
+      <_JazorDenoCandidateWinArm64>$(TargetDir)runtimes\win-arm64\native\deno.exe</_JazorDenoCandidateWinArm64>
+      <_JazorDenoCandidateLinuxX64>$(TargetDir)runtimes\linux-x64\native\deno</_JazorDenoCandidateLinuxX64>
+      <_JazorDenoCandidateLinuxArm64>$(TargetDir)runtimes\linux-arm64\native\deno</_JazorDenoCandidateLinuxArm64>
+      <_JazorDenoCandidateOsxX64>$(TargetDir)runtimes\osx-x64\native\deno</_JazorDenoCandidateOsxX64>
+      <_JazorDenoCandidateOsxArm64>$(TargetDir)runtimes\osx-arm64\native\deno</_JazorDenoCandidateOsxArm64>
+      <_JazorDenoPath Condition="'$(_JazorDenoOverride)' != '' and Exists('$(_JazorDenoOverride)')">$(_JazorDenoOverride)</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateRid)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateRid)'))</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateWinX64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateWinX64)'))</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateWinArm64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateWinArm64)'))</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateLinuxX64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateLinuxX64)'))</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateLinuxArm64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateLinuxArm64)'))</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateOsxX64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateOsxX64)'))</_JazorDenoPath>
+      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateOsxArm64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateOsxArm64)'))</_JazorDenoPath>
+      <_JazorDenoArgument Condition="'$(_JazorDenoPath)' != ''">--deno &quot;$(_JazorDenoPath)&quot;</_JazorDenoArgument>
+    </PropertyGroup>
+    <Error Condition="'$(JazorDenoPath)' != '' and !Exists('$(_JazorDenoOverride)')"
+           Text="JazorDenoPath was specified but the DenoHost executable was not found at '$(_JazorDenoOverride)'." />
+  </Target>
+
   <Target Name="JazorDebug"
           AfterTargets="Build"
-          DependsOnTargets="_ResolveJazorEmitTool"
+          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno"
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
@@ -75,12 +103,12 @@
     <!-- Emit 仅反射托管程序集；Windows 的原生 runtime DLL 也会使用 .dll 扩展名，必须在此排除。 -->
 
     <!-- A single Emit invocation owns collection, dependency resolution and the atomic output commit. -->
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; --clean true @(JazorDebugAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; --clean true $(_JazorDenoArgument) @(JazorDebugAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" ConsoleToMSBuild="true" />
   </Target>
 
   <Target Name="JazorRelease"
           AfterTargets="Build"
-          DependsOnTargets="_ResolveJazorEmitTool"
+          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno"
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
@@ -98,7 +126,7 @@
     <!-- Release 与 Debug 保持同一托管程序集边界，避免发布构建重新传入原生库。 -->
 
     <!-- Release uses the same managed assembly boundary and profile transaction as Debug. -->
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; --clean true @(JazorReleaseAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; --clean true $(_JazorDenoArgument) @(JazorReleaseAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" ConsoleToMSBuild="true" />
   </Target>
 
   <!--

@@ -10,7 +10,8 @@ internal sealed record EmitOptions(
     BuildMode Mode,
     string? SourceRoot,
     IReadOnlyList<string> LibraryManifests,
-    bool EnableSsr)
+    bool EnableSsr,
+    string? DenoExecutablePath = null)
 {
     public static bool TryParse(string[] args, out EmitOptions? options, out string? error)
     {
@@ -26,6 +27,7 @@ internal sealed record EmitOptions(
         var sourceRoot = string.Empty;
         var libraryManifests = new List<string>();
         var enableSsr = false;
+        string? denoExecutablePath = null;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -81,6 +83,9 @@ internal sealed record EmitOptions(
                     }
 
                     break;
+                case "--deno":
+                    denoExecutablePath = value;
+                    break;
                 default:
                     error = $"Unknown argument '{arg}'.";
                     return false;
@@ -118,7 +123,8 @@ internal sealed record EmitOptions(
                 .Select(Path.GetFullPath)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)],
-            enableSsr);
+            enableSsr,
+            string.IsNullOrWhiteSpace(denoExecutablePath) ? null : Path.GetFullPath(denoExecutablePath));
         return true;
     }
 

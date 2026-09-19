@@ -2,10 +2,10 @@
 
 > 定位：Vue Router 5 的独立强类型 C# binding 与 Razor-to-Vue authoring 接口。
 
-本包属于 JS resource library：Vue Router 的已有 runtime ESM 位于包内
-`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
-authoring contract。消费方编写的 RazorVue 组件生成到消费程序集的
-`Jazor.Generated.ModuleCatalog`。
+本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Vue Router
+npm package、入口和依赖元数据；Emit 生成标准 `jazor/package.json`，Deno 将运行时恢复到
+`jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的 RazorVue
+组件生成到消费程序集的 `Jazor.Generated.ModuleCatalog`。
 
 ## 安装
 

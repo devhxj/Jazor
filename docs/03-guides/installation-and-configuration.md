@@ -2,7 +2,7 @@
 
 > 面向：使用 Jazor 核心平台、当前 Razor-to-Vue 集成或可选生态绑定的应用开发者。
 >
-> 说明：类库资源只使用两种 carrier：已有 JavaScript 使用 `manifest.json + dist/**`，Jazor 编译结果使用程序集内的 `Jazor.Generated.ModuleCatalog`。最终宿主在构建后由 MSBuild 调用 `Jazor.Emit`，一次性物化选中的依赖闭包到 `JazorDir`。
+> 说明：类库资源由 package metadata（npm/JSR identity 或明确声明的 embedded carrier）与程序集内的 `Jazor.Generated.ModuleCatalog` 组成。最终宿主在构建后由 MSBuild 调用 `Jazor.Emit`，一次性生成标准 `jazor/` 项目、恢复依赖并物化选中的闭包到 `JazorDir`。
 
 ## 前置条件
 
@@ -19,7 +19,7 @@
 | C# -> ECMAScript 模块 | `Jazor` | 对应的 `ECMAScript.*` 绑定 |
 | 普通 C# -> ECMAScript 类库 | `Jazor` | 不需要 Vue 依赖 |
 | 当前 Razor-to-Vue 集成 | `Jazor`、`Jazor.Vue` | Vue authoring、Razor hook、Vue runtime 与基础 Vue bindings |
-| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；运行时 JavaScript 由 `ECMAScript` 的 `manifest.json + dist/**` 提供 |
+| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；核心运行时由 `ECMAScript` manifest 与 `src/ECMAScript/clr/**` 提供，Vue bridge 由 `Jazor.Vue/dist/**` 提供 |
 | Vue Router | `Jazor`、`Jazor.Vue`、`ECMAScript.VueRoute` | `ECMAScript.VueRoute` 显式提供 Router bindings |
 | Pinia | `Jazor`、`Jazor.Vue`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
 | Vue Devtools 自定义插件 | `Jazor`、`Jazor.Vue`、`ECMAScript.Vue.Devtools` | `Jazor.Vue` 提供 Vue runtime 闭包 |
@@ -69,7 +69,7 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ## 配置产物输出
 
-输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；纯 Jazor 类库在程序集内携带 `ModuleCatalog`，JS resource library 通过传递的 manifest locator 提供 `manifest.json + dist/**`。最终宿主的 MSBuild target 在 `Build` 后调用 Emit，读取这两种输入并直接写出 `JazorDir`。
+输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；纯 Jazor 类库在程序集内携带 `ModuleCatalog`，JS resource library 通过传递的 manifest locator 提供 package metadata。最终宿主的 MSBuild target 在 `Build` 后调用 Emit，生成 `jazor/package.json`，由 DenoHost 恢复 `node_modules` 并写出 `deno.lock`，再将浏览器/SSR profile 写入 `JazorDir`。
 
 多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具，最终宿主直接引用并配置 Emit；只消费上游类库的中间项目不因资源传递增加 `Jazor`/`Jazor.Vue`。工具资产应在类库包中使用 `PrivateAssets="all"` 隔离，生成模块随 `ModuleCatalog` 传播，ESM/CSS 随 manifest 的显式依赖传播。完整规则见[类库产物与引用契约](../02-architecture/library-artifact-contract.md)。
 

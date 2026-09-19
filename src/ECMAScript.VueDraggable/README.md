@@ -1,8 +1,11 @@
 # ECMAScript.VueDraggable
 
-vue-draggable-plus 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本、`manifest.json`（schema 2）、`dist/` 资源、许可证与 inventory。
+vue-draggable-plus 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游版本，
+`manifest.json`（schema 2）和 `inventory.json` 记录 npm package、入口、完整性与许可证元数据。
 
-Strongly typed C# bindings for vue-draggable-plus, shipped as a Jazor JS resource library with a locked upstream version, package-local `manifest.json` (schema 2), `dist/` runtime assets, license, and inventory.
+Strongly typed C# bindings for vue-draggable-plus, shipped as a Jazor JS resource library with a
+locked upstream npm version. Runtime files remain in npm; metadata describes the shared component
+and composable entry for the generated `jazor` project.
 
 ## 上游锁定 Upstream lock
 
@@ -47,4 +50,4 @@ dotnet run --file scripts/csharp/generate-vue-draggable.cs -- --source .tmp/p3c 
 
 ## 测试 Tests
 
-`src/ECMAScript.VueDraggable.Test` 覆盖 manifest/inventory 元数据、vendored 哈希、上游导出 drift、组件代理契约与编译器 emission。
+`src/ECMAScript.VueDraggable.Test` 覆盖 manifest/inventory 元数据、npm integrity、上游导出 drift、组件代理契约与编译器 emission。

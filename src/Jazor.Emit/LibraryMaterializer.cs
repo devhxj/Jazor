@@ -4,10 +4,10 @@ using Jazor.Common;
 namespace Jazor.Emit;
 
 /// <summary>
-/// Resolves and materializes JS resource libraries from their manifest and dist files.
-/// The resolver consumes only explicit manifest edges; it never parses JavaScript or scans a
-/// package directory to infer a dependency. All validation happens before the owned vendor tree
-/// is replaced.
+/// Resolves binding metadata and materializes the selected local package resources.
+/// External npm/JSR packages stay as bare package imports; only an explicit embedded-mjs
+/// manifest contributes local files. The resolver consumes explicit manifest edges and never
+/// scans a third-party package directory to infer a dependency.
 /// </summary>
 internal sealed class LibraryMaterializer
 {
@@ -42,7 +42,13 @@ internal sealed class LibraryMaterializer
             .ToArray();
 
         var importIndex = CreateImportIndex(manifests);
-        var selectedImports = SelectImports(importIndex, mode, requiredImports, providedModulePaths);
+        var unresolvedExternalPackages = new Dictionary<string, LibraryPackageReference>(StringComparer.Ordinal);
+        var selectedImports = SelectImports(
+            importIndex,
+            mode,
+            requiredImports,
+            providedModulePaths,
+            unresolvedExternalPackages);
         var selectedManifests = ResolveManifestClosure(selectedImports, manifests);
         var providersById = selectedManifests.ToDictionary(static manifest => manifest.LibraryId, StringComparer.Ordinal);
         selectedManifests = OrderByDependencies(selectedManifests, providersById);
@@ -61,13 +67,23 @@ internal sealed class LibraryMaterializer
                 .OrderBy(static selection => selection.Specifier, StringComparer.Ordinal)
                 .ToArray();
 
-            foreach (var file in manifest.Files)
-                plan.Add(manifest, file, owner: "root");
-
-            foreach (var style in manifest.Styles)
+            // External npm/JSR manifests are package metadata. Their module bytes and package
+            // styles are supplied by the package manager; a binding must never copy a historical
+            // dist snapshot. Explicit non-module resources such as license/static/worker files
+            // remain producer-owned and are copied through the same integrity-checked carrier.
+            foreach (var file in manifest.Files.Where(file =>
+                         manifest.IsEmbedded || file.Type is LicenseType or StaticType or WorkerType))
             {
-                plan.Add(manifest, style, owner: "style");
-                plan.AddStyle(manifest, style.Path);
+                plan.Add(manifest, file, owner: "root");
+            }
+
+            if (manifest.IsEmbedded)
+            {
+                foreach (var style in manifest.Styles)
+                {
+                    plan.Add(manifest, style, owner: "style");
+                    plan.AddStyle(manifest, style.Path);
+                }
             }
 
             foreach (var selection in selected)
@@ -95,17 +111,32 @@ internal sealed class LibraryMaterializer
                 static specifier => specifier,
                 specifier => importIndex[specifier][0].Manifest.GetPackageReference(specifier),
                 StringComparer.Ordinal);
-        var packageProjections = new Dictionary<string, LibraryPackageProjection>(StringComparer.Ordinal);
-        foreach (var selection in selectedImports.OrderBy(static item => item.Specifier, StringComparer.Ordinal))
+        foreach (var reference in unresolvedExternalPackages.Values)
         {
-            if (!plan.ImportPaths.ContainsKey(selection.Specifier))
+            if (packageReferences.TryGetValue(reference.Name, out var existing) && !Equals(existing, reference))
+            {
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_PACKAGE_CONFLICT",
+                    $"Package '{reference.Name}' resolves to conflicting external identities.");
+            }
+
+            packageReferences[reference.Name] = reference;
+        }
+        var packageProjections = new Dictionary<string, LibraryPackageProjection>(StringComparer.Ordinal);
+        foreach (var (specifier, owner) in plan.ModuleOwners
+                     .OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        {
+            var reference = owner.Manifest.GetPackageReference(specifier);
+            // External packages remain package specifiers. Their package.json, exports and
+            // sideEffects metadata are restored by Deno and must be resolved by the consumer;
+            // creating a synthetic projection here would turn `pkg/subpath` into a second,
+            // binding-owned path and could bypass the upstream package contract.
+            if (reference.Source is "npm" or "jsr")
                 continue;
 
-            var reference = selection.Manifest.GetPackageReference(selection.Specifier);
-            var packageRoot = plan.GetPackageRootRelativePath(selection.Manifest);
-            var packageTarget = NormalizePath(
-                mode == BuildMode.Development ? selection.Entry.Development : selection.Entry.Production);
-            var exportName = GetPackageExportName(selection.Specifier, reference.Name);
+            var packageRoot = plan.GetPackageRootRelativePath(owner.Manifest, reference.Name);
+            var packageTarget = plan.GetPackageExportPath(owner.Manifest, reference.Name, owner.PackageRelativePath);
+            var exportName = GetPackageExportName(specifier, reference.Name, packageTarget);
             if (!packageProjections.TryGetValue(reference.Name, out var projection))
             {
                 projection = new LibraryPackageProjection(reference, packageRoot);
@@ -131,7 +162,10 @@ internal sealed class LibraryMaterializer
         }
         return new LibraryAssets(
             new Dictionary<string, string>(plan.ImportPaths, StringComparer.Ordinal),
+            new Dictionary<string, string>(plan.BrowserImportPaths, StringComparer.Ordinal),
             plan.StylePaths.ToArray(),
+            plan.ExternalStyleModuleImports.ToArray(),
+            plan.ExternalStylesheetPaths.ToArray(),
             plan.PublishAssets.ToArray(),
             plan.MaterializedPaths.ToArray(),
             selectedManifests.Select(static manifest => manifest.SourcePath).ToArray(),
@@ -192,6 +226,9 @@ internal sealed class LibraryMaterializer
             {
                 if (!candidatesById.TryGetValue(requirement.Key, out var candidates) || candidates.Length == 0)
                 {
+                    if (manifest.Source is "npm" or "jsr")
+                        continue;
+
                     throw new LibraryException(
                         "JAZOR_LIBRARY_PROVIDER_MISSING",
                         $"Library '{manifest.LibraryId}' requires provider '{requirement.Key}', but no matching manifest was supplied.");
@@ -283,6 +320,10 @@ internal sealed class LibraryMaterializer
                a.ProductionDependencies.SequenceEqual(b.ProductionDependencies, StringComparer.Ordinal) &&
                a.DevelopmentModuleDependencies.SequenceEqual(b.DevelopmentModuleDependencies, StringComparer.Ordinal) &&
                a.ProductionModuleDependencies.SequenceEqual(b.ProductionModuleDependencies, StringComparer.Ordinal) &&
+               a.DevelopmentStyleImports.SequenceEqual(b.DevelopmentStyleImports, StringComparer.Ordinal) &&
+               a.ProductionStyleImports.SequenceEqual(b.ProductionStyleImports, StringComparer.Ordinal) &&
+               a.DevelopmentStylesheetImports.SequenceEqual(b.DevelopmentStylesheetImports, StringComparer.Ordinal) &&
+               a.ProductionStylesheetImports.SequenceEqual(b.ProductionStylesheetImports, StringComparer.Ordinal) &&
                a.DevelopmentStyles.SequenceEqual(b.DevelopmentStyles) &&
                a.ProductionStyles.SequenceEqual(b.ProductionStyles) &&
                a.Files.SequenceEqual(b.Files);
@@ -292,7 +333,8 @@ internal sealed class LibraryMaterializer
         IReadOnlyDictionary<string, IReadOnlyList<ImportSelection>> importsBySpecifier,
         BuildMode mode,
         IEnumerable<string>? requiredImports,
-        IEnumerable<string>? providedModulePaths)
+        IEnumerable<string>? providedModulePaths,
+        IDictionary<string, LibraryPackageReference>? unresolvedExternalPackages)
     {
         var requested = requiredImports is null
             ? importsBySpecifier.Keys
@@ -340,11 +382,28 @@ internal sealed class LibraryMaterializer
             return first;
         }
 
-        void Add(string specifier, bool packageEdge)
+        void Add(string specifier, bool packageEdge, ImportSelection? ownerSelection = null)
         {
             specifier = ValidatePackageSpecifier(specifier, "dependency");
             if (selected.ContainsKey(specifier))
                 return;
+            if (!importsBySpecifier.TryGetValue(specifier, out var candidates) || candidates.Count == 0)
+            {
+                // An npm/JSR dependency can be intentionally left to Deno's package
+                // resolver. The owning manifest must still provide its package identity so the
+                // generated project remains exact and auditable.
+                var reference = ownerSelection?.Manifest.GetPackageReference(specifier);
+                if (reference is not null && reference.Source is "npm" or "jsr")
+                {
+                    unresolvedExternalPackages?.TryAdd(reference.Name, reference);
+                    return;
+                }
+
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_IMPORT_MISSING",
+                    $"No library manifest provides: {specifier}.");
+            }
+
             var selection = Resolve(specifier);
             if (!visiting.Add(specifier))
             {
@@ -361,7 +420,11 @@ internal sealed class LibraryMaterializer
             }
 
             foreach (var dependency in selection.Entry.GetPackageDependencies(mode))
-                Add(dependency, packageEdge: true);
+                Add(dependency, packageEdge: true, ownerSelection: selection);
+            foreach (var style in selection.Entry.GetStyleImports(mode))
+                Add(style, packageEdge: true, ownerSelection: selection);
+            foreach (var stylesheet in selection.Entry.GetStylesheetImports(mode))
+                Add(stylesheet, packageEdge: true, ownerSelection: selection);
 
             visiting.Remove(specifier);
             selected.Add(specifier, selection);
@@ -398,16 +461,52 @@ internal sealed class LibraryMaterializer
         {
             var entry = selection.Entry;
             var selectedPath = mode == BuildMode.Development ? entry.Development : entry.Production;
-            var selectedHash = mode == BuildMode.Development ? entry.DevelopmentHash : entry.ProductionHash;
+            if (!selection.Manifest.IsEmbedded)
+            {
+                // Keep the authored bare specifier intact. Deno/NetPack resolve it through the
+                // restored package.json/exports graph; no local projection or import-map alias is
+                // created for an external package.
+                // Keep the C# logical import as the graph key, while allowing metadata to map it
+                // to the exact upstream package export. This preserves authored binding paths and
+                // gives NetPack/Deno the real package entry (`pkg/es/button/index.mjs`, etc.).
+                plan.AddImport(
+                    selection.Specifier,
+                    selectedPath,
+                    selection.Entry.GetBrowserPath(mode) ?? selectedPath,
+                    hash: null);
+                foreach (var styleSpecifier in selection.Entry.GetStyleImports(mode))
+                    plan.AddExternalStyle(styleSpecifier);
+                foreach (var stylesheetSpecifier in selection.Entry.GetStylesheetImports(mode))
+                    plan.AddExternalStylesheet(stylesheetSpecifier);
+                return;
+            }
+
+            var selectedHash = mode == BuildMode.Development
+                ? selection.Entry.DevelopmentHash
+                : selection.Entry.ProductionHash;
+            if (string.IsNullOrWhiteSpace(selectedHash))
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_ENTRY_HASH_MISSING",
+                    $"Embedded library '{selection.Manifest.LibraryId}' entry '{selection.Specifier}' must declare a SHA-256 hash.");
             var mainFile = new ManifestFile(ModuleType, selectedPath, selectedHash, selection.Specifier);
             plan.Add(selection.Manifest, mainFile, owner: selection.Specifier);
-            plan.AddImport(selection.Specifier, plan.GetTargetRelativePath(selection.Manifest, selectedPath), selectedHash);
+            var targetRelativePath = plan.GetTargetRelativePath(selection.Manifest, selectedPath);
+            plan.AddImport(
+                selection.Specifier,
+                targetRelativePath,
+                targetRelativePath,
+                selectedHash,
+                selection.Manifest,
+                selectedPath);
 
             foreach (var style in entry.GetStyles(mode))
             {
                 plan.Add(selection.Manifest, style, owner: selection.Specifier);
                 plan.AddStyle(selection.Manifest, style.Path);
             }
+
+            foreach (var stylesheetSpecifier in entry.GetStylesheetImports(mode))
+                plan.AddExternalStylesheet(stylesheetSpecifier);
 
             foreach (var file in entry.Files)
                 plan.Add(selection.Manifest, file, owner: selection.Specifier);
@@ -466,7 +565,10 @@ internal sealed class LibraryMaterializer
             }
 
             foreach (var dependency in manifest.Requires.Keys.OrderBy(static id => id, StringComparer.Ordinal))
-                Visit(providers[dependency]);
+            {
+                if (providers.TryGetValue(dependency, out var provider))
+                    Visit(provider);
+            }
 
             visiting.Remove(manifest.LibraryId);
             visited.Add(manifest.LibraryId);
@@ -503,14 +605,15 @@ internal sealed class LibraryMaterializer
         return specifier;
     }
 
-    private static string GetPackageExportName(string specifier, string packageName)
+    private static string GetPackageExportName(string specifier, string packageName, string fallbackTarget)
     {
         if (string.Equals(specifier, packageName, StringComparison.Ordinal))
             return ".";
         if (!specifier.StartsWith(packageName + "/", StringComparison.Ordinal))
-            throw new LibraryException(
-                "JAZOR_LIBRARY_IMPORT_INVALID",
-                $"Import '{specifier}' does not belong to package '{packageName}'.");
+            // A typed module file can have a local moduleId (for example `shared`) that is not
+            // itself a package subpath. Expose its physical package-relative path while keeping
+            // the authored module id in the import map.
+            return "./" + fallbackTarget;
         return "./" + specifier[(packageName.Length + 1)..];
     }
 
@@ -520,25 +623,163 @@ internal sealed class LibraryMaterializer
             throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version '{versionText}' is invalid.");
 
         var range = rangeText.Trim();
-        if (!range.StartsWith("^", StringComparison.Ordinal))
+        if (range.Length == 0)
+            throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version range '{rangeText}' is invalid.");
+
+        var alternatives = range.Split("||", StringSplitOptions.TrimEntries);
+        foreach (var alternative in alternatives)
         {
-            if (!TryParsePackageVersion(range, out var exact))
+            if (!TrySatisfiesRangeClause(version, alternative, out var satisfies))
                 throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version range '{rangeText}' is invalid.");
-            return version.Equals(exact);
+
+            if (satisfies)
+                return true;
         }
 
-        if (!TryParsePackageVersion(range[1..], out var minimum))
-            throw new LibraryException("JAZOR_LIBRARY_VERSION_INVALID", $"Library version range '{rangeText}' is invalid.");
-        if (version.CompareTo(minimum) < 0)
+        return false;
+    }
+
+    private static bool TrySatisfiesRangeClause(
+        PackageVersion version,
+        string clause,
+        out bool satisfies)
+    {
+        satisfies = false;
+        var tokens = clause.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (tokens.Length == 0)
             return false;
 
-        var maximum = minimum.Major > 0
+        foreach (var token in tokens)
+        {
+            if (!TryEvaluateRangeToken(version, token, out var tokenSatisfies))
+                return false;
+            if (!tokenSatisfies)
+                return true;
+        }
+
+        satisfies = true;
+        return true;
+    }
+
+    private static bool TryEvaluateRangeToken(
+        PackageVersion version,
+        string token,
+        out bool satisfies)
+    {
+        satisfies = false;
+        if (token is "*" or "x" or "X")
+        {
+            satisfies = true;
+            return true;
+        }
+
+        if (token.StartsWith('^') || token.StartsWith('~'))
+        {
+            if (!TryParsePackageVersion(token[1..], out var minimum))
+                return false;
+
+            var maximum = token[0] == '^'
+                ? GetCaretUpperBound(minimum)
+                : GetTildeUpperBound(minimum);
+            satisfies = version.CompareTo(minimum) >= 0 && version.CompareTo(maximum) < 0;
+            return true;
+        }
+
+        var operation = "=";
+        var value = token;
+        foreach (var candidate in new[] { ">=", "<=", ">", "<", "=" })
+        {
+            if (!token.StartsWith(candidate, StringComparison.Ordinal))
+                continue;
+            operation = candidate;
+            value = token[candidate.Length..];
+            break;
+        }
+
+        if (!TryParseRangeVersion(value, out var parsed, out var componentCount))
+            return false;
+
+        // A partial bare version is the npm-compatible major/minor range. Comparators use the
+        // missing components as zero, which is the useful interpretation for peer constraints.
+        if (operation == "=" && componentCount < 3)
+        {
+            var upper = componentCount == 1
+                ? new PackageVersion(parsed.Major + 1, 0, 0, null)
+                : new PackageVersion(parsed.Major, parsed.Minor + 1, 0, null);
+            satisfies = version.CompareTo(parsed) >= 0 && version.CompareTo(upper) < 0;
+            return true;
+        }
+
+        var comparison = version.CompareTo(parsed);
+        satisfies = operation switch
+        {
+            ">=" => comparison >= 0,
+            ">" => comparison > 0,
+            "<=" => comparison <= 0,
+            "<" => comparison < 0,
+            _ => comparison == 0
+        };
+        return true;
+    }
+
+    private static bool TryParseRangeVersion(
+        string value,
+        out PackageVersion version,
+        out int componentCount)
+    {
+        componentCount = 0;
+        version = default;
+        var text = value.Trim();
+        if (text.Length == 0)
+            return false;
+
+        var parts = text.Split('.', StringSplitOptions.None);
+        if (parts.Length is < 1 or > 3)
+            return false;
+
+        if (!parts.Any(static part => part is "*" or "x" or "X"))
+        {
+            if (!TryParsePackageVersion(text, out version))
+                return false;
+            componentCount = parts[0].Split('-', '+')[0].Length == 0
+                ? 0
+                : parts.Length;
+            return true;
+        }
+
+        foreach (var part in parts)
+        {
+            if (part is "*" or "x" or "X")
+                break;
+            if (part.Length == 0 || !part.All(char.IsDigit))
+                return false;
+            componentCount++;
+        }
+
+        if (componentCount == 0)
+        {
+            version = new PackageVersion(0, 0, 0, null);
+            return true;
+        }
+
+        var numeric = parts.Take(componentCount).Select(int.Parse).ToArray();
+        version = new PackageVersion(
+            numeric[0],
+            numeric.Length > 1 ? numeric[1] : 0,
+            numeric.Length > 2 ? numeric[2] : 0,
+            null);
+        return true;
+    }
+
+    private static PackageVersion GetCaretUpperBound(PackageVersion minimum)
+        => minimum.Major > 0
             ? new PackageVersion(minimum.Major + 1, 0, 0, null)
             : minimum.Minor > 0
                 ? new PackageVersion(0, minimum.Minor + 1, 0, null)
                 : new PackageVersion(0, 0, minimum.Patch + 1, null);
-        return version.CompareTo(maximum) < 0;
-    }
+
+    private static PackageVersion GetTildeUpperBound(PackageVersion minimum)
+        => new(minimum.Major, minimum.Minor + 1, 0, null);
 
     private static bool TryParsePackageVersion(string value, out PackageVersion version)
     {
@@ -642,15 +883,30 @@ internal sealed class LibraryMaterializer
     private sealed class MaterializationPlan(string destinationRoot)
     {
         private readonly Dictionary<string, PlannedFile> _files = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, string> _importHashes = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string?> _importHashes = new(StringComparer.Ordinal);
         private readonly List<string> _stylePaths = [];
+        private readonly List<string> _externalStyleModuleImports = [];
+        private readonly List<string> _externalStylesheetPaths = [];
         private readonly List<LibraryPublishAsset> _publishAssets = [];
 
         public string DestinationRoot { get; } = destinationRoot;
 
         public Dictionary<string, string> ImportPaths { get; } = new(StringComparer.Ordinal);
 
+        public Dictionary<string, string> BrowserImportPaths { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Owners for embedded manifest imports reached through the selected module closure.
+        /// Package projection generation uses this set instead of only the package roots so
+        /// cross-namespace imports such as System/* receive exact local exports.
+        /// </summary>
+        public Dictionary<string, MaterializedModuleOwner> ModuleOwners { get; } = new(StringComparer.Ordinal);
+
         public IReadOnlyList<string> StylePaths => _stylePaths;
+
+        public IReadOnlyList<string> ExternalStyleModuleImports => _externalStyleModuleImports;
+
+        public IReadOnlyList<string> ExternalStylesheetPaths => _externalStylesheetPaths;
 
         public IReadOnlyList<LibraryPublishAsset> PublishAssets => _publishAssets;
 
@@ -706,29 +962,96 @@ internal sealed class LibraryMaterializer
 
         public string GetTargetRelativePath(LibraryManifest manifest, string packageRelativePath)
         {
-            var normalized = NormalizePath(packageRelativePath);
-            return GetPackageRootRelativePath(manifest) + "/" + normalized;
+            var packageName = manifest.GetPackageNameForPath(packageRelativePath);
+            return GetPackageFilePath(manifest, packageName, packageRelativePath);
         }
 
-        public string GetPackageRootRelativePath(LibraryManifest manifest)
-            => $"vendor/{manifest.LibraryId}/{manifest.Version}";
+        public string GetPackageRootRelativePath(LibraryManifest manifest, string? packageName = null)
+        {
+            return manifest.Source == "embedded-mjs" &&
+                   string.Equals(manifest.LibraryId, "ecmascript", StringComparison.Ordinal)
+                ? "packages/" + RequireCorePackageName(packageName)
+                : "packages/" + (packageName ?? manifest.LibraryId);
+        }
 
-        public void AddImport(string specifier, string targetRelativePath, string hash)
+        public string GetPackageExportPath(
+            LibraryManifest manifest,
+            string packageName,
+            string packageRelativePath)
+        {
+            var target = GetPackageFilePath(manifest, packageName, packageRelativePath);
+            var root = GetPackageRootRelativePath(manifest, packageName);
+            var relative = Path.GetRelativePath(
+                    root.Replace('/', Path.DirectorySeparatorChar),
+                    target.Replace('/', Path.DirectorySeparatorChar))
+                .Replace(Path.DirectorySeparatorChar, '/');
+            return NormalizePath(relative);
+        }
+
+        private string GetPackageFilePath(
+            LibraryManifest manifest,
+            string packageName,
+            string packageRelativePath)
+        {
+            var normalized = NormalizePath(packageRelativePath);
+            if (manifest.IsCoreSource)
+            {
+                if (normalized.StartsWith("clr/", StringComparison.OrdinalIgnoreCase))
+                    normalized = normalized[4..];
+
+                var packagePrefix = packageName + "/";
+                if (normalized.StartsWith(packagePrefix, StringComparison.Ordinal))
+                    normalized = normalized[packagePrefix.Length..];
+            }
+
+            return GetPackageRootRelativePath(manifest, packageName) + "/" + normalized;
+        }
+
+        private static string RequireCorePackageName(string? packageName)
+            => string.IsNullOrWhiteSpace(packageName)
+                ? throw new InvalidOperationException("The ECMAScript source package requires a namespace package identity.")
+                : packageName;
+
+        public void AddImport(
+            string specifier,
+            string targetRelativePath,
+            string browserTarget,
+            string? hash,
+            LibraryManifest? ownerManifest = null,
+            string? ownerPackageRelativePath = null)
         {
             if (_importHashes.TryGetValue(specifier, out var existingHash))
             {
                 if (!string.Equals(existingHash, hash, StringComparison.OrdinalIgnoreCase) ||
-                    !string.Equals(ImportPaths[specifier], targetRelativePath, StringComparison.Ordinal))
+                    !string.Equals(ImportPaths[specifier], targetRelativePath, StringComparison.Ordinal) ||
+                    !string.Equals(BrowserImportPaths[specifier], browserTarget, StringComparison.Ordinal))
                 {
                     throw new LibraryException(
                         "JAZOR_LIBRARY_IMPORT_CONFLICT",
                         $"Logical import '{specifier}' resolves to incompatible assets.");
+                }
+
+                if (ownerManifest is not null && ownerPackageRelativePath is not null)
+                {
+                    if (ModuleOwners.TryGetValue(specifier, out var existingOwner) &&
+                        (!ReferenceEquals(existingOwner.Manifest, ownerManifest) ||
+                         !string.Equals(existingOwner.PackageRelativePath, ownerPackageRelativePath, StringComparison.Ordinal)))
+                    {
+                        throw new LibraryException(
+                            "JAZOR_LIBRARY_IMPORT_CONFLICT",
+                            $"Logical import '{specifier}' resolves to incompatible package owners.");
+                    }
+
+                    ModuleOwners[specifier] = new MaterializedModuleOwner(ownerManifest, ownerPackageRelativePath);
                 }
                 return;
             }
 
             _importHashes.Add(specifier, hash);
             ImportPaths.Add(specifier, targetRelativePath);
+            BrowserImportPaths.Add(specifier, browserTarget);
+            if (ownerManifest is not null && ownerPackageRelativePath is not null)
+                ModuleOwners.Add(specifier, new MaterializedModuleOwner(ownerManifest, ownerPackageRelativePath));
         }
 
         public void AddStyle(LibraryManifest manifest, string packageRelativePath)
@@ -738,22 +1061,66 @@ internal sealed class LibraryMaterializer
                 _stylePaths.Add(target);
         }
 
+        public void AddExternalStyle(string specifier)
+        {
+            var normalized = ECMAScriptModulePath.ValidateExternalImportSpecifier(specifier);
+            if (!ECMAScriptModulePath.IsPackageSpecifier(normalized))
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_STYLE_INVALID",
+                    $"External style '{specifier}' must be a package specifier.");
+            var target = IsStylesheetSpecifier(normalized)
+                ? _externalStylesheetPaths
+                : _externalStyleModuleImports;
+            if (!target.Contains(normalized, StringComparer.Ordinal))
+                target.Add(normalized);
+        }
+
+        public void AddExternalStylesheet(string specifier)
+        {
+            var normalized = ECMAScriptModulePath.ValidateExternalImportSpecifier(specifier);
+            if (!ECMAScriptModulePath.IsPackageSpecifier(normalized))
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_STYLE_INVALID",
+                    $"External stylesheet '{specifier}' must be a package specifier.");
+            if (!_externalStylesheetPaths.Contains(normalized, StringComparer.Ordinal))
+                _externalStylesheetPaths.Add(normalized);
+        }
+
+        private static bool IsStylesheetSpecifier(string specifier)
+        {
+            var queryStart = specifier.IndexOfAny(['?', '#']);
+            var path = queryStart < 0 ? specifier : specifier[..queryStart];
+            return path.EndsWith(".css", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".scss", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".sass", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".less", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".styl", StringComparison.OrdinalIgnoreCase) ||
+                   path.EndsWith(".stylus", StringComparison.OrdinalIgnoreCase);
+        }
+
         public void Commit()
         {
             var parent = Directory.GetParent(DestinationRoot)?.FullName
                 ?? throw new InvalidOperationException($"Could not determine parent directory for '{DestinationRoot}'.");
             Directory.CreateDirectory(parent);
             var staging = Path.Combine(parent, ".jazor-library-" + Guid.NewGuid().ToString("N"));
-            var stagedVendor = Path.Combine(staging, "vendor");
-            var destinationVendor = Path.Combine(DestinationRoot, "vendor");
-            var backupVendor = Path.Combine(parent, ".jazor-library-backup-" + Guid.NewGuid().ToString("N"));
+            var stagedPayload = Path.Combine(staging, "payload");
+            // `packages/` is the only binding-owned carrier in the standard project layout.
+            // Legacy carriers are included in the same transaction solely so an incremental
+            // Emit cannot leave stale resources visible beside the package graph. They are
+            // backed up and removed; they are never recreated.
+            var materializedRoots = new[] { "packages" };
+            var legacyRoots = new[] { "vendor", "ecmascript", "embedded" };
+            var rootsToReplace = materializedRoots.Concat(legacyRoots).ToArray();
+            var backups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var movedRoots = new List<string>();
 
             try
             {
-                Directory.CreateDirectory(stagedVendor);
+                Directory.CreateDirectory(stagedPayload);
                 foreach (var file in _files.Values.OrderBy(static item => item.TargetRelativePath, StringComparer.OrdinalIgnoreCase))
                 {
-                    var stagedPath = GetSafePath(staging, file.TargetRelativePath);
+                    var stagedPath = GetSafePath(stagedPayload, file.TargetRelativePath);
                     var directory = Path.GetDirectoryName(stagedPath);
                     if (!string.IsNullOrWhiteSpace(directory))
                         Directory.CreateDirectory(directory);
@@ -764,27 +1131,56 @@ internal sealed class LibraryMaterializer
 
                 if (!Directory.Exists(DestinationRoot))
                     Directory.CreateDirectory(DestinationRoot);
-                if (Directory.Exists(destinationVendor))
-                    DirectoryTransaction.Move(destinationVendor, backupVendor);
-                DirectoryTransaction.Move(stagedVendor, destinationVendor);
-                if (Directory.Exists(backupVendor))
-                    Directory.Delete(backupVendor, recursive: true);
+                foreach (var root in rootsToReplace)
+                {
+                    var stagedRoot = Path.Combine(stagedPayload, root);
+                    var destinationRoot = Path.Combine(DestinationRoot, root);
+                    var backupRoot = Path.Combine(parent, ".jazor-library-backup-" + Guid.NewGuid().ToString("N"));
+                    if (Directory.Exists(destinationRoot))
+                    {
+                        DirectoryTransaction.Move(destinationRoot, backupRoot);
+                        backups[destinationRoot] = backupRoot;
+                    }
+
+                    if (materializedRoots.Contains(root, StringComparer.Ordinal))
+                    {
+                        // Do not create an empty packages directory when this closure has no
+                        // embedded files. A standard project can consist solely of restored
+                        // external packages under node_modules.
+                        if (Directory.Exists(stagedRoot))
+                        {
+                            DirectoryTransaction.Move(stagedRoot, destinationRoot);
+                            movedRoots.Add(destinationRoot);
+                        }
+                    }
+                }
+
+                foreach (var backup in backups.Values)
+                    DeleteDirectory(backup);
             }
             catch
             {
-                if (Directory.Exists(destinationVendor) && Directory.Exists(backupVendor))
-                    Directory.Delete(destinationVendor, recursive: true);
-                if (!Directory.Exists(destinationVendor) && Directory.Exists(backupVendor))
-                    DirectoryTransaction.Move(backupVendor, destinationVendor);
+                foreach (var movedRoot in movedRoots)
+                    DeleteDirectory(movedRoot);
+                foreach (var backup in backups)
+                {
+                    if (Directory.Exists(backup.Value) && !Directory.Exists(backup.Key))
+                        DirectoryTransaction.Move(backup.Value, backup.Key);
+                }
                 throw;
             }
             finally
             {
-                if (Directory.Exists(staging))
-                    Directory.Delete(staging, recursive: true);
-                if (Directory.Exists(backupVendor))
-                    Directory.Delete(backupVendor, recursive: true);
+                DeleteDirectory(staging);
+                foreach (var backup in backups.Values)
+                    DeleteDirectory(backup);
             }
+        }
+
+        private static void DeleteDirectory(string path)
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, recursive: true);
         }
 
         private sealed record PlannedFile(string SourcePath, string TargetRelativePath, string Hash, string Owner);
@@ -796,7 +1192,10 @@ internal sealed class LibraryMaterializer
 /// <summary>Resolved local imports, styles, and source manifests for one build.</summary>
 internal sealed record LibraryAssets(
     IReadOnlyDictionary<string, string> ImportPaths,
+    IReadOnlyDictionary<string, string> BrowserImportPaths,
     IReadOnlyList<string> StylePaths,
+    IReadOnlyList<string> ExternalStyleModuleImports,
+    IReadOnlyList<string> ExternalStylesheetPaths,
     IReadOnlyList<LibraryPublishAsset> PublishAssets,
     IReadOnlyList<string> MaterializedPaths,
     IReadOnlyList<string> ManifestPaths,
@@ -824,6 +1223,11 @@ internal sealed record LibraryPackageProjection(
     public SortedDictionary<string, string> Exports { get; } = new(StringComparer.Ordinal);
 }
 
+/// <summary>Manifest owner and source path for one embedded module import.</summary>
+internal sealed record MaterializedModuleOwner(
+    LibraryManifest Manifest,
+    string PackageRelativePath);
+
 /// <summary>A selected non-bundled library asset that must retain its package-relative URL.</summary>
 internal sealed record LibraryPublishAsset(
     string Type,
@@ -841,16 +1245,25 @@ internal sealed record ImportEntry(
     string Type,
     string Development,
     string Production,
-    string DevelopmentHash,
-    string ProductionHash,
+    string? BrowserDevelopment,
+    string? BrowserProduction,
+    string? DevelopmentHash,
+    string? ProductionHash,
     IReadOnlyList<string> DevelopmentDependencies,
     IReadOnlyList<string> ProductionDependencies,
     IReadOnlyList<string> DevelopmentModuleDependencies,
     IReadOnlyList<string> ProductionModuleDependencies,
+    IReadOnlyList<string> DevelopmentStyleImports,
+    IReadOnlyList<string> ProductionStyleImports,
+    IReadOnlyList<string> DevelopmentStylesheetImports,
+    IReadOnlyList<string> ProductionStylesheetImports,
     IReadOnlyList<ManifestFile> DevelopmentStyles,
     IReadOnlyList<ManifestFile> ProductionStyles,
     IReadOnlyList<ManifestFile> Files)
 {
+    public string? GetBrowserPath(BuildMode mode)
+        => mode == BuildMode.Development ? BrowserDevelopment : BrowserProduction;
+
     public IReadOnlyList<string> GetPackageDependencies(BuildMode mode)
         => (mode == BuildMode.Development ? DevelopmentDependencies : ProductionDependencies)
             .Distinct(StringComparer.Ordinal)
@@ -865,6 +1278,12 @@ internal sealed record ImportEntry(
 
     public IReadOnlyList<ManifestFile> GetStyles(BuildMode mode)
         => mode == BuildMode.Development ? DevelopmentStyles : ProductionStyles;
+
+    public IReadOnlyList<string> GetStyleImports(BuildMode mode)
+        => mode == BuildMode.Development ? DevelopmentStyleImports : ProductionStyleImports;
+
+    public IReadOnlyList<string> GetStylesheetImports(BuildMode mode)
+        => mode == BuildMode.Development ? DevelopmentStylesheetImports : ProductionStylesheetImports;
 }
 
 /// <summary>Validated package manifest for one browser-ready binding library.</summary>
@@ -876,7 +1295,8 @@ internal sealed record LibraryManifest(
     IReadOnlyDictionary<string, string> Requires,
     IReadOnlyList<ManifestFile> Styles,
     IReadOnlyList<ManifestFile> Files,
-    IReadOnlyDictionary<string, LibraryPackageReference> Packages)
+    IReadOnlyDictionary<string, LibraryPackageReference> Packages,
+    string Source)
 {
     public string Directory => Path.GetDirectoryName(SourcePath)!;
 
@@ -904,7 +1324,8 @@ internal sealed record LibraryManifest(
             if (libraryId.Contains('/') || libraryId.Contains('\\') || libraryId.Contains(':'))
                 throw new InvalidOperationException($"Library id '{libraryId}' is not a stable package id.");
 
-            var imports = ReadImports(root, manifestPath);
+            var source = ReadSource(root, manifestPath);
+            var imports = ReadImports(root, manifestPath, source);
             var requires = ReadRequires(root);
             var styles = ReadTypedFiles(root, "styles", "style");
             var files = ReadTypedFiles(root, "files", "license", "static", "worker");
@@ -920,7 +1341,8 @@ internal sealed record LibraryManifest(
                 requires,
                 styles,
                 files,
-                packages);
+                packages,
+                source);
             if (validateFiles)
                 manifest.ValidateAllFiles();
             return manifest;
@@ -941,19 +1363,74 @@ internal sealed record LibraryManifest(
         if (Packages.TryGetValue(packageName, out var package))
             return package;
 
-        // schemaVersion 2 manifests predate package-source metadata. Keep their materialized
-        // carrier usable while exposing the generated package project to package-aware tools.
-        // New manifests must declare `packages` so source/integrity are auditable.
-        return new LibraryPackageReference(packageName, Version, "embedded-mjs");
+        if (IsCoreSource)
+        {
+            var namespacePackage = GetCorePackageName(specifier);
+            return new LibraryPackageReference(namespacePackage, Version, "embedded-mjs");
+        }
+
+        // A package without an explicit package table uses its import's package name as the
+        // identity. The source still comes from the manifest; there is no legacy dist fallback.
+        return new LibraryPackageReference(packageName, Version, Source);
+    }
+
+    public bool IsCoreSource
+        => string.Equals(LibraryId, "ecmascript", StringComparison.Ordinal) && IsEmbedded;
+
+    public bool IsEmbedded
+        => string.Equals(Source, "embedded-mjs", StringComparison.Ordinal);
+
+    public string GetPackageNameForPath(string path)
+    {
+        if (!IsCoreSource)
+        {
+            // An embedded package may use a scoped npm-compatible identity (for example
+            // @jazor/vue-runtime) that is intentionally different from the binding library id.
+            // Every materialized file must use the same identity as its package projection;
+            // infer it only from an explicit embedded package declaration.
+            var embeddedPackages = Packages.Values
+                .Where(static package => string.Equals(package.Source, "embedded-mjs", StringComparison.Ordinal))
+                .Select(static package => package.Name)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (embeddedPackages.Length == 1)
+                return embeddedPackages[0];
+
+            var importPackages = Imports.Keys
+                .Select(GetPackageName)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (importPackages.Length == 1)
+                return importPackages[0];
+
+            return LibraryId;
+        }
+
+        var normalized = NormalizeManifestPath(path);
+        if (normalized.StartsWith("clr/", StringComparison.OrdinalIgnoreCase))
+            normalized = normalized[4..];
+
+        var slash = normalized.IndexOf('/', StringComparison.Ordinal);
+        var packageName = slash < 0 ? normalized : normalized[..slash];
+        return packageName switch
+        {
+            "System" or "Microsoft" => packageName,
+            _ => throw new LibraryException(
+                "JAZOR_LIBRARY_PACKAGE_IDENTITY_INVALID",
+                $"Core ECMAScript module '{path}' must begin with the System or Microsoft package namespace.")
+        };
     }
 
     public ManifestFile? FindModule(string moduleId, BuildMode mode)
     {
         if (Imports.TryGetValue(moduleId, out var entry))
         {
+            if (!IsEmbedded)
+                return null;
+
             return mode == BuildMode.Development
-                ? new ManifestFile(LibraryMaterializer.ModuleType, entry.Development, entry.DevelopmentHash, moduleId)
-                : new ManifestFile(LibraryMaterializer.ModuleType, entry.Production, entry.ProductionHash, moduleId);
+                ? new ManifestFile(LibraryMaterializer.ModuleType, entry.Development, entry.DevelopmentHash!, moduleId)
+                : new ManifestFile(LibraryMaterializer.ModuleType, entry.Production, entry.ProductionHash!, moduleId);
         }
 
         return AllFiles().FirstOrDefault(file =>
@@ -971,8 +1448,8 @@ internal sealed record LibraryManifest(
             var entry = pair.Value;
             return new[]
             {
-                new ManifestFile(LibraryMaterializer.ModuleType, entry.Development, entry.DevelopmentHash, pair.Key),
-                new ManifestFile(LibraryMaterializer.ModuleType, entry.Production, entry.ProductionHash, pair.Key)
+                new ManifestFile(LibraryMaterializer.ModuleType, entry.Development, entry.DevelopmentHash!, pair.Key),
+                new ManifestFile(LibraryMaterializer.ModuleType, entry.Production, entry.ProductionHash!, pair.Key)
             }.Concat(entry.DevelopmentStyles)
              .Concat(entry.ProductionStyles)
              .Concat(entry.Files);
@@ -995,13 +1472,11 @@ internal sealed record LibraryManifest(
 
     internal void ValidateAllFiles()
     {
-        var distRoot = Path.Combine(Directory, "dist");
-        if (!System.IO.Directory.Exists(distRoot))
-        {
-            throw new LibraryException(
-                "JAZOR_LIBRARY_DIST_MISSING",
-                $"Library '{LibraryId}' does not contain the required dist directory.");
-        }
+        // External npm/JSR bindings describe upstream package identities and entry specifiers;
+        // their package files are supplied by Deno. Only an explicit embedded-mjs package
+        // validates local files.
+        if (!IsEmbedded)
+            return;
 
         var files = AllFiles().ToArray();
         foreach (var file in files)
@@ -1027,12 +1502,12 @@ internal sealed record LibraryManifest(
             AddModuleVariant(moduleFiles, entry.Key, new ManifestFile(
                 LibraryMaterializer.ModuleType,
                 entry.Value.Development,
-                entry.Value.DevelopmentHash,
+                entry.Value.DevelopmentHash!,
                 entry.Key));
             AddModuleVariant(moduleFiles, entry.Key, new ManifestFile(
                 LibraryMaterializer.ModuleType,
                 entry.Value.Production,
-                entry.Value.ProductionHash,
+                entry.Value.ProductionHash!,
                 entry.Key));
         }
 
@@ -1103,7 +1578,10 @@ internal sealed record LibraryManifest(
            string.Equals(left.Hash, right.Hash, StringComparison.OrdinalIgnoreCase) &&
            string.Equals(left.ModuleId, right.ModuleId, StringComparison.Ordinal);
 
-    private static Dictionary<string, ImportEntry> ReadImports(JsonElement root, string manifestPath)
+    private static Dictionary<string, ImportEntry> ReadImports(
+        JsonElement root,
+        string manifestPath,
+        string? source)
     {
         if (!root.TryGetProperty("imports", out var importsElement) || importsElement.ValueKind != JsonValueKind.Object)
             throw new InvalidOperationException($"Library manifest '{manifestPath}' must contain an imports object.");
@@ -1120,26 +1598,120 @@ internal sealed record LibraryManifest(
             var type = GetRequiredString(property.Value, "type");
             if (!string.Equals(type, "module", StringComparison.Ordinal))
                 throw new InvalidOperationException($"Library import '{specifier}' has unsupported type '{type}'.");
-            var development = NormalizeManifestPath(GetRequiredString(property.Value, "development"));
-            var production = NormalizeManifestPath(GetRequiredString(property.Value, "production"));
-            var developmentHash = NormalizeManifestHash(GetRequiredString(property.Value, "developmentHash"));
-            var productionHash = NormalizeManifestHash(GetRequiredString(property.Value, "productionHash"));
+            var development = ReadEntryPath(property.Value, "development", specifier, source);
+            var production = ReadEntryPath(property.Value, "production", specifier, source);
+            var browserDevelopment = ReadOptionalExternalEntryPath(property.Value, "browserDevelopment", source);
+            var browserProduction = ReadOptionalExternalEntryPath(property.Value, "browserProduction", source);
+            var developmentHash = ReadEntryHash(property.Value, "developmentHash", source);
+            var productionHash = ReadEntryHash(property.Value, "productionHash", source);
             var entry = new ImportEntry(
                 type,
                 development,
                 production,
+                browserDevelopment,
+                browserProduction,
                 developmentHash,
                 productionHash,
                 ReadPackageDependencies(property.Value, "developmentDependencies"),
                 ReadPackageDependencies(property.Value, "productionDependencies"),
                 ReadModuleDependencies(property.Value, "developmentModuleDependencies"),
                 ReadModuleDependencies(property.Value, "productionModuleDependencies"),
+                ReadExternalStyleImports(property.Value, "developmentStyleImports"),
+                ReadExternalStyleImports(property.Value, "productionStyleImports"),
+                ReadExternalStyleImports(property.Value, "developmentStylesheetImports"),
+                ReadExternalStyleImports(property.Value, "productionStylesheetImports"),
                 ReadTypedFiles(property.Value, "developmentStyles", "style"),
                 ReadTypedFiles(property.Value, "productionStyles", "style"),
                 ReadTypedFiles(property.Value, "files", "module", "source-map", "static", "worker", "license"));
             imports.Add(specifier, entry);
         }
         return imports;
+    }
+
+    private static string ReadEntryPath(
+        JsonElement element,
+        string name,
+        string fallbackSpecifier,
+        string? source)
+    {
+        if (!TryGetProperty(element, out var property, name) || property.ValueKind == JsonValueKind.Null)
+        {
+            if (source is "npm" or "jsr")
+                return fallbackSpecifier;
+            throw new InvalidOperationException($"Library import entry must contain '{name}'.");
+        }
+
+        if (property.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(property.GetString()))
+            throw new InvalidOperationException($"Library import entry field '{name}' must be a non-empty string.");
+
+        var value = property.GetString()!.Trim();
+        return source is "npm" or "jsr"
+            ? ECMAScriptModulePath.ValidateExternalImportSpecifier(value)
+            : NormalizeManifestPath(value);
+    }
+
+    private static string? ReadOptionalExternalEntryPath(
+        JsonElement element,
+        string name,
+        string? source)
+    {
+        if (!TryGetProperty(element, out var property, name) || property.ValueKind == JsonValueKind.Null)
+            return null;
+
+        if (source is not ("npm" or "jsr"))
+        {
+            throw new InvalidOperationException(
+                $"Library import entry field '{name}' is available only for npm or JSR package entries.");
+        }
+        if (property.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(property.GetString()))
+            throw new InvalidOperationException($"Library import entry field '{name}' must be a non-empty string.");
+
+        return ECMAScriptModulePath.ValidateExternalImportSpecifier(property.GetString()!.Trim());
+    }
+
+    private static string ReadSource(JsonElement root, string manifestPath)
+    {
+        if (!TryGetProperty(root, out var property, "source", "packageSource", "Source") ||
+            property.ValueKind == JsonValueKind.Null)
+        {
+            throw new InvalidOperationException(
+                $"Library manifest '{manifestPath}' must declare source 'npm', 'jsr', or 'embedded-mjs'.");
+        }
+
+        if (property.ValueKind != JsonValueKind.String)
+            throw new InvalidOperationException($"Library manifest '{manifestPath}' source must be a string.");
+
+        var source = property.GetString()?.Trim();
+        if (source is not ("npm" or "jsr" or "embedded-mjs"))
+        {
+            throw new InvalidOperationException(
+                $"Library manifest '{manifestPath}' has unsupported source '{source}'.");
+        }
+
+        return source;
+    }
+
+    private static string? ReadEntryHash(JsonElement element, string name, string? source)
+    {
+        if (!TryGetProperty(element, out var property, name) || property.ValueKind == JsonValueKind.Null)
+        {
+            if (string.Equals(source, "embedded-mjs", StringComparison.Ordinal))
+                throw new InvalidOperationException($"Library import entry must contain '{name}'.");
+            return null;
+        }
+
+        if (property.ValueKind != JsonValueKind.String)
+            throw new InvalidOperationException($"Library import entry field '{name}' must be a string.");
+
+        var value = property.GetString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            if (string.Equals(source, "embedded-mjs", StringComparison.Ordinal))
+                throw new InvalidOperationException($"Library import entry field '{name}' cannot be empty.");
+            return null;
+        }
+
+        return NormalizeManifestHash(value);
     }
 
     private static Dictionary<string, string> ReadRequires(JsonElement root)
@@ -1209,6 +1781,20 @@ internal sealed record LibraryManifest(
         return string.Join('/', segments.Take(count));
     }
 
+    private static string GetCorePackageName(string specifier)
+    {
+        var normalized = NormalizeManifestPath(specifier);
+        var slash = normalized.IndexOf('/', StringComparison.Ordinal);
+        var packageName = slash < 0 ? normalized : normalized[..slash];
+        return packageName switch
+        {
+            "System" or "Microsoft" => packageName,
+            _ => throw new LibraryException(
+                "JAZOR_LIBRARY_PACKAGE_IDENTITY_INVALID",
+                $"Core ECMAScript import '{specifier}' must begin with the System or Microsoft package namespace.")
+        };
+    }
+
     private static IReadOnlyList<string> ReadPackageDependencies(JsonElement element, string name)
     {
         var values = ReadStringArray(element, name);
@@ -1232,6 +1818,29 @@ internal sealed record LibraryManifest(
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static IReadOnlyList<string> ReadExternalStyleImports(
+        JsonElement element,
+        string name)
+    {
+        if (!element.TryGetProperty(name, out var valuesElement) || valuesElement.ValueKind == JsonValueKind.Null)
+            return [];
+        if (valuesElement.ValueKind != JsonValueKind.Array)
+            throw new InvalidOperationException($"Library import entry property '{name}' must be an array.");
+
+        var values = new List<string>();
+        foreach (var item in valuesElement.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(item.GetString()))
+                throw new InvalidOperationException($"Library import entry property '{name}' must contain non-empty strings.");
+            var value = ECMAScriptModulePath.ValidateExternalImportSpecifier(item.GetString()!);
+            if (!ECMAScriptModulePath.IsPackageSpecifier(value))
+                throw new LibraryException("JAZOR_LIBRARY_STYLE_INVALID", $"External style '{value}' must be a package specifier.");
+            values.Add(value);
+        }
+
+        return values.Distinct(StringComparer.Ordinal).OrderBy(static value => value, StringComparer.Ordinal).ToArray();
     }
 
     private static IReadOnlyList<ManifestFile> ReadTypedFiles(
@@ -1310,6 +1919,21 @@ internal sealed record LibraryManifest(
         => element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+
+    private static bool TryGetProperty(
+        JsonElement element,
+        out JsonElement value,
+        params string[] names)
+    {
+        foreach (var name in names)
+        {
+            if (element.TryGetProperty(name, out value))
+                return true;
+        }
+
+        value = default;
+        return false;
+    }
 
     private static string GetJsonString(JsonElement value, string field)
         => value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString())

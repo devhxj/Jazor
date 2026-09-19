@@ -1,8 +1,12 @@
 # ECMAScript.FilePond
 
-FilePond 与其官方 Vue 适配器的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游多包版本、`manifest.json`（schema 2）、`dist/` 资源、默认样式、许可证与 inventory。
+FilePond 与其官方 Vue 适配器的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定
+上游多包版本，`manifest.json`（schema 2）和 `inventory.json` 记录 package、入口、样式、
+完整性与许可证元数据。
 
-Strongly typed C# bindings for FilePond and its official Vue adapter, shipped as a Jazor JS resource library with locked upstream package versions, package-local `manifest.json` (schema 2), `dist/` runtime assets, the default stylesheet, licenses, and inventory.
+Strongly typed C# bindings for FilePond and its official Vue adapter, shipped as a Jazor JS resource
+library with locked upstream package versions. Runtime files remain in npm; package metadata records
+the entries, stylesheet and licenses for the generated `jazor` project.
 
 ## 上游锁定 Upstream lock
 
@@ -12,7 +16,7 @@ Strongly typed C# bindings for FilePond and its official Vue adapter, shipped as
 | 版本 | 见 `manifest.json` / `inventory.json` |
 | 闭包包 | `vue-filepond`（适配器）、`filepond`（核心，锁定版本） |
 | 许可证 | MIT（`licenses/*-LICENSE`） |
-| 样式 | `dist/filepond/filepond.css`（manifest `styles` 声明） |
+| 样式 | `filepond/dist/filepond.css`（上游 package stylesheet export，由 manifest 声明） |
 | peer 依赖 | `vue`（由 `ECMAScript.Vue` 资源库提供） |
 
 ## 首期范围 First slice
@@ -55,4 +59,4 @@ dotnet run --file scripts/csharp/generate-file-pond.cs -- --source .tmp/p3c --ve
 
 ## 测试 Tests
 
-`src/ECMAScript.FilePond.Test` 覆盖 manifest/inventory 元数据、vendored 哈希、样式资源、上游导出 drift 与编译器 emission。
+`src/ECMAScript.FilePond.Test` 覆盖 manifest/inventory 元数据、npm integrity、样式入口、上游导出 drift 与编译器 emission。

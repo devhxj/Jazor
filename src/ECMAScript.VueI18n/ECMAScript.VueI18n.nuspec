@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.VueI18n.targets" target="buildTransitive\ECMAScript.VueI18n.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vue-i18n" />
     <file src="$projectDir$inventory.json" target="jazor\vue-i18n" />
-    <file src="$projectDir$dist\**\*" target="jazor\vue-i18n\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vue-i18n\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

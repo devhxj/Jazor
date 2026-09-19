@@ -336,19 +336,27 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         {
             _generation = generation;
             _jsonOptions = jsonOptions;
+            // A debug artifact can be the package project root itself; a release SSR profile
+            // lives under `jazor/ssr` and shares the parent project's package graph. Start Deno
+            // at whichever artifact ancestor actually owns package.json/node_modules.
+            var packageWorkspace = File.Exists(Path.Combine(artifacts.RootPath, "package.json"))
+                ? artifacts.RootPath
+                : Path.GetDirectoryName(artifacts.RootPath) ?? artifacts.RootPath;
             _process = new DenoProcess(
                 new DenoExecuteBaseOptions
                 {
-                    WorkingDirectory = artifacts.RootPath
+                    WorkingDirectory = packageWorkspace
                 },
                 [
                     "run",
                     "--no-config",
                     "--node-modules-dir=manual",
-                    "--frozen",
+                    "--frozen-lockfile",
                     "--no-remote",
                     "--no-prompt",
+                    "--allow-env=NODE_ENV",
                     "--allow-read=" + artifacts.RootPath,
+                    "--allow-read=" + Path.GetDirectoryName(artifacts.RootPath)!,
                     "--import-map",
                     artifacts.SsrImportMapPath,
                     runnerPath

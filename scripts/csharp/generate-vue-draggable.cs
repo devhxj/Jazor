@@ -8,9 +8,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-// Vendor the locked vue-draggable-plus ESM runtime into src/ECMAScript.VueDraggable and
-// regenerate the package-local manifest, inventory, and vendored dist closure.
-// 上游以 npm registry integrity 锁定版本；本脚本搬运并生成资源闭包，不改写上游代码。
+// Validate the locked vue-draggable-plus ESM entry and regenerate package metadata. Runtime
+// bytes remain in the upstream npm package.
 //
 // Usage:
 //   dotnet run --file scripts/csharp/generate-vue-draggable.cs -- --version 0.6.1
@@ -54,6 +53,7 @@ foreach (var package in sources.Keys.Order(StringComparer.Ordinal))
     var packageJson = JsonNode.Parse(File.ReadAllText(Path.Combine(sources[package], "package.json")))!;
     packageVersions[package] = packageJson["version"]!.GetValue<string>();
 }
+CopyExistingPackageVersions(manifestPath, packageVersions);
 
 if (packageVersions[primaryPackage] != version)
     throw new InvalidOperationException($"{primaryPackage} extracted version '{packageVersions[primaryPackage]}' does not match requested '{version}'.");
@@ -84,27 +84,11 @@ foreach (var (specifier, package, file) in entries)
 if (unresolved.Count > 0)
     throw new InvalidOperationException("Upstream adds references outside the declared closure: " + string.Join(", ", unresolved));
 
-var distRoot = Path.Combine(projectRoot, "dist");
 var licensesRoot = Path.Combine(projectRoot, "licenses");
 
-// 整体替换 dist 与 licenses，保证 manifest 与 vendored 文件始终一一对应。
-if (Directory.Exists(distRoot))
-    Directory.Delete(distRoot, recursive: true);
 if (Directory.Exists(licensesRoot))
     Directory.Delete(licensesRoot, recursive: true);
-Directory.CreateDirectory(distRoot);
 Directory.CreateDirectory(licensesRoot);
-
-var vendored = new SortedDictionary<string, string>(StringComparer.Ordinal);
-foreach (var (_, package, file) in entries)
-    vendored[package + "/" + Path.GetFileName(file)] = Path.Combine(sources[package], file.Replace('/', Path.DirectorySeparatorChar));
-
-foreach (var (relative, source) in vendored)
-{
-    var destination = Path.Combine(distRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-    File.Copy(source, destination, overwrite: false);
-}
 
 var licenseFiles = new JsonArray();
 foreach (var package in entries.Select(static entry => entry.Package).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
@@ -122,13 +106,27 @@ foreach (var package in entries.Select(static entry => entry.Package).Distinct(S
     });
 }
 
-var manifest = BuildManifest(version, entries, dependencies, vendored, peerRequires, licenseFiles);
+var manifest = BuildManifest(version, entries, dependencies, packageVersions, peerRequires, licenseFiles);
 WriteLfText(manifestPath, manifest.ToJsonString(GeneratorJson.Manifest) + "\n");
 
-WriteInventory(projectRoot, version, vendored.Count, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions, "vue-draggable-plus", "https://vue-draggable-plus.pages.dev/");
+WriteInventory(projectRoot, version, entries.Length, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions, "vue-draggable-plus", "https://vue-draggable-plus.pages.dev/");
 
-Console.WriteLine($"Vendored {vendored.Count} vue-draggable-plus {version} module(s); license: MIT.");
+Console.WriteLine($"Validated {entries.Length} vue-draggable-plus {version} npm entries; license: MIT.");
 Console.WriteLine("Review contract drift for bound exports before committing.");
+
+static void CopyExistingPackageVersions(string manifestPath, IDictionary<string, string> packageVersions)
+{
+    if (!File.Exists(manifestPath))
+        return;
+    var packages = JsonNode.Parse(File.ReadAllText(manifestPath))?["packages"] as JsonObject;
+    if (packages is null)
+        return;
+    foreach (var property in packages)
+    {
+        if (!packageVersions.ContainsKey(property.Key) && property.Value?["version"]?.GetValue<string>() is { } version)
+            packageVersions[property.Key] = version;
+    }
+}
 
 static void AssertBrowserSafe(string path, string specifier)
 {
@@ -238,15 +236,13 @@ static JsonNode BuildManifest(
     string version,
     (string Specifier, string Package, string File)[] entries,
     Dictionary<string, string[]> dependencies,
-    SortedDictionary<string, string> vendored,
+    SortedDictionary<string, string> packageVersions,
     SortedDictionary<string, string> peerRequires,
     JsonArray licenseFiles)
 {
     var imports = new JsonObject();
-    foreach (var (specifier, package, file) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
+    foreach (var (specifier, _, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
     {
-        var relative = package + "/" + Path.GetFileName(file);
-        var hash = HashFile(vendored[relative]);
         var dependenciesNode = new JsonArray();
         foreach (var dependency in dependencies[specifier])
             dependenciesNode.Add((JsonNode)dependency);
@@ -254,16 +250,10 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = "dist/" + relative,
-            ["production"] = "dist/" + relative,
-            ["developmentHash"] = hash,
-            ["productionHash"] = hash,
-            // 兄弟条目和 peer 都通过 package 通道解析；requires 只负责 provider 版本约束。
+            ["development"] = specifier,
+            ["production"] = specifier,
             ["developmentDependencies"] = (JsonArray)dependenciesNode.DeepClone(),
             ["productionDependencies"] = dependenciesNode,
-            ["developmentModuleDependencies"] = new JsonArray(),
-            ["productionModuleDependencies"] = new JsonArray(),
-            ["files"] = new JsonArray(),
         };
     }
 
@@ -276,6 +266,8 @@ static JsonNode BuildManifest(
         ["schemaVersion"] = 2,
         ["libraryId"] = "vue-draggable",
         ["version"] = version,
+        ["source"] = "npm",
+        ["packages"] = BuildPackages(packageVersions),
         ["imports"] = imports,
         ["requires"] = requiresNode,
         ["styles"] = new JsonArray(),
@@ -283,10 +275,18 @@ static JsonNode BuildManifest(
     };
 }
 
+static JsonObject BuildPackages(SortedDictionary<string, string> packageVersions)
+{
+    var packages = new JsonObject();
+    foreach (var (name, packageVersion) in packageVersions.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        packages[name] = new JsonObject { ["source"] = "npm", ["version"] = packageVersion };
+    return packages;
+}
+
 static void WriteInventory(
     string projectRoot,
     string version,
-    int vendoredCount,
+    int validatedEntryCount,
     string[] specifiers,
     SortedDictionary<string, string> packageVersions,
     string libraryId,
@@ -305,7 +305,7 @@ static void WriteInventory(
         ["source"] = $"https://registry.npmjs.org/{libraryId}/{version}",
         ["documentation"] = documentation,
         ["entryImports"] = new JsonArray(specifiers.Order(StringComparer.Ordinal).Select(static value => (JsonNode)value).ToArray()),
-        ["vendoredModuleCount"] = vendoredCount,
+        ["validatedEntryCount"] = validatedEntryCount,
     };
     var payload = inventory.ToJsonString(GeneratorJson.Manifest);
     inventory["fingerprint"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

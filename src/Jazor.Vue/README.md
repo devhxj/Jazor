@@ -2,8 +2,9 @@
 
 > 定位：Razor SDK 项目显式启用 Razor-to-Vue 的 NuGet 包。
 
-> 资源契约：RazorVue 生成的组件模块进入程序集内的 `Jazor.Generated.ModuleCatalog`；Vue、
-> CLR runtime 与其他已有 JavaScript 资源通过 `manifest.json + dist/**` 提供。
+> 资源契约：RazorVue 生成的组件模块进入程序集内的 `Jazor.Generated.ModuleCatalog`；Vue
+> runtime bridge 由本包 manifest 声明的 embedded carrier 提供，外部 binding runtime 由
+> npm/JSR package metadata 提供。
 
 `Jazor.Vue` 安装消费官方 Razor Source Generator 最终 Roslyn `Compilation` 的 generator-driver hook。Razor 组件的 `BuildRenderTree` 操作会降低为 Vue render-function 模块，并生成供 `Jazor.Emit` 读取的 `Jazor.Generated.ModuleCatalog`；本包唯一的 `buildTransitive/Jazor.Vue.targets` 始终传递资源 manifest locator，并仅在当前项目直接声明 `Jazor.Vue` 时注册 RazorVue analyzer。
 
@@ -29,7 +30,7 @@ RazorVue analyzer 与 `AngleSharp` 位于 `tools/net11.0/analyzers/`，由当前
 `Jazor.Vue` 时通过该包的 `buildTransitive/Jazor.Vue.targets` 条件注册；它们不放入 NuGet
 自动导入的 `analyzers/dotnet/cs`，也不随组件库引用激活。
 
-Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成，再由 `Jazor.CLR` 唯一持有 module、mapping、helper；生成的 runtime JavaScript 进入 `ECMAScript/manifest.json + dist/**`，用户不需要复制映射源码或手工注册资源。当前 browser-interactive `Support` 覆盖 Mouse/Keyboard/Focus/Change，以及 Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 的 getter-only 原生事件投影；TouchList 在属性访问时惰性转换为数组 carrier。七组扩展事件已由 Blazor `EventHandlers` reference metadata、official Razor SG/Deno、真实 BrowserSmoke 与 isolated Release package consumer 共同验证。统一 Release 包边界和基本 Razor/Vue 消费路径已由 `SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary` 验证；file input、合成 `EventArgs` payload、DataTransfer files/items、TouchList 非 getter 操作和 SSR/prerender 仍不支持/不声明。
+Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成，再由 `Jazor.CLR` 唯一持有 module、mapping、helper；生成的 runtime JavaScript 进入 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` carrier，用户不需要复制映射源码或手工注册资源。当前 browser-interactive `Support` 覆盖 Mouse/Keyboard/Focus/Change，以及 Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 的 getter-only 原生事件投影；TouchList 在属性访问时惰性转换为数组 carrier。七组扩展事件已由 Blazor `EventHandlers` reference metadata、official Razor SG/Deno、真实 BrowserSmoke 与 isolated Release package consumer 共同验证。统一 Release 包边界和基本 Razor/Vue 消费路径已由 `SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary` 验证；file input、合成 `EventArgs` payload、DataTransfer files/items、TouchList 非 getter 操作和 SSR/prerender 仍不支持/不声明。
 
 ## 产物输出
 
@@ -50,3 +51,4 @@ Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core re
 - [Jazor.RazorVue](../Jazor.RazorVue/README.md)
 - [安装与配置](../../docs/03-guides/installation-and-configuration.md)
 - [Razor-to-Vue](../../docs/02-architecture/razor-to-vue.md)
+

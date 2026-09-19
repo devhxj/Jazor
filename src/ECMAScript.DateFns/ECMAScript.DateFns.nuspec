@@ -26,7 +26,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.DateFns.targets" target="buildTransitive\ECMAScript.DateFns.targets" />
     <file src="$projectDir$manifest.json" target="jazor\date-fns" />
     <file src="$projectDir$inventory.json" target="jazor\date-fns" />
-    <file src="$projectDir$dist\**\*" target="jazor\date-fns\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\date-fns\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

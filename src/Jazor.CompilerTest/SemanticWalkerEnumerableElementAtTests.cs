@@ -421,10 +421,10 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         foreach (var entry in document.RootElement.GetProperty("imports").EnumerateObject())
         {
             var relativeFile = entry.Value.GetProperty("production").GetString()!;
-            if (!relativeFile.StartsWith("dist/", StringComparison.Ordinal))
+            if (!relativeFile.StartsWith("clr/", StringComparison.Ordinal))
                 continue;
 
-            var relativePath = relativeFile["dist/".Length..];
+            var relativePath = relativeFile["clr/".Length..];
             var sourcePath = Path.Combine(repositoryRoot, "src", "ECMAScript", relativeFile.Replace('/', Path.DirectorySeparatorChar));
             var content = await File.ReadAllTextAsync(sourcePath);
             var outputPath = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));

@@ -7,17 +7,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-// Materialize the locked monaco-editor runtime into src/ECMAScript.Monaco and regenerate the
-// package-local manifest, inventory, and vendored resource closure.
-//
-// monaco-editor's published ESM tree is NOT directly loadable by a browser: 120 of its modules
-// import plain `.css` files, which the native ESM loader rejects. The upstream `min/` build is AMD.
-// Following the repository's TDesign precedent, this generator bundles both the editor entry and the
-// language workers with esbuild so each artifact is a self-contained ESM module; esbuild extracts the
-// stylesheet alongside the editor bundle.
-//
-// 上游 ESM 树不能被浏览器直接加载（120 个模块 import 纯 .css）；min/ 是 AMD。沿用仓库 TDesign 先例，
-// 用 esbuild 把编辑器入口与各 worker 打成自包含 ESM，并把样式单独抽出交付。
+// Validate the locked monaco-editor package and regenerate package metadata and the upstream
+// inventory. Runtime modules stay in the npm package so NetPack can resolve its exports and
+// sideEffects metadata at the actual usage site.
 //
 // Usage:
 //   dotnet run --file scripts/csharp/generate-monaco.cs -- --version 0.56.0
@@ -42,7 +34,8 @@ if (version is null && File.Exists(manifestPath))
 if (string.IsNullOrWhiteSpace(version))
     throw new ArgumentException("Provide --version on the first run; later runs reuse the manifest version.");
 
-// 构建输入由 ESLint 无关的 package.json/lockfile 锁定；版本必须与请求一致。
+// The validation input is locked by package.json/package-lock.json; the requested version must
+// match it before the package is inspected.
 var buildPackage = JsonNode.Parse(File.ReadAllText(Path.Combine(buildRoot, "package.json")))!;
 var lockedMonaco = buildPackage["dependencies"]!["monaco-editor"]!.GetValue<string>();
 if (lockedMonaco != version)
@@ -63,54 +56,36 @@ var installedVersion = JsonNode.Parse(File.ReadAllText(Path.Combine(monacoRoot, 
 if (installedVersion != version)
     throw new InvalidOperationException($"Installed monaco-editor version '{installedVersion}' does not match '{version}'.");
 
-// 逻辑 import → 上游 ESM 入口 → 产物名。编辑器入口与四个语言 worker。
-var entries = new (string Specifier, string Source, string Artifact)[]
+// Logical binding names map to package export subpaths. The package's `./*.js` export maps these
+// paths to `esm/vs/*`; keeping the authored target preserves upstream module boundaries.
+var entries = new (string Specifier, string Target, string Source)[]
 {
-    ("monaco-editor", "esm/vs/editor/editor.api.js", "editor.api.mjs"),
-    ("monaco-editor/esm/vs/editor/editor.worker.start.js", "esm/vs/editor/editor.worker.start.js", "editor.worker.start.mjs"),
-    ("monaco-editor/esm/vs/languages/features/json/json.worker.js", "esm/vs/languages/features/json/json.worker.js", "json.worker.mjs"),
-    ("monaco-editor/esm/vs/languages/features/css/css.worker.js", "esm/vs/languages/features/css/css.worker.js", "css.worker.mjs"),
-    ("monaco-editor/esm/vs/languages/features/html/html.worker.js", "esm/vs/languages/features/html/html.worker.js", "html.worker.mjs"),
-    ("monaco-editor/esm/vs/languages/features/typescript/ts.worker.js", "esm/vs/languages/features/typescript/ts.worker.js", "ts.worker.mjs"),
+    ("monaco-editor", "monaco-editor/editor/editor.api.js", "esm/vs/editor/editor.api.js"),
+    ("monaco-editor/editor/editor.worker.start.js", "monaco-editor/editor/editor.worker.start.js", "esm/vs/editor/editor.worker.start.js"),
+    ("monaco-editor/languages/features/json/json.worker.js", "monaco-editor/languages/features/json/json.worker.js", "esm/vs/languages/features/json/json.worker.js"),
+    ("monaco-editor/languages/features/css/css.worker.js", "monaco-editor/languages/features/css/css.worker.js", "esm/vs/languages/features/css/css.worker.js"),
+    ("monaco-editor/languages/features/html/html.worker.js", "monaco-editor/languages/features/html/html.worker.js", "esm/vs/languages/features/html/html.worker.js"),
+    ("monaco-editor/languages/features/typescript/ts.worker.js", "monaco-editor/languages/features/typescript/ts.worker.js", "esm/vs/languages/features/typescript/ts.worker.js"),
 };
 
-var staging = Path.Combine(root, ".tmp", "monaco-build", Guid.NewGuid().ToString("N"));
-Directory.CreateDirectory(staging);
-
-var artifacts = new SortedDictionary<string, string>(StringComparer.Ordinal); // artifact -> staged path
-foreach (var (specifier, source, artifact) in entries)
+foreach (var (specifier, _, source) in entries)
 {
     var sourcePath = Path.Combine(monacoRoot, source.Replace('/', Path.DirectorySeparatorChar));
     if (!File.Exists(sourcePath))
         throw new FileNotFoundException($"monaco-editor does not expose the expected entry '{source}'.", sourcePath);
 
-    var outputPath = Path.Combine(staging, artifact);
-    var (cssPath, code) = await BundleAsync(buildRoot, sourcePath, outputPath);
-    if (code != 0)
-        throw new InvalidOperationException($"esbuild failed for '{specifier}' with exit code {code}.");
-
-    artifacts[artifact] = outputPath;
-    AssertBrowserSafe(outputPath, specifier);
-
-    // 只有编辑器入口会产生样式；worker 无样式。
-    if (cssPath is not null)
-    {
-        if (!artifacts.TryAdd("editor.api.css", cssPath))
-            throw new InvalidOperationException("Duplicate stylesheet artifact.");
-    }
+    ValidateEntry(sourcePath, specifier);
 }
 
-// 整体替换 dist 与 licenses，保证 manifest 与 vendored 文件始终一一对应。
-var distRoot = Path.Combine(projectRoot, "dist", "monaco-editor");
+// Remove the historical binding-owned carrier when regeneration runs. The binding now emits
+// metadata only; the restored npm package is the runtime source.
+var distRoot = Path.Combine(projectRoot, "dist");
 var licensesRoot = Path.Combine(projectRoot, "licenses");
-foreach (var directory in new[] { Path.Combine(projectRoot, "dist"), licensesRoot })
-    if (Directory.Exists(directory))
-        Directory.Delete(directory, recursive: true);
-Directory.CreateDirectory(distRoot);
+if (Directory.Exists(distRoot))
+    Directory.Delete(distRoot, recursive: true);
+if (Directory.Exists(licensesRoot))
+    Directory.Delete(licensesRoot, recursive: true);
 Directory.CreateDirectory(licensesRoot);
-
-foreach (var (artifact, source) in artifacts)
-    File.Copy(source, Path.Combine(distRoot, artifact), overwrite: false);
 
 // 许可证与第三方声明必须随包交付。
 var licenseFiles = new JsonArray();
@@ -131,34 +106,12 @@ foreach (var (source, name) in new[]
     });
 }
 
-var manifest = BuildManifest(version, entries, artifacts, licenseFiles);
+var manifest = BuildManifest(version, entries, licenseFiles);
 WriteLfText(manifestPath, manifest.ToJsonString(GeneratorJson.Manifest) + "\n");
-WriteInventory(projectRoot, version, artifacts.Count);
+WriteInventory(projectRoot, version, entries.Length);
 
-Console.WriteLine($"Vendored {artifacts.Count} monaco-editor {version} artifact(s) (editor + stylesheet + {entries.Length - 1} workers).");
+Console.WriteLine($"Validated {entries.Length} monaco-editor {version} export entries.");
 Console.WriteLine("Review contract drift for bound editor/model/language APIs before committing.");
-
-static async Task<(string? CssPath, int ExitCode)> BundleAsync(string buildRoot, string sourcePath, string outputPath)
-{
-    Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-    var esbuild = Path.Combine(buildRoot, "node_modules", "esbuild", "bin", "esbuild");
-    var arguments = new List<string>
-    {
-        esbuild,
-        sourcePath,
-        "--bundle",
-        "--format=esm",
-        "--platform=browser",
-        "--target=es2022",
-        "--charset=utf8",
-        "--outfile=" + outputPath,
-    };
-    var exitCode = await RunAsync("node", arguments, buildRoot, throwOnFailure: false);
-
-    // esbuild 仅在入口引用样式时生成同名 .css。
-    var cssPath = Path.ChangeExtension(outputPath, ".css");
-    return (File.Exists(cssPath) ? cssPath : null, exitCode);
-}
 
 static async Task<int> RunAsync(string fileName, IEnumerable<string> arguments, string workingDirectory, bool throwOnFailure = true)
 {
@@ -186,97 +139,51 @@ static async Task<int> RunAsync(string fileName, IEnumerable<string> arguments, 
     return process.ExitCode;
 }
 
-static void AssertBrowserSafe(string path, string specifier)
+static void ValidateEntry(string path, string specifier)
 {
-    // 浏览器安全闸门：vendor 的模块不得在裸浏览器环境引用 process.env。
-    // Monaco 自带的 vs/base/common/process.js 有 typeof process 守卫，属正当用法；因此只在
-    // 引用点没有同类守卫时失败。
+    // Validate the authored entry without rewriting it. Runtime import edges and CSS are resolved
+    // by the package-aware bundler from the upstream package graph.
     var source = File.ReadAllText(path);
-    var index = source.IndexOf("process.env", StringComparison.Ordinal);
-    while (index >= 0)
-    {
-        // 引用点前 400 字符串内出现 typeof process / typeof globalThis.process 视为已守卫。
-        var window = source[Math.Max(0, index - 400)..index];
-        var guarded = window.Contains("typeof process", StringComparison.Ordinal) ||
-                      window.Contains("typeof globalThis.process", StringComparison.Ordinal) ||
-                      window.Contains("typeof window", StringComparison.Ordinal);
-        if (!guarded)
-            throw new InvalidOperationException(
-                $"Vendored artifact '{specifier}' references process.env without an environment guard; " +
-                "it cannot load in a browser.");
-        index = source.IndexOf("process.env", index + 1, StringComparison.Ordinal);
-    }
+    if (source.Contains("require(", StringComparison.Ordinal))
+        throw new InvalidOperationException($"monaco-editor entry '{specifier}' contains CommonJS require().");
 }
 
 static JsonNode BuildManifest(
     string version,
-    (string Specifier, string Source, string Artifact)[] entries,
-    SortedDictionary<string, string> artifacts,
+    (string Specifier, string Target, string Source)[] entries,
     JsonArray licenseFiles)
 {
-    // 编辑器入口是唯一的 C# 作者入口；worker 以 manifest 模块依赖 + static 资源声明，
-    // 让 Emit 把 worker 与样式一并物化，而不是留给应用手写 URL。
     var imports = new JsonObject();
-    var workerArtifacts = entries
-        .Where(static entry => entry.Artifact.EndsWith(".worker.mjs", StringComparison.Ordinal) ||
-                               entry.Artifact == "editor.worker.start.mjs")
-        .Select(static entry => entry.Artifact)
-        .Order(StringComparer.Ordinal)
-        .ToArray();
-
-    var moduleDependencies = new JsonArray();
-    var files = new JsonArray();
-    foreach (var worker in workerArtifacts)
+    foreach (var (specifier, target, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
     {
-        var distPath = "dist/monaco-editor/" + worker;
-        moduleDependencies.Add((JsonNode)distPath);
-        files.Add(new JsonObject
+        imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["path"] = distPath,
-            ["hash"] = HashFile(artifacts[worker]),
-            ["moduleId"] = distPath,
-        });
+            ["development"] = target,
+            ["production"] = target,
+            ["developmentDependencies"] = new JsonArray(),
+            ["productionDependencies"] = new JsonArray(),
+        };
     }
-
-    var entryArtifact = "editor.api.mjs";
-    imports["monaco-editor"] = new JsonObject
-    {
-        ["type"] = "module",
-        ["development"] = "dist/monaco-editor/" + entryArtifact,
-        ["production"] = "dist/monaco-editor/" + entryArtifact,
-        ["developmentHash"] = HashFile(artifacts[entryArtifact]),
-        ["productionHash"] = HashFile(artifacts[entryArtifact]),
-        ["developmentDependencies"] = new JsonArray(),
-        ["productionDependencies"] = new JsonArray(),
-        ["developmentModuleDependencies"] = (JsonArray)moduleDependencies.DeepClone(),
-        ["productionModuleDependencies"] = moduleDependencies,
-        ["files"] = files,
-    };
-
-    var styles = new JsonArray
-    {
-        new JsonObject
-        {
-            ["type"] = "style",
-            ["path"] = "dist/monaco-editor/editor.api.css",
-            ["hash"] = HashFile(artifacts["editor.api.css"]),
-        },
-    };
 
     return new JsonObject
     {
         ["schemaVersion"] = 2,
         ["libraryId"] = "monaco",
         ["version"] = version,
+        ["source"] = "npm",
+        ["packages"] = new JsonObject
+        {
+            ["monaco-editor"] = new JsonObject { ["source"] = "npm", ["version"] = version }
+        },
         ["imports"] = imports,
         ["requires"] = new JsonObject(),
-        ["styles"] = styles,
+        ["styles"] = new JsonArray(),
         ["files"] = licenseFiles,
     };
 }
 
-static void WriteInventory(string projectRoot, string version, int vendoredCount)
+static void WriteInventory(string projectRoot, string version, int validatedEntryCount)
 {
     var inventory = new JsonObject
     {
@@ -287,10 +194,8 @@ static void WriteInventory(string projectRoot, string version, int vendoredCount
         ["source"] = $"https://registry.npmjs.org/monaco-editor/{version}",
         ["documentation"] = "https://microsoft.github.io/monaco-editor/",
         ["entryImports"] = new JsonArray { "monaco-editor" },
-        ["vendoredModuleCount"] = vendoredCount,
-        ["buildNote"] =
-            "Bundled with esbuild from the upstream ESM tree: 120 of its modules import plain .css files, " +
-            "which a browser ESM loader rejects, and the upstream min/ build is AMD.",
+        ["validatedEntryCount"] = validatedEntryCount,
+        ["runtimeNote"] = "NetPack resolves the upstream ESM exports, CSS edges, and worker modules from node_modules.",
     };
     var payload = inventory.ToJsonString(GeneratorJson.Manifest);
     inventory["fingerprint"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

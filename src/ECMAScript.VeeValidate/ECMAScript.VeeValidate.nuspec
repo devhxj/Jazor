@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.VeeValidate.targets" target="buildTransitive\ECMAScript.VeeValidate.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vee-validate" />
     <file src="$projectDir$inventory.json" target="jazor\vee-validate" />
-    <file src="$projectDir$dist\**\*" target="jazor\vee-validate\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\vee-validate\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

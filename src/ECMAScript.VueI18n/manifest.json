@@ -2,22 +2,28 @@
   "schemaVersion": 2,
   "libraryId": "vue-i18n",
   "version": "11.4.12",
+  "source": "npm",
+  "packages": {
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
+    },
+    "vue-i18n": {
+      "source": "npm",
+      "version": "11.4.12"
+    }
+  },
   "imports": {
     "vue-i18n": {
       "type": "module",
-      "development": "dist/vue-i18n/dist/vue-i18n.esm-browser.js",
-      "production": "dist/vue-i18n/dist/vue-i18n.esm-browser.js",
-      "developmentHash": "b116e6e0842375499bb6253e3ae1251896fef5a9d233c9cce342a915c8f5b360",
-      "productionHash": "b116e6e0842375499bb6253e3ae1251896fef5a9d233c9cce342a915c8f5b360",
+      "development": "vue-i18n",
+      "production": "vue-i18n",
       "developmentDependencies": [
         "vue"
       ],
       "productionDependencies": [
         "vue"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     }
   },
   "requires": {

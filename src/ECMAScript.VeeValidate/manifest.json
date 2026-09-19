@@ -2,13 +2,22 @@
   "schemaVersion": 2,
   "libraryId": "vee-validate",
   "version": "4.15.1",
+  "source": "npm",
+  "packages": {
+    "vee-validate": {
+      "source": "npm",
+      "version": "4.15.1"
+    },
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
+    }
+  },
   "imports": {
     "vee-validate": {
       "type": "module",
-      "development": "dist/vee-validate/dist/vee-validate.mjs",
-      "production": "dist/vee-validate/dist/vee-validate.mjs",
-      "developmentHash": "e91a46e0a986a7f80c3af95e469b7cc19733c2a73af13f7cd7e1a3ee89cc152b",
-      "productionHash": "e91a46e0a986a7f80c3af95e469b7cc19733c2a73af13f7cd7e1a3ee89cc152b",
+      "development": "vee-validate",
+      "production": "vee-validate",
       "developmentDependencies": [
         "@vue/devtools-api",
         "vue"
@@ -16,21 +25,10 @@
       "productionDependencies": [
         "@vue/devtools-api",
         "vue"
-      ],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      ]
     }
   },
-  "requires": {
-    "vue3": "^3.4.26"
-  },
+  "requires": {},
   "styles": [],
-  "files": [
-    {
-      "type": "license",
-      "path": "licenses/vee-validate-LICENSE",
-      "hash": "a6d9a0b6255a6c3e0bce3d1033c31e6f2fbb00f53340d621958cb95d795832d0"
-    }
-  ]
+  "files": []
 }

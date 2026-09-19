@@ -54,7 +54,7 @@ public sealed partial class JazorSsrHostingTests
         StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
         StringAssert.Contains(html, "mountElement.dataset.jazorSsrHydrated = \"1\";");
         StringAssert.Contains(html, "\"Title\":\"SSR \\u003Ctitle\\u003E\"");
-        Assert.IsFalse(html.Contains("node_modules", StringComparison.Ordinal));
+        StringAssert.Contains(html, "/docs/jazor/node_modules/vue/dist/vue.runtime.esm-browser.prod.js");
         Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
 
         var styleResponse = await client.GetAsync("/docs/jazor/vendor/test.css");
@@ -643,11 +643,7 @@ public sealed partial class JazorSsrHostingTests
                 [manifestPath],
                 artifactRoot,
                 BuildMode.Production);
-            await ImportMapWriter.WriteAsync(artifactRoot, materialization);
             await File.WriteAllTextAsync(Path.Combine(artifactRoot, "jazor-manifest.json"), "{}\n");
-            await File.WriteAllTextAsync(
-                Path.Combine(artifactRoot, "manifest.json"),
-                """{"styles":["/jazor/vendor/test.css"]}""");
             var stylePath = Path.Combine(artifactRoot, "vendor", "test.css");
             Directory.CreateDirectory(Path.GetDirectoryName(stylePath)!);
             await File.WriteAllTextAsync(stylePath, "main{display:block;}");
@@ -687,7 +683,34 @@ public sealed partial class JazorSsrHostingTests
                   }
                 });
                 """);
+
+            // SSR fixtures use the same standard package project as MSBuild Emit. Restore once
+            // at the artifact root so DenoHost resolves Vue through node_modules; the SSR host
+            // remains a consumer of this already-prepared graph.
+            LibraryPackageWriter.WritePackageProject(artifactRoot, materialization);
+            await DenoPackageRestorer.RestoreAndCheckAsync(
+                artifactRoot,
+                ResolveTestDenoExecutable(),
+                [componentPath, hydrationComponentPath],
+                materialization,
+                CancellationToken.None);
+            await ImportMapWriter.WriteAsync(artifactRoot, materialization);
+            await File.WriteAllTextAsync(
+                Path.Combine(artifactRoot, "manifest.json"),
+                """{"styles":["/jazor/vendor/test.css"]}""");
             return artifactRoot;
+        }
+
+        private static string ResolveTestDenoExecutable()
+        {
+            var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+            var rid = OperatingSystem.IsWindows()
+                ? (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "win-arm64" : "win-x64")
+                : OperatingSystem.IsMacOS()
+                    ? (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "osx-arm64" : "osx-x64")
+                    : "linux-x64";
+            var path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", runtimeName);
+            return File.Exists(path) ? path : runtimeName;
         }
 
         public Task PublishGenerationAsync(string generation)

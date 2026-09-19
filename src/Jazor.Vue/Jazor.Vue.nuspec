@@ -35,7 +35,6 @@
     <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.pdb" target="tools/net11.0/analyzers" />
     <file src="$nugetPackageRoot$anglesharp\$angleSharpVersion$\lib\netstandard2.0\AngleSharp.dll" target="tools/net11.0/analyzers" />
     <file src="$projectDir$..\ECMAScript.Vue\manifest.json" target="jazor/vue3/manifest.json" />
-    <file src="$projectDir$..\ECMAScript.Vue\dist\**\*" target="jazor/vue3/dist" />
     <file src="$projectDir$..\ECMAScript.Vue\licenses\**\*" target="jazor/vue3/licenses" />
     <file src="$projectDir$manifest.json" target="jazor/vue-runtime/manifest.json" />
     <file src="$projectDir$dist\**\*" target="jazor/vue-runtime/dist" />

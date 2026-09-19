@@ -5,6 +5,8 @@
     <JazorDir Condition="'$(JazorDir)' == ''">$(MSBuildProjectDirectory)\jazor\</JazorDir>
     <!-- Release keeps only the browser bundle unless SSR explicitly needs the raw module graph. -->
     <JazorSSR Condition="'$(JazorSSR)' == ''">false</JazorSSR>
+    <!-- Optional override for the DenoHost executable used by Emit package restore. -->
+    <JazorDenoPath Condition="'$(JazorDenoPath)' == ''"></JazorDenoPath>
     <!-- DenoHost validates its packaged runtime metadata through System.Text.Json reflection. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>

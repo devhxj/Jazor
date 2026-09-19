@@ -26,13 +26,34 @@ public sealed class LibraryMaterializerTests
         foreach (var manifestPath in manifests)
         {
             var packageRoot = Path.GetDirectoryName(manifestPath)!;
-            Assert.IsTrue(
-                Directory.Exists(Path.Combine(packageRoot, "dist")),
-                $"JS resource package '{manifestPath}' must contain a dist directory.");
-
             // Load validates schema, typed records, explicit module edges, file paths and every
             // declared SHA-256 before the manifest can reach Emit's materialization path.
-            _ = LibraryManifest.Load(manifestPath);
+            var manifest = LibraryManifest.Load(manifestPath);
+            if (manifest.IsCoreSource)
+            {
+                Assert.IsTrue(
+                    Directory.Exists(Path.Combine(packageRoot, "clr")),
+                    $"The ECMAScript source package '{manifestPath}' must contain its CLR carrier directory.");
+            }
+            else if (manifest.Source == "embedded-mjs")
+            {
+                var declaredCarrierFiles = manifest.Imports.Values
+                    .SelectMany(static entry => new[] { entry.Development, entry.Production }
+                        .Concat(entry.DevelopmentStyles.Select(static file => file.Path))
+                        .Concat(entry.ProductionStyles.Select(static file => file.Path))
+                        .Concat(entry.Files.Select(static file => file.Path)))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray();
+                Assert.IsTrue(
+                    declaredCarrierFiles.Length > 0 && declaredCarrierFiles.All(path => File.Exists(Path.Combine(packageRoot, path.Replace('/', Path.DirectorySeparatorChar)))),
+                    $"Embedded package '{manifestPath}' must contain every declared carrier file.");
+            }
+            else
+            {
+                Assert.IsFalse(
+                    Directory.Exists(Path.Combine(packageRoot, "dist")),
+                    $"External mapping package '{manifestPath}' must not carry a binding-owned dist snapshot.");
+            }
         }
     }
 
@@ -54,11 +75,11 @@ public sealed class LibraryMaterializerTests
         var outputRoot = Path.Combine(workspace.Root, "out");
         var result = new LibraryMaterializer().Materialize([manifestPath], outputRoot, BuildMode.Production);
 
-        Assert.AreEqual("vendor/vue3/3.5.42/dist/prod.mjs", result.ImportPaths["vue"]);
-        Assert.AreEqual("vendor/vue3/3.5.42/dist/main.css", result.StylePaths.Single());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.42", "dist", "prod.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.42", "dist", "main.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.42", "dist", "dev.mjs")));
+        Assert.AreEqual("packages/vue/dist/prod.mjs", result.ImportPaths["vue"]);
+        Assert.AreEqual("packages/vue/dist/main.css", result.StylePaths.Single());
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "vue", "dist", "prod.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "vue", "dist", "main.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "packages", "vue", "dist", "dev.mjs")));
     }
 
     [TestMethod]
@@ -102,7 +123,7 @@ public sealed class LibraryMaterializerTests
         var exports = embeddedPackage.RootElement.GetProperty("exports");
         Assert.AreEqual("./dist/index.mjs", exports.GetProperty(".").GetString());
         Assert.AreEqual("./dist/feature.mjs", exports.GetProperty("./feature").GetString());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "node_modules", "widget", "dist", "feature.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "widget", "dist", "feature.mjs")));
     }
 
     [TestMethod]
@@ -141,10 +162,10 @@ public sealed class LibraryMaterializerTests
             BuildMode.Development,
             requiredImports: ["profile-library/used"]);
 
-        Assert.AreEqual("vendor/profile-library/1.0.0/dist/dev.css", result.StylePaths.Single());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "profile-library", "1.0.0", "dist", "dev.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "vendor", "profile-library", "1.0.0", "dist", "prod.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "vendor", "profile-library", "1.0.0", "dist", "unused.css")));
+        Assert.AreEqual("packages/profile-library/dist/dev.css", result.StylePaths.Single());
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "profile-library", "dist", "dev.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "packages", "profile-library", "dist", "prod.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "packages", "profile-library", "dist", "unused.css")));
 
         var releaseRoot = Path.Combine(workspace.Root, "release");
         var release = new LibraryMaterializer().Materialize(
@@ -152,7 +173,7 @@ public sealed class LibraryMaterializerTests
             releaseRoot,
             BuildMode.Production,
             requiredImports: ["profile-library/used"]);
-        Assert.AreEqual("vendor/profile-library/1.0.0/dist/prod.css", release.StylePaths.Single());
+        Assert.AreEqual("packages/profile-library/dist/prod.css", release.StylePaths.Single());
     }
 
     [TestMethod]
@@ -175,12 +196,9 @@ public sealed class LibraryMaterializerTests
             Assert.IsFalse(result.ImportPaths.ContainsKey("tdesign-vue-next/alert/Alert"));
             Assert.IsFalse(result.StylePaths.Any(path => path.Contains("alert", StringComparison.OrdinalIgnoreCase)));
             Assert.IsFalse(result.StylePaths.Any(path => path.Contains("root", StringComparison.OrdinalIgnoreCase)));
-            Assert.IsTrue(result.StylePaths.Any(path => path.EndsWith("button-Button.css", StringComparison.OrdinalIgnoreCase)));
-
-            var vendorRoot = Path.Combine(outputRoot, "vendor", "tdesign-vue-next", version, "dist");
-            Assert.IsTrue(File.Exists(Path.Combine(vendorRoot, "components", "button-Button.js")));
-            Assert.IsFalse(File.Exists(Path.Combine(vendorRoot, "components", "alert-Alert.js")));
-            Assert.IsFalse(File.Exists(Path.Combine(vendorRoot, "root", "index.js")));
+            Assert.IsTrue(result.ExternalStylesheetPaths.Any(path => path.Contains("button", StringComparison.OrdinalIgnoreCase)));
+            Assert.AreEqual("tdesign-vue-next/es/button/index.mjs", result.ImportPaths["tdesign-vue-next/button/Button"]);
+            Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("tdesign-vue-next", StringComparison.OrdinalIgnoreCase)));
         }
         finally
         {
@@ -195,9 +213,6 @@ public sealed class LibraryMaterializerTests
         var elementPlusManifest = FindLibraryManifest("ECMAScript.ElementPlus");
         var vueManifest = FindLibraryManifest("ECMAScript.Vue");
         using var manifest = JsonDocument.Parse(File.ReadAllText(elementPlusManifest));
-        var version = manifest.RootElement.GetProperty("version").GetString()!;
-        var imports = manifest.RootElement.GetProperty("imports");
-        Assert.IsTrue(imports.GetProperty("element-plus/button/ElButton").GetProperty("productionStyles").GetArrayLength() > 0);
 
         var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "element-plus", Guid.NewGuid().ToString("N"));
         try
@@ -211,17 +226,9 @@ public sealed class LibraryMaterializerTests
             Assert.IsTrue(result.ImportPaths.ContainsKey("element-plus/button/ElButton"));
             Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/alert/ElAlert"));
             Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus"));
-            Assert.IsTrue(result.StylePaths.Any(path => path.EndsWith("button-ElButton.css", StringComparison.OrdinalIgnoreCase)));
-            Assert.IsFalse(result.StylePaths.Any(path => path.Contains("alert", StringComparison.OrdinalIgnoreCase)));
-            Assert.IsFalse(result.StylePaths.Any(path => path.Contains("root", StringComparison.OrdinalIgnoreCase)));
-
-            var vendorRoot = Path.Combine(outputRoot, "vendor", "element-plus", version, "dist");
-            var buttonCss = File.ReadAllText(Path.Combine(vendorRoot, "components", "button-ElButton.css"));
-            Assert.Contains(".el-button", buttonCss, StringComparison.Ordinal);
-            Assert.DoesNotContain(".el-alert", buttonCss, StringComparison.Ordinal);
-            Assert.IsTrue(File.Exists(Path.Combine(vendorRoot, "components", "button-ElButton.js")));
-            Assert.IsFalse(File.Exists(Path.Combine(vendorRoot, "components", "alert-ElAlert.js")));
-            Assert.IsFalse(File.Exists(Path.Combine(vendorRoot, "root", "index.js")));
+            Assert.IsTrue(result.ExternalStyleModuleImports.Any(path => path.Contains("button", StringComparison.OrdinalIgnoreCase)));
+            Assert.AreEqual("element-plus/es/components/button/index.mjs", result.ImportPaths["element-plus/button/ElButton"]);
+            Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("element-plus", StringComparison.OrdinalIgnoreCase)));
         }
         finally
         {
@@ -233,9 +240,8 @@ public sealed class LibraryMaterializerTests
     [TestMethod]
     public void Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries()
     {
-        // The vendored date-fns tree is a real multi-module closure; materializing both entries
-        // must reproduce every declared module under vendor/ with a fully resolvable import graph.
-        // vendored date-fns 是真实多模块闭包；两个入口 materialize 后必须在 vendor/ 下完整复现且导入图自包含。
+        // date-fns is an external package. Materialization records its authored package roots;
+        // Deno supplies the module closure in node_modules during the package restore phase.
         var manifestPath = FindLibraryManifest("ECMAScript.DateFns");
         using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var version = manifest.RootElement.GetProperty("version").GetString()!;
@@ -248,27 +254,10 @@ public sealed class LibraryMaterializerTests
                 BuildMode.Production,
                 requiredImports: ["date-fns", "date-fns/locale"]);
 
-            Assert.AreEqual($"vendor/date-fns/{version}/dist/index.js", result.ImportPaths["date-fns"]);
-            Assert.AreEqual($"vendor/date-fns/{version}/dist/locale.mjs", result.ImportPaths["date-fns/locale"]);
-
-            var vendorModules = Directory.EnumerateFiles(
-                Path.Combine(outputRoot, "vendor", "date-fns", version),
-                "*.*",
-                SearchOption.AllDirectories)
-                .Where(IsJavaScriptModule)
-                .ToArray();
-            Assert.IsTrue(vendorModules.Length >= 367, $"Expected the full vendored closure, found {vendorModules.Length} JavaScript modules.");
-
-            foreach (var module in vendorModules)
-            {
-                foreach (var specifier in GetRelativeModuleSpecifiers(module))
-                {
-                    var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(module)!, specifier));
-                    Assert.IsTrue(
-                        File.Exists(resolved),
-                        $"Vendored module '{module}' imports '{specifier}' which is not part of the materialized closure.");
-                }
-            }
+            Assert.AreEqual("date-fns", result.ImportPaths["date-fns"]);
+            Assert.AreEqual("date-fns/locale", result.ImportPaths["date-fns/locale"]);
+            Assert.AreEqual("npm", result.PackageReferences["date-fns"].Source);
+            Assert.IsEmpty(result.MaterializedPaths);
         }
         finally
         {
@@ -299,26 +288,9 @@ public sealed class LibraryMaterializerTests
             foreach (var specifier in new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "@floating-ui/utils/dom" })
                 Assert.IsTrue(result.ImportPaths.ContainsKey(specifier), $"Sibling closure member '{specifier}' was not selected.");
 
-            Assert.AreEqual($"vendor/floating-ui/{version}/dist/@floating-ui/vue/floating-ui.vue.mjs", result.ImportPaths["@floating-ui/vue"]);
-
-            var vendorModules = Directory.EnumerateFiles(
-                Path.Combine(outputRoot, "vendor", "floating-ui", version),
-                "*",
-                SearchOption.AllDirectories)
-                .Where(IsJavaScriptModule)
-                .ToArray();
-            Assert.AreEqual(5, vendorModules.Length, "The full Floating UI closure must materialize exactly the five declared bundles.");
-
-            foreach (var module in vendorModules)
-            {
-                foreach (var specifier in GetBareModuleSpecifiers(module))
-                {
-                    // Vue is the declared peer and resolves to the Vue vendor tree, not this closure.
-                    if (specifier == "vue")
-                        continue;
-                    Assert.IsTrue(result.ImportPaths.ContainsKey(specifier), $"Module '{Path.GetFileName(module)}' references '{specifier}' outside the selected closure.");
-                }
-            }
+            Assert.AreEqual("@floating-ui/vue", result.ImportPaths["@floating-ui/vue"]);
+            Assert.AreEqual("npm", result.PackageReferences["@floating-ui/vue"].Source);
+            Assert.IsEmpty(result.MaterializedPaths);
         }
         finally
         {
@@ -344,10 +316,10 @@ public sealed class LibraryMaterializerTests
                 BuildMode.Production,
                 requiredImports: ["@vueuse/core"]);
 
-            Assert.AreEqual($"vendor/vueuse/{version}/dist/@vueuse/core/index.js", result.ImportPaths["@vueuse/core"]);
-            Assert.AreEqual($"vendor/vueuse/{version}/dist/@vueuse/shared/index.js", result.ImportPaths["@vueuse/shared"]);
+            Assert.AreEqual("@vueuse/core", result.ImportPaths["@vueuse/core"]);
+            Assert.AreEqual("@vueuse/shared", result.ImportPaths["@vueuse/shared"]);
             Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), "VueUse's bare vue import must resolve through the Vue provider.");
-            Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vueuse", version, "dist", "@vueuse", "shared", "index.js")));
+            Assert.IsEmpty(result.MaterializedPaths);
         }
         finally
         {
@@ -367,13 +339,13 @@ public sealed class LibraryMaterializerTests
         // @intlify/* 的单一 browser 构建。
         var cases = new[]
         {
-            (Manifest: "ECMAScript.VeeValidate", Id: "vee-validate", Specifier: "vee-validate", Entry: "dist/vee-validate/dist/vee-validate.mjs"),
-            (Manifest: "ECMAScript.VueI18n", Id: "vue-i18n", Specifier: "vue-i18n", Entry: "dist/vue-i18n/dist/vue-i18n.esm-browser.js"),
-            (Manifest: "ECMAScript.VueQuery", Id: "vue-query", Specifier: "@tanstack/vue-query", Entry: "dist/@tanstack/vue-query/build/modern/index.js")
+            (Manifest: "ECMAScript.VeeValidate", Id: "vee-validate", Specifier: "vee-validate"),
+            (Manifest: "ECMAScript.VueI18n", Id: "vue-i18n", Specifier: "vue-i18n"),
+            (Manifest: "ECMAScript.VueQuery", Id: "vue-query", Specifier: "@tanstack/vue-query")
         };
         var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
 
-        foreach (var (manifestName, libraryId, specifier, expectedEntry) in cases)
+        foreach (var (manifestName, libraryId, specifier) in cases)
         {
             var manifestPath = FindLibraryManifest(manifestName);
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
@@ -387,14 +359,15 @@ public sealed class LibraryMaterializerTests
                     BuildMode.Production,
                     requiredImports: [specifier]);
 
-                Assert.AreEqual($"vendor/{libraryId}/{version}/{expectedEntry}", result.ImportPaths[specifier]);
+                Assert.AreEqual(specifier, result.ImportPaths[specifier]);
 
                 // Every declared import of the closure has a resolvable provider path.
                 foreach (var declared in manifest.RootElement.GetProperty("imports").EnumerateObject())
                     Assert.IsTrue(result.ImportPaths.ContainsKey(declared.Name), $"{libraryId}: '{declared.Name}' was not selected.");
 
-                // The vue provider must be materialized into its own vendor tree.
+                // The Vue provider is another external package in the same graph.
                 Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), $"{libraryId}: the vue provider was not resolved.");
+                Assert.IsTrue(result.PackageReferences.ContainsKey(specifier), $"{libraryId}: package identity was not recorded.");
             }
             finally
             {
@@ -412,13 +385,13 @@ public sealed class LibraryMaterializerTests
         // materialize the whole graph, and FilePond/WangEditor must carry their stylesheet.
         var cases = new[]
         {
-            (Manifest: "ECMAScript.VueDraggable", Id: "vue-draggable", Specifier: "vue-draggable-plus", Entry: "dist/vue-draggable-plus/vue-draggable-plus.js"),
-            (Manifest: "ECMAScript.FilePond", Id: "file-pond", Specifier: "filepond", Entry: "dist/filepond/filepond.esm.js"),
-            (Manifest: "ECMAScript.WangEditor", Id: "wang-editor", Specifier: "@wangeditor/editor", Entry: "dist/@wangeditor/editor/index.esm.js")
+            (Manifest: "ECMAScript.VueDraggable", Id: "vue-draggable", Specifier: "vue-draggable-plus"),
+            (Manifest: "ECMAScript.FilePond", Id: "file-pond", Specifier: "filepond"),
+            (Manifest: "ECMAScript.WangEditor", Id: "wang-editor", Specifier: "@wangeditor/editor")
         };
         var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
 
-        foreach (var (manifestName, libraryId, specifier, expectedEntry) in cases)
+        foreach (var (manifestName, libraryId, specifier) in cases)
         {
             var manifestPath = FindLibraryManifest(manifestName);
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
@@ -435,7 +408,7 @@ public sealed class LibraryMaterializerTests
                     BuildMode.Production,
                     requiredImports: [specifier]);
 
-                Assert.AreEqual($"vendor/{libraryId}/{version}/{expectedEntry}", result.ImportPaths[specifier]);
+                Assert.AreEqual(specifier, result.ImportPaths[specifier]);
 
                 // 请求入口必须连同其 package 依赖链一起被选中（含闭包内的核心包）。
                 var requested = manifest.RootElement.GetProperty("imports").GetProperty(specifier);
@@ -448,15 +421,10 @@ public sealed class LibraryMaterializerTests
                     .Any(static value => value.GetString() == "vue"))
                     Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), $"{libraryId}: the vue peer was not resolved.");
 
-                // 样式通过 manifest styles 通道物化（FilePond/WangEditor 有，VueDraggable 无）；
-                // StylePaths 是目标相对路径（vendor/<id>/<version>/...），按文件名断言。
-                Assert.AreEqual(expectedStyles.Length, result.StylePaths.Count, $"{libraryId}: style closure size mismatch.");
+                // Styles are external package edges; local style paths stay empty.
+                Assert.AreEqual(0, result.StylePaths.Count, $"{libraryId}: external styles must not be copied from binding output.");
                 foreach (var style in expectedStyles)
-                {
-                    var fileName = style.Split('/')[^1];
-                    Assert.IsTrue(result.StylePaths.Any(path => string.Equals(Path.GetFileName(path), fileName, StringComparison.OrdinalIgnoreCase)),
-                        $"{libraryId}: style '{style}' was not materialized.");
-                }
+                    Assert.Contains(style, result.ExternalStylesheetPaths.ToArray());
             }
             finally
             {
@@ -599,7 +567,7 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["component-library/widget"]);
 
-        var materializedRoot = Path.Combine(outputRoot, "vendor", "component-library", "1.0.0", "dist");
+        var materializedRoot = Path.Combine(outputRoot, "packages", "component-library", "dist");
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "components", "widget.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "shared", "helper.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "shared", "reexport.mjs")));
@@ -639,13 +607,12 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["owner"]);
 
-        Assert.AreEqual("vendor/owner/1.0.0/dist/app.mjs", result.ImportPaths["owner"]);
+        Assert.AreEqual("packages/owner/dist/app.mjs", result.ImportPaths["owner"]);
         Assert.IsFalse(result.ImportPaths.ContainsKey("shared"));
         Assert.IsTrue(File.Exists(Path.Combine(
             outputRoot,
-            "vendor",
+            "packages",
             "owner",
-            "1.0.0",
             "dist",
             "shared.mjs")));
         Assert.IsFalse(Directory.Exists(Path.Combine(outputRoot, "vendor", "unrelated")));
@@ -686,7 +653,7 @@ public sealed class LibraryMaterializerTests
         foreach (var specifier in result.ImportPaths.Keys)
         {
             var target = imports.GetProperty(specifier).GetString();
-            Assert.IsTrue(target?.StartsWith("/jazor/vendor/ecmascript/", StringComparison.Ordinal));
+            Assert.IsTrue(target?.StartsWith("/jazor/packages/", StringComparison.Ordinal));
         }
     }
 
@@ -832,13 +799,13 @@ public sealed class LibraryMaterializerTests
         using var ssrMap = System.Text.Json.JsonDocument.Parse(
             await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
         Assert.AreEqual(
-            "/jazor/vendor/vue3/3.5.42/dist/index.mjs",
+            "/jazor/packages/vue/dist/index.mjs",
             browserMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
         Assert.AreEqual(
-            "./vendor/vue3/3.5.42/dist/index.mjs",
+            "./packages/vue/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
         Assert.AreEqual(
-            "./vendor/vue-server-renderer/3.5.42/dist/index.mjs",
+            "./packages/@vue/server-renderer/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
         Assert.IsFalse(
             (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
@@ -863,6 +830,7 @@ public sealed class LibraryMaterializerTests
               "schemaVersion": 2,
               "libraryId": "second",
               "version": "1.0.0",
+              "source": "embedded-mjs",
               "imports": { "vue": {
                 "type": "module",
                 "development": "dist/dev.mjs", "production": "dist/prod.mjs",
@@ -897,6 +865,7 @@ public sealed class LibraryMaterializerTests
               "schemaVersion": 2,
               "libraryId": "component",
               "version": "1.0.0",
+              "source": "embedded-mjs",
               "imports": { "component": {
                 "type": "module",
                 "development": "dist/component.mjs", "production": "dist/component.mjs",
@@ -936,7 +905,7 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["component"]);
 
-        Assert.AreEqual("vendor/component/1.0.0-preview.1/dist/index.mjs", result.ImportPaths["component"]);
+        Assert.AreEqual("packages/component/dist/index.mjs", result.ImportPaths["component"]);
     }
 
     [TestMethod]
@@ -965,8 +934,8 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEqual(
             new[]
             {
-                "vendor/z-core/1.0.0/dist/core.css",
-                "vendor/a-ui/1.0.0/dist/ui.css"
+                "packages/z-core/dist/core.css",
+                "packages/a-ui/dist/ui.css"
             },
             result.StylePaths.ToArray());
     }
@@ -1019,7 +988,7 @@ public sealed class LibraryMaterializerTests
             ["pinia", "host/app.mjs", "stores/counter-store.mjs"],
             ["host/app.mjs", "stores/counter-store.mjs"]);
 
-        Assert.AreEqual("vendor/pinia/3.0.4/dist/pinia.mjs", result.ImportPaths["pinia"]);
+        Assert.AreEqual("packages/pinia/dist/pinia.mjs", result.ImportPaths["pinia"]);
     }
 
     [TestMethod]
@@ -1058,7 +1027,7 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["selected"]);
 
-        Assert.AreEqual("vendor/selected-library/1.0.0/dist/index.mjs", result.ImportPaths["selected"]);
+        Assert.AreEqual("packages/selected/dist/index.mjs", result.ImportPaths["selected"]);
         Assert.HasCount(1, result.ManifestPaths);
         Assert.AreEqual(
             Path.GetFullPath(selectedManifest),
@@ -1081,43 +1050,10 @@ public sealed class LibraryMaterializerTests
 
         Assert.HasCount(1, result.ImportPaths);
         Assert.IsTrue(result.ImportPaths.ContainsKey("vue"));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "vue.runtime.esm-browser.prod.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "server-renderer.esm-browser.prod.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "vue-devtools-api.esm-browser.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "perfect-debounce.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "licenses",
-            "LICENSE")));
+        Assert.AreEqual("vue", result.ImportPaths["vue"]);
+        Assert.AreEqual("vue/dist/vue.runtime.esm-browser.prod.js", result.BrowserImportPaths["vue"]);
+        Assert.AreEqual("npm", result.PackageReferences["vue"].Source);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1135,28 +1071,9 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "@vue/devtools-api", "perfect-debounce" },
             result.ImportPaths.Keys.ToArray());
-        Assert.AreEqual(
-            "vendor/vue3/3.5.42/dist/devtools-api/vue-devtools-api.esm-browser.js",
-            result.ImportPaths["@vue/devtools-api"]);
-        Assert.AreEqual(
-            "vendor/vue3/3.5.42/dist/devtools-api/perfect-debounce.mjs",
-            result.ImportPaths["perfect-debounce"]);
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "vue-devtools-api.esm-browser.js")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "perfect-debounce.mjs")));
+        Assert.AreEqual("@vue/devtools-api", result.ImportPaths["@vue/devtools-api"]);
+        Assert.AreEqual("perfect-debounce", result.ImportPaths["perfect-debounce"]);
+        Assert.IsEmpty(result.MaterializedPaths);
         Assert.IsFalse(File.Exists(Path.Combine(
             FindRepositoryRoot(),
             "src",
@@ -1183,29 +1100,9 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "pinia", "vue" },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "pinia",
-            "4.0.3",
-            "dist",
-            "pinia.esm-browser.prod.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "pinia",
-            "4.0.3",
-            "dist",
-            "nostics",
-            "index.mjs")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "vue-devtools-api.esm-browser.js")));
+        Assert.AreEqual("pinia", result.ImportPaths["pinia"]);
+        Assert.AreEqual("vue", result.ImportPaths["vue"]);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1226,37 +1123,9 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "pinia", "vue", "nostics", "@vue/devtools-api", "perfect-debounce" },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "pinia",
-            "4.0.3",
-            "dist",
-            "pinia.esm-browser.js")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "pinia",
-            "4.0.3",
-            "dist",
-            "nostics",
-            "index.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "vue-devtools-api.esm-browser.js")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "perfect-debounce.mjs")));
+        Assert.AreEqual("pinia", result.ImportPaths["pinia"]);
+        Assert.AreEqual("nostics", result.ImportPaths["nostics"]);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1277,22 +1146,9 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue-router", "nostics", "vue", "@vue/devtools-api", "perfect-debounce" },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue-router",
-            "5.3.1",
-            "dist",
-            "nostics",
-            "index.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vue3",
-            "3.5.42",
-            "dist",
-            "devtools-api",
-            "vue-devtools-api.esm-browser.js")));
+        Assert.AreEqual("vue-router", result.ImportPaths["vue-router"]);
+        Assert.AreEqual("nostics", result.ImportPaths["nostics"]);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1314,25 +1170,13 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "@pinia/testing", "pinia", "vue", "nostics" },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "pinia-testing",
-            "2.0.1",
-            "dist",
-            "index.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "pinia",
-            "4.0.3",
-            "dist",
-            "nostics",
-            "index.mjs")));
+        Assert.AreEqual("@pinia/testing", result.ImportPaths["@pinia/testing"]);
+        Assert.AreEqual("nostics", result.ImportPaths["nostics"]);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
-    public void Materialize_ProductionVuetifyLabsEntry_CopiesSelectedComponentClosureOnly()
+    public void Materialize_ProductionVuetifyLabsEntry_ResolvesSelectedComponentClosureOnly()
     {
         using var workspace = new LibraryWorkspace();
         var outputRoot = Path.Combine(workspace.Root, "out");
@@ -1349,37 +1193,16 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue", "vuetify/labs/components/VCalendar" },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsTrue(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vuetify",
-            "4.2.1",
-            "dist",
-            "entries",
-            "labs-VCalendar.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vuetify",
-            "4.2.1",
-            "dist",
-            "entries",
-            "component-VBtn.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
-            outputRoot,
-            "vendor",
-            "vuetify",
-            "4.2.1",
-            "dist",
-            "entries",
-            "directive-Ripple.js")));
-        CollectionAssert.Contains(
-            result.StylePaths.Select(Path.GetFileName).ToArray(),
-            "labs-VCalendar.css");
+        // The logical binding key remains the labs entry, while Vuetify 4.2.1 exports
+        // VCalendar from its stable components subpath after the lab-to-stable move.
+        Assert.AreEqual("vuetify/components/VCalendar", result.ImportPaths["vuetify/labs/components/VCalendar"]);
+        Assert.IsEmpty(result.MaterializedPaths);
+        Assert.IsEmpty(result.ExternalStyleModuleImports);
+        Assert.IsEmpty(result.ExternalStylesheetPaths);
     }
 
     [TestMethod]
-    public void Load_VueDataUiManifest_DeclaresPerComponentStylesWithoutGlobalCss()
+    public void Load_VueDataUiManifest_DeclaresUpstreamGlobalStylesheetEdge()
     {
         using var manifest = JsonDocument.Parse(File.ReadAllText(FindLibraryManifest("ECMAScript.VueDataUi")));
         var root = manifest.RootElement;
@@ -1390,24 +1213,16 @@ public sealed class LibraryMaterializerTests
             .Where(static entry => entry.Name.StartsWith("vue-data-ui/", StringComparison.Ordinal))
             .ToArray();
         Assert.HasCount(71, components);
-        var stylelessComponents = components
-            .Where(static component => !component.Value.GetProperty("productionStyles").EnumerateArray().Any())
-            .Select(static component => component.Name)
-            .ToArray();
-        CollectionAssert.AreEquivalent(
-            new[] { "vue-data-ui/vue-ui-pattern", "vue-data-ui/vue-ui-pattern-seed" },
-            stylelessComponents,
-            "Only upstream components with no emitted CSS may have an empty style closure.");
-
-        var donutStyles = root.GetProperty("imports").GetProperty("vue-data-ui/vue-ui-donut")
-            .GetProperty("productionStyles")
+        Assert.IsTrue(components.All(static component => component.Value
+            .GetProperty("productionStylesheetImports")
             .EnumerateArray()
-            .Select(static style => style.GetProperty("path").GetString()!)
+            .Any(static style => style.GetString() == "vue-data-ui/style.css")));
+        var donutStyles = root.GetProperty("imports").GetProperty("vue-data-ui/vue-ui-donut")
+            .GetProperty("productionStylesheetImports")
+            .EnumerateArray()
+            .Select(static style => style.GetString()!)
             .ToArray();
-        Assert.IsTrue(donutStyles.Any(static path =>
-            Path.GetFileName(path).StartsWith("vue-ui-donut-", StringComparison.Ordinal) &&
-            path.EndsWith(".css", StringComparison.Ordinal)));
-        Assert.IsFalse(donutStyles.Any(static path => path.Contains("vue-ui-xy-", StringComparison.Ordinal)));
+        CollectionAssert.AreEqual(new[] { "vue-data-ui/style.css" }, donutStyles);
     }
 
     [TestMethod]
@@ -1428,17 +1243,9 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue", "jspdf", "vue-data-ui/vue-ui-donut" },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsTrue(result.StylePaths.Any(static path =>
-            Path.GetFileName(path).StartsWith("vue-ui-donut-", StringComparison.Ordinal) &&
-            path.EndsWith(".css", StringComparison.Ordinal)));
-        Assert.IsFalse(result.StylePaths.Any(static path => path.Contains("vue-ui-xy-", StringComparison.Ordinal)));
-
-        var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "runtime", "components", "vue-ui-donut.js")));
-        Assert.IsTrue(Directory.GetFiles(Path.Combine(dataUiRoot, "runtime", "chunks"), "vue-ui-donut-*.js", SearchOption.TopDirectoryOnly).Length > 0);
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
-        Assert.IsFalse(File.Exists(Path.Combine(dataUiRoot, "runtime", "components", "vue-ui-xy.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(dataUiRoot, "style.css")));
+        Assert.Contains("vue-data-ui/style.css", result.ExternalStylesheetPaths.ToArray());
+        Assert.IsEmpty(result.StylePaths);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1468,59 +1275,8 @@ public sealed class LibraryMaterializerTests
             .EnumerateObject()
             .Select(static entry => entry.Name)
             .ToArray();
-        var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
-        var unresolved = Directory.EnumerateFiles(dataUiRoot, "*", SearchOption.AllDirectories)
-            .Where(IsJavaScriptModule)
-            .SelectMany(GetBareModuleSpecifiers)
-            .Where(specifier => !providers.Any(provider => ProvidesImport(provider, specifier)))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static specifier => specifier, StringComparer.Ordinal)
-            .ToArray();
-
-        Assert.IsEmpty(unresolved, "Browser import map does not provide: " + string.Join(", ", unresolved));
-
-        // A manifest can provide every bare package name while still omitting a relative ESM
-        // chunk. Verify the physical selected closure as a graph, including dynamic imports,
-        // so a browser never receives an import-map entry whose next request is a 404.
-        var unresolvedRelative = Directory.EnumerateFiles(dataUiRoot, "*", SearchOption.AllDirectories)
-            .Where(IsJavaScriptModule)
-            .SelectMany(path => GetRelativeModuleSpecifiers(path)
-                .Select(specifier => (path, specifier)))
-            .Where(edge => ResolveMaterializedModule(dataUiRoot, edge.path, edge.specifier) is null)
-            .Select(edge => $"{Path.GetRelativePath(dataUiRoot, edge.path).Replace('\\', '/')} -> {edge.specifier}")
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static edge => edge, StringComparer.Ordinal)
-            .ToArray();
-
-        Assert.IsEmpty(
-            unresolvedRelative,
-            "Materialized browser closure is missing relative modules: " + string.Join(", ", unresolvedRelative));
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs.LEGAL.txt")));
-
-        var noticesRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "licenses");
-        var expectedNotices = new[]
-        {
-            "JSPDF-LICENSE",
-            "jspdf-browser-bundle/README.md",
-            "jspdf-browser-bundle/babel-runtime-LICENSE",
-            "jspdf-browser-bundle/canvg-LICENSE",
-            "jspdf-browser-bundle/core-js-LICENSE",
-            "jspdf-browser-bundle/dompurify-LICENSE",
-            "jspdf-browser-bundle/fast-png-LICENSE",
-            "jspdf-browser-bundle/fflate-LICENSE",
-            "jspdf-browser-bundle/html2canvas-LICENSE",
-            "jspdf-browser-bundle/iobuffer-LICENSE",
-            "jspdf-browser-bundle/pako-LICENSE",
-            "jspdf-browser-bundle/performance-now-license.txt",
-            "jspdf-browser-bundle/raf-LICENSE",
-            "jspdf-browser-bundle/rgbcolor-LICENSE.md",
-            "jspdf-browser-bundle/rgbcolor-FEEL-FREE.md",
-            "jspdf-browser-bundle/stackblur-canvas-LICENSE-MIT.txt",
-            "jspdf-browser-bundle/svg-pathdata-LICENSE"
-        };
-        foreach (var notice in expectedNotices)
-            Assert.IsTrue(File.Exists(Path.Combine(noticesRoot, notice)), $"Missing bundled dependency notice: {notice}");
+        Assert.Contains("vue-data-ui/style.css", materialization.ExternalStylesheetPaths.ToArray());
+        Assert.IsEmpty(materialization.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1542,11 +1298,9 @@ public sealed class LibraryMaterializerTests
             new[] { "vue", "jspdf", "vue-data-ui/vue-ui-flow" },
             result.ImportPaths.Keys.ToArray());
 
-        var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "runtime", "components", "vue-ui-flow.js")));
-        Assert.IsTrue(Directory.GetFiles(Path.Combine(dataUiRoot, "runtime", "chunks"), "vue-ui-flow-*.js", SearchOption.TopDirectoryOnly).Length > 0);
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
-        Assert.IsFalse(File.Exists(Path.Combine(dataUiRoot, "runtime", "components", "vue-ui-donut.js")));
+        Assert.AreEqual("vue-data-ui/vue-ui-flow", result.ImportPaths["vue-data-ui/vue-ui-flow"]);
+        Assert.Contains("vue-data-ui/style.css", result.ExternalStylesheetPaths.ToArray());
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
@@ -1567,14 +1321,14 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue", "vu-icons/VuUser" },
             result.ImportPaths.Keys.ToArray());
-        CollectionAssert.Contains(result.StylePaths.ToArray(), "vendor/vu-icons/1.5.4/dist/jazor-vu-icon.css");
+        CollectionAssert.Contains(result.StylePaths.ToArray(), "packages/vu-icons/runtime/vu-icons/vu-icons.css");
 
-        var iconsRoot = Path.Combine(outputRoot, "vendor", "vu-icons", "1.5.4", "dist");
+        var iconsRoot = Path.Combine(outputRoot, "packages", "vu-icons", "runtime", "vu-icons");
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "components", "VuUser.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "jazor-vu-icon-runtime.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "runtime.mjs")));
         Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
         Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "components", "VuSearch.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vu-icons", "1.5.4", "licenses", "VU-ICONS-LICENSE")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "vu-icons", "licenses", "VU-ICONS-LICENSE")));
     }
 
     [TestMethod]
@@ -1596,9 +1350,9 @@ public sealed class LibraryMaterializerTests
             new[] { "vue", "vu-icons" },
             result.ImportPaths.Keys.ToArray());
 
-        var iconsRoot = Path.Combine(outputRoot, "vendor", "vu-icons", "1.5.4", "dist");
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "jazor-vu-icon.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "jazor-vu-icon-runtime.mjs")));
+        var iconsRoot = Path.Combine(outputRoot, "packages", "vu-icons", "runtime", "vu-icons");
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "index.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "runtime.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
         Assert.IsFalse(Directory.Exists(Path.Combine(iconsRoot, "components")));
     }
@@ -1791,6 +1545,7 @@ public sealed class LibraryMaterializerTests
                 schemaVersion = 2,
                 libraryId,
                 version,
+                source = "embedded-mjs",
                 imports = importEntries,
                 requires = new Dictionary<string, string>(),
                 styles = styleFiles,
@@ -1870,13 +1625,14 @@ public sealed class LibraryMaterializerTests
             }
 
             var manifestPath = Path.Combine(root, "manifest.json");
-            File.WriteAllText(
+                File.WriteAllText(
                 manifestPath,
                 System.Text.Json.JsonSerializer.Serialize(new
                 {
                     schemaVersion = 2,
                     libraryId,
                     version,
+                    source = "embedded-mjs",
                     imports = new Dictionary<string, object>
                     {
                         [import] = new

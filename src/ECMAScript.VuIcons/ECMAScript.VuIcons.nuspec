@@ -26,7 +26,7 @@
     <file src="$buildOutputDir$ECMAScript.VuIcons.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.VuIcons.targets" target="buildTransitive\ECMAScript.VuIcons.targets" />
     <file src="$projectDir$manifest.json" target="jazor\vu-icons" />
-    <file src="$projectDir$dist\**\*" target="jazor\vu-icons\dist" />
+    <file src="$projectDir$runtime\**\*" target="jazor\vu-icons" />
     <file src="$projectDir$licenses\**\*" target="jazor\vu-icons\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>

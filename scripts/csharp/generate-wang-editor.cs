@@ -8,9 +8,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-// Vendor the locked @wangeditor/editor-for-vue + @wangeditor/editor ESM runtime into
-// src/ECMAScript.WangEditor and regenerate the package-local manifest, inventory, vendored dist
-// closure, and styles. 上游以 npm registry integrity 锁定版本；本脚本搬运并生成资源闭包与样式声明。
+// Validate the locked @wangeditor/editor-for-vue + @wangeditor/editor ESM entries and regenerate
+// npm package metadata. Runtime modules and styles remain in the upstream npm packages.
+// 上游以 npm registry integrity 锁定版本；本脚本只校验入口并生成外部包元数据。
 //
 // The author entry is the official Vue 3 adapter `@wangeditor/editor-for-vue`; the editor core
 // `@wangeditor/editor` is its peer/dependency inside the same closure.
@@ -64,6 +64,7 @@ foreach (var package in sources.Keys.Order(StringComparer.Ordinal))
     var packageJson = JsonNode.Parse(File.ReadAllText(Path.Combine(sources[package], "package.json")))!;
     packageVersions[package] = packageJson["version"]!.GetValue<string>();
 }
+CopyExistingPackageVersions(manifestPath, packageVersions);
 
 if (packageVersions[primaryPackage] != version)
     throw new InvalidOperationException($"{primaryPackage} extracted version '{packageVersions[primaryPackage]}' does not match requested '{version}'.");
@@ -81,7 +82,10 @@ foreach (var (specifier, package, file, _) in entries)
     AssertBrowserSafe(source, specifier);
 
     var bare = ReadBareSpecifiers(source);
-    dependencies[specifier] = bare.Where(known.Contains).Order(StringComparer.Ordinal).ToArray();
+    dependencies[specifier] = bare
+        .Where(value => known.Contains(value) || peerSpecifiers.Contains(value))
+        .Order(StringComparer.Ordinal)
+        .ToArray();
     foreach (var value in bare)
         if (!known.Contains(value) && !peerSpecifiers.Contains(value))
             unresolved.Add(specifier + " -> " + value);
@@ -90,39 +94,16 @@ foreach (var (specifier, package, file, _) in entries)
 if (unresolved.Count > 0)
     throw new InvalidOperationException("Upstream adds references outside the declared closure: " + string.Join(", ", unresolved));
 
-var distRoot = Path.Combine(projectRoot, "dist");
 var licensesRoot = Path.Combine(projectRoot, "licenses");
-if (Directory.Exists(distRoot))
-    Directory.Delete(distRoot, recursive: true);
 if (Directory.Exists(licensesRoot))
     Directory.Delete(licensesRoot, recursive: true);
-Directory.CreateDirectory(distRoot);
 Directory.CreateDirectory(licensesRoot);
 
-var vendored = new SortedDictionary<string, string>(StringComparer.Ordinal);
-foreach (var (_, package, file, _) in entries)
-    vendored[package + "/" + Path.GetFileName(file)] = Path.Combine(sources[package], file.Replace('/', Path.DirectorySeparatorChar));
-
-foreach (var (relative, source) in vendored)
-{
-    var destination = Path.Combine(distRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-    File.Copy(source, destination, overwrite: false);
-}
-
-// 编辑器默认样式必须随资源闭包交付；manifest styles 声明它，Emit 会注入链接。
-var styleFiles = new List<(string Path, string Target)>();
-var editorDist = Path.Combine(sources["@wangeditor/editor"], "dist");
-foreach (var (source, target) in new[] { (Path.Combine("css", "style.css"), "@wangeditor/editor/style.css") })
-{
-    var sourcePath = Path.Combine(editorDist, source);
-    if (!File.Exists(sourcePath))
-        throw new InvalidOperationException($"@wangeditor/editor does not ship '{source}'.");
-    var destination = Path.Combine(distRoot, target.Replace('/', Path.DirectorySeparatorChar));
-    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-    File.Copy(sourcePath, destination, overwrite: false);
-    styleFiles.Add(("dist/" + target, destination));
-}
+// Validate the published stylesheet without copying it into the binding package. Emit carries
+// this bare stylesheet import through the npm package graph.
+var stylesheet = Path.Combine(sources["@wangeditor/editor"], "dist", "css", "style.css");
+if (!File.Exists(stylesheet))
+    throw new InvalidOperationException("@wangeditor/editor does not ship 'dist/css/style.css'.");
 
 // 许可证：随包交付存在的 LICENSE 文件。上游适配器包未附带 LICENSE 文件（仅 package.json 声明
 // MIT），此时不伪造文本，改为在 inventory 记录其声明值与来源，并在 README 说明。
@@ -150,12 +131,12 @@ foreach (var package in entries.Select(static entry => entry.Package).Distinct(S
     });
 }
 
-var manifest = BuildManifest(version, entries, dependencies, vendored, peerRequires, licenseFiles, styleFiles);
+var manifest = BuildManifest(version, entries, dependencies, packageVersions, peerRequires, licenseFiles);
 WriteLfText(manifestPath, manifest.ToJsonString(GeneratorJson.Manifest) + "\n");
 
-WriteInventory(projectRoot, version, vendored.Count + styleFiles.Count, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions, declaredLicenses);
+WriteInventory(projectRoot, version, entries.Length, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions, declaredLicenses);
 
-Console.WriteLine($"Vendored {vendored.Count} WangEditor {version} module(s) and {styleFiles.Count} style sheet(s); license: MIT.");
+Console.WriteLine($"Validated {entries.Length} WangEditor {version} npm module(s) and one stylesheet; license: MIT.");
 Console.WriteLine("Review contract drift for bound components and editor API before committing.");
 
 static void AssertBrowserSafe(string path, string specifier)
@@ -227,6 +208,25 @@ static string? ResolveLocalPackage(string localSource, string package, string si
     return null;
 }
 
+static void CopyExistingPackageVersions(string manifestPath, IDictionary<string, string> packageVersions)
+{
+    if (!File.Exists(manifestPath))
+        return;
+
+    var packages = JsonNode.Parse(File.ReadAllText(manifestPath))?["packages"] as JsonObject;
+    if (packages is null)
+        return;
+
+    foreach (var property in packages)
+    {
+        if (!packageVersions.ContainsKey(property.Key) &&
+            property.Value?["version"]?.GetValue<string>() is { } packageVersion)
+        {
+            packageVersions[property.Key] = packageVersion;
+        }
+    }
+}
+
 static async Task<Dictionary<string, string>> AcquireSourcesAsync(string root, string? localSource, (string Package, string Version)[] packages)
 {
     var result = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -293,64 +293,67 @@ static JsonNode BuildManifest(
     string version,
     (string Specifier, string Package, string File, string RequestedVersion)[] entries,
     Dictionary<string, string[]> dependencies,
-    SortedDictionary<string, string> vendored,
+    SortedDictionary<string, string> packageVersions,
     SortedDictionary<string, string> peerRequires,
-    JsonArray licenseFiles,
-    List<(string Path, string Target)> styles)
+    JsonArray licenseFiles)
 {
     var imports = new JsonObject();
-    foreach (var (specifier, package, file, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
+    foreach (var (specifier, _, _, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
     {
-        var relative = package + "/" + Path.GetFileName(file);
-        var hash = HashFile(vendored[relative]);
         var dependenciesNode = new JsonArray();
         foreach (var dependency in dependencies[specifier])
             dependenciesNode.Add((JsonNode)dependency);
 
-        imports[specifier] = new JsonObject
+        var entry = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = "dist/" + relative,
-            ["production"] = "dist/" + relative,
-            ["developmentHash"] = hash,
-            ["productionHash"] = hash,
+            ["development"] = specifier,
+            ["production"] = specifier,
             ["developmentDependencies"] = (JsonArray)dependenciesNode.DeepClone(),
             ["productionDependencies"] = dependenciesNode,
-            ["developmentModuleDependencies"] = new JsonArray(),
-            ["productionModuleDependencies"] = new JsonArray(),
-            ["files"] = new JsonArray(),
         };
+
+        // WangEditor publishes one CSS entry from the editor core. Keep it as a bare package
+        // stylesheet edge so the consumer bundler resolves it from npm.
+        if (specifier == "@wangeditor/editor")
+        {
+            entry["developmentStylesheetImports"] = new JsonArray { "@wangeditor/editor/dist/css/style.css" };
+            entry["productionStylesheetImports"] = new JsonArray { "@wangeditor/editor/dist/css/style.css" };
+        }
+
+        imports[specifier] = entry;
     }
 
     var requiresNode = new JsonObject();
     foreach (var (name, range) in peerRequires)
         requiresNode[name] = range;
 
-    var stylesNode = new JsonArray();
-    foreach (var (path, target) in styles)
-        stylesNode.Add(new JsonObject
-        {
-            ["type"] = "style",
-            ["path"] = path,
-            ["hash"] = HashFile(target),
-        });
-
     return new JsonObject
     {
         ["schemaVersion"] = 2,
         ["libraryId"] = "wang-editor",
         ["version"] = version,
+        ["source"] = "npm",
+        ["packages"] = BuildPackages(packageVersions),
         ["imports"] = imports,
         ["requires"] = requiresNode,
-        ["styles"] = stylesNode,
+        ["styles"] = new JsonArray(),
         ["files"] = licenseFiles,
     };
+}
+
+static JsonObject BuildPackages(SortedDictionary<string, string> packageVersions)
+{
+    var packages = new JsonObject();
+    foreach (var (package, packageVersion) in packageVersions.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        packages[package] = new JsonObject { ["source"] = "npm", ["version"] = packageVersion };
+    return packages;
 }
 
 static void WriteInventory(
     string projectRoot,
     string version,
-    int vendoredCount,
+    int validatedModuleCount,
     string[] specifiers,
     SortedDictionary<string, string> packageVersions,
     JsonObject declaredLicenses)
@@ -369,7 +372,7 @@ static void WriteInventory(
         ["source"] = $"https://registry.npmjs.org/@wangeditor/editor-for-vue/{version}",
         ["documentation"] = "https://www.wangeditor.com/",
         ["entryImports"] = new JsonArray(specifiers.Order(StringComparer.Ordinal).Select(static value => (JsonNode)value).ToArray()),
-        ["vendoredModuleCount"] = vendoredCount,
+        ["validatedModuleCount"] = validatedModuleCount,
     };
     var payload = inventory.ToJsonString(GeneratorJson.Manifest);
     inventory["fingerprint"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

@@ -6,7 +6,7 @@
 
 为 RazorVue 应用提供一组可组合的、强类型的 Vue 应用基础库绑定，覆盖响应式工具、表单、国际化、日期、拖拽、编辑器、文件上传、服务端状态和浮动定位。
 
-每个交付物都是独立的 `ECMAScript.<Name>` JS resource library，拥有自己的 C# contract、`manifest.json`、`dist/`、许可证、README、版本快照和测试项目。绑定只描述上游库的公开运行时能力；不会把第三方库的内部状态改写为 Jazor compiler 特判。
+每个交付物都是独立的 `ECMAScript.<Name>` JS resource library，拥有自己的 C# contract、package metadata、许可证、README、版本快照和测试项目。运行时模块与样式由上游 npm/JSR package 提供；需要随包交付的本地模块使用 manifest 明确声明的 embedded carrier。绑定描述上游库的公开运行时能力，编译器保持通用 lowering 语义。
 
 ## 当前候选选型
 
@@ -37,7 +37,7 @@ Monaco 与 WangEditor 必须是两个独立包。Monaco 默认直接绑定核心
 
 ## 分阶段顺序
 
-组件类绑定的策略见[JS 资源库绑定指南](../03-guides/js-resource-binding.md#组件绑定)：组件数少时用手写双表示（`ECMAScript.VueRoute` 的 `RouterLink`/`RouterView` 范式，Razor 代理 + `IVueComponent<TProps, TSlots>` 描述符），组件数多且上游有机器可读 metadata 时用全量代理 + 生成描述符（`ECMAScript.Vuetify` 范式，生成 `VuetifyCatalog.g.cs` 导出目录与 `dist/components.mjs` shim）。P3-A 三包均为函数/composable，无组件代理；P3-C 的 `VueDraggable`、`FilePond`、`WangEditor` 组件数少，按手写双表示落地；P3-D 的 Monaco 是指令式 editor API 而非 Vue 组件，按函数/Hook 绑定。
+组件类绑定的策略见[JS 资源库绑定指南](../03-guides/js-resource-binding.md#组件绑定)：组件数少时用手写双表示（`ECMAScript.VueRoute` 的 `RouterLink`/`RouterView` 范式，Razor 代理 + `IVueComponent<TProps, TSlots>` 描述符），组件数多且上游有机器可读 metadata 时用全量代理 + 生成描述符（`ECMAScript.Vuetify` 范式，生成 `VuetifyCatalog.g.cs` 导出目录，入口直接指向上游 `exports`）。P3-A 三包均为函数/composable，无组件代理；P3-C 的 `VueDraggable`、`FilePond`、`WangEditor` 组件数少，按手写双表示落地；P3-D 的 Monaco 是指令式 editor API，按函数/Hook 绑定。
 
 ### P3-A：基础工具与确定性纯函数
 
@@ -67,7 +67,7 @@ Monaco 与 WangEditor 必须是两个独立包。Monaco 默认直接绑定核心
 
 1. `src/ECMAScript.<Name>` 独立 net11.0 packable 项目，并加入 `Jazor.slnx`。
 2. C# 类型契约、delegate、union、组件 proxy 和 `[ECMAScript]` 映射；命名空间不跨包复用。
-3. 上游 runtime 的锁定版本、`manifest.json` schema 2、`dist/` 资源、许可证和 `README.md`。
+3. 上游 runtime 的锁定版本、`manifest.json` schema 2、package identity/exports 记录、明确声明的 embedded carrier（如有）、许可证和 `README.md`。
 4. 生成或手工维护的 export/prop/event/slot inventory、文档来源和 contract fingerprint。
 5. 对应 `src/ECMAScript.<Name>.Test`：metadata/manifest、compiler emission、Razor SG、Emit/resource closure 和适用的 browser smoke。
 6. 真实消费者样例，证明安装包和源码引用得到相同 module/import 结果。
@@ -84,10 +84,6 @@ Monaco 与 WangEditor 必须是两个独立包。Monaco 默认直接绑定核心
 - 真实 Chromium browser smoke 覆盖至少一个用户可观察流程；
 - 上游版本、文档和 contract fingerprint 与仓库 baseline 一致；漂移默认阻止发布；
 - 适用的 compiler、Razor SG、Emit、Vue binding coverage 和 package consumer 门禁通过。
-
-## 非目标
-
-本计划不实现新的 axios/fetch 通用库、不把所有第三方库合并成一个聚合包、不复制第三方完整内部类型、不提供任意 JavaScript 字符串互操作，也不宣称这些浏览器库天然具备 SSR 等价行为。TanStack Query 不替代 Pinia；VeeValidate 不替代服务端模型验证；WangEditor 不替代 Monaco；Floating UI 不替代 UI 组件库自身的视觉组件。
 
 ## Definition of Done
 

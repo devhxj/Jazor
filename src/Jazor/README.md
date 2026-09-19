@@ -4,14 +4,16 @@
 
 `Jazor` 包含框架无关的 runtime contract、analyzer、source generator、Emit 工具、MSBuild 集成与 ASP.NET Core 集成。它可以用于编写普通 ECMAScript 类库；Vue authoring、Razor-to-Vue、Vue bindings 与 Vue runtime 由独立的 `Jazor.Vue` opt-in 包提供。
 
-> 资源契约：已有 JavaScript 由 `manifest.json + dist/**` 携带，Jazor 编译模块由程序集内的
-> `Jazor.Generated.ModuleCatalog` 携带。两者由最终宿主构建后的 Emit 一次性物化。
+> 资源契约：仓库自有 ECMAScript runtime 由 `ECMAScript` manifest 与
+> `src/ECMAScript/clr/**` 提供；其他运行时来自 manifest 声明的 npm/JSR package 或明确的
+> embedded carrier。Jazor 编译模块由程序集内的 `Jazor.Generated.ModuleCatalog` 携带，最终
+> 宿主在 MSBuild 阶段由 Emit 生成标准 `jazor/package.json` 并物化项目。
 
-类库携带 JavaScript 只有这两种形式；RazorVue 是纯 Jazor 类库的 authoring 场景，不是第三种
-carrier。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue 模块的程序集内生成载体；
-`manifest.json + dist/**` 是 `ECMAScript`、Vue、Vuetify 等已有 JavaScript 的包内资源载体。
-`ModuleCatalog` 的存在是因为 analysis/source generator 的标准输出是 C#；它是纯 Jazor 的正式
-生成格式，不是遗留兼容载体。
+类库的 JavaScript 来源由 package metadata 明确区分：`ECMAScript` 使用仓库内的
+`src/ECMAScript/clr/**` embedded carrier，外部绑定使用 npm/JSR package，少数需要随包交付
+的模块使用显式 embedded carrier。RazorVue 是纯 Jazor 类库的 authoring 场景，不是第三种
+来源。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue 模块的程序集内生成
+载体；它是纯 Jazor 的正式生成格式，不是遗留兼容载体。
 
 ## 安装
 
@@ -79,8 +81,8 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 `ECMAScript.Vue` 随 `Jazor.Vue` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor、`Jazor.Vue` 与 Vue 生态包应保持相同版本。
 
 Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有；其 runtime
-JavaScript 由 `ECMAScript` 的 `manifest.json + dist/**` 提供。`Jazor` 不因此引用 ASP.NET Core
-framework。
+JavaScript 由 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` embedded carrier 提供。
+`Jazor` 不因此引用 ASP.NET Core framework。
 
 ## SSR
 

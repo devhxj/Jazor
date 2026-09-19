@@ -25,7 +25,11 @@ public enum Transform
 /// one-string form declares the exact external ESM import specifier that must appear in emitted
 /// JavaScript. Component declarations may provide an optional export name; an omitted name means
 /// the module default export. Package identity, version and resource metadata are supplied by the
-/// binding package manifest alongside this declaration.
+/// binding package metadata alongside this declaration. The metadata may resolve the specifier to
+/// an external npm/JSR package or to an explicitly declared embedded carrier. The core
+/// The repository-owned `ECMAScript` package uses `src/ECMAScript/clr/**`. External binding
+/// packages resolve their runtime from npm/JSR; a package that ships a local module names its
+/// explicit embedded carrier in package metadata.
 ///
 /// 当特性标在具体成员上时，该成员的 specifier 优先于宿主类型上的 specifier。这样一个
 /// C# 宿主类型可以映射多个细粒度 ESM 入口，而编译器和 Emit 仍能按调用点收集 tree-shaking roots。

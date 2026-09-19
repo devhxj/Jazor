@@ -8,10 +8,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-// Vendor the locked VueUse ESM runtime into src/ECMAScript.VueUse and regenerate the
-// package-local manifest and upstream inventory. @vueuse/core is a single self-contained
-// bundle whose only sibling bare import is @vueuse/shared; both peer-depend on vue.
-// 上游以 npm registry integrity 锁定版本；core 是自包含 bundle，唯一同闭包裸依赖是 shared，两者 peer 依赖 vue。
+// Validate the locked VueUse ESM entries and regenerate package metadata. Runtime bytes remain
+// in the upstream npm packages.
 //
 // Usage:
 //   dotnet run --file scripts/csharp/generate-vueuse.cs -- --version 15.0.0
@@ -35,7 +33,7 @@ if (version is null && File.Exists(manifestPath))
 if (string.IsNullOrWhiteSpace(version))
     throw new ArgumentException("Provide --version on the first run; later runs reuse the manifest version.");
 
-// 逻辑 import → 上游包、入口文件与 vendored 目标路径。
+// 逻辑 import -> 上游包和入口文件。
 var entries = new (string Specifier, string Package, string File, string Target)[]
 {
     ("@vueuse/core", "@vueuse/core", "dist/index.js", "@vueuse/core/index.js"),
@@ -52,6 +50,7 @@ foreach (var package in packages.Order(StringComparer.Ordinal))
     var packageJson = JsonNode.Parse(File.ReadAllText(Path.Combine(sources[package], "package.json")))!;
     packageVersions[package] = packageJson["version"]!.GetValue<string>();
 }
+CopyExistingPackageVersions(manifestPath, packageVersions);
 
 if (packageVersions[primaryPackage] != version)
     throw new InvalidOperationException($"{primaryPackage} extracted version '{packageVersions[primaryPackage]}' does not match requested '{version}'.");
@@ -79,26 +78,8 @@ foreach (var (specifier, package, file, _) in entries)
 if (unresolved.Count > 0)
     throw new InvalidOperationException("Upstream adds references outside the declared closure: " + string.Join(", ", unresolved));
 
-var distRoot = Path.Combine(projectRoot, "dist");
 var licensesRoot = Path.Combine(projectRoot, "licenses");
-Directory.CreateDirectory(distRoot);
 Directory.CreateDirectory(licensesRoot);
-
-// 整体替换 dist，保证 manifest 与 vendored 文件始终一一对应。
-if (Directory.Exists(distRoot))
-    Directory.Delete(distRoot, recursive: true);
-Directory.CreateDirectory(distRoot);
-
-var vendored = new SortedDictionary<string, string>(StringComparer.Ordinal); // target relative -> source path
-foreach (var (_, package, file, target) in entries)
-    vendored[target] = Path.Combine(sources[package], file.Replace('/', Path.DirectorySeparatorChar));
-
-foreach (var (relative, source) in vendored)
-{
-    var destination = Path.Combine(distRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-    File.Copy(source, destination, overwrite: false);
-}
 
 var licenseFiles = new JsonArray();
 foreach (var package in packages.Order(StringComparer.Ordinal))
@@ -116,13 +97,27 @@ foreach (var package in packages.Order(StringComparer.Ordinal))
     });
 }
 
-var manifest = BuildManifest(version, entries, dependencies, vendored, licenseFiles);
+var manifest = BuildManifest(version, entries, dependencies, packageVersions, licenseFiles);
 WriteLfText(manifestPath, manifest.ToJsonString(GeneratorJson.Manifest) + "\n");
 
-WriteInventory(projectRoot, version, vendored.Count, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions);
+WriteInventory(projectRoot, version, entries.Length, entries.Select(static entry => entry.Specifier).ToArray(), packageVersions);
 
-Console.WriteLine($"Vendored {vendored.Count} VueUse {version} bundle(s); license: MIT.");
+Console.WriteLine($"Validated {entries.Length} VueUse {version} npm entries; license: MIT.");
 Console.WriteLine("Review contract drift for bound exports before committing.");
+
+static void CopyExistingPackageVersions(string manifestPath, IDictionary<string, string> packageVersions)
+{
+    if (!File.Exists(manifestPath))
+        return;
+    var packages = JsonNode.Parse(File.ReadAllText(manifestPath))?["packages"] as JsonObject;
+    if (packages is null)
+        return;
+    foreach (var property in packages)
+    {
+        if (!packageVersions.ContainsKey(property.Key) && property.Value?["version"]?.GetValue<string>() is { } version)
+            packageVersions[property.Key] = version;
+    }
+}
 
 static HashSet<string> ReadBareSpecifiers(string path)
 {
@@ -215,13 +210,12 @@ static JsonNode BuildManifest(
     string version,
     (string Specifier, string Package, string File, string Target)[] entries,
     Dictionary<string, string[]> dependencies,
-    SortedDictionary<string, string> vendored,
+    SortedDictionary<string, string> packageVersions,
     JsonArray licenseFiles)
 {
     var imports = new JsonObject();
-    foreach (var (specifier, _, _, target) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
+    foreach (var (specifier, _, _, _) in entries.OrderBy(static entry => entry.Specifier, StringComparer.Ordinal))
     {
-        var hash = HashFile(vendored[target]);
         var packageDependencies = new JsonArray();
         foreach (var dependency in dependencies[specifier])
             packageDependencies.Add(dependency);
@@ -229,16 +223,11 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = "dist/" + target,
-            ["production"] = "dist/" + target,
-            ["developmentHash"] = hash,
-            ["productionHash"] = hash,
+            ["development"] = specifier,
+            ["production"] = specifier,
             // 兄弟条目和 peer 都通过 package 通道解析；requires 只负责 provider 版本约束。
             ["developmentDependencies"] = (JsonArray)packageDependencies.DeepClone(),
             ["productionDependencies"] = packageDependencies,
-            ["developmentModuleDependencies"] = new JsonArray(),
-            ["productionModuleDependencies"] = new JsonArray(),
-            ["files"] = new JsonArray(),
         };
     }
 
@@ -247,6 +236,8 @@ static JsonNode BuildManifest(
         ["schemaVersion"] = 2,
         ["libraryId"] = "vueuse",
         ["version"] = version,
+        ["source"] = "npm",
+        ["packages"] = BuildPackages(packageVersions),
         ["imports"] = imports,
         // core 与 shared 都 peer 依赖 vue，由 Vue 资源库提供；具体入口依赖边记录在 imports 中。
         ["requires"] = new JsonObject { ["vue3"] = "^3.5.0" },
@@ -255,10 +246,18 @@ static JsonNode BuildManifest(
     };
 }
 
+static JsonObject BuildPackages(SortedDictionary<string, string> packageVersions)
+{
+    var packages = new JsonObject();
+    foreach (var (name, packageVersion) in packageVersions.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        packages[name] = new JsonObject { ["source"] = "npm", ["version"] = packageVersion };
+    return packages;
+}
+
 static void WriteInventory(
     string projectRoot,
     string version,
-    int vendoredCount,
+    int validatedEntryCount,
     string[] specifiers,
     SortedDictionary<string, string> packageVersions)
 {
@@ -275,7 +274,7 @@ static void WriteInventory(
         ["source"] = $"https://registry.npmjs.org/@vueuse/core/{version}",
         ["documentation"] = "https://vueuse.org/functions.html",
         ["entryImports"] = new JsonArray(specifiers.Order(StringComparer.Ordinal).Select(static value => (JsonNode)value).ToArray()),
-        ["vendoredModuleCount"] = vendoredCount,
+        ["validatedEntryCount"] = validatedEntryCount,
     };
     var payload = inventory.ToJsonString(GeneratorJson.Manifest);
     inventory["fingerprint"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));

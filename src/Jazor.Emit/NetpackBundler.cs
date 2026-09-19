@@ -1,9 +1,12 @@
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Jazor.Common;
 using NetPack;
 using NetPack.Graph;
+using NetPack.Graph.Bundles;
+using NetPack.Graph.Writers;
 
 namespace Jazor.Emit;
 
@@ -58,9 +61,11 @@ internal sealed class NetpackBundler
         if (!string.IsNullOrWhiteSpace(outputDirectory))
             Directory.CreateDirectory(outputDirectory);
 
-        var bundleWorkspaceRoot = string.IsNullOrWhiteSpace(options.SourceRoot)
-            ? options.InputDirectory
-            : options.SourceRoot;
+        // Emit supplies PackageRoot when it has already restored the graph. Keeping the
+        // temporary workspace below that root lets NetPack discover its node_modules through
+        // ordinary upward package resolution instead of rebuilding a second projection.
+        var bundleWorkspaceRoot = options.PackageRoot ??
+            (string.IsNullOrWhiteSpace(options.SourceRoot) ? options.InputDirectory : options.SourceRoot);
         var bundleWorkspace = Path.Combine(bundleWorkspaceRoot, "__jazor_netpack_bundle__");
         if (Directory.Exists(bundleWorkspace))
             Directory.Delete(bundleWorkspace, recursive: true);
@@ -82,11 +87,34 @@ internal sealed class NetpackBundler
             var assets = useMaterializedLibraries
                 ? CopyMaterializedAssets(manifest, options.InputDirectory, bundleWorkspace)
                 : CopyAssets(manifest, options, bundleWorkspace);
+            var externalPackageRewrites = new HashSet<string>(StringComparer.Ordinal);
             var importRewrites = new Dictionary<string, string>(
-                CreateImportRewrites(relativePaths, assets.ImportRewrites),
+                CreateImportRewrites(
+                    relativePaths,
+                    assets.ImportRewrites,
+                    libraries,
+                    externalPackageRewrites),
                 StringComparer.OrdinalIgnoreCase);
-            PrepareBundledRouteRuntime(bundleWorkspace, libraries.ImportPaths, relativePaths, importRewrites);
-            LibraryPackageWriter.WritePackageProject(bundleWorkspace, libraries);
+            PrepareBundledRouteRuntime(
+                bundleWorkspace,
+                libraries.ImportPaths,
+                relativePaths,
+                importRewrites,
+                externalPackageRewrites);
+            var standalonePackageRoot = string.IsNullOrWhiteSpace(options.PackageRoot);
+            if (standalonePackageRoot)
+            {
+                // A direct Toolchain caller owns this temporary project, so it must complete
+                // the same package restore that Emit performs before handing the graph to
+                // NetPack. The MSBuild/Emit path supplies PackageRoot and reuses its already
+                // restored jazor/node_modules tree instead of restoring a second graph.
+                LibraryPackageWriter.WritePackageProject(bundleWorkspace, libraries);
+            }
+            else if (!IsAncestorDirectory(options.PackageRoot!, bundleWorkspace))
+            {
+                throw new InvalidOperationException(
+                    $"Netpack package root '{options.PackageRoot}' must contain the bundle workspace '{bundleWorkspace}'.");
+            }
             foreach (var relativePath in relativePaths)
             {
                 var sourcePath = GetSafePath(options.InputDirectory, relativePath);
@@ -96,8 +124,25 @@ internal sealed class NetpackBundler
                     Directory.CreateDirectory(targetDirectory);
 
                 var content = await File.ReadAllTextAsync(sourcePath);
-                var rewritten = RewriteModuleImports(content, relativePath, importRewrites);
+                var rewritten = RewriteModuleImports(
+                    content,
+                    relativePath,
+                    importRewrites,
+                    externalPackageRewrites);
                 await File.WriteAllTextAsync(targetPath, rewritten, Utf8WithoutBom);
+            }
+
+            if (standalonePackageRoot)
+            {
+                var checkEntries = relativePaths
+                    .Select(relativePath => Path.Combine(bundleWorkspace, relativePath))
+                    .ToArray();
+                await DenoPackageRestorer.RestoreAndCheckAsync(
+                    bundleWorkspace,
+                    executablePath: null,
+                    checkEntries,
+                    libraries,
+                    CancellationToken.None).ConfigureAwait(false);
             }
 
             var rootAssemblyName = GetRootAssemblyName(manifest);
@@ -111,41 +156,97 @@ internal sealed class NetpackBundler
             if (entryRelativePaths.Length == 0)
                 entryRelativePaths = relativePaths;
 
-            var entryPath = Path.Combine(bundleWorkspace, "__jazor_netpack_entry__.mjs");
+            // Give the synthetic root the requested output stem. NetPack derives the primary
+            // bundle name from the entry file; EntryNames only participates when a [hash]
+            // placeholder is present. Keep the file in a private staging directory so it cannot
+            // collide with an application module that happens to use the same stem.
+            var requestedOutputName = Path.GetFileName(options.OutputPath);
+            var requestedOutputStem = Path.GetFileNameWithoutExtension(requestedOutputName);
+            if (string.IsNullOrWhiteSpace(requestedOutputStem))
+                throw new InvalidOperationException($"Bundle output '{options.OutputPath}' must have a file name stem.");
+
+            var syntheticEntryPath = Path.Combine(
+                bundleWorkspace,
+                "__jazor_entry__",
+                requestedOutputStem + ".mjs");
+            Directory.CreateDirectory(Path.GetDirectoryName(syntheticEntryPath)!);
             await File.WriteAllTextAsync(
-                entryPath,
-                string.Join("\n", entryRelativePaths.Select(static relativePath => $"export * from \"./{relativePath}\";")),
+                syntheticEntryPath,
+                string.Join(
+                    "\n",
+                    entryRelativePaths.Select(relativePath =>
+                    {
+                        var importPath = Path.GetRelativePath(
+                                Path.GetDirectoryName(syntheticEntryPath)!,
+                                GetSafePath(bundleWorkspace, relativePath))
+                            .Replace(Path.DirectorySeparatorChar, '/');
+                        if (!importPath.StartsWith(".", StringComparison.Ordinal))
+                            importPath = "./" + importPath;
+                        return $"export * from \"{importPath}\";";
+                    })),
                 Utf8WithoutBom);
 
-            var result = await Bundler.BundleAsync(
-                entryPath,
-                new global::NetPack.BundleOptions
+            var netpackOutputDirectory = Path.Combine(bundleWorkspace, "__jazor_netpack_output__");
+            Directory.CreateDirectory(netpackOutputDirectory);
+            var netpackOptions = new global::NetPack.BundleOptions
+            {
+                Format = ModuleFormat.Esm,
+                Platform = Platform.Web,
+                SourceMaps = options.SourceMaps,
+                Minify = options.Minify && !string.Equals(Environment.GetEnvironmentVariable("JAZOR_NETPACK_NO_MINIFY"), "1", StringComparison.Ordinal),
+                EntryNames = "[name]",
+                // Browser bundles have no Node process object. NetPack already defines
+                // process.env.NODE_ENV; provide the remaining environment namespace so
+                // optional upstream checks such as `process.env.VITE_LOGGER_ENABLED` remain
+                // valid after package-level tree shaking.
+                Define = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
-                    Format = ModuleFormat.Esm,
-                    Platform = Platform.Web,
-                    SourceMaps = options.SourceMaps,
-                    Minify = options.Minify,
-                    EntryNames = Path.GetFileNameWithoutExtension(options.OutputPath),
-                    // Selected entries are exposed through generated package.json `exports` maps.
-                    // NetPack therefore validates the same standard package graph used by Deno.
-                    ExternalPackages = false
-                });
+                    ["process.env"] = "{}"
+                },
+                // Selected entries are exposed through generated package.json `exports` maps.
+                // NetPack therefore validates the same standard package graph used by Deno.
+                ExternalPackages = false,
+                MetafilePath = Path.Combine(netpackOutputDirectory, "metafile.json")
+            };
 
-            var wroteBundle = WriteOutputs(result.Outputs, options.OutputPath);
+            await WriteNetpackDirectoryAsync(
+                    syntheticEntryPath,
+                    netpackOutputDirectory,
+                    netpackOptions)
+                .ConfigureAwait(false);
+            var netpackOutputs = Directory.EnumerateFiles(netpackOutputDirectory, "*", SearchOption.AllDirectories)
+                .ToDictionary(
+                    path => Path.GetRelativePath(netpackOutputDirectory, path).Replace('\\', '/'),
+                    File.ReadAllBytes,
+                    StringComparer.Ordinal);
+
+            var wroteBundle = WriteOutputs(
+                netpackOutputs,
+                options.OutputPath,
+                netpackOptions.MetafilePath!,
+                requestedOutputStem,
+                out var netpackCssPaths);
             if (!File.Exists(options.OutputPath))
             {
                 return BundleResult.Fail(
                     8,
                     wroteBundle
                         ? $"Netpack did not materialize expected bundle '{options.OutputPath}'."
-                        : $"Netpack did not emit a JavaScript entry bundle. Outputs: {string.Join(", ", result.Outputs.Keys.OrderBy(static key => key, StringComparer.Ordinal))}.");
+                        : $"Netpack did not emit a JavaScript entry bundle. Outputs: {string.Join(", ", netpackOutputs.Keys.OrderBy(static key => key, StringComparer.Ordinal))}.");
             }
 
             CopyLibraryPublishAssetsToOutput(options.OutputPath, bundleWorkspace, libraries.PublishAssets);
             CopyStaticAssetsToOutput(options.OutputPath, assets.StaticAssets);
             await WriteBundleCssAsync(
                 options.OutputPath,
-                libraries.StylePaths.Select(path => Path.Combine(bundleWorkspace, path)).ToArray());
+                netpackCssPaths
+                    .Select(path => Path.Combine(netpackOutputDirectory, path))
+                    .Concat(ResolveExternalStylesheetPaths(
+                        options.PackageRoot ?? bundleWorkspace,
+                        libraries.ExternalStyleModuleImports,
+                        libraries.ExternalStylesheetPaths))
+                    .Concat(libraries.StylePaths.Select(path => Path.Combine(bundleWorkspace, path)))
+                    .ToArray());
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -165,11 +266,110 @@ internal sealed class NetpackBundler
         }
     }
 
+    private static async Task<IReadOnlyList<global::NetPack.Graph.Writers.EmittedFile>> WriteNetpackDirectoryAsync(
+        string entryPath,
+        string outputDirectory,
+        global::NetPack.BundleOptions options)
+    {
+        Directory.CreateDirectory(outputDirectory);
+
+        // NetPack 0.8.2's ResultWriter renders bundles with Parallel.ForEachAsync while the
+        // minifier mutates shared AST nodes. Build the graph through the public API, keep the
+        // upstream tree-shaking pass, and render each asset/bundle in a stable sequence.
+        using var traverse = await Traverse.From(
+                entryPath,
+                options.Externals,
+                options.Shared,
+                platform: options.Platform,
+                defines: options.Define,
+                aliases: options.Alias,
+                loaders: options.Loader,
+                conditions: options.Conditions,
+                externalPackages: options.ExternalPackages,
+                splitChunks: options.SplitChunks)
+            .ConfigureAwait(false);
+
+        var outputOptions = new OutputOptions
+        {
+            IsOptimizing = options.Minify,
+            IsReloading = false,
+            WithSourceMaps = options.SourceMaps,
+            Format = options.Format,
+            EntryNames = options.EntryNames,
+            PublicPath = options.PublicPath,
+            Banner = options.Banner,
+            Licenses = options.Licenses,
+            InlineLimit = options.InlineLimit,
+            MetafilePath = options.MetafilePath
+        };
+
+        if (outputOptions.IsOptimizing)
+            TreeShakePass.Run(traverse.Context);
+
+        var emitted = new List<EmittedFile>();
+        foreach (var asset in traverse.Context.Assets.Values
+                     .OrderBy(static asset => asset.GetFileName(), StringComparer.Ordinal))
+        {
+            if (Bundle.IsInlined(asset.Root, asset, outputOptions))
+                continue;
+
+            var fileName = asset.GetFileName();
+            var targetPath = GetSafePath(outputDirectory, fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+            await using var source = await asset.CreateStream(outputOptions).ConfigureAwait(false);
+            await using var destination = File.Create(targetPath);
+            await source.CopyToAsync(destination).ConfigureAwait(false);
+            emitted.Add(new EmittedFile(fileName, destination.Length, 0, IsBundle: false));
+        }
+
+        foreach (var bundle in traverse.Context.Bundles.Values
+                     .OrderBy(static bundle => bundle.GetFileName(), StringComparer.Ordinal)
+                     .ThenBy(static bundle => bundle.Name, StringComparer.Ordinal))
+        {
+            var fileName = bundle.GetFileName();
+            var targetPath = GetSafePath(outputDirectory, fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+            await using (var source = await bundle.CreateStream(outputOptions).ConfigureAwait(false))
+            await using (var destination = File.Create(targetPath))
+            {
+                await source.CopyToAsync(destination).ConfigureAwait(false);
+                emitted.Add(new EmittedFile(fileName, destination.Length, bundle.Items.Length, IsBundle: true));
+            }
+
+            if (bundle.SourceMap is { } sourceMap)
+            {
+                var mapName = fileName + ".map";
+                var mapPath = GetSafePath(outputDirectory, mapName);
+                Directory.CreateDirectory(Path.GetDirectoryName(mapPath)!);
+                await File.WriteAllBytesAsync(mapPath, sourceMap).ConfigureAwait(false);
+                emitted.Add(new EmittedFile(mapName, sourceMap.Length, 0, IsBundle: false));
+            }
+        }
+
+        var ordered = emitted
+            .OrderBy(static file => file.Name, StringComparer.Ordinal)
+            .ToArray();
+        if (!string.IsNullOrWhiteSpace(outputOptions.MetafilePath))
+        {
+            var metafilePath = Path.IsPathRooted(outputOptions.MetafilePath)
+                ? outputOptions.MetafilePath
+                : Path.Combine(Environment.CurrentDirectory, outputOptions.MetafilePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(metafilePath)!);
+            await File.WriteAllTextAsync(
+                    metafilePath,
+                    Traverse.BuildMetafile(traverse.Context, ordered, inlineLimit: outputOptions.InlineLimit))
+                .ConfigureAwait(false);
+        }
+
+        return ordered;
+    }
+
     private static void PrepareBundledRouteRuntime(
         string bundleWorkspace,
         IReadOnlyDictionary<string, string> libraryImportPaths,
         IReadOnlyList<string> moduleRelativePaths,
-        IDictionary<string, string> importRewrites)
+        IDictionary<string, string> importRewrites,
+        ISet<string> externalPackageRewrites)
     {
         const string routingSpecifier = "@jazor/vue-runtime/blazor-routing.mjs";
         const string routeCatalogSpecifier = "@jazor/vue-runtime/routes.mjs";
@@ -197,9 +397,14 @@ internal sealed class NetpackBundler
             [routeCatalogSpecifier] = routeCatalogSpecifier
         };
         var source = File.ReadAllText(sourcePath);
-        var rewritten = RewriteModuleImports(source, bundledRoutingPath, routeImportRewrites);
+        var rewritten = RewriteModuleImports(
+            source,
+            bundledRoutingPath,
+            routeImportRewrites,
+            new HashSet<string>(StringComparer.Ordinal));
         File.WriteAllText(targetPath, rewritten, Utf8WithoutBom);
         importRewrites[routingSpecifier] = bundledRoutingPath;
+        externalPackageRewrites.Remove(routingSpecifier);
     }
 
     private static PreparedAssets CopyAssets(
@@ -305,7 +510,9 @@ internal sealed class NetpackBundler
 
     private static IReadOnlyDictionary<string, string> CreateImportRewrites(
         IReadOnlyList<string> moduleRelativePaths,
-        IReadOnlyDictionary<string, string> assetImportRewrites)
+        IReadOnlyDictionary<string, string> assetImportRewrites,
+        LibraryAssets libraries,
+        ISet<string> externalPackageRewrites)
     {
         var rewrites = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var relativePath in moduleRelativePaths)
@@ -313,6 +520,14 @@ internal sealed class NetpackBundler
 
         foreach (var (source, target) in assetImportRewrites)
             rewrites[source] = target;
+
+        foreach (var (source, target) in libraries.ImportPaths)
+        {
+            if (!string.Equals(source, target, StringComparison.Ordinal))
+                rewrites[source] = target;
+            if (IsExternalPackage(libraries, source))
+                externalPackageRewrites.Add(source);
+        }
 
         return rewrites;
     }
@@ -367,6 +582,357 @@ internal sealed class NetpackBundler
             await File.WriteAllTextAsync(Path.ChangeExtension(outputPath, ".css"), content.ToString(), Utf8WithoutBom);
     }
 
+    /// <summary>
+    /// Resolves the stylesheet closure declared by selected external package entries.
+    /// Style modules are ordinary ESM files (for example Element Plus' <c>style/css.mjs</c>)
+    /// and can import other style modules or CSS files. The package manager owns the bytes;
+    /// this resolver only follows the selected entry graph inside the restored node_modules.
+    /// </summary>
+    private static IReadOnlyList<string> ResolveExternalStylesheetPaths(
+        string packageWorkspace,
+        IReadOnlyList<string> styleModuleSpecifiers,
+        IReadOnlyList<string> stylesheetSpecifiers)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageWorkspace);
+        ArgumentNullException.ThrowIfNull(styleModuleSpecifiers);
+        ArgumentNullException.ThrowIfNull(stylesheetSpecifiers);
+
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var cssFiles = new List<string>();
+        var visiting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void VisitSpecifier(string specifier)
+        {
+            var file = ResolveExternalStyleFile(packageWorkspace, specifier, importer: null);
+            VisitFile(file);
+        }
+
+        void VisitFile(string file)
+        {
+            var fullPath = Path.GetFullPath(file);
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"External style file was not found: '{fullPath}'.", fullPath);
+
+            if (!visiting.Add(fullPath))
+                return;
+            try
+            {
+                var extension = Path.GetExtension(fullPath);
+                if (IsCssFileExtension(extension))
+                {
+                    if (visited.Add(fullPath))
+                        cssFiles.Add(fullPath);
+                    foreach (var import in ReadCssImports(fullPath))
+                    {
+                        var imported = ResolveExternalStyleFile(packageWorkspace, import, fullPath);
+                        if (IsCssFileExtension(Path.GetExtension(imported)))
+                            VisitFile(imported);
+                    }
+
+                    return;
+                }
+
+                if (!IsStyleModuleExtension(extension))
+                    return;
+
+                var source = File.ReadAllText(fullPath);
+                foreach (var import in ReadModuleImports(source))
+                {
+                    var imported = ResolveExternalStyleFile(packageWorkspace, import, fullPath);
+                    VisitFile(imported);
+                }
+            }
+            finally
+            {
+                visiting.Remove(fullPath);
+            }
+        }
+
+        foreach (var specifier in styleModuleSpecifiers
+                     .Concat(stylesheetSpecifiers)
+                     .Where(static value => !string.IsNullOrWhiteSpace(value))
+                     .Distinct(StringComparer.Ordinal)
+                     .OrderBy(static value => value, StringComparer.Ordinal))
+        {
+            VisitSpecifier(specifier);
+        }
+
+        return cssFiles;
+    }
+
+    private static readonly Regex CssImportPattern = new(
+        "@import\\s+(?:url\\(\\s*)?(?:[\"'](?<path>[^\"']+)[\"']|(?<pathBare>[^\\s;\\)]+))",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    private static IEnumerable<string> ReadModuleImports(string source)
+    {
+        foreach (Match match in ImportFromPattern.Matches(source))
+            yield return match.Groups["path"].Value;
+        foreach (Match match in ImportOnlyPattern.Matches(source))
+            yield return match.Groups["path"].Value;
+        foreach (Match match in ImportExpressionPattern.Matches(source))
+            yield return match.Groups["path"].Value;
+    }
+
+    private static IEnumerable<string> ReadCssImports(string path)
+    {
+        var source = File.ReadAllText(path);
+        foreach (Match match in CssImportPattern.Matches(source))
+        {
+            var value = match.Groups["path"].Success
+                ? match.Groups["path"].Value
+                : match.Groups["pathBare"].Value;
+            if (string.IsNullOrWhiteSpace(value) ||
+                value.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
+                value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                value.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+                value.StartsWith("//", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var query = value.IndexOfAny(['?', '#']);
+            yield return query < 0 ? value : value[..query];
+        }
+    }
+
+    private static string ResolveExternalStyleFile(
+        string packageWorkspace,
+        string specifier,
+        string? importer)
+    {
+        var value = StripUrlSuffix(specifier);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidOperationException("External style import cannot be empty.");
+
+        if (value.StartsWith("./", StringComparison.Ordinal) ||
+            value.StartsWith("../", StringComparison.Ordinal))
+        {
+            if (importer is null)
+                throw new InvalidOperationException($"Relative external style import '{specifier}' has no importer.");
+            var candidate = Path.GetFullPath(Path.Combine(
+                Path.GetDirectoryName(importer)!,
+                value.Replace('/', Path.DirectorySeparatorChar)));
+            return ResolveFileCandidate(candidate, packageWorkspace, specifier)
+                ?? throw new FileNotFoundException(
+                    $"External style '{specifier}' could not be resolved from '{importer}'.",
+                    candidate);
+        }
+
+        var packageName = GetExternalPackageName(value);
+        var packageRoot = Path.Combine(
+            packageWorkspace,
+            "node_modules",
+            packageName.Replace('/', Path.DirectorySeparatorChar));
+        if (!Directory.Exists(packageRoot))
+            throw new DirectoryNotFoundException(
+                $"Restored package '{packageName}' was not found below '{packageWorkspace}'.");
+
+        var subpath = value.Length == packageName.Length
+            ? "."
+            : "./" + value[(packageName.Length + 1)..];
+        var target = ResolvePackageExport(packageRoot, subpath);
+        if (target is null)
+        {
+            var direct = subpath == "." ? "index" : subpath[2..];
+            target = ResolveFileCandidate(
+                Path.Combine(packageRoot, direct.Replace('/', Path.DirectorySeparatorChar)),
+                packageWorkspace,
+                specifier,
+                allowMissing: true);
+        }
+
+        return target ?? throw new FileNotFoundException(
+            $"Package style entry '{specifier}' could not be resolved from '{packageRoot}'.");
+    }
+
+    private static string? ResolvePackageExport(string packageRoot, string subpath)
+    {
+        var packageJson = Path.Combine(packageRoot, "package.json");
+        if (!File.Exists(packageJson))
+            return null;
+
+        using var document = JsonDocument.Parse(File.ReadAllText(packageJson));
+        var root = document.RootElement;
+        if (root.TryGetProperty("exports", out var exports))
+        {
+            var target = ResolveExportsValue(
+                exports,
+                subpath,
+                ["style", "browser", "import", "module", "default", "deno", "node"],
+                wildcard: null);
+            if (target is not null)
+            {
+                var resolved = ResolveFileCandidate(
+                    Path.Combine(packageRoot, target.TrimStart('.', '/').Replace('/', Path.DirectorySeparatorChar)),
+                    packageRoot,
+                    subpath,
+                    allowMissing: true);
+                if (resolved is not null)
+                    return resolved;
+            }
+        }
+
+        if (subpath != ".")
+        {
+            return ResolveFileCandidate(
+                Path.Combine(packageRoot, subpath[2..].Replace('/', Path.DirectorySeparatorChar)),
+                packageRoot,
+                subpath,
+                allowMissing: true);
+        }
+
+        foreach (var field in new[] { "style", "browser", "module", "main" })
+        {
+            if (root.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String)
+            {
+                var resolved = ResolveFileCandidate(
+                    Path.Combine(packageRoot, value.GetString()!.Replace('/', Path.DirectorySeparatorChar)),
+                    packageRoot,
+                    field,
+                    allowMissing: true);
+                if (resolved is not null)
+                    return resolved;
+            }
+        }
+
+        return ResolveFileCandidate(Path.Combine(packageRoot, "index"), packageRoot, subpath, allowMissing: true);
+    }
+
+    private static string? ResolveExportsValue(
+        JsonElement value,
+        string subpath,
+        IReadOnlyList<string> conditions,
+        string? wildcard)
+    {
+        switch (value.ValueKind)
+        {
+            case JsonValueKind.String:
+                return ApplyWildcard(value.GetString()!, wildcard);
+            case JsonValueKind.Array:
+                foreach (var candidate in value.EnumerateArray())
+                {
+                    var result = ResolveExportsValue(candidate, subpath, conditions, wildcard);
+                    if (result is not null)
+                        return result;
+                }
+
+                return null;
+            case JsonValueKind.Object:
+                var properties = value.EnumerateObject().ToArray();
+                if (properties.Any(static property => property.Name.StartsWith('.', StringComparison.Ordinal)))
+                {
+                    JsonProperty? exact = null;
+                    foreach (var property in properties)
+                    {
+                        if (string.Equals(property.Name, subpath, StringComparison.Ordinal))
+                        {
+                            exact = property;
+                            break;
+                        }
+                    }
+
+                    if (exact is { } exactProperty)
+                    {
+                        var result = ResolveExportsValue(exactProperty.Value, subpath, conditions, wildcard);
+                        if (result is not null)
+                            return result;
+                    }
+
+                    foreach (var property in properties.Where(static property => property.Name.Contains('*', StringComparison.Ordinal)))
+                    {
+                        var star = property.Name.IndexOf('*');
+                        var prefix = property.Name[..star];
+                        var suffix = property.Name[(star + 1)..];
+                        if (!subpath.StartsWith(prefix, StringComparison.Ordinal) ||
+                            !subpath.EndsWith(suffix, StringComparison.Ordinal) ||
+                            subpath.Length < prefix.Length + suffix.Length)
+                        {
+                            continue;
+                        }
+
+                        var valueWildcard = subpath[prefix.Length..^suffix.Length];
+                        var result = ResolveExportsValue(property.Value, subpath, conditions, valueWildcard);
+                        if (result is not null)
+                            return result;
+                    }
+
+                    return null;
+                }
+
+                foreach (var condition in conditions)
+                {
+                    if (!value.TryGetProperty(condition, out var candidate))
+                        continue;
+                    var result = ResolveExportsValue(candidate, subpath, conditions, wildcard);
+                    if (result is not null)
+                        return result;
+                }
+
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    private static string ApplyWildcard(string value, string? wildcard)
+        => wildcard is null ? value : value.Replace("*", wildcard, StringComparison.Ordinal);
+
+    private static string? ResolveFileCandidate(
+        string candidate,
+        string root,
+        string source,
+        bool allowMissing = false)
+    {
+        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var fullCandidate = Path.GetFullPath(candidate);
+        if (!fullCandidate.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"External style path '{source}' escaped package root '{root}'.");
+
+        var candidates = new[]
+        {
+            fullCandidate,
+            fullCandidate + ".css",
+            fullCandidate + ".mjs",
+            fullCandidate + ".js",
+            fullCandidate + ".scss",
+            Path.Combine(fullCandidate, "index.css"),
+            Path.Combine(fullCandidate, "index.mjs"),
+            Path.Combine(fullCandidate, "index.js")
+        };
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path))
+                return path;
+        }
+
+        if (allowMissing)
+            return null;
+        throw new FileNotFoundException($"External style '{source}' could not be resolved below '{root}'.", fullCandidate);
+    }
+
+    private static bool IsCssFileExtension(string extension)
+        => extension.Equals(".css", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsStyleModuleExtension(string extension)
+        => extension.Equals(".mjs", StringComparison.OrdinalIgnoreCase) ||
+           extension.Equals(".js", StringComparison.OrdinalIgnoreCase);
+
+    private static string StripUrlSuffix(string value)
+    {
+        var index = value.IndexOfAny(['?', '#']);
+        return (index < 0 ? value : value[..index]).Trim();
+    }
+
+    private static string GetExternalPackageName(string specifier)
+    {
+        var segments = specifier.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var count = specifier.StartsWith('@', StringComparison.Ordinal) ? 2 : 1;
+        if (segments.Length < count)
+            throw new InvalidOperationException($"External style specifier '{specifier}' does not contain a package name.");
+        return string.Join('/', segments.Take(count));
+    }
+
     private static void CopyStaticAssetsToOutput(string outputPath, IReadOnlyList<StaticAsset> staticAssets)
     {
         if (staticAssets.Count == 0)
@@ -387,7 +953,8 @@ internal sealed class NetpackBundler
     private static string RewriteModuleImports(
         string content,
         string importerRelativePath,
-        IReadOnlyDictionary<string, string> importRewrites)
+        IReadOnlyDictionary<string, string> importRewrites,
+        IReadOnlySet<string> externalPackageRewrites)
     {
         if (importRewrites.Count == 0)
             return content;
@@ -395,7 +962,11 @@ internal sealed class NetpackBundler
         string Rewrite(Match match)
         {
             var importPath = match.Groups["path"].Value;
-            var rewrittenPath = RewriteImportPath(importPath, importerRelativePath, importRewrites);
+            var rewrittenPath = RewriteImportPath(
+                importPath,
+                importerRelativePath,
+                importRewrites,
+                externalPackageRewrites);
             return ReferenceEquals(rewrittenPath, importPath)
                 ? match.Value
                 : match.Groups["prefix"].Value + rewrittenPath + match.Groups["suffix"].Value;
@@ -408,20 +979,41 @@ internal sealed class NetpackBundler
     private static string RewriteImportPath(
         string importPath,
         string importerRelativePath,
-        IReadOnlyDictionary<string, string> importRewrites)
+        IReadOnlyDictionary<string, string> importRewrites,
+        IReadOnlySet<string> externalPackageRewrites)
     {
         if (!importPath.StartsWith("./", StringComparison.Ordinal) &&
             !importPath.StartsWith("../", StringComparison.Ordinal))
         {
-            return importRewrites.TryGetValue(importPath, out var rewrittenBarePath)
-                ? RebaseImportPath(rewrittenBarePath, importerRelativePath)
-                : importPath;
+            if (!importRewrites.TryGetValue(importPath, out var rewrittenBarePath))
+                return importPath;
+
+            // Both generated module ids and npm package ids can look like bare specifiers.
+            // Preserve only rewrites whose manifest identity is external; all other targets
+            // are files in this workspace and must be relative to the importing module.
+            return externalPackageRewrites.Contains(importPath)
+                ? rewrittenBarePath
+                : RebaseImportPath(rewrittenBarePath, importerRelativePath);
         }
 
         var resolvedPath = ResolveImportPath(importPath, importerRelativePath);
         return importRewrites.TryGetValue(resolvedPath, out var rewrittenPath)
             ? RebaseImportPath(rewrittenPath, importerRelativePath)
             : importPath;
+    }
+
+    private static bool IsExternalPackage(LibraryAssets libraries, string specifier)
+    {
+        if (libraries.PackageReferences.TryGetValue(specifier, out var reference))
+            return reference.Source is "npm" or "jsr";
+
+        var segments = specifier.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var count = specifier.StartsWith('@', StringComparison.Ordinal) ? 2 : 1;
+        var packageName = segments.Length >= count
+            ? string.Join('/', segments.Take(count))
+            : specifier;
+        return libraries.PackageReferences.TryGetValue(packageName, out reference) &&
+               reference.Source is "npm" or "jsr";
     }
 
     private static string ResolveImportPath(string importPath, string importerRelativePath)
@@ -470,22 +1062,32 @@ internal sealed class NetpackBundler
     private static string[] SplitPathSegments(string path)
         => path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-    private static bool WriteOutputs(IReadOnlyDictionary<string, byte[]> outputs, string outputPath)
+    private static bool WriteOutputs(
+        IReadOnlyDictionary<string, byte[]> outputs,
+        string outputPath,
+        string metafilePath,
+        string requestedOutputStem,
+        out IReadOnlyList<string> cssPaths)
     {
+        cssPaths = [];
         var outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath)) ?? string.Empty;
-        var bundleOutput = outputs
-            .Where(static item => IsJavaScriptOutput(item.Key))
-            .OrderBy(static item => item.Key, StringComparer.Ordinal)
-            .FirstOrDefault();
+        var selection = SelectNetpackOutputs(outputs, metafilePath, requestedOutputStem);
+        var bundleOutput = selection.JavaScriptPath is { } entryPath &&
+                           outputs.TryGetValue(entryPath, out var entryBytes)
+            ? new KeyValuePair<string, byte[]>(entryPath, entryBytes)
+            : default;
         if (string.IsNullOrWhiteSpace(bundleOutput.Key))
             return false;
+
+        cssPaths = selection.CssPaths;
 
         foreach (var (name, bytes) in outputs)
         {
             // Netpack may expose the synthetic entry module used to feed the bundler. It is an
             // internal staging input, never a public Jazor artifact; only the named bundle and
             // its map are committed below.
-            if (name.StartsWith("__jazor_", StringComparison.OrdinalIgnoreCase))
+            if (name.StartsWith("__jazor_", StringComparison.OrdinalIgnoreCase) ||
+                name.EndsWith("metafile.json", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             var targetPath = GetSafePath(outputDirectory, name);
@@ -511,10 +1113,114 @@ internal sealed class NetpackBundler
         return true;
     }
 
+    private static NetpackOutputSelection SelectNetpackOutputs(
+        IReadOnlyDictionary<string, byte[]> outputs,
+        string metafilePath,
+        string requestedOutputStem)
+    {
+        var outputNames = outputs.Keys.ToHashSet(StringComparer.Ordinal);
+        bool IsRequested(string path)
+            => string.Equals(
+                Path.GetFileNameWithoutExtension(path),
+                requestedOutputStem,
+                StringComparison.OrdinalIgnoreCase);
+
+        var metadata = TryReadNetpackMetadata(metafilePath);
+        var javascript = metadata
+            .Where(item => IsJavaScriptOutput(item.Key) &&
+                           string.Equals(item.Value.Flags, "entry", StringComparison.OrdinalIgnoreCase))
+            .Select(static item => item.Key)
+            .Where(outputNames.Contains)
+            .OrderBy(path => IsRequested(path) ? 0 : 1)
+            .ThenBy(static path => path, StringComparer.Ordinal)
+            .FirstOrDefault();
+
+        if (javascript is null)
+        {
+            javascript = metadata
+                .Where(item => IsJavaScriptOutput(item.Key) &&
+                               string.Equals(item.Value.EntryPoint, item.Key, StringComparison.Ordinal))
+                .Select(static item => item.Key)
+                .Where(outputNames.Contains)
+                .OrderBy(path => IsRequested(path) ? 0 : 1)
+                .ThenBy(static path => path, StringComparer.Ordinal)
+                .FirstOrDefault();
+        }
+
+        javascript ??= outputs.Keys
+            .Where(IsJavaScriptOutput)
+            .Where(outputNames.Contains)
+            .OrderBy(path => IsRequested(path) ? 0 : 1)
+            .ThenBy(static path => path, StringComparer.Ordinal)
+            .FirstOrDefault();
+
+        var css = metadata
+            .Where(item => IsCssOutput(item.Key))
+            .Select(static item => item.Key)
+            .Where(outputNames.Contains)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToArray();
+
+        if (css.Length == 0)
+        {
+            css = outputs.Keys
+                .Where(IsCssOutput)
+                .Where(outputNames.Contains)
+                .OrderBy(static path => path, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        return new NetpackOutputSelection(javascript, css);
+    }
+
+    private static IReadOnlyDictionary<string, NetpackOutputMetadata> TryReadNetpackMetadata(string metafilePath)
+    {
+        if (!File.Exists(metafilePath))
+            return new Dictionary<string, NetpackOutputMetadata>(StringComparer.Ordinal);
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllBytes(metafilePath));
+            if (!document.RootElement.TryGetProperty("outputs", out var outputs) ||
+                outputs.ValueKind != JsonValueKind.Object)
+            {
+                return new Dictionary<string, NetpackOutputMetadata>(StringComparer.Ordinal);
+            }
+
+            var result = new Dictionary<string, NetpackOutputMetadata>(StringComparer.Ordinal);
+            foreach (var output in outputs.EnumerateObject())
+            {
+                var entryPoint = output.Value.TryGetProperty("entryPoint", out var entry) &&
+                                 entry.ValueKind == JsonValueKind.String
+                    ? entry.GetString()
+                    : null;
+                var flags = output.Value.TryGetProperty("flags", out var flag) &&
+                            flag.ValueKind == JsonValueKind.String
+                    ? flag.GetString()
+                    : null;
+                result[output.Name.Replace('\\', '/')] = new NetpackOutputMetadata(entryPoint, flags);
+            }
+
+            return result;
+        }
+        catch (JsonException)
+        {
+            return new Dictionary<string, NetpackOutputMetadata>(StringComparer.Ordinal);
+        }
+    }
+
+    private static bool IsCssOutput(string name)
+        => name.EndsWith(".css", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsJavaScriptOutput(string name)
         => (name.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
             name.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)) &&
            !name.EndsWith(".map", StringComparison.OrdinalIgnoreCase);
+
+    private sealed record NetpackOutputMetadata(string? EntryPoint, string? Flags);
+
+    private sealed record NetpackOutputSelection(string? JavaScriptPath, IReadOnlyList<string> CssPaths);
 
     private static byte[] RewriteRazorSourceMapUrl(byte[] bytes, string originalMapName, string materializedMapName)
     {
@@ -553,6 +1259,13 @@ internal sealed class NetpackBundler
         => path.EndsWith(Path.DirectorySeparatorChar)
             ? path
             : path + Path.DirectorySeparatorChar;
+
+    private static bool IsAncestorDirectory(string ancestor, string child)
+    {
+        var normalizedAncestor = EnsureDirectorySeparator(Path.GetFullPath(ancestor));
+        var normalizedChild = Path.GetFullPath(child);
+        return normalizedChild.StartsWith(normalizedAncestor, StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>Temporary import rewrites and static files prepared for Netpack.</summary>
     private sealed record PreparedAssets(

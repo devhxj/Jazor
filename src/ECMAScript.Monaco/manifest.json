@@ -2,71 +2,59 @@
   "schemaVersion": 2,
   "libraryId": "monaco",
   "version": "0.56.0",
+  "source": "npm",
+  "packages": {
+    "monaco-editor": {
+      "source": "npm",
+      "version": "0.56.0"
+    }
+  },
   "imports": {
     "monaco-editor": {
       "type": "module",
-      "development": "dist/monaco-editor/editor.api.mjs",
-      "production": "dist/monaco-editor/editor.api.mjs",
-      "developmentHash": "e528b4f2fdfacfc5849fcf0c2b7ebab490bd14fa1248a02f9cdf61694c402ae6",
-      "productionHash": "e528b4f2fdfacfc5849fcf0c2b7ebab490bd14fa1248a02f9cdf61694c402ae6",
+      "development": "monaco-editor/editor/editor.api.js",
+      "production": "monaco-editor/editor/editor.api.js",
       "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
-        "dist/monaco-editor/css.worker.mjs",
-        "dist/monaco-editor/editor.worker.start.mjs",
-        "dist/monaco-editor/html.worker.mjs",
-        "dist/monaco-editor/json.worker.mjs",
-        "dist/monaco-editor/ts.worker.mjs"
-      ],
-      "productionModuleDependencies": [
-        "dist/monaco-editor/css.worker.mjs",
-        "dist/monaco-editor/editor.worker.start.mjs",
-        "dist/monaco-editor/html.worker.mjs",
-        "dist/monaco-editor/json.worker.mjs",
-        "dist/monaco-editor/ts.worker.mjs"
-      ],
-      "files": [
-        {
-          "type": "module",
-          "path": "dist/monaco-editor/css.worker.mjs",
-          "hash": "e8b4e76968f3e3f7adc209e5ed6ccf1f6843df7d36090239149b291cb2abd1c2",
-          "moduleId": "dist/monaco-editor/css.worker.mjs"
-        },
-        {
-          "type": "module",
-          "path": "dist/monaco-editor/editor.worker.start.mjs",
-          "hash": "796dfc6c852b717eec7016417de0ed1b344ec1e7ff19e8fad85590c4eebeef38",
-          "moduleId": "dist/monaco-editor/editor.worker.start.mjs"
-        },
-        {
-          "type": "module",
-          "path": "dist/monaco-editor/html.worker.mjs",
-          "hash": "3834dabc0c95a39dc37d9beeb3ea131dd66768b772dd594b34f6aa2f2de5efca",
-          "moduleId": "dist/monaco-editor/html.worker.mjs"
-        },
-        {
-          "type": "module",
-          "path": "dist/monaco-editor/json.worker.mjs",
-          "hash": "debbf01532e433c46d88394f367442429906513494384d7e4ec87a19e6f1879c",
-          "moduleId": "dist/monaco-editor/json.worker.mjs"
-        },
-        {
-          "type": "module",
-          "path": "dist/monaco-editor/ts.worker.mjs",
-          "hash": "0608353c71d351c4edd7c2755c047b0ad1c5b20554386c8073f9ae18d39d24bf",
-          "moduleId": "dist/monaco-editor/ts.worker.mjs"
-        }
-      ]
+      "productionDependencies": []
+    },
+    "monaco-editor/editor/editor.worker.start.js": {
+      "type": "module",
+      "development": "monaco-editor/editor/editor.worker.start.js",
+      "production": "monaco-editor/editor/editor.worker.start.js",
+      "developmentDependencies": [],
+      "productionDependencies": []
+    },
+    "monaco-editor/languages/features/css/css.worker.js": {
+      "type": "module",
+      "development": "monaco-editor/languages/features/css/css.worker.js",
+      "production": "monaco-editor/languages/features/css/css.worker.js",
+      "developmentDependencies": [],
+      "productionDependencies": []
+    },
+    "monaco-editor/languages/features/html/html.worker.js": {
+      "type": "module",
+      "development": "monaco-editor/languages/features/html/html.worker.js",
+      "production": "monaco-editor/languages/features/html/html.worker.js",
+      "developmentDependencies": [],
+      "productionDependencies": []
+    },
+    "monaco-editor/languages/features/json/json.worker.js": {
+      "type": "module",
+      "development": "monaco-editor/languages/features/json/json.worker.js",
+      "production": "monaco-editor/languages/features/json/json.worker.js",
+      "developmentDependencies": [],
+      "productionDependencies": []
+    },
+    "monaco-editor/languages/features/typescript/ts.worker.js": {
+      "type": "module",
+      "development": "monaco-editor/languages/features/typescript/ts.worker.js",
+      "production": "monaco-editor/languages/features/typescript/ts.worker.js",
+      "developmentDependencies": [],
+      "productionDependencies": []
     }
   },
   "requires": {},
-  "styles": [
-    {
-      "type": "style",
-      "path": "dist/monaco-editor/editor.api.css",
-      "hash": "b1488ae98f42804fe3f34c27276c751c8257ab55eff20eb1029cfdb633b5c402"
-    }
-  ],
+  "styles": [],
   "files": [
     {
       "type": "license",

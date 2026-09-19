@@ -16,7 +16,7 @@
 
 - `JazorAttribute` 与 `Op` 是仓库内部契约，通过 `InternalsVisibleTo` 共享，不扩展为宽泛公共 API。
 - `Op.Compile` 是编译器持有语义的保留入口；consumer 不应以它替代 `Alias`、`Inline` 或 `Import` 建模。
-- `ECMAScriptAttribute` 的 `Allow`、`Import`、`Component` 三类 `Transform` 分别表示环境宿主、普通外部 ESM binding 和组件 ESM binding；其第一个参数是最终 ESM import specifier，也是 binding manifest 的入口 key。组件身份仍由对应框架 marker（例如 `ComponentBase + IVueComponent`）确认。成员级特性优先于类型级特性，用于声明细粒度入口；包名、版本、来源、integrity 和资源闭包由 binding manifest 提供。
+- `ECMAScriptAttribute` 的 `Allow`、`Import`、`Component` 三类 `Transform` 分别表示环境宿主、普通 ESM binding 和组件 ESM binding；其第一个参数是最终 ESM import specifier，也是 binding package metadata 的入口 key。组件身份仍由对应框架 marker（例如 `ComponentBase + IVueComponent`）确认。成员级特性优先于类型级特性，用于声明细粒度入口；包名、版本、来源（npm、JSR 或明确声明的 embedded-mjs carrier）、integrity 和资源闭包由 package metadata 提供。
 - SourceMap、宿主协议 DTO 与其他共享实现位于 `Jazor.Common`，Razor-to-Vue 行为位于其专属项目。
 
 ## 关键文件

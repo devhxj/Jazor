@@ -1,8 +1,11 @@
 # ECMAScript.FloatingUi
 
-Floating UI 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游多包版本、`manifest.json`（schema 2）、`dist/` 资源、许可证与 inventory。
+Floating UI 的 C# 绑定，作为 Jazor 的 JS resource library 交付：包内锁定上游多包版本，
+`manifest.json`（schema 2）和 `inventory.json` 记录 package、入口、完整性与许可证元数据。
 
-Strongly typed C# bindings for Floating UI, shipped as a Jazor JS resource library with locked upstream package versions, package-local `manifest.json` (schema 2), `dist/` runtime assets, licenses, and inventory.
+Strongly typed C# bindings for Floating UI, shipped as a Jazor JS resource library with locked
+upstream package versions. Runtime files remain in npm; the package metadata records the dependency
+graph used by the generated `jazor` project.
 
 ## 上游锁定 Upstream lock
 
@@ -61,4 +64,4 @@ dotnet run --file scripts/csharp/generate-floating-ui.cs -- --source .tmp/p3/nod
 
 ## 测试 Tests
 
-`src/ECMAScript.FloatingUi.Test` 覆盖 import/manifest/inventory 元数据、vendored 哈希、上游导出 drift 与编译器 emission；`Jazor.EmitTest` 覆盖真实 materialization 闭包。
+`src/ECMAScript.FloatingUi.Test` 覆盖 import/manifest/inventory 元数据、npm integrity、上游导出 drift 与编译器 emission；`Jazor.EmitTest` 覆盖真实 package graph materialization。

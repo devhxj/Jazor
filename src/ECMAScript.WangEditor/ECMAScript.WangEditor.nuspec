@@ -27,7 +27,6 @@
     <file src="$projectDir$buildTransitive\ECMAScript.WangEditor.targets" target="buildTransitive\ECMAScript.WangEditor.targets" />
     <file src="$projectDir$manifest.json" target="jazor\wang-editor" />
     <file src="$projectDir$inventory.json" target="jazor\wang-editor" />
-    <file src="$projectDir$dist\**\*" target="jazor\wang-editor\dist" />
     <file src="$projectDir$licenses\**\*" target="jazor\wang-editor\licenses" />
     <file src="$projectDir$$packageReadmeFile$" target="" />
   </files>
