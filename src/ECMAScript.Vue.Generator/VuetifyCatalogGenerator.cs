@@ -15,6 +15,7 @@ internal static class VuetifyCatalogGenerator
 {
     private const string Version = "4.2.1";
     private const int ContractSchemaVersion = 1;
+    private const string PackageName = "vuetify";
     private const string StableModule = "vuetify/components";
     private const string LabsModule = "vuetify/labs/components";
 
@@ -36,7 +37,7 @@ internal static class VuetifyCatalogGenerator
         var schema = ReadContractSchema(Path.Combine(upstreamRoot, "contracts.json"));
         var descriptions = ReadWebTypeDescriptions(Path.Combine(upstreamRoot, "web-types.json"));
         var components = ReadComponents(repositoryRoot, projectRoot);
-        var contractsByKey = ValidateInputs(repositoryRoot, projectRoot, upstreamRoot, schema, components);
+        (components, var contractsByKey) = ValidateInputs(repositoryRoot, projectRoot, upstreamRoot, schema, components);
         var outputs = new List<GeneratedFile>();
 
         foreach (var component in components)
@@ -115,24 +116,31 @@ internal static class VuetifyCatalogGenerator
                 if (attribute is null)
                     continue;
 
-                // 组件声明面：[ECMAScript("specifier")] 提供模块，导出名由 [ECMAScriptName] 给出。
+                // 组件是普通（非 static）类；根宿主 Vuetify 也是单参数 [ECMAScript]，
+                // 但它是 static 类，不是组件，不参与 catalog。
+                if (declaration.Modifiers.Any(SyntaxKind.StaticKeyword))
+                    continue;
+
+                // 组件声明面：[ECMAScript("specifier")] 提供上游公开入口，导出名由 [ECMAScriptName] 给出。
+                // specifier 逐字保留——它是生成 import 的真值；catalog 分组用的 family 由
+                // contracts.json 提供，因为上游会把组件在 stable/labs 之间迁移，
+                // 而迁移后只有其中一条路径真实可解析（见 VCalendar 等 labs 组件）。
                 var arguments = attribute.ArgumentList?.Arguments;
                 if (arguments is not { Count: 1 } ||
-                    !TryReadString(arguments.Value[0], out var module) ||
+                    !TryReadString(arguments.Value[0], out var specifier) ||
                     !TryReadComponentExport(declaration, out var export))
                 {
                     throw new InvalidOperationException(
                         $"ECMAScript Component binding on {Path.GetFileName(path)} must declare one module string literal and an [ECMAScriptName] export.");
                 }
 
-                var family = NormalizeComponentFamily(module, export);
-                if (!seenExports.Add((family, export)))
-                    throw new InvalidOperationException($"Duplicate Vuetify component export '{family}:{export}'.");
+                if (!seenExports.Add((specifier, export)))
+                    throw new InvalidOperationException($"Duplicate Vuetify component export '{specifier}:{export}'.");
 
                 components.Add(new Component(
                     path,
                     NormalizeRelativePath(repositoryRoot, path),
-                    family,
+                    specifier,
                     export,
                     declaration.Identifier.ValueText));
             }
@@ -142,12 +150,12 @@ internal static class VuetifyCatalogGenerator
             throw new InvalidOperationException("No [ECMAScript(\"module\")] component declarations were found in ECMAScript.Vuetify.");
 
         return components
-            .OrderBy(static component => component.Module, StringComparer.Ordinal)
+            .OrderBy(static component => component.Specifier, StringComparer.Ordinal)
             .ThenBy(static component => component.Export, StringComparer.Ordinal)
             .ToArray();
     }
 
-    private static IReadOnlyDictionary<string, VuetifyContract> ValidateInputs(
+    private static (IReadOnlyList<Component> Components, IReadOnlyDictionary<string, VuetifyContract> Contracts) ValidateInputs(
         string repositoryRoot,
         string projectRoot,
         string upstreamRoot,
@@ -167,6 +175,14 @@ internal static class VuetifyCatalogGenerator
         }
 
         var webTypeTags = ReadWebTypeTags(Path.Combine(upstreamRoot, "web-types.json"));
+        var packageRoot = Path.Combine(
+            repositoryRoot,
+            "src",
+            "ECMAScript.Vue.Generator",
+            "vuetify-runtime",
+            "node_modules",
+            "vuetify");
+        var resolved = new List<Component>(components.Count);
         foreach (var component in components)
         {
             var key = GetContractKey(component.SourceFile, component.TypeName);
@@ -176,12 +192,15 @@ internal static class VuetifyCatalogGenerator
                     $"Vuetify contract schema does not describe '{component.SourceFile}:{component.TypeName}'.");
             }
 
-            if (!string.Equals(NormalizeComponentFamily(contract.Module, contract.Export), component.Module, StringComparison.Ordinal) ||
-                !string.Equals(contract.Export, component.Export, StringComparison.Ordinal))
+            // 导出名以声明为准，且必须与契约一致；catalog family 只由契约决定——
+            // 上游会把组件在 stable/labs 之间迁移，声明只想说明"从哪导入"。
+            if (!string.Equals(contract.Export, component.Export, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException(
-                    $"Vuetify contract '{component.TypeName}' no longer matches its C# module/export declaration.");
+                    $"Vuetify contract '{component.TypeName}' export '{contract.Export}' does not match its declaration '{component.Export}'.");
             }
+
+            var family = NormalizeComponentFamily(contract.Module, contract.Export);
             if (!webTypeTags.Contains(component.Export))
                 throw new InvalidOperationException($"Vuetify web-types {Version} does not contain tag '{component.Export}'.");
 
@@ -189,9 +208,101 @@ internal static class VuetifyCatalogGenerator
                 throw new InvalidOperationException($"Vuetify contract '{component.TypeName}' has no parameter metadata.");
             if (contract.Members.Select(static member => member.Name).Distinct(StringComparer.Ordinal).Count() != contract.Members.Count)
                 throw new InvalidOperationException($"Vuetify contract '{component.TypeName}' contains duplicate member names.");
+
+            resolved.Add(component with { Family = family });
         }
 
-        return contractsByKey;
+        ValidateImportSpecifiers(resolved, packageRoot);
+        return (resolved, contractsByKey);
+    }
+
+    /// <summary>
+    /// 断言每个组件的声明 specifier 在固定版本的上游包中真实可解析。
+    ///
+    /// 这是 [ECMAScript] 作为"生成 import 真源"的最低保证：specifier 必须命中上游
+    /// exports（精确键或通配），而不是靠绑定私有的别名表在解析前替换。
+    /// </summary>
+    private static void ValidateImportSpecifiers(IReadOnlyList<Component> components, string packageRoot)
+    {
+        using var package = JsonDocument.Parse(SystemFile.ReadAllText(Path.Combine(packageRoot, "package.json")));
+        if (!package.RootElement.TryGetProperty("exports", out var exports))
+        {
+            throw new InvalidOperationException(
+                $"Vuetify {Version} must publish an exports field to validate component import specifiers.");
+        }
+
+        foreach (var component in components)
+        {
+            var subpath = "./" + component.Specifier[(PackageName.Length + 1)..];
+            var target = ResolveExportTarget(exports, subpath);
+            if (target is null || !SystemFile.Exists(Path.Combine(packageRoot, target)))
+            {
+                throw new InvalidOperationException(
+                    $"Vuetify component '{component.TypeName}' declares import specifier '{component.Specifier}', " +
+                    "which the pinned package does not export.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 按 package exports 规则解析一个 ./ 子路径为包内相对文件路径。
+    /// 支持精确键、单层通配（./components/*）与兜底 ./*；解析不到返回 null。
+    /// </summary>
+    private static string? ResolveExportTarget(JsonElement exports, string subpath)
+    {
+        static string? Pick(JsonElement value)
+        {
+            if (value.ValueKind == JsonValueKind.String)
+                return value.GetString();
+            if (value.ValueKind != JsonValueKind.Object)
+                return null;
+            foreach (var condition in new[] { "import", "module", "default" })
+            {
+                if (value.TryGetProperty(condition, out var candidate))
+                {
+                    var picked = Pick(candidate);
+                    if (picked is not null)
+                        return picked;
+                }
+            }
+
+            return null;
+        }
+
+        foreach (var entry in exports.EnumerateObject())
+        {
+            var key = entry.Name;
+            if (!key.Contains('*', StringComparison.Ordinal))
+            {
+                if (string.Equals(key, subpath, StringComparison.Ordinal))
+                    return Pick(entry.Value)?.Replace("./", string.Empty, StringComparison.Ordinal);
+                continue;
+            }
+
+            // 单层通配：./prefix/* -> ./target/*；捕获段不能再含 '/'（Node 的 * 语义）。
+            var star = key.IndexOf('*', StringComparison.Ordinal);
+            var prefix = key[..star];
+            var suffix = key[(star + 1)..];
+            if (!subpath.StartsWith(prefix, StringComparison.Ordinal) ||
+                !subpath.EndsWith(suffix, StringComparison.Ordinal) ||
+                subpath.Length < prefix.Length + suffix.Length)
+            {
+                continue;
+            }
+
+            var captured = subpath[prefix.Length..(subpath.Length - suffix.Length)];
+            if (captured.Contains('/', StringComparison.Ordinal))
+                continue;
+
+            var target = Pick(entry.Value);
+            if (target is null)
+                continue;
+
+            return target.Replace("*", captured, StringComparison.Ordinal)
+                .Replace("./", string.Empty, StringComparison.Ordinal);
+        }
+
+        return null;
     }
 
     private static void ValidatePackageVersion(string path)
@@ -224,8 +335,14 @@ internal static class VuetifyCatalogGenerator
             "A component module must be its aggregate contract family or its exact export subpath.");
     }
 
+    /// <summary>
+    /// 生成 import 的 specifier 逐字来自声明。
+    ///
+    /// 不要用 family + export 重新拼装：上游会把组件在 stable/labs 之间迁移，
+    /// 迁移后只有一条路径真实可解析（VCalendar 等 9 个 labs 组件即为此类）。
+    /// </summary>
     private static string GetComponentImportPath(Component component)
-        => component.Module + "/" + component.Export;
+        => component.Specifier;
 
     private static HashSet<string> ReadWebTypeTags(string path)
     {
@@ -392,13 +509,13 @@ internal static class VuetifyCatalogGenerator
         builder.AppendLine("namespace ECMAScript.Vuetify;");
         builder.AppendLine();
 
-        RenderExports(builder, components.Where(static component => component.Module == StableModule), "VuetifyComponents");
+        RenderExports(builder, components.Where(static component => component.Family == StableModule), "VuetifyComponents");
         builder.AppendLine();
-        RenderExports(builder, components.Where(static component => component.Module == LabsModule), "VuetifyLabsComponents");
+        RenderExports(builder, components.Where(static component => component.Family == LabsModule), "VuetifyLabsComponents");
         builder.AppendLine();
-        RenderRegistry(builder, components.Where(static component => component.Module == StableModule), "VuetifyComponentRegistry", "stable Vuetify components");
+        RenderRegistry(builder, components.Where(static component => component.Family == StableModule), "VuetifyComponentRegistry", "stable Vuetify components");
         builder.AppendLine();
-        RenderRegistry(builder, components.Where(static component => component.Module == LabsModule), "VuetifyLabsComponentRegistry", "Vuetify labs components");
+        RenderRegistry(builder, components.Where(static component => component.Family == LabsModule), "VuetifyLabsComponentRegistry", "Vuetify labs components");
 
         return builder.ToString();
     }
@@ -609,9 +726,10 @@ internal static class VuetifyCatalogGenerator
     private sealed record Component(
         string SourcePath,
         string SourceFile,
-        string Module,
+        string Specifier,
         string Export,
-        string TypeName);
+        string TypeName,
+        string Family = "");
 
     private sealed record GeneratedFile(string Path, string Content);
 

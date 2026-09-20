@@ -188,7 +188,17 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 深层路径可解析的前提是上游 exports 允许它。绑定使用 `element-plus/es/components/affix/style/css.mjs` 这类深层 specifier 时，依赖的是上游 exports 的通配或兜底规则：`element-plus@2.14.5` 提供 `"./es/*.mjs"` 通配与 `"./*"` 兜底，`tdesign-vue-next@1.20.7` 则没有 `exports` 字段（任意路径按文件布局解析）。若上游改成封闭 exports，这些深层 specifier 会被阻止——因此绑定选择的 specifier 必须由恢复后的 package 实际验证可解析，不能只凭路径存在。
 
-当前三个主要绑定的 specifier 已用上游快照的 exports 规则逐一验证：ElementPlus 446 条、TDesign 470 条、Vuetify 448 条，合计 1364 条全部命中精确键、通配或开放的 exports，无未解析项。
+**声明值就是生成 import 的真源（已定）**：`[ECMAScript("<specifier>")]` 保存的字符串**逐字**写进生成模块，绑定不得为它维护一份"逻辑名 → 真入口"的私有别名表。判据是该 specifier 在固定版本的上游包中真实可解析——`VuetifyCatalogGenerator` 已有 `ValidateImportSpecifiers` 逐个按上游 `exports`（精确键 / 单层通配 / 兜底）解析为真实文件，解析失败即构建错误。
+
+这条规则排除了两类曾出现的简写形态：
+
+| 不可解析的简写 | 失败原因 |
+| --- | --- |
+| `tdesign-vue-next/button/Button` | `es/button/` 下只有 `index.mjs`/`button.mjs`/`props.mjs`/`style/`；该包无 `exports` 字段，路径按文件布局字面解析 |
+| `element-plus/affix/ElAffix` | 不对应任何真实文件；该包的 `exports` 只有 `"./es/*.mjs"` 通配与 `"./*"` 兜底 |
+| `vuetify/components/VCardActions` | `exports["./components/*"] → ./lib/components/*/index.js` 只对真实目录成立，而 `VCardActions` 位于 `VCard/` 目录内 |
+
+上游会把组件在 stable/labs 之间迁移（`vuetify@4.2.1` 已把 `VCalendar` 等 9 个组件迁出 `labs/components/`）。此时声明的 specifier 必须跟随**当前版本可解析**的路径，而把"属于哪个 catalog 分组"这类派生信息交给生成器从上游元数据推导，不要从 specifier 反推。
 
 ### 同一模块多处声明
 

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 网格列组件创作代理。
 /// Vuetify grid column component authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VCol")]
+[ECMAScript("vuetify/components/VGrid")]
 public sealed class VCol : ComponentBase, IVuetifyComponent
 {
     /// <summary>

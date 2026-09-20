@@ -4082,11 +4082,10 @@ public sealed class SdkIntegrationTests
             .ToArray();
         CollectionAssert.Contains(mappedSources, "components/navigation-location-changing.mjs");
 
+        // ECMAScript 自有源码 carrier 按声明路径写入项目源码树（clr/**），
+        // 不再经 node_modules/ 包投影物化。
         var navigationModulePaths = Directory
-            .EnumerateFiles(outputRoot, "NavigationManagerModule.js", SearchOption.AllDirectories)
-            .Where(static path => path.Contains(
-                $"{Path.DirectorySeparatorChar}node_modules{Path.DirectorySeparatorChar}",
-                StringComparison.OrdinalIgnoreCase))
+            .EnumerateFiles(Path.Combine(outputRoot, "clr"), "NavigationManagerModule.js", SearchOption.AllDirectories)
             .ToArray();
         Assert.HasCount(1, navigationModulePaths, "The Release consumer did not materialize exactly one NavigationManager runtime module.");
 

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 网格容器组件创作代理。
 /// Vuetify grid container component authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VContainer")]
+[ECMAScript("vuetify/components/VGrid")]
 public sealed class VContainer : ComponentBase, IVuetifyComponent
 {
     /// <summary>

@@ -10,7 +10,7 @@
     }
   },
   "imports": {
-    "monaco-editor": {
+    "monaco-editor/editor/editor.api.js": {
       "type": "module",
       "development": "monaco-editor/editor/editor.api.js",
       "production": "monaco-editor/editor/editor.api.js",

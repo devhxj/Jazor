@@ -740,6 +740,13 @@ internal static class VueModuleBuilder
             .OfType<ImportDeclaration>()
             .Select(static declaration => declaration.Source.Value)
             .Where(ECMAScriptModulePath.IsPackageSpecifier)
+            .Concat(moduleStatements
+                .OfType<ImportDeclaration>()
+                .Select(static declaration => declaration.Source.Value)
+                // carrier 引用写出的 specifier 是相对的，但它不是本图模块：载体由资源库清单
+                // 物化。逻辑键无法从相对文本反推，因此在这里补记，供 --library-manifest 选择。
+                .Where(specifier => IsCarrierImportSpecifier(specifier, relativePath))
+                .Select(specifier => ResolveModuleDependency(specifier, relativePath)))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToImmutableArray();
@@ -749,6 +756,10 @@ internal static class VueModuleBuilder
             .Where(static specifier => !ECMAScriptModulePath.IsPackageSpecifier(specifier) &&
                                        !string.Equals(specifier, "style.mjs", StringComparison.Ordinal))
             .Select(specifier => ResolveModuleDependency(specifier, relativePath))
+            // carrier 引用（clr/**）不是本编译的 ModuleCatalog 模块：载体由资源库清单物化，
+            // 载体内部的模块边由载体自身的 manifest 表达。记成本图依赖会让 ModuleCollector
+            // 去当前程序集闭包里找 clr/** 而失败。
+            .Where(static dependency => !dependency.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToImmutableArray();
@@ -775,6 +786,21 @@ internal static class VueModuleBuilder
         }
 
         return ECMAScriptModulePath.ResolveRelativePath(relativePath, specifier);
+    }
+
+    /// <summary>
+    /// 判定一个 import specifier 是否指向 ECMAScript 源码 carrier（clr/**）。
+    ///
+    /// 判据是"解析后的项目路径落在 carrier 根下"，与 specifier 的书写形态无关：
+    /// carrier 内部互引用相对路径，用户模块引用 carrier 也由编译器写成相对路径。
+    /// </summary>
+    private static bool IsCarrierImportSpecifier(string specifier, string relativePath)
+    {
+        if (ECMAScriptModulePath.IsPackageSpecifier(specifier))
+            return false;
+
+        var resolved = ResolveModuleDependency(specifier, relativePath);
+        return resolved.StartsWith(CarrierSourceRoot, StringComparison.Ordinal);
     }
 
     private static FunctionDeclaration BuildSetupFactoryDeclaration(

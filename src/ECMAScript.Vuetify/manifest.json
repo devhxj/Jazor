@@ -270,91 +270,6 @@
         "vuetify/lib/components/VCard/VCard.css"
       ]
     },
-    "vuetify/components/VCardActions": {
-      "type": "module",
-      "development": "vuetify/components/VCard",
-      "production": "vuetify/components/VCard",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ]
-    },
-    "vuetify/components/VCardItem": {
-      "type": "module",
-      "development": "vuetify/components/VCard",
-      "production": "vuetify/components/VCard",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ]
-    },
-    "vuetify/components/VCardSubtitle": {
-      "type": "module",
-      "development": "vuetify/components/VCard",
-      "production": "vuetify/components/VCard",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ]
-    },
-    "vuetify/components/VCardText": {
-      "type": "module",
-      "development": "vuetify/components/VCard",
-      "production": "vuetify/components/VCard",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ]
-    },
-    "vuetify/components/VCardTitle": {
-      "type": "module",
-      "development": "vuetify/components/VCard",
-      "production": "vuetify/components/VCard",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ]
-    },
     "vuetify/components/VCarousel": {
       "type": "module",
       "development": "vuetify/components/VCarousel",
@@ -440,7 +355,7 @@
         "vuetify/lib/components/VCode/VCode.css"
       ]
     },
-    "vuetify/components/VCol": {
+    "vuetify/components/VGrid": {
       "type": "module",
       "development": "vuetify/components/VGrid",
       "production": "vuetify/components/VGrid",
@@ -500,23 +415,6 @@
       ],
       "productionDependencies": [
         "vue"
-      ]
-    },
-    "vuetify/components/VContainer": {
-      "type": "module",
-      "development": "vuetify/components/VGrid",
-      "production": "vuetify/components/VGrid",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
       ]
     },
     "vuetify/components/VCounter": {
@@ -914,23 +812,6 @@
         "vuetify/lib/components/VList/VList.css"
       ]
     },
-    "vuetify/components/VListItem": {
-      "type": "module",
-      "development": "vuetify/components/VList",
-      "production": "vuetify/components/VList",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VList/VList.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VList/VList.css"
-      ]
-    },
     "vuetify/components/VLocaleProvider": {
       "type": "module",
       "development": "vuetify/components/VLocaleProvider",
@@ -1219,23 +1100,6 @@
         "vuetify/lib/components/VResponsive/VResponsive.css"
       ]
     },
-    "vuetify/components/VRow": {
-      "type": "module",
-      "development": "vuetify/components/VGrid",
-      "production": "vuetify/components/VGrid",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
-      ]
-    },
     "vuetify/components/VSelect": {
       "type": "module",
       "development": "vuetify/components/VSelect",
@@ -1383,23 +1247,6 @@
         "vue"
       ]
     },
-    "vuetify/components/VSpacer": {
-      "type": "module",
-      "development": "vuetify/components/VGrid",
-      "production": "vuetify/components/VGrid",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
-      ]
-    },
     "vuetify/components/VSparkline": {
       "type": "module",
       "development": "vuetify/components/VSparkline",
@@ -1479,7 +1326,7 @@
         "vuetify/lib/components/VSystemBar/VSystemBar.css"
       ]
     },
-    "vuetify/components/VTab": {
+    "vuetify/components/VTabs": {
       "type": "module",
       "development": "vuetify/components/VTabs",
       "production": "vuetify/components/VTabs",
@@ -1511,57 +1358,6 @@
       ],
       "productionStylesheetImports": [
         "vuetify/lib/components/VTable/VTable.css"
-      ]
-    },
-    "vuetify/components/VTabs": {
-      "type": "module",
-      "development": "vuetify/components/VTabs",
-      "production": "vuetify/components/VTabs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
-      ]
-    },
-    "vuetify/components/VTabsWindow": {
-      "type": "module",
-      "development": "vuetify/components/VTabs",
-      "production": "vuetify/components/VTabs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
-      ]
-    },
-    "vuetify/components/VTabsWindowItem": {
-      "type": "module",
-      "development": "vuetify/components/VTabs",
-      "production": "vuetify/components/VTabs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
       ]
     },
     "vuetify/components/VTextField": {
@@ -1649,40 +1445,6 @@
         "vuetify/lib/components/VToolbar/VToolbar.css"
       ]
     },
-    "vuetify/components/VToolbarItems": {
-      "type": "module",
-      "development": "vuetify/components/VToolbar",
-      "production": "vuetify/components/VToolbar",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VToolbar/VToolbar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VToolbar/VToolbar.css"
-      ]
-    },
-    "vuetify/components/VToolbarTitle": {
-      "type": "module",
-      "development": "vuetify/components/VToolbar",
-      "production": "vuetify/components/VToolbar",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VToolbar/VToolbar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VToolbar/VToolbar.css"
-      ]
-    },
     "vuetify/components/VTooltip": {
       "type": "module",
       "development": "vuetify/components/VTooltip",
@@ -1745,7 +1507,7 @@
         "vuetify/lib/components/VWindow/VWindow.css"
       ]
     },
-    "vuetify/directives/ClickOutside": {
+    "vuetify/directives/click-outside": {
       "type": "module",
       "development": "vuetify/directives/click-outside",
       "production": "vuetify/directives/click-outside",
@@ -1756,7 +1518,7 @@
         "vue"
       ]
     },
-    "vuetify/directives/Intersect": {
+    "vuetify/directives/intersect": {
       "type": "module",
       "development": "vuetify/directives/intersect",
       "production": "vuetify/directives/intersect",
@@ -1767,7 +1529,7 @@
         "vue"
       ]
     },
-    "vuetify/directives/Mutate": {
+    "vuetify/directives/mutate": {
       "type": "module",
       "development": "vuetify/directives/mutate",
       "production": "vuetify/directives/mutate",
@@ -1778,7 +1540,7 @@
         "vue"
       ]
     },
-    "vuetify/directives/Resize": {
+    "vuetify/directives/resize": {
       "type": "module",
       "development": "vuetify/directives/resize",
       "production": "vuetify/directives/resize",
@@ -1789,7 +1551,7 @@
         "vue"
       ]
     },
-    "vuetify/directives/Ripple": {
+    "vuetify/directives/ripple": {
       "type": "module",
       "development": "vuetify/directives/ripple",
       "production": "vuetify/directives/ripple",
@@ -1806,7 +1568,7 @@
         "vuetify/lib/directives/ripple/VRipple.css"
       ]
     },
-    "vuetify/directives/Scroll": {
+    "vuetify/directives/scroll": {
       "type": "module",
       "development": "vuetify/directives/scroll",
       "production": "vuetify/directives/scroll",
@@ -1817,7 +1579,7 @@
         "vue"
       ]
     },
-    "vuetify/directives/Tooltip": {
+    "vuetify/directives/tooltip": {
       "type": "module",
       "development": "vuetify/directives/tooltip",
       "production": "vuetify/directives/tooltip",
@@ -1828,7 +1590,7 @@
         "vue"
       ]
     },
-    "vuetify/directives/Touch": {
+    "vuetify/directives/touch": {
       "type": "module",
       "development": "vuetify/directives/touch",
       "production": "vuetify/directives/touch",
@@ -1839,7 +1601,7 @@
         "vue"
       ]
     },
-    "vuetify/labs/components/VCalendar": {
+    "vuetify/components/VCalendar": {
       "type": "module",
       "development": "vuetify/components/VCalendar",
       "production": "vuetify/components/VCalendar",
@@ -1850,7 +1612,7 @@
         "vue"
       ]
     },
-    "vuetify/labs/components/VDateInput": {
+    "vuetify/components/VDateInput": {
       "type": "module",
       "development": "vuetify/components/VDateInput",
       "production": "vuetify/components/VDateInput",
@@ -1867,7 +1629,7 @@
         "vuetify/lib/components/VDateInput/VDateInput.css"
       ]
     },
-    "vuetify/labs/components/VFileUpload": {
+    "vuetify/components/VFileUpload": {
       "type": "module",
       "development": "vuetify/components/VFileUpload",
       "production": "vuetify/components/VFileUpload",
@@ -1884,7 +1646,7 @@
         "vuetify/lib/components/VFileUpload/VFileUpload.css"
       ]
     },
-    "vuetify/labs/components/VIconBtn": {
+    "vuetify/components/VIconBtn": {
       "type": "module",
       "development": "vuetify/components/VIconBtn",
       "production": "vuetify/components/VIconBtn",
@@ -1901,7 +1663,7 @@
         "vuetify/lib/components/VIconBtn/VIconBtn.css"
       ]
     },
-    "vuetify/labs/components/VPicker": {
+    "vuetify/components/VPicker": {
       "type": "module",
       "development": "vuetify/components/VPicker",
       "production": "vuetify/components/VPicker",
@@ -1918,7 +1680,7 @@
         "vuetify/lib/components/VPicker/VPicker.css"
       ]
     },
-    "vuetify/labs/components/VPullToRefresh": {
+    "vuetify/components/VPullToRefresh": {
       "type": "module",
       "development": "vuetify/components/VPullToRefresh",
       "production": "vuetify/components/VPullToRefresh",
@@ -1935,7 +1697,7 @@
         "vuetify/lib/components/VPullToRefresh/VPullToRefresh.css"
       ]
     },
-    "vuetify/labs/components/VStepperVertical": {
+    "vuetify/components/VStepperVertical": {
       "type": "module",
       "development": "vuetify/components/VStepperVertical",
       "production": "vuetify/components/VStepperVertical",
@@ -1946,7 +1708,7 @@
         "vue"
       ]
     },
-    "vuetify/labs/components/VTimePicker": {
+    "vuetify/components/VTimePicker": {
       "type": "module",
       "development": "vuetify/components/VTimePicker",
       "production": "vuetify/components/VTimePicker",
@@ -1963,7 +1725,7 @@
         "vuetify/lib/components/VTimePicker/VTimePicker.css"
       ]
     },
-    "vuetify/labs/components/VTreeview": {
+    "vuetify/components/VTreeview": {
       "type": "module",
       "development": "vuetify/components/VTreeview",
       "production": "vuetify/components/VTreeview",

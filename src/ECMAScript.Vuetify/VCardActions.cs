@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 卡片操作区域组件。
 /// Vuetify card actions section component.
 /// </summary>
-[ECMAScript("vuetify/components/VCardActions")]
+[ECMAScript("vuetify/components/VCard")]
 public sealed class VCardActions : ComponentBase, IVuetifyComponent
 {
     /// <summary>

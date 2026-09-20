@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify Labs 下拉刷新组件的编写代理。
 /// Vuetify labs pull-to-refresh authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/labs/components/VPullToRefresh")]
+[ECMAScript("vuetify/components/VPullToRefresh")]
 public sealed class VPullToRefresh : ComponentBase, IVuetifyComponent
 {
     /// <summary>

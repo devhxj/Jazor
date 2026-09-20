@@ -492,7 +492,8 @@ public sealed class ESGenerator : IIncrementalGenerator
             if (dependency.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
                 continue;
 
-            dependencies.Add(dependency);        }
+            dependencies.Add(dependency);
+        }
 
         return dependencies.OrderBy(static value => value, StringComparer.Ordinal).ToArray();
     }

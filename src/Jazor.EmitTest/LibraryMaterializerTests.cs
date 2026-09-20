@@ -1466,14 +1466,14 @@ public sealed class LibraryMaterializerTests
             ],
             outputRoot,
             BuildMode.Production,
-            ["vuetify/labs/components/VCalendar"]);
+            ["vuetify/components/VCalendar"]);
 
         CollectionAssert.AreEquivalent(
-            new[] { "vue", "vuetify/labs/components/VCalendar" },
+            new[] { "vue", "vuetify/components/VCalendar" },
             result.ImportPaths.Keys.ToArray());
-        // The logical binding key remains the labs entry, while Vuetify 4.2.1 exports
-        // VCalendar from its stable components subpath after the lab-to-stable move.
-        Assert.AreEqual("vuetify/components/VCalendar", result.ImportPaths["vuetify/labs/components/VCalendar"]);
+        // VCalendar 等 9 个组件已从 labs 迁到 stable；声明值跟随上游可解析路径，
+        // 因此键与目标同为 stable 入口（labs 路径在当前版本经 exports 无法解析）。
+        Assert.AreEqual("vuetify/components/VCalendar", result.ImportPaths["vuetify/components/VCalendar"]);
         Assert.IsEmpty(result.MaterializedPaths);
         Assert.IsEmpty(result.ExternalStyleModuleImports);
         Assert.IsEmpty(result.ExternalStylesheetPaths);

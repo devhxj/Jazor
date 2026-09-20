@@ -67,12 +67,14 @@ public sealed class EcmaScriptVueProxyTests
         AssertEcmaScriptImport(
             typeof(VuetifyComponents).GetProperty(nameof(VuetifyComponents.VBtn))!,
             "vuetify/components/VBtn");
+        // VCalendar 等 9 个组件已从 labs 迁到 stable：只有 stable 路径在当前版本可解析，
+        // 声明值必须跟随上游（labs 路径经 exports 通配会解析失败）。
         AssertEcmaScriptImport(
             typeof(VuetifyLabsComponents).GetProperty(nameof(VuetifyLabsComponents.VCalendar))!,
-            "vuetify/labs/components/VCalendar");
+            "vuetify/components/VCalendar");
         AssertEcmaScriptImport(
             typeof(VuetifyDirectives).GetProperty(nameof(VuetifyDirectives.Ripple))!,
-            "vuetify/directives/Ripple");
+            "vuetify/directives/ripple");
     }
 
     [TestMethod]

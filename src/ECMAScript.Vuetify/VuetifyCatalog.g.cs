@@ -79,27 +79,27 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VCard { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardActions"/>。</summary>
-    [ECMAScript("vuetify/components/VCardActions")]
+    [ECMAScript("vuetify/components/VCard")]
     [ECMAScriptName("VCardActions")]
     public extern static IVuetifyComponent VCardActions { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardItem"/>。</summary>
-    [ECMAScript("vuetify/components/VCardItem")]
+    [ECMAScript("vuetify/components/VCard")]
     [ECMAScriptName("VCardItem")]
     public extern static IVuetifyComponent VCardItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardSubtitle"/>。</summary>
-    [ECMAScript("vuetify/components/VCardSubtitle")]
+    [ECMAScript("vuetify/components/VCard")]
     [ECMAScriptName("VCardSubtitle")]
     public extern static IVuetifyComponent VCardSubtitle { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardText"/>。</summary>
-    [ECMAScript("vuetify/components/VCardText")]
+    [ECMAScript("vuetify/components/VCard")]
     [ECMAScriptName("VCardText")]
     public extern static IVuetifyComponent VCardText { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCardTitle"/>。</summary>
-    [ECMAScript("vuetify/components/VCardTitle")]
+    [ECMAScript("vuetify/components/VCard")]
     [ECMAScriptName("VCardTitle")]
     public extern static IVuetifyComponent VCardTitle { get; }
 
@@ -129,7 +129,7 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VCode { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCol"/>。</summary>
-    [ECMAScript("vuetify/components/VCol")]
+    [ECMAScript("vuetify/components/VGrid")]
     [ECMAScriptName("VCol")]
     public extern static IVuetifyComponent VCol { get; }
 
@@ -149,7 +149,7 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VConfirmEdit { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VContainer"/>。</summary>
-    [ECMAScript("vuetify/components/VContainer")]
+    [ECMAScript("vuetify/components/VGrid")]
     [ECMAScriptName("VContainer")]
     public extern static IVuetifyComponent VContainer { get; }
 
@@ -279,7 +279,7 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VList { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VListItem"/>。</summary>
-    [ECMAScript("vuetify/components/VListItem")]
+    [ECMAScript("vuetify/components/VList")]
     [ECMAScriptName("VListItem")]
     public extern static IVuetifyComponent VListItem { get; }
 
@@ -374,7 +374,7 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VResponsive { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VRow"/>。</summary>
-    [ECMAScript("vuetify/components/VRow")]
+    [ECMAScript("vuetify/components/VGrid")]
     [ECMAScriptName("VRow")]
     public extern static IVuetifyComponent VRow { get; }
 
@@ -424,7 +424,7 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VSnackbarQueue { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VSpacer"/>。</summary>
-    [ECMAScript("vuetify/components/VSpacer")]
+    [ECMAScript("vuetify/components/VGrid")]
     [ECMAScriptName("VSpacer")]
     public extern static IVuetifyComponent VSpacer { get; }
 
@@ -454,7 +454,7 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VSystemBar { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTab"/>。</summary>
-    [ECMAScript("vuetify/components/VTab")]
+    [ECMAScript("vuetify/components/VTabs")]
     [ECMAScriptName("VTab")]
     public extern static IVuetifyComponent VTab { get; }
 
@@ -469,12 +469,12 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VTabs { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTabsWindow"/>。</summary>
-    [ECMAScript("vuetify/components/VTabsWindow")]
+    [ECMAScript("vuetify/components/VTabs")]
     [ECMAScriptName("VTabsWindow")]
     public extern static IVuetifyComponent VTabsWindow { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTabsWindowItem"/>。</summary>
-    [ECMAScript("vuetify/components/VTabsWindowItem")]
+    [ECMAScript("vuetify/components/VTabs")]
     [ECMAScriptName("VTabsWindowItem")]
     public extern static IVuetifyComponent VTabsWindowItem { get; }
 
@@ -504,12 +504,12 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VToolbar { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VToolbarItems"/>。</summary>
-    [ECMAScript("vuetify/components/VToolbarItems")]
+    [ECMAScript("vuetify/components/VToolbar")]
     [ECMAScriptName("VToolbarItems")]
     public extern static IVuetifyComponent VToolbarItems { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VToolbarTitle"/>。</summary>
-    [ECMAScript("vuetify/components/VToolbarTitle")]
+    [ECMAScript("vuetify/components/VToolbar")]
     [ECMAScriptName("VToolbarTitle")]
     public extern static IVuetifyComponent VToolbarTitle { get; }
 
@@ -539,47 +539,47 @@ public static class VuetifyComponents
 public static class VuetifyLabsComponents
 {
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VCalendar"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VCalendar")]
+    [ECMAScript("vuetify/components/VCalendar")]
     [ECMAScriptName("VCalendar")]
     public extern static IVuetifyComponent VCalendar { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VDateInput"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VDateInput")]
+    [ECMAScript("vuetify/components/VDateInput")]
     [ECMAScriptName("VDateInput")]
     public extern static IVuetifyComponent VDateInput { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VFileUpload"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VFileUpload")]
+    [ECMAScript("vuetify/components/VFileUpload")]
     [ECMAScriptName("VFileUpload")]
     public extern static IVuetifyComponent VFileUpload { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VIconBtn"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VIconBtn")]
+    [ECMAScript("vuetify/components/VIconBtn")]
     [ECMAScriptName("VIconBtn")]
     public extern static IVuetifyComponent VIconBtn { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VPicker"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VPicker")]
+    [ECMAScript("vuetify/components/VPicker")]
     [ECMAScriptName("VPicker")]
     public extern static IVuetifyComponent VPicker { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VPullToRefresh"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VPullToRefresh")]
+    [ECMAScript("vuetify/components/VPullToRefresh")]
     [ECMAScriptName("VPullToRefresh")]
     public extern static IVuetifyComponent VPullToRefresh { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VStepperVertical"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VStepperVertical")]
+    [ECMAScript("vuetify/components/VStepperVertical")]
     [ECMAScriptName("VStepperVertical")]
     public extern static IVuetifyComponent VStepperVertical { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTimePicker"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VTimePicker")]
+    [ECMAScript("vuetify/components/VTimePicker")]
     [ECMAScriptName("VTimePicker")]
     public extern static IVuetifyComponent VTimePicker { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref="VTreeview"/>。</summary>
-    [ECMAScript("vuetify/labs/components/VTreeview")]
+    [ECMAScript("vuetify/components/VTreeview")]
     [ECMAScriptName("VTreeview")]
     public extern static IVuetifyComponent VTreeview { get; }
 }
