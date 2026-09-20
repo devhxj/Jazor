@@ -162,7 +162,7 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | D3 载体相对化 | 载体内部 import 全改相对 specifier；`clr/` 前缀纳入声明路径，使声明路径即项目路径 | `9715ec80`、`fba111da` |
 | B2 物化退役 | embedded carrier 按声明路径写入源码树；退役 `packages/` 投影、合成 `file:` 本地包与合成 `package-lock.json`；`LibraryPackageWriter` 收敛为根 `package.json` writer | `fba111da` |
 | D3 收尾 | carrier 逻辑键单列通道（`CarrierImportKeys`）：carrier 写出的 specifier 已是相对的，逻辑键无法从生成文本反推，供 `--library-manifest` 选择使用 | `907af628` |
-| D-2 绑定 specifier 收敛 | `[ECMAScript]` 改为上游公开入口；manifest 键收敛为同一 specifier 并按「模块 × 导出名」归并；生成器 `--check` 门禁改为按上游 `exports` 校验可解析性 | `b278bb57`、待提交 |
+| D-2 绑定 specifier 收敛 | `[ECMAScript]` 改为上游公开入口；manifest 键收敛为同一 specifier 并按「模块 × 导出名」归并；生成器 `--check` 门禁改为按上游 `exports` 校验可解析性 | `b278bb57`、`d7f4327a` |
 
 当前测试基线：
 
@@ -170,8 +170,9 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | --- | --- |
 | `Jazor.CompilerTest` | 10714 / 10714（全绿；D-2 前为 10713 / 10714） |
 | `Jazor.RazorVue.Sg.Test` | 5010 / 5010（全绿；D-2 前为 5004 / 5010） |
+| `Jazor.EmitTest` | 224 / 224（全绿；D3/B2 切片开始时为 9 个失败） |
 | `Jazor.CLR.Test` | 4963 / 5089（126 个既有失败；改动前基线为 127） |
-| `Jazor.EmitTest` | 低并发/串行运行；全并发下 Roslyn 编译 OOM |
+| 生成器门禁 | `vuetify --check`、`elementplus --check`、`tdesign components --check` 全部通过 |
 
 仍未开始：B3（NetPack/Toolchain 单根收敛）、C（NetPack 与 SSR）、E（交付证据与 CHANGELOG）。
 
