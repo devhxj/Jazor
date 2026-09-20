@@ -23,19 +23,19 @@
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 
-这些包按需显式引用。浏览器模块、样式、许可证和其他资源由 package metadata、上游 npm/JSR package identity 与明确声明的 embedded carrier 共同管理；最终宿主的 Emit 物化所选闭包。应用通过 package metadata 管理资源来源。
+这些包按需显式引用。绑定库声明 npm/JSR package identity 与标准 ESM specifier；最终宿主的 Emit 将依赖写入根 `package.json`，Deno 恢复 `node_modules`，NetPack 从同一 `jazor/` 项目解析模块、样式和其他资源。
 
-`ECMAScript.VueDataUi` 以 71 个组件 binding 对应上游 `vue-data-ui/vue-ui-*` entry，并声明上游 package 的全局 stylesheet edge。`Jazor.Emit` 从实际 generated import 沿 manifest 的显式 module/package edge 解析 package graph；图表模块和样式由上游 package exports 参与最终 tree shaking。PDF export runtime 通过同一 package graph 解析 `jspdf`。
+`ECMAScript.VueDataUi` 以 71 个组件 binding 对应上游 `vue-data-ui/vue-ui-*` entry，并为需要全局样式的入口声明标准 stylesheet import。图表模块、样式和 PDF export 的 `jspdf` 依赖由恢复后的 package 与 NetPack ESM 图解析。
 
-`ECMAScript.VuIcons` 同时提供静态与动态路径。已知图标应直接使用生成的 `VuUser` 等 component，其 binding 指向独立 `vu-icons/VuUser` entry，Emit 仅物化该 SVG module、共享 runtime 和样式；运行时名称选择使用 `VuIcon` 与 `VuIconName`，它需要完整 `icons-data.js` catalog 才能解析任意名称。这是运行时动态性的必要载荷，独立于静态路径而存在。
+`ECMAScript.VuIcons` 同时提供静态与动态路径。已知图标直接使用生成的 `VuUser` 等 component，其 binding 指向独立 `vu-icons/VuUser` entry；运行时名称选择使用 `VuIcon` 与 `VuIconName`，并由正式动态入口引入完整 `icons-data.js` catalog。
 
 ## Blazor framework 绑定
 
 | 包/程序集 | 用途 | 交付边界 |
 | --- | --- | --- |
-| `Jazor.CLR` | Blazor framework CLR 类型的生成 module/doc、`[Jazor]` mapping、carrier 与 runtime helper | runtime JavaScript 由 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` 核心 carrier 提供；唯一 CLR mapping owner |
+| `Jazor.CLR` | Blazor framework CLR 类型的生成 module/doc、`[Jazor]` mapping、carrier 与 runtime helper | runtime JavaScript 由 `ECMAScript` 的 `src/ECMAScript/clr/**` 源码提供；唯一 CLR mapping owner |
 
-`Jazor.CLR` 面向 Blazor framework CLR mapping 与 runtime helper；所有进入 runtime-sensitive lowering 的 Blazor 类型都先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成 module/doc，再由 `Jazor.CLR` 完善。核心 runtime JavaScript 作为 `ECMAScript` JS resource library 的 manifest 与 `src/ECMAScript/clr/**` carrier 交付；`Jazor.Vue/dist/**` 作为独立 Vue runtime bridge 交付。Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责。
+`Jazor.CLR` 面向 Blazor framework CLR mapping 与 runtime helper；所有进入 runtime-sensitive lowering 的 Blazor 类型都先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成 module/doc，再由 `Jazor.CLR` 完善。核心 runtime JavaScript 从 `src/ECMAScript/clr/**` 写入 `jazor/clr/**`；其他 `ECMAScriptModule` 生成结果按各自模块路径写入项目。Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责。
 
 ## 名称与作者契约
 

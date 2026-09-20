@@ -25,7 +25,7 @@
 | P0-2 | 让边界明确呈现在作者源码中。继续完善 compatibility analyzer、final Compilation diagnostics、HelpLink 和最小替代路径，保证诊断路径维持完整 module、catalog 和 bundle。 | `Jazor.RazorVue`、指南与 Authoring sample | 正常写法保持 Razor SDK 诊断语义；缺少支持条件的形状具有稳定诊断 ID、源位置和替代说明；源码项目与 package consumer 表现一致。 |
 | P0-3 | 巩固已声明 framework primitive 与宿主交付的真实证据。覆盖 Debug、Release、HMR、PathBase、SSR/hydration 的一致性，以及新 binding 或 framework slice 的独立消费者回归。 | `Jazor.Emit`、`Jazor.AspNetCore`、`Jazor.CLR`、RazorVue | 产物闭包、source map、浏览器交互和适用 SSR 行为可复现；失败显式传播，不以静默 CSR 或旧产物回退。 |
 | P0-4 | 先测量，再优化 direct render 与 CLR runtime。性能候选必须先建立固定输入、warm-up、多轮测量、产物体积和行为基线，再决定是否实施。 | `Jazor.RazorVue`、`Jazor.Compiler`、`Jazor.CLR` | 改动前记录阈值和基线；优化在不改变求值顺序、值语义、导入稳定性和 source map 的前提下达到阈值，否则不实施。 |
-| P0-5 | 将绑定资源迁移到标准 package project：Emit 生成 `jazor/package.json` 并调用 DenoHost runtime 恢复、冻结 `node_modules`，NetPack/SSR 复用同一依赖图，支持 npm、JSR 和 embedded `mjs` 的细粒度 JS/CSS tree shaking。 | `Jazor.Emit`、DenoHost、NetPack 集成层、各 `ECMAScript.*` binding | 通过[绑定包标准化与细粒度 tree shaking 迁移计划](./npm-jsr-binding-tree-shaking-plan.md)的 restore、offline/frozen lock、Web bundle、SSR、CSS/worker/static 和源码/NuGet consumer 矩阵；迁移阶段持续维护兼容 carrier。 |
+| P0-5 | 将 `jazor/` 固定为标准前端项目：ECMAScript MJS 作为项目源码，binding 以 npm/JSR identity 和标准 ESM specifier 接入；Emit 在 MSBuild 中生成入口与 `package.json`，Deno 2.9.7 恢复依赖，NetPack 与 DenoHost 直接消费同一项目。 | `Jazor.Emit`、NetPack 集成层、DenoHost、各 `ECMAScript.*` binding | 通过[npm/JSR 绑定与标准 Jazor 项目计划](./npm-jsr-binding-tree-shaking-plan.md)的标准项目、frozen lock、细粒度 JS/CSS tree shaking、组件内部依赖、SSR 及源码/NuGet consumer 验收矩阵。 |
 
 ## P1：需要先确立协议的能力
 

@@ -2,7 +2,7 @@
 
 > 面向：使用 Jazor 核心平台、当前 Razor-to-Vue 集成或可选生态绑定的应用开发者。
 >
-> 说明：类库资源由 package metadata（npm/JSR identity 或明确声明的 embedded carrier）与程序集内的 `Jazor.Generated.ModuleCatalog` 组成。最终宿主在构建后由 MSBuild 调用 `Jazor.Emit`，一次性生成标准 `jazor/` 项目、恢复依赖并物化选中的闭包到 `JazorDir`。
+> 说明：ECMAScript 自有 MJS 与 `Jazor.Generated.ModuleCatalog` 提供项目源码，`ECMAScript.*` binding 提供 npm/JSR identity 与标准 ESM specifier。最终宿主在 MSBuild 中调用 `Jazor.Emit`，生成标准 `jazor/` 项目并恢复依赖。
 
 ## 前置条件
 
@@ -10,7 +10,7 @@
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前项目目标为 `net11.0`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
-- 普通 ECMAScript 模块库通过 NuGet 包与 `Jazor.Emit` 管理资源闭包。
+- ECMAScript 源码库通过 NuGet carrier 写入项目源码，绑定库通过 npm/JSR dependency 接入项目。
 
 ## 选择包
 
@@ -69,9 +69,9 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ## 配置产物输出
 
-输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；纯 Jazor 类库在程序集内携带 `ModuleCatalog`，JS resource library 通过传递的 manifest locator 提供 package metadata。最终宿主的 MSBuild target 在 `Build` 后调用 Emit，生成 `jazor/package.json`，由 DenoHost 恢复 `node_modules` 并写出 `deno.lock`，再将浏览器/SSR profile 写入 `JazorDir`。
+输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；源码类库通过 `ModuleCatalog` 或源码 locator 传递模块，binding 通过 metadata 传递 npm/JSR identity 与入口。最终宿主的 MSBuild target 调用 Emit 写出源码、入口和 `package.json`，再使用 Deno 2.9.7 恢复 `node_modules` 并生成或验证 `deno.lock`。
 
-多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具，最终宿主直接引用并配置 Emit；只消费上游类库的中间项目不因资源传递增加 `Jazor`/`Jazor.Vue`。工具资产应在类库包中使用 `PrivateAssets="all"` 隔离，生成模块随 `ModuleCatalog` 传播，ESM/CSS 随 manifest 的显式依赖传播。完整规则见[类库产物与引用契约](../02-architecture/library-artifact-contract.md)。
+多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具��最终宿主直接引用并配置 Emit；工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
 
 ```xml
 <PropertyGroup>
@@ -84,9 +84,9 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 | --- | --- | --- |
 | `JazorMode` | `none` | `none` 不输出；`debug` 直接物化模块、source map、manifest 与 import map；`release` 生成生产 bundle 和所需资源 |
 | `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；Emit 通过 staging 校验后原子替换该目录 |
-| `JazorSSR` | `false` | 启用受支持 SSR 时在同一依赖闭包下额外物化 SSR runner、Vue 和 server-renderer 所需资源 |
+| `JazorSSR` | `false` | 启用受支持 SSR 时生成 SSR 入口，并从同一项目根使用已恢复的依赖 |
 
-`debug` 与 `release` 是互斥输出模式。`release` 通过内置 Netpack 路径完成浏览器打包；资源由 package manifest 与 Emit 统一管理。
+`debug` 与 `release` 是互斥输出模式。`release` 通过内置 NetPack 路径从 `jazor/` 项目入口完成浏览器打包。
 
 ## 一次性切换边界
 
@@ -172,5 +172,5 @@ ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `J
 - 核心语义与支持边界：[编译器](../02-architecture/compiler.md)
 - Razor 应用方向：[Razor-to-Vue](../02-architecture/razor-to-vue.md)
 - 产物归属：[产物管线](../02-architecture/artifact-pipeline.md)
-- 多项目类库、直接引用与资源传播：[类库产物与引用契约](../02-architecture/library-artifact-contract.md)
+- 多项目类库、直接引用与源码/绑定传播：[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)
 - 管理壳库：[管理壳](../02-architecture/admin-shell.md)

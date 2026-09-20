@@ -1,102 +1,138 @@
 # 产物管线
 
-> 适用范围：`Jazor.Compiler` 的生成 carrier、JS resource package、`Jazor.Emit` 物化、source map、Netpack bundle、SSR 和 HMR。类库 carrier 的稳定定义由本文和[类库资源与引用契约](./library-artifact-contract.md)共同给出；交付状态见[当前状态](../04-roadmap/current-status.md)。
+> 适用范围：C# 编译模块、ECMAScript 源码、npm/JSR 绑定、Jazor.Emit、Deno、NetPack、SSR 与 HMR。标准项目契约见[类库与标准前端项目契约](./library-artifact-contract.md)。
 
-## 核心边界
+## 一个项目根
 
-Jazor 的类库资源只有两种输入：
+最终宿主的前端产物统一位于 `jazor/`：
 
-| 输入 | 物理形态 | 语义 |
-| --- | --- | --- |
-| JS resource library | package metadata（`manifest.json`/`inventory.json`） | npm/JSR package identity、入口、exports、sideEffects、CSS/worker/static 边；C# 只做 binding/authoring contract |
-| 纯 Jazor library | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | C# 经 `Jazor.Compiler` lowering 后携带的生成模块源码和依赖 |
+```text
+ModuleCatalog + ECMAScript 源码 + binding declarations
+                         |
+                         v
+                     Jazor.Emit
+                         |
+                         v
+             jazor/（源码、入口、package.json）
+                         |
+             +-----------+-----------+
+             |                       |
+             v                       v
+       Deno restore/check       NetPack / DenoHost
+```
 
-二者并列，都是 Emit 的一等输入。`ModuleCatalog` 承载生成 Jazor 模块，package metadata 承载外部包身份和明确声明的 embedded carrier。Emit 在内存中归一化二者，得到统一的 package graph；该记录归属本次物化过程。
+Emit 是 MSBuild 阶段的项目适配器。它把 Jazor carrier 转换为标准项目文件，再调用标准工具。项目形成后，包解析、条件选择、模块可达性和资源裁剪遵循 Deno、npm/JSR package 与 NetPack 的规则。
 
-`Jazor.Emit` 不参与 C# 或 Razor 语义降低。它只负责读取两种输入、验证清单、解析显式依赖闭包、执行冲突检查，并物化选定结果，产出最终 JavaScript 输出。
+## 输入与所有权
 
-## 职责分层
+| 输入 | 产生方 | Emit 的处理 | 项目结果 |
+| --- | --- | --- | --- |
+| `Jazor.Generated.ModuleCatalog` | `Jazor.Compiler` / RazorVue | 读取生成模块、Entries、source map、相对依赖与 package imports | 生成的 `.mjs`、`.map` 与相对 import |
+| ECMAScript 源码 carrier | ECMAScript 源码库 | 按声明路径写入源码树 | `clr/**` 与其他项目源码 |
+| binding declaration | `ECMAScript.*` binding | 收集 dependency key、版本、integrity、specifier 与显式样式入口 | 根 `package.json` 的 `dependencies` 与源码 bare import |
+| 应用本地资源 | 最终宿主 / `ModuleCatalog` | 按源码 import 或 URL 的目标路径写出 | 项目内 CSS、worker、字体、图片和 wasm |
 
-| 输出或阶段 | 所属组件 | 说明 |
-| --- | --- | --- |
-| Roslyn `IOperation`、ESTree、模块文本 | `Jazor.Compiler` / `SemanticWalker` / `AstConverter` | 负责 C# 语义、导入收集、source origin 和确定性模块内容 |
-| `Jazor.Generated.ModuleCatalog` | `Jazor.Compiler`、RazorVue generator | 纯 Jazor 编译结果的程序集内 carrier；最终宿主负责输出目录 |
-| package metadata | 各 JS resource library | 外部 npm/JSR identity，或明确声明的 embedded JavaScript 及其资源；不经 C# lowering |
-| 资源读取、归一化、依赖闭包和冲突校验 | `Jazor.Emit` | 只读取两种 carrier，使用同一套规则 |
-| `.mjs/.js/.map/.css`、输出 manifest/import map | `Jazor.Emit` | 已验证资源闭包的物化结果 |
-| Release bundle | `Jazor.Emit` + Netpack | 消费已选闭包；bundle 维持资源依赖语义 |
-| SSR 模块图和 runner | `Jazor.Emit` + ASP.NET Core/DenoHost | 使用同一 carrier 闭包，额外选择显式 SSR 入口 |
-| HMR snapshot/update | `Jazor.Emit` + Dev integration | 输出 profile 的更新数据，归属宿主输出层 |
+现有 metadata 中的 `embedded-mjs` 对应 ECMAScript 源码 carrier，写入项目源码树。npm/JSR binding 的运行时代码由依赖恢复提供。`manifest.json`、inventory 和 source map 保存声明与诊断证据，项目运行时解析使用标准 `package.json` 和源码 import。
 
 ## 固定数据流
 
+1. **收集**：最终宿主提供根程序集、参与程序集、应用 Entries、`ModuleCatalog`、源码 carrier 和 binding declarations。
+2. **准备 staging**：Emit 在输出同卷创建 staging 项目根，保持与最终项目相同的路径结构并复用一致的锁文件。
+3. **写源码**：写入 `clr/**`、其他 ECMAScript 源码、编译生成模块、source map 与本地资源。
+4. **归一化 import**：项目内模块按最终文件位置写 `./` 或 `../`；npm/JSR import 保留绑定声明中的 bare specifier。
+5. **生成入口**：生成 `entry.mjs`；存在 SSR 时生成 `ssr-entry.mjs`。每个入口只连接应用实际 roots。
+6. **生成项目声明**：合并实际 package imports，写根 `package.json` 的标准字段、`dependencies` 和 `exports`。
+7. **恢复与检查**：调用 Deno 2.9.7 生成或验证 `deno.lock` 和 `node_modules`，再以 frozen lock 检查可见入口。
+8. **消费与提交**：Release 交给 NetPack 构建 `dist/`；SSR 交给 DenoHost 使用同一项目；所有检查通过后原子替换目标 `jazor/`。
+
+## 源码与入口路径
+
+源码 carrier 的路径在项目内保持稳定：
+
 ```text
-Jazor.Generated.ModuleCatalog --------┐
-                                      ├─ carrier reader
-package metadata ---------------------┘
-                                      v
-                         in-memory resource records
-                                      v
-                        roots + explicit dependency closure
-                                      v
-                            validate / dedupe / conflict
-                                      v
-                           materialize selected profile
+src/ECMAScript/clr/**         -> jazor/clr/**
+ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 ```
 
-### 发现入口
+`ModuleCatalog` 中的相对依赖在写出时根据 importer 的最终路径计算。package import 直接由 Deno 恢复的 `node_modules` 解析。入口导出保持 C# binding 声明的 named/default 形式。
 
-- 程序集闭包只发现精确名称 `Jazor.Generated.ModuleCatalog`。生成模块、source map、HMR metadata 和附属资源必须由同一入口关联读取。
-- JS resource library 由 MSBuild/NuGet 传递的 manifest locator 定位；locator 只是文件位置，不携带 analyzer、generator 或 Emit 资格。
-- 发现过程不读取 provider 专名 catalog，不按程序集名、CLR 类型名、`System/` 前缀或目录内容推断资源，也不从已物化输出反向发现 producer。
-- 同一输入重复发现时按稳定 identity 去重；内容、路径、owner、类型、hash 或依赖不一致时，在写出前返回冲突。
+应用可以拥有浏览器、SSR 和 HMR 等可见入口；这些入口共享一棵项目源码与 package 依赖图。Debug 输出的 `jazor-manifest.json` 和 source map 用于诊断与开发服务，package resolution 始终读取根 `package.json`。
 
-### 资源条目和依赖
+## Deno 项目恢复
 
-JS resource manifest 使用固定 `schemaVersion` 和 `libraryId/version`。资源条目 `type` 只描述资源语义：`module`、`source-map`、`style`、`license`、`static`。`imports[*]` 是 module 入口；相对模块依赖与 package 依赖分开记录；`requires` 只表示 library 版本约束。
+Deno 版本固定为 2.9.7，由 `DenoHost.Runtime` 包提供可执行文件。Emit 根据根项目的 dependency identity 选择标准命令。
 
-纯 Jazor `ModuleCatalog` 的 module 记录至少包含 `AssemblyName`、`TypeName`、`Id`、`RelativePath`、`Content`、`Hash`、相对依赖和 package imports。Emit 使用这些声明建立闭包，不解析 JavaScript 文本猜依赖。
+首次生成或依赖 identity 变化：
 
-闭包规则：
+```text
+deno install --package-json --node-modules-dir=auto --frozen=false
+```
 
-1. roots 来自应用自身生成模块、显式选择的 package specifier、SSR/HMR 入口和用户声明的静态入口。纯 consumer host 通过显式提供的 `ModuleCatalog` modules 声明 consumer roots；manifest locator 提供资源位置。
-2. ModuleCatalog 的相对 dependency 指向同一生成 owner 的 module；package import 指向 JS resource manifest 的唯一 entry。
-3. manifest entry 按当前 profile 选择 development/production 路径，沿显式 module/package dependencies 和 `requires` 继续解析。
-4. 闭包之外的 module、map、style、license、static 文件不物化；引用程序集只贡献其声明的 roots 和 package metadata。
-5. 缺失入口/文件/依赖、版本不满足、路径越界、错误 hash、重复 identity 或输出路径冲突，都在目标目录写入前失败。
+锁文件与 `package.json` 对齐：
 
-## 输出 profile
+```text
+deno ci
+```
 
-| Profile | 输入选择 | 输出 |
-| --- | --- | --- |
-| `browser-debug` | 应用 roots + development resource entries | 独立 module、source map、输出 manifest/import map |
-| `browser-release` | 应用 roots + production entries | 生产模块和 Netpack bundle/source map |
-| `ssr-debug` | browser roots + 显式 SSR runner/Vue server entries | 可诊断 SSR module graph、runner、SSR import map |
-| `ssr-release` | SSR roots + production entries | 发布 SSR graph、runner、hydration 所需资源 |
-| `hmr-debug` | 与 browser-debug 同一次收集的 roots/closure | 完整当前 module snapshot 和 HMR update metadata |
+恢复后的入口检查：
 
-所有 profile 共享同一 carrier 发现、identity、依赖和冲突规则；profile 选择入口并形成最终投影。`jazor-manifest.json`、browser/SSR import map、SSR 文件和 HMR envelope 归属本次构建的输出层。
+```text
+deno check --node-modules-dir=manual --no-remote --frozen-lockfile entry.mjs
+```
 
-## 物化和失败原子性
+启用 SSR 时对 `ssr-entry.mjs` 追加相同的 frozen check。`deno.lock` 是 Deno 的冻结依据；完整 npm `package-lock.json` 作为生态兼容输入随项目保留，并在生成时验证根依赖一致。
 
-Emit 先在目标同卷 staging 中写出完整 profile，再验证每个文件的字节、hash、相对路径和 owner。成功后原子替换最终输出目录；失败、取消、并发冲突或进程中断时保留上一份有效输出。
+## 标准消费者
 
-Debug、Release、SSR 和 HMR 共用发现和闭包规则；HMR snapshot、SSR worker 状态和 bundle 归属宿主输出层。类库 carrier、资源 `type` 和依赖闭包由输入契约确定，输出 manifest 描述选中的资源闭包。
+### NetPack
 
-## 包和项目引用
+NetPack 接收项目根、可见 entry、构建模式与输出目录，并沿普通 ESM 图读取：
 
-- 定义纯 Jazor module 的项目直接引用 Jazor，生成自己的 `ModuleCatalog`；中间类库传递上游 catalog。
-- JS resource package 的 manifest locator 和 package dependency 可以传递；外部 npm/JSR runtime 由 package manager 恢复，embedded-mjs runtime 由明确声明的本地 carrier 提供，最终宿主按闭包一次物化。
-- `Jazor`、`Jazor.Vue`、Analyzer、Generator 和 Emit 是工具资格，谁直接使用谁直接引用；普通程序集引用不自动传递工具资格。
-- NuGet 的 target 承载明确的工具边界；Jazor 的 `build/Jazor.targets` 负责直接 tooling，`buildTransitive/Jazor.Resources.targets` 传递 manifest locator。`buildTransitive/Jazor.Vue.targets` 始终传递 manifest locator，并在当前项目直接声明 `PackageReference Include="Jazor.Vue"` 时注册 RazorVue analyzer。analyzer 依赖位于 `tools/net11.0/analyzers/`，由直接引用的 target 注册给 Roslyn。
-- 定义 Jazor module 或 RazorVue 组件的类库以 `PrivateAssets="all"` 直接引用对应工具包；最终 `Exe`/`WinExe` 宿主直接引用 `Jazor` 后才获得 Emit。
-- 源码 ProjectReference 和 NuGet PackageReference 必须产生相同的 carrier 发现、版本选择、依赖闭包、去重、冲突诊断和输出字节。
+```text
+entry.mjs
+  -> 项目源码
+  -> npm/JSR 公开入口
+  -> 包内实现与共享 helper
+  -> peer / optional dependency
+  -> side-effect module
+  -> CSS / worker / static asset
+```
 
-## 输入约束
+NetPack 使用上游 `package.json` 的 `exports`、conditions 和 `sideEffects`。公开子路径与 named export 提供细粒度入口；组件内部 import、共享模块和必要副作用在可达图中保持，未到达的导出与资源由构建器裁剪。
 
-- 类库资源以 `ModuleCatalog` 或 package metadata 进入 Emit；provider、descriptor 与 catalog 专名属于各自的 metadata owner。
-- `ArtifactCatalog`、`RuntimeProviderCatalog` 和 source-map catalog 的数据分别归属 `ModuleCatalog`、package metadata 或纯编译期 metadata。
-- 发现以声明的 carrier、identity 和显式依赖为依据；Emit 以所选闭包进行物化。
-- 中间类库传递资源 carrier；最终宿主执行 Emit 并物化输出。
+### DenoHost
 
-一次性实施过程已归入历史记录；当前变更应遵守本文的固定数据流、失败原子性和验证边界。
+DenoHost 以 `jazor/` 为工作目录，加载 `ssr-entry.mjs`，复用 Emit 已恢复的 `node_modules` 与 `deno.lock`。SSR 与浏览器构建使用同一 package identity、源码路径和条件选择。
+
+### HMR
+
+HMR 读取当前项目的源码入口、source map 和变更文件。更新消息引用项目内稳定路径；依赖恢复和包解析继续由同一 `package.json`、`node_modules` 与 lock 提供。
+
+## 事务与确定性
+
+Emit 在同卷 staging 中完成写入、恢复、检查和构建。成功后以目录替换提交；发生失败、取消或构建错误时保留上一份完整 `jazor/`。相同源码、SDK、Deno、NetPack、依赖 identity 和构建选项产生稳定的源码路径、入口、项目声明、lock 与 bundle 元数据。
+
+项目内重复模块按稳定路径和内容 hash 去重。dependency key、版本或入口冲突在 Deno restore 前报告；缺失源码、无法解析的相对 import、Deno frozen check 失败或 NetPack 失败会阻止提交。
+
+## 配置与交付
+
+最终宿主配置 `JazorMode` 与 `JazorDir`，Emit 在 MSBuild 中运行：
+
+```xml
+<PropertyGroup>
+  <JazorMode>debug</JazorMode>
+  <JazorDir>$(MSBuildProjectDirectory)/jazor/</JazorDir>
+</PropertyGroup>
+```
+
+- `debug`：保留项目源码、source map、诊断 manifest 和 import map，供开发与 HMR 使用。
+- `release`：从同一项目根调用 NetPack，输出 `dist/` 与 bundle metafile。
+- `JazorSSR=true`：在同一次项目生成与恢复中增加 `ssr-entry.mjs`，供 DenoHost 直接消费。
+
+## 验收证据
+
+- 生成的 `jazor/` 可由 Deno 2.9.7 在 `--no-remote` 与 frozen lock 下检查。
+- `package.json` 的每个 dependency key 都对应一个精确 binding identity，源码中的每个 bare import 都能解析。
+- NetPack metafile 展示入口可达的 JS、CSS、worker 和 static 资源；组件内部依赖保持完整，共享模块只出现一个实例。
+- DenoHost SSR 使用同一 `node_modules` 与 `deno.lock`，浏览器与 SSR 的 package identity 一致。
+- 重复 MSBuild 生成得到稳定项目文件、路径、source map 和 bundle 输出。

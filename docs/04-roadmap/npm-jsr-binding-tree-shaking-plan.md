@@ -1,71 +1,68 @@
-# 绑定库 npm/JSR 与标准项目 Tree Shaking 计划
+# npm/JSR 绑定与标准 Jazor 项目计划
 
-> 状态：进行中（P0-5）。本计划以标准前端项目为运行、检查和打包单位，定义绑定库来源、Emit 适配边界和细粒度 tree shaking 验收方式。
+> 状态：进行中（P0-5）。目标是让 `jazor/` 成为 Deno 2.9.7、NetPack 和 DenoHost 可以直接消费的标准前端项目，并在标准 ESM 图上完成细粒度 tree shaking。
 
-## 设计原则
+## 设计结论
 
-1. `jazor/` 是 Emit 生成的普通前端项目根。Deno、NetPack 和 SSR 直接消费同一个项目根。
-2. Emit 负责把 Jazor 模块产物和绑定入口接入标准项目；包解析、exports、条件、sideEffects、peer 依赖和 tree shaking 由 Deno、NetPack 与上游 package 机制完成。
-3. 绑定库的运行时来源为 npm 和 JSR。绑定库维护强类型 C# API、入口映射、版本、integrity、资源 metadata 和上游证据。
-4. `embedded-mjs` 表示源码库 carrier。ECMAScript 的 `src/ECMAScript/clr/**` 是源码，Emit 将实际使用的文件写入 `jazor/clr/**`；Emit 生成的其他 ECMAScript 模块写入项目源码目录。
-5. 运行时项目只保留标准源码、入口、package.json、锁文件和 node_modules；Emit 适配层保持短小、稳定、可审计。
+1. `jazor/` 是唯一项目根。源码、入口、`package.json`、锁文件、`node_modules` 和构建输出都在该目录。
+2. ECMAScript 自有 MJS 是项目源码。`src/ECMAScript/clr/**` 写入 `jazor/clr/**`，其他 `ECMAScriptModule` 按声明路径写入项目。
+3. ECMAScript 绑定库只绑定 npm 或 JSR 包，交付强类型 C# API、精确 package identity 和标准 ESM specifier。
+4. Emit 在 MSBuild 阶段生成并恢复项目。恢复是项目生成的一部分，与 SSR 是否启用无关。
+5. Deno 负责依赖恢复、`node_modules`、`deno.lock` 和入口检查；NetPack 负责浏览器构建；DenoHost 负责 SSR。三者直接使用同一项目。
 
-## 目标结果
-
-- 一个组件或函数作为入口时，NetPack 从真实 ESM 图裁剪到可达导出、组件、方法和资源。
-- 组件内部依赖、共享 helper、Vue peer/optional 依赖、条件导出和初始化模块按上游 package 语义保留。
-- CSS、worker、字体、图片、wasm 和 static 文件由入口资源边进入项目和 release 输出。
-- Deno 2.9.7 在 Emit 的 MSBuild 阶段恢复 `node_modules` 并生成 `deno.lock`；SSR 与 NetPack 复用该结果。
-- 相同输入、SDK、Deno 和 NetPack 版本产生稳定的项目文件、lock、入口、bundle、CSS 清单和 source map。
-
-## 来源模型
-
-### 绑定库：npm 与 JSR
-
-绑定库是 `ECMAScript.*` 中为外部 JavaScript 包提供强类型 C# API 的库。运行时来源和项目接入方式如下：
-
-| 来源 | 绑定声明 | Emit 接入 | 标准工具消费 |
-| --- | --- | --- | --- |
-| npm | package name、精确版本、integrity、exports 子路径、named/default export、peer/optional 约束和资源边 | 写入 `jazor/package.json` 的精确 dependency，保留 authored specifier | Deno 恢复上游 package，NetPack 按 package.json 解析 |
-| JSR | jsr specifier、精确版本或 integrity、入口/export、条件和资源边 | 写入 Deno 可恢复的 dependency，记录 authored specifier 与 canonical identity 的映射 | Deno 与 NetPack 使用同一 `node_modules` 和同一入口 |
-
-绑定 package 的 manifest、inventory、许可证和 fingerprint 描述 contract。上游 package 的源码、exports、sideEffects 和内部依赖由恢复结果提供。
-
-### 源码库：embedded-mjs
-
-`embedded-mjs` 是源码库交付方式。源码 metadata 记录 carrier 路径、模块 hash、相对依赖、生成目标和资源边。
-
-```text
-src/ECMAScript/clr/**        -> jazor/clr/**
-Emit 生成的 ECMAScript 模块 -> jazor/<声明的源码目录>/**
-```
-
-源码模块使用项目内相对 import，并可使用 npm/JSR bare package import。源码 carrier 与绑定 package 在同一项目图中通过标准 ESM 语义连接。
-
-## 标准项目契约
+## 标准项目结果
 
 ```text
 jazor/
-  package.json          # Emit 生成：项目类型、依赖、入口和 exports
-  package-lock.json     # 完整时作为 npm 生态兼容输入保留
-  deno.lock             # Deno 2.9.7 restore 生成的冻结锁
-  node_modules/         # Deno restore 恢复，SSR 与 NetPack 共用
-  entry.mjs             # Emit 生成的可见应用入口
-  clr/                  # ECMAScript 源码 carrier
-  <generated-sources>/  # Emit 生成的其他 ECMAScript 模块
-  <assets>/             # 由资源边选中的 CSS、worker 和 static 文件
+  package.json          # Emit 生成：精确依赖与公开入口
+  package-lock.json     # 存在完整 npm lock 时保留
+  deno.lock             # Deno 2.9.7 生成并冻结
+  node_modules/         # Deno 恢复，NetPack 与 DenoHost 共用
+  entry.mjs             # 浏览器入口
+  ssr-entry.mjs         # 启用 SSR 时生成
+  clr/                  # ECMAScript CLR 源码
+  <module-paths>/       # 其他生成源码与 source map
+  <local-assets>/       # 项目源码直接引用的本地资源
+  dist/                 # NetPack Release 输出
 ```
 
-根 `package.json` 使用标准字段：`private`、`type: module`、稳定项目名称、npm/JSR `dependencies`、`main` 或 `exports["."]` 指向 `./entry.mjs`。启用 SSR 时增加显式 SSR entry。项目构建诊断保留在现有应用 manifest 和 Emit 输出证据中，运行时解析依赖标准 package 字段。
+根 `package.json` 使用标准字段：`name`、`private`、`type`、`main`、`exports` 和 `dependencies`。`exports["."]` 指向 `entry.mjs`；存在 SSR 入口时增加 `exports["./ssr"]`。
 
-`package-lock.json` 作为 npm 生态兼容输入，在能够表达完整 npm 图时保留或生成；`deno.lock` 由 Deno restore 生成并作为冻结依据。Deno 配置由 Deno 侧按项目需要管理。
+`package-lock.json` 只接入 npm 生成且与当前 `package.json` 一致的完整 lock。`deno.lock` 由 Deno 生成，是 Deno check、SSR 和后续确定性恢复的冻结依据。
+
+## 两类输入
+
+### ECMAScript 源码
+
+ECMAScript 自有 MJS 进入项目后就是普通源码：
+
+```text
+src/ECMAScript/clr/**        -> jazor/clr/**
+ECMAScriptModule 生成结果    -> jazor/<module-path>/**
+```
+
+源码模块使用相对 import。source map 以及源码直接引用的 CSS、worker、字体、图片和 wasm 按最终相对路径写入项目。
+
+现有 metadata 中的 `embedded-mjs` 对应这种源码 carrier。目标模型将它归入 ECMAScript 源码输入。
+
+### ECMAScript 绑定
+
+绑定库的构建声明保持精简：
+
+- C# 强类型 API；
+- `[ECMAScript]` 上的标准 ESM specifier、导入形式和 export name；
+- npm/JSR dependency key、精确版本和可用的 integrity；
+- 上游快照、许可证与 inventory；
+- 上游要求调用方显式导入时，与绑定入口关联的 CSS side-effect specifier。
+
+绑定包交付 package identity 与入口声明，运行时代码由 npm/JSR 恢复。恢复后的上游 `package.json`、`exports`、conditions、`sideEffects`、dependencies 和 peer dependencies 是包解析与 tree shaking 的标准依据。
 
 ## 模块与包映射
 
-C# 的 `[ECMAScript("specifier")]` 是绑定入口的 authored specifier 真源。成员级路径优先于宿主类型级路径；`Transform` 表达导入或组件 lowering，`ExportName` 表达 named/default export。
+`[ECMAScript("<specifier>")]` 保存生成源码最终写出的 import specifier。它直接使用 Deno 与 NetPack 可以解析的公开入口：
 
 ```csharp
-[ECMAScript("tdesign-vue-next/button/Button", Transform.Component, "Button")]
+[ECMAScript("tdesign-vue-next/es/button/index.mjs", Transform.Component, "Button")]
 public sealed class TButton : IUIComponent
 {
 }
@@ -76,162 +73,131 @@ public static class AddDays
 }
 ```
 
-Emit 保持 npm authored bare specifier；metadata 校验 package identity、exports 子路径和 export name。源码库逻辑路径在写出阶段按最终 importer 位置生成 `./` 或 `../` 相对 import。
+Emit 从 bare specifier 取得 dependency key，再从绑定声明取得精确 identity：
 
-## Emit 适配契约
+| 输入 | `package.json` | 生成源码 |
+| --- | --- | --- |
+| npm binding | dependency key 对应精确 npm 版本 | 保持公开 bare specifier |
+| JSR binding | dependency key 对应精确 `jsr:` value | 保持该 key 下的公开 specifier |
+| 项目源码 | 无 package dependency | 根据文件位置写 `./` 或 `../` import |
 
-Emit 是标准项目的适配器和事务边界。MSBuild 调用一次 Emit 完成项目写出、依赖恢复、检查和交付；SSR 运行阶段复用结果。
+成员级 `[ECMAScript]` 优先于类型级声明；`Transform` 决定普通导入或组件导入；`ExportName` 决定 named/default export。
 
-### 输入
+绑定优先选择上游公开的最细 ESM 入口。上游只提供正式根入口时直接使用根入口；VueDraggable 等高耦合库由该入口保留完整运行时闭包。
 
-- 根程序集、参与 Emit 的程序集、源码根、输出根和 build profile。
-- `ModuleCatalog` 中的模块内容、Entries、模块依赖、package imports、source map 和资源边。
-- npm/JSR binding metadata：package identity、版本、integrity、入口、peer/optional 选择和 CSS/worker/static 边。
-- ECMAScript 源码 carrier metadata：源码路径、模块 hash、相对依赖和生成目标。
-- Deno 2.9.7 可执行文件路径和 restore/check 选项。
+同一个 dependency key 只能对应一个精确 identity。生成源码出现 package import 而绑定声明缺失，或多个绑定为同一 key 声明不同 identity 时，Emit 在恢复前报告冲突。
 
-### 写出与恢复顺序
+## Emit 必须完成的工作
 
-1. 在输出同卷创建 staging 项目根，按 profile 收集实际模块 roots、package roots 和资源 roots。
-2. 写出应用生成模块、source map、`src/ECMAScript/clr/**` 的实际闭包和其他源码模块。
-3. 根据最终文件位置把项目内逻辑 import 归一化为 `./` 或 `../`；npm/JSR authored specifier 保持 bare package 形式。
-4. 写出应用和 ECMAScript 源码 carrier 自身拥有的 CSS、worker、static、字体、图片、wasm 和 license 文件，并保留入口关联与 hash；npm/JSR 包内资源由包自身的 ESM import、exports 和 NetPack 资源图处理。
-5. 生成可见 `entry.mjs`，按应用 Entries 连接实际模块；启用 SSR 时生成显式 SSR entry。
-6. 生成根 `package.json`，写入 `type`、`main/exports`、npm/JSR 精确 dependencies 和 profile entries。
-7. 根据 `package.json` 与现有 `deno.lock` 的 identity 选择一次标准恢复：首次生成或依赖 identity 变化时使用 `--frozen=false`；已有一致的 `deno.lock` 时使用 `deno ci`。
+Emit 是项目生成器和失败原子性边界，按以下顺序执行：
+
+1. **收集入口**：从最终宿主和 `ModuleCatalog` 取得浏览器 Entries、可选 SSR Entries、生成模块、source map、package imports 与本地资源。
+2. **建立 staging 项目**：在同卷目录建立与最终 `jazor/` 相同的结构，并沿用仍与 `package.json` 一致的锁文件。staging 只用于原子提交。
+3. **写入源码**：把 `clr/**`、其他源码 carrier、生成的 `ECMAScriptModule`、source map 和源码资源写到最终相对位置。
+4. **写入标准 import**：项目内模块使用相对 specifier；npm/JSR 绑定保留 `[ECMAScript]` 的 bare specifier；必要样式以普通 side-effect import 写入入口。
+5. **生成可见入口**：`entry.mjs` 连接实际浏览器 Entries；启用 SSR 时生成 `ssr-entry.mjs`。这些文件是 Deno、NetPack 和 DenoHost 共用的真实入口。
+6. **生成 `package.json`**：从实际 package imports 合并 dependency key 与精确 identity，并写入标准入口字段。
+7. **恢复与冻结**：在 staging 项目根调用 Deno 2.9.7，生成或验证 `deno.lock` 与 `node_modules`。
+8. **检查入口**：使用本地 `node_modules`、`--no-remote` 和 frozen lock 检查所有生成入口。
+9. **调用消费者**：Release 让 NetPack 从 `entry.mjs` 构建 `dist/`；SSR 运行时让 DenoHost 从同一项目加载 `ssr-entry.mjs`。
+10. **提交项目**：源码、项目文件、lock、恢复结果和构建结果全部有效后，原子替换最终 `jazor/`。
+
+首次恢复或 dependency identity 变化：
 
 ```text
-# 首次生成或依赖 identity 变化
 deno install --package-json --node-modules-dir=auto --frozen=false
-
-# 已有一致的 deno.lock
-deno ci --node-modules-dir=manual
 ```
 
-8. 对根 entry、profile entry 和 SSR entry 执行离线 frozen check：
+锁文件一致后的确定性恢复：
+
+```text
+deno ci
+```
+
+入口检查：
 
 ```text
 deno check --node-modules-dir=manual --no-remote --frozen-lockfile entry.mjs
 ```
 
-9. 将同一 staging 项目根交给 NetPack 与 SSR；NetPack 从 `entry.mjs`、`package.json`、`node_modules` 和源码树构图，SSR 使用同一 `node_modules` 与 `deno.lock`。
-10. 校验项目文件、lock、entry、Deno check 和 NetPack 输出后，以同卷原子替换提交 `jazor/`。
+Deno 2.9.7 的 `ci` 命令按 lock 执行 frozen install。Emit 从 DenoHost runtime package 取得同版本可执行文件，并沿用项目已经建立的 `node_modules` 模式。
 
-### Emit 的稳定边界
+## 标准构建行为
 
-- Emit 负责项目文件、入口、依赖声明、源码路径和完整性校验。
-- Deno 负责 npm/JSR restore、node_modules 和 deno.lock。
-- NetPack 负责 exports、条件、sideEffects、ESM/CSS tree shaking 和 release bundle。
-- DenoHost 负责使用已恢复项目执行 SSR。
-- 应用 manifest 负责记录生成模块和本地资源清单，作为 Emit 与标准工具之间的输入证据；项目运行时依赖 `package.json`、包的 `exports` 和 NetPack 资源图。
-
-## 组件内部依赖与资源闭包
+NetPack 的工作根、解析根和入口都来自 `jazor/`：
 
 ```text
-binding entry
-  -> package exports target
-  -> component implementation / shared helper
-  -> peer and optional dependency
-  -> package side effect
-  -> CSS / worker / static edge
-
-source entry
-  -> relative source module
-  -> CLR/generated helper
-  -> local resource edge
+entry.mjs
+  -> 项目源码
+  -> npm/JSR 公开入口
+  -> 包内组件、函数和共享 helper
+  -> dependencies / peer dependencies
+  -> side-effect module
+  -> CSS / worker / font / image / wasm
 ```
 
-同一模块在多个入口闭包中保持一个稳定 identity。VueDraggable 等耦合度高的底层库按其 npm/JSR package 的完整运行时闭包验收；组件内部 helper 和共享 Vue runtime 随真实边保留。
+NetPack 使用上游 package 的 `exports`、conditions 和 `sideEffects`，并执行 ESM/CSS tree shaking。组件内部 import 自然保留其实现、共享依赖、Vue peer、初始化顺序和必要样式；未从入口到达的 export、组件和资源由标准构建图裁剪。
 
-资源 metadata 记录 module、style、worker、static、license 五类边，以及 sideEffects 对 CSS import、全局注册、polyfill 和初始化模块的影响。
+上游入口已经 import CSS 时直接跟随该边。上游要求调用方显式引入 CSS 时，绑定声明把样式 specifier 关联到组件入口，Emit 写出普通 side-effect import。worker、字体、图片和 wasm 通过包内 import 或 `new URL(..., import.meta.url)` 进入构建图。
 
-## 当前实现接入点
+DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` 和 `deno.lock`。依赖恢复属于 Emit 流程；SSR 只消费结果。Debug、Release、HMR 和 SSR 因而观察同一份源码与 package identity。
 
-1. `LibraryMaterializer`：将 ECMAScript 源码写入 `clr/**` 和声明的项目源码目录；绑定库提供 npm/JSR roots 与资源 metadata。
-2. `LibraryPackageWriter`：生成根 `package.json`；完整 npm 图存在时保留标准 `package-lock.json` 输入，并记录 dependency identity。
-3. `EmitPipeline`：以一个 staging 项目根串联源码写出、入口生成、一次 Deno restore/check、NetPack/SSR 消费和原子提交。
-4. `NetpackBundler`：接收可见 entry 与同一 `PackageRoot`，直接调用标准 package resolution 和 tree shaking。
-5. Route runtime 与 route catalog：作为普通项目源码或明确 package entry 写入项目树，通过标准相对/bare import 连接。
-6. 路径与 identity 校验：验证 Emit 生成的相对 import、package identity 和项目文件可解析，运行时解析继续使用标准 package 机制。
+## 实施顺序
 
-## 分阶段计划
+### A. 固定标准项目 fixture
 
-### 阶段 A：来源与项目 fixture
+- 生成包含一个 npm binding、一个 JSR binding、`clr/**` 和一个生成模块的最小项目。
+- 固定 dependency key、精确 identity、标准 specifier、入口、lock 与恢复后的 `node_modules` 形态。
+- 用组件内部依赖、显式 CSS import、worker 和静态资源证明标准工具链行为。
 
-- 固定 npm/JSR binding metadata、ECMAScript 源码 carrier metadata、entry 和 package.json schema。
-- 建立 npm、JSR、CLR source、组件内部依赖、CSS 和 worker fixture。
-- 固化 JSR dependency key、canonical identity、authored specifier 和项目内相对 import。
+### B. 收敛 Emit
 
-退出条件：fixture 生成普通 `jazor/` 项目，Deno 与 NetPack 直接读取同一入口和依赖图。
+- 将 `LibraryPackageWriter` 收敛为根 `package.json` writer。
+- 将源码 carrier 直接写入项目源码目录。
+- 让 Deno restore/check、NetPack 和 DenoHost 始终使用同一项目根。
+- 用 EmitTest 固定 identity 冲突、lock 更新、离线检查、构建失败和原子提交。
 
-### 阶段 B：Emit 标准适配
+### C. 收敛 NetPack 与 SSR
 
-- 完成源码写出、项目内 import 归一化、`entry.mjs`、`package.json` 和 lock 输入。
-- 在 MSBuild 的 Emit 阶段选择一次 restore 或 ci，生成 `deno.lock`，随后执行 frozen check；SSR 复用恢复结果。
-- 为失败诊断、完整性校验、项目路径和原子提交建立 EmitTest 回归。
+- NetPack 从 `jazor/entry.mjs` 构图，并把 `jazor/` 作为 package resolution root。
+- DenoHost 从 `jazor/ssr-entry.mjs` 运行，复用项目 lock 与 `node_modules`。
+- 让生产路径只保留项目根、可见入口和标准 package resolution。
 
-退出条件：生成的 `jazor/` 可由 Deno 2.9.7 check/run，项目文件可直接交给 NetPack。
+### D. 迁移绑定库
 
-### 阶段 C：标准项目构建
+- 枚举所有 `src/ECMAScript.*/manifest.json`，把绑定运行时来源统一为 npm/JSR。
+- TDesign、Element Plus、Vuetify 验证公开组件入口、内部依赖、Vue peer 和组件 CSS。
+- VueUse、VueI18n、VeeValidate、DateFns、Pinia、VueRoute 和 VueQuery 验证 named export 与函数级裁剪。
+- VueDataUi、FilePond、Monaco、图标和编辑器类绑定验证全局样式、worker、字体、图片和 wasm。
+- VueDraggable 等高耦合库验证正式根入口的完整运行时闭包。
+- ECMAScript 的 `clr/**` 与所有 `ECMAScriptModule` 生成结果按项目源码路径交付。
 
-- 让 NetPack 直接消费 `jazor/entry.mjs`、`package.json`、`node_modules` 和源码目录。
-- 验证 exports、sideEffects、组件内部依赖、共享依赖、CSS、worker、static 和 metafile。
-- 保持 release 输出与项目输入边界清晰。
+### E. 固定交付证据
 
-退出条件：Deno、NetPack 和 SSR 使用同一个 `jazor/` 项目图与恢复结果。
+- 更新架构、绑定指南、consumer fixture、质量门禁和 CHANGELOG。
+- 保存生成的 `package.json`、`deno.lock`、Deno 检查结果与 NetPack metafile。
+- 让源码 ProjectReference 与 NuGet consumer 通过同一套浏览器和 SSR 验收。
 
-### 阶段 D：绑定库逐包迁移
-
-1. 纯 ESM 函数/composable 包，验证 named export 与共享依赖。
-2. TDesign、Element Plus、Vuetify 等组件包，验证组件级入口、组件内部依赖、Vue peer 和 CSS 边。
-3. VueDataUi、图表、编辑器、上传和图标包，验证全局 CSS、worker、字体、图片、wasm 与动态资源。
-4. VueDraggable 等耦合底层库，按 npm/JSR package 的完整闭包验收运行时语义。
-5. 新增 binding 统一采用 npm/JSR identity，上游 ESM、exports 和 sideEffects 变化进入 metadata fingerprint。
-
-ECMAScript 源码库单独验证 `clr/**`、生成模块、相对 import 和源码资源进入标准项目。
-
-### 阶段 E：契约、文档与发布同步
-
-- 同步 `library-artifact-contract.md`、`artifact-pipeline.md`、`js-resource-binding.md`、`current-status.md` 和 CHANGELOG。
-- 更新 NuGet 与源码 ProjectReference consumer，使其发现并验证标准 `jazor/` 项目文件。
-- 保存来源、版本、entry、lock、资源闭包和 bundle metafile 的可复现证据。
-
-## 验收矩阵
+## 验收
 
 | 场景 | 必须证明 |
 | --- | --- |
-| npm binding | 精确版本、integrity、exports、peer 选择和 node_modules 入口一致 |
-| JSR binding | authored specifier、dependency key、版本、入口和冻结字节在 Deno/NetPack 中一致 |
-| ECMAScript 源码库 | `src/ECMAScript/clr/**` 到 `jazor/clr/**` 的实际闭包复制完整，生成模块和相对 import 可解析 |
-| 标准项目 | package.json、entry、源码、node_modules 和 lock 位于同一 `jazor/` 根，可由标准工具直接消费 |
-| Emit 适配 | roots、源码写出、路径归一化、入口、package.json、restore、check 和提交均有测试证据 |
-| Tree shaking | 只导入一个组件/函数时，未使用导出、组件和方法不进入 bundle，共享依赖只保留一份 |
-| 组件依赖 | 组件内部模块、共享 helper、Vue peer 和必要 side effect 在裁剪后保持运行语义 |
-| CSS | 已使用组件和必要基础 CSS 存在，未选入口的 CSS 不进入输出；全局 stylesheet 按上游声明保留 |
-| worker/static | worker、字体、图片和 wasm 可解析且只随可达资源边输出 |
-| Deno restore | Emit 按 lock 状态选择一次 install 或 ci，生成 `node_modules` 与 `deno.lock`，随后在 no-remote 下通过 frozen check |
-| SSR | 直接复用 Emit 已恢复的 jazor/node_modules 和 frozen lock |
-| NetPack Web | 从 jazor/entry.mjs 解析 exports/sideEffects，并生成可运行、稳定的 Web bundle |
-| 条件导出 | browser、deno、development、production 条件在对应 profile 中确定选择 |
-| 确定性 | 相同 SDK、Deno、NetPack 和输入下项目文件、lock、manifest、bundle 与 source map 字节稳定 |
+| 标准项目 | 源码、入口、`package.json`、lock、`node_modules` 与 `dist/` 位于同一 `jazor/` 根 |
+| npm/JSR | dependency key、精确 identity、生成 import 与恢复后的公开入口一致 |
+| ECMAScript 源码 | `clr/**` 与其他生成模块通过相对 import 被 Deno 和 NetPack 直接解析 |
+| Emit | 项目生成、restore/ci、frozen check、NetPack 调用和原子提交具有回归证据 |
+| JavaScript | 单组件或单函数入口只保留可达 export/module，共享模块保持单一实例 |
+| 组件内部依赖 | 组件实现、共享 helper、Vue peer、初始化模块和必要副作用保持运行语义 |
+| CSS | 已用组件样式和必要全局样式进入输出，未到达组件的独立样式不进入输出 |
+| worker/static | worker、字体、图片和 wasm 由标准 import/URL 图解析并输出 |
+| SSR | DenoHost 直接使用 Emit 已恢复的项目、`node_modules` 与 frozen lock |
+| 确定性 | 相同源码、工具版本和 dependency identity 产生稳定项目文件、lock 与构建结果 |
 
-验证覆盖绑定专属测试、Jazor.EmitTest package/closure/materialization 回归、MSBuild Emit restore/check/SSR 回归、NetPack fixture、真实 RazorVue consumer 和适用 Chromium smoke。自动化继续使用 `scripts/csharp/` 单文件 C# 入口。
+## 完成定义
 
-## 实施证据
-
-- npm/JSR binding 保存 package identity、上游版本、specifier、exports、sideEffects、资源边和 fingerprint。
-- ECMAScript 源码库保存 carrier 路径、模块 hash、生成目标和相对依赖证据。
-- Emit 保存 `package.json`、entry catalog、`deno.lock`、restore/check 摘要、项目源码清单和本地资源清单。
-- NetPack 保存入口、解析条件、tree shaking metafile、bundle/source map 和 CSS 清单。
-- 失败信息包含来源、specifier、entry、依赖 owner、profile 和 Emit 阶段。
-
-## Definition of Done
-
-- 所有纳入范围的 ECMAScript 绑定库都以 npm/JSR identity 声明精确依赖和公开入口；运行时包由标准依赖恢复提供。
-- ECMAScript 源码库的 `clr/**` 与生成模块由 Emit 写入标准 `jazor/` 项目，并通过项目内相对 import 运行。
-- Emit 完成标准项目适配：写出源码与入口、生成 package.json、执行 Deno 2.9.7 restore/check、提交 deno.lock 和 node_modules，并把同一项目根交给 NetPack/SSR。
-- NetPack 以 `jazor/` 为工作根消费同一 node_modules，按上游 exports/sideEffects 完成细粒度 JS/CSS tree shaking；组件内部和共享依赖语义保持一致。
-- SSR 直接复用 Emit 已恢复的项目根；浏览器、SSR、源码 ProjectReference 和 NuGet consumer 通过验收矩阵。
-- 架构文档、作者指南、测试门禁、发布脚本、CHANGELOG 和 current-status.md 同步记录标准项目契约。
-
-后续按阶段验收，把 npm/JSR 绑定和 ECMAScript 源码项目逐步转入 Support 能力。
+- `jazor/` 可由 Deno 2.9.7 直接 restore、check 和 run，并可由 NetPack 直接打包。
+- 所有外部 ECMAScript 绑定通过 npm/JSR dependency 与公开 ESM specifier 接入。
+- ECMAScript 的 `clr/**`、生成模块和其他自有 MJS 作为普通项目源码交付。
+- Emit、NetPack 与 DenoHost 共享一个项目根、一张标准 ESM 图和一次依赖恢复结果。
+- 仓库 fixture 证明未使用的方法、组件及其独立 CSS 被裁剪，同时保留组件内部依赖与必要副作用。
+- 架构、指南、测试门禁和能力状态使用同一标准项目契约。
