@@ -18,8 +18,7 @@ internal sealed class ModuleWriter
         string rootAssemblyPath,
         string outputDirectory,
         string manifestPath,
-        IReadOnlyList<ModuleRecord> modules,
-        bool clean)
+        IReadOnlyList<ModuleRecord> modules)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootAssemblyPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
@@ -37,9 +36,8 @@ internal sealed class ModuleWriter
             var desiredFiles = BuildDesiredFiles(outputRoot, preparedModules);
             ValidateManifestCollision(manifestFile, desiredFiles);
 
-            var staleFiles = clean
-                ? FindStaleFiles(outputRoot, existingManifest, desiredFiles)
-                : [];
+            // 过期文件按清单差异就地删除，这是增量收敛的唯一机制。
+            var staleFiles = FindStaleFiles(outputRoot, existingManifest, desiredFiles);
             var writer = new InPlaceMaterializer(outputRoot, manifestFile);
             return writer.Commit(
                 desiredFiles,

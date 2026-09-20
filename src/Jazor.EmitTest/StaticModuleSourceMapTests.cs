@@ -185,8 +185,7 @@ public sealed class StaticModuleSourceMapTests
                         SourceMapRelativePath: "modules/counter.mjs.map",
                         SourceMapContent: mapContent,
                         MapHash: ComputeSha256(mapContent))
-                ],
-                clean: true);
+                ]);
 
             Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
             Assert.AreEqual(2, result.Written);
@@ -239,8 +238,7 @@ public sealed class StaticModuleSourceMapTests
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
-                modules,
-                clean: true);
+                modules);
 
             Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
             var firstManifest = File.ReadAllText(manifestPath).ReplaceLineEndings("\n");
@@ -249,8 +247,7 @@ public sealed class StaticModuleSourceMapTests
                 rootAssemblyPath,
                 outputDirectory,
                 manifestPath,
-                modules,
-                clean: true);
+                modules);
 
             Assert.IsTrue(second.IsSuccess, second.Error ?? string.Empty);
             var secondManifest = File.ReadAllText(manifestPath).ReplaceLineEndings("\n");
@@ -305,8 +302,7 @@ public sealed class StaticModuleSourceMapTests
                         SourceMapRelativePath: "modules/counter.mjs.map",
                         SourceMapContent: "{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}",
                         MapHash: ComputeSha256("{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}"))
-                ],
-                clean: true);
+                ]);
 
             Assert.IsTrue(first.IsSuccess, first.Error ?? string.Empty);
             Assert.IsTrue(File.Exists(mapPath));
@@ -324,8 +320,7 @@ public sealed class StaticModuleSourceMapTests
                         RelativePath: "modules/counter.mjs",
                         Content: "export const counter = 1;\n",
                         Hash: ComputeSha256("export const counter = 1;\n"))
-                ],
-                clean: true);
+                ]);
 
             Assert.IsTrue(second.IsSuccess, second.Error ?? string.Empty);
             Assert.AreEqual(1, second.Written);
@@ -393,8 +388,7 @@ public sealed class StaticModuleSourceMapTests
                         RelativePath: "components/wiki-home.mjs",
                         Content: "export default 1;\n",
                         Hash: ComputeSha256("export default 1;\n"))
-                ],
-                clean: true);
+                ]);
 
             Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
             Assert.IsTrue(File.Exists(modulePath));

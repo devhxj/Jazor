@@ -41,12 +41,12 @@ public sealed class EmitPipelineAssetContractTests
             var result = await ExecuteAsync(
                 assemblyPath,
                 sourceRoot,
-                outputRoot,
-                clean: false);
+                outputRoot);
 
             Assert.IsFalse(result.IsSuccess);
             StringAssert.Contains(result.Error, "JAZOR_MODULE_ASSET_HASH_MISMATCH", StringComparison.Ordinal);
             Assert.AreEqual(expectedAssetContent, await File.ReadAllTextAsync(existingAsset));
+            // 写入前校验阶段拒绝：不产生 manifest，既有输出保持原样。
             Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")));
         }
         finally
@@ -84,11 +84,11 @@ public sealed class EmitPipelineAssetContractTests
             var result = await ExecuteAsync(
                 assemblyPath,
                 sourceRoot,
-                outputRoot,
-                clean: true);
+                outputRoot);
 
             Assert.IsFalse(result.IsSuccess);
             StringAssert.Contains(result.Error, "conflicts with a generated or Emit-owned output file", StringComparison.Ordinal);
+            // 冲突在写入前被拒绝，因此输出根未被创建。
             Assert.IsFalse(Directory.Exists(outputRoot));
         }
         finally
@@ -102,15 +102,13 @@ public sealed class EmitPipelineAssetContractTests
     private static Task<EmitPipelineResult> ExecuteAsync(
         string assemblyPath,
         string sourceRoot,
-        string outputRoot,
-        bool clean)
+        string outputRoot)
         => new EmitPipeline().ExecuteAsync(
             new EmitOptions(
                 assemblyPath,
                 [],
                 outputRoot,
                 Path.Combine(outputRoot, "jazor-manifest.json"),
-                clean,
                 BuildMode.Development,
                 sourceRoot,
                 [],

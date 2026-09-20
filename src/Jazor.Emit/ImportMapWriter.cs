@@ -402,65 +402,32 @@ internal static class ImportMapWriter
         imports.Add(specifier, target);
     }
 
+    /// <summary>
+    /// 就地写入 import map 与 asset manifest。
+    ///
+    /// 每个文件先写同目录临时文件再 rename，避免半写文件；不做 staging、备份或回滚——
+    /// 失败显式传播，下一次构建按同一规则收敛。
+    /// </summary>
     private static async Task CommitAsync(
         string outputRoot,
         IReadOnlyDictionary<string, string> payloads,
         CancellationToken cancellationToken)
     {
-        var parent = Directory.GetParent(outputRoot)?.FullName
-            ?? throw new InvalidOperationException($"Could not determine parent directory for '{outputRoot}'.");
         Directory.CreateDirectory(outputRoot);
-        var staging = Path.Combine(parent, ".jazor-importmap-" + Guid.NewGuid().ToString("N"));
-        var backups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var committed = new List<string>();
-
-        try
+        foreach (var payload in payloads.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
         {
-            Directory.CreateDirectory(staging);
-            foreach (var payload in payloads.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+            cancellationToken.ThrowIfCancellationRequested();
+            var target = Path.Combine(outputRoot, payload.Key);
+            var temporary = target + ".jazor-tmp-" + Guid.NewGuid().ToString("N");
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                await File.WriteAllTextAsync(
-                    Path.Combine(staging, payload.Key),
-                    payload.Value,
-                    cancellationToken).ConfigureAwait(false);
+                await File.WriteAllTextAsync(temporary, payload.Value, cancellationToken).ConfigureAwait(false);
+                File.Move(temporary, target, overwrite: true);
             }
-
-            foreach (var name in payloads.Keys.OrderBy(static name => name, StringComparer.Ordinal))
+            finally
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var target = Path.Combine(outputRoot, name);
-                if (File.Exists(target))
-                {
-                    var backup = Path.Combine(parent, ".jazor-importmap-backup-" + Guid.NewGuid().ToString("N"));
-                    File.Move(target, backup);
-                    backups[target] = backup;
-                }
-
-                File.Move(Path.Combine(staging, name), target);
-                committed.Add(target);
+                DeleteFile(temporary);
             }
-
-            foreach (var backup in backups.Values)
-                DeleteFile(backup);
-        }
-        catch
-        {
-            foreach (var target in committed)
-                DeleteFile(target);
-            foreach (var backup in backups)
-            {
-                if (File.Exists(backup.Value) && !File.Exists(backup.Key))
-                    File.Move(backup.Value, backup.Key);
-            }
-            throw;
-        }
-        finally
-        {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, recursive: true);
-            foreach (var backup in backups.Values)
-                DeleteFile(backup);
         }
     }
 

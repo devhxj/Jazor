@@ -23,7 +23,6 @@ internal sealed class EmitPipeline
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        string? temporarySsrMaterializationRoot = null;
         try
         {
             ValidateOptions(options);
@@ -33,28 +32,33 @@ internal sealed class EmitPipeline
             var manifestPath = Path.GetFullPath(options.ManifestPath);
             EnsureManifestIsOwnedByOutput(outputRoot, manifestPath);
 
-            await using var transaction = await OutputTransaction.CreateAsync(
-                outputRoot,
-                options.Clean,
-                cancellationToken).ConfigureAwait(false);
-
             var collection = CollectModules(options);
             if (!collection.IsSuccess)
                 return EmitPipelineResult.Fail(collection.ExitCode, collection.Error!);
 
-            var stagedManifestPath = Path.Combine(transaction.StagingRoot, ApplicationManifestFileName);
+            // Write-phase boundary: all pure validation runs first so a rejected request never
+            // leaves partial output. Failures after the first write are reported and converge
+            // on the next build (see artifact-pipeline "写入与确定性").
+            var validatedAssets = ValidateCatalogAssets(
+                options.SourceRoot,
+                collection.Assets,
+                GetReservedOutputPaths(collection.Modules),
+                cancellationToken);
+
+            // 就地写入最终 jazor/：不做 staging、备份或回滚。失败显式返回，下一次构建收敛。
+            Directory.CreateDirectory(outputRoot);
+
             var moduleWrite = ModuleWriter.Write(
                 options.RootAssemblyPath,
-                transaction.StagingRoot,
-                stagedManifestPath,
-                collection.Modules,
-                clean: true);
+                outputRoot,
+                manifestPath,
+                collection.Modules);
             if (!moduleWrite.IsSuccess)
                 return EmitPipelineResult.Fail(moduleWrite.ExitCode, moduleWrite.Error!);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var applicationManifest = ManifestModel.TryLoad(stagedManifestPath)
+            var applicationManifest = ManifestModel.TryLoad(manifestPath)
                 ?? throw new InvalidOperationException("Emit did not produce the application manifest.");
             var packageImports = GetPackageImports(applicationManifest);
             if (options.EnableSsr)
@@ -67,14 +71,8 @@ internal sealed class EmitPipeline
                     .OrderBy(static value => value, StringComparer.Ordinal)
                     .ToArray();
             }
-            var reservedOutputPaths = GetReservedOutputPaths(applicationManifest);
 
-            CopyCatalogAssets(
-                transaction.StagingRoot,
-                options.SourceRoot,
-                collection.Assets,
-                reservedOutputPaths,
-                cancellationToken);
+            CopyCatalogAssets(outputRoot, validatedAssets, cancellationToken);
 
             // Resolve package resources only after the application graph is known. Passing an
             // explicit (possibly empty) root set prevents unused package entries from leaking
@@ -82,51 +80,40 @@ internal sealed class EmitPipeline
             var materializer = new LibraryMaterializer();
             var browserLibraries = materializer.Materialize(
                 options.LibraryManifests,
-                transaction.StagingRoot,
+                outputRoot,
                 options.Mode,
                 GetPackageImports(applicationManifest),
                 applicationManifest.Modules.Select(static module => module.RelativePath));
             var packageLibraries = browserLibraries;
-            string? ssrMaterializationRoot = null;
             if (options.EnableSsr)
             {
-                // Build the wider SSR closure in an isolated package workspace. Merge its local
-                // package files into the root project, while the browser materialization remains
-                // limited to browser roots so SSR-only entries do not leak into the browser view.
-                ssrMaterializationRoot = Path.Combine(
-                    Path.GetDirectoryName(transaction.StagingRoot)!,
-                    ".jazor-ssr-materialization-" + Guid.NewGuid().ToString("N"));
-                temporarySsrMaterializationRoot = ssrMaterializationRoot;
+                // SSR uses the wider package closure in the same project root; there is no second
+                // workspace to merge from. The browser view stays limited to browser roots via
+                // the browserLibraries computed above.
                 packageLibraries = materializer.Materialize(
                     options.LibraryManifests,
-                    ssrMaterializationRoot,
+                    outputRoot,
                     options.Mode,
                     packageImports,
                     applicationManifest.Modules.Select(static module => module.RelativePath));
-                foreach (var ownedRoot in new[] { "packages" })
-                {
-                    MergeDirectory(
-                        Path.Combine(ssrMaterializationRoot, ownedRoot),
-                        Path.Combine(transaction.StagingRoot, ownedRoot));
-                }
             }
             // Keep the browser/debug artifact root package-aware as well. NetPack uses a
             // temporary projection for release, while DenoHost and local diagnostics consume
             // this same package.json/node_modules contract from jazor/.
-            ResetPackageWorkspace(transaction.StagingRoot);
-            LibraryPackageWriter.WritePackageProject(transaction.StagingRoot, packageLibraries);
+            ResetPackageWorkspace(outputRoot);
+            LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries);
             await DenoPackageRestorer.RestoreAndCheckAsync(
-                transaction.StagingRoot,
+                outputRoot,
                 options.DenoExecutablePath,
                 applicationManifest.Modules
-                    .Select(module => Path.Combine(transaction.StagingRoot, module.RelativePath))
+                    .Select(module => Path.Combine(outputRoot, module.RelativePath))
                     .ToArray(),
                 packageLibraries,
                 cancellationToken).ConfigureAwait(false);
             // External imports are mapped only after restore, so the map can follow the
             // package's real exports target from the shared node_modules tree.
             await ImportMapWriter.WriteAsync(
-                transaction.StagingRoot,
+                outputRoot,
                 browserLibraries,
                 applicationManifest.Modules,
                 cancellationToken).ConfigureAwait(false);
@@ -135,8 +122,8 @@ internal sealed class EmitPipeline
             {
                 var bundleResult = await BuildBrowserBundleAsync(
                     options,
-                    transaction.StagingRoot,
-                    stagedManifestPath,
+                    outputRoot,
+                    manifestPath,
                     browserLibraries,
                     cancellationToken).ConfigureAwait(false);
                 if (!bundleResult.IsSuccess)
@@ -149,14 +136,14 @@ internal sealed class EmitPipeline
                 // that the bundle still references (package/static/CSS) and remove generated
                 // modules plus their debug manifests/maps before the outer atomic commit.
                 // 浏览器 Release 只交付 bundle 投影，不能把调试 raw graph 一并暴露到 JazorDir。
-                RemoveBrowserRawProjection(transaction.StagingRoot, applicationManifest);
+                RemoveBrowserRawProjection(outputRoot, applicationManifest);
             }
 
             if (options.EnableSsr)
             {
                 var ssrResult = await BuildSsrProfileAsync(
                     options,
-                    transaction.StagingRoot,
+                    outputRoot,
                     collection.Modules,
                     collection.Assets,
                     packageLibraries,
@@ -169,7 +156,6 @@ internal sealed class EmitPipeline
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 
             return EmitPipelineResult.Success(
                 collection.AssemblyCount,
@@ -192,41 +178,6 @@ internal sealed class EmitPipeline
         catch (Exception exception)
         {
             return EmitPipelineResult.Fail(5, exception.ToString());
-        }
-        finally
-        {
-            if (temporarySsrMaterializationRoot is not null && Directory.Exists(temporarySsrMaterializationRoot))
-            {
-                try
-                {
-                    Directory.Delete(temporarySsrMaterializationRoot, recursive: true);
-                }
-                catch
-                {
-                }
-            }
-        }
-    }
-
-    private static void MergeDirectory(string sourceRoot, string destinationRoot)
-    {
-        if (!Directory.Exists(sourceRoot))
-            return;
-
-        foreach (var sourcePath in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories)
-                     .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
-        {
-            var relativePath = Path.GetRelativePath(sourceRoot, sourcePath);
-            var targetPath = GetSafePath(destinationRoot, relativePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-            if (File.Exists(targetPath))
-            {
-                if (!FileBytesEqual(sourcePath, targetPath))
-                    throw new InvalidOperationException($"Library materialization conflict at '{relativePath}'.");
-                continue;
-            }
-
-            File.Copy(sourcePath, targetPath);
         }
     }
 
@@ -325,19 +276,18 @@ internal sealed class EmitPipeline
             options.RootAssemblyPath,
             ssrRoot,
             ssrManifestPath,
-            modules,
-            clean: true);
+            modules);
         if (!moduleWrite.IsSuccess)
             return EmitPipelineResult.Fail(moduleWrite.ExitCode, moduleWrite.Error!);
 
-        var manifest = ManifestModel.TryLoad(ssrManifestPath)
-            ?? throw new InvalidOperationException("Emit did not produce the SSR application manifest.");
-        CopyCatalogAssets(
-            ssrRoot,
+        var ssrValidatedAssets = ValidateCatalogAssets(
             options.SourceRoot,
             assets,
-            GetReservedOutputPaths(manifest),
+            GetReservedOutputPaths(modules),
             cancellationToken);
+        var manifest = ManifestModel.TryLoad(ssrManifestPath)
+            ?? throw new InvalidOperationException("Emit did not produce the SSR application manifest.");
+        CopyCatalogAssets(ssrRoot, ssrValidatedAssets, cancellationToken);
 
         // Keep the SSR browser-facing asset URLs stable while the executable package imports
         // resolve through the single restored node_modules tree in the parent jazor root.
@@ -382,20 +332,26 @@ internal sealed class EmitPipeline
         }
     }
 
-    private static void CopyCatalogAssets(
-        string destinationRoot,
+    /// <summary>
+    /// 写出前的纯校验：asset 路径冲突、源文件存在性、源字节 hash。
+    ///
+    /// 这些检查不依赖输出状态，因此在任何写入之前完成——"写入前校验失败不产生输出"这条契约
+    /// 靠它保持；写入开始后的失败则按就地写入契约显式返回，由下一次构建收敛。
+    /// </summary>
+    private static IReadOnlyList<ValidatedAsset> ValidateCatalogAssets(
         string? sourceRoot,
         IReadOnlyList<AssetEntry> assets,
         IReadOnlySet<string> reservedOutputPaths,
         CancellationToken cancellationToken)
     {
         if (assets.Count == 0)
-            return;
+            return [];
         if (string.IsNullOrWhiteSpace(sourceRoot))
             throw new InvalidOperationException("ModuleCatalog assets require --source-root.");
         ArgumentNullException.ThrowIfNull(reservedOutputPaths);
 
         var sourceBase = Path.GetFullPath(sourceRoot);
+        var validated = new List<ValidatedAsset>(assets.Count);
         foreach (var asset in assets
                      .OrderBy(static value => value.ArtifactPath, StringComparer.OrdinalIgnoreCase)
                      .ThenBy(static value => value.SourcePath, StringComparer.Ordinal))
@@ -409,7 +365,6 @@ internal sealed class EmitPipeline
                     $"ModuleCatalog asset output '{artifactPath}' conflicts with a generated or Emit-owned output file.");
             }
 
-            var targetPath = GetSafePath(destinationRoot, artifactPath);
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException(
                     $"ModuleCatalog asset source was not found: '{asset.SourcePath}'.",
@@ -428,40 +383,51 @@ internal sealed class EmitPipeline
                     $"ModuleCatalog asset '{artifactPath}' hash does not match its source.");
             }
 
+            validated.Add(new ValidatedAsset(sourcePath, artifactPath, expectedHash));
+        }
+
+        return validated;
+    }
+
+    private static void CopyCatalogAssets(
+        string destinationRoot,
+        IReadOnlyList<ValidatedAsset> assets,
+        CancellationToken cancellationToken)
+    {
+        foreach (var asset in assets)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var targetPath = GetSafePath(destinationRoot, asset.ArtifactPath);
+
+            // 校验阶段已确认源字节与声明的 hash 一致；源在两次读取之间变化属于竞态，
+            // 复制后再确认一次，保证落盘内容与声明相符。
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrWhiteSpace(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
 
-            if (File.Exists(targetPath))
-            {
-                if (!FileBytesEqual(sourcePath, targetPath))
-                    throw new InvalidOperationException(
-                        $"ModuleCatalog asset output '{artifactPath}' is claimed by incompatible files.");
+            if (File.Exists(targetPath) && FileBytesEqual(asset.SourcePath, targetPath))
                 continue;
-            }
 
-            File.Copy(sourcePath, targetPath);
-            if (expectedHash is not null &&
-                !string.Equals(ComputeSha256(targetPath), expectedHash, StringComparison.Ordinal))
+            File.Copy(asset.SourcePath, targetPath, overwrite: true);
+            if (asset.ExpectedHash is not null &&
+                !string.Equals(ComputeSha256(targetPath), asset.ExpectedHash, StringComparison.Ordinal))
             {
                 File.Delete(targetPath);
                 throw new LibraryException(
                     "JAZOR_MODULE_ASSET_HASH_MISMATCH",
-                    $"ModuleCatalog asset '{artifactPath}' changed while it was being copied.");
+                    $"ModuleCatalog asset '{asset.ArtifactPath}' changed while it was being copied.");
             }
         }
     }
 
+    private readonly record struct ValidatedAsset(
+        string SourcePath,
+        string ArtifactPath,
+        string? ExpectedHash);
+
     private static IReadOnlySet<string> GetReservedOutputPaths(ManifestModel manifest)
     {
-        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ApplicationManifestFileName,
-            ImportMapWriter.BrowserImportMapFileName,
-            ImportMapWriter.SsrImportMapFileName,
-            ImportMapWriter.AssetManifestFileName
-        };
-
+        var paths = CreateReservedPathSet();
         foreach (var module in manifest.Modules)
         {
             paths.Add(NormalizeRelativePath(module.RelativePath));
@@ -471,6 +437,32 @@ internal sealed class EmitPipeline
 
         return paths;
     }
+
+    /// <summary>
+    /// 与 <see cref="GetReservedOutputPaths(ManifestModel)"/> 等价的提前版本：manifest 尚未写出时，
+    /// 用收集到的模块记录算出同一组保留路径，使 asset 冲突能在任何写入之前被拒绝。
+    /// </summary>
+    private static IReadOnlySet<string> GetReservedOutputPaths(IReadOnlyList<ModuleRecord> modules)
+    {
+        var paths = CreateReservedPathSet();
+        foreach (var module in modules)
+        {
+            paths.Add(NormalizeRelativePath(module.RelativePath));
+            if (!string.IsNullOrWhiteSpace(module.SourceMapRelativePath))
+                paths.Add(NormalizeRelativePath(module.SourceMapRelativePath!));
+        }
+
+        return paths;
+    }
+
+    private static HashSet<string> CreateReservedPathSet()
+        => new(StringComparer.OrdinalIgnoreCase)
+        {
+            ApplicationManifestFileName,
+            ImportMapWriter.BrowserImportMapFileName,
+            ImportMapWriter.SsrImportMapFileName,
+            ImportMapWriter.AssetManifestFileName
+        };
 
     private static void RemoveBrowserRawProjection(
         string outputRoot,
@@ -590,144 +582,6 @@ internal sealed class EmitPipeline
 
     private static string NormalizeHash(string value)
         => ArtifactHash.RequireSha256(value, "ModuleCatalog asset hash");
-
-    private sealed class OutputTransaction : IAsyncDisposable
-    {
-        private readonly string _outputRoot;
-        private bool _committed;
-
-        private OutputTransaction(string outputRoot, string stagingRoot)
-        {
-            _outputRoot = outputRoot;
-            StagingRoot = stagingRoot;
-        }
-
-        public string StagingRoot { get; }
-
-        public static Task<OutputTransaction> CreateAsync(
-            string outputRoot,
-            bool clean,
-            CancellationToken cancellationToken)
-        {
-            var parent = Directory.GetParent(outputRoot)?.FullName
-                ?? throw new InvalidOperationException($"Could not determine output parent for '{outputRoot}'.");
-            Directory.CreateDirectory(parent);
-            var stagingRoot = Path.Combine(parent, ".jazor-output-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(stagingRoot);
-            var previousLock = Path.Combine(outputRoot, "deno.lock");
-            if (clean && File.Exists(previousLock))
-            {
-                // Keep the frozen graph available for `deno ci` even when the outer Emit
-                // request intentionally starts with a clean artifact projection.
-                File.Copy(previousLock, Path.Combine(stagingRoot, "deno.lock"), overwrite: true);
-            }
-            if (!clean && Directory.Exists(outputRoot))
-                CopyDirectory(outputRoot, stagingRoot, cancellationToken);
-            return Task.FromResult(new OutputTransaction(outputRoot, stagingRoot));
-        }
-
-        public Task CommitAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var parent = Directory.GetParent(_outputRoot)?.FullName
-                ?? throw new InvalidOperationException($"Could not determine output parent for '{_outputRoot}'.");
-            var backupRoot = Path.Combine(parent, ".jazor-output-backup-" + Guid.NewGuid().ToString("N"));
-            var movedOld = false;
-            var movedStaging = false;
-            var preserveBackup = false;
-            try
-            {
-                if (Directory.Exists(_outputRoot))
-                {
-                    DirectoryTransaction.Move(_outputRoot, backupRoot);
-                    movedOld = true;
-                }
-                else if (File.Exists(_outputRoot))
-                {
-                    throw new InvalidOperationException($"Output path is a file, not a directory: '{_outputRoot}'.");
-                }
-
-                DirectoryTransaction.Move(StagingRoot, _outputRoot);
-                movedStaging = true;
-                _committed = true;
-                if (movedOld && Directory.Exists(backupRoot))
-                    Directory.Delete(backupRoot, recursive: true);
-                return Task.CompletedTask;
-            }
-            catch
-            {
-                // Rollback is best effort. A failed initial move (for example, because the
-                // output directory is a process CWD) must leave the original exception intact.
-                if (movedStaging && _committed == false)
-                    TryDeleteDirectory(_outputRoot);
-                if (movedOld && !Directory.Exists(_outputRoot) && Directory.Exists(backupRoot))
-                    preserveBackup = !TryMoveDirectory(backupRoot, _outputRoot);
-                throw;
-            }
-            finally
-            {
-                if (!preserveBackup)
-                    TryDeleteDirectory(backupRoot);
-            }
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            if (!_committed && Directory.Exists(StagingRoot))
-                TryDeleteDirectory(StagingRoot);
-            return ValueTask.CompletedTask;
-        }
-
-        private static void TryDeleteDirectory(string path)
-        {
-            try
-            {
-                if (Directory.Exists(path))
-                    Directory.Delete(path, recursive: true);
-            }
-            catch (Exception)
-            {
-                // Cleanup must never replace the commit failure that is being reported.
-            }
-        }
-
-        private static bool TryMoveDirectory(string source, string destination)
-        {
-            try
-            {
-                if (Directory.Exists(source))
-                {
-                    DirectoryTransaction.Move(source, destination);
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                // Preserve the original failure when rollback is also blocked by a handle.
-            }
-
-            return false;
-        }
-
-        private static void CopyDirectory(string sourceRoot, string destinationRoot, CancellationToken cancellationToken)
-        {
-            foreach (var directory in Directory.EnumerateDirectories(sourceRoot, "*", SearchOption.AllDirectories))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var relative = Path.GetRelativePath(sourceRoot, directory);
-                Directory.CreateDirectory(Path.Combine(destinationRoot, relative));
-            }
-
-            foreach (var file in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var relative = Path.GetRelativePath(sourceRoot, file);
-                var target = Path.Combine(destinationRoot, relative);
-                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                File.Copy(file, target, overwrite: true);
-            }
-        }
-    }
 }
 
 internal sealed record EmitPipelineResult(

@@ -6,7 +6,6 @@ internal sealed record EmitOptions(
     IReadOnlyList<string> AssemblyPaths,
     string OutputDirectory,
     string ManifestPath,
-    bool Clean,
     BuildMode Mode,
     string? SourceRoot,
     IReadOnlyList<string> LibraryManifests,
@@ -22,7 +21,6 @@ internal sealed record EmitOptions(
         var outputDirectory = string.Empty;
         var manifestPath = string.Empty;
         var assemblyPaths = new List<string>();
-        var clean = true;
         var mode = BuildMode.Development;
         var sourceRoot = string.Empty;
         var libraryManifests = new List<string>();
@@ -52,14 +50,6 @@ internal sealed record EmitOptions(
                     break;
                 case "--write-manifest":
                     manifestPath = value;
-                    break;
-                case "--clean":
-                    if (!bool.TryParse(value, out clean))
-                    {
-                        error = $"Invalid boolean for --clean: '{value}'.";
-                        return false;
-                    }
-
                     break;
                 case "--mode":
                     if (!TryParseMode(value, out mode))
@@ -115,7 +105,6 @@ internal sealed record EmitOptions(
             [.. assemblyPaths.Select(Path.GetFullPath)],
             Path.GetFullPath(outputDirectory),
             Path.GetFullPath(manifestPath),
-            clean,
             mode,
             string.IsNullOrWhiteSpace(sourceRoot) ? null : Path.GetFullPath(sourceRoot),
             [.. libraryManifests

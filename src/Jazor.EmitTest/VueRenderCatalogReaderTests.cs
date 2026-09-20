@@ -410,8 +410,7 @@ public sealed class ModuleCatalogReaderTests
                     "components/counter.mjs",
                     content,
                     Sha256(content),
-                    Hmr: HmrMetadata.Create("jazor.vue", "Demo:components/counter.mjs", "{\"change\":\"safe\"}"))],
-                clean: true);
+                    Hmr: HmrMetadata.Create("jazor.vue", "Demo:components/counter.mjs", "{\"change\":\"safe\"}"))]);
 
             Assert.IsTrue(result.IsSuccess, result.Error);
             Assert.IsTrue(File.Exists(Path.Combine(output, "components", "counter.mjs")));
