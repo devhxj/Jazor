@@ -453,6 +453,11 @@ static JsonObject UpdateExternalManifest(
     var imports = manifest["imports"]?.AsObject()
         ?? throw new InvalidOperationException("Manifest must contain an imports object.");
     var touched = 0;
+    // imports 的键是 [ECMAScript] 声明的 specifier，也是编译器写进生成模块的 import。
+    // 因此键必须是恢复后 package 可解析的上游公开入口，而不是绑定自造的组件简写。
+    // 多个组件共享一个上游模块是正常形态（Vuetify 的 VCard/VCardActions，TDesign 的
+    // Anchor/AnchorItem/AnchorTarget），按目标 specifier 归并成一条模块记录。
+    var resolved = new JsonObject();
     foreach (var pair in imports.ToArray())
     {
         var logicalSpecifier = pair.Key;
@@ -474,6 +479,7 @@ static JsonObject UpdateExternalManifest(
             RemoveExternalStyleFields(entry);
             NormalizeDependencyArray(entry, "developmentDependencies");
             NormalizeDependencyArray(entry, "productionDependencies");
+            resolved[logicalSpecifier] = entry;
             continue;
         }
 
@@ -513,12 +519,70 @@ static JsonObject UpdateExternalManifest(
             entry["developmentStylesheetImports"] = ToJsonArray(stylesheetStyles);
             entry["productionStylesheetImports"] = ToJsonArray(stylesheetStyles);
         }
+
+        if (resolved[externalSpecifier] is JsonObject existing)
+        {
+            MergeModuleEntry(existing, entry, externalSpecifier, logicalSpecifier);
+        }
+        else
+        {
+            resolved[externalSpecifier] = entry;
+        }
     }
 
     if (touched == 0)
         throw new InvalidOperationException($"Manifest contains no entries for npm package '{packageName}'.");
 
+    manifest["imports"] = resolved;
     return manifest;
+}
+
+/// <summary>
+/// 把共享同一上游模块的第二条组件声明并入既有模块记录。
+///
+/// 归并只针对"同模块多处声明"这一正常形态：模块级事实（type）必须一致，依赖与样式边取并集。
+/// 若两条记录的模块身份不同，说明映射把两个上游模块混为一谈，属于错误，必须显式失败。
+/// </summary>
+static void MergeModuleEntry(JsonObject target, JsonObject incoming, string externalSpecifier, string logicalSpecifier)
+{
+    foreach (var field in new[] { "type", "development", "production" })
+    {
+        if (!string.Equals(target[field]?.GetValue<string>(), incoming[field]?.GetValue<string>(), StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Manifest entries for '{logicalSpecifier}' and '{externalSpecifier}' disagree on '{field}'.");
+        }
+    }
+
+    foreach (var field in new[]
+             {
+                 "developmentDependencies",
+                 "productionDependencies",
+                 "developmentStyleImports",
+                 "productionStyleImports",
+                 "developmentStylesheetImports",
+                 "productionStylesheetImports"
+             })
+    {
+        var values = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var source in new[] { target, incoming })
+        {
+            if (source[field] is not JsonArray array)
+                continue;
+
+            foreach (var value in array)
+            {
+                var text = value?.GetValue<string>();
+                if (!string.IsNullOrWhiteSpace(text))
+                    values.Add(text);
+            }
+        }
+
+        if (values.Count == 0)
+            target.Remove(field);
+        else
+            target[field] = ToJsonArray(values.ToArray());
+    }
 }
 
 static void RemoveEmbeddedEntryFields(JsonObject entry)

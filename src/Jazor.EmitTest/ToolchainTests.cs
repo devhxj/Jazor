@@ -418,10 +418,9 @@ public sealed class ToolchainTests
         Assert.Contains(".used-style", css, StringComparison.Ordinal);
         Assert.DoesNotContain(".unused-style", css, StringComparison.Ordinal);
 
+        // 自有源码 carrier 按声明路径写入项目源码树，不再套 packages/<name>/ 合成包根。
         var workerPath = Path.Combine(
             workspace.OutputRoot,
-            "packages",
-            "tree-lib",
             "dist",
             "editor.worker.mjs");
         Assert.IsTrue(File.Exists(workerPath), $"Expected selected worker output: {workerPath}");

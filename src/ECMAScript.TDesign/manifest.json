@@ -15,7 +15,7 @@
     }
   },
   "imports": {
-    "tdesign-vue-next": {
+    "tdesign-vue-next/es/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/index.mjs",
       "production": "tdesign-vue-next/es/index.mjs",
@@ -32,7 +32,7 @@
         "tdesign-vue-next/es/style/index.css"
       ]
     },
-    "tdesign-vue-next/affix/Affix": {
+    "tdesign-vue-next/es/affix/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/affix/index.mjs",
       "production": "tdesign-vue-next/es/affix/index.mjs",
@@ -49,7 +49,7 @@
         "tdesign-vue-next/es/affix/style/index.css"
       ]
     },
-    "tdesign-vue-next/alert/Alert": {
+    "tdesign-vue-next/es/alert/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/alert/index.mjs",
       "production": "tdesign-vue-next/es/alert/index.mjs",
@@ -66,7 +66,7 @@
         "tdesign-vue-next/es/alert/style/index.css"
       ]
     },
-    "tdesign-vue-next/anchor/Anchor": {
+    "tdesign-vue-next/es/anchor/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/anchor/index.mjs",
       "production": "tdesign-vue-next/es/anchor/index.mjs",
@@ -83,41 +83,7 @@
         "tdesign-vue-next/es/anchor/style/index.css"
       ]
     },
-    "tdesign-vue-next/anchor/AnchorItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/anchor/index.mjs",
-      "production": "tdesign-vue-next/es/anchor/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/anchor/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/anchor/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/anchor/AnchorTarget": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/anchor/index.mjs",
-      "production": "tdesign-vue-next/es/anchor/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/anchor/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/anchor/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/auto-complete/AutoComplete": {
+    "tdesign-vue-next/es/auto-complete/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/auto-complete/index.mjs",
       "production": "tdesign-vue-next/es/auto-complete/index.mjs",
@@ -134,7 +100,7 @@
         "tdesign-vue-next/es/auto-complete/style/index.css"
       ]
     },
-    "tdesign-vue-next/avatar/Avatar": {
+    "tdesign-vue-next/es/avatar/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/avatar/index.mjs",
       "production": "tdesign-vue-next/es/avatar/index.mjs",
@@ -151,24 +117,7 @@
         "tdesign-vue-next/es/avatar/style/index.css"
       ]
     },
-    "tdesign-vue-next/avatar/AvatarGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/avatar/index.mjs",
-      "production": "tdesign-vue-next/es/avatar/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/avatar/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/avatar/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/back-top/BackTop": {
+    "tdesign-vue-next/es/back-top/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/back-top/index.mjs",
       "production": "tdesign-vue-next/es/back-top/index.mjs",
@@ -185,7 +134,7 @@
         "tdesign-vue-next/es/back-top/style/index.css"
       ]
     },
-    "tdesign-vue-next/badge/Badge": {
+    "tdesign-vue-next/es/badge/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/badge/index.mjs",
       "production": "tdesign-vue-next/es/badge/index.mjs",
@@ -202,7 +151,7 @@
         "tdesign-vue-next/es/badge/style/index.css"
       ]
     },
-    "tdesign-vue-next/breadcrumb/Breadcrumb": {
+    "tdesign-vue-next/es/breadcrumb/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/breadcrumb/index.mjs",
       "production": "tdesign-vue-next/es/breadcrumb/index.mjs",
@@ -219,24 +168,7 @@
         "tdesign-vue-next/es/breadcrumb/style/index.css"
       ]
     },
-    "tdesign-vue-next/breadcrumb/BreadcrumbItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/breadcrumb/index.mjs",
-      "production": "tdesign-vue-next/es/breadcrumb/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/breadcrumb/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/breadcrumb/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/button/Button": {
+    "tdesign-vue-next/es/button/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/button/index.mjs",
       "production": "tdesign-vue-next/es/button/index.mjs",
@@ -253,7 +185,7 @@
         "tdesign-vue-next/es/button/style/index.css"
       ]
     },
-    "tdesign-vue-next/calendar/Calendar": {
+    "tdesign-vue-next/es/calendar/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/calendar/index.mjs",
       "production": "tdesign-vue-next/es/calendar/index.mjs",
@@ -270,7 +202,7 @@
         "tdesign-vue-next/es/calendar/style/index.css"
       ]
     },
-    "tdesign-vue-next/card/Card": {
+    "tdesign-vue-next/es/card/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/card/index.mjs",
       "production": "tdesign-vue-next/es/card/index.mjs",
@@ -287,7 +219,7 @@
         "tdesign-vue-next/es/card/style/index.css"
       ]
     },
-    "tdesign-vue-next/cascader/Cascader": {
+    "tdesign-vue-next/es/cascader/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/cascader/index.mjs",
       "production": "tdesign-vue-next/es/cascader/index.mjs",
@@ -304,7 +236,7 @@
         "tdesign-vue-next/es/cascader/style/index.css"
       ]
     },
-    "tdesign-vue-next/checkbox/Checkbox": {
+    "tdesign-vue-next/es/checkbox/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/checkbox/index.mjs",
       "production": "tdesign-vue-next/es/checkbox/index.mjs",
@@ -321,24 +253,7 @@
         "tdesign-vue-next/es/checkbox/style/index.css"
       ]
     },
-    "tdesign-vue-next/checkbox/CheckboxGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/checkbox/index.mjs",
-      "production": "tdesign-vue-next/es/checkbox/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/checkbox/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/checkbox/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/collapse/Collapse": {
+    "tdesign-vue-next/es/collapse/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/collapse/index.mjs",
       "production": "tdesign-vue-next/es/collapse/index.mjs",
@@ -355,24 +270,7 @@
         "tdesign-vue-next/es/collapse/style/index.css"
       ]
     },
-    "tdesign-vue-next/collapse/CollapsePanel": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/collapse/index.mjs",
-      "production": "tdesign-vue-next/es/collapse/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/collapse/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/collapse/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/color-picker/ColorPicker": {
+    "tdesign-vue-next/es/color-picker/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/color-picker/index.mjs",
       "production": "tdesign-vue-next/es/color-picker/index.mjs",
@@ -389,24 +287,7 @@
         "tdesign-vue-next/es/color-picker/style/index.css"
       ]
     },
-    "tdesign-vue-next/color-picker/ColorPickerPanel": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/color-picker/index.mjs",
-      "production": "tdesign-vue-next/es/color-picker/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/color-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/color-picker/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/comment/Comment": {
+    "tdesign-vue-next/es/comment/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/comment/index.mjs",
       "production": "tdesign-vue-next/es/comment/index.mjs",
@@ -423,7 +304,7 @@
         "tdesign-vue-next/es/comment/style/index.css"
       ]
     },
-    "tdesign-vue-next/config-provider/ConfigProvider": {
+    "tdesign-vue-next/es/config-provider/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/config-provider/index.mjs",
       "production": "tdesign-vue-next/es/config-provider/index.mjs",
@@ -434,7 +315,7 @@
         "vue"
       ]
     },
-    "tdesign-vue-next/date-picker/DatePicker": {
+    "tdesign-vue-next/es/date-picker/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/date-picker/index.mjs",
       "production": "tdesign-vue-next/es/date-picker/index.mjs",
@@ -451,58 +332,7 @@
         "tdesign-vue-next/es/date-picker/style/index.css"
       ]
     },
-    "tdesign-vue-next/date-picker/DatePickerPanel": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/date-picker/index.mjs",
-      "production": "tdesign-vue-next/es/date-picker/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/date-picker/DateRangePicker": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/date-picker/index.mjs",
-      "production": "tdesign-vue-next/es/date-picker/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/date-picker/DateRangePickerPanel": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/date-picker/index.mjs",
-      "production": "tdesign-vue-next/es/date-picker/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/descriptions/Descriptions": {
+    "tdesign-vue-next/es/descriptions/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/descriptions/index.mjs",
       "production": "tdesign-vue-next/es/descriptions/index.mjs",
@@ -519,24 +349,7 @@
         "tdesign-vue-next/es/descriptions/style/index.css"
       ]
     },
-    "tdesign-vue-next/descriptions/DescriptionsItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/descriptions/index.mjs",
-      "production": "tdesign-vue-next/es/descriptions/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/descriptions/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/descriptions/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/dialog/Dialog": {
+    "tdesign-vue-next/es/dialog/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/dialog/index.mjs",
       "production": "tdesign-vue-next/es/dialog/index.mjs",
@@ -553,24 +366,7 @@
         "tdesign-vue-next/es/dialog/style/index.css"
       ]
     },
-    "tdesign-vue-next/dialog/DialogCard": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/dialog/index.mjs",
-      "production": "tdesign-vue-next/es/dialog/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/dialog/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/dialog/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/divider/Divider": {
+    "tdesign-vue-next/es/divider/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/divider/index.mjs",
       "production": "tdesign-vue-next/es/divider/index.mjs",
@@ -587,7 +383,7 @@
         "tdesign-vue-next/es/divider/style/index.css"
       ]
     },
-    "tdesign-vue-next/drawer/Drawer": {
+    "tdesign-vue-next/es/drawer/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/drawer/index.mjs",
       "production": "tdesign-vue-next/es/drawer/index.mjs",
@@ -604,7 +400,7 @@
         "tdesign-vue-next/es/drawer/style/index.css"
       ]
     },
-    "tdesign-vue-next/dropdown/Dropdown": {
+    "tdesign-vue-next/es/dropdown/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/dropdown/index.mjs",
       "production": "tdesign-vue-next/es/dropdown/index.mjs",
@@ -621,24 +417,7 @@
         "tdesign-vue-next/es/dropdown/style/index.css"
       ]
     },
-    "tdesign-vue-next/dropdown/DropdownItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/dropdown/index.mjs",
-      "production": "tdesign-vue-next/es/dropdown/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/dropdown/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/dropdown/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/empty/Empty": {
+    "tdesign-vue-next/es/empty/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/empty/index.mjs",
       "production": "tdesign-vue-next/es/empty/index.mjs",
@@ -655,7 +434,7 @@
         "tdesign-vue-next/es/empty/style/index.css"
       ]
     },
-    "tdesign-vue-next/form/Form": {
+    "tdesign-vue-next/es/form/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/form/index.mjs",
       "production": "tdesign-vue-next/es/form/index.mjs",
@@ -672,24 +451,7 @@
         "tdesign-vue-next/es/form/style/index.css"
       ]
     },
-    "tdesign-vue-next/form/FormItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/form/index.mjs",
-      "production": "tdesign-vue-next/es/form/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/form/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/form/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/grid/Col": {
+    "tdesign-vue-next/es/grid/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/grid/index.mjs",
       "production": "tdesign-vue-next/es/grid/index.mjs",
@@ -706,24 +468,7 @@
         "tdesign-vue-next/es/grid/style/index.css"
       ]
     },
-    "tdesign-vue-next/grid/Row": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/grid/index.mjs",
-      "production": "tdesign-vue-next/es/grid/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/grid/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/grid/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/guide/Guide": {
+    "tdesign-vue-next/es/guide/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/guide/index.mjs",
       "production": "tdesign-vue-next/es/guide/index.mjs",
@@ -740,7 +485,7 @@
         "tdesign-vue-next/es/guide/style/index.css"
       ]
     },
-    "tdesign-vue-next/icon/Icon": {
+    "tdesign-vue-next/es/icon/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/icon/index.mjs",
       "production": "tdesign-vue-next/es/icon/index.mjs",
@@ -751,7 +496,7 @@
         "vue"
       ]
     },
-    "tdesign-vue-next/image/Image": {
+    "tdesign-vue-next/es/image/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/image/index.mjs",
       "production": "tdesign-vue-next/es/image/index.mjs",
@@ -768,7 +513,7 @@
         "tdesign-vue-next/es/image/style/index.css"
       ]
     },
-    "tdesign-vue-next/image-viewer/ImageViewer": {
+    "tdesign-vue-next/es/image-viewer/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/image-viewer/index.mjs",
       "production": "tdesign-vue-next/es/image-viewer/index.mjs",
@@ -785,7 +530,7 @@
         "tdesign-vue-next/es/image-viewer/style/index.css"
       ]
     },
-    "tdesign-vue-next/input/Input": {
+    "tdesign-vue-next/es/input/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/input/index.mjs",
       "production": "tdesign-vue-next/es/input/index.mjs",
@@ -802,24 +547,7 @@
         "tdesign-vue-next/es/input/style/index.css"
       ]
     },
-    "tdesign-vue-next/input/InputGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/input/index.mjs",
-      "production": "tdesign-vue-next/es/input/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/input/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/input/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/input-adornment/InputAdornment": {
+    "tdesign-vue-next/es/input-adornment/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/input-adornment/index.mjs",
       "production": "tdesign-vue-next/es/input-adornment/index.mjs",
@@ -836,7 +564,7 @@
         "tdesign-vue-next/es/input-adornment/style/index.css"
       ]
     },
-    "tdesign-vue-next/input-number/InputNumber": {
+    "tdesign-vue-next/es/input-number/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/input-number/index.mjs",
       "production": "tdesign-vue-next/es/input-number/index.mjs",
@@ -853,7 +581,7 @@
         "tdesign-vue-next/es/input-number/style/index.css"
       ]
     },
-    "tdesign-vue-next/layout/Aside": {
+    "tdesign-vue-next/es/layout/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/layout/index.mjs",
       "production": "tdesign-vue-next/es/layout/index.mjs",
@@ -870,75 +598,7 @@
         "tdesign-vue-next/es/layout/style/index.css"
       ]
     },
-    "tdesign-vue-next/layout/Content": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/layout/index.mjs",
-      "production": "tdesign-vue-next/es/layout/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/layout/Footer": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/layout/index.mjs",
-      "production": "tdesign-vue-next/es/layout/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/layout/Header": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/layout/index.mjs",
-      "production": "tdesign-vue-next/es/layout/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/layout/Layout": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/layout/index.mjs",
-      "production": "tdesign-vue-next/es/layout/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/link/Link": {
+    "tdesign-vue-next/es/link/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/link/index.mjs",
       "production": "tdesign-vue-next/es/link/index.mjs",
@@ -955,7 +615,7 @@
         "tdesign-vue-next/es/link/style/index.css"
       ]
     },
-    "tdesign-vue-next/list/List": {
+    "tdesign-vue-next/es/list/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/list/index.mjs",
       "production": "tdesign-vue-next/es/list/index.mjs",
@@ -972,41 +632,7 @@
         "tdesign-vue-next/es/list/style/index.css"
       ]
     },
-    "tdesign-vue-next/list/ListItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/list/index.mjs",
-      "production": "tdesign-vue-next/es/list/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/list/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/list/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/list/ListItemMeta": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/list/index.mjs",
-      "production": "tdesign-vue-next/es/list/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/list/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/list/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/loading/Loading": {
+    "tdesign-vue-next/es/loading/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/loading/index.mjs",
       "production": "tdesign-vue-next/es/loading/index.mjs",
@@ -1023,7 +649,7 @@
         "tdesign-vue-next/es/loading/style/index.css"
       ]
     },
-    "tdesign-vue-next/menu/HeadMenu": {
+    "tdesign-vue-next/es/menu/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/menu/index.mjs",
       "production": "tdesign-vue-next/es/menu/index.mjs",
@@ -1040,75 +666,7 @@
         "tdesign-vue-next/es/menu/style/index.css"
       ]
     },
-    "tdesign-vue-next/menu/Menu": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/menu/index.mjs",
-      "production": "tdesign-vue-next/es/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/menu/MenuGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/menu/index.mjs",
-      "production": "tdesign-vue-next/es/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/menu/MenuItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/menu/index.mjs",
-      "production": "tdesign-vue-next/es/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/menu/Submenu": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/menu/index.mjs",
-      "production": "tdesign-vue-next/es/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/message/Message": {
+    "tdesign-vue-next/es/message/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/message/index.mjs",
       "production": "tdesign-vue-next/es/message/index.mjs",
@@ -1125,7 +683,7 @@
         "tdesign-vue-next/es/message/style/index.css"
       ]
     },
-    "tdesign-vue-next/notification/Notification": {
+    "tdesign-vue-next/es/notification/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/notification/index.mjs",
       "production": "tdesign-vue-next/es/notification/index.mjs",
@@ -1142,7 +700,7 @@
         "tdesign-vue-next/es/notification/style/index.css"
       ]
     },
-    "tdesign-vue-next/pagination/Pagination": {
+    "tdesign-vue-next/es/pagination/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/pagination/index.mjs",
       "production": "tdesign-vue-next/es/pagination/index.mjs",
@@ -1159,24 +717,7 @@
         "tdesign-vue-next/es/pagination/style/index.css"
       ]
     },
-    "tdesign-vue-next/pagination/PaginationMini": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/pagination/index.mjs",
-      "production": "tdesign-vue-next/es/pagination/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/pagination/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/pagination/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/popconfirm/Popconfirm": {
+    "tdesign-vue-next/es/popconfirm/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/popconfirm/index.mjs",
       "production": "tdesign-vue-next/es/popconfirm/index.mjs",
@@ -1193,7 +734,7 @@
         "tdesign-vue-next/es/popconfirm/style/index.css"
       ]
     },
-    "tdesign-vue-next/popup/Popup": {
+    "tdesign-vue-next/es/popup/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/popup/index.mjs",
       "production": "tdesign-vue-next/es/popup/index.mjs",
@@ -1210,7 +751,7 @@
         "tdesign-vue-next/es/popup/style/index.css"
       ]
     },
-    "tdesign-vue-next/progress/Progress": {
+    "tdesign-vue-next/es/progress/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/progress/index.mjs",
       "production": "tdesign-vue-next/es/progress/index.mjs",
@@ -1227,7 +768,7 @@
         "tdesign-vue-next/es/progress/style/index.css"
       ]
     },
-    "tdesign-vue-next/qrcode/QRCode": {
+    "tdesign-vue-next/es/qrcode/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/qrcode/index.mjs",
       "production": "tdesign-vue-next/es/qrcode/index.mjs",
@@ -1244,7 +785,7 @@
         "tdesign-vue-next/es/qrcode/style/index.css"
       ]
     },
-    "tdesign-vue-next/radio/Radio": {
+    "tdesign-vue-next/es/radio/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/radio/index.mjs",
       "production": "tdesign-vue-next/es/radio/index.mjs",
@@ -1261,41 +802,7 @@
         "tdesign-vue-next/es/radio/style/index.css"
       ]
     },
-    "tdesign-vue-next/radio/RadioButton": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/radio/index.mjs",
-      "production": "tdesign-vue-next/es/radio/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/radio/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/radio/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/radio/RadioGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/radio/index.mjs",
-      "production": "tdesign-vue-next/es/radio/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/radio/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/radio/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/range-input/RangeInput": {
+    "tdesign-vue-next/es/range-input/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/range-input/index.mjs",
       "production": "tdesign-vue-next/es/range-input/index.mjs",
@@ -1312,24 +819,7 @@
         "tdesign-vue-next/es/range-input/style/index.css"
       ]
     },
-    "tdesign-vue-next/range-input/RangeInputPopup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/range-input/index.mjs",
-      "production": "tdesign-vue-next/es/range-input/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/range-input/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/range-input/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/rate/Rate": {
+    "tdesign-vue-next/es/rate/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/rate/index.mjs",
       "production": "tdesign-vue-next/es/rate/index.mjs",
@@ -1346,7 +836,7 @@
         "tdesign-vue-next/es/rate/style/index.css"
       ]
     },
-    "tdesign-vue-next/select/Option": {
+    "tdesign-vue-next/es/select/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/select/index.mjs",
       "production": "tdesign-vue-next/es/select/index.mjs",
@@ -1363,41 +853,7 @@
         "tdesign-vue-next/es/select/style/index.css"
       ]
     },
-    "tdesign-vue-next/select/OptionGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/select/index.mjs",
-      "production": "tdesign-vue-next/es/select/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/select/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/select/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/select/Select": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/select/index.mjs",
-      "production": "tdesign-vue-next/es/select/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/select/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/select/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/select-input/SelectInput": {
+    "tdesign-vue-next/es/select-input/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/select-input/index.mjs",
       "production": "tdesign-vue-next/es/select-input/index.mjs",
@@ -1414,7 +870,7 @@
         "tdesign-vue-next/es/select-input/style/index.css"
       ]
     },
-    "tdesign-vue-next/skeleton/Skeleton": {
+    "tdesign-vue-next/es/skeleton/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/skeleton/index.mjs",
       "production": "tdesign-vue-next/es/skeleton/index.mjs",
@@ -1431,7 +887,7 @@
         "tdesign-vue-next/es/skeleton/style/index.css"
       ]
     },
-    "tdesign-vue-next/slider/Slider": {
+    "tdesign-vue-next/es/slider/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/slider/index.mjs",
       "production": "tdesign-vue-next/es/slider/index.mjs",
@@ -1448,7 +904,7 @@
         "tdesign-vue-next/es/slider/style/index.css"
       ]
     },
-    "tdesign-vue-next/space/Space": {
+    "tdesign-vue-next/es/space/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/space/index.mjs",
       "production": "tdesign-vue-next/es/space/index.mjs",
@@ -1465,7 +921,7 @@
         "tdesign-vue-next/es/space/style/index.css"
       ]
     },
-    "tdesign-vue-next/statistic/Statistic": {
+    "tdesign-vue-next/es/statistic/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/statistic/index.mjs",
       "production": "tdesign-vue-next/es/statistic/index.mjs",
@@ -1482,7 +938,7 @@
         "tdesign-vue-next/es/statistic/style/index.css"
       ]
     },
-    "tdesign-vue-next/steps/StepItem": {
+    "tdesign-vue-next/es/steps/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/steps/index.mjs",
       "production": "tdesign-vue-next/es/steps/index.mjs",
@@ -1499,24 +955,7 @@
         "tdesign-vue-next/es/steps/style/index.css"
       ]
     },
-    "tdesign-vue-next/steps/Steps": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/steps/index.mjs",
-      "production": "tdesign-vue-next/es/steps/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/steps/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/steps/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/sticky-tool/StickyItem": {
+    "tdesign-vue-next/es/sticky-tool/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/sticky-tool/index.mjs",
       "production": "tdesign-vue-next/es/sticky-tool/index.mjs",
@@ -1533,24 +972,7 @@
         "tdesign-vue-next/es/sticky-tool/style/index.css"
       ]
     },
-    "tdesign-vue-next/sticky-tool/StickyTool": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/sticky-tool/index.mjs",
-      "production": "tdesign-vue-next/es/sticky-tool/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/sticky-tool/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/sticky-tool/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/swiper/Swiper": {
+    "tdesign-vue-next/es/swiper/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/swiper/index.mjs",
       "production": "tdesign-vue-next/es/swiper/index.mjs",
@@ -1567,24 +989,7 @@
         "tdesign-vue-next/es/swiper/style/index.css"
       ]
     },
-    "tdesign-vue-next/swiper/SwiperItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/swiper/index.mjs",
-      "production": "tdesign-vue-next/es/swiper/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/swiper/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/swiper/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/switch/Switch": {
+    "tdesign-vue-next/es/switch/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/switch/index.mjs",
       "production": "tdesign-vue-next/es/switch/index.mjs",
@@ -1601,7 +1006,7 @@
         "tdesign-vue-next/es/switch/style/index.css"
       ]
     },
-    "tdesign-vue-next/table/BaseTable": {
+    "tdesign-vue-next/es/table/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/table/index.mjs",
       "production": "tdesign-vue-next/es/table/index.mjs",
@@ -1618,58 +1023,7 @@
         "tdesign-vue-next/es/table/style/index.css"
       ]
     },
-    "tdesign-vue-next/table/EnhancedTable": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/table/index.mjs",
-      "production": "tdesign-vue-next/es/table/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/table/PrimaryTable": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/table/index.mjs",
-      "production": "tdesign-vue-next/es/table/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/table/Table": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/table/index.mjs",
-      "production": "tdesign-vue-next/es/table/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/tabs/TabPanel": {
+    "tdesign-vue-next/es/tabs/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/tabs/index.mjs",
       "production": "tdesign-vue-next/es/tabs/index.mjs",
@@ -1686,24 +1040,7 @@
         "tdesign-vue-next/es/tabs/style/index.css"
       ]
     },
-    "tdesign-vue-next/tabs/Tabs": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/tabs/index.mjs",
-      "production": "tdesign-vue-next/es/tabs/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tabs/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tabs/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/tag/CheckTag": {
+    "tdesign-vue-next/es/tag/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/tag/index.mjs",
       "production": "tdesign-vue-next/es/tag/index.mjs",
@@ -1720,41 +1057,7 @@
         "tdesign-vue-next/es/tag/style/index.css"
       ]
     },
-    "tdesign-vue-next/tag/CheckTagGroup": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/tag/index.mjs",
-      "production": "tdesign-vue-next/es/tag/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tag/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tag/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/tag/Tag": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/tag/index.mjs",
-      "production": "tdesign-vue-next/es/tag/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tag/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tag/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/tag-input/TagInput": {
+    "tdesign-vue-next/es/tag-input/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/tag-input/index.mjs",
       "production": "tdesign-vue-next/es/tag-input/index.mjs",
@@ -1771,7 +1074,7 @@
         "tdesign-vue-next/es/tag-input/style/index.css"
       ]
     },
-    "tdesign-vue-next/textarea/Textarea": {
+    "tdesign-vue-next/es/textarea/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/textarea/index.mjs",
       "production": "tdesign-vue-next/es/textarea/index.mjs",
@@ -1788,7 +1091,7 @@
         "tdesign-vue-next/es/textarea/style/index.css"
       ]
     },
-    "tdesign-vue-next/time-picker/TimePicker": {
+    "tdesign-vue-next/es/time-picker/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/time-picker/index.mjs",
       "production": "tdesign-vue-next/es/time-picker/index.mjs",
@@ -1805,24 +1108,7 @@
         "tdesign-vue-next/es/time-picker/style/index.css"
       ]
     },
-    "tdesign-vue-next/time-picker/TimeRangePicker": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/time-picker/index.mjs",
-      "production": "tdesign-vue-next/es/time-picker/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/time-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/time-picker/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/timeline/Timeline": {
+    "tdesign-vue-next/es/timeline/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/timeline/index.mjs",
       "production": "tdesign-vue-next/es/timeline/index.mjs",
@@ -1839,24 +1125,7 @@
         "tdesign-vue-next/es/timeline/style/index.css"
       ]
     },
-    "tdesign-vue-next/timeline/TimelineItem": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/timeline/index.mjs",
-      "production": "tdesign-vue-next/es/timeline/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/timeline/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/timeline/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/tooltip/Tooltip": {
+    "tdesign-vue-next/es/tooltip/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/tooltip/index.mjs",
       "production": "tdesign-vue-next/es/tooltip/index.mjs",
@@ -1873,7 +1142,7 @@
         "tdesign-vue-next/es/tooltip/style/index.css"
       ]
     },
-    "tdesign-vue-next/transfer/Transfer": {
+    "tdesign-vue-next/es/transfer/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/transfer/index.mjs",
       "production": "tdesign-vue-next/es/transfer/index.mjs",
@@ -1890,7 +1159,7 @@
         "tdesign-vue-next/es/transfer/style/index.css"
       ]
     },
-    "tdesign-vue-next/tree/Tree": {
+    "tdesign-vue-next/es/tree/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/tree/index.mjs",
       "production": "tdesign-vue-next/es/tree/index.mjs",
@@ -1907,7 +1176,7 @@
         "tdesign-vue-next/es/tree/style/index.css"
       ]
     },
-    "tdesign-vue-next/tree-select/TreeSelect": {
+    "tdesign-vue-next/es/tree-select/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/tree-select/index.mjs",
       "production": "tdesign-vue-next/es/tree-select/index.mjs",
@@ -1924,7 +1193,7 @@
         "tdesign-vue-next/es/tree-select/style/index.css"
       ]
     },
-    "tdesign-vue-next/typography/Paragraph": {
+    "tdesign-vue-next/es/typography/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/typography/index.mjs",
       "production": "tdesign-vue-next/es/typography/index.mjs",
@@ -1941,58 +1210,7 @@
         "tdesign-vue-next/es/typography/style/index.css"
       ]
     },
-    "tdesign-vue-next/typography/Text": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/typography/index.mjs",
-      "production": "tdesign-vue-next/es/typography/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/typography/Title": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/typography/index.mjs",
-      "production": "tdesign-vue-next/es/typography/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/typography/Typography": {
-      "type": "module",
-      "development": "tdesign-vue-next/es/typography/index.mjs",
-      "production": "tdesign-vue-next/es/typography/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ]
-    },
-    "tdesign-vue-next/upload/Upload": {
+    "tdesign-vue-next/es/upload/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/upload/index.mjs",
       "production": "tdesign-vue-next/es/upload/index.mjs",
@@ -2009,7 +1227,7 @@
         "tdesign-vue-next/es/upload/style/index.css"
       ]
     },
-    "tdesign-vue-next/watermark/Watermark": {
+    "tdesign-vue-next/es/watermark/index.mjs": {
       "type": "module",
       "development": "tdesign-vue-next/es/watermark/index.mjs",
       "production": "tdesign-vue-next/es/watermark/index.mjs",

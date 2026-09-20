@@ -104,7 +104,7 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             "nameof(global::ECMAScript.TDesign.TInput<string>.OnChange)",
             StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { Button, Input, PrimaryTable } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { Button } from \"tdesign-vue-next/es/button/index.mjs\";\nimport { Input } from \"tdesign-vue-next/es/input/index.mjs\";\nimport { PrimaryTable } from \"tdesign-vue-next/es/table/index.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("admin-input", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("builder.OpenComponent", StringComparison.Ordinal), observation.ModuleText);
 
@@ -117,7 +117,9 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             import test from "node:test";
 
             import component from "./components/tdesign-natural-authoring-runtime.mjs";
-            import { Button, Input, PrimaryTable } from "tdesign-vue-next";
+            import { Button } from "tdesign-vue-next/es/button/index.mjs";
+            import { Input } from "tdesign-vue-next/es/input/index.mjs";
+            import { PrimaryTable } from "tdesign-vue-next/es/table/index.mjs";
 
             test("natural TDesign components preserve typed props and callbacks", () => {
                 const render = component.setup({}, { slots: {} });
@@ -147,8 +149,10 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Button = { name: \"button\" }; export const Input = { name: \"input\" }; export const PrimaryTable = { name: \"primary-table\" };"
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
+                ["node_modules/tdesign-vue-next/es/button/index.mjs"] = "export const Button = { name: \"button\" };",
+                ["node_modules/tdesign-vue-next/es/input/index.mjs"] = "export const Input = { name: \"input\" };",
+                ["node_modules/tdesign-vue-next/es/table/index.mjs"] = "export const PrimaryTable = { name: \"primary-table\" };"
             });
     }
 
@@ -215,7 +219,7 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "RuntimeHelpers.CreateInferredEventCallback", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "AddMultipleAttributes", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { Form, FormItem, Input, RadioButton, RadioGroup, Switch } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { Form, FormItem } from \"tdesign-vue-next/es/form/index.mjs\";\nimport { Input } from \"tdesign-vue-next/es/input/index.mjs\";\nimport { RadioButton, RadioGroup } from \"tdesign-vue-next/es/radio/index.mjs\";\nimport { Switch } from \"tdesign-vue-next/es/switch/index.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("AdminForm", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("AdminRadioGroup", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("AdminToggle", StringComparison.Ordinal), observation.ModuleText);
@@ -229,7 +233,10 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             import test from "node:test";
 
             import component from "./components/tdesign-form-control-natural-authoring-runtime.mjs";
-            import { Form, FormItem, Input, RadioButton, RadioGroup, Switch } from "tdesign-vue-next";
+            import { Form, FormItem } from "tdesign-vue-next/es/form/index.mjs";
+            import { Input } from "tdesign-vue-next/es/input/index.mjs";
+            import { RadioButton, RadioGroup } from "tdesign-vue-next/es/radio/index.mjs";
+            import { Switch } from "tdesign-vue-next/es/switch/index.mjs";
 
             const findAll = (value, predicate) => {
                 if (Array.isArray(value)) {
@@ -294,8 +301,11 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Form = { name: \"form\" }; export const FormItem = { name: \"form-item\" }; export const Input = { name: \"input\" }; export const RadioButton = { name: \"radio-button\" }; export const RadioGroup = { name: \"radio-group\" }; export const Switch = { name: \"switch\" };"
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
+                ["node_modules/tdesign-vue-next/es/form/index.mjs"] = "export const Form = { name: \"form\" }; export const FormItem = { name: \"form-item\" };",
+                ["node_modules/tdesign-vue-next/es/input/index.mjs"] = "export const Input = { name: \"input\" };",
+                ["node_modules/tdesign-vue-next/es/radio/index.mjs"] = "export const RadioButton = { name: \"radio-button\" }; export const RadioGroup = { name: \"radio-group\" };",
+                ["node_modules/tdesign-vue-next/es/switch/index.mjs"] = "export const Switch = { name: \"switch\" };"
             });
     }
 
@@ -345,7 +355,7 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             "nameof(global::ECMAScript.TDesign.TTextarea.OnChange)",
             StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { Textarea } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { Textarea } from \"tdesign-vue-next/es/textarea/index.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("AdminTextarea", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -357,7 +367,7 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             import test from "node:test";
 
             import component from "./components/tdesign-textarea-natural-authoring-runtime.mjs";
-            import { Textarea } from "tdesign-vue-next";
+            import { Textarea } from "tdesign-vue-next/es/textarea/index.mjs";
 
             test("natural TDesign textarea binds its native union value", () => {
                 const render = component.setup({}, { slots: {} });
@@ -378,8 +388,8 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Textarea = { name: \"textarea\" };"
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
+                ["node_modules/tdesign-vue-next/es/textarea/index.mjs"] = "export const Textarea = { name: \"textarea\" };"
             });
     }
 
@@ -455,7 +465,7 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TTable<Row>>", StringComparison.Ordinal);
         StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TPrimaryTable<Row>>", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { Dialog, PrimaryTable, Table } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { Dialog } from \"tdesign-vue-next/es/dialog/index.mjs\";\nimport { PrimaryTable, Table } from \"tdesign-vue-next/es/table/index.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("AdminDialog", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("AdminTable", StringComparison.Ordinal), observation.ModuleText);
 
@@ -468,7 +478,8 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             import test from "node:test";
 
             import component from "./components/tdesign-dialog-table-natural-authoring-runtime.mjs";
-            import { Dialog, PrimaryTable, Table } from "tdesign-vue-next";
+            import { Dialog } from "tdesign-vue-next/es/dialog/index.mjs";
+            import { PrimaryTable, Table } from "tdesign-vue-next/es/table/index.mjs";
 
             const findAll = (value, predicate) => {
                 if (Array.isArray(value)) {
@@ -536,8 +547,9 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Dialog = { name: \"dialog\" }; export const PrimaryTable = { name: \"primary-table\" }; export const Table = { name: \"table\" };"
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
+                ["node_modules/tdesign-vue-next/es/dialog/index.mjs"] = "export const Dialog = { name: \"dialog\" };",
+                ["node_modules/tdesign-vue-next/es/table/index.mjs"] = "export const PrimaryTable = { name: \"primary-table\" }; export const Table = { name: \"table\" };"
             });
     }
 

@@ -15,7 +15,7 @@
     }
   },
   "imports": {
-    "element-plus": {
+    "element-plus/es/index.mjs": {
       "type": "module",
       "development": "element-plus/es/index.mjs",
       "production": "element-plus/es/index.mjs",
@@ -32,7 +32,7 @@
         "element-plus/dist/index.css"
       ]
     },
-    "element-plus/affix/ElAffix": {
+    "element-plus/es/components/affix/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/affix/index.mjs",
       "production": "element-plus/es/components/affix/index.mjs",
@@ -49,7 +49,7 @@
         "element-plus/es/components/affix/style/css.mjs"
       ]
     },
-    "element-plus/alert/ElAlert": {
+    "element-plus/es/components/alert/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/alert/index.mjs",
       "production": "element-plus/es/components/alert/index.mjs",
@@ -66,7 +66,7 @@
         "element-plus/es/components/alert/style/css.mjs"
       ]
     },
-    "element-plus/anchor/ElAnchor": {
+    "element-plus/es/components/anchor/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/anchor/index.mjs",
       "production": "element-plus/es/components/anchor/index.mjs",
@@ -83,24 +83,7 @@
         "element-plus/es/components/anchor/style/css.mjs"
       ]
     },
-    "element-plus/anchor/ElAnchorLink": {
-      "type": "module",
-      "development": "element-plus/es/components/anchor/index.mjs",
-      "production": "element-plus/es/components/anchor/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/anchor/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/anchor/style/css.mjs"
-      ]
-    },
-    "element-plus/container/ElAside": {
+    "element-plus/es/components/container/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/container/index.mjs",
       "production": "element-plus/es/components/container/index.mjs",
@@ -117,7 +100,7 @@
         "element-plus/es/components/container/style/css.mjs"
       ]
     },
-    "element-plus/table-v2/ElAutoResizer": {
+    "element-plus/es/components/table-v2/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/table-v2/index.mjs",
       "production": "element-plus/es/components/table-v2/index.mjs",
@@ -134,7 +117,7 @@
         "element-plus/es/components/table-v2/style/css.mjs"
       ]
     },
-    "element-plus/autocomplete/ElAutocomplete": {
+    "element-plus/es/components/autocomplete/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/autocomplete/index.mjs",
       "production": "element-plus/es/components/autocomplete/index.mjs",
@@ -151,7 +134,7 @@
         "element-plus/es/components/autocomplete/style/css.mjs"
       ]
     },
-    "element-plus/avatar/ElAvatar": {
+    "element-plus/es/components/avatar/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/avatar/index.mjs",
       "production": "element-plus/es/components/avatar/index.mjs",
@@ -168,24 +151,7 @@
         "element-plus/es/components/avatar/style/css.mjs"
       ]
     },
-    "element-plus/avatar/ElAvatarGroup": {
-      "type": "module",
-      "development": "element-plus/es/components/avatar/index.mjs",
-      "production": "element-plus/es/components/avatar/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/avatar/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/avatar/style/css.mjs"
-      ]
-    },
-    "element-plus/backtop/ElBacktop": {
+    "element-plus/es/components/backtop/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/backtop/index.mjs",
       "production": "element-plus/es/components/backtop/index.mjs",
@@ -202,7 +168,7 @@
         "element-plus/es/components/backtop/style/css.mjs"
       ]
     },
-    "element-plus/badge/ElBadge": {
+    "element-plus/es/components/badge/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/badge/index.mjs",
       "production": "element-plus/es/components/badge/index.mjs",
@@ -219,7 +185,7 @@
         "element-plus/es/components/badge/style/css.mjs"
       ]
     },
-    "element-plus/breadcrumb/ElBreadcrumb": {
+    "element-plus/es/components/breadcrumb/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/breadcrumb/index.mjs",
       "production": "element-plus/es/components/breadcrumb/index.mjs",
@@ -236,24 +202,7 @@
         "element-plus/es/components/breadcrumb/style/css.mjs"
       ]
     },
-    "element-plus/breadcrumb/ElBreadcrumbItem": {
-      "type": "module",
-      "development": "element-plus/es/components/breadcrumb/index.mjs",
-      "production": "element-plus/es/components/breadcrumb/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/breadcrumb/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/breadcrumb/style/css.mjs"
-      ]
-    },
-    "element-plus/button/ElButton": {
+    "element-plus/es/components/button/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/button/index.mjs",
       "production": "element-plus/es/components/button/index.mjs",
@@ -270,24 +219,7 @@
         "element-plus/es/components/button/style/css.mjs"
       ]
     },
-    "element-plus/button/ElButtonGroup": {
-      "type": "module",
-      "development": "element-plus/es/components/button/index.mjs",
-      "production": "element-plus/es/components/button/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/button/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/button/style/css.mjs"
-      ]
-    },
-    "element-plus/calendar/ElCalendar": {
+    "element-plus/es/components/calendar/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/calendar/index.mjs",
       "production": "element-plus/es/components/calendar/index.mjs",
@@ -304,7 +236,7 @@
         "element-plus/es/components/calendar/style/css.mjs"
       ]
     },
-    "element-plus/card/ElCard": {
+    "element-plus/es/components/card/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/card/index.mjs",
       "production": "element-plus/es/components/card/index.mjs",
@@ -321,7 +253,7 @@
         "element-plus/es/components/card/style/css.mjs"
       ]
     },
-    "element-plus/carousel/ElCarousel": {
+    "element-plus/es/components/carousel/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/carousel/index.mjs",
       "production": "element-plus/es/components/carousel/index.mjs",
@@ -338,24 +270,7 @@
         "element-plus/es/components/carousel/style/css.mjs"
       ]
     },
-    "element-plus/carousel/ElCarouselItem": {
-      "type": "module",
-      "development": "element-plus/es/components/carousel/index.mjs",
-      "production": "element-plus/es/components/carousel/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/carousel/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/carousel/style/css.mjs"
-      ]
-    },
-    "element-plus/cascader/ElCascader": {
+    "element-plus/es/components/cascader/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/cascader/index.mjs",
       "production": "element-plus/es/components/cascader/index.mjs",
@@ -372,7 +287,7 @@
         "element-plus/es/components/cascader/style/css.mjs"
       ]
     },
-    "element-plus/cascader-panel/ElCascaderPanel": {
+    "element-plus/es/components/cascader-panel/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/cascader-panel/index.mjs",
       "production": "element-plus/es/components/cascader-panel/index.mjs",
@@ -389,7 +304,7 @@
         "element-plus/es/components/cascader-panel/style/css.mjs"
       ]
     },
-    "element-plus/check-tag/ElCheckTag": {
+    "element-plus/es/components/check-tag/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/check-tag/index.mjs",
       "production": "element-plus/es/components/check-tag/index.mjs",
@@ -406,7 +321,7 @@
         "element-plus/es/components/check-tag/style/css.mjs"
       ]
     },
-    "element-plus/checkbox/ElCheckbox": {
+    "element-plus/es/components/checkbox/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/checkbox/index.mjs",
       "production": "element-plus/es/components/checkbox/index.mjs",
@@ -423,41 +338,7 @@
         "element-plus/es/components/checkbox/style/css.mjs"
       ]
     },
-    "element-plus/checkbox/ElCheckboxButton": {
-      "type": "module",
-      "development": "element-plus/es/components/checkbox/index.mjs",
-      "production": "element-plus/es/components/checkbox/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/checkbox/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/checkbox/style/css.mjs"
-      ]
-    },
-    "element-plus/checkbox/ElCheckboxGroup": {
-      "type": "module",
-      "development": "element-plus/es/components/checkbox/index.mjs",
-      "production": "element-plus/es/components/checkbox/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/checkbox/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/checkbox/style/css.mjs"
-      ]
-    },
-    "element-plus/col/ElCol": {
+    "element-plus/es/components/col/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/col/index.mjs",
       "production": "element-plus/es/components/col/index.mjs",
@@ -474,7 +355,7 @@
         "element-plus/es/components/col/style/css.mjs"
       ]
     },
-    "element-plus/collapse/ElCollapse": {
+    "element-plus/es/components/collapse/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/collapse/index.mjs",
       "production": "element-plus/es/components/collapse/index.mjs",
@@ -491,24 +372,7 @@
         "element-plus/es/components/collapse/style/css.mjs"
       ]
     },
-    "element-plus/collapse/ElCollapseItem": {
-      "type": "module",
-      "development": "element-plus/es/components/collapse/index.mjs",
-      "production": "element-plus/es/components/collapse/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/collapse/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/collapse/style/css.mjs"
-      ]
-    },
-    "element-plus/collapse-transition/ElCollapseTransition": {
+    "element-plus/es/components/collapse-transition/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/collapse-transition/index.mjs",
       "production": "element-plus/es/components/collapse-transition/index.mjs",
@@ -525,7 +389,7 @@
         "element-plus/es/components/collapse-transition/style/css.mjs"
       ]
     },
-    "element-plus/color-picker/ElColorPicker": {
+    "element-plus/es/components/color-picker/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/color-picker/index.mjs",
       "production": "element-plus/es/components/color-picker/index.mjs",
@@ -542,7 +406,7 @@
         "element-plus/es/components/color-picker/style/css.mjs"
       ]
     },
-    "element-plus/color-picker-panel/ElColorPickerPanel": {
+    "element-plus/es/components/color-picker-panel/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/color-picker-panel/index.mjs",
       "production": "element-plus/es/components/color-picker-panel/index.mjs",
@@ -559,7 +423,7 @@
         "element-plus/es/components/color-picker-panel/style/css.mjs"
       ]
     },
-    "element-plus/config-provider/ElConfigProvider": {
+    "element-plus/es/components/config-provider/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/config-provider/index.mjs",
       "production": "element-plus/es/components/config-provider/index.mjs",
@@ -576,24 +440,7 @@
         "element-plus/es/components/config-provider/style/css.mjs"
       ]
     },
-    "element-plus/container/ElContainer": {
-      "type": "module",
-      "development": "element-plus/es/components/container/index.mjs",
-      "production": "element-plus/es/components/container/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ]
-    },
-    "element-plus/countdown/ElCountdown": {
+    "element-plus/es/components/countdown/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/countdown/index.mjs",
       "production": "element-plus/es/components/countdown/index.mjs",
@@ -610,7 +457,7 @@
         "element-plus/es/components/countdown/style/css.mjs"
       ]
     },
-    "element-plus/date-picker/ElDatePicker": {
+    "element-plus/es/components/date-picker/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/date-picker/index.mjs",
       "production": "element-plus/es/components/date-picker/index.mjs",
@@ -627,7 +474,7 @@
         "element-plus/es/components/date-picker/style/css.mjs"
       ]
     },
-    "element-plus/date-picker-panel/ElDatePickerPanel": {
+    "element-plus/es/components/date-picker-panel/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/date-picker-panel/index.mjs",
       "production": "element-plus/es/components/date-picker-panel/index.mjs",
@@ -644,7 +491,7 @@
         "element-plus/es/components/date-picker-panel/style/css.mjs"
       ]
     },
-    "element-plus/descriptions/ElDescriptions": {
+    "element-plus/es/components/descriptions/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/descriptions/index.mjs",
       "production": "element-plus/es/components/descriptions/index.mjs",
@@ -661,24 +508,7 @@
         "element-plus/es/components/descriptions/style/css.mjs"
       ]
     },
-    "element-plus/descriptions/ElDescriptionsItem": {
-      "type": "module",
-      "development": "element-plus/es/components/descriptions/index.mjs",
-      "production": "element-plus/es/components/descriptions/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/descriptions/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/descriptions/style/css.mjs"
-      ]
-    },
-    "element-plus/dialog/ElDialog": {
+    "element-plus/es/components/dialog/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/dialog/index.mjs",
       "production": "element-plus/es/components/dialog/index.mjs",
@@ -695,7 +525,7 @@
         "element-plus/es/components/dialog/style/css.mjs"
       ]
     },
-    "element-plus/divider/ElDivider": {
+    "element-plus/es/components/divider/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/divider/index.mjs",
       "production": "element-plus/es/components/divider/index.mjs",
@@ -712,7 +542,7 @@
         "element-plus/es/components/divider/style/css.mjs"
       ]
     },
-    "element-plus/drawer/ElDrawer": {
+    "element-plus/es/components/drawer/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/drawer/index.mjs",
       "production": "element-plus/es/components/drawer/index.mjs",
@@ -729,7 +559,7 @@
         "element-plus/es/components/drawer/style/css.mjs"
       ]
     },
-    "element-plus/dropdown/ElDropdown": {
+    "element-plus/es/components/dropdown/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/dropdown/index.mjs",
       "production": "element-plus/es/components/dropdown/index.mjs",
@@ -746,41 +576,7 @@
         "element-plus/es/components/dropdown/style/css.mjs"
       ]
     },
-    "element-plus/dropdown/ElDropdownItem": {
-      "type": "module",
-      "development": "element-plus/es/components/dropdown/index.mjs",
-      "production": "element-plus/es/components/dropdown/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/dropdown/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/dropdown/style/css.mjs"
-      ]
-    },
-    "element-plus/dropdown/ElDropdownMenu": {
-      "type": "module",
-      "development": "element-plus/es/components/dropdown/index.mjs",
-      "production": "element-plus/es/components/dropdown/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/dropdown/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/dropdown/style/css.mjs"
-      ]
-    },
-    "element-plus/empty/ElEmpty": {
+    "element-plus/es/components/empty/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/empty/index.mjs",
       "production": "element-plus/es/components/empty/index.mjs",
@@ -797,24 +593,7 @@
         "element-plus/es/components/empty/style/css.mjs"
       ]
     },
-    "element-plus/container/ElFooter": {
-      "type": "module",
-      "development": "element-plus/es/components/container/index.mjs",
-      "production": "element-plus/es/components/container/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ]
-    },
-    "element-plus/form/ElForm": {
+    "element-plus/es/components/form/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/form/index.mjs",
       "production": "element-plus/es/components/form/index.mjs",
@@ -831,41 +610,7 @@
         "element-plus/es/components/form/style/css.mjs"
       ]
     },
-    "element-plus/form/ElFormItem": {
-      "type": "module",
-      "development": "element-plus/es/components/form/index.mjs",
-      "production": "element-plus/es/components/form/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/form/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/form/style/css.mjs"
-      ]
-    },
-    "element-plus/container/ElHeader": {
-      "type": "module",
-      "development": "element-plus/es/components/container/index.mjs",
-      "production": "element-plus/es/components/container/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ]
-    },
-    "element-plus/icon/ElIcon": {
+    "element-plus/es/components/icon/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/icon/index.mjs",
       "production": "element-plus/es/components/icon/index.mjs",
@@ -882,7 +627,7 @@
         "element-plus/es/components/icon/style/css.mjs"
       ]
     },
-    "element-plus/image/ElImage": {
+    "element-plus/es/components/image/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/image/index.mjs",
       "production": "element-plus/es/components/image/index.mjs",
@@ -899,7 +644,7 @@
         "element-plus/es/components/image/style/css.mjs"
       ]
     },
-    "element-plus/image-viewer/ElImageViewer": {
+    "element-plus/es/components/image-viewer/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/image-viewer/index.mjs",
       "production": "element-plus/es/components/image-viewer/index.mjs",
@@ -916,7 +661,7 @@
         "element-plus/es/components/image-viewer/style/css.mjs"
       ]
     },
-    "element-plus/input/ElInput": {
+    "element-plus/es/components/input/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/input/index.mjs",
       "production": "element-plus/es/components/input/index.mjs",
@@ -933,7 +678,7 @@
         "element-plus/es/components/input/style/css.mjs"
       ]
     },
-    "element-plus/input-number/ElInputNumber": {
+    "element-plus/es/components/input-number/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/input-number/index.mjs",
       "production": "element-plus/es/components/input-number/index.mjs",
@@ -950,7 +695,7 @@
         "element-plus/es/components/input-number/style/css.mjs"
       ]
     },
-    "element-plus/input-otp/ElInputOtp": {
+    "element-plus/es/components/input-otp/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/input-otp/index.mjs",
       "production": "element-plus/es/components/input-otp/index.mjs",
@@ -967,7 +712,7 @@
         "element-plus/es/components/input-otp/style/css.mjs"
       ]
     },
-    "element-plus/input-tag/ElInputTag": {
+    "element-plus/es/components/input-tag/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/input-tag/index.mjs",
       "production": "element-plus/es/components/input-tag/index.mjs",
@@ -984,7 +729,7 @@
         "element-plus/es/components/input-tag/style/css.mjs"
       ]
     },
-    "element-plus/link/ElLink": {
+    "element-plus/es/components/link/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/link/index.mjs",
       "production": "element-plus/es/components/link/index.mjs",
@@ -1001,24 +746,7 @@
         "element-plus/es/components/link/style/css.mjs"
       ]
     },
-    "element-plus/container/ElMain": {
-      "type": "module",
-      "development": "element-plus/es/components/container/index.mjs",
-      "production": "element-plus/es/components/container/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ]
-    },
-    "element-plus/mention/ElMention": {
+    "element-plus/es/components/mention/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/mention/index.mjs",
       "production": "element-plus/es/components/mention/index.mjs",
@@ -1035,7 +763,7 @@
         "element-plus/es/components/mention/style/css.mjs"
       ]
     },
-    "element-plus/menu/ElMenu": {
+    "element-plus/es/components/menu/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/menu/index.mjs",
       "production": "element-plus/es/components/menu/index.mjs",
@@ -1052,41 +780,7 @@
         "element-plus/es/components/menu/style/css.mjs"
       ]
     },
-    "element-plus/menu/ElMenuItem": {
-      "type": "module",
-      "development": "element-plus/es/components/menu/index.mjs",
-      "production": "element-plus/es/components/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ]
-    },
-    "element-plus/menu/ElMenuItemGroup": {
-      "type": "module",
-      "development": "element-plus/es/components/menu/index.mjs",
-      "production": "element-plus/es/components/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ]
-    },
-    "element-plus/select/ElOption": {
+    "element-plus/es/components/select/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/select/index.mjs",
       "production": "element-plus/es/components/select/index.mjs",
@@ -1103,24 +797,7 @@
         "element-plus/es/components/select/style/css.mjs"
       ]
     },
-    "element-plus/select/ElOptionGroup": {
-      "type": "module",
-      "development": "element-plus/es/components/select/index.mjs",
-      "production": "element-plus/es/components/select/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/select/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/select/style/css.mjs"
-      ]
-    },
-    "element-plus/page-header/ElPageHeader": {
+    "element-plus/es/components/page-header/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/page-header/index.mjs",
       "production": "element-plus/es/components/page-header/index.mjs",
@@ -1137,7 +814,7 @@
         "element-plus/es/components/page-header/style/css.mjs"
       ]
     },
-    "element-plus/pagination/ElPagination": {
+    "element-plus/es/components/pagination/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/pagination/index.mjs",
       "production": "element-plus/es/components/pagination/index.mjs",
@@ -1154,7 +831,7 @@
         "element-plus/es/components/pagination/style/css.mjs"
       ]
     },
-    "element-plus/popconfirm/ElPopconfirm": {
+    "element-plus/es/components/popconfirm/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/popconfirm/index.mjs",
       "production": "element-plus/es/components/popconfirm/index.mjs",
@@ -1171,7 +848,7 @@
         "element-plus/es/components/popconfirm/style/css.mjs"
       ]
     },
-    "element-plus/popover/ElPopover": {
+    "element-plus/es/components/popover/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/popover/index.mjs",
       "production": "element-plus/es/components/popover/index.mjs",
@@ -1188,7 +865,7 @@
         "element-plus/es/components/popover/style/css.mjs"
       ]
     },
-    "element-plus/popper/ElPopper": {
+    "element-plus/es/components/popper/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/popper/index.mjs",
       "production": "element-plus/es/components/popper/index.mjs",
@@ -1205,7 +882,7 @@
         "element-plus/es/components/popper/style/css.mjs"
       ]
     },
-    "element-plus/progress/ElProgress": {
+    "element-plus/es/components/progress/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/progress/index.mjs",
       "production": "element-plus/es/components/progress/index.mjs",
@@ -1222,7 +899,7 @@
         "element-plus/es/components/progress/style/css.mjs"
       ]
     },
-    "element-plus/radio/ElRadio": {
+    "element-plus/es/components/radio/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/radio/index.mjs",
       "production": "element-plus/es/components/radio/index.mjs",
@@ -1239,41 +916,7 @@
         "element-plus/es/components/radio/style/css.mjs"
       ]
     },
-    "element-plus/radio/ElRadioButton": {
-      "type": "module",
-      "development": "element-plus/es/components/radio/index.mjs",
-      "production": "element-plus/es/components/radio/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/radio/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/radio/style/css.mjs"
-      ]
-    },
-    "element-plus/radio/ElRadioGroup": {
-      "type": "module",
-      "development": "element-plus/es/components/radio/index.mjs",
-      "production": "element-plus/es/components/radio/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/radio/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/radio/style/css.mjs"
-      ]
-    },
-    "element-plus/rate/ElRate": {
+    "element-plus/es/components/rate/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/rate/index.mjs",
       "production": "element-plus/es/components/rate/index.mjs",
@@ -1290,7 +933,7 @@
         "element-plus/es/components/rate/style/css.mjs"
       ]
     },
-    "element-plus/result/ElResult": {
+    "element-plus/es/components/result/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/result/index.mjs",
       "production": "element-plus/es/components/result/index.mjs",
@@ -1307,7 +950,7 @@
         "element-plus/es/components/result/style/css.mjs"
       ]
     },
-    "element-plus/row/ElRow": {
+    "element-plus/es/components/row/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/row/index.mjs",
       "production": "element-plus/es/components/row/index.mjs",
@@ -1324,7 +967,7 @@
         "element-plus/es/components/row/style/css.mjs"
       ]
     },
-    "element-plus/scrollbar/ElScrollbar": {
+    "element-plus/es/components/scrollbar/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/scrollbar/index.mjs",
       "production": "element-plus/es/components/scrollbar/index.mjs",
@@ -1341,7 +984,7 @@
         "element-plus/es/components/scrollbar/style/css.mjs"
       ]
     },
-    "element-plus/segmented/ElSegmented": {
+    "element-plus/es/components/segmented/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/segmented/index.mjs",
       "production": "element-plus/es/components/segmented/index.mjs",
@@ -1358,24 +1001,7 @@
         "element-plus/es/components/segmented/style/css.mjs"
       ]
     },
-    "element-plus/select/ElSelect": {
-      "type": "module",
-      "development": "element-plus/es/components/select/index.mjs",
-      "production": "element-plus/es/components/select/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/select/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/select/style/css.mjs"
-      ]
-    },
-    "element-plus/select-v2/ElSelectV2": {
+    "element-plus/es/components/select-v2/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/select-v2/index.mjs",
       "production": "element-plus/es/components/select-v2/index.mjs",
@@ -1392,7 +1018,7 @@
         "element-plus/es/components/select-v2/style/css.mjs"
       ]
     },
-    "element-plus/skeleton/ElSkeleton": {
+    "element-plus/es/components/skeleton/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/skeleton/index.mjs",
       "production": "element-plus/es/components/skeleton/index.mjs",
@@ -1409,24 +1035,7 @@
         "element-plus/es/components/skeleton/style/css.mjs"
       ]
     },
-    "element-plus/skeleton/ElSkeletonItem": {
-      "type": "module",
-      "development": "element-plus/es/components/skeleton/index.mjs",
-      "production": "element-plus/es/components/skeleton/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/skeleton/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/skeleton/style/css.mjs"
-      ]
-    },
-    "element-plus/slider/ElSlider": {
+    "element-plus/es/components/slider/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/slider/index.mjs",
       "production": "element-plus/es/components/slider/index.mjs",
@@ -1443,7 +1052,7 @@
         "element-plus/es/components/slider/style/css.mjs"
       ]
     },
-    "element-plus/space/ElSpace": {
+    "element-plus/es/components/space/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/space/index.mjs",
       "production": "element-plus/es/components/space/index.mjs",
@@ -1460,7 +1069,7 @@
         "element-plus/es/components/space/style/css.mjs"
       ]
     },
-    "element-plus/splitter/ElSplitter": {
+    "element-plus/es/components/splitter/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/splitter/index.mjs",
       "production": "element-plus/es/components/splitter/index.mjs",
@@ -1477,24 +1086,7 @@
         "element-plus/es/components/splitter/style/css.mjs"
       ]
     },
-    "element-plus/splitter/ElSplitterPanel": {
-      "type": "module",
-      "development": "element-plus/es/components/splitter/index.mjs",
-      "production": "element-plus/es/components/splitter/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/splitter/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/splitter/style/css.mjs"
-      ]
-    },
-    "element-plus/statistic/ElStatistic": {
+    "element-plus/es/components/statistic/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/statistic/index.mjs",
       "production": "element-plus/es/components/statistic/index.mjs",
@@ -1511,7 +1103,7 @@
         "element-plus/es/components/statistic/style/css.mjs"
       ]
     },
-    "element-plus/steps/ElStep": {
+    "element-plus/es/components/steps/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/steps/index.mjs",
       "production": "element-plus/es/components/steps/index.mjs",
@@ -1528,41 +1120,7 @@
         "element-plus/es/components/steps/style/css.mjs"
       ]
     },
-    "element-plus/steps/ElSteps": {
-      "type": "module",
-      "development": "element-plus/es/components/steps/index.mjs",
-      "production": "element-plus/es/components/steps/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/steps/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/steps/style/css.mjs"
-      ]
-    },
-    "element-plus/menu/ElSubMenu": {
-      "type": "module",
-      "development": "element-plus/es/components/menu/index.mjs",
-      "production": "element-plus/es/components/menu/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ]
-    },
-    "element-plus/switch/ElSwitch": {
+    "element-plus/es/components/switch/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/switch/index.mjs",
       "production": "element-plus/es/components/switch/index.mjs",
@@ -1579,7 +1137,7 @@
         "element-plus/es/components/switch/style/css.mjs"
       ]
     },
-    "element-plus/tabs/ElTabPane": {
+    "element-plus/es/components/tabs/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tabs/index.mjs",
       "production": "element-plus/es/components/tabs/index.mjs",
@@ -1596,7 +1154,7 @@
         "element-plus/es/components/tabs/style/css.mjs"
       ]
     },
-    "element-plus/table/ElTable": {
+    "element-plus/es/components/table/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/table/index.mjs",
       "production": "element-plus/es/components/table/index.mjs",
@@ -1613,58 +1171,7 @@
         "element-plus/es/components/table/style/css.mjs"
       ]
     },
-    "element-plus/table/ElTableColumn": {
-      "type": "module",
-      "development": "element-plus/es/components/table/index.mjs",
-      "production": "element-plus/es/components/table/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/table/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/table/style/css.mjs"
-      ]
-    },
-    "element-plus/table-v2/ElTableV2": {
-      "type": "module",
-      "development": "element-plus/es/components/table-v2/index.mjs",
-      "production": "element-plus/es/components/table-v2/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/table-v2/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/table-v2/style/css.mjs"
-      ]
-    },
-    "element-plus/tabs/ElTabs": {
-      "type": "module",
-      "development": "element-plus/es/components/tabs/index.mjs",
-      "production": "element-plus/es/components/tabs/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tabs/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tabs/style/css.mjs"
-      ]
-    },
-    "element-plus/tag/ElTag": {
+    "element-plus/es/components/tag/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tag/index.mjs",
       "production": "element-plus/es/components/tag/index.mjs",
@@ -1681,7 +1188,7 @@
         "element-plus/es/components/tag/style/css.mjs"
       ]
     },
-    "element-plus/text/ElText": {
+    "element-plus/es/components/text/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/text/index.mjs",
       "production": "element-plus/es/components/text/index.mjs",
@@ -1698,7 +1205,7 @@
         "element-plus/es/components/text/style/css.mjs"
       ]
     },
-    "element-plus/time-picker/ElTimePicker": {
+    "element-plus/es/components/time-picker/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/time-picker/index.mjs",
       "production": "element-plus/es/components/time-picker/index.mjs",
@@ -1715,7 +1222,7 @@
         "element-plus/es/components/time-picker/style/css.mjs"
       ]
     },
-    "element-plus/time-select/ElTimeSelect": {
+    "element-plus/es/components/time-select/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/time-select/index.mjs",
       "production": "element-plus/es/components/time-select/index.mjs",
@@ -1732,7 +1239,7 @@
         "element-plus/es/components/time-select/style/css.mjs"
       ]
     },
-    "element-plus/timeline/ElTimeline": {
+    "element-plus/es/components/timeline/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/timeline/index.mjs",
       "production": "element-plus/es/components/timeline/index.mjs",
@@ -1749,24 +1256,7 @@
         "element-plus/es/components/timeline/style/css.mjs"
       ]
     },
-    "element-plus/timeline/ElTimelineItem": {
-      "type": "module",
-      "development": "element-plus/es/components/timeline/index.mjs",
-      "production": "element-plus/es/components/timeline/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/timeline/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/timeline/style/css.mjs"
-      ]
-    },
-    "element-plus/tooltip/ElTooltip": {
+    "element-plus/es/components/tooltip/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tooltip/index.mjs",
       "production": "element-plus/es/components/tooltip/index.mjs",
@@ -1783,7 +1273,7 @@
         "element-plus/es/components/tooltip/style/css.mjs"
       ]
     },
-    "element-plus/tour/ElTour": {
+    "element-plus/es/components/tour/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tour/index.mjs",
       "production": "element-plus/es/components/tour/index.mjs",
@@ -1800,24 +1290,7 @@
         "element-plus/es/components/tour/style/css.mjs"
       ]
     },
-    "element-plus/tour/ElTourStep": {
-      "type": "module",
-      "development": "element-plus/es/components/tour/index.mjs",
-      "production": "element-plus/es/components/tour/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tour/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tour/style/css.mjs"
-      ]
-    },
-    "element-plus/transfer/ElTransfer": {
+    "element-plus/es/components/transfer/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/transfer/index.mjs",
       "production": "element-plus/es/components/transfer/index.mjs",
@@ -1834,7 +1307,7 @@
         "element-plus/es/components/transfer/style/css.mjs"
       ]
     },
-    "element-plus/tree/ElTree": {
+    "element-plus/es/components/tree/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tree/index.mjs",
       "production": "element-plus/es/components/tree/index.mjs",
@@ -1851,7 +1324,7 @@
         "element-plus/es/components/tree/style/css.mjs"
       ]
     },
-    "element-plus/tree-select/ElTreeSelect": {
+    "element-plus/es/components/tree-select/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tree-select/index.mjs",
       "production": "element-plus/es/components/tree-select/index.mjs",
@@ -1868,7 +1341,7 @@
         "element-plus/es/components/tree-select/style/css.mjs"
       ]
     },
-    "element-plus/tree-v2/ElTreeV2": {
+    "element-plus/es/components/tree-v2/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/tree-v2/index.mjs",
       "production": "element-plus/es/components/tree-v2/index.mjs",
@@ -1885,7 +1358,7 @@
         "element-plus/es/components/tree-v2/style/css.mjs"
       ]
     },
-    "element-plus/upload/ElUpload": {
+    "element-plus/es/components/upload/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/upload/index.mjs",
       "production": "element-plus/es/components/upload/index.mjs",
@@ -1902,7 +1375,7 @@
         "element-plus/es/components/upload/style/css.mjs"
       ]
     },
-    "element-plus/watermark/ElWatermark": {
+    "element-plus/es/components/watermark/index.mjs": {
       "type": "module",
       "development": "element-plus/es/components/watermark/index.mjs",
       "production": "element-plus/es/components/watermark/index.mjs",

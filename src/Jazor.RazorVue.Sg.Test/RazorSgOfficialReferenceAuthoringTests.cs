@@ -38,7 +38,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
 
         StringAssert.Contains(
             observation.ModuleText,
-            "from \"Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js\"",
+            "from \"../clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js\"",
             StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "focusAsync(state.inputElement)", StringComparison.Ordinal);
         StringAssert.Contains(

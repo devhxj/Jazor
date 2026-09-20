@@ -3,7 +3,11 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Element Plus root host.
 /// </summary>
-[ECMAScript("element-plus")]
+/// <remarks>
+/// 聚合入口是上游的 <c>es/index.mjs</c>（package.json 的 <c>module</c> 字段），
+/// 它同时导出组件、指令与 <c>default</c> 插件对象；Jazor 不发明裸包简写。
+/// </remarks>
+[ECMAScript("element-plus/es/index.mjs")]
 [Description("@#")]
 public static class ElementPlus
 {

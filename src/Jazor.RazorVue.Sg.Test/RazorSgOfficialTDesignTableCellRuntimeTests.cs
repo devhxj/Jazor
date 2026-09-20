@@ -99,7 +99,7 @@ public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
                 }
 
                 [ECMAScriptName("Button")]
-                [ECMAScript("tdesign-vue-next")]
+                [ECMAScript("tdesign-vue-next/es/button/index.mjs")]
                 public sealed class TButton : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("onClick")]
@@ -114,7 +114,7 @@ public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("builder.Open", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "__jazor$renderH, context", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "import { Button } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { Button } from \"tdesign-vue-next/es/button/index.mjs\";", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/t-design-table-cell-runtime.mjs",
@@ -165,8 +165,8 @@ public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
             {
                 ["node_modules/table-cell-capture/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
                 ["node_modules/table-cell-capture/index.mjs"] = "export const CellCapture = { name: \"cell-capture\" };",
-                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Button = { name: \"button\" };"
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
+                ["node_modules/tdesign-vue-next/es/button/index.mjs"] = "export const Button = { name: \"button\" };"
             });
     }
 }

@@ -21,6 +21,9 @@ namespace Jazor.Compiler;
 /// </remarks>
 public sealed class ESGenerator : IIncrementalGenerator
 {
+    /// <summary>ECMAScript 自有源码 carrier 在项目源码树中的根目录。</summary>
+    private const string CarrierSourceRoot = "clr/";
+
     private static readonly DiagnosticDescriptor ModuleGenerationFailed = new(
         id: "JAZORG001",
         title: "Jazor module generation failed",
@@ -447,9 +450,8 @@ public sealed class ESGenerator : IIncrementalGenerator
         if (moduleCatalogImportPaths.Contains(projectPath))
             return true;
 
-        const string carrierRoot = "clr/";
-        return projectPath.StartsWith(carrierRoot, StringComparison.Ordinal) &&
-               moduleCatalogImportPaths.Contains(projectPath.Substring(carrierRoot.Length));
+        return projectPath.StartsWith(CarrierSourceRoot, StringComparison.Ordinal) &&
+               moduleCatalogImportPaths.Contains(projectPath.Substring(CarrierSourceRoot.Length));
     }
 
     private static IReadOnlyList<string> CollectModuleDependencies(
@@ -480,20 +482,17 @@ public sealed class ESGenerator : IIncrementalGenerator
             }
 
             // 两种形态都归一成"项目相对路径"，它才是产物图的边标识。
-            string dependency;
-            try
-            {
-                dependency = isRelativeSpecifier
-                    ? ECMAScriptModulePath.ResolveRelativePath(relativePath, source)
-                    : NormalizeRelativePath(source);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"DBG dep relativePath={relativePath} source={source} isRel={isRelativeSpecifier} isCatalog={isModuleCatalogImport}: {ex.Message}", ex);
-            }
-            dependencies.Add(dependency);
-        }
+            var dependency = isRelativeSpecifier
+                ? ECMAScriptModulePath.ResolveRelativePath(relativePath, source)
+                : NormalizeRelativePath(source);
+
+            // carrier 引用（clr/**）不是本编译的 ModuleCatalog 模块：载体由资源库清单物化，
+            // 载体内部的模块边由载体自身的 manifest 表达。把它记成本图依赖会让
+            // ModuleCollector 去当前程序集闭包里找 clr/** 而失败。
+            if (dependency.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
+                continue;
+
+            dependencies.Add(dependency);        }
 
         return dependencies.OrderBy(static value => value, StringComparer.Ordinal).ToArray();
     }

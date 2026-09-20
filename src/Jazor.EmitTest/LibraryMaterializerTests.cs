@@ -151,7 +151,7 @@ public sealed class LibraryMaterializerTests
                 [tdesignManifest, vueManifest],
                 outputRoot,
                 BuildMode.Production,
-                requiredImports: ["tdesign-vue-next/button/Button"]);
+                requiredImports: ["tdesign-vue-next/es/button/index.mjs"]);
 
             // A stale lock must not survive when the root contains external identities. Deno's
             // resolved graph is the complete lock source for npm/JSR packages.
@@ -422,14 +422,14 @@ public sealed class LibraryMaterializerTests
                 [tdesignManifest, vueManifest],
                 outputRoot,
                 BuildMode.Production,
-                requiredImports: ["tdesign-vue-next/button/Button"]);
+                requiredImports: ["tdesign-vue-next/es/button/index.mjs"]);
 
-            Assert.IsTrue(result.ImportPaths.ContainsKey("tdesign-vue-next/button/Button"));
-            Assert.IsFalse(result.ImportPaths.ContainsKey("tdesign-vue-next/alert/Alert"));
+            Assert.IsTrue(result.ImportPaths.ContainsKey("tdesign-vue-next/es/button/index.mjs"));
+            Assert.IsFalse(result.ImportPaths.ContainsKey("tdesign-vue-next/es/alert/index.mjs"));
             Assert.IsFalse(result.StylePaths.Any(path => path.Contains("alert", StringComparison.OrdinalIgnoreCase)));
             Assert.IsFalse(result.StylePaths.Any(path => path.Contains("root", StringComparison.OrdinalIgnoreCase)));
             Assert.IsTrue(result.ExternalStylesheetPaths.Any(path => path.Contains("button", StringComparison.OrdinalIgnoreCase)));
-            Assert.AreEqual("tdesign-vue-next/es/button/index.mjs", result.ImportPaths["tdesign-vue-next/button/Button"]);
+            Assert.AreEqual("tdesign-vue-next/es/button/index.mjs", result.ImportPaths["tdesign-vue-next/es/button/index.mjs"]);
             Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("tdesign-vue-next", StringComparison.OrdinalIgnoreCase)));
         }
         finally
@@ -453,13 +453,13 @@ public sealed class LibraryMaterializerTests
                 [elementPlusManifest, vueManifest],
                 outputRoot,
                 BuildMode.Production,
-                requiredImports: ["element-plus/button/ElButton"]);
+                requiredImports: ["element-plus/es/components/button/index.mjs"]);
 
-            Assert.IsTrue(result.ImportPaths.ContainsKey("element-plus/button/ElButton"));
-            Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/alert/ElAlert"));
-            Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus"));
+            Assert.IsTrue(result.ImportPaths.ContainsKey("element-plus/es/components/button/index.mjs"));
+            Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/es/components/alert/index.mjs"));
+            Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/es/index.mjs"));
             Assert.IsTrue(result.ExternalStyleModuleImports.Any(path => path.Contains("button", StringComparison.OrdinalIgnoreCase)));
-            Assert.AreEqual("element-plus/es/components/button/index.mjs", result.ImportPaths["element-plus/button/ElButton"]);
+            Assert.AreEqual("element-plus/es/components/button/index.mjs", result.ImportPaths["element-plus/es/components/button/index.mjs"]);
             Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("element-plus", StringComparison.OrdinalIgnoreCase)));
         }
         finally
@@ -1054,7 +1054,7 @@ public sealed class LibraryMaterializerTests
                 [tdesignManifest],
                 outputRoot,
                 BuildMode.Production,
-                requiredImports: ["tdesign-vue-next/button/Button"]);
+                requiredImports: ["tdesign-vue-next/es/button/index.mjs"]);
 
             WriteRestoredPackage(
                 outputRoot,
@@ -1070,10 +1070,10 @@ public sealed class LibraryMaterializerTests
                 await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
             Assert.AreEqual(
                 "/jazor/node_modules/tdesign-vue-next/es/button/index.mjs",
-                browserMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/button/Button").GetString());
+                browserMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/es/button/index.mjs").GetString());
             Assert.AreEqual(
                 "./node_modules/tdesign-vue-next/es/button/index.mjs",
-                rootSsrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/button/Button").GetString());
+                rootSsrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/es/button/index.mjs").GetString());
 
             var ssrRoot = Path.Combine(outputRoot, "ssr");
             await ImportMapWriter.WriteSsrAsync(ssrRoot, materialization);
@@ -1081,7 +1081,7 @@ public sealed class LibraryMaterializerTests
                 await File.ReadAllTextAsync(Path.Combine(ssrRoot, ImportMapWriter.SsrImportMapFileName)));
             Assert.AreEqual(
                 "../node_modules/tdesign-vue-next/es/button/index.mjs",
-                ssrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/button/Button").GetString());
+                ssrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/es/button/index.mjs").GetString());
         }
         finally
         {

@@ -257,40 +257,25 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         {
             foreach (var supportingModule in supportingModules)
             {
-                var packageName = GetPackageName(supportingModule.Key);
-                if (packageName is null)
-                {
+                // fixture 里的每个模块文件都按其裸 specifier 暴露：上游包（如
+                // tdesign-vue-next）不发布 exports 字段，深层 specifier 直接按文件布局解析，
+                // 因此映射必须逐文件建立，不能只映射包根。
+                if (!IsJavaScriptModulePath(supportingModule.Key))
                     continue;
-                }
 
-                using var manifest = JsonDocument.Parse(supportingModule.Value);
-                var exportPath = manifest.RootElement.GetProperty("exports").GetString()
-                    ?? throw new InvalidOperationException($"Package fixture '{packageName}' must expose a string exports path.");
-                if (!exportPath.StartsWith("./", StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException($"Package fixture '{packageName}' must expose a relative exports path.");
-                }
+                var normalized = supportingModule.Key.Replace('\\', '/');
+                if (!normalized.StartsWith(NodeModulesPrefix, StringComparison.Ordinal))
+                    continue;
 
-                imports.Add(packageName, $"./node_modules/{packageName}/{exportPath[2..]}");
+                var specifier = normalized.Substring(NodeModulesPrefix.Length);
+                imports[specifier] = "./" + normalized;
             }
         }
 
         return JsonSerializer.Serialize(new { imports });
     }
 
-    private static string? GetPackageName(string supportingModulePath)
-    {
-        var normalizedPath = supportingModulePath.Replace('\\', '/');
-        const string prefix = "node_modules/";
-        const string suffix = "/package.json";
-        if (!normalizedPath.StartsWith(prefix, StringComparison.Ordinal)
-            || !normalizedPath.EndsWith(suffix, StringComparison.Ordinal))
-        {
-            return null;
-        }
-
-        return normalizedPath[prefix.Length..^suffix.Length];
-    }
+    private const string NodeModulesPrefix = "node_modules/";
 
     private static void MaterializeCatalogDependencies(
         string root,

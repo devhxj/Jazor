@@ -55,8 +55,8 @@ public sealed class RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddMultipleAttributes", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "nameof(global::ECMAScript.ElementPlus.ElInput.ModelValueChanged)", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { ElButton } from \"element-plus/button/ElButton\";", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "import { ElInput } from \"element-plus/input/ElInput\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { ElButton } from \"element-plus/es/components/button/index.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { ElInput } from \"element-plus/es/components/input/index.mjs\";", StringComparison.Ordinal);
         Assert.DoesNotContain("builder.OpenComponent", observation.ModuleText, StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
@@ -68,8 +68,8 @@ public sealed class RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests
             import test from "node:test";
 
             import component from "./components/element-plus-natural-authoring-runtime.mjs";
-            import { ElButton } from "element-plus/button/ElButton";
-            import { ElInput } from "element-plus/input/ElInput";
+            import { ElButton } from "element-plus/es/components/button/index.mjs";
+            import { ElInput } from "element-plus/es/components/input/index.mjs";
 
             const find = (nodes, name) => nodes.find(node => node?.name === name);
 
@@ -106,10 +106,9 @@ public sealed class RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["node_modules/element-plus/button/ElButton/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/element-plus/button/ElButton/index.mjs"] = "export const ElButton = { name: \"el-button\" };",
-                ["node_modules/element-plus/input/ElInput/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
-                ["node_modules/element-plus/input/ElInput/index.mjs"] = "export const ElInput = { name: \"el-input\" };"
+                ["node_modules/element-plus/package.json"] = """{"type":"module"}""",
+                ["node_modules/element-plus/es/components/button/index.mjs"] = "export const ElButton = { name: \"el-button\" };",
+                ["node_modules/element-plus/es/components/input/index.mjs"] = "export const ElInput = { name: \"el-input\" };"
             });
     }
 }

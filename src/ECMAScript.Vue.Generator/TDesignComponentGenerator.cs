@@ -219,7 +219,7 @@ internal static class TDesignComponentGenerator
             builder.AppendLine();
             AppendXmlSummary(builder, component.Component.Contract.Description);
             builder.AppendLine($"[ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
-            builder.AppendLine($"[ECMAScript(\"tdesign-vue-next/{component.Component.Binding.Module}/{component.Component.Binding.RuntimeExport}\")]");
+            builder.AppendLine($"[ECMAScript(\"{GetModuleSpecifier(component.Component.Binding)}\")]");
             var genericSuffix = component.TypeParameters.Length == 0
                 ? string.Empty
                 : "<" + string.Join(", ", component.TypeParameters.Select(static parameter => parameter.Name)) + ">";
@@ -275,7 +275,7 @@ internal static class TDesignComponentGenerator
             {
                 builder.AppendLine();
                 builder.AppendLine($"[ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
-                builder.AppendLine($"[ECMAScript(\"tdesign-vue-next/{component.Component.Binding.Module}/{component.Component.Binding.RuntimeExport}\")]");
+                builder.AppendLine($"[ECMAScript(\"{GetModuleSpecifier(component.Component.Binding)}\")]");
                 // Razor's component discovery cannot disambiguate a generic component and a
                 // same-named closed alias. Keep the generated alias for assembly-internal
                 // metadata compatibility, while typed Razor markup uses the generic component
@@ -294,7 +294,7 @@ internal static class TDesignComponentGenerator
             foreach (var component in components)
             {
                 AppendXmlSummary(builder, component.Component.Contract.Description, "    ");
-                builder.AppendLine($"    [ECMAScript(\"tdesign-vue-next/{component.Component.Binding.Module}/{component.Component.Binding.RuntimeExport}\")]");
+                builder.AppendLine($"    [ECMAScript(\"{GetModuleSpecifier(component.Component.Binding)}\")]");
                 builder.AppendLine($"    [ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"    public extern static ITDesignComponent {component.Component.Contract.AuthoringType} {{ get; }}");
                 builder.AppendLine();
@@ -333,6 +333,17 @@ internal static class TDesignComponentGenerator
                 : $"{indent}/// {EscapeXml(line.Trim())}");
         builder.AppendLine($"{indent}/// </summary>");
     }
+
+    /// <summary>
+    /// [ECMAScript] 保存生成 import 的上游公开入口，必须能被恢复后的 package 解析。
+    ///
+    /// TDesign 按组件目录发布 ESM 入口：`es/{module}/index.mjs` 导出该组件并自带样式边。
+    /// 不要退化成 Jazor 自造的 `{package}/{module}/{export}` 简写——该路径在上游不存在
+    /// （`es/button/` 下只有 index.mjs / button.mjs / props.mjs），且 tdesign-vue-next@1.20.7
+    /// 没有 exports 字段，会按文件布局字面解析而失败。
+    /// </summary>
+    private static string GetModuleSpecifier(Binding binding)
+        => $"tdesign-vue-next/es/{binding.Module}/index.mjs";
 
     private static string EscapeXml(string value)
         => value.Replace("&", "&amp;", StringComparison.Ordinal)

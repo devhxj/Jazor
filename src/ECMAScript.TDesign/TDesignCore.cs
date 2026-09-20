@@ -3,7 +3,11 @@ namespace ECMAScript.TDesign;
 /// <summary>
 /// TDesign Vue Next 的入口，提供插件安装和运行时版本信息。
 /// </summary>
-[ECMAScript("tdesign-vue-next")]
+/// <remarks>
+/// 上游聚合入口是 <c>es/index.mjs</c>（package.json 的 <c>module</c> 字段），
+/// 它同时导出 <c>default</c> 插件对象与 <c>install</c>；Jazor 不发明入口路径。
+/// </remarks>
+[ECMAScript("tdesign-vue-next/es/index.mjs")]
 [Description("@#")]
 public static class TDesign
 {

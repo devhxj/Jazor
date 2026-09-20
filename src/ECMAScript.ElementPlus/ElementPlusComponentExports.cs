@@ -5,672 +5,672 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Export surface for generated Element Plus components.
 /// </summary>
-[ECMAScript("element-plus")]
+[ECMAScript("element-plus/es/index.mjs")]
 public static class ElComponents
 {
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAffix"/>。</summary>
     /// <remarks>Fix the element to a specific visible area.</remarks>
-    [ECMAScript("element-plus/affix/ElAffix")]
+    [ECMAScript("element-plus/es/components/affix/index.mjs")]
     [ECMAScriptName("ElAffix")]
     public extern static IElementPlusComponent ElAffix { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAlert"/>。</summary>
     /// <remarks>Displays important alert messages.</remarks>
-    [ECMAScript("element-plus/alert/ElAlert")]
+    [ECMAScript("element-plus/es/components/alert/index.mjs")]
     [ECMAScriptName("ElAlert")]
     public extern static IElementPlusComponent ElAlert { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAnchor"/>。</summary>
     /// <remarks>Through the anchor point, you can quickly find the position of the information content on the current page.</remarks>
-    [ECMAScript("element-plus/anchor/ElAnchor")]
+    [ECMAScript("element-plus/es/components/anchor/index.mjs")]
     [ECMAScriptName("ElAnchor")]
     public extern static IElementPlusComponent ElAnchor { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAnchorLink"/>。</summary>
     /// <remarks>el-anchor-link</remarks>
-    [ECMAScript("element-plus/anchor/ElAnchorLink")]
+    [ECMAScript("element-plus/es/components/anchor/index.mjs")]
     [ECMAScriptName("ElAnchorLink")]
     public extern static IElementPlusComponent ElAnchorLink { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAside"/>。</summary>
     /// <remarks>el-aside</remarks>
-    [ECMAScript("element-plus/container/ElAside")]
+    [ECMAScript("element-plus/es/components/container/index.mjs")]
     [ECMAScriptName("ElAside")]
     public extern static IElementPlusComponent ElAside { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAutoResizer"/>。</summary>
     /// <remarks>ElAutoResizer</remarks>
-    [ECMAScript("element-plus/table-v2/ElAutoResizer")]
+    [ECMAScript("element-plus/es/components/table-v2/index.mjs")]
     [ECMAScriptName("ElAutoResizer")]
     public extern static IElementPlusComponent ElAutoResizer { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAutocomplete"/>。</summary>
     /// <remarks>Get some recommended tips based on the current input.</remarks>
-    [ECMAScript("element-plus/autocomplete/ElAutocomplete")]
+    [ECMAScript("element-plus/es/components/autocomplete/index.mjs")]
     [ECMAScriptName("ElAutocomplete")]
     public extern static IElementPlusComponent ElAutocomplete { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAvatar"/>。</summary>
     /// <remarks>Avatars can be used to represent people or objects. It supports images, Icons, or characters.</remarks>
-    [ECMAScript("element-plus/avatar/ElAvatar")]
+    [ECMAScript("element-plus/es/components/avatar/index.mjs")]
     [ECMAScriptName("ElAvatar")]
     public extern static IElementPlusComponent ElAvatar { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElAvatarGroup"/>。</summary>
     /// <remarks>el-avatar-group</remarks>
-    [ECMAScript("element-plus/avatar/ElAvatarGroup")]
+    [ECMAScript("element-plus/es/components/avatar/index.mjs")]
     [ECMAScriptName("ElAvatarGroup")]
     public extern static IElementPlusComponent ElAvatarGroup { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElBacktop"/>。</summary>
     /// <remarks>A button to back to top.</remarks>
-    [ECMAScript("element-plus/backtop/ElBacktop")]
+    [ECMAScript("element-plus/es/components/backtop/index.mjs")]
     [ECMAScriptName("ElBacktop")]
     public extern static IElementPlusComponent ElBacktop { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElBadge"/>。</summary>
     /// <remarks>A number or status mark on buttons and icons.</remarks>
-    [ECMAScript("element-plus/badge/ElBadge")]
+    [ECMAScript("element-plus/es/components/badge/index.mjs")]
     [ECMAScriptName("ElBadge")]
     public extern static IElementPlusComponent ElBadge { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElBreadcrumb"/>。</summary>
     /// <remarks>Displays the location of the current page, making it easier to browser back.</remarks>
-    [ECMAScript("element-plus/breadcrumb/ElBreadcrumb")]
+    [ECMAScript("element-plus/es/components/breadcrumb/index.mjs")]
     [ECMAScriptName("ElBreadcrumb")]
     public extern static IElementPlusComponent ElBreadcrumb { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElBreadcrumbItem"/>。</summary>
     /// <remarks>el-breadcrumb-item</remarks>
-    [ECMAScript("element-plus/breadcrumb/ElBreadcrumbItem")]
+    [ECMAScript("element-plus/es/components/breadcrumb/index.mjs")]
     [ECMAScriptName("ElBreadcrumbItem")]
     public extern static IElementPlusComponent ElBreadcrumbItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElButton"/>。</summary>
     /// <remarks>Commonly used button.</remarks>
-    [ECMAScript("element-plus/button/ElButton")]
+    [ECMAScript("element-plus/es/components/button/index.mjs")]
     [ECMAScriptName("ElButton")]
     public extern static IElementPlusComponent ElButton { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElButtonGroup"/>。</summary>
     /// <remarks>el-button-group</remarks>
-    [ECMAScript("element-plus/button/ElButtonGroup")]
+    [ECMAScript("element-plus/es/components/button/index.mjs")]
     [ECMAScriptName("ElButtonGroup")]
     public extern static IElementPlusComponent ElButtonGroup { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCalendar"/>。</summary>
     /// <remarks>Display date.</remarks>
-    [ECMAScript("element-plus/calendar/ElCalendar")]
+    [ECMAScript("element-plus/es/components/calendar/index.mjs")]
     [ECMAScriptName("ElCalendar")]
     public extern static IElementPlusComponent ElCalendar { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCard"/>。</summary>
     /// <remarks>Integrate information in a card container.</remarks>
-    [ECMAScript("element-plus/card/ElCard")]
+    [ECMAScript("element-plus/es/components/card/index.mjs")]
     [ECMAScriptName("ElCard")]
     public extern static IElementPlusComponent ElCard { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCarousel"/>。</summary>
     /// <remarks>Loop a series of images or texts in a limited space</remarks>
-    [ECMAScript("element-plus/carousel/ElCarousel")]
+    [ECMAScript("element-plus/es/components/carousel/index.mjs")]
     [ECMAScriptName("ElCarousel")]
     public extern static IElementPlusComponent ElCarousel { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCarouselItem"/>。</summary>
     /// <remarks>el-carousel-item</remarks>
-    [ECMAScript("element-plus/carousel/ElCarouselItem")]
+    [ECMAScript("element-plus/es/components/carousel/index.mjs")]
     [ECMAScriptName("ElCarouselItem")]
     public extern static IElementPlusComponent ElCarouselItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCascader"/>。</summary>
     /// <remarks>If the options have a clear hierarchical structure, Cascader can be used to view and select them.</remarks>
-    [ECMAScript("element-plus/cascader/ElCascader")]
+    [ECMAScript("element-plus/es/components/cascader/index.mjs")]
     [ECMAScriptName("ElCascader")]
     public extern static IElementPlusComponent ElCascader { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCascaderPanel"/>。</summary>
     /// <remarks>el-cascader-panel</remarks>
-    [ECMAScript("element-plus/cascader-panel/ElCascaderPanel")]
+    [ECMAScript("element-plus/es/components/cascader-panel/index.mjs")]
     [ECMAScriptName("ElCascaderPanel")]
     public extern static IElementPlusComponent ElCascaderPanel { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCheckTag"/>。</summary>
     /// <remarks>el-check-tag</remarks>
-    [ECMAScript("element-plus/check-tag/ElCheckTag")]
+    [ECMAScript("element-plus/es/components/check-tag/index.mjs")]
     [ECMAScriptName("ElCheckTag")]
     public extern static IElementPlusComponent ElCheckTag { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCheckbox"/>。</summary>
     /// <remarks>A group of options for multiple choices.</remarks>
-    [ECMAScript("element-plus/checkbox/ElCheckbox")]
+    [ECMAScript("element-plus/es/components/checkbox/index.mjs")]
     [ECMAScriptName("ElCheckbox")]
     public extern static IElementPlusComponent ElCheckbox { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCheckboxButton"/>。</summary>
     /// <remarks>el-checkbox-button</remarks>
-    [ECMAScript("element-plus/checkbox/ElCheckboxButton")]
+    [ECMAScript("element-plus/es/components/checkbox/index.mjs")]
     [ECMAScriptName("ElCheckboxButton")]
     public extern static IElementPlusComponent ElCheckboxButton { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCheckboxGroup"/>。</summary>
     /// <remarks>el-checkbox-group</remarks>
-    [ECMAScript("element-plus/checkbox/ElCheckboxGroup")]
+    [ECMAScript("element-plus/es/components/checkbox/index.mjs")]
     [ECMAScriptName("ElCheckboxGroup")]
     public extern static IElementPlusComponent ElCheckboxGroup { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCol"/>。</summary>
     /// <remarks>el-col</remarks>
-    [ECMAScript("element-plus/col/ElCol")]
+    [ECMAScript("element-plus/es/components/col/index.mjs")]
     [ECMAScriptName("ElCol")]
     public extern static IElementPlusComponent ElCol { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCollapse"/>。</summary>
     /// <remarks>Use Collapse to store contents.</remarks>
-    [ECMAScript("element-plus/collapse/ElCollapse")]
+    [ECMAScript("element-plus/es/components/collapse/index.mjs")]
     [ECMAScriptName("ElCollapse")]
     public extern static IElementPlusComponent ElCollapse { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCollapseItem"/>。</summary>
     /// <remarks>el-collapse-item</remarks>
-    [ECMAScript("element-plus/collapse/ElCollapseItem")]
+    [ECMAScript("element-plus/es/components/collapse/index.mjs")]
     [ECMAScriptName("ElCollapseItem")]
     public extern static IElementPlusComponent ElCollapseItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCollapseTransition"/>。</summary>
     /// <remarks>ElCollapseTransition</remarks>
-    [ECMAScript("element-plus/collapse-transition/ElCollapseTransition")]
+    [ECMAScript("element-plus/es/components/collapse-transition/index.mjs")]
     [ECMAScriptName("ElCollapseTransition")]
     public extern static IElementPlusComponent ElCollapseTransition { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElColorPicker"/>。</summary>
     /// <remarks>ColorPicker is a color selector supporting multiple color formats.</remarks>
-    [ECMAScript("element-plus/color-picker/ElColorPicker")]
+    [ECMAScript("element-plus/es/components/color-picker/index.mjs")]
     [ECMAScriptName("ElColorPicker")]
     public extern static IElementPlusComponent ElColorPicker { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElColorPickerPanel"/>。</summary>
     /// <remarks>`ColorPickerPanel` is the core component of `ColorPicker`.</remarks>
-    [ECMAScript("element-plus/color-picker-panel/ElColorPickerPanel")]
+    [ECMAScript("element-plus/es/components/color-picker-panel/index.mjs")]
     [ECMAScriptName("ElColorPickerPanel")]
     public extern static IElementPlusComponent ElColorPickerPanel { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElConfigProvider"/>。</summary>
     /// <remarks>Config Provider is used for providing global configurations, which enables your entire application to access these configurations everywhere.</remarks>
-    [ECMAScript("element-plus/config-provider/ElConfigProvider")]
+    [ECMAScript("element-plus/es/components/config-provider/index.mjs")]
     [ECMAScriptName("ElConfigProvider")]
     public extern static IElementPlusComponent ElConfigProvider { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElContainer"/>。</summary>
     /// <remarks>Container components for scaffolding basic structure of the page:</remarks>
-    [ECMAScript("element-plus/container/ElContainer")]
+    [ECMAScript("element-plus/es/components/container/index.mjs")]
     [ECMAScriptName("ElContainer")]
     public extern static IElementPlusComponent ElContainer { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElCountdown"/>。</summary>
     /// <remarks>:::demo Countdown component, support to add other components control countdown.</remarks>
-    [ECMAScript("element-plus/countdown/ElCountdown")]
+    [ECMAScript("element-plus/es/components/countdown/index.mjs")]
     [ECMAScriptName("ElCountdown")]
     public extern static IElementPlusComponent ElCountdown { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDatePicker"/>。</summary>
     /// <remarks>Use Date Picker for date input.</remarks>
-    [ECMAScript("element-plus/date-picker/ElDatePicker")]
+    [ECMAScript("element-plus/es/components/date-picker/index.mjs")]
     [ECMAScriptName("ElDatePicker")]
     public extern static IElementPlusComponent ElDatePicker { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDatePickerPanel"/>。</summary>
     /// <remarks>`DatePickerPanel` is the core component of `DatePicker`.</remarks>
-    [ECMAScript("element-plus/date-picker-panel/ElDatePickerPanel")]
+    [ECMAScript("element-plus/es/components/date-picker-panel/index.mjs")]
     [ECMAScriptName("ElDatePickerPanel")]
     public extern static IElementPlusComponent ElDatePickerPanel { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDescriptions"/>。</summary>
     /// <remarks>Display multiple fields in list form.</remarks>
-    [ECMAScript("element-plus/descriptions/ElDescriptions")]
+    [ECMAScript("element-plus/es/components/descriptions/index.mjs")]
     [ECMAScriptName("ElDescriptions")]
     public extern static IElementPlusComponent ElDescriptions { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDescriptionsItem"/>。</summary>
     /// <remarks>el-descriptions-item</remarks>
-    [ECMAScript("element-plus/descriptions/ElDescriptionsItem")]
+    [ECMAScript("element-plus/es/components/descriptions/index.mjs")]
     [ECMAScriptName("ElDescriptionsItem")]
     public extern static IElementPlusComponent ElDescriptionsItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDialog"/>。</summary>
     /// <remarks>Informs users while preserving the current page state.</remarks>
-    [ECMAScript("element-plus/dialog/ElDialog")]
+    [ECMAScript("element-plus/es/components/dialog/index.mjs")]
     [ECMAScriptName("ElDialog")]
     public extern static IElementPlusComponent ElDialog { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDivider"/>。</summary>
     /// <remarks>The dividing line that separates the content.</remarks>
-    [ECMAScript("element-plus/divider/ElDivider")]
+    [ECMAScript("element-plus/es/components/divider/index.mjs")]
     [ECMAScriptName("ElDivider")]
     public extern static IElementPlusComponent ElDivider { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDrawer"/>。</summary>
     /// <remarks>Sometimes, `Dialog` does not always satisfy our requirements, let's say you have a massive form, or you need space to display something like `terms &amp; conditions`, `Drawer` has almost identical API with `Dialog`, but it introduces different user experience.</remarks>
-    [ECMAScript("element-plus/drawer/ElDrawer")]
+    [ECMAScript("element-plus/es/components/drawer/index.mjs")]
     [ECMAScriptName("ElDrawer")]
     public extern static IElementPlusComponent ElDrawer { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDropdown"/>。</summary>
     /// <remarks>Toggleable menu for displaying lists of links and actions.</remarks>
-    [ECMAScript("element-plus/dropdown/ElDropdown")]
+    [ECMAScript("element-plus/es/components/dropdown/index.mjs")]
     [ECMAScriptName("ElDropdown")]
     public extern static IElementPlusComponent ElDropdown { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDropdownItem"/>。</summary>
     /// <remarks>el-dropdown-item</remarks>
-    [ECMAScript("element-plus/dropdown/ElDropdownItem")]
+    [ECMAScript("element-plus/es/components/dropdown/index.mjs")]
     [ECMAScriptName("ElDropdownItem")]
     public extern static IElementPlusComponent ElDropdownItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElDropdownMenu"/>。</summary>
     /// <remarks>el-dropdown-menu</remarks>
-    [ECMAScript("element-plus/dropdown/ElDropdownMenu")]
+    [ECMAScript("element-plus/es/components/dropdown/index.mjs")]
     [ECMAScriptName("ElDropdownMenu")]
     public extern static IElementPlusComponent ElDropdownMenu { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElEmpty"/>。</summary>
     /// <remarks>Placeholder hints for empty states.</remarks>
-    [ECMAScript("element-plus/empty/ElEmpty")]
+    [ECMAScript("element-plus/es/components/empty/index.mjs")]
     [ECMAScriptName("ElEmpty")]
     public extern static IElementPlusComponent ElEmpty { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElFooter"/>。</summary>
     /// <remarks>el-footer</remarks>
-    [ECMAScript("element-plus/container/ElFooter")]
+    [ECMAScript("element-plus/es/components/container/index.mjs")]
     [ECMAScriptName("ElFooter")]
     public extern static IElementPlusComponent ElFooter { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElForm"/>。</summary>
     /// <remarks>Form consists of `input`, `radio`, `select`, `checkbox` and so on. With form, you can collect, verify and submit data.</remarks>
-    [ECMAScript("element-plus/form/ElForm")]
+    [ECMAScript("element-plus/es/components/form/index.mjs")]
     [ECMAScriptName("ElForm")]
     public extern static IElementPlusComponent ElForm { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElFormItem"/>。</summary>
     /// <remarks>el-form-item</remarks>
-    [ECMAScript("element-plus/form/ElFormItem")]
+    [ECMAScript("element-plus/es/components/form/index.mjs")]
     [ECMAScriptName("ElFormItem")]
     public extern static IElementPlusComponent ElFormItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElHeader"/>。</summary>
     /// <remarks>el-header</remarks>
-    [ECMAScript("element-plus/container/ElHeader")]
+    [ECMAScript("element-plus/es/components/container/index.mjs")]
     [ECMAScriptName("ElHeader")]
     public extern static IElementPlusComponent ElHeader { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElIcon"/>。</summary>
     /// <remarks>Element Plus provides a set of common icons.</remarks>
-    [ECMAScript("element-plus/icon/ElIcon")]
+    [ECMAScript("element-plus/es/components/icon/index.mjs")]
     [ECMAScriptName("ElIcon")]
     public extern static IElementPlusComponent ElIcon { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElImage"/>。</summary>
     /// <remarks>Besides the native features of img, support lazy load, custom placeholder and load failure, etc.</remarks>
-    [ECMAScript("element-plus/image/ElImage")]
+    [ECMAScript("element-plus/es/components/image/index.mjs")]
     [ECMAScriptName("ElImage")]
     public extern static IElementPlusComponent ElImage { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElImageViewer"/>。</summary>
     /// <remarks>el-image-viewer</remarks>
-    [ECMAScript("element-plus/image-viewer/ElImageViewer")]
+    [ECMAScript("element-plus/es/components/image-viewer/index.mjs")]
     [ECMAScriptName("ElImageViewer")]
     public extern static IElementPlusComponent ElImageViewer { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElInput"/>。</summary>
     /// <remarks>Input data using mouse or keyboard.</remarks>
-    [ECMAScript("element-plus/input/ElInput")]
+    [ECMAScript("element-plus/es/components/input/index.mjs")]
     [ECMAScriptName("ElInput")]
     public extern static IElementPlusComponent ElInput { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElInputNumber"/>。</summary>
     /// <remarks>Input numerical values with a customizable range.</remarks>
-    [ECMAScript("element-plus/input-number/ElInputNumber")]
+    [ECMAScript("element-plus/es/components/input-number/index.mjs")]
     [ECMAScriptName("ElInputNumber")]
     public extern static IElementPlusComponent ElInputNumber { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElInputOtp"/>。</summary>
     /// <remarks>Used to enter a one-time password</remarks>
-    [ECMAScript("element-plus/input-otp/ElInputOtp")]
+    [ECMAScript("element-plus/es/components/input-otp/index.mjs")]
     [ECMAScriptName("ElInputOtp")]
     public extern static IElementPlusComponent ElInputOtp { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElInputTag"/>。</summary>
     /// <remarks>The InputTag component allows users to add content as tags.</remarks>
-    [ECMAScript("element-plus/input-tag/ElInputTag")]
+    [ECMAScript("element-plus/es/components/input-tag/index.mjs")]
     [ECMAScriptName("ElInputTag")]
     public extern static IElementPlusComponent ElInputTag { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElLink"/>。</summary>
     /// <remarks>Text hyperlink</remarks>
-    [ECMAScript("element-plus/link/ElLink")]
+    [ECMAScript("element-plus/es/components/link/index.mjs")]
     [ECMAScriptName("ElLink")]
     public extern static IElementPlusComponent ElLink { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElMain"/>。</summary>
     /// <remarks>el-main</remarks>
-    [ECMAScript("element-plus/container/ElMain")]
+    [ECMAScript("element-plus/es/components/container/index.mjs")]
     [ECMAScriptName("ElMain")]
     public extern static IElementPlusComponent ElMain { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElMention"/>。</summary>
     /// <remarks>Used to mention someone or something in an input.</remarks>
-    [ECMAScript("element-plus/mention/ElMention")]
+    [ECMAScript("element-plus/es/components/mention/index.mjs")]
     [ECMAScriptName("ElMention")]
     public extern static IElementPlusComponent ElMention { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElMenu"/>。</summary>
     /// <remarks>Menu that provides navigation for your website.</remarks>
-    [ECMAScript("element-plus/menu/ElMenu")]
+    [ECMAScript("element-plus/es/components/menu/index.mjs")]
     [ECMAScriptName("ElMenu")]
     public extern static IElementPlusComponent ElMenu { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElMenuItem"/>。</summary>
     /// <remarks>el-menu-item</remarks>
-    [ECMAScript("element-plus/menu/ElMenuItem")]
+    [ECMAScript("element-plus/es/components/menu/index.mjs")]
     [ECMAScriptName("ElMenuItem")]
     public extern static IElementPlusComponent ElMenuItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElMenuItemGroup"/>。</summary>
     /// <remarks>el-menu-item-group</remarks>
-    [ECMAScript("element-plus/menu/ElMenuItemGroup")]
+    [ECMAScript("element-plus/es/components/menu/index.mjs")]
     [ECMAScriptName("ElMenuItemGroup")]
     public extern static IElementPlusComponent ElMenuItemGroup { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElOption"/>。</summary>
     /// <remarks>el-option</remarks>
-    [ECMAScript("element-plus/select/ElOption")]
+    [ECMAScript("element-plus/es/components/select/index.mjs")]
     [ECMAScriptName("ElOption")]
     public extern static IElementPlusComponent ElOption { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElOptionGroup"/>。</summary>
     /// <remarks>el-option-group</remarks>
-    [ECMAScript("element-plus/select/ElOptionGroup")]
+    [ECMAScript("element-plus/es/components/select/index.mjs")]
     [ECMAScriptName("ElOptionGroup")]
     public extern static IElementPlusComponent ElOptionGroup { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElPageHeader"/>。</summary>
     /// <remarks>If path of the page is simple, it is recommended to use PageHeader instead of the Breadcrumb.</remarks>
-    [ECMAScript("element-plus/page-header/ElPageHeader")]
+    [ECMAScript("element-plus/es/components/page-header/index.mjs")]
     [ECMAScriptName("ElPageHeader")]
     public extern static IElementPlusComponent ElPageHeader { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElPagination"/>。</summary>
     /// <remarks>If you have too much data to display in one page, use pagination.</remarks>
-    [ECMAScript("element-plus/pagination/ElPagination")]
+    [ECMAScript("element-plus/es/components/pagination/index.mjs")]
     [ECMAScriptName("ElPagination")]
     public extern static IElementPlusComponent ElPagination { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElPopconfirm"/>。</summary>
     /// <remarks>A simple confirmation dialog of an element click action.</remarks>
-    [ECMAScript("element-plus/popconfirm/ElPopconfirm")]
+    [ECMAScript("element-plus/es/components/popconfirm/index.mjs")]
     [ECMAScriptName("ElPopconfirm")]
     public extern static IElementPlusComponent ElPopconfirm { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElPopover"/>。</summary>
     /// <remarks>el-popover</remarks>
-    [ECMAScript("element-plus/popover/ElPopover")]
+    [ECMAScript("element-plus/es/components/popover/index.mjs")]
     [ECMAScriptName("ElPopover")]
     public extern static IElementPlusComponent ElPopover { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElPopper"/>。</summary>
     /// <remarks>ElPopper</remarks>
-    [ECMAScript("element-plus/popper/ElPopper")]
+    [ECMAScript("element-plus/es/components/popper/index.mjs")]
     [ECMAScriptName("ElPopper")]
     public extern static IElementPlusComponent ElPopper { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElProgress"/>。</summary>
     /// <remarks>Progress is used to show the progress of current operation, and inform the user the current status.</remarks>
-    [ECMAScript("element-plus/progress/ElProgress")]
+    [ECMAScript("element-plus/es/components/progress/index.mjs")]
     [ECMAScriptName("ElProgress")]
     public extern static IElementPlusComponent ElProgress { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElRadio"/>。</summary>
     /// <remarks>Single selection among multiple options.</remarks>
-    [ECMAScript("element-plus/radio/ElRadio")]
+    [ECMAScript("element-plus/es/components/radio/index.mjs")]
     [ECMAScriptName("ElRadio")]
     public extern static IElementPlusComponent ElRadio { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElRadioButton"/>。</summary>
     /// <remarks>el-radio-button</remarks>
-    [ECMAScript("element-plus/radio/ElRadioButton")]
+    [ECMAScript("element-plus/es/components/radio/index.mjs")]
     [ECMAScriptName("ElRadioButton")]
     public extern static IElementPlusComponent ElRadioButton { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElRadioGroup"/>。</summary>
     /// <remarks>el-radio-group</remarks>
-    [ECMAScript("element-plus/radio/ElRadioGroup")]
+    [ECMAScript("element-plus/es/components/radio/index.mjs")]
     [ECMAScriptName("ElRadioGroup")]
     public extern static IElementPlusComponent ElRadioGroup { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElRate"/>。</summary>
     /// <remarks>Used for rating</remarks>
-    [ECMAScript("element-plus/rate/ElRate")]
+    [ECMAScript("element-plus/es/components/rate/index.mjs")]
     [ECMAScriptName("ElRate")]
     public extern static IElementPlusComponent ElRate { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElResult"/>。</summary>
     /// <remarks>Used to give feedback on the result of user's operation or access exception.</remarks>
-    [ECMAScript("element-plus/result/ElResult")]
+    [ECMAScript("element-plus/es/components/result/index.mjs")]
     [ECMAScriptName("ElResult")]
     public extern static IElementPlusComponent ElResult { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElRow"/>。</summary>
     /// <remarks>el-row</remarks>
-    [ECMAScript("element-plus/row/ElRow")]
+    [ECMAScript("element-plus/es/components/row/index.mjs")]
     [ECMAScriptName("ElRow")]
     public extern static IElementPlusComponent ElRow { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElScrollbar"/>。</summary>
     /// <remarks>Used to replace the browser's native scrollbar.</remarks>
-    [ECMAScript("element-plus/scrollbar/ElScrollbar")]
+    [ECMAScript("element-plus/es/components/scrollbar/index.mjs")]
     [ECMAScriptName("ElScrollbar")]
     public extern static IElementPlusComponent ElScrollbar { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSegmented"/>。</summary>
     /// <remarks>Display multiple options and allow users to select a single option.</remarks>
-    [ECMAScript("element-plus/segmented/ElSegmented")]
+    [ECMAScript("element-plus/es/components/segmented/index.mjs")]
     [ECMAScriptName("ElSegmented")]
     public extern static IElementPlusComponent ElSegmented { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSelect"/>。</summary>
     /// <remarks>When there are plenty of options, use a drop-down menu to display and select desired ones.</remarks>
-    [ECMAScript("element-plus/select/ElSelect")]
+    [ECMAScript("element-plus/es/components/select/index.mjs")]
     [ECMAScriptName("ElSelect")]
     public extern static IElementPlusComponent ElSelect { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSkeleton"/>。</summary>
     /// <remarks>When loading data, and you need a rich experience for visual and interactions for your end users, you can choose `skeleton`.</remarks>
-    [ECMAScript("element-plus/skeleton/ElSkeleton")]
+    [ECMAScript("element-plus/es/components/skeleton/index.mjs")]
     [ECMAScriptName("ElSkeleton")]
     public extern static IElementPlusComponent ElSkeleton { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSkeletonItem"/>。</summary>
     /// <remarks>el-skeleton-item</remarks>
-    [ECMAScript("element-plus/skeleton/ElSkeletonItem")]
+    [ECMAScript("element-plus/es/components/skeleton/index.mjs")]
     [ECMAScriptName("ElSkeletonItem")]
     public extern static IElementPlusComponent ElSkeletonItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSlider"/>。</summary>
     /// <remarks>Drag the slider within a fixed range.</remarks>
-    [ECMAScript("element-plus/slider/ElSlider")]
+    [ECMAScript("element-plus/es/components/slider/index.mjs")]
     [ECMAScriptName("ElSlider")]
     public extern static IElementPlusComponent ElSlider { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSpace"/>。</summary>
     /// <remarks>Even though we have [Divider]</remarks>
-    [ECMAScript("element-plus/space/ElSpace")]
+    [ECMAScript("element-plus/es/components/space/index.mjs")]
     [ECMAScriptName("ElSpace")]
     public extern static IElementPlusComponent ElSpace { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSplitter"/>。</summary>
     /// <remarks>el-splitter</remarks>
-    [ECMAScript("element-plus/splitter/ElSplitter")]
+    [ECMAScript("element-plus/es/components/splitter/index.mjs")]
     [ECMAScriptName("ElSplitter")]
     public extern static IElementPlusComponent ElSplitter { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSplitterPanel"/>。</summary>
     /// <remarks>el-splitter-panel</remarks>
-    [ECMAScript("element-plus/splitter/ElSplitterPanel")]
+    [ECMAScript("element-plus/es/components/splitter/index.mjs")]
     [ECMAScriptName("ElSplitterPanel")]
     public extern static IElementPlusComponent ElSplitterPanel { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElStatistic"/>。</summary>
     /// <remarks>Display statistics.</remarks>
-    [ECMAScript("element-plus/statistic/ElStatistic")]
+    [ECMAScript("element-plus/es/components/statistic/index.mjs")]
     [ECMAScriptName("ElStatistic")]
     public extern static IElementPlusComponent ElStatistic { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElStep"/>。</summary>
     /// <remarks>el-step</remarks>
-    [ECMAScript("element-plus/steps/ElStep")]
+    [ECMAScript("element-plus/es/components/steps/index.mjs")]
     [ECMAScriptName("ElStep")]
     public extern static IElementPlusComponent ElStep { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSteps"/>。</summary>
     /// <remarks>Guide the user to complete tasks in accordance with the process. Its steps can be set according to the actual application scenario and the number of the steps can't be less than 2.</remarks>
-    [ECMAScript("element-plus/steps/ElSteps")]
+    [ECMAScript("element-plus/es/components/steps/index.mjs")]
     [ECMAScriptName("ElSteps")]
     public extern static IElementPlusComponent ElSteps { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSubMenu"/>。</summary>
     /// <remarks>el-sub-menu</remarks>
-    [ECMAScript("element-plus/menu/ElSubMenu")]
+    [ECMAScript("element-plus/es/components/menu/index.mjs")]
     [ECMAScriptName("ElSubMenu")]
     public extern static IElementPlusComponent ElSubMenu { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElSwitch"/>。</summary>
     /// <remarks>Switch is used for switching between two opposing states.</remarks>
-    [ECMAScript("element-plus/switch/ElSwitch")]
+    [ECMAScript("element-plus/es/components/switch/index.mjs")]
     [ECMAScriptName("ElSwitch")]
     public extern static IElementPlusComponent ElSwitch { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTabPane"/>。</summary>
     /// <remarks>el-tab-pane</remarks>
-    [ECMAScript("element-plus/tabs/ElTabPane")]
+    [ECMAScript("element-plus/es/components/tabs/index.mjs")]
     [ECMAScriptName("ElTabPane")]
     public extern static IElementPlusComponent ElTabPane { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTable"/>。</summary>
     /// <remarks>Display multiple data with similar format. You can sort, filter, compare your data in a table.</remarks>
-    [ECMAScript("element-plus/table/ElTable")]
+    [ECMAScript("element-plus/es/components/table/index.mjs")]
     [ECMAScriptName("ElTable")]
     public extern static IElementPlusComponent ElTable { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTableColumn"/>。</summary>
     /// <remarks>el-table-column</remarks>
-    [ECMAScript("element-plus/table/ElTableColumn")]
+    [ECMAScript("element-plus/es/components/table/index.mjs")]
     [ECMAScriptName("ElTableColumn")]
     public extern static IElementPlusComponent ElTableColumn { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTableV2"/>。</summary>
     /// <remarks>el-table-v2</remarks>
-    [ECMAScript("element-plus/table-v2/ElTableV2")]
+    [ECMAScript("element-plus/es/components/table-v2/index.mjs")]
     [ECMAScriptName("ElTableV2")]
     public extern static IElementPlusComponent ElTableV2 { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTabs"/>。</summary>
     /// <remarks>Divide data collections which are related yet belong to different types.</remarks>
-    [ECMAScript("element-plus/tabs/ElTabs")]
+    [ECMAScript("element-plus/es/components/tabs/index.mjs")]
     [ECMAScriptName("ElTabs")]
     public extern static IElementPlusComponent ElTabs { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTag"/>。</summary>
     /// <remarks>Used for marking and selection.</remarks>
-    [ECMAScript("element-plus/tag/ElTag")]
+    [ECMAScript("element-plus/es/components/tag/index.mjs")]
     [ECMAScriptName("ElTag")]
     public extern static IElementPlusComponent ElTag { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElText"/>。</summary>
     /// <remarks>Used for text.</remarks>
-    [ECMAScript("element-plus/text/ElText")]
+    [ECMAScript("element-plus/es/components/text/index.mjs")]
     [ECMAScriptName("ElText")]
     public extern static IElementPlusComponent ElText { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTimePicker"/>。</summary>
     /// <remarks>Use Time Picker for time input.</remarks>
-    [ECMAScript("element-plus/time-picker/ElTimePicker")]
+    [ECMAScript("element-plus/es/components/time-picker/index.mjs")]
     [ECMAScriptName("ElTimePicker")]
     public extern static IElementPlusComponent ElTimePicker { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTimeSelect"/>。</summary>
     /// <remarks>Use Time Select for time input.</remarks>
-    [ECMAScript("element-plus/time-select/ElTimeSelect")]
+    [ECMAScript("element-plus/es/components/time-select/index.mjs")]
     [ECMAScriptName("ElTimeSelect")]
     public extern static IElementPlusComponent ElTimeSelect { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTimeline"/>。</summary>
     /// <remarks>Visually display timeline.</remarks>
-    [ECMAScript("element-plus/timeline/ElTimeline")]
+    [ECMAScript("element-plus/es/components/timeline/index.mjs")]
     [ECMAScriptName("ElTimeline")]
     public extern static IElementPlusComponent ElTimeline { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTimelineItem"/>。</summary>
     /// <remarks>el-timeline-item</remarks>
-    [ECMAScript("element-plus/timeline/ElTimelineItem")]
+    [ECMAScript("element-plus/es/components/timeline/index.mjs")]
     [ECMAScriptName("ElTimelineItem")]
     public extern static IElementPlusComponent ElTimelineItem { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTooltip"/>。</summary>
     /// <remarks>Display prompt information for mouse hover.</remarks>
-    [ECMAScript("element-plus/tooltip/ElTooltip")]
+    [ECMAScript("element-plus/es/components/tooltip/index.mjs")]
     [ECMAScriptName("ElTooltip")]
     public extern static IElementPlusComponent ElTooltip { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTour"/>。</summary>
     /// <remarks>A popup component for guiding users through a product. Use when you want to guide users through a product.</remarks>
-    [ECMAScript("element-plus/tour/ElTour")]
+    [ECMAScript("element-plus/es/components/tour/index.mjs")]
     [ECMAScriptName("ElTour")]
     public extern static IElementPlusComponent ElTour { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTourStep"/>。</summary>
     /// <remarks>el-tour-step</remarks>
-    [ECMAScript("element-plus/tour/ElTourStep")]
+    [ECMAScript("element-plus/es/components/tour/index.mjs")]
     [ECMAScriptName("ElTourStep")]
     public extern static IElementPlusComponent ElTourStep { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTransfer"/>。</summary>
     /// <remarks>el-transfer</remarks>
-    [ECMAScript("element-plus/transfer/ElTransfer")]
+    [ECMAScript("element-plus/es/components/transfer/index.mjs")]
     [ECMAScriptName("ElTransfer")]
     public extern static IElementPlusComponent ElTransfer { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTree"/>。</summary>
     /// <remarks>Display a set of data with hierarchies.</remarks>
-    [ECMAScript("element-plus/tree/ElTree")]
+    [ECMAScript("element-plus/es/components/tree/index.mjs")]
     [ECMAScriptName("ElTree")]
     public extern static IElementPlusComponent ElTree { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTreeSelect"/>。</summary>
     /// <remarks>ElTreeSelect</remarks>
-    [ECMAScript("element-plus/tree-select/ElTreeSelect")]
+    [ECMAScript("element-plus/es/components/tree-select/index.mjs")]
     [ECMAScriptName("ElTreeSelect")]
     public extern static IElementPlusComponent ElTreeSelect { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElTreeV2"/>。</summary>
     /// <remarks>el-tree-v2</remarks>
-    [ECMAScript("element-plus/tree-v2/ElTreeV2")]
+    [ECMAScript("element-plus/es/components/tree-v2/index.mjs")]
     [ECMAScriptName("ElTreeV2")]
     public extern static IElementPlusComponent ElTreeV2 { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElUpload"/>。</summary>
     /// <remarks>Upload files by clicking or drag-and-drop.</remarks>
-    [ECMAScript("element-plus/upload/ElUpload")]
+    [ECMAScript("element-plus/es/components/upload/index.mjs")]
     [ECMAScriptName("ElUpload")]
     public extern static IElementPlusComponent ElUpload { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElVirtualizedSelect"/>。</summary>
     /// <remarks>:::tip</remarks>
-    [ECMAScript("element-plus/select-v2/ElSelectV2")]
+    [ECMAScript("element-plus/es/components/select-v2/index.mjs")]
     [ECMAScriptName("ElSelectV2")]
     public extern static IElementPlusComponent ElVirtualizedSelect { get; }
 
     /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref="ElWatermark"/>。</summary>
     /// <remarks>Add specific text or patterns to the page.</remarks>
-    [ECMAScript("element-plus/watermark/ElWatermark")]
+    [ECMAScript("element-plus/es/components/watermark/index.mjs")]
     [ECMAScriptName("ElWatermark")]
     public extern static IElementPlusComponent ElWatermark { get; }
 

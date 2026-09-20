@@ -1,6 +1,6 @@
 import { onUnmounted, provide, reactive } from "vue";
 import { routes } from "@jazor/vue-runtime/routes.mjs";
-import { CreateNavigationManager, HandleHistoryNavigation } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
+import { CreateNavigationManager, HandleHistoryNavigation } from "../clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js";
 
 const navigationServiceKey = "jazor:service:Microsoft.AspNetCore.Components.NavigationManager";
 function readLocation() {

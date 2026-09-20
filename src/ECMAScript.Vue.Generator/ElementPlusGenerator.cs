@@ -559,7 +559,7 @@ internal static class ElementPlusGenerator
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Export surface for generated Element Plus components.");
         builder.AppendLine("/// </summary>");
-        builder.AppendLine("[ECMAScript(\"element-plus\")]");
+        builder.AppendLine("[ECMAScript(\"element-plus/es/index.mjs\")]");
         builder.AppendLine("public static class ElComponents");
         builder.AppendLine("{");
 
@@ -702,7 +702,7 @@ internal static class ElementPlusGenerator
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Export surface for Element Plus directives.");
         builder.AppendLine("/// </summary>");
-        builder.AppendLine("[ECMAScript(\"element-plus\")]");
+        builder.AppendLine("[ECMAScript(\"element-plus/es/index.mjs\")]");
         builder.AppendLine("public static class ElDirectives");
         builder.AppendLine("{");
 
@@ -891,6 +891,14 @@ internal static class ElementPlusGenerator
         return result;
     }
 
+    /// <summary>
+    /// [ECMAScript] 保存生成 import 的上游公开入口，必须能被恢复后的 package 解析。
+    ///
+    /// Element Plus 按组件目录发布 ESM 入口：`es/components/{module}/index.mjs`。
+    /// 不要退化成 Jazor 自造的 `element-plus/{module}/{export}` 简写——该路径不对应任何
+    /// 真实文件，element-plus@2.14.5 的 exports 只有 `"./es/*.mjs"` 通配与 `"./*"` 兜底，
+    /// 简写形态无法命中。
+    /// </summary>
     private static string GetComponentImportSpecifier(
         ElementPlusComponentMetadata component,
         IReadOnlyDictionary<string, string> componentModulePaths)
@@ -901,7 +909,7 @@ internal static class ElementPlusGenerator
                 $"Element Plus component '{component.RuntimeExportName}' has no runtime module path.");
         }
 
-        return "element-plus/" + module + "/" + component.RuntimeExportName;
+        return "element-plus/es/components/" + module + "/index.mjs";
     }
 
     private static void ValidateRuntimeComponentExportOverrides(HashSet<string> validComponentExports)

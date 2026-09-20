@@ -5,7 +5,7 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Export surface for Element Plus directives.
 /// </summary>
-[ECMAScript("element-plus")]
+[ECMAScript("element-plus/es/index.mjs")]
 public static class ElDirectives
 {
     /// <summary>

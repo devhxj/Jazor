@@ -104,8 +104,9 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void TDesign_ImportHosts_UseEcmaScriptImports_InsteadOfModuleEntryMarkers()
     {
-        AssertEcmaScriptImport(typeof(TDesign), "tdesign-vue-next");
-        AssertEcmaScriptImport(typeof(TComponents), "tdesign-vue-next");
+        // 声明值必须是上游公开入口（package.json 的 module 字段），不是 Jazor 自造简写。
+        AssertEcmaScriptImport(typeof(TDesign), "tdesign-vue-next/es/index.mjs");
+        AssertEcmaScriptImport(typeof(TComponents), "tdesign-vue-next/es/index.mjs");
     }
 
     [TestMethod]
@@ -3321,8 +3322,9 @@ public sealed class EcmaScriptVueProxyTests
             var contract = catalog.Components[componentType.Name];
             var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
             Assert.IsNotNull(component, componentType.FullName);
+            // 组件入口是上游按目录发布的 ESM 入口，导出名仍由 [ECMAScriptName] 给出。
             Assert.AreEqual(
-                $"tdesign-vue-next/{contract.Module}/{contract.RuntimeExport}",
+                $"tdesign-vue-next/es/{contract.Module}/index.mjs",
                 component!.Import,
                 componentType.FullName);
             Assert.AreEqual(contract.RuntimeExport, componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name, componentType.FullName);
@@ -4229,32 +4231,27 @@ public sealed class EcmaScriptVueProxyTests
             ? items.EnumerateArray().Select(static item => item.GetProperty("name").GetString()!)
             : Array.Empty<string>();
 
+    /// <summary>
+    /// 每个组件在上游入口里的导出名，取自committed 的 bindings 快照。
+    ///
+    /// 运行时代码由 Deno 按 npm identity 恢复，仓库不 vendor 上游 <c>.mjs</c>，
+    /// 因此这里不能去读包内源码；导出名来自快照，声明值由 <c>manifest.json</c> 的
+    /// imports 键表达，两者都已是受控工件。
+    /// </summary>
     private static string[] ReadTDesignRuntimeExports(string repositoryRoot)
     {
-        var manifestPath = Path.Combine(
+        using var bindings = JsonDocument.Parse(System.IO.File.ReadAllText(Path.Combine(
             repositoryRoot,
             "src",
-            "ECMAScript.TDesign",
-            "manifest.json");
-        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(manifestPath));
-        var imports = document.RootElement.GetProperty("imports");
-        var exports = new List<string>();
-        foreach (var entry in imports.EnumerateObject().Where(static entry => entry.Name != "tdesign-vue-next"))
-        {
-            var relativePath = entry.Value.GetProperty("development").GetString()!;
-            var source = System.IO.File.ReadAllText(Path.Combine(
-                repositoryRoot,
-                "src",
-                "ECMAScript.TDesign",
-                relativePath.Replace('/', Path.DirectorySeparatorChar)));
-            var match = Regex.Match(source, @"export\s*\{(?<members>[\s\S]*?)\};", RegexOptions.CultureInvariant);
-            Assert.IsTrue(match.Success, $"Cannot locate the ESM export declaration for '{entry.Name}'.");
-            exports.AddRange(match.Groups["members"].Value
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(static member => member.Split(" as ", StringSplitOptions.TrimEntries).Last()));
-        }
+            "ECMAScript.Vue.Generator",
+            "upstream",
+            "tdesign-vue-next",
+            "1.20.7",
+            "bindings.json")));
 
-        return exports
+        return bindings.RootElement.GetProperty("components").EnumerateArray()
+            .Select(static element => element.GetProperty("runtimeExport").GetString()!)
+            .Distinct(StringComparer.Ordinal)
             .OrderBy(static member => member, StringComparer.Ordinal)
             .ToArray();
     }

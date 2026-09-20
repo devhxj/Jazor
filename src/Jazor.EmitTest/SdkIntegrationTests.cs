@@ -482,7 +482,7 @@ public sealed class SdkIntegrationTests
         var root = manifest.RootElement;
         Assert.AreEqual("tdesign-vue-next", root.GetProperty("libraryId").GetString());
         Assert.AreEqual("1.20.7", root.GetProperty("version").GetString());
-        var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next");
+        var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next/es/index.mjs");
         Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("development").GetString());
         Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("production").GetString());
         Assert.AreEqual(">=3.1.0", root.GetProperty("requires").GetProperty("vue3").GetString());
@@ -556,7 +556,7 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(appPath), $"Consumer module was not materialized: {appPath}");
         Assert.IsTrue(File.Exists(manifestPath), $"Debug manifest was not generated: {manifestPath}");
         var appModule = await File.ReadAllTextAsync(appPath);
-        StringAssert.Contains(appModule, "from \"style.mjs\"");
+        StringAssert.Contains(appModule, "from \"./style.mjs\"");
         StringAssert.Contains(appModule, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(appModule, "context({");
         Assert.IsFalse(appModule.Contains("context as ", StringComparison.Ordinal), appModule);
@@ -588,7 +588,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "font-face");
         StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.IsFalse(bundle.Contains("from \"style.mjs\"", StringComparison.Ordinal), bundle);
+        Assert.IsFalse(bundle.Contains("from \"./style.mjs\"", StringComparison.Ordinal), bundle);
     }
 
     [TestMethod]
@@ -838,16 +838,16 @@ public sealed class SdkIntegrationTests
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
 
         Assert.AreEqual(
-            "import { _e2640560d207afce } from \"System/DateOnlyModule.js\";",
-            GetImportLine(module, "clr/System/DateOnlyModule.js"));
+            "import { _e2640560d207afce } from \"../clr/System/DateOnlyModule.js\";",
+            GetImportLine(module, "../clr/System/DateOnlyModule.js"));
         Assert.AreEqual(
-            "import { _25187a24d190d864, _e856edbfd7db0646 } from \"System/DateTimeOffsetModule.js\";",
-            GetImportLine(module, "clr/System/DateTimeOffsetModule.js"));
-        var decimalImport = GetImportLine(module, "clr/System/DecimalModule.js");
+            "import { _25187a24d190d864, _e856edbfd7db0646 } from \"../clr/System/DateTimeOffsetModule.js\";",
+            GetImportLine(module, "../clr/System/DateTimeOffsetModule.js"));
+        var decimalImport = GetImportLine(module, "../clr/System/DecimalModule.js");
         StringAssert.Contains(decimalImport, "_01be2a34fe2cda4e");
         StringAssert.Contains(decimalImport, "_b1e6a06111674f0c");
 
-        var cultureInfoImport = GetImportLine(module, "clr/System/Globalization/CultureInfoModule.js");
+        var cultureInfoImport = GetImportLine(module, "../clr/System/Globalization/CultureInfoModule.js");
         StringAssert.Contains(cultureInfoImport, "_559b27327f84f1af");
         StringAssert.Contains(cultureInfoImport, "_b7486264ae338f27");
         StringAssert.Contains(cultureInfoImport, "_a536c354b66082b9");
@@ -993,11 +993,11 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
 
-        var indexImport = GetImportLine(module, "clr/System/IndexModule.js");
+        var indexImport = GetImportLine(module, "../clr/System/IndexModule.js");
         StringAssert.Contains(indexImport, "_ce8b9229a41c8545");
         StringAssert.Contains(indexImport, "_9b817e75f3f8f58f");
 
-        var rangeImport = GetImportLine(module, "clr/System/RangeModule.js");
+        var rangeImport = GetImportLine(module, "../clr/System/RangeModule.js");
         StringAssert.Contains(rangeImport, "_fc3dfc5dbaa397eb");
         StringAssert.Contains(rangeImport, "_1c7a1e658ed790ff");
 

@@ -337,8 +337,9 @@ public readonly record struct SenseArgument
     /// <summary>
     /// Binds a CLR runtime carrier import (a module emitted into the ECMAScript source carrier).
     ///
-    /// 这些路径同样属于项目内模块：它们是载体里的真实文件，不是包。因此与 catalog 导入走同一条
-    /// 路径规则——记录产物图边、并写成相对 specifier——而不是保留裸 specifier。
+    /// 这些路径是载体里的真实文件，不是包，因此与 catalog 导入走同一条路径规则：
+    /// 记录边、并写成<b>相对</b> specifier。裸 <c>clr/**</c> 形态会让消费侧必须依赖
+    /// import map 前缀映射才能解析，与"自有源码按普通项目源码交付"的契约不符。
     /// </summary>
     public Identifier BindCarrierImportSpecifier(string? modulePath, string importedName)
     {
@@ -351,21 +352,23 @@ public readonly record struct SenseArgument
         if (IsCurrentModuleImport(logicalPath))
             return BindImportSpecifier(logicalPath, importedName);
 
-        // carrier 之间的引用：文件同在 clr/ 下，写成相对 specifier；边由 carrier 自身的
-        // manifest 模块依赖表达，因此从 app 的 packageImports 里排除。
         if (IsCarrierModule(_currentModuleOutputPath))
         {
+            // carrier 内部互引：边由 carrier 自身的 manifest 模块依赖表达，
+            // 因此从 app 的 packageImports 里排除。
             _moduleCatalogImportPaths?.Add(logicalPath);
-            return BindImportSpecifierCore(
-                ResolveProjectImportSpecifier(logicalPath, _moduleCatalogOutputPrefix),
-                importedName,
-                normalizeForCurrentModule: false);
+        }
+        else
+        {
+            // 用户模块引用 carrier：写出的 specifier 是相对的，无法从生成文本反推逻辑键，
+            // 必须单独记录，供 --library-manifest 选中对应的资源库。
+            _carrierImportKeys?.Add(logicalPath);
         }
 
-        // 用户模块引用 carrier：carrier 是资源库（--library-manifest 提供），不在本编译的
-        // ModuleCatalog 里。保留裸逻辑 specifier，并让它进入 packageImports，
-        // 从而选中对应的库清单、由 import map 定位到 clr/**。
-        return BindImportSpecifierCore(logicalPath, importedName, normalizeForCurrentModule: false);
+        return BindImportSpecifierCore(
+            ResolveProjectImportSpecifier(logicalPath, _moduleCatalogOutputPrefix),
+            importedName,
+            normalizeForCurrentModule: false);
     }
 
     /// <summary>

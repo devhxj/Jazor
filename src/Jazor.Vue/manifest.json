@@ -14,14 +14,14 @@
       "type": "module",
       "development": "dist/blazor-routing.mjs",
       "production": "dist/blazor-routing.mjs",
-      "developmentHash": "7331685fe253775ec1837c45258a52cbf182c8add2fa595e59a070568bfab82c",
-      "productionHash": "7331685fe253775ec1837c45258a52cbf182c8add2fa595e59a070568bfab82c",
+      "developmentHash": "a6979527d0274262097d4ee5b19cfd52ef3c4352d04c0222ec34d2e60e268f93",
+      "productionHash": "a6979527d0274262097d4ee5b19cfd52ef3c4352d04c0222ec34d2e60e268f93",
       "developmentDependencies": [
-        "Microsoft/AspNetCore/Components/NavigationManagerModule.js",
+        "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
         "vue"
       ],
       "productionDependencies": [
-        "Microsoft/AspNetCore/Components/NavigationManagerModule.js",
+        "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
         "vue"
       ],
       "developmentModuleDependencies": [],

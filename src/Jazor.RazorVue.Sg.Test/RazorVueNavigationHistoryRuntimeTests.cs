@@ -9,13 +9,14 @@ public sealed class RazorVueNavigationHistoryRuntimeTests
         var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "dist", "blazor-routing.mjs"))
             .Replace("import { routes } from \"@jazor/vue-runtime/routes.mjs\";", "const routes = [];", StringComparison.Ordinal);
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "blazor-routing.mjs",
+            // 载体按声明路径落盘：它的相对 import 以 dist/ 为基点。
+            "dist/blazor-routing.mjs",
             module,
             "navigation-history-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import { createNavigationHost } from "./blazor-routing.mjs";
+            import { createNavigationHost } from "./dist/blazor-routing.mjs";
             import { preventNavigation } from "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
 
             test("history handlers cancel after the browser moved and restore the accepted URL", async () => {
