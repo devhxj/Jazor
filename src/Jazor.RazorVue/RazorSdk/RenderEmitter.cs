@@ -4985,14 +4985,16 @@ internal static class RenderEmitter
     {
         EnsureRazorVueComponentContract(compilation, componentType);
 
-        // 导出名统一由名字机制给出（ECMAScriptName / Description("@#...")，缺省回退符号名）。
-        // 不再有组件专用的 "default" 回退：default 导出写成 [ECMAScriptName("default")]。
-        var exportName = Util.GetConfigOrSymbolName(componentType);
-
+        // 输出方向：[ECMAScriptModule("./x.mjs")] 描述 Jazor 自己生成的组件模块。
+        // RazorVue 生成的组件模块以 `export default __jazorComponent` 交付组件本体，
+        // 因此这条路径固定为 default；导出名不参与名字机制。
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (!string.IsNullOrWhiteSpace(exportPath))
-            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), exportName);
+            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), "default");
 
+        // 输入方向：[ECMAScript("specifier")] 绑定外部包。导出名由名字机制给出
+        // （ECMAScriptName / Description("@#...")，缺省回退符号名）；default 导出写成 [ECMAScriptName("default")]。
+        var exportName = Util.GetConfigOrSymbolName(componentType);
         foreach (var attribute in componentType.GetAttributes())
         {
             if (!ECMAScriptComponentMetadata.TryGetComponentImport(attribute, out var descriptor))

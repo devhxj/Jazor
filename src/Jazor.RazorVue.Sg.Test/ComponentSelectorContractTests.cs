@@ -103,8 +103,11 @@ public sealed class ComponentSelectorContractTests
 
         var components = ComponentSelector.DiscoverCurrentComponents(compilation);
 
+        // 声明面统一后，组件身份只由约定判定（ComponentBase + IVueComponent），
+        // 不再有 Transform 区分：任何 [ECMAScript("specifier")] 都是有效的组件导入描述。
+        // 因此 ImportOnlyComponent 也是候选；无参 [ECMAScript] 与无描述的类型仍被排除。
         CollectionAssert.AreEquivalent(
-            new[] { "ExternalComponent", "IndirectComponent" },
+            new[] { "ExternalComponent", "ImportOnlyComponent", "IndirectComponent" },
             components.Select(static component => component.Name).ToArray());
     }
 

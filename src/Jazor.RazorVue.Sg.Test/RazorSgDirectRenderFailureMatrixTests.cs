@@ -540,9 +540,8 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         [ECMAScript(" ")]
         public sealed class FailureWhitespaceLibrarySpecifierChild : ComponentBase, IVueComponent;
 
-        [ECMAScriptName(" ")]
-        [ECMAScript("failure-library")]
-        public sealed class FailureWhitespaceLibraryExportChild : ComponentBase, IVueComponent;
+        [ECMAScript("")]
+        public sealed class FailureEmptyLibrarySpecifierChild : ComponentBase, IVueComponent;
 
         [ECMAScriptModule(" ")]
         public sealed class FailureWhitespaceModuleChild : ComponentBase, IVueComponent;

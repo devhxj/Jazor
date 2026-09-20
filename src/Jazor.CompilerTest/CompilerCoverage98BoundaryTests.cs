@@ -3480,7 +3480,7 @@ public sealed class CompilerCoverage98BoundaryTests
     }
 
     [TestMethod]
-    public void ExternalImportBoundaries_ClassifyEcmaScriptTransformShapes()
+    public void ExternalImportBoundaries_ClassifyEcmaScriptDeclarationShapes()
     {
         var compilation = CreateCompilation(
             """
@@ -3489,14 +3489,8 @@ public sealed class CompilerCoverage98BoundaryTests
             [ECMAScript("./plain-import")]
             public sealed class PlainImport;
 
-            [ECMAScript("./explicit-import")]
-            public sealed class ExplicitImport;
-
-            [ECMAScript("./allow-shaped")]
-            public sealed class AllowShaped;
-
-            [ECMAScript("./component-shaped")]
-            public sealed class ComponentShaped;
+            [ECMAScript("./second-import")]
+            public sealed class SecondImport;
 
             [ECMAScript]
             public sealed class AmbientAllow;
@@ -3521,12 +3515,10 @@ public sealed class CompilerCoverage98BoundaryTests
             """);
 
         Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("PlainImport")!));
-        Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("ExplicitImport")!));
+        Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("SecondImport")!));
         Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("AfterOther")!));
 
-        // Allow/Component 不是外部 ESM import；空 specifier 与无参形式在守卫链里被跳过。
-        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("AllowShaped")!));
-        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("ComponentShaped")!));
+        // 无参形式是环境契约，空 specifier 在守卫链里被跳过。
         Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("AmbientAllow")!));
         Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("BlankImport")!));
         Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("Unmarked+Nested")!));
@@ -3534,10 +3526,14 @@ public sealed class CompilerCoverage98BoundaryTests
         // 嵌套类型沿 ContainingType 回溯，外层标记决定归类。
         Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("Outer+Inner")!));
 
+        // [ECMAScript] 与 [ECMAScriptModule] 都是 support marker；组件身份不再由特性表达，
+        // 因此带 import 的声明一律是 marker，没有旧的 Allow/Component 例外。
         Assert.IsTrue(Util.IsECMAScriptSupportMarkerAttributeData(
-            compilation.GetTypeByMetadataName("AllowShaped")!.GetAttributes().Single()));
-        Assert.IsFalse(Util.IsECMAScriptSupportMarkerAttributeData(
-            compilation.GetTypeByMetadataName("ComponentShaped")!.GetAttributes().Single()));
+            compilation.GetTypeByMetadataName("PlainImport")!.GetAttributes()
+                .Single(static a => a.AttributeClass?.Name == "ECMAScriptAttribute")));
+        Assert.IsTrue(Util.IsECMAScriptSupportMarkerAttributeData(
+            compilation.GetTypeByMetadataName("AmbientAllow")!.GetAttributes()
+                .Single(static a => a.AttributeClass?.Name == "ECMAScriptAttribute")));
     }
 
     private static CSharpCompilation CreateCompilation(string source)

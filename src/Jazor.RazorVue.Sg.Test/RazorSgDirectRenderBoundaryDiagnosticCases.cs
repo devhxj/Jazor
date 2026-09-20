@@ -349,16 +349,17 @@ internal static partial class DirectRenderFailureCaseCatalog
         {
             0 => new(
                 "builder.OpenComponent<FailureNoImportChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]"),
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\")]"),
             1 => new(
                 "builder.OpenComponent<FailureWhitespaceLibrarySpecifierChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]"),
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\")]"),
+            // 空白 export 参数已不存在；改用空 specifier 作为同类的"无效绑定"形状。
             2 => new(
-                "builder.OpenComponent<FailureWhitespaceLibraryExportChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]"),
+                "builder.OpenComponent<FailureEmptyLibrarySpecifierChild>(0); builder.CloseComponent();",
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\")]"),
             _ => new(
                 "builder.OpenComponent<FailureWhitespaceModuleChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]")
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\")]")
         };
 
     private static BoundaryCaseSpec CreateUnsupportedHelperInvocationShapeCase(int variant, string marker)

@@ -254,11 +254,11 @@ public sealed class UtilBoundaryScenarioTests
     }
 
     [TestMethod]
-    public void GetECMAScriptModuleImportPath_RejectsUnknownTransform()
+    public void GetECMAScriptModuleImportPath_SkipsAmbientMarkerWithoutArgument()
     {
-        var type = SymbolFixture.Value.GetType("UnknownTransformRuntime");
-        var exception = Assert.Throws<NotSupportedException>(() => Util.GetECMAScriptModuleImportPath(type));
-        StringAssert.Contains(exception.Message, "transform value '99'", StringComparison.Ordinal);
+        // 无参 [ECMAScript] 是环境契约，不构成外部导入，因此没有 import 路径。
+        var type = SymbolFixture.Value.GetType("AmbientRuntime");
+        Assert.IsNull(Util.GetECMAScriptModuleImportPath(type));
     }
 
     [TestMethod]
@@ -270,14 +270,9 @@ public sealed class UtilBoundaryScenarioTests
         Assert.IsNull(ambient.Import);
         Assert.AreEqual("vue", import.Import);
 
-        SetImport(import, "dayjs");
-        Assert.AreEqual("dayjs", import.Import);
-
         // 非空白 specifier 是唯一约束；组件身份与导出名都不再由该特性表达。
         Assert.Throws<ArgumentException>(() => new ECMAScriptAttribute(""));
         Assert.Throws<ArgumentException>(() => new ECMAScriptAttribute("   "));
-        Assert.Throws<ArgumentException>(() => SetImport(import, ""));
-        Assert.Throws<ArgumentException>(() => SetImport(import, "  "));
 
         var style = new StyleAttribute("vuetify/styles");
         Assert.AreEqual("vuetify/styles", style.Specifier);
@@ -292,13 +287,6 @@ public sealed class UtilBoundaryScenarioTests
         Assert.IsNull(
             typeof(ECMAScriptAttribute).Assembly.GetType("ECMAScript.Contract.LibraryComponentAttribute"));
         Assert.IsNull(typeof(ECMAScriptAttribute).Assembly.GetType("ECMAScript.Transform"));
-    }
-
-    private static void SetImport(ECMAScriptAttribute attribute, string? value)
-    {
-        var property = typeof(ECMAScriptAttribute).GetProperty(nameof(ECMAScriptAttribute.Import))
-            ?? throw new InvalidOperationException("ECMAScriptAttribute.Import must exist.");
-        property.SetValue(attribute, value);
     }
 
     [TestMethod]
@@ -914,8 +902,8 @@ internal static class UtilBoundaryScenarioCatalog
         {
         }
 
-        [ECMAScript("runtime-package", (Transform)99)]
-        public sealed class UnknownTransformRuntime
+        [ECMAScript]
+        public sealed class AmbientRuntime
         {
         }
 

@@ -171,12 +171,14 @@ public sealed class RenderEmitterPrivateContractTests
         var importFailure = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoImportComponent")));
         StringAssert.Contains(importFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
+        // [ECMAScript] 无参形式是环境契约，不构成组件绑定。
         var allowMarkerFailure = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "AllowMarkerComponent")));
-        StringAssert.Contains(allowMarkerFailure.InnerException!.Message, "Transform.Component", StringComparison.Ordinal);
-        var importMarkerFailure = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ImportMarkerComponent")));
-        StringAssert.Contains(importMarkerFailure.InnerException!.Message, "Transform.Component", StringComparison.Ordinal);
+        StringAssert.Contains(allowMarkerFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
+        // [ECMAScript("specifier")] 现在同时服务值绑定与组件绑定，因此 import 标记的组件是合法声明。
+        var importMarkerDescriptor = Invoke<object>(
+            "ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ImportMarkerComponent"));
+        Assert.IsNotNull(importMarkerDescriptor);
         var invalidLibraryImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "InvalidLibraryComponent")));
         StringAssert.Contains(invalidLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);

@@ -1183,7 +1183,7 @@ internal static class RazorVueM5CapabilityLedger
             "RazorVueCompatibilityAnalyzerTests.StandardBlazorComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
-            "Use ComponentBase + IVueComponent with [ECMAScriptModule] or [ECMAScript(import, Transform.Component, exportName)] metadata, or use a typed TDesign/Vuetify/Element Plus/custom component. Historical adapters are not product support."),
+            "Use ComponentBase + IVueComponent with [ECMAScriptModule] or [ECMAScript(\"specifier\")] metadata, or use a typed TDesign/Vuetify/Element Plus/custom component. Historical adapters are not product support."),
         new(
             "P1-dynamic-component",
             "DynamicComponent with statically discoverable component type and validated parameters",
