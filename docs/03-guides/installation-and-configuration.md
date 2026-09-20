@@ -83,7 +83,7 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
 | `JazorMode` | `none` | `none` 不输出；`debug` 直接物化模块、source map、manifest 与 import map；`release` 生成生产 bundle 和所需资源 |
-| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；Emit 通过 staging 校验后原子替换该目录 |
+| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；Emit 就地写入并按清单差异清理过期文件 |
 | `JazorSSR` | `false` | 启用受支持 SSR 时生成 SSR 入口，并从同一项目根使用已恢复的依赖 |
 
 `debug` 与 `release` 是互斥输出模式。`release` 通过内置 NetPack 路径从 `jazor/` 项目入口完成浏览器打包。

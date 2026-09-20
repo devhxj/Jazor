@@ -24,7 +24,7 @@ Razor 组件
 
 1. 类型可赋值给 `Microsoft.AspNetCore.Components.ComponentBase`，直接或通过源码/库基类间接继承均可；
 2. 类型实现 `ECMAScript.Vue.IVueComponent` 或其派生接口；
-3. 类型声明组件导入描述：`[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。
+3. 类型声明组件导入描述：`[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]`（导出名由 `[ECMAScriptName]` 给出）。
 
 `IVueComponent<TProps>` / `IVueComponent<TProps, TSlots>` 是带类型化 props/slots 的可选增强契约，与非泛型 marker 共同构成组件入口。导入描述提供模块资格，组件 marker 提供组件身份；两种导入描述同时出现时 `[ECMAScriptModule]` 优先。direct render 和 library component import 仅消费同时满足全部入口条件的类型，Microsoft Blazor 内置 UI 组件通过显式 binding 接入。
 

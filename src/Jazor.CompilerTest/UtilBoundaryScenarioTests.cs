@@ -120,7 +120,7 @@ public sealed class UtilBoundaryScenarioTests
                 AssertSymbolName(
                     fixture.GetMethod("NamingHost", "BlankExplicitNameSuppressesDescription"),
                     expectedConfigName: null,
-                    hasBoundary: false,
+                    hasBoundary: true,
                     "BlankExplicitNameSuppressesDescription",
                     scenario.Id);
                 break;

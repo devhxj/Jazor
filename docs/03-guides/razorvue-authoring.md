@@ -61,7 +61,7 @@ Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorV
 
 Blazor JS interop 使用独立的运行时模型。`IJSRuntime` 的 identifier string、`object[]` 参数编组、动态 import 和 runtime dispatcher 缺少 Jazor 静态 import 与模块依赖契约，因此实际类型或成员使用点通过现有 compiler/final Compilation diagnostic 说明。JavaScript 能力通过已有的强类型 `ECMAScript`/WebIDL binding，或静态模块 API 的强类型 binding declaration 进入模块；调用、导入和资源闭包由 `Jazor.Compiler` 与 `Jazor.Emit` 统一处理。
 
-RazorVue 组件按独立入口契约判断：类型可赋值给 `ComponentBase`、实现 `IVueComponent`（包括泛型或派生 marker），并声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。其中 `Transform.Component` 描述静态库组件 import；它与 `IVueComponent` 共同构成当前组件类型契约。
+RazorVue 组件按独立入口契约判断：类型可赋值给 `ComponentBase`、实现 `IVueComponent`（包括泛型或派生 marker），并声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]`（导出名由 `[ECMAScriptName]` 给出）。导入描述与 `IVueComponent` marker 共同构成当前组件类型契约。
 
 这些规则检查作者的 `.razor`、`.razor.cs` 和普通 C# component source；final Compilation 使用 `JAZORVGA020`-`026` 系列诊断。其他服务在具备可静态证明的 browser contract 后进入 authoring 诊断；最终 lowering 由 final diagnostic 报告。
 
@@ -210,7 +210,7 @@ Razor SG 生成的 builder 调用按顺序解释为 Vue VNode；手写 `BuildRen
 | 未初始化 local、frame 外 metadata、`goto`、labeled branch | **Reject (`JAZORVGA021`)** | 使用初始化、正确 frame 顺序或 [Component C# Logic](#component-logic) 中的普通 helper。普通 loop `break`/`continue` 见下方循环规则。 |
 
 - `OpenElement`、`OpenComponent`、`OpenRegion` 与对应 close 成对，并按栈顺序关闭；
-- `OpenComponent<T>` 支持开放泛型组件类型（例如 `OpenComponent<TTable<T>>()`）；类型参数作为编译期注解擦除，组件声明 `[ECMAScriptModule]` 或 `[ECMAScript(..., Transform.Component, ...)]` 描述。official Razor SG 生成的 `TypeInference.Create*_0<T>` 辅助在当前 fragment builder 作用域内内联，构造方法参数与方法体原始定义对齐，最终模块保持 builder 作用域封闭。运行时动态 `Type` 和静态信息不足的组件类型报告 `JAZORVGA021`。
+- `OpenComponent<T>` 支持开放泛型组件类型（例如 `OpenComponent<TTable<T>>()`）；类型参数作为编译期注解擦除，组件声明 `[ECMAScriptModule]` 或 `[ECMAScript("<specifier>")]` 描述。official Razor SG 生成的 `TypeInference.Create*_0<T>` 辅助在当前 fragment builder 作用域内内联，构造方法参数与方法体原始定义对齐，最终模块保持 builder 作用域封闭。运行时动态 `Type` 和静态信息不足的组件类型报告 `JAZORVGA021`。
 - element/component 的属性、component parameter、splat 和 event metadata 位于第一个 child 之前；
 - tag、attribute、parameter、event modifier 和 bulk-attribute 名称使用 compile-time string；
 - `SetKey`、`SetUpdatesAttributeName`、reference capture 和 render-mode metadata 作用于正确的当前 frame；
@@ -247,9 +247,9 @@ RazorVue 在 direct-render 层使用 `Jazor.Compiler`/`SemanticWalker` 的 C# �
 <a id="component-binding"></a>
 ## Component Binding
 
-组件从 final Compilation 解析可绑定的 `BuildRenderTree(RenderTreeBuilder)` block，并满足 RazorVue 组件身份契约：可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，且声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]` 导入描述。官方 Razor SG 负责 component parameter、required parameter 和参数类型诊断；RazorVue 报告缺少绑定或消费条件的最终形状。
+组件从 final Compilation 解析可绑定的 `BuildRenderTree(RenderTreeBuilder)` block，并满足 RazorVue 组件身份契约：可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，且声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]` 导入描述。官方 Razor SG 负责 component parameter、required parameter 和参数类型诊断；RazorVue 报告缺少绑定或消费条件的最终形状。
 
-组件模块使用稳定的 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。组件引用、parameter 名称和 child content 与编译期 symbol 对齐；组件入口通过 `IVueComponent` marker 和导入描述确定。
+组件模块使用稳定的 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]`。组件引用、parameter 名称和 child content 与编译期 symbol 对齐；组件入口通过 `IVueComponent` marker 和导入描述确定。
 
 <a id="member-closure"></a>
 ## Member Closure 与 Reactive Class

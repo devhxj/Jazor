@@ -37,13 +37,13 @@ Emit 是 MSBuild 阶段的项目适配器。它把 Jazor carrier 转换为标准
 ## 固定数据流
 
 1. **收集**：最终宿主提供根程序集、参与程序集、应用 Entries、`ModuleCatalog`、源码 carrier 和 binding declarations。
-2. **准备 staging**：Emit 在输出同卷创建 staging 项目根，保持与最终项目相同的路径结构并复用一致的锁文件。
+2. **就地准备项目**：Emit 直接在最终 `jazor/` 写入，单文件使用临时文件加 rename 以避免半写文件，并复用仍与 `package.json` 一致的锁文件。
 3. **写源码**：写入 `clr/**`、其他 ECMAScript 源码、编译生成模块、source map 与本地资源。
 4. **归一化 import**：项目内模块按最终文件位置写 `./` 或 `../`；npm/JSR import 保留绑定声明中的 bare specifier。
-5. **生成入口**：生成 `entry.mjs`；存在 SSR 时生成 `ssr-entry.mjs`。每个入口只连接应用实际 roots。
+5. **生成入口**：生成 `entry.js`；存在 SSR 时生成 `ssr-entry.js`。每个入口只连接应用实际 roots。
 6. **生成项目声明**：合并实际 package imports，写根 `package.json` 的标准字段、`dependencies` 和 `exports`。
 7. **恢复与检查**：调用 Deno 2.9.7 生成或验证 `deno.lock` 和 `node_modules`，再以 frozen lock 检查可见入口。
-8. **消费与提交**：Release 交给 NetPack 构建 `dist/`；SSR 交给 DenoHost 使用同一项目；所有检查通过后原子替换目标 `jazor/`。
+8. **消费与交付**：Release 交给 NetPack 构建 `dist/`；SSR 交给 DenoHost 使用同一项目；写入就地生效，失败显式返回并由下一次构建收敛。
 
 ## 源码与入口路径
 
@@ -65,22 +65,22 @@ Deno 版本固定为 2.9.7，由 `DenoHost.Runtime` 包提供可执行文件。E
 首次生成或依赖 identity 变化：
 
 ```text
-deno install --package-json --node-modules-dir=auto --frozen=false
+deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=false
 ```
 
-锁文件与 `package.json` 对齐：
+锁文件与 `package.json` 对齐（按 lock 确定性恢复）：
 
 ```text
-deno ci
+deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=true
 ```
 
 恢复后的入口检查：
 
 ```text
-deno check --node-modules-dir=manual --no-remote --frozen-lockfile entry.mjs
+deno check --node-modules-dir=manual --no-remote --no-config --frozen-lockfile entry.js
 ```
 
-启用 SSR 时对 `ssr-entry.mjs` 追加相同的 frozen check。`deno.lock` 是 Deno 的冻结依据；完整 npm `package-lock.json` 作为生态兼容输入随项目保留，并在生成时验证根依赖一致。
+启用 SSR 时对 `ssr-entry.js` 追加相同的 frozen check。`deno.lock` 是 Deno 的冻结依据；完整 npm `package-lock.json` 作为生态兼容输入随项目保留，并在生成时验证根依赖一致。
 
 ## 标准消费者
 
@@ -89,7 +89,7 @@ deno check --node-modules-dir=manual --no-remote --frozen-lockfile entry.mjs
 NetPack 接收项目根、可见 entry、构建模式与输出目录，并沿普通 ESM 图读取：
 
 ```text
-entry.mjs
+entry.js
   -> 项目源码
   -> npm/JSR 公开入口
   -> 包内实现与共享 helper
@@ -102,17 +102,17 @@ NetPack 使用上游 `package.json` 的 `exports`、conditions 和 `sideEffects`
 
 ### DenoHost
 
-DenoHost 以 `jazor/` 为工作目录，加载 `ssr-entry.mjs`，复用 Emit 已恢复的 `node_modules` 与 `deno.lock`。SSR 与浏览器构建使用同一 package identity、源码路径和条件选择。
+DenoHost 以 `jazor/` 为工作目录，加载 `ssr-entry.js`，复用 Emit 已恢复的 `node_modules` 与 `deno.lock`。SSR 与浏览器构建使用同一 package identity、源码路径和条件选择。
 
 ### HMR
 
 HMR 读取当前项目的源码入口、source map 和变更文件。更新消息引用项目内稳定路径；依赖恢复和包解析继续由同一 `package.json`、`node_modules` 与 lock 提供。
 
-## 事务与确定性
+## 写入与确定性
 
-Emit 在同卷 staging 中完成写入、恢复、检查和构建。成功后以目录替换提交；发生失败、取消或构建错误时保留上一份完整 `jazor/`。相同源码、SDK、Deno、NetPack、依赖 identity 和构建选项产生稳定的源码路径、入口、项目声明、lock 与 bundle 元数据。
+Emit 在最终 `jazor/` 中就地完成写入、恢复、检查和构建。写入就地生效：中断或失败时项目可能处于未收敛状态，下一次构建按同一规则收敛；HMR 需要模块随时变更，因此不保留整目录快照，也不做整目录回滚。相同源码、SDK、Deno、NetPack、依赖 identity 和构建选项产生稳定的源码路径、入口、项目声明、lock 与 bundle 元数据。
 
-项目内重复模块按稳定路径和内容 hash 去重。dependency key、版本或入口冲突在 Deno restore 前报告；缺失源码、无法解析的相对 import、Deno frozen check 失败或 NetPack 失败会阻止提交。
+项目内重复模块按稳定路径和内容 hash 去重。dependency key、版本或入口冲突在 Deno restore 前报告；缺失源码、无法解析的相对 import、Deno frozen check 失败或 NetPack 失败会使本次构建显式失败。
 
 ## 配置与交付
 
@@ -127,7 +127,7 @@ Emit 在同卷 staging 中完成写入、恢复、检查和构建。成功后以
 
 - `debug`：保留项目源码、source map、诊断 manifest 和 import map，供开发与 HMR 使用。
 - `release`：从同一项目根调用 NetPack，输出 `dist/` 与 bundle metafile。
-- `JazorSSR=true`：在同一次项目生成与恢复中增加 `ssr-entry.mjs`，供 DenoHost 直接消费。
+- `JazorSSR=true`：在同一次项目生成与恢复中增加 `ssr-entry.js`，供 DenoHost 直接消费。
 
 ## 验收证据
 

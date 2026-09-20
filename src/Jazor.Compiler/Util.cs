@@ -334,8 +334,10 @@ public static class Util
         var metadata = GetJavaScriptNameMetadata(symbol);
         if (metadata.HasECMAScriptNameAttribute)
         {
+            // 空声明名是 stop 标记，与 Description("@#") 同义：表示该符号不参与命名，
+            // 也不参与外层宿主的名称拼接；它不是"没有配置"，因此不能回退到 Description 或符号名。
             return string.IsNullOrEmpty(metadata.ECMAScriptName)
-                ? JsNameConfig.None
+                ? JsNameConfig.Stop
                 : JsNameConfig.Explicit(metadata.ECMAScriptName!);
         }
 

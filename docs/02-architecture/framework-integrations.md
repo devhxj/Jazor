@@ -28,6 +28,6 @@ Jazor core: C# / Roslyn IOperation -> ESTree -> ECMAScript modules
 4. 核心层提供可组合、强类型的扩展契约；集成层通过显式声明选择标准 lowering 或诊断路径。
 5. 新方向在实施前定义作者输入、编译语义边界、最终 artifact、诊断与 source-map 合同，并以独立契约记录其演进。
 
-外部组件库统一使用 `ECMAScript.ECMAScriptAttribute` 的 `Transform.Component` 形式声明 ESM module specifier 与可选 export name：`[ECMAScript("package", Transform.Component, "Export")]`，省略 export name 表示 default export。该特性描述静态 binding；Vue、React 等集成由各自适配器确认组件 marker 并拥有 rendering protocol。组件 Attribute 使用现行协议，引用方通过 lockstep 版本完成升级；核心依据显式 metadata 解析框架行为。
+外部组件库使用 `[ECMAScript("<specifier>")]` 声明 ESM module specifier；导出名由 `[ECMAScriptName]` / `[Description("@#...")]` 给出，`default` 导出写成 `[ECMAScriptName("default")]`；样式边由可重复的 `[Style]` 声明。组件身份由约定判定：类型派生 `ComponentBase` 且实现对应 Vue marker，没有组件专用特性或参数。该特性描述静态 binding；Vue、React 等集成由各自适配器确认组件 marker 并拥有 rendering protocol。组件 Attribute 使用现行协议，引用方通过 lockstep 版本完成升级；核心依据显式 metadata 解析框架行为。
 
 这一分层让核心平台可被多个框架方向复用，并保持通用 C# -> ECMAScript 能力的独立性。

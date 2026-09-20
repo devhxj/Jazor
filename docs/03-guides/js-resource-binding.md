@@ -42,7 +42,9 @@ VueDraggable 等底层库可以直接绑定正式根入口。组件内部依赖�
 `[ECMAScript("<specifier>")]` 是生成 import 的真源。specifier 使用恢复后 package 可以解析的公开路径：
 
 ```csharp
-[ECMAScript("tdesign-vue-next/es/button/index.mjs", Transform.Component, "Button")]
+[ECMAScript("tdesign-vue-next/es/button/index.mjs")]
+[ECMAScriptName("Button")]
+[Style("tdesign-vue-next/es/button/style/index.css")]
 public sealed class TButton : IUIComponent
 {
 }
@@ -59,9 +61,11 @@ public static class AddDays
 | --- | --- |
 | 类型级 `[ECMAScript]` | 为宿主类型提供默认入口 |
 | 成员级 `[ECMAScript]` | 为需要拆分的函数、组件或常量提供更细入口，并优先于类型级入口 |
-| `Transform.Component` | 生成 Vue 组件导入 |
+| 无参 `[ECMAScript]` | 环境/宿主契约，不绑定外部模块 |
+| `[ECMAScriptName]` / `[Description("@#...")]` | 指定输出名，同时作为模块导出名 |
+| 组件约定 | 派生 `ComponentBase` 且实现 Vue marker 的类型生成组件导入，不需要专用特性或参数 |
+| `[Style]` | 声明该入口的样式 side-effect specifier，可重复，声明顺序即层叠顺序 |
 | 普通导入形式 | 生成函数、composable、常量或模块导入 |
-| `ExportName` | 指定 named export 或 default export |
 
 绑定维护者优先选择上游公开的最细 ESM 入口。例如 TDesign Button 使用 `tdesign-vue-next/es/button/index.mjs`；该入口内部导入组件实现、共享 helper、Vue 和样式，标准构建会沿这些边保留所需闭包。上游只公开根入口时，绑定使用根入口并验证其完整运行时。
 
@@ -101,7 +105,7 @@ MSBuild 执行 Emit 时，绑定包参与以下步骤：
 
 1. 提供实际使用的 package imports、dependency identities 与必要的 CSS side-effect specifier；
 2. 让 Emit 把标准 bare import 写入项目源码；
-3. 让 Emit 生成 `entry.mjs`、可选的 `ssr-entry.mjs` 和根 `package.json`；
+3. 让 Emit 生成 `entry.js`、可选的 `ssr-entry.js` 和根 `package.json`；
 4. 由 Deno 2.9.7 恢复 `node_modules`、生成或校验 `deno.lock` 并执行 frozen check；
 5. 由 NetPack 从同一 `jazor/` 根读取上游 `exports`、conditions、`sideEffects` 和 ESM 资源图。
 
