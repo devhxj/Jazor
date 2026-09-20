@@ -146,11 +146,13 @@ internal static class RazorSgDirectRenderMatrixTestHost
             [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
         }
 
-        [ECMAScript(" matrix-library ", Transform.Component, " MatrixLibraryChild ")]
+        [ECMAScriptName(" MatrixLibraryChild ")]
+        [ECMAScript(" matrix-library ")]
         public sealed class MatrixLibraryChild : ComponentBase, IVueComponent;
 
         [ECMAScriptModule(" ./matrix/module-preferred ")]
-        [ECMAScript("discarded-library", Transform.Component, "DiscardedLibraryChild")]
+        [ECMAScriptName("DiscardedLibraryChild")]
+        [ECMAScript("discarded-library")]
         public sealed class MatrixModulePreferredChild : ComponentBase, IVueComponent;
 
         public static class MatrixRenderTreeBuilderHelpers

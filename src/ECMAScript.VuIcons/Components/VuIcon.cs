@@ -31,7 +31,7 @@ public abstract class VuIconComponentBase : ComponentBase, ECMAScript.Vue.IVueCo
 /// Dynamic vu-icons renderer。Use this when the icon changes at runtime; for a known icon, prefer its
 /// generated static component such as <c>VuUser</c> so Emit only materializes that SVG module.
 /// </summary>
-[ECMAScript("vu-icons", Transform.Component, "VuIcon")]
+[ECMAScript("vu-icons")]
 public sealed class VuIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>Icon name. The closed enum prevents misspelled upstream names.</summary>

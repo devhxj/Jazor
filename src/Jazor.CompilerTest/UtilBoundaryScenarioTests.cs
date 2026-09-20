@@ -262,32 +262,43 @@ public sealed class UtilBoundaryScenarioTests
     }
 
     [TestMethod]
-    public void ECMAScriptAttribute_UsesUnifiedTransformAndExportContract()
+    public void ECMAScriptAttribute_UsesSingleArgumentImportContract()
     {
-        var allow = new ECMAScriptAttribute();
+        var ambient = new ECMAScriptAttribute();
         var import = new ECMAScriptAttribute("vue");
-        var componentDefault = new ECMAScriptAttribute("element-plus", Transform.Component);
-        var componentNamed = new ECMAScriptAttribute("element-plus", Transform.Component, "ElButton");
 
-        Assert.IsNull(allow.Import);
-        Assert.AreEqual(Transform.Allow, allow.Transform);
+        Assert.IsNull(ambient.Import);
         Assert.AreEqual("vue", import.Import);
-        Assert.AreEqual(Transform.Import, import.Transform);
-        Assert.AreEqual(Transform.Component, componentDefault.Transform);
-        Assert.IsNull(componentDefault.ExportName);
-        Assert.AreEqual("ElButton", componentNamed.ExportName);
 
-        Assert.Throws<ArgumentException>(
-            () => new ECMAScriptAttribute("vue", Transform.Allow));
-        Assert.Throws<ArgumentException>(
-            () => new ECMAScriptAttribute("vue", Transform.Import, "Vue"));
-        Assert.Throws<ArgumentException>(
-            () => new ECMAScriptAttribute("", Transform.Component));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => new ECMAScriptAttribute("vue", (Transform)99));
+        SetImport(import, "dayjs");
+        Assert.AreEqual("dayjs", import.Import);
+
+        // 非空白 specifier 是唯一约束；组件身份与导出名都不再由该特性表达。
+        Assert.Throws<ArgumentException>(() => new ECMAScriptAttribute(""));
+        Assert.Throws<ArgumentException>(() => new ECMAScriptAttribute("   "));
+        Assert.Throws<ArgumentException>(() => SetImport(import, ""));
+        Assert.Throws<ArgumentException>(() => SetImport(import, "  "));
+
+        var style = new StyleAttribute("vuetify/styles");
+        Assert.AreEqual("vuetify/styles", style.Specifier);
+        Assert.Throws<ArgumentException>(() => new StyleAttribute(""));
+
+        var styleUsage = typeof(StyleAttribute)
+            .GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
+            .Cast<AttributeUsageAttribute>()
+            .Single();
+        Assert.IsTrue(styleUsage.AllowMultiple);
 
         Assert.IsNull(
             typeof(ECMAScriptAttribute).Assembly.GetType("ECMAScript.Contract.LibraryComponentAttribute"));
+        Assert.IsNull(typeof(ECMAScriptAttribute).Assembly.GetType("ECMAScript.Transform"));
+    }
+
+    private static void SetImport(ECMAScriptAttribute attribute, string? value)
+    {
+        var property = typeof(ECMAScriptAttribute).GetProperty(nameof(ECMAScriptAttribute.Import))
+            ?? throw new InvalidOperationException("ECMAScriptAttribute.Import must exist.");
+        property.SetValue(attribute, value);
     }
 
     [TestMethod]

@@ -80,7 +80,7 @@ public sealed class FilePondManifestTests
     [TestMethod]
     public void FilePond_BoundEntriesMatchManifestKeys()
     {
-        // 宿主函数条目（@# 描述）与组件代理（Transform.Component 的 ExportName）都必须在上游入口存在；
+        // 宿主函数条目（@# 描述）与组件代理（[ECMAScriptName] 给出的导出名）都必须在上游入口存在；
         // 默认导出的组件代理改用 default 导出断言。
         var hostNames = ReadBoundExportNames(typeof(FilePond));
         var componentExports = ReadComponentExports(typeof(FilePond).Assembly);
@@ -95,9 +95,8 @@ public sealed class FilePondManifestTests
 
     private static HashSet<string> ReadComponentExports(System.Reflection.Assembly assembly)
         => assembly.GetExportedTypes()
-            .Select(static type => type.GetCustomAttribute<ECMAScriptAttribute>())
-            .Where(static attribute => attribute?.Transform == Transform.Component)
-            .Select(static attribute => attribute!.ExportName ?? "default")
+            .Where(static type => type.GetCustomAttribute<ECMAScriptAttribute>()?.Import is not null)
+            .Select(static type => type.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name ?? type.Name)
             .ToHashSet(StringComparer.Ordinal);
 
     [TestMethod]

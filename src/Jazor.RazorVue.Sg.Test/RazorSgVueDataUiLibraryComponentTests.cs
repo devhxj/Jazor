@@ -13,8 +13,7 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
         var descriptor = typeof(VdDonut).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(descriptor);
         Assert.AreEqual("vue-data-ui/vue-ui-donut", descriptor!.Import);
-        Assert.AreEqual(Transform.Component, descriptor.Transform);
-        Assert.AreEqual("VueUiDonut", descriptor.ExportName);
+        Assert.AreEqual("VueUiDonut", typeof(VdDonut).GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RevenueDonut.razor"),

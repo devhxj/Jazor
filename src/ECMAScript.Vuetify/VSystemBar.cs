@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 系统栏组件的编写代理。
 /// Vuetify system bar authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VSystemBar", Transform.Component, "VSystemBar")]
+[ECMAScript("vuetify/components/VSystemBar")]
 public sealed class VSystemBar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

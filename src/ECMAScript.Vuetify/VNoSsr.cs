@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 无服务端渲染组件。
 /// Vuetify no-SSR component.
 /// </summary>
-[ECMAScript("vuetify/components/VNoSsr", Transform.Component, "VNoSsr")]
+[ECMAScript("vuetify/components/VNoSsr")]
 public sealed class VNoSsr : ComponentBase, IVuetifyComponent
 {
     /// <summary>

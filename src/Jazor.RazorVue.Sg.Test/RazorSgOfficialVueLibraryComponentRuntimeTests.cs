@@ -36,7 +36,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("tdesign-vue-next", Transform.Component, "Select")]
+                [ECMAScriptName("Select")]
+                [ECMAScript("tdesign-vue-next")]
                 public sealed class TSelect : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("selected")]
@@ -97,7 +98,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("tdesign-vue-next", Transform.Component, "Panel")]
+                [ECMAScriptName("Panel")]
+                [ECMAScript("tdesign-vue-next")]
                 public sealed class TPanel : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("title")]
@@ -155,7 +157,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("tdesign-vue-next", Transform.Component, "Submenu")]
+                [ECMAScriptName("Submenu")]
+                [ECMAScript("tdesign-vue-next")]
                 public sealed class TSubmenu : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("title")]
@@ -208,7 +211,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("tdesign-vue-next", Transform.Component, "Action")]
+                [ECMAScriptName("Action")]
+                [ECMAScript("tdesign-vue-next")]
                 public sealed class TAction : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("onSave")]
@@ -255,7 +259,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("tdesign-vue-next", Transform.Component, "Select")]
+                [ECMAScriptName("Select")]
+                [ECMAScript("tdesign-vue-next")]
                 public sealed class TSelect : ComponentBase, IVueComponent
                 {
                     [Parameter]
@@ -311,7 +316,8 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("tdesign-vue-next", Transform.Component, "Button")]
+                [ECMAScriptName("Button")]
+                [ECMAScript("tdesign-vue-next")]
                 public sealed class TButton : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("status")]

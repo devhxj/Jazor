@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 芯片组组件创作代理。
 /// Vuetify chip group component authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VChipGroup", Transform.Component, "VChipGroup")]
+[ECMAScript("vuetify/components/VChipGroup")]
 public sealed class VChipGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>

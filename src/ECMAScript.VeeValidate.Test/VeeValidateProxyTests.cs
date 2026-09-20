@@ -21,7 +21,6 @@ public sealed class VeeValidateProxyTests
         var runtime = typeof(VeeValidate).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime);
         Assert.AreEqual("vee-validate", runtime!.Import);
-        Assert.AreEqual(Transform.Import, runtime.Transform);
     }
 
     [TestMethod]

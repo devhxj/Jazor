@@ -19,7 +19,6 @@ public sealed class VueUseProxyTests
         var runtime = typeof(VueUse).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime);
         Assert.AreEqual("@vueuse/core", runtime!.Import);
-        Assert.AreEqual(Transform.Import, runtime.Transform);
     }
 
     [TestMethod]

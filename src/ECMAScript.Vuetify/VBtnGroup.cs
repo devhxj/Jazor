@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 按钮组组件。
 /// Vuetify button group component.
 /// </summary>
-[ECMAScript("vuetify/components/VBtnGroup", Transform.Component, "VBtnGroup")]
+[ECMAScript("vuetify/components/VBtnGroup")]
 public sealed class VBtnGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>

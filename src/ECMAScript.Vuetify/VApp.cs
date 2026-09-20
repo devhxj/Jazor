@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 应用根包装组件。
 /// Vuetify app root wrapper component.
 /// </summary>
-[ECMAScript("vuetify/components/VApp", Transform.Component, "VApp")]
+[ECMAScript("vuetify/components/VApp")]
 public sealed class VApp : ComponentBase, IVuetifyComponent
 {
     /// <summary>

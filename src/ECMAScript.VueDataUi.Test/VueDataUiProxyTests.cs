@@ -16,7 +16,7 @@ public sealed class VueDataUiProxyTests
         var componentTypes = typeof(VdXy).Assembly
             .GetExportedTypes()
             .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
-            .Where(static item => item.Attribute?.Transform == Transform.Component)
+            .Where(static item => item.Attribute?.Import is not null)
             .OrderBy(static item => item.Type.Name, StringComparer.Ordinal)
             .ToArray();
         var shippedEntries = imports.EnumerateObject()
@@ -45,7 +45,7 @@ public sealed class VueDataUiProxyTests
                 $"manifest.json is missing {attribute.Import} for {type.Name}.");
             // C# uses the short Vd prefix; the npm entry still exports its original VueUi name.
             Assert.IsTrue(type.Name.StartsWith("Vd", StringComparison.Ordinal), type.Name);
-            Assert.AreEqual("VueUi" + type.Name[2..], attribute.ExportName, type.Name);
+            Assert.AreEqual("VueUi" + type.Name[2..], type.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name, type.Name);
         }
 
         Assert.AreEqual("3.23.4", manifest.RootElement.GetProperty("version").GetString());

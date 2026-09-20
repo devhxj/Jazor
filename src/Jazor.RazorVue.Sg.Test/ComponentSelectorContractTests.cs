@@ -69,7 +69,7 @@ public sealed class ComponentSelectorContractTests
                 protected override void BuildRenderTree(RenderTreeBuilder builder) { }
             }
 
-            [ECMAScript("component-package", Transform.Component, "ExternalComponent")]
+            [ECMAScript("component-package")]
             public sealed class ExternalComponent : ComponentBase, IVueComponent
             {
                 protected override void BuildRenderTree(RenderTreeBuilder builder) { }

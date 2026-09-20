@@ -21,7 +21,6 @@ public sealed class FloatingUiProxyTests
         var runtime = typeof(FloatingUi).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime);
         Assert.AreEqual("@floating-ui/vue", runtime!.Import);
-        Assert.AreEqual(Transform.Import, runtime.Transform);
     }
 
     [TestMethod]

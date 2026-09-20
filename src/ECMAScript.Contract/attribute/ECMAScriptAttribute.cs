@@ -1,35 +1,21 @@
 namespace ECMAScript;
 
 /// <summary>
-/// Describes how a declaration is supplied to the ECMAScript host.
-/// 描述声明如何由 ECMAScript 宿主提供。
-/// </summary>
-public enum Transform
-{
-    /// <summary>Ambient or compiler-allowed host contract without an import.</summary>
-    Allow,
-
-    /// <summary>Ordinary external ESM binding.</summary>
-    Import,
-
-    /// <summary>External component ESM binding.</summary>
-    Component
-}
-
-/// <summary>
 /// Marks a declaration as an ECMAScript host contract that Jazor can validate and lower.
 /// 标记声明为可由 Jazor 校验和 lowering 的 ECMAScript 宿主契约。
 /// </summary>
 /// <remarks>
-/// The parameterless form is an ambient <see cref="Transform.Allow"/> declaration. The
-/// one-string form declares the exact external ESM import specifier that must appear in emitted
-/// JavaScript. Component declarations may provide an optional export name; an omitted name means
-/// the module default export. Package identity, version and resource metadata are supplied by the
-/// binding package metadata alongside this declaration. The metadata may resolve the specifier to
-/// an external npm/JSR package or to an explicitly declared embedded carrier. The core
-/// The repository-owned `ECMAScript` package uses `src/ECMAScript/clr/**`. External binding
-/// packages resolve their runtime from npm/JSR; a package that ships a local module names its
-/// explicit embedded carrier in package metadata.
+/// The attribute carries at most one argument: the exact external ESM import specifier that must
+/// appear in emitted JavaScript. The parameterless form is an ambient host contract that does not
+/// bind an external module.
+///
+/// 该特性最多一个参数：生成 JavaScript 中必须出现的精确外部 ESM import specifier。
+/// 无参形式是环境宿主契约，不绑定外部模块。
+///
+/// 组件身份不由该特性表达。派生自 <c>Microsoft.AspNetCore.Components.ComponentBase</c>
+/// 且实现 Vue marker 的类型即组件，声明面与普通绑定相同。
+///
+/// 导出名由名字机制给出（<c>ECMAScriptName</c> / <c>Description("@#...")</c>），不是该特性的参数。
 ///
 /// 当特性标在具体成员上时，该成员的 specifier 优先于宿主类型上的 specifier。这样一个
 /// C# 宿主类型可以映射多个细粒度 ESM 入口，而编译器和 Emit 仍能按调用点收集 tree-shaking roots。
@@ -37,64 +23,22 @@ public enum Transform
 [AttributeUsage(AttributeTargets.All, Inherited = false)]
 public class ECMAScriptAttribute : Attribute
 {
-    /// <summary>Gets the exact ESM import specifier, or <see langword="null"/> for <see cref="Transform.Allow"/>.</summary>
+    /// <summary>Gets the exact ESM import specifier, or <see langword="null"/> for an ambient contract.</summary>
     public string? Import { get; }
 
-    /// <summary>Gets the intended lowering category.</summary>
-    public Transform Transform { get; }
-
-    /// <summary>Gets the component export name, or <see langword="null"/> for a default export.</summary>
-    public virtual string? ExportName { get; }
-
-    /// <summary>Creates an ambient <see cref="Transform.Allow"/> declaration.</summary>
+    /// <summary>Creates an ambient host contract that does not bind an external module.</summary>
     public ECMAScriptAttribute()
     {
-        Transform = Transform.Allow;
+        Import = null;
     }
 
-    /// <summary>Creates an ordinary external <see cref="Transform.Import"/> declaration.</summary>
+    /// <summary>Creates an external module binding.</summary>
     /// <param name="import">The exact package or module import specifier preserved in generated JavaScript.</param>
     public ECMAScriptAttribute(string import)
-        : this(import, Transform.Import)
     {
-    }
-
-    /// <summary>Creates a declaration with an explicit transform category.</summary>
-    /// <param name="import">The exact package or module import specifier.</param>
-    /// <param name="transform">The intended host transform.</param>
-    public ECMAScriptAttribute(string import, Transform transform)
-        : this(import, transform, null)
-    {
-    }
-
-    /// <summary>Creates a declaration with an explicit category and optional component export.</summary>
-    /// <param name="import">The exact package or module import specifier.</param>
-    /// <param name="transform">The intended host transform.</param>
-    /// <param name="exportName">The component named export; <see langword="null"/> means default.</param>
-    public ECMAScriptAttribute(string import, Transform transform, string? exportName)
-    {
-        Validate(import, transform, exportName);
-        Import = import;
-        Transform = transform;
-        ExportName = exportName;
-    }
-
-    private static void Validate(string? import, Transform transform, string? exportName)
-    {
-        if (transform is not (Transform.Allow or Transform.Import or Transform.Component))
-            throw new ArgumentOutOfRangeException(nameof(transform), transform, "Unknown ECMAScript transform.");
-
-        if (transform == Transform.Allow)
-        {
-            if (!string.IsNullOrWhiteSpace(import) || exportName is not null)
-                throw new ArgumentException("Allow declarations cannot specify an import or export name.");
-            return;
-        }
-
         if (string.IsNullOrWhiteSpace(import))
-            throw new ArgumentException("Import and Component declarations require an import specifier.", nameof(import));
+            throw new ArgumentException("An ECMAScript binding requires an import specifier.", nameof(import));
 
-        if (transform == Transform.Import && exportName is not null)
-            throw new ArgumentException("Import declarations cannot specify a component export name.", nameof(exportName));
+        Import = import;
     }
 }

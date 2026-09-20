@@ -35,7 +35,8 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("declared-direct-normalize-library", Transform.Component, "Normalize")]
+                [ECMAScriptName("Normalize")]
+                [ECMAScript("declared-direct-normalize-library")]
                 public sealed class DirectNormalize : ComponentBase, IVueComponent
                 {
                 }
@@ -191,7 +192,8 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
 
                 namespace Demo.Library;
 
-                [ECMAScript("direct-normalize-library", Transform.Component, "Normalize")]
+                [ECMAScriptName("Normalize")]
+                [ECMAScript("direct-normalize-library")]
                 public sealed class DirectNormalize : ComponentBase, IVueComponent
                 {
                     [Parameter, System.ComponentModel.Description("@#value")] public string Value { get; set; } = string.Empty;

@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 响应式容器组件的编写代理。
 /// Vuetify responsive container authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VResponsive", Transform.Component, "VResponsive")]
+[ECMAScript("vuetify/components/VResponsive")]
 public sealed class VResponsive : ComponentBase, IVuetifyComponent
 {
     /// <summary>

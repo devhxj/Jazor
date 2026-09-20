@@ -20,7 +20,7 @@ public sealed class LibraryComponentConventionsTests
 
             namespace Demo;
 
-            [ECMAScript("demo-components", Transform.Component, "LibraryWidget")]
+            [ECMAScript("demo-components")]
             public sealed class LibraryWidget : ComponentBase
             {
                 [Parameter, ECMAScriptName("data-title")]
@@ -94,7 +94,7 @@ public sealed class LibraryComponentConventionsTests
                 public new string Title { get; set; } = string.Empty;
             }
 
-            [ECMAScript("demo-components", Transform.Component, "LibraryWidget")]
+            [ECMAScript("demo-components")]
             public sealed class LibraryWidget : ComponentBase
             {
                 [Parameter]
@@ -113,7 +113,7 @@ public sealed class LibraryComponentConventionsTests
                 public RenderFragment? ApiURLContent { get; set; }
             }
 
-            [ECMAScript("demo-components", Transform.Component, "DefaultSlotWidget")]
+            [ECMAScript("demo-components")]
             public sealed class DefaultSlotWidget : ComponentBase
             {
                 [Parameter, ECMAScriptName("default")]
@@ -163,7 +163,7 @@ public sealed class LibraryComponentConventionsTests
 
             namespace Demo;
 
-            [ECMAScript("demo-components", Transform.Component, "LibraryWidget")]
+            [ECMAScript("demo-components")]
             public sealed class LibraryWidget : ComponentBase
             {
                 [Parameter] public string Value { get; set; } = string.Empty;
@@ -231,7 +231,7 @@ public sealed class LibraryComponentConventionsTests
 
             [Obsolete("container metadata")]
             [CustomMetadata(Flag = true)]
-            [ECMAScript("demo-components", Transform.Component, "DecoratedWidget")]
+            [ECMAScript("demo-components")]
             public sealed class DecoratedWidget : ComponentBase
             {
                 [Obsolete("listener metadata"), Parameter]

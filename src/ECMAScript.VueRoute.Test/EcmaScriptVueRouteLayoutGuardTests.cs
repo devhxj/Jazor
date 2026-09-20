@@ -87,8 +87,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(component);
         Assert.AreEqual("vue-router", component!.Import);
-        Assert.AreEqual(Transform.Component, component.Transform);
-        Assert.AreEqual("RouterLink", component.ExportName);
+        Assert.AreEqual("RouterLink", componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         Assert.AreEqual(
             "class",
@@ -129,8 +128,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(component);
         Assert.AreEqual("vue-router", component!.Import);
-        Assert.AreEqual(Transform.Component, component.Transform);
-        Assert.AreEqual("RouterView", component.ExportName);
+        Assert.AreEqual("RouterView", componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
         Assert.AreEqual(typeof(string), componentType.GetProperty(nameof(ECMAScript.VueRouterView.Name))!.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.RouteLocationNormalized), componentType.GetProperty(nameof(ECMAScript.VueRouterView.Route))!.PropertyType);
         Assert.AreEqual(typeof(RenderFragment<ECMAScript.RouterViewSlotScope>), componentType.GetProperty(nameof(ECMAScript.VueRouterView.ChildContent))!.PropertyType);

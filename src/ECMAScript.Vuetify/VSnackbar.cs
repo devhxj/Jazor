@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 消息条组件的编写代理。
 /// Vuetify snackbar authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VSnackbar", Transform.Component, "VSnackbar")]
+[ECMAScript("vuetify/components/VSnackbar")]
 public sealed class VSnackbar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

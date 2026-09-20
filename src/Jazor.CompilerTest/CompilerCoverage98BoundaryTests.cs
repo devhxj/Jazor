@@ -3489,13 +3489,13 @@ public sealed class CompilerCoverage98BoundaryTests
             [ECMAScript("./plain-import")]
             public sealed class PlainImport;
 
-            [ECMAScript("./explicit-import", Transform.Import)]
+            [ECMAScript("./explicit-import")]
             public sealed class ExplicitImport;
 
-            [ECMAScript("./allow-shaped", Transform.Allow)]
+            [ECMAScript("./allow-shaped")]
             public sealed class AllowShaped;
 
-            [ECMAScript("./component-shaped", Transform.Component)]
+            [ECMAScript("./component-shaped")]
             public sealed class ComponentShaped;
 
             [ECMAScript]

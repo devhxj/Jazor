@@ -21,7 +21,6 @@ public sealed class VueDraggableProxyTests
         var runtime = typeof(VueDraggable).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime);
         Assert.AreEqual("vue-draggable-plus", runtime!.Import);
-        Assert.AreEqual(Transform.Import, runtime.Transform);
     }
 
     [TestMethod]
@@ -33,8 +32,7 @@ public sealed class VueDraggableProxyTests
         var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(component);
         Assert.AreEqual("vue-draggable-plus", component!.Import);
-        Assert.AreEqual(Transform.Component, component.Transform);
-        Assert.AreEqual("VueDraggable", component.ExportName);
+        Assert.AreEqual("VueDraggable", componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         var modelValue = componentType.GetProperty(nameof(VueDraggableList<string>.ModelValue))!;
         Assert.IsNotNull(modelValue.GetCustomAttribute<Microsoft.AspNetCore.Components.ParameterAttribute>());

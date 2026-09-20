@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 悬停组件，用于检测和响应鼠标悬停状态。
 /// Vuetify hover component for detecting and responding to mouse hover state.
 /// </summary>
-[ECMAScript("vuetify/components/VHover", Transform.Component, "VHover")]
+[ECMAScript("vuetify/components/VHover")]
 public sealed class VHover : ComponentBase, IVuetifyComponent
 {
     /// <summary>

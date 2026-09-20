@@ -9,7 +9,8 @@ namespace ECMAScript;
 /// Razor authoring proxy for WangEditor's <c>Editor</c> component.
 /// 富文本编辑器组件的 Razor 创作代理；<c>ModelValue</c> 承载 HTML 内容并支持双向更新。
 /// </summary>
-[ECMAScript("@wangeditor/editor-for-vue", Transform.Component, "Editor")]
+[ECMAScriptName("Editor")]
+[ECMAScript("@wangeditor/editor-for-vue")]
 public sealed class WangEditorComponent : ComponentBase, IVueComponent
 {
     /// <summary>
@@ -58,7 +59,8 @@ public sealed class WangEditorComponent : ComponentBase, IVueComponent
 /// Razor authoring proxy for WangEditor's <c>Toolbar</c> component.
 /// 富文本编辑器工具栏组件的 Razor 创作代理；需要与 <see cref="WangEditorComponent"/> 的实例关联。
 /// </summary>
-[ECMAScript("@wangeditor/editor-for-vue", Transform.Component, "Toolbar")]
+[ECMAScriptName("Toolbar")]
+[ECMAScript("@wangeditor/editor-for-vue")]
 public sealed class WangEditorToolbar : ComponentBase, IVueComponent
 {
     /// <summary>

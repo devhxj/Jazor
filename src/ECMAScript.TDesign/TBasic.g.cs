@@ -49360,7 +49360,8 @@ public enum TdTreePropsValueMode
 ///
 /// 固钉
 /// </summary>
-[ECMAScript("tdesign-vue-next/affix/Affix", Transform.Component, "Affix")]
+[ECMAScriptName("Affix")]
+[ECMAScript("tdesign-vue-next/affix/Affix")]
 public sealed class TAffix : TContentComponentBase
 {
     /// <summary>
@@ -49421,7 +49422,8 @@ public sealed class TAffix : TContentComponentBase
 ///
 /// 警告提示
 /// </summary>
-[ECMAScript("tdesign-vue-next/alert/Alert", Transform.Component, "Alert")]
+[ECMAScriptName("Alert")]
+[ECMAScript("tdesign-vue-next/alert/Alert")]
 public sealed class TAlert : TContentComponentBase
 {
     /// <summary>
@@ -49534,7 +49536,8 @@ public sealed class TAlert : TContentComponentBase
 ///
 /// 锚点
 /// </summary>
-[ECMAScript("tdesign-vue-next/anchor/Anchor", Transform.Component, "Anchor")]
+[ECMAScriptName("Anchor")]
+[ECMAScript("tdesign-vue-next/anchor/Anchor")]
 public sealed class TAnchor : TContentComponentBase
 {
     /// <summary>
@@ -49612,7 +49615,8 @@ public sealed class TAnchor : TContentComponentBase
 ///
 /// 锚点项
 /// </summary>
-[ECMAScript("tdesign-vue-next/anchor/AnchorItem", Transform.Component, "AnchorItem")]
+[ECMAScriptName("AnchorItem")]
+[ECMAScript("tdesign-vue-next/anchor/AnchorItem")]
 public sealed class TAnchorItem : TContentComponentBase
 {
     /// <summary>
@@ -49662,7 +49666,8 @@ public sealed class TAnchorItem : TContentComponentBase
 ///
 /// 锚点目标
 /// </summary>
-[ECMAScript("tdesign-vue-next/anchor/AnchorTarget", Transform.Component, "AnchorTarget")]
+[ECMAScriptName("AnchorTarget")]
+[ECMAScript("tdesign-vue-next/anchor/AnchorTarget")]
 public sealed class TAnchorTarget : TContentComponentBase
 {
     /// <summary>
@@ -49688,7 +49693,8 @@ public sealed class TAnchorTarget : TContentComponentBase
 ///
 /// 布局-侧边栏
 /// </summary>
-[ECMAScript("tdesign-vue-next/layout/Aside", Transform.Component, "Aside")]
+[ECMAScriptName("Aside")]
+[ECMAScript("tdesign-vue-next/layout/Aside")]
 public sealed class TAside : TContentComponentBase
 {
     /// <summary>
@@ -49705,7 +49711,8 @@ public sealed class TAside : TContentComponentBase
 ///
 /// 自动填充
 /// </summary>
-[ECMAScript("tdesign-vue-next/auto-complete/AutoComplete", Transform.Component, "AutoComplete")]
+[ECMAScriptName("AutoComplete")]
+[ECMAScript("tdesign-vue-next/auto-complete/AutoComplete")]
 public class TAutoComplete<T> : TContentComponentBase
 {
     /// <summary>
@@ -49953,7 +49960,8 @@ public class TAutoComplete<T> : TContentComponentBase
     public EventCallback<string> OnSelect { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/auto-complete/AutoComplete", Transform.Component, "AutoComplete")]
+[ECMAScriptName("AutoComplete")]
+[ECMAScript("tdesign-vue-next/auto-complete/AutoComplete")]
 internal sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
 {
 }
@@ -49963,7 +49971,8 @@ internal sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
 ///
 /// 头像
 /// </summary>
-[ECMAScript("tdesign-vue-next/avatar/Avatar", Transform.Component, "Avatar")]
+[ECMAScriptName("Avatar")]
+[ECMAScript("tdesign-vue-next/avatar/Avatar")]
 public sealed class TAvatar : TContentComponentBase
 {
     /// <summary>
@@ -50047,7 +50056,8 @@ public sealed class TAvatar : TContentComponentBase
 ///
 /// 头像组
 /// </summary>
-[ECMAScript("tdesign-vue-next/avatar/AvatarGroup", Transform.Component, "AvatarGroup")]
+[ECMAScriptName("AvatarGroup")]
+[ECMAScript("tdesign-vue-next/avatar/AvatarGroup")]
 public sealed class TAvatarGroup : TContentComponentBase
 {
     /// <summary>
@@ -50109,7 +50119,8 @@ public sealed class TAvatarGroup : TContentComponentBase
 ///
 /// 回到顶部
 /// </summary>
-[ECMAScript("tdesign-vue-next/back-top/BackTop", Transform.Component, "BackTop")]
+[ECMAScriptName("BackTop")]
+[ECMAScript("tdesign-vue-next/back-top/BackTop")]
 public sealed class TBackTop : TContentComponentBase
 {
     /// <summary>
@@ -50203,7 +50214,8 @@ public sealed class TBackTop : TContentComponentBase
 ///
 /// 徽标数
 /// </summary>
-[ECMAScript("tdesign-vue-next/badge/Badge", Transform.Component, "Badge")]
+[ECMAScriptName("Badge")]
+[ECMAScript("tdesign-vue-next/badge/Badge")]
 public sealed class TBadge : TContentComponentBase
 {
     /// <summary>
@@ -50297,7 +50309,8 @@ public sealed class TBadge : TContentComponentBase
 ///
 /// 基础表格
 /// </summary>
-[ECMAScript("tdesign-vue-next/table/BaseTable", Transform.Component, "BaseTable")]
+[ECMAScriptName("BaseTable")]
+[ECMAScript("tdesign-vue-next/table/BaseTable")]
 public sealed class TBaseTable : TContentComponentBase
 {
     /// <summary>
@@ -50834,7 +50847,8 @@ public sealed class TBaseTable : TContentComponentBase
 ///
 /// 面包屑
 /// </summary>
-[ECMAScript("tdesign-vue-next/breadcrumb/Breadcrumb", Transform.Component, "Breadcrumb")]
+[ECMAScriptName("Breadcrumb")]
+[ECMAScript("tdesign-vue-next/breadcrumb/Breadcrumb")]
 public sealed class TBreadcrumb : TContentComponentBase
 {
     /// <summary>
@@ -50914,7 +50928,8 @@ public sealed class TBreadcrumb : TContentComponentBase
 ///
 /// 面包屑项
 /// </summary>
-[ECMAScript("tdesign-vue-next/breadcrumb/BreadcrumbItem", Transform.Component, "BreadcrumbItem")]
+[ECMAScriptName("BreadcrumbItem")]
+[ECMAScript("tdesign-vue-next/breadcrumb/BreadcrumbItem")]
 public sealed class TBreadcrumbItem : TContentComponentBase
 {
     /// <summary>
@@ -51003,7 +51018,8 @@ public sealed class TBreadcrumbItem : TContentComponentBase
 ///
 /// 按钮
 /// </summary>
-[ECMAScript("tdesign-vue-next/button/Button", Transform.Component, "Button")]
+[ECMAScriptName("Button")]
+[ECMAScript("tdesign-vue-next/button/Button")]
 public sealed class TButton : TContentComponentBase
 {
     /// <summary>
@@ -51146,7 +51162,8 @@ public sealed class TButton : TContentComponentBase
 ///
 /// 日历
 /// </summary>
-[ECMAScript("tdesign-vue-next/calendar/Calendar", Transform.Component, "Calendar")]
+[ECMAScriptName("Calendar")]
+[ECMAScript("tdesign-vue-next/calendar/Calendar")]
 public sealed class TCalendar : TContentComponentBase
 {
     /// <summary>
@@ -51342,7 +51359,8 @@ public sealed class TCalendar : TContentComponentBase
 ///
 /// 卡片
 /// </summary>
-[ECMAScript("tdesign-vue-next/card/Card", Transform.Component, "Card")]
+[ECMAScriptName("Card")]
+[ECMAScript("tdesign-vue-next/card/Card")]
 public sealed class TCard : TContentComponentBase
 {
     /// <summary>
@@ -51556,7 +51574,8 @@ public sealed class TCard : TContentComponentBase
 ///
 /// 级联选择
 /// </summary>
-[ECMAScript("tdesign-vue-next/cascader/Cascader", Transform.Component, "Cascader")]
+[ECMAScriptName("Cascader")]
+[ECMAScript("tdesign-vue-next/cascader/Cascader")]
 public class TCascader<CascaderOption> : TContentComponentBase
 {
     /// <summary>
@@ -51977,7 +51996,8 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public EventCallback<TRemoveContext<CascaderOption>> OnRemove { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/cascader/Cascader", Transform.Component, "Cascader")]
+[ECMAScriptName("Cascader")]
+[ECMAScript("tdesign-vue-next/cascader/Cascader")]
 internal sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOptionDefaultTDefault>>
 {
 }
@@ -51987,7 +52007,8 @@ internal sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOpt
 ///
 /// 可选标签
 /// </summary>
-[ECMAScript("tdesign-vue-next/tag/CheckTag", Transform.Component, "CheckTag")]
+[ECMAScriptName("CheckTag")]
+[ECMAScript("tdesign-vue-next/tag/CheckTag")]
 public sealed class TCheckTag : TContentComponentBase
 {
     /// <summary>
@@ -52068,7 +52089,8 @@ public sealed class TCheckTag : TContentComponentBase
 ///
 /// 可选标签组
 /// </summary>
-[ECMAScript("tdesign-vue-next/tag/CheckTagGroup", Transform.Component, "CheckTagGroup")]
+[ECMAScriptName("CheckTagGroup")]
+[ECMAScript("tdesign-vue-next/tag/CheckTagGroup")]
 public sealed class TCheckTagGroup : TContentComponentBase
 {
     /// <summary>
@@ -52121,7 +52143,8 @@ public sealed class TCheckTagGroup : TContentComponentBase
 ///
 /// 多选框
 /// </summary>
-[ECMAScript("tdesign-vue-next/checkbox/Checkbox", Transform.Component, "Checkbox")]
+[ECMAScriptName("Checkbox")]
+[ECMAScript("tdesign-vue-next/checkbox/Checkbox")]
 public sealed class TCheckbox : TContentComponentBase
 {
     /// <summary>
@@ -52220,7 +52243,8 @@ public sealed class TCheckbox : TContentComponentBase
 ///
 /// 多选框组
 /// </summary>
-[ECMAScript("tdesign-vue-next/checkbox/CheckboxGroup", Transform.Component, "CheckboxGroup")]
+[ECMAScriptName("CheckboxGroup")]
+[ECMAScript("tdesign-vue-next/checkbox/CheckboxGroup")]
 public class TCheckboxGroup<T> : TContentComponentBase
 {
     /// <summary>
@@ -52283,7 +52307,8 @@ public class TCheckboxGroup<T> : TContentComponentBase
     public EventCallback<T> OnChange { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/checkbox/CheckboxGroup", Transform.Component, "CheckboxGroup")]
+[ECMAScriptName("CheckboxGroup")]
+[ECMAScript("tdesign-vue-next/checkbox/CheckboxGroup")]
 internal sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
 {
 }
@@ -52293,7 +52318,8 @@ internal sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
 ///
 /// 栅格-纵向
 /// </summary>
-[ECMAScript("tdesign-vue-next/grid/Col", Transform.Component, "Col")]
+[ECMAScriptName("Col")]
+[ECMAScript("tdesign-vue-next/grid/Col")]
 public sealed class TCol : TContentComponentBase
 {
     /// <summary>
@@ -52398,7 +52424,8 @@ public sealed class TCol : TContentComponentBase
 ///
 /// 折叠
 /// </summary>
-[ECMAScript("tdesign-vue-next/collapse/Collapse", Transform.Component, "Collapse")]
+[ECMAScriptName("Collapse")]
+[ECMAScript("tdesign-vue-next/collapse/Collapse")]
 public sealed class TCollapse : TContentComponentBase
 {
     /// <summary>
@@ -52484,7 +52511,8 @@ public sealed class TCollapse : TContentComponentBase
 ///
 /// 折叠面板
 /// </summary>
-[ECMAScript("tdesign-vue-next/collapse/CollapsePanel", Transform.Component, "CollapsePanel")]
+[ECMAScriptName("CollapsePanel")]
+[ECMAScript("tdesign-vue-next/collapse/CollapsePanel")]
 public sealed class TCollapsePanel : TContentComponentBase
 {
     /// <summary>
@@ -52571,7 +52599,8 @@ public sealed class TCollapsePanel : TContentComponentBase
 ///
 /// 颜色选择器
 /// </summary>
-[ECMAScript("tdesign-vue-next/color-picker/ColorPicker", Transform.Component, "ColorPicker")]
+[ECMAScriptName("ColorPicker")]
+[ECMAScript("tdesign-vue-next/color-picker/ColorPicker")]
 public sealed class TColorPicker : TContentComponentBase
 {
     /// <summary>
@@ -52723,7 +52752,8 @@ public sealed class TColorPicker : TContentComponentBase
 ///
 /// 颜色选择器面板
 /// </summary>
-[ECMAScript("tdesign-vue-next/color-picker/ColorPickerPanel", Transform.Component, "ColorPickerPanel")]
+[ECMAScriptName("ColorPickerPanel")]
+[ECMAScript("tdesign-vue-next/color-picker/ColorPickerPanel")]
 public sealed class TColorPickerPanel : TContentComponentBase
 {
     /// <summary>
@@ -52830,7 +52860,8 @@ public sealed class TColorPickerPanel : TContentComponentBase
 ///
 /// 评论
 /// </summary>
-[ECMAScript("tdesign-vue-next/comment/Comment", Transform.Component, "Comment")]
+[ECMAScriptName("Comment")]
+[ECMAScript("tdesign-vue-next/comment/Comment")]
 public sealed class TComment : TContentComponentBase
 {
     /// <summary>
@@ -52937,7 +52968,8 @@ public sealed class TComment : TContentComponentBase
 ///
 /// 全局特性配置
 /// </summary>
-[ECMAScript("tdesign-vue-next/config-provider/ConfigProvider", Transform.Component, "ConfigProvider")]
+[ECMAScriptName("ConfigProvider")]
+[ECMAScript("tdesign-vue-next/config-provider/ConfigProvider")]
 public sealed class TConfigProvider : TContentComponentBase
 {
     /// <summary>
@@ -52953,7 +52985,8 @@ public sealed class TConfigProvider : TContentComponentBase
 ///
 /// 布局-内容
 /// </summary>
-[ECMAScript("tdesign-vue-next/layout/Content", Transform.Component, "Content")]
+[ECMAScriptName("Content")]
+[ECMAScript("tdesign-vue-next/layout/Content")]
 public sealed class TContent : TContentComponentBase
 {
     /// <summary>
@@ -52976,7 +53009,8 @@ public sealed class TContent : TContentComponentBase
 ///
 /// 日期选择器
 /// </summary>
-[ECMAScript("tdesign-vue-next/date-picker/DatePicker", Transform.Component, "DatePicker")]
+[ECMAScriptName("DatePicker")]
+[ECMAScript("tdesign-vue-next/date-picker/DatePicker")]
 public sealed class TDatePicker : TContentComponentBase
 {
     /// <summary>
@@ -53299,7 +53333,8 @@ public sealed class TDatePicker : TContentComponentBase
 ///
 /// 日期选择器面板
 /// </summary>
-[ECMAScript("tdesign-vue-next/date-picker/DatePickerPanel", Transform.Component, "DatePickerPanel")]
+[ECMAScriptName("DatePickerPanel")]
+[ECMAScript("tdesign-vue-next/date-picker/DatePickerPanel")]
 public sealed class TDatePickerPanel : TContentComponentBase
 {
     /// <summary>
@@ -53461,7 +53496,8 @@ public sealed class TDatePickerPanel : TContentComponentBase
 ///
 /// 日期范围选择器
 /// </summary>
-[ECMAScript("tdesign-vue-next/date-picker/DateRangePicker", Transform.Component, "DateRangePicker")]
+[ECMAScriptName("DateRangePicker")]
+[ECMAScript("tdesign-vue-next/date-picker/DateRangePicker")]
 public sealed class TDateRangePicker : TContentComponentBase
 {
     /// <summary>
@@ -53779,7 +53815,8 @@ public sealed class TDateRangePicker : TContentComponentBase
 ///
 /// 日期范围选择器面板
 /// </summary>
-[ECMAScript("tdesign-vue-next/date-picker/DateRangePickerPanel", Transform.Component, "DateRangePickerPanel")]
+[ECMAScriptName("DateRangePickerPanel")]
+[ECMAScript("tdesign-vue-next/date-picker/DateRangePickerPanel")]
 public sealed class TDateRangePickerPanel : TContentComponentBase
 {
     /// <summary>
@@ -53935,7 +53972,8 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
 ///
 /// 描述列表
 /// </summary>
-[ECMAScript("tdesign-vue-next/descriptions/Descriptions", Transform.Component, "Descriptions")]
+[ECMAScriptName("Descriptions")]
+[ECMAScript("tdesign-vue-next/descriptions/Descriptions")]
 public sealed class TDescriptions : TContentComponentBase
 {
     /// <summary>
@@ -54034,7 +54072,8 @@ public sealed class TDescriptions : TContentComponentBase
 ///
 /// 描述项
 /// </summary>
-[ECMAScript("tdesign-vue-next/descriptions/DescriptionsItem", Transform.Component, "DescriptionsItem")]
+[ECMAScriptName("DescriptionsItem")]
+[ECMAScript("tdesign-vue-next/descriptions/DescriptionsItem")]
 public sealed class TDescriptionsItem : TContentComponentBase
 {
     /// <summary>
@@ -54079,7 +54118,8 @@ public sealed class TDescriptionsItem : TContentComponentBase
 ///
 /// 对话框
 /// </summary>
-[ECMAScript("tdesign-vue-next/dialog/Dialog", Transform.Component, "Dialog")]
+[ECMAScriptName("Dialog")]
+[ECMAScript("tdesign-vue-next/dialog/Dialog")]
 public sealed class TDialog : TContentComponentBase
 {
     /// <summary>
@@ -54398,7 +54438,8 @@ public sealed class TDialog : TContentComponentBase
 ///
 /// 对话框卡片
 /// </summary>
-[ECMAScript("tdesign-vue-next/dialog/DialogCard", Transform.Component, "DialogCard")]
+[ECMAScriptName("DialogCard")]
+[ECMAScript("tdesign-vue-next/dialog/DialogCard")]
 public sealed class TDialogCard : TContentComponentBase
 {
     /// <summary>
@@ -54533,7 +54574,8 @@ public sealed class TDialogCard : TContentComponentBase
 ///
 /// 分割线
 /// </summary>
-[ECMAScript("tdesign-vue-next/divider/Divider", Transform.Component, "Divider")]
+[ECMAScriptName("Divider")]
+[ECMAScript("tdesign-vue-next/divider/Divider")]
 public sealed class TDivider : TContentComponentBase
 {
     /// <summary>
@@ -54587,7 +54629,8 @@ public sealed class TDivider : TContentComponentBase
 ///
 /// 模态抽屉
 /// </summary>
-[ECMAScript("tdesign-vue-next/drawer/Drawer", Transform.Component, "Drawer")]
+[ECMAScriptName("Drawer")]
+[ECMAScript("tdesign-vue-next/drawer/Drawer")]
 public sealed class TDrawer : TContentComponentBase
 {
     /// <summary>
@@ -54862,7 +54905,8 @@ public sealed class TDrawer : TContentComponentBase
 ///
 /// 下拉菜单
 /// </summary>
-[ECMAScript("tdesign-vue-next/dropdown/Dropdown", Transform.Component, "Dropdown")]
+[ECMAScriptName("Dropdown")]
+[ECMAScript("tdesign-vue-next/dropdown/Dropdown")]
 public sealed class TDropdown : TContentComponentBase
 {
     /// <summary>
@@ -54985,7 +55029,8 @@ public sealed class TDropdown : TContentComponentBase
 ///
 /// 下拉菜单选项
 /// </summary>
-[ECMAScript("tdesign-vue-next/dropdown/DropdownItem", Transform.Component, "DropdownItem")]
+[ECMAScriptName("DropdownItem")]
+[ECMAScript("tdesign-vue-next/dropdown/DropdownItem")]
 public sealed class TDropdownItem : TContentComponentBase
 {
     /// <summary>
@@ -55063,7 +55108,8 @@ public sealed class TDropdownItem : TContentComponentBase
 ///
 /// 空状态
 /// </summary>
-[ECMAScript("tdesign-vue-next/empty/Empty", Transform.Component, "Empty")]
+[ECMAScriptName("Empty")]
+[ECMAScript("tdesign-vue-next/empty/Empty")]
 public sealed class TEmpty : TContentComponentBase
 {
     /// <summary>
@@ -55144,7 +55190,8 @@ public sealed class TEmpty : TContentComponentBase
 ///
 /// 增强表格
 /// </summary>
-[ECMAScript("tdesign-vue-next/table/EnhancedTable", Transform.Component, "EnhancedTable")]
+[ECMAScriptName("EnhancedTable")]
+[ECMAScript("tdesign-vue-next/table/EnhancedTable")]
 public class TEnhancedTable<T> : TContentComponentBase
 {
     /// <summary>
@@ -55404,7 +55451,8 @@ public class TEnhancedTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/table/EnhancedTable", Transform.Component, "EnhancedTable")]
+[ECMAScriptName("EnhancedTable")]
+[ECMAScript("tdesign-vue-next/table/EnhancedTable")]
 internal sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
 {
 }
@@ -55414,7 +55462,8 @@ internal sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
 ///
 /// 布局-底部内容
 /// </summary>
-[ECMAScript("tdesign-vue-next/layout/Footer", Transform.Component, "Footer")]
+[ECMAScriptName("Footer")]
+[ECMAScript("tdesign-vue-next/layout/Footer")]
 public sealed class TFooter : TContentComponentBase
 {
     /// <summary>
@@ -55431,7 +55480,8 @@ public sealed class TFooter : TContentComponentBase
 ///
 /// 表单
 /// </summary>
-[ECMAScript("tdesign-vue-next/form/Form", Transform.Component, "Form")]
+[ECMAScriptName("Form")]
+[ECMAScript("tdesign-vue-next/form/Form")]
 public class TForm<FormData> : TContentComponentBase
 {
     /// <summary>
@@ -55606,7 +55656,8 @@ public class TForm<FormData> : TContentComponentBase
     public EventCallback<TValidateResultContext<FormData>> OnValidate { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/form/Form", Transform.Component, "Form")]
+[ECMAScriptName("Form")]
+[ECMAScript("tdesign-vue-next/form/Form")]
 internal sealed class TForm : TForm<TJsonObject>
 {
 }
@@ -55616,7 +55667,8 @@ internal sealed class TForm : TForm<TJsonObject>
 ///
 /// 表单元素
 /// </summary>
-[ECMAScript("tdesign-vue-next/form/FormItem", Transform.Component, "FormItem")]
+[ECMAScriptName("FormItem")]
+[ECMAScript("tdesign-vue-next/form/FormItem")]
 public sealed class TFormItem : TContentComponentBase
 {
     /// <summary>
@@ -55750,7 +55802,8 @@ public sealed class TFormItem : TContentComponentBase
 ///
 /// 引导
 /// </summary>
-[ECMAScript("tdesign-vue-next/guide/Guide", Transform.Component, "Guide")]
+[ECMAScriptName("Guide")]
+[ECMAScript("tdesign-vue-next/guide/Guide")]
 public sealed class TGuide : TContentComponentBase
 {
     /// <summary>
@@ -55899,7 +55952,8 @@ public sealed class TGuide : TContentComponentBase
 ///
 /// 顶部导航菜单
 /// </summary>
-[ECMAScript("tdesign-vue-next/menu/HeadMenu", Transform.Component, "HeadMenu")]
+[ECMAScriptName("HeadMenu")]
+[ECMAScript("tdesign-vue-next/menu/HeadMenu")]
 public sealed class THeadMenu : TContentComponentBase
 {
     /// <summary>
@@ -55966,7 +56020,8 @@ public sealed class THeadMenu : TContentComponentBase
 ///
 /// 布局-头部
 /// </summary>
-[ECMAScript("tdesign-vue-next/layout/Header", Transform.Component, "Header")]
+[ECMAScriptName("Header")]
+[ECMAScript("tdesign-vue-next/layout/Header")]
 public sealed class THeader : TContentComponentBase
 {
     /// <summary>
@@ -55983,7 +56038,8 @@ public sealed class THeader : TContentComponentBase
 ///
 /// 图标（IconSVG）
 /// </summary>
-[ECMAScript("tdesign-vue-next/icon/Icon", Transform.Component, "Icon")]
+[ECMAScriptName("Icon")]
+[ECMAScript("tdesign-vue-next/icon/Icon")]
 public sealed class TIcon : TContentComponentBase
 {
     /// <summary>
@@ -56037,7 +56093,8 @@ public sealed class TIcon : TContentComponentBase
 ///
 /// 图片
 /// </summary>
-[ECMAScript("tdesign-vue-next/image/Image", Transform.Component, "Image")]
+[ECMAScriptName("Image")]
+[ECMAScript("tdesign-vue-next/image/Image")]
 public sealed class TImage : TContentComponentBase
 {
     /// <summary>
@@ -56202,7 +56259,8 @@ public sealed class TImage : TContentComponentBase
 ///
 /// 图片预览
 /// </summary>
-[ECMAScript("tdesign-vue-next/image-viewer/ImageViewer", Transform.Component, "ImageViewer")]
+[ECMAScriptName("ImageViewer")]
+[ECMAScript("tdesign-vue-next/image-viewer/ImageViewer")]
 public sealed class TImageViewer : TContentComponentBase
 {
     /// <summary>
@@ -56382,7 +56440,8 @@ public sealed class TImageViewer : TContentComponentBase
 ///
 /// 输入框
 /// </summary>
-[ECMAScript("tdesign-vue-next/input/Input", Transform.Component, "Input")]
+[ECMAScriptName("Input")]
+[ECMAScript("tdesign-vue-next/input/Input")]
 public class TInput<T> : TContentComponentBase
 {
     /// <summary>
@@ -56721,7 +56780,8 @@ public class TInput<T> : TContentComponentBase
     public EventCallback<TInputWheelEventContext<T>> OnWheel { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/input/Input", Transform.Component, "Input")]
+[ECMAScriptName("Input")]
+[ECMAScript("tdesign-vue-next/input/Input")]
 internal sealed class TInput : TInput<TInputValue>
 {
 }
@@ -56731,7 +56791,8 @@ internal sealed class TInput : TInput<TInputValue>
 ///
 /// 输入装饰器
 /// </summary>
-[ECMAScript("tdesign-vue-next/input-adornment/InputAdornment", Transform.Component, "InputAdornment")]
+[ECMAScriptName("InputAdornment")]
+[ECMAScript("tdesign-vue-next/input-adornment/InputAdornment")]
 public sealed class TInputAdornment : TContentComponentBase
 {
     /// <summary>
@@ -56768,7 +56829,8 @@ public sealed class TInputAdornment : TContentComponentBase
 ///
 /// 输入框组
 /// </summary>
-[ECMAScript("tdesign-vue-next/input/InputGroup", Transform.Component, "InputGroup")]
+[ECMAScriptName("InputGroup")]
+[ECMAScript("tdesign-vue-next/input/InputGroup")]
 public sealed class TInputGroup : TContentComponentBase
 {
     /// <summary>
@@ -56784,7 +56846,8 @@ public sealed class TInputGroup : TContentComponentBase
 ///
 /// 数字输入框
 /// </summary>
-[ECMAScript("tdesign-vue-next/input-number/InputNumber", Transform.Component, "InputNumber")]
+[ECMAScriptName("InputNumber")]
+[ECMAScript("tdesign-vue-next/input-number/InputNumber")]
 public class TInputNumber<T> : TContentComponentBase
 {
     /// <summary>
@@ -57014,7 +57077,8 @@ public class TInputNumber<T> : TContentComponentBase
     public EventCallback<TInputNumberValidateEventContext<T>> OnValidate { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/input-number/InputNumber", Transform.Component, "InputNumber")]
+[ECMAScriptName("InputNumber")]
+[ECMAScript("tdesign-vue-next/input-number/InputNumber")]
 internal sealed class TInputNumber : TInputNumber<TInputNumberValue>
 {
 }
@@ -57024,7 +57088,8 @@ internal sealed class TInputNumber : TInputNumber<TInputNumberValue>
 ///
 /// 布局
 /// </summary>
-[ECMAScript("tdesign-vue-next/layout/Layout", Transform.Component, "Layout")]
+[ECMAScriptName("Layout")]
+[ECMAScript("tdesign-vue-next/layout/Layout")]
 public sealed class TLayout : TContentComponentBase
 {
     /// <summary>
@@ -57040,7 +57105,8 @@ public sealed class TLayout : TContentComponentBase
 ///
 /// 链接
 /// </summary>
-[ECMAScript("tdesign-vue-next/link/Link", Transform.Component, "Link")]
+[ECMAScriptName("Link")]
+[ECMAScript("tdesign-vue-next/link/Link")]
 public sealed class TLink : TContentComponentBase
 {
     /// <summary>
@@ -57145,7 +57211,8 @@ public sealed class TLink : TContentComponentBase
 ///
 /// 列表
 /// </summary>
-[ECMAScript("tdesign-vue-next/list/List", Transform.Component, "List")]
+[ECMAScriptName("List")]
+[ECMAScript("tdesign-vue-next/list/List")]
 public sealed class TList : TContentComponentBase
 {
     /// <summary>
@@ -57249,7 +57316,8 @@ public sealed class TList : TContentComponentBase
 ///
 /// 列表项
 /// </summary>
-[ECMAScript("tdesign-vue-next/list/ListItem", Transform.Component, "ListItem")]
+[ECMAScriptName("ListItem")]
+[ECMAScript("tdesign-vue-next/list/ListItem")]
 public sealed class TListItem : TContentComponentBase
 {
     /// <summary>
@@ -57286,7 +57354,8 @@ public sealed class TListItem : TContentComponentBase
 ///
 /// 带图片的列表项
 /// </summary>
-[ECMAScript("tdesign-vue-next/list/ListItemMeta", Transform.Component, "ListItemMeta")]
+[ECMAScriptName("ListItemMeta")]
+[ECMAScript("tdesign-vue-next/list/ListItemMeta")]
 public sealed class TListItemMeta : TContentComponentBase
 {
     /// <summary>
@@ -57353,7 +57422,8 @@ public sealed class TListItemMeta : TContentComponentBase
 ///
 /// 加载中
 /// </summary>
-[ECMAScript("tdesign-vue-next/loading/Loading", Transform.Component, "Loading")]
+[ECMAScriptName("Loading")]
+[ECMAScript("tdesign-vue-next/loading/Loading")]
 public sealed class TLoading : TContentComponentBase
 {
     /// <summary>
@@ -57477,7 +57547,8 @@ public sealed class TLoading : TContentComponentBase
 ///
 /// 侧边导航菜单
 /// </summary>
-[ECMAScript("tdesign-vue-next/menu/Menu", Transform.Component, "Menu")]
+[ECMAScriptName("Menu")]
+[ECMAScript("tdesign-vue-next/menu/Menu")]
 public sealed class TMenu : TContentComponentBase
 {
     /// <summary>
@@ -57568,7 +57639,8 @@ public sealed class TMenu : TContentComponentBase
 ///
 /// 导航菜单组
 /// </summary>
-[ECMAScript("tdesign-vue-next/menu/MenuGroup", Transform.Component, "MenuGroup")]
+[ECMAScriptName("MenuGroup")]
+[ECMAScript("tdesign-vue-next/menu/MenuGroup")]
 public sealed class TMenuGroup : TContentComponentBase
 {
     /// <summary>
@@ -57591,7 +57663,8 @@ public sealed class TMenuGroup : TContentComponentBase
 ///
 /// 导航菜单选项
 /// </summary>
-[ECMAScript("tdesign-vue-next/menu/MenuItem", Transform.Component, "MenuItem")]
+[ECMAScriptName("MenuItem")]
+[ECMAScript("tdesign-vue-next/menu/MenuItem")]
 public sealed class TMenuItem : TContentComponentBase
 {
     /// <summary>
@@ -57695,7 +57768,8 @@ public sealed class TMenuItem : TContentComponentBase
 ///
 /// 全局提醒
 /// </summary>
-[ECMAScript("tdesign-vue-next/message/Message", Transform.Component, "Message")]
+[ECMAScriptName("Message")]
+[ECMAScript("tdesign-vue-next/message/Message")]
 public sealed class TMessage : TContentComponentBase
 {
     /// <summary>
@@ -57785,7 +57859,8 @@ public sealed class TMessage : TContentComponentBase
 ///
 /// 消息通知
 /// </summary>
-[ECMAScript("tdesign-vue-next/notification/Notification", Transform.Component, "Notification")]
+[ECMAScriptName("Notification")]
+[ECMAScript("tdesign-vue-next/notification/Notification")]
 public sealed class TNotification : TContentComponentBase
 {
     /// <summary>
@@ -57903,7 +57978,8 @@ public sealed class TNotification : TContentComponentBase
 ///
 /// 选择器选项
 /// </summary>
-[ECMAScript("tdesign-vue-next/select/Option", Transform.Component, "Option")]
+[ECMAScriptName("Option")]
+[ECMAScript("tdesign-vue-next/select/Option")]
 public sealed class TOption : TContentComponentBase
 {
     /// <summary>
@@ -57965,7 +58041,8 @@ public sealed class TOption : TContentComponentBase
 ///
 /// 选择器选项组
 /// </summary>
-[ECMAScript("tdesign-vue-next/select/OptionGroup", Transform.Component, "OptionGroup")]
+[ECMAScriptName("OptionGroup")]
+[ECMAScript("tdesign-vue-next/select/OptionGroup")]
 public sealed class TOptionGroup : TContentComponentBase
 {
     /// <summary>
@@ -57990,7 +58067,8 @@ public sealed class TOptionGroup : TContentComponentBase
 ///
 /// 分页
 /// </summary>
-[ECMAScript("tdesign-vue-next/pagination/Pagination", Transform.Component, "Pagination")]
+[ECMAScriptName("Pagination")]
+[ECMAScript("tdesign-vue-next/pagination/Pagination")]
 public sealed class TPagination : TContentComponentBase
 {
     /// <summary>
@@ -58162,7 +58240,8 @@ public sealed class TPagination : TContentComponentBase
 ///
 /// 迷你分页
 /// </summary>
-[ECMAScript("tdesign-vue-next/pagination/PaginationMini", Transform.Component, "PaginationMini")]
+[ECMAScriptName("PaginationMini")]
+[ECMAScript("tdesign-vue-next/pagination/PaginationMini")]
 public sealed class TPaginationMini : TContentComponentBase
 {
     /// <summary>
@@ -58224,7 +58303,8 @@ public sealed class TPaginationMini : TContentComponentBase
 ///
 /// 段落
 /// </summary>
-[ECMAScript("tdesign-vue-next/typography/Paragraph", Transform.Component, "Paragraph")]
+[ECMAScriptName("Paragraph")]
+[ECMAScript("tdesign-vue-next/typography/Paragraph")]
 public sealed class TParagraph : TContentComponentBase
 {
     /// <summary>
@@ -58255,7 +58335,8 @@ public sealed class TParagraph : TContentComponentBase
 ///
 /// 气泡确认框
 /// </summary>
-[ECMAScript("tdesign-vue-next/popconfirm/Popconfirm", Transform.Component, "Popconfirm")]
+[ECMAScriptName("Popconfirm")]
+[ECMAScript("tdesign-vue-next/popconfirm/Popconfirm")]
 public sealed class TPopconfirm : TContentComponentBase
 {
     /// <summary>
@@ -58377,7 +58458,8 @@ public sealed class TPopconfirm : TContentComponentBase
 ///
 /// 气泡框
 /// </summary>
-[ECMAScript("tdesign-vue-next/popup/Popup", Transform.Component, "Popup")]
+[ECMAScriptName("Popup")]
+[ECMAScript("tdesign-vue-next/popup/Popup")]
 public sealed class TPopup : TContentComponentBase
 {
     /// <summary>
@@ -58553,7 +58635,8 @@ public sealed class TPopup : TContentComponentBase
 ///
 /// 主表格
 /// </summary>
-[ECMAScript("tdesign-vue-next/table/PrimaryTable", Transform.Component, "PrimaryTable")]
+[ECMAScriptName("PrimaryTable")]
+[ECMAScript("tdesign-vue-next/table/PrimaryTable")]
 public class TPrimaryTable<T> : TContentComponentBase
 {
     /// <summary>
@@ -59388,7 +59471,8 @@ public class TPrimaryTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/table/PrimaryTable", Transform.Component, "PrimaryTable")]
+[ECMAScriptName("PrimaryTable")]
+[ECMAScript("tdesign-vue-next/table/PrimaryTable")]
 internal sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
 {
 }
@@ -59398,7 +59482,8 @@ internal sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
 ///
 /// 进度条
 /// </summary>
-[ECMAScript("tdesign-vue-next/progress/Progress", Transform.Component, "Progress")]
+[ECMAScriptName("Progress")]
+[ECMAScript("tdesign-vue-next/progress/Progress")]
 public sealed class TProgress : TContentComponentBase
 {
     /// <summary>
@@ -59477,7 +59562,8 @@ public sealed class TProgress : TContentComponentBase
 ///
 /// 二维码
 /// </summary>
-[ECMAScript("tdesign-vue-next/qrcode/QRCode", Transform.Component, "QRCode")]
+[ECMAScriptName("QRCode")]
+[ECMAScript("tdesign-vue-next/qrcode/QRCode")]
 public sealed class TQRCode : TContentComponentBase
 {
     /// <summary>
@@ -59580,7 +59666,8 @@ public sealed class TQRCode : TContentComponentBase
 ///
 /// 单选框
 /// </summary>
-[ECMAScript("tdesign-vue-next/radio/Radio", Transform.Component, "Radio")]
+[ECMAScriptName("Radio")]
+[ECMAScript("tdesign-vue-next/radio/Radio")]
 public class TRadio<T> : TContentComponentBase
 {
     /// <summary>
@@ -59657,7 +59744,8 @@ public class TRadio<T> : TContentComponentBase
     public EventCallback<TRadioClickEventContext<T>> OnClick { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/radio/Radio", Transform.Component, "Radio")]
+[ECMAScriptName("Radio")]
+[ECMAScript("tdesign-vue-next/radio/Radio")]
 internal sealed class TRadio : TRadio<TRadioValue>
 {
 }
@@ -59667,7 +59755,8 @@ internal sealed class TRadio : TRadio<TRadioValue>
 ///
 /// 单选框
 /// </summary>
-[ECMAScript("tdesign-vue-next/radio/RadioButton", Transform.Component, "RadioButton")]
+[ECMAScriptName("RadioButton")]
+[ECMAScript("tdesign-vue-next/radio/RadioButton")]
 public class TRadioButton<T> : TContentComponentBase
 {
     /// <summary>
@@ -59744,7 +59833,8 @@ public class TRadioButton<T> : TContentComponentBase
     public EventCallback<TRadioButtonClickEventContext<T>> OnClick { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/radio/RadioButton", Transform.Component, "RadioButton")]
+[ECMAScriptName("RadioButton")]
+[ECMAScript("tdesign-vue-next/radio/RadioButton")]
 internal sealed class TRadioButton : TRadioButton<TRadioValue>
 {
 }
@@ -59754,7 +59844,8 @@ internal sealed class TRadioButton : TRadioButton<TRadioValue>
 ///
 /// 单选框组
 /// </summary>
-[ECMAScript("tdesign-vue-next/radio/RadioGroup", Transform.Component, "RadioGroup")]
+[ECMAScriptName("RadioGroup")]
+[ECMAScript("tdesign-vue-next/radio/RadioGroup")]
 public class TRadioGroup<T> : TContentComponentBase
 {
     /// <summary>
@@ -59833,7 +59924,8 @@ public class TRadioGroup<T> : TContentComponentBase
     public EventCallback<T> OnChange { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/radio/RadioGroup", Transform.Component, "RadioGroup")]
+[ECMAScriptName("RadioGroup")]
+[ECMAScript("tdesign-vue-next/radio/RadioGroup")]
 internal sealed class TRadioGroup : TRadioGroup<TRadioValue>
 {
 }
@@ -59843,7 +59935,8 @@ internal sealed class TRadioGroup : TRadioGroup<TRadioValue>
 ///
 /// 范围输入框
 /// </summary>
-[ECMAScript("tdesign-vue-next/range-input/RangeInput", Transform.Component, "RangeInput")]
+[ECMAScriptName("RangeInput")]
+[ECMAScript("tdesign-vue-next/range-input/RangeInput")]
 public sealed class TRangeInput : TContentComponentBase
 {
     /// <summary>
@@ -60070,7 +60163,8 @@ public sealed class TRangeInput : TContentComponentBase
 ///
 /// 范围输入框触发器
 /// </summary>
-[ECMAScript("tdesign-vue-next/range-input/RangeInputPopup", Transform.Component, "RangeInputPopup")]
+[ECMAScriptName("RangeInputPopup")]
+[ECMAScript("tdesign-vue-next/range-input/RangeInputPopup")]
 public sealed class TRangeInputPopup : TContentComponentBase
 {
     /// <summary>
@@ -60193,7 +60287,8 @@ public sealed class TRangeInputPopup : TContentComponentBase
 ///
 /// 评分
 /// </summary>
-[ECMAScript("tdesign-vue-next/rate/Rate", Transform.Component, "Rate")]
+[ECMAScriptName("Rate")]
+[ECMAScript("tdesign-vue-next/rate/Rate")]
 public sealed class TRate : TContentComponentBase
 {
     /// <summary>
@@ -60295,7 +60390,8 @@ public sealed class TRate : TContentComponentBase
 ///
 /// 栅格-横向
 /// </summary>
-[ECMAScript("tdesign-vue-next/grid/Row", Transform.Component, "Row")]
+[ECMAScriptName("Row")]
+[ECMAScript("tdesign-vue-next/grid/Row")]
 public sealed class TRow : TContentComponentBase
 {
     /// <summary>
@@ -60336,7 +60432,8 @@ public sealed class TRow : TContentComponentBase
 ///
 /// 选择器
 /// </summary>
-[ECMAScript("tdesign-vue-next/select/Select", Transform.Component, "Select")]
+[ECMAScriptName("Select")]
+[ECMAScript("tdesign-vue-next/select/Select")]
 public class TSelect<T> : TContentComponentBase
 {
     /// <summary>
@@ -60776,7 +60873,8 @@ public class TSelect<T> : TContentComponentBase
     public EventCallback<string> OnSearch { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/select/Select", Transform.Component, "Select")]
+[ECMAScriptName("Select")]
+[ECMAScript("tdesign-vue-next/select/Select")]
 internal sealed class TSelect : TSelect<TSelectOption>
 {
 }
@@ -60786,7 +60884,8 @@ internal sealed class TSelect : TSelect<TSelectOption>
 ///
 /// 筛选器输入框
 /// </summary>
-[ECMAScript("tdesign-vue-next/select-input/SelectInput", Transform.Component, "SelectInput")]
+[ECMAScriptName("SelectInput")]
+[ECMAScript("tdesign-vue-next/select-input/SelectInput")]
 public sealed class TSelectInput : TContentComponentBase
 {
     /// <summary>
@@ -61136,7 +61235,8 @@ public sealed class TSelectInput : TContentComponentBase
 ///
 /// 骨架屏
 /// </summary>
-[ECMAScript("tdesign-vue-next/skeleton/Skeleton", Transform.Component, "Skeleton")]
+[ECMAScriptName("Skeleton")]
+[ECMAScript("tdesign-vue-next/skeleton/Skeleton")]
 public sealed class TSkeleton : TContentComponentBase
 {
     /// <summary>
@@ -61198,7 +61298,8 @@ public sealed class TSkeleton : TContentComponentBase
 ///
 /// 滑块
 /// </summary>
-[ECMAScript("tdesign-vue-next/slider/Slider", Transform.Component, "Slider")]
+[ECMAScriptName("Slider")]
+[ECMAScript("tdesign-vue-next/slider/Slider")]
 public sealed class TSlider : TContentComponentBase
 {
     /// <summary>
@@ -61329,7 +61430,8 @@ public sealed class TSlider : TContentComponentBase
 ///
 /// 间距
 /// </summary>
-[ECMAScript("tdesign-vue-next/space/Space", Transform.Component, "Space")]
+[ECMAScriptName("Space")]
+[ECMAScript("tdesign-vue-next/space/Space")]
 public sealed class TSpace : TContentComponentBase
 {
     /// <summary>
@@ -61383,7 +61485,8 @@ public sealed class TSpace : TContentComponentBase
 ///
 /// 统计数值
 /// </summary>
-[ECMAScript("tdesign-vue-next/statistic/Statistic", Transform.Component, "Statistic")]
+[ECMAScriptName("Statistic")]
+[ECMAScript("tdesign-vue-next/statistic/Statistic")]
 public sealed class TStatistic : TContentComponentBase
 {
     /// <summary>
@@ -61537,7 +61640,8 @@ public sealed class TStatistic : TContentComponentBase
 ///
 /// 步骤
 /// </summary>
-[ECMAScript("tdesign-vue-next/steps/StepItem", Transform.Component, "StepItem")]
+[ECMAScriptName("StepItem")]
+[ECMAScript("tdesign-vue-next/steps/StepItem")]
 public sealed class TStepItem : TContentComponentBase
 {
     /// <summary>
@@ -61623,7 +61727,8 @@ public sealed class TStepItem : TContentComponentBase
 ///
 /// 步骤条
 /// </summary>
-[ECMAScript("tdesign-vue-next/steps/Steps", Transform.Component, "Steps")]
+[ECMAScriptName("Steps")]
+[ECMAScript("tdesign-vue-next/steps/Steps")]
 public sealed class TSteps : TContentComponentBase
 {
     /// <summary>
@@ -61692,7 +61797,8 @@ public sealed class TSteps : TContentComponentBase
 ///
 /// 侧边固钉项
 /// </summary>
-[ECMAScript("tdesign-vue-next/sticky-tool/StickyItem", Transform.Component, "StickyItem")]
+[ECMAScriptName("StickyItem")]
+[ECMAScript("tdesign-vue-next/sticky-tool/StickyItem")]
 public sealed class TStickyItem : TContentComponentBase
 {
     /// <summary>
@@ -61751,7 +61857,8 @@ public sealed class TStickyItem : TContentComponentBase
 ///
 /// 侧边固钉
 /// </summary>
-[ECMAScript("tdesign-vue-next/sticky-tool/StickyTool", Transform.Component, "StickyTool")]
+[ECMAScriptName("StickyTool")]
+[ECMAScript("tdesign-vue-next/sticky-tool/StickyTool")]
 public sealed class TStickyTool : TContentComponentBase
 {
     /// <summary>
@@ -61827,7 +61934,8 @@ public sealed class TStickyTool : TContentComponentBase
 ///
 /// 二级导航
 /// </summary>
-[ECMAScript("tdesign-vue-next/menu/Submenu", Transform.Component, "Submenu")]
+[ECMAScriptName("Submenu")]
+[ECMAScript("tdesign-vue-next/menu/Submenu")]
 public sealed class TSubmenu : TContentComponentBase
 {
     /// <summary>
@@ -61892,7 +62000,8 @@ public sealed class TSubmenu : TContentComponentBase
 ///
 /// 轮播
 /// </summary>
-[ECMAScript("tdesign-vue-next/swiper/Swiper", Transform.Component, "Swiper")]
+[ECMAScriptName("Swiper")]
+[ECMAScript("tdesign-vue-next/swiper/Swiper")]
 public sealed class TSwiper : TContentComponentBase
 {
     /// <summary>
@@ -62024,7 +62133,8 @@ public sealed class TSwiper : TContentComponentBase
 ///
 /// 轮播
 /// </summary>
-[ECMAScript("tdesign-vue-next/swiper/SwiperItem", Transform.Component, "SwiperItem")]
+[ECMAScriptName("SwiperItem")]
+[ECMAScript("tdesign-vue-next/swiper/SwiperItem")]
 public sealed class TSwiperItem : TContentComponentBase
 {
     /// <summary>
@@ -62156,7 +62266,8 @@ public sealed class TSwiperItem : TContentComponentBase
 ///
 /// 开关
 /// </summary>
-[ECMAScript("tdesign-vue-next/switch/Switch", Transform.Component, "Switch")]
+[ECMAScriptName("Switch")]
+[ECMAScript("tdesign-vue-next/switch/Switch")]
 public class TSwitch<T> : TContentComponentBase
 {
     /// <summary>
@@ -62227,7 +62338,8 @@ public class TSwitch<T> : TContentComponentBase
     public EventCallback<T> OnChange { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/switch/Switch", Transform.Component, "Switch")]
+[ECMAScriptName("Switch")]
+[ECMAScript("tdesign-vue-next/switch/Switch")]
 internal sealed class TSwitch : TSwitch<TSwitchValue>
 {
 }
@@ -62237,7 +62349,8 @@ internal sealed class TSwitch : TSwitch<TSwitchValue>
 ///
 /// 选项卡面板
 /// </summary>
-[ECMAScript("tdesign-vue-next/tabs/TabPanel", Transform.Component, "TabPanel")]
+[ECMAScriptName("TabPanel")]
+[ECMAScript("tdesign-vue-next/tabs/TabPanel")]
 public sealed class TTabPanel : TContentComponentBase
 {
     /// <summary>
@@ -62328,7 +62441,8 @@ public sealed class TTabPanel : TContentComponentBase
 ///
 /// 主表格
 /// </summary>
-[ECMAScript("tdesign-vue-next/table/Table", Transform.Component, "Table")]
+[ECMAScriptName("Table")]
+[ECMAScript("tdesign-vue-next/table/Table")]
 public class TTable<T> : TContentComponentBase
 {
     /// <summary>
@@ -63163,7 +63277,8 @@ public class TTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/table/Table", Transform.Component, "Table")]
+[ECMAScriptName("Table")]
+[ECMAScript("tdesign-vue-next/table/Table")]
 internal sealed class TTable : TTable<TTableRowData>
 {
 }
@@ -63173,7 +63288,8 @@ internal sealed class TTable : TTable<TTableRowData>
 ///
 /// 选项卡
 /// </summary>
-[ECMAScript("tdesign-vue-next/tabs/Tabs", Transform.Component, "Tabs")]
+[ECMAScriptName("Tabs")]
+[ECMAScript("tdesign-vue-next/tabs/Tabs")]
 public sealed class TTabs : TContentComponentBase
 {
     /// <summary>
@@ -63294,7 +63410,8 @@ public sealed class TTabs : TContentComponentBase
 ///
 /// 标签
 /// </summary>
-[ECMAScript("tdesign-vue-next/tag/Tag", Transform.Component, "Tag")]
+[ECMAScriptName("Tag")]
+[ECMAScript("tdesign-vue-next/tag/Tag")]
 public sealed class TTag : TContentComponentBase
 {
     /// <summary>
@@ -63408,7 +63525,8 @@ public sealed class TTag : TContentComponentBase
 ///
 /// 标签输入框
 /// </summary>
-[ECMAScript("tdesign-vue-next/tag-input/TagInput", Transform.Component, "TagInput")]
+[ECMAScriptName("TagInput")]
+[ECMAScript("tdesign-vue-next/tag-input/TagInput")]
 public sealed class TTagInput : TContentComponentBase
 {
     /// <summary>
@@ -63713,7 +63831,8 @@ public sealed class TTagInput : TContentComponentBase
 ///
 /// 文本
 /// </summary>
-[ECMAScript("tdesign-vue-next/typography/Text", Transform.Component, "Text")]
+[ECMAScriptName("Text")]
+[ECMAScript("tdesign-vue-next/typography/Text")]
 public sealed class TText : TContentComponentBase
 {
     /// <summary>
@@ -63823,7 +63942,8 @@ public sealed class TText : TContentComponentBase
 ///
 /// 文本输入框
 /// </summary>
-[ECMAScript("tdesign-vue-next/textarea/Textarea", Transform.Component, "Textarea")]
+[ECMAScriptName("Textarea")]
+[ECMAScript("tdesign-vue-next/textarea/Textarea")]
 public sealed class TTextarea : TContentComponentBase
 {
     /// <summary>
@@ -63977,7 +64097,8 @@ public sealed class TTextarea : TContentComponentBase
 ///
 /// 时间选择器
 /// </summary>
-[ECMAScript("tdesign-vue-next/time-picker/TimePicker", Transform.Component, "TimePicker")]
+[ECMAScriptName("TimePicker")]
+[ECMAScript("tdesign-vue-next/time-picker/TimePicker")]
 public sealed class TTimePicker : TContentComponentBase
 {
     /// <summary>
@@ -64219,7 +64340,8 @@ public sealed class TTimePicker : TContentComponentBase
 ///
 /// 时间范围选择器
 /// </summary>
-[ECMAScript("tdesign-vue-next/time-picker/TimeRangePicker", Transform.Component, "TimeRangePicker")]
+[ECMAScriptName("TimeRangePicker")]
+[ECMAScript("tdesign-vue-next/time-picker/TimeRangePicker")]
 public sealed class TTimeRangePicker : TContentComponentBase
 {
     /// <summary>
@@ -64419,7 +64541,8 @@ public sealed class TTimeRangePicker : TContentComponentBase
 ///
 /// 时间轴
 /// </summary>
-[ECMAScript("tdesign-vue-next/timeline/Timeline", Transform.Component, "Timeline")]
+[ECMAScriptName("Timeline")]
+[ECMAScript("tdesign-vue-next/timeline/Timeline")]
 public sealed class TTimeline : TContentComponentBase
 {
     /// <summary>
@@ -64468,7 +64591,8 @@ public sealed class TTimeline : TContentComponentBase
 ///
 /// 时间轴
 /// </summary>
-[ECMAScript("tdesign-vue-next/timeline/TimelineItem", Transform.Component, "TimelineItem")]
+[ECMAScriptName("TimelineItem")]
+[ECMAScript("tdesign-vue-next/timeline/TimelineItem")]
 public sealed class TTimelineItem : TContentComponentBase
 {
     /// <summary>
@@ -64541,7 +64665,8 @@ public sealed class TTimelineItem : TContentComponentBase
 ///
 /// 标题
 /// </summary>
-[ECMAScript("tdesign-vue-next/typography/Title", Transform.Component, "Title")]
+[ECMAScriptName("Title")]
+[ECMAScript("tdesign-vue-next/typography/Title")]
 public sealed class TTitle : TContentComponentBase
 {
     /// <summary>
@@ -64580,7 +64705,8 @@ public sealed class TTitle : TContentComponentBase
 ///
 /// 文字提示
 /// </summary>
-[ECMAScript("tdesign-vue-next/tooltip/Tooltip", Transform.Component, "Tooltip")]
+[ECMAScriptName("Tooltip")]
+[ECMAScript("tdesign-vue-next/tooltip/Tooltip")]
 public sealed class TTooltip : TContentComponentBase
 {
     /// <summary>
@@ -64771,7 +64897,8 @@ public sealed class TTooltip : TContentComponentBase
 ///
 /// 穿梭框
 /// </summary>
-[ECMAScript("tdesign-vue-next/transfer/Transfer", Transform.Component, "Transfer")]
+[ECMAScriptName("Transfer")]
+[ECMAScript("tdesign-vue-next/transfer/Transfer")]
 public class TTransfer<T> : TContentComponentBase
 {
     /// <summary>
@@ -64985,7 +65112,8 @@ public class TTransfer<T> : TContentComponentBase
     public EventCallback<TSearchContext> OnSearch { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/transfer/Transfer", Transform.Component, "Transfer")]
+[ECMAScriptName("Transfer")]
+[ECMAScript("tdesign-vue-next/transfer/Transfer")]
 internal sealed class TTransfer : TTransfer<TDataOption>
 {
 }
@@ -64995,7 +65123,8 @@ internal sealed class TTransfer : TTransfer<TDataOption>
 ///
 /// 树
 /// </summary>
-[ECMAScript("tdesign-vue-next/tree/Tree", Transform.Component, "Tree")]
+[ECMAScriptName("Tree")]
+[ECMAScript("tdesign-vue-next/tree/Tree")]
 public class TTree<T> : TContentComponentBase
 {
     /// <summary>
@@ -65369,7 +65498,8 @@ public class TTree<T> : TContentComponentBase
     public EventCallback<TTreeScrollEventParams<T>> OnScroll { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/tree/Tree", Transform.Component, "Tree")]
+[ECMAScriptName("Tree")]
+[ECMAScript("tdesign-vue-next/tree/Tree")]
 internal sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
 {
 }
@@ -65379,7 +65509,8 @@ internal sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
 ///
 /// 树选择
 /// </summary>
-[ECMAScript("tdesign-vue-next/tree-select/TreeSelect", Transform.Component, "TreeSelect")]
+[ECMAScriptName("TreeSelect")]
+[ECMAScript("tdesign-vue-next/tree-select/TreeSelect")]
 public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
 {
     /// <summary>
@@ -65769,7 +65900,8 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public EventCallback<string> OnSearch { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/tree-select/TreeSelect", Transform.Component, "TreeSelect")]
+[ECMAScriptName("TreeSelect")]
+[ECMAScript("tdesign-vue-next/tree-select/TreeSelect")]
 internal sealed class TTreeSelect : TTreeSelect<TTreeOptionData<TTreeSelectDataOptionDefaultTDefault>, TTreeSelectValue>
 {
 }
@@ -65779,7 +65911,8 @@ internal sealed class TTreeSelect : TTreeSelect<TTreeOptionData<TTreeSelectDataO
 ///
 /// 排版
 /// </summary>
-[ECMAScript("tdesign-vue-next/typography/Typography", Transform.Component, "Typography")]
+[ECMAScriptName("Typography")]
+[ECMAScript("tdesign-vue-next/typography/Typography")]
 public sealed class TTypography : TContentComponentBase
 {
 }
@@ -65789,7 +65922,8 @@ public sealed class TTypography : TContentComponentBase
 ///
 /// 上传
 /// </summary>
-[ECMAScript("tdesign-vue-next/upload/Upload", Transform.Component, "Upload")]
+[ECMAScriptName("Upload")]
+[ECMAScript("tdesign-vue-next/upload/Upload")]
 public class TUpload<T> : TContentComponentBase
 {
     /// <summary>
@@ -66275,7 +66409,8 @@ public class TUpload<T> : TContentComponentBase
     public EventCallback<TUploadWaitingUploadFilesChangeEventContext<T>> OnWaitingUploadFilesChange { get; set; }
 }
 
-[ECMAScript("tdesign-vue-next/upload/Upload", Transform.Component, "Upload")]
+[ECMAScriptName("Upload")]
+[ECMAScript("tdesign-vue-next/upload/Upload")]
 internal sealed class TUpload : TUpload<TUploadFile>
 {
 }
@@ -66285,7 +66420,8 @@ internal sealed class TUpload : TUpload<TUploadFile>
 ///
 /// 水印
 /// </summary>
-[ECMAScript("tdesign-vue-next/watermark/Watermark", Transform.Component, "Watermark")]
+[ECMAScriptName("Watermark")]
+[ECMAScript("tdesign-vue-next/watermark/Watermark")]
 public sealed class TWatermark : TContentComponentBase
 {
     /// <summary>

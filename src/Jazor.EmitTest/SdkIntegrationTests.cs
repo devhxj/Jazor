@@ -6089,7 +6089,7 @@ public sealed class SdkIntegrationTests
             #pragma warning restore CS0626
             }
 
-            [ECMAScript("Microsoft/AspNetCore/Components/NavigationManagerModule.js", Transform.Import)]
+            [ECMAScript("Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
             internal static class NavigationManagerRuntimeModule
             {
                 [ECMAScriptName("CreateNavigationManager")]

@@ -4,9105 +4,9105 @@ namespace ECMAScript.VuIcons;
 // One descriptor per upstream wrapper keeps static icon usage on a one-icon ESM path.
 /// <summary>Vue 3 &amp; UniApp Icon VuAArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAArrowDown", Transform.Component, "VuAArrowDown")]
+[ECMAScript("vu-icons/VuAArrowDown")]
 public sealed class VuAArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAArrowUp", Transform.Component, "VuAArrowUp")]
+[ECMAScript("vu-icons/VuAArrowUp")]
 public sealed class VuAArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuALargeSmall</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuALargeSmall</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuALargeSmall", Transform.Component, "VuALargeSmall")]
+[ECMAScript("vu-icons/VuALargeSmall")]
 public sealed class VuALargeSmall : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAccessibility</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAccessibility</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAccessibility", Transform.Component, "VuAccessibility")]
+[ECMAScript("vu-icons/VuAccessibility")]
 public sealed class VuAccessibility : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuActive</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuActive</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuActive", Transform.Component, "VuActive")]
+[ECMAScript("vu-icons/VuActive")]
 public sealed class VuActive : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuActivity</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuActivity</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuActivity", Transform.Component, "VuActivity")]
+[ECMAScript("vu-icons/VuActivity")]
 public sealed class VuActivity : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAdd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAdd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAdd", Transform.Component, "VuAdd")]
+[ECMAScript("vu-icons/VuAdd")]
 public sealed class VuAdd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAirVent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAirVent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAirVent", Transform.Component, "VuAirVent")]
+[ECMAScript("vu-icons/VuAirVent")]
 public sealed class VuAirVent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAirplay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAirplay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAirplay", Transform.Component, "VuAirplay")]
+[ECMAScript("vu-icons/VuAirplay")]
 public sealed class VuAirplay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarm</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarm</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarm", Transform.Component, "VuAlarm")]
+[ECMAScript("vu-icons/VuAlarm")]
 public sealed class VuAlarm : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarmClock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarmClock", Transform.Component, "VuAlarmClock")]
+[ECMAScript("vu-icons/VuAlarmClock")]
 public sealed class VuAlarmClock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarmClockCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarmClockCheck", Transform.Component, "VuAlarmClockCheck")]
+[ECMAScript("vu-icons/VuAlarmClockCheck")]
 public sealed class VuAlarmClockCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarmClockMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarmClockMinus", Transform.Component, "VuAlarmClockMinus")]
+[ECMAScript("vu-icons/VuAlarmClockMinus")]
 public sealed class VuAlarmClockMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarmClockOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarmClockOff", Transform.Component, "VuAlarmClockOff")]
+[ECMAScript("vu-icons/VuAlarmClockOff")]
 public sealed class VuAlarmClockOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarmClockPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarmClockPlus", Transform.Component, "VuAlarmClockPlus")]
+[ECMAScript("vu-icons/VuAlarmClockPlus")]
 public sealed class VuAlarmClockPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlarmSmoke</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlarmSmoke</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlarmSmoke", Transform.Component, "VuAlarmSmoke")]
+[ECMAScript("vu-icons/VuAlarmSmoke")]
 public sealed class VuAlarmSmoke : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlbum</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlbum</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlbum", Transform.Component, "VuAlbum")]
+[ECMAScript("vu-icons/VuAlbum")]
 public sealed class VuAlbum : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignCenter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignCenter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignCenter", Transform.Component, "VuAlignCenter")]
+[ECMAScript("vu-icons/VuAlignCenter")]
 public sealed class VuAlignCenter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignCenterHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignCenterHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignCenterHorizontal", Transform.Component, "VuAlignCenterHorizontal")]
+[ECMAScript("vu-icons/VuAlignCenterHorizontal")]
 public sealed class VuAlignCenterHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignCenterVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignCenterVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignCenterVertical", Transform.Component, "VuAlignCenterVertical")]
+[ECMAScript("vu-icons/VuAlignCenterVertical")]
 public sealed class VuAlignCenterVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignEndHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignEndHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignEndHorizontal", Transform.Component, "VuAlignEndHorizontal")]
+[ECMAScript("vu-icons/VuAlignEndHorizontal")]
 public sealed class VuAlignEndHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignEndVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignEndVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignEndVertical", Transform.Component, "VuAlignEndVertical")]
+[ECMAScript("vu-icons/VuAlignEndVertical")]
 public sealed class VuAlignEndVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeCenter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalDistributeCenter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalDistributeCenter", Transform.Component, "VuAlignHorizontalDistributeCenter")]
+[ECMAScript("vu-icons/VuAlignHorizontalDistributeCenter")]
 public sealed class VuAlignHorizontalDistributeCenter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalDistributeEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalDistributeEnd", Transform.Component, "VuAlignHorizontalDistributeEnd")]
+[ECMAScript("vu-icons/VuAlignHorizontalDistributeEnd")]
 public sealed class VuAlignHorizontalDistributeEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalDistributeStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalDistributeStart", Transform.Component, "VuAlignHorizontalDistributeStart")]
+[ECMAScript("vu-icons/VuAlignHorizontalDistributeStart")]
 public sealed class VuAlignHorizontalDistributeStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyCenter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalJustifyCenter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalJustifyCenter", Transform.Component, "VuAlignHorizontalJustifyCenter")]
+[ECMAScript("vu-icons/VuAlignHorizontalJustifyCenter")]
 public sealed class VuAlignHorizontalJustifyCenter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalJustifyEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalJustifyEnd", Transform.Component, "VuAlignHorizontalJustifyEnd")]
+[ECMAScript("vu-icons/VuAlignHorizontalJustifyEnd")]
 public sealed class VuAlignHorizontalJustifyEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalJustifyStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalJustifyStart", Transform.Component, "VuAlignHorizontalJustifyStart")]
+[ECMAScript("vu-icons/VuAlignHorizontalJustifyStart")]
 public sealed class VuAlignHorizontalJustifyStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalSpaceAround</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalSpaceAround</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalSpaceAround", Transform.Component, "VuAlignHorizontalSpaceAround")]
+[ECMAScript("vu-icons/VuAlignHorizontalSpaceAround")]
 public sealed class VuAlignHorizontalSpaceAround : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalSpaceBetween</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignHorizontalSpaceBetween</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignHorizontalSpaceBetween", Transform.Component, "VuAlignHorizontalSpaceBetween")]
+[ECMAScript("vu-icons/VuAlignHorizontalSpaceBetween")]
 public sealed class VuAlignHorizontalSpaceBetween : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignJustify</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignJustify</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignJustify", Transform.Component, "VuAlignJustify")]
+[ECMAScript("vu-icons/VuAlignJustify")]
 public sealed class VuAlignJustify : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignLeft", Transform.Component, "VuAlignLeft")]
+[ECMAScript("vu-icons/VuAlignLeft")]
 public sealed class VuAlignLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignRight", Transform.Component, "VuAlignRight")]
+[ECMAScript("vu-icons/VuAlignRight")]
 public sealed class VuAlignRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignStartHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignStartHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignStartHorizontal", Transform.Component, "VuAlignStartHorizontal")]
+[ECMAScript("vu-icons/VuAlignStartHorizontal")]
 public sealed class VuAlignStartHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignStartVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignStartVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignStartVertical", Transform.Component, "VuAlignStartVertical")]
+[ECMAScript("vu-icons/VuAlignStartVertical")]
 public sealed class VuAlignStartVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeCenter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalDistributeCenter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalDistributeCenter", Transform.Component, "VuAlignVerticalDistributeCenter")]
+[ECMAScript("vu-icons/VuAlignVerticalDistributeCenter")]
 public sealed class VuAlignVerticalDistributeCenter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalDistributeEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalDistributeEnd", Transform.Component, "VuAlignVerticalDistributeEnd")]
+[ECMAScript("vu-icons/VuAlignVerticalDistributeEnd")]
 public sealed class VuAlignVerticalDistributeEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalDistributeStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalDistributeStart", Transform.Component, "VuAlignVerticalDistributeStart")]
+[ECMAScript("vu-icons/VuAlignVerticalDistributeStart")]
 public sealed class VuAlignVerticalDistributeStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyCenter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalJustifyCenter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalJustifyCenter", Transform.Component, "VuAlignVerticalJustifyCenter")]
+[ECMAScript("vu-icons/VuAlignVerticalJustifyCenter")]
 public sealed class VuAlignVerticalJustifyCenter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalJustifyEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalJustifyEnd", Transform.Component, "VuAlignVerticalJustifyEnd")]
+[ECMAScript("vu-icons/VuAlignVerticalJustifyEnd")]
 public sealed class VuAlignVerticalJustifyEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalJustifyStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalJustifyStart", Transform.Component, "VuAlignVerticalJustifyStart")]
+[ECMAScript("vu-icons/VuAlignVerticalJustifyStart")]
 public sealed class VuAlignVerticalJustifyStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalSpaceAround</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalSpaceAround</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalSpaceAround", Transform.Component, "VuAlignVerticalSpaceAround")]
+[ECMAScript("vu-icons/VuAlignVerticalSpaceAround")]
 public sealed class VuAlignVerticalSpaceAround : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalSpaceBetween</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAlignVerticalSpaceBetween</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAlignVerticalSpaceBetween", Transform.Component, "VuAlignVerticalSpaceBetween")]
+[ECMAScript("vu-icons/VuAlignVerticalSpaceBetween")]
 public sealed class VuAlignVerticalSpaceBetween : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAmbulance</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAmbulance</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAmbulance", Transform.Component, "VuAmbulance")]
+[ECMAScript("vu-icons/VuAmbulance")]
 public sealed class VuAmbulance : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAmpersand</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAmpersand</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAmpersand", Transform.Component, "VuAmpersand")]
+[ECMAScript("vu-icons/VuAmpersand")]
 public sealed class VuAmpersand : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAmpersands</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAmpersands</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAmpersands", Transform.Component, "VuAmpersands")]
+[ECMAScript("vu-icons/VuAmpersands")]
 public sealed class VuAmpersands : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAmphora</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAmphora</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAmphora", Transform.Component, "VuAmphora")]
+[ECMAScript("vu-icons/VuAmphora")]
 public sealed class VuAmphora : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAnchor</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAnchor</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAnchor", Transform.Component, "VuAnchor")]
+[ECMAScript("vu-icons/VuAnchor")]
 public sealed class VuAnchor : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAngry</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAngry</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAngry", Transform.Component, "VuAngry")]
+[ECMAScript("vu-icons/VuAngry")]
 public sealed class VuAngry : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAnnoyed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAnnoyed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAnnoyed", Transform.Component, "VuAnnoyed")]
+[ECMAScript("vu-icons/VuAnnoyed")]
 public sealed class VuAnnoyed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAntenna</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAntenna</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAntenna", Transform.Component, "VuAntenna")]
+[ECMAScript("vu-icons/VuAntenna")]
 public sealed class VuAntenna : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAnvil</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAnvil</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAnvil", Transform.Component, "VuAnvil")]
+[ECMAScript("vu-icons/VuAnvil")]
 public sealed class VuAnvil : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAperture</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAperture</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAperture", Transform.Component, "VuAperture")]
+[ECMAScript("vu-icons/VuAperture")]
 public sealed class VuAperture : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAppWindow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAppWindow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAppWindow", Transform.Component, "VuAppWindow")]
+[ECMAScript("vu-icons/VuAppWindow")]
 public sealed class VuAppWindow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAppWindowMac</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAppWindowMac</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAppWindowMac", Transform.Component, "VuAppWindowMac")]
+[ECMAScript("vu-icons/VuAppWindowMac")]
 public sealed class VuAppWindowMac : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuApple</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuApple</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuApple", Transform.Component, "VuApple")]
+[ECMAScript("vu-icons/VuApple")]
 public sealed class VuApple : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAppointment</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAppointment</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAppointment", Transform.Component, "VuAppointment")]
+[ECMAScript("vu-icons/VuAppointment")]
 public sealed class VuAppointment : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArchive</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArchive</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArchive", Transform.Component, "VuArchive")]
+[ECMAScript("vu-icons/VuArchive")]
 public sealed class VuArchive : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArchiveRestore</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArchiveRestore</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArchiveRestore", Transform.Component, "VuArchiveRestore")]
+[ECMAScript("vu-icons/VuArchiveRestore")]
 public sealed class VuArchiveRestore : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArchiveX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArchiveX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArchiveX", Transform.Component, "VuArchiveX")]
+[ECMAScript("vu-icons/VuArchiveX")]
 public sealed class VuArchiveX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAreaChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAreaChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAreaChart", Transform.Component, "VuAreaChart")]
+[ECMAScript("vu-icons/VuAreaChart")]
 public sealed class VuAreaChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArmchair</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArmchair</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArmchair", Transform.Component, "VuArmchair")]
+[ECMAScript("vu-icons/VuArmchair")]
 public sealed class VuArmchair : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigDown", Transform.Component, "VuArrowBigDown")]
+[ECMAScript("vu-icons/VuArrowBigDown")]
 public sealed class VuArrowBigDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigDownDash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigDownDash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigDownDash", Transform.Component, "VuArrowBigDownDash")]
+[ECMAScript("vu-icons/VuArrowBigDownDash")]
 public sealed class VuArrowBigDownDash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigLeft", Transform.Component, "VuArrowBigLeft")]
+[ECMAScript("vu-icons/VuArrowBigLeft")]
 public sealed class VuArrowBigLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigLeftDash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigLeftDash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigLeftDash", Transform.Component, "VuArrowBigLeftDash")]
+[ECMAScript("vu-icons/VuArrowBigLeftDash")]
 public sealed class VuArrowBigLeftDash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigRight", Transform.Component, "VuArrowBigRight")]
+[ECMAScript("vu-icons/VuArrowBigRight")]
 public sealed class VuArrowBigRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigRightDash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigRightDash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigRightDash", Transform.Component, "VuArrowBigRightDash")]
+[ECMAScript("vu-icons/VuArrowBigRightDash")]
 public sealed class VuArrowBigRightDash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigUp", Transform.Component, "VuArrowBigUp")]
+[ECMAScript("vu-icons/VuArrowBigUp")]
 public sealed class VuArrowBigUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowBigUpDash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowBigUpDash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowBigUpDash", Transform.Component, "VuArrowBigUpDash")]
+[ECMAScript("vu-icons/VuArrowBigUpDash")]
 public sealed class VuArrowBigUpDash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDown", Transform.Component, "VuArrowDown")]
+[ECMAScript("vu-icons/VuArrowDown")]
 public sealed class VuArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDown01</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDown01</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDown01", Transform.Component, "VuArrowDown01")]
+[ECMAScript("vu-icons/VuArrowDown01")]
 public sealed class VuArrowDown01 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDown10</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDown10</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDown10", Transform.Component, "VuArrowDown10")]
+[ECMAScript("vu-icons/VuArrowDown10")]
 public sealed class VuArrowDown10 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownAZ</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownAZ</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownAZ", Transform.Component, "VuArrowDownAZ")]
+[ECMAScript("vu-icons/VuArrowDownAZ")]
 public sealed class VuArrowDownAZ : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownFromLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownFromLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownFromLine", Transform.Component, "VuArrowDownFromLine")]
+[ECMAScript("vu-icons/VuArrowDownFromLine")]
 public sealed class VuArrowDownFromLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownLeft", Transform.Component, "VuArrowDownLeft")]
+[ECMAScript("vu-icons/VuArrowDownLeft")]
 public sealed class VuArrowDownLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownNarrowWide</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownNarrowWide</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownNarrowWide", Transform.Component, "VuArrowDownNarrowWide")]
+[ECMAScript("vu-icons/VuArrowDownNarrowWide")]
 public sealed class VuArrowDownNarrowWide : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownRight", Transform.Component, "VuArrowDownRight")]
+[ECMAScript("vu-icons/VuArrowDownRight")]
 public sealed class VuArrowDownRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownToDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownToDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownToDot", Transform.Component, "VuArrowDownToDot")]
+[ECMAScript("vu-icons/VuArrowDownToDot")]
 public sealed class VuArrowDownToDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownToLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownToLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownToLine", Transform.Component, "VuArrowDownToLine")]
+[ECMAScript("vu-icons/VuArrowDownToLine")]
 public sealed class VuArrowDownToLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownUp", Transform.Component, "VuArrowDownUp")]
+[ECMAScript("vu-icons/VuArrowDownUp")]
 public sealed class VuArrowDownUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownWideNarrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownWideNarrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownWideNarrow", Transform.Component, "VuArrowDownWideNarrow")]
+[ECMAScript("vu-icons/VuArrowDownWideNarrow")]
 public sealed class VuArrowDownWideNarrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowDownZA</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowDownZA</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowDownZA", Transform.Component, "VuArrowDownZA")]
+[ECMAScript("vu-icons/VuArrowDownZA")]
 public sealed class VuArrowDownZA : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowLeft", Transform.Component, "VuArrowLeft")]
+[ECMAScript("vu-icons/VuArrowLeft")]
 public sealed class VuArrowLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftFromLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowLeftFromLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowLeftFromLine", Transform.Component, "VuArrowLeftFromLine")]
+[ECMAScript("vu-icons/VuArrowLeftFromLine")]
 public sealed class VuArrowLeftFromLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowLeftRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowLeftRight", Transform.Component, "VuArrowLeftRight")]
+[ECMAScript("vu-icons/VuArrowLeftRight")]
 public sealed class VuArrowLeftRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftToLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowLeftToLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowLeftToLine", Transform.Component, "VuArrowLeftToLine")]
+[ECMAScript("vu-icons/VuArrowLeftToLine")]
 public sealed class VuArrowLeftToLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowRight", Transform.Component, "VuArrowRight")]
+[ECMAScript("vu-icons/VuArrowRight")]
 public sealed class VuArrowRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowRightFromLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowRightFromLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowRightFromLine", Transform.Component, "VuArrowRightFromLine")]
+[ECMAScript("vu-icons/VuArrowRightFromLine")]
 public sealed class VuArrowRightFromLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowRightLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowRightLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowRightLeft", Transform.Component, "VuArrowRightLeft")]
+[ECMAScript("vu-icons/VuArrowRightLeft")]
 public sealed class VuArrowRightLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowRightToLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowRightToLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowRightToLine", Transform.Component, "VuArrowRightToLine")]
+[ECMAScript("vu-icons/VuArrowRightToLine")]
 public sealed class VuArrowRightToLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUp", Transform.Component, "VuArrowUp")]
+[ECMAScript("vu-icons/VuArrowUp")]
 public sealed class VuArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUp01</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUp01</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUp01", Transform.Component, "VuArrowUp01")]
+[ECMAScript("vu-icons/VuArrowUp01")]
 public sealed class VuArrowUp01 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUp10</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUp10</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUp10", Transform.Component, "VuArrowUp10")]
+[ECMAScript("vu-icons/VuArrowUp10")]
 public sealed class VuArrowUp10 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpAZ</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpAZ</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpAZ", Transform.Component, "VuArrowUpAZ")]
+[ECMAScript("vu-icons/VuArrowUpAZ")]
 public sealed class VuArrowUpAZ : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpDown", Transform.Component, "VuArrowUpDown")]
+[ECMAScript("vu-icons/VuArrowUpDown")]
 public sealed class VuArrowUpDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpFromDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpFromDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpFromDot", Transform.Component, "VuArrowUpFromDot")]
+[ECMAScript("vu-icons/VuArrowUpFromDot")]
 public sealed class VuArrowUpFromDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpFromLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpFromLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpFromLine", Transform.Component, "VuArrowUpFromLine")]
+[ECMAScript("vu-icons/VuArrowUpFromLine")]
 public sealed class VuArrowUpFromLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpLeft", Transform.Component, "VuArrowUpLeft")]
+[ECMAScript("vu-icons/VuArrowUpLeft")]
 public sealed class VuArrowUpLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpNarrowWide</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpNarrowWide</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpNarrowWide", Transform.Component, "VuArrowUpNarrowWide")]
+[ECMAScript("vu-icons/VuArrowUpNarrowWide")]
 public sealed class VuArrowUpNarrowWide : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpRight", Transform.Component, "VuArrowUpRight")]
+[ECMAScript("vu-icons/VuArrowUpRight")]
 public sealed class VuArrowUpRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpToLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpToLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpToLine", Transform.Component, "VuArrowUpToLine")]
+[ECMAScript("vu-icons/VuArrowUpToLine")]
 public sealed class VuArrowUpToLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpWideNarrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpWideNarrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpWideNarrow", Transform.Component, "VuArrowUpWideNarrow")]
+[ECMAScript("vu-icons/VuArrowUpWideNarrow")]
 public sealed class VuArrowUpWideNarrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowUpZA</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowUpZA</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowUpZA", Transform.Component, "VuArrowUpZA")]
+[ECMAScript("vu-icons/VuArrowUpZA")]
 public sealed class VuArrowUpZA : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowsExpand</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowsExpand</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowsExpand", Transform.Component, "VuArrowsExpand")]
+[ECMAScript("vu-icons/VuArrowsExpand")]
 public sealed class VuArrowsExpand : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowsHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowsHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowsHorizontal", Transform.Component, "VuArrowsHorizontal")]
+[ECMAScript("vu-icons/VuArrowsHorizontal")]
 public sealed class VuArrowsHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuArrowsUpFromLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuArrowsUpFromLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuArrowsUpFromLine", Transform.Component, "VuArrowsUpFromLine")]
+[ECMAScript("vu-icons/VuArrowsUpFromLine")]
 public sealed class VuArrowsUpFromLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAsterisk</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAsterisk</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAsterisk", Transform.Component, "VuAsterisk")]
+[ECMAScript("vu-icons/VuAsterisk")]
 public sealed class VuAsterisk : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAt", Transform.Component, "VuAt")]
+[ECMAScript("vu-icons/VuAt")]
 public sealed class VuAt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAtSign</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAtSign</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAtSign", Transform.Component, "VuAtSign")]
+[ECMAScript("vu-icons/VuAtSign")]
 public sealed class VuAtSign : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAtom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAtom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAtom", Transform.Component, "VuAtom")]
+[ECMAScript("vu-icons/VuAtom")]
 public sealed class VuAtom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAudioLines</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAudioLines</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAudioLines", Transform.Component, "VuAudioLines")]
+[ECMAScript("vu-icons/VuAudioLines")]
 public sealed class VuAudioLines : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAudioWaveform</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAudioWaveform</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAudioWaveform", Transform.Component, "VuAudioWaveform")]
+[ECMAScript("vu-icons/VuAudioWaveform")]
 public sealed class VuAudioWaveform : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAvatar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAvatar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAvatar", Transform.Component, "VuAvatar")]
+[ECMAScript("vu-icons/VuAvatar")]
 public sealed class VuAvatar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAward", Transform.Component, "VuAward")]
+[ECMAScript("vu-icons/VuAward")]
 public sealed class VuAward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAxe</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAxe</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAxe", Transform.Component, "VuAxe")]
+[ECMAScript("vu-icons/VuAxe")]
 public sealed class VuAxe : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuAxis3d</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuAxis3d</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuAxis3d", Transform.Component, "VuAxis3d")]
+[ECMAScript("vu-icons/VuAxis3d")]
 public sealed class VuAxis3d : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBaby</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBaby</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBaby", Transform.Component, "VuBaby")]
+[ECMAScript("vu-icons/VuBaby")]
 public sealed class VuBaby : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBackpack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBackpack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBackpack", Transform.Component, "VuBackpack")]
+[ECMAScript("vu-icons/VuBackpack")]
 public sealed class VuBackpack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadge", Transform.Component, "VuBadge")]
+[ECMAScript("vu-icons/VuBadge")]
 public sealed class VuBadge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeAlert", Transform.Component, "VuBadgeAlert")]
+[ECMAScript("vu-icons/VuBadgeAlert")]
 public sealed class VuBadgeAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeCent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeCent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeCent", Transform.Component, "VuBadgeCent")]
+[ECMAScript("vu-icons/VuBadgeCent")]
 public sealed class VuBadgeCent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeCheck", Transform.Component, "VuBadgeCheck")]
+[ECMAScript("vu-icons/VuBadgeCheck")]
 public sealed class VuBadgeCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeDollarSign</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeDollarSign</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeDollarSign", Transform.Component, "VuBadgeDollarSign")]
+[ECMAScript("vu-icons/VuBadgeDollarSign")]
 public sealed class VuBadgeDollarSign : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeEuro</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeEuro</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeEuro", Transform.Component, "VuBadgeEuro")]
+[ECMAScript("vu-icons/VuBadgeEuro")]
 public sealed class VuBadgeEuro : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeIndianRupee</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeIndianRupee</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeIndianRupee", Transform.Component, "VuBadgeIndianRupee")]
+[ECMAScript("vu-icons/VuBadgeIndianRupee")]
 public sealed class VuBadgeIndianRupee : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeInfo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeInfo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeInfo", Transform.Component, "VuBadgeInfo")]
+[ECMAScript("vu-icons/VuBadgeInfo")]
 public sealed class VuBadgeInfo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeJapaneseYen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeJapaneseYen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeJapaneseYen", Transform.Component, "VuBadgeJapaneseYen")]
+[ECMAScript("vu-icons/VuBadgeJapaneseYen")]
 public sealed class VuBadgeJapaneseYen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeMinus", Transform.Component, "VuBadgeMinus")]
+[ECMAScript("vu-icons/VuBadgeMinus")]
 public sealed class VuBadgeMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgePercent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgePercent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgePercent", Transform.Component, "VuBadgePercent")]
+[ECMAScript("vu-icons/VuBadgePercent")]
 public sealed class VuBadgePercent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgePlus", Transform.Component, "VuBadgePlus")]
+[ECMAScript("vu-icons/VuBadgePlus")]
 public sealed class VuBadgePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgePoundSterling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgePoundSterling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgePoundSterling", Transform.Component, "VuBadgePoundSterling")]
+[ECMAScript("vu-icons/VuBadgePoundSterling")]
 public sealed class VuBadgePoundSterling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeQuestionMark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeQuestionMark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeQuestionMark", Transform.Component, "VuBadgeQuestionMark")]
+[ECMAScript("vu-icons/VuBadgeQuestionMark")]
 public sealed class VuBadgeQuestionMark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeRussianRuble</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeRussianRuble</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeRussianRuble", Transform.Component, "VuBadgeRussianRuble")]
+[ECMAScript("vu-icons/VuBadgeRussianRuble")]
 public sealed class VuBadgeRussianRuble : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeSwissFranc</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeSwissFranc</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeSwissFranc", Transform.Component, "VuBadgeSwissFranc")]
+[ECMAScript("vu-icons/VuBadgeSwissFranc")]
 public sealed class VuBadgeSwissFranc : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeTurkishLira</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeTurkishLira</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeTurkishLira", Transform.Component, "VuBadgeTurkishLira")]
+[ECMAScript("vu-icons/VuBadgeTurkishLira")]
 public sealed class VuBadgeTurkishLira : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBadgeX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBadgeX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBadgeX", Transform.Component, "VuBadgeX")]
+[ECMAScript("vu-icons/VuBadgeX")]
 public sealed class VuBadgeX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBaggageClaim</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBaggageClaim</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBaggageClaim", Transform.Component, "VuBaggageClaim")]
+[ECMAScript("vu-icons/VuBaggageClaim")]
 public sealed class VuBaggageClaim : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBalloon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBalloon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBalloon", Transform.Component, "VuBalloon")]
+[ECMAScript("vu-icons/VuBalloon")]
 public sealed class VuBalloon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBan", Transform.Component, "VuBan")]
+[ECMAScript("vu-icons/VuBan")]
 public sealed class VuBan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBanana</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBanana</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBanana", Transform.Component, "VuBanana")]
+[ECMAScript("vu-icons/VuBanana")]
 public sealed class VuBanana : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBandage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBandage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBandage", Transform.Component, "VuBandage")]
+[ECMAScript("vu-icons/VuBandage")]
 public sealed class VuBandage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBankCard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBankCard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBankCard", Transform.Component, "VuBankCard")]
+[ECMAScript("vu-icons/VuBankCard")]
 public sealed class VuBankCard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBanknote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBanknote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBanknote", Transform.Component, "VuBanknote")]
+[ECMAScript("vu-icons/VuBanknote")]
 public sealed class VuBanknote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBanknoteArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBanknoteArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBanknoteArrowDown", Transform.Component, "VuBanknoteArrowDown")]
+[ECMAScript("vu-icons/VuBanknoteArrowDown")]
 public sealed class VuBanknoteArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBanknoteArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBanknoteArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBanknoteArrowUp", Transform.Component, "VuBanknoteArrowUp")]
+[ECMAScript("vu-icons/VuBanknoteArrowUp")]
 public sealed class VuBanknoteArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBanknoteX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBanknoteX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBanknoteX", Transform.Component, "VuBanknoteX")]
+[ECMAScript("vu-icons/VuBanknoteX")]
 public sealed class VuBanknoteX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarChart", Transform.Component, "VuBarChart")]
+[ECMAScript("vu-icons/VuBarChart")]
 public sealed class VuBarChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarChart3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarChart3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarChart3", Transform.Component, "VuBarChart3")]
+[ECMAScript("vu-icons/VuBarChart3")]
 public sealed class VuBarChart3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarChart4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarChart4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarChart4", Transform.Component, "VuBarChart4")]
+[ECMAScript("vu-icons/VuBarChart4")]
 public sealed class VuBarChart4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarChartBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarChartBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarChartBig", Transform.Component, "VuBarChartBig")]
+[ECMAScript("vu-icons/VuBarChartBig")]
 public sealed class VuBarChartBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarChartHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarChartHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarChartHorizontal", Transform.Component, "VuBarChartHorizontal")]
+[ECMAScript("vu-icons/VuBarChartHorizontal")]
 public sealed class VuBarChartHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarChartHorizontalBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarChartHorizontalBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarChartHorizontalBig", Transform.Component, "VuBarChartHorizontalBig")]
+[ECMAScript("vu-icons/VuBarChartHorizontalBig")]
 public sealed class VuBarChartHorizontalBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarcode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarcode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarcode", Transform.Component, "VuBarcode")]
+[ECMAScript("vu-icons/VuBarcode")]
 public sealed class VuBarcode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBarrel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBarrel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBarrel", Transform.Component, "VuBarrel")]
+[ECMAScript("vu-icons/VuBarrel")]
 public sealed class VuBarrel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBaseline</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBaseline</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBaseline", Transform.Component, "VuBaseline")]
+[ECMAScript("vu-icons/VuBaseline")]
 public sealed class VuBaseline : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBath</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBath</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBath", Transform.Component, "VuBath")]
+[ECMAScript("vu-icons/VuBath")]
 public sealed class VuBath : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBattery</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBattery</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBattery", Transform.Component, "VuBattery")]
+[ECMAScript("vu-icons/VuBattery")]
 public sealed class VuBattery : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBatteryCharging</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBatteryCharging</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBatteryCharging", Transform.Component, "VuBatteryCharging")]
+[ECMAScript("vu-icons/VuBatteryCharging")]
 public sealed class VuBatteryCharging : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBatteryFull</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBatteryFull</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBatteryFull", Transform.Component, "VuBatteryFull")]
+[ECMAScript("vu-icons/VuBatteryFull")]
 public sealed class VuBatteryFull : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBatteryLow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBatteryLow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBatteryLow", Transform.Component, "VuBatteryLow")]
+[ECMAScript("vu-icons/VuBatteryLow")]
 public sealed class VuBatteryLow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBatteryMedium</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBatteryMedium</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBatteryMedium", Transform.Component, "VuBatteryMedium")]
+[ECMAScript("vu-icons/VuBatteryMedium")]
 public sealed class VuBatteryMedium : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBatteryPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBatteryPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBatteryPlus", Transform.Component, "VuBatteryPlus")]
+[ECMAScript("vu-icons/VuBatteryPlus")]
 public sealed class VuBatteryPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBatteryWarning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBatteryWarning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBatteryWarning", Transform.Component, "VuBatteryWarning")]
+[ECMAScript("vu-icons/VuBatteryWarning")]
 public sealed class VuBatteryWarning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBeaker</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBeaker</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBeaker", Transform.Component, "VuBeaker")]
+[ECMAScript("vu-icons/VuBeaker")]
 public sealed class VuBeaker : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBean</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBean</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBean", Transform.Component, "VuBean")]
+[ECMAScript("vu-icons/VuBean")]
 public sealed class VuBean : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBeanOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBeanOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBeanOff", Transform.Component, "VuBeanOff")]
+[ECMAScript("vu-icons/VuBeanOff")]
 public sealed class VuBeanOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBed", Transform.Component, "VuBed")]
+[ECMAScript("vu-icons/VuBed")]
 public sealed class VuBed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBedDouble</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBedDouble</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBedDouble", Transform.Component, "VuBedDouble")]
+[ECMAScript("vu-icons/VuBedDouble")]
 public sealed class VuBedDouble : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBedSingle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBedSingle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBedSingle", Transform.Component, "VuBedSingle")]
+[ECMAScript("vu-icons/VuBedSingle")]
 public sealed class VuBedSingle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBeef</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBeef</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBeef", Transform.Component, "VuBeef")]
+[ECMAScript("vu-icons/VuBeef")]
 public sealed class VuBeef : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBeer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBeer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBeer", Transform.Component, "VuBeer")]
+[ECMAScript("vu-icons/VuBeer")]
 public sealed class VuBeer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBeerOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBeerOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBeerOff", Transform.Component, "VuBeerOff")]
+[ECMAScript("vu-icons/VuBeerOff")]
 public sealed class VuBeerOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBell</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBell</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBell", Transform.Component, "VuBell")]
+[ECMAScript("vu-icons/VuBell")]
 public sealed class VuBell : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBellDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBellDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBellDot", Transform.Component, "VuBellDot")]
+[ECMAScript("vu-icons/VuBellDot")]
 public sealed class VuBellDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBellElectric</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBellElectric</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBellElectric", Transform.Component, "VuBellElectric")]
+[ECMAScript("vu-icons/VuBellElectric")]
 public sealed class VuBellElectric : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBellMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBellMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBellMinus", Transform.Component, "VuBellMinus")]
+[ECMAScript("vu-icons/VuBellMinus")]
 public sealed class VuBellMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBellOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBellOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBellOff", Transform.Component, "VuBellOff")]
+[ECMAScript("vu-icons/VuBellOff")]
 public sealed class VuBellOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBellPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBellPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBellPlus", Transform.Component, "VuBellPlus")]
+[ECMAScript("vu-icons/VuBellPlus")]
 public sealed class VuBellPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBellRing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBellRing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBellRing", Transform.Component, "VuBellRing")]
+[ECMAScript("vu-icons/VuBellRing")]
 public sealed class VuBellRing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBetweenHorizontalEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBetweenHorizontalEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBetweenHorizontalEnd", Transform.Component, "VuBetweenHorizontalEnd")]
+[ECMAScript("vu-icons/VuBetweenHorizontalEnd")]
 public sealed class VuBetweenHorizontalEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBetweenHorizontalStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBetweenHorizontalStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBetweenHorizontalStart", Transform.Component, "VuBetweenHorizontalStart")]
+[ECMAScript("vu-icons/VuBetweenHorizontalStart")]
 public sealed class VuBetweenHorizontalStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBetweenVerticalEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBetweenVerticalEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBetweenVerticalEnd", Transform.Component, "VuBetweenVerticalEnd")]
+[ECMAScript("vu-icons/VuBetweenVerticalEnd")]
 public sealed class VuBetweenVerticalEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBetweenVerticalStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBetweenVerticalStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBetweenVerticalStart", Transform.Component, "VuBetweenVerticalStart")]
+[ECMAScript("vu-icons/VuBetweenVerticalStart")]
 public sealed class VuBetweenVerticalStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBicepsFlexed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBicepsFlexed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBicepsFlexed", Transform.Component, "VuBicepsFlexed")]
+[ECMAScript("vu-icons/VuBicepsFlexed")]
 public sealed class VuBicepsFlexed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBike</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBike</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBike", Transform.Component, "VuBike")]
+[ECMAScript("vu-icons/VuBike")]
 public sealed class VuBike : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBill</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBill</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBill", Transform.Component, "VuBill")]
+[ECMAScript("vu-icons/VuBill")]
 public sealed class VuBill : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBinary</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBinary</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBinary", Transform.Component, "VuBinary")]
+[ECMAScript("vu-icons/VuBinary")]
 public sealed class VuBinary : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBinoculars</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBinoculars</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBinoculars", Transform.Component, "VuBinoculars")]
+[ECMAScript("vu-icons/VuBinoculars")]
 public sealed class VuBinoculars : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBiohazard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBiohazard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBiohazard", Transform.Component, "VuBiohazard")]
+[ECMAScript("vu-icons/VuBiohazard")]
 public sealed class VuBiohazard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBird</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBird</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBird", Transform.Component, "VuBird")]
+[ECMAScript("vu-icons/VuBird")]
 public sealed class VuBird : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBirdhouse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBirdhouse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBirdhouse", Transform.Component, "VuBirdhouse")]
+[ECMAScript("vu-icons/VuBirdhouse")]
 public sealed class VuBirdhouse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBitcoin</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBitcoin</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBitcoin", Transform.Component, "VuBitcoin")]
+[ECMAScript("vu-icons/VuBitcoin")]
 public sealed class VuBitcoin : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBlend</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBlend</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBlend", Transform.Component, "VuBlend")]
+[ECMAScript("vu-icons/VuBlend")]
 public sealed class VuBlend : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBlinds</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBlinds</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBlinds", Transform.Component, "VuBlinds")]
+[ECMAScript("vu-icons/VuBlinds")]
 public sealed class VuBlinds : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBlocks</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBlocks</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBlocks", Transform.Component, "VuBlocks")]
+[ECMAScript("vu-icons/VuBlocks")]
 public sealed class VuBlocks : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBluetooth</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBluetooth</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBluetooth", Transform.Component, "VuBluetooth")]
+[ECMAScript("vu-icons/VuBluetooth")]
 public sealed class VuBluetooth : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBluetoothConnected</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBluetoothConnected</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBluetoothConnected", Transform.Component, "VuBluetoothConnected")]
+[ECMAScript("vu-icons/VuBluetoothConnected")]
 public sealed class VuBluetoothConnected : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBluetoothOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBluetoothOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBluetoothOff", Transform.Component, "VuBluetoothOff")]
+[ECMAScript("vu-icons/VuBluetoothOff")]
 public sealed class VuBluetoothOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBluetoothSearching</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBluetoothSearching</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBluetoothSearching", Transform.Component, "VuBluetoothSearching")]
+[ECMAScript("vu-icons/VuBluetoothSearching")]
 public sealed class VuBluetoothSearching : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBold</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBold</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBold", Transform.Component, "VuBold")]
+[ECMAScript("vu-icons/VuBold")]
 public sealed class VuBold : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBolt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBolt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBolt", Transform.Component, "VuBolt")]
+[ECMAScript("vu-icons/VuBolt")]
 public sealed class VuBolt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBomb</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBomb</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBomb", Transform.Component, "VuBomb")]
+[ECMAScript("vu-icons/VuBomb")]
 public sealed class VuBomb : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBone", Transform.Component, "VuBone")]
+[ECMAScript("vu-icons/VuBone")]
 public sealed class VuBone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBook", Transform.Component, "VuBook")]
+[ECMAScript("vu-icons/VuBook")]
 public sealed class VuBook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookA</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookA</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookA", Transform.Component, "VuBookA")]
+[ECMAScript("vu-icons/VuBookA")]
 public sealed class VuBookA : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookAlert", Transform.Component, "VuBookAlert")]
+[ECMAScript("vu-icons/VuBookAlert")]
 public sealed class VuBookAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookAudio</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookAudio</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookAudio", Transform.Component, "VuBookAudio")]
+[ECMAScript("vu-icons/VuBookAudio")]
 public sealed class VuBookAudio : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookCheck", Transform.Component, "VuBookCheck")]
+[ECMAScript("vu-icons/VuBookCheck")]
 public sealed class VuBookCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookCopy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookCopy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookCopy", Transform.Component, "VuBookCopy")]
+[ECMAScript("vu-icons/VuBookCopy")]
 public sealed class VuBookCopy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookDashed", Transform.Component, "VuBookDashed")]
+[ECMAScript("vu-icons/VuBookDashed")]
 public sealed class VuBookDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookDown", Transform.Component, "VuBookDown")]
+[ECMAScript("vu-icons/VuBookDown")]
 public sealed class VuBookDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookHeadphones</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookHeadphones</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookHeadphones", Transform.Component, "VuBookHeadphones")]
+[ECMAScript("vu-icons/VuBookHeadphones")]
 public sealed class VuBookHeadphones : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookHeart", Transform.Component, "VuBookHeart")]
+[ECMAScript("vu-icons/VuBookHeart")]
 public sealed class VuBookHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookImage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookImage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookImage", Transform.Component, "VuBookImage")]
+[ECMAScript("vu-icons/VuBookImage")]
 public sealed class VuBookImage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookKey</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookKey</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookKey", Transform.Component, "VuBookKey")]
+[ECMAScript("vu-icons/VuBookKey")]
 public sealed class VuBookKey : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookLock", Transform.Component, "VuBookLock")]
+[ECMAScript("vu-icons/VuBookLock")]
 public sealed class VuBookLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookMarked</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookMarked</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookMarked", Transform.Component, "VuBookMarked")]
+[ECMAScript("vu-icons/VuBookMarked")]
 public sealed class VuBookMarked : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookMinus", Transform.Component, "VuBookMinus")]
+[ECMAScript("vu-icons/VuBookMinus")]
 public sealed class VuBookMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookOpen", Transform.Component, "VuBookOpen")]
+[ECMAScript("vu-icons/VuBookOpen")]
 public sealed class VuBookOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookOpenCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookOpenCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookOpenCheck", Transform.Component, "VuBookOpenCheck")]
+[ECMAScript("vu-icons/VuBookOpenCheck")]
 public sealed class VuBookOpenCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookOpenText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookOpenText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookOpenText", Transform.Component, "VuBookOpenText")]
+[ECMAScript("vu-icons/VuBookOpenText")]
 public sealed class VuBookOpenText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookPlus", Transform.Component, "VuBookPlus")]
+[ECMAScript("vu-icons/VuBookPlus")]
 public sealed class VuBookPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookSearch", Transform.Component, "VuBookSearch")]
+[ECMAScript("vu-icons/VuBookSearch")]
 public sealed class VuBookSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookText", Transform.Component, "VuBookText")]
+[ECMAScript("vu-icons/VuBookText")]
 public sealed class VuBookText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookType</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookType</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookType", Transform.Component, "VuBookType")]
+[ECMAScript("vu-icons/VuBookType")]
 public sealed class VuBookType : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookUp", Transform.Component, "VuBookUp")]
+[ECMAScript("vu-icons/VuBookUp")]
 public sealed class VuBookUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookUp2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookUp2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookUp2", Transform.Component, "VuBookUp2")]
+[ECMAScript("vu-icons/VuBookUp2")]
 public sealed class VuBookUp2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookUser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookUser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookUser", Transform.Component, "VuBookUser")]
+[ECMAScript("vu-icons/VuBookUser")]
 public sealed class VuBookUser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookX", Transform.Component, "VuBookX")]
+[ECMAScript("vu-icons/VuBookX")]
 public sealed class VuBookX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookmark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookmark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookmark", Transform.Component, "VuBookmark")]
+[ECMAScript("vu-icons/VuBookmark")]
 public sealed class VuBookmark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookmarkCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookmarkCheck", Transform.Component, "VuBookmarkCheck")]
+[ECMAScript("vu-icons/VuBookmarkCheck")]
 public sealed class VuBookmarkCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookmarkMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookmarkMinus", Transform.Component, "VuBookmarkMinus")]
+[ECMAScript("vu-icons/VuBookmarkMinus")]
 public sealed class VuBookmarkMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookmarkPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookmarkPlus", Transform.Component, "VuBookmarkPlus")]
+[ECMAScript("vu-icons/VuBookmarkPlus")]
 public sealed class VuBookmarkPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBookmarkX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBookmarkX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBookmarkX", Transform.Component, "VuBookmarkX")]
+[ECMAScript("vu-icons/VuBookmarkX")]
 public sealed class VuBookmarkX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBoomBox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBoomBox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBoomBox", Transform.Component, "VuBoomBox")]
+[ECMAScript("vu-icons/VuBoomBox")]
 public sealed class VuBoomBox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBot", Transform.Component, "VuBot")]
+[ECMAScript("vu-icons/VuBot")]
 public sealed class VuBot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBotMessageSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBotMessageSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBotMessageSquare", Transform.Component, "VuBotMessageSquare")]
+[ECMAScript("vu-icons/VuBotMessageSquare")]
 public sealed class VuBotMessageSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBotOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBotOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBotOff", Transform.Component, "VuBotOff")]
+[ECMAScript("vu-icons/VuBotOff")]
 public sealed class VuBotOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBottleWine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBottleWine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBottleWine", Transform.Component, "VuBottleWine")]
+[ECMAScript("vu-icons/VuBottleWine")]
 public sealed class VuBottleWine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBottomBar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBottomBar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBottomBar", Transform.Component, "VuBottomBar")]
+[ECMAScript("vu-icons/VuBottomBar")]
 public sealed class VuBottomBar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBowArrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBowArrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBowArrow", Transform.Component, "VuBowArrow")]
+[ECMAScript("vu-icons/VuBowArrow")]
 public sealed class VuBowArrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBox", Transform.Component, "VuBox")]
+[ECMAScript("vu-icons/VuBox")]
 public sealed class VuBox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBoxes</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBoxes</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBoxes", Transform.Component, "VuBoxes")]
+[ECMAScript("vu-icons/VuBoxes")]
 public sealed class VuBoxes : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBraces</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBraces</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBraces", Transform.Component, "VuBraces")]
+[ECMAScript("vu-icons/VuBraces")]
 public sealed class VuBraces : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrackets</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrackets</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrackets", Transform.Component, "VuBrackets")]
+[ECMAScript("vu-icons/VuBrackets")]
 public sealed class VuBrackets : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrain</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrain</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrain", Transform.Component, "VuBrain")]
+[ECMAScript("vu-icons/VuBrain")]
 public sealed class VuBrain : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrainCircuit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrainCircuit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrainCircuit", Transform.Component, "VuBrainCircuit")]
+[ECMAScript("vu-icons/VuBrainCircuit")]
 public sealed class VuBrainCircuit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrainCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrainCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrainCog", Transform.Component, "VuBrainCog")]
+[ECMAScript("vu-icons/VuBrainCog")]
 public sealed class VuBrainCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBreadcrumb</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBreadcrumb</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBreadcrumb", Transform.Component, "VuBreadcrumb")]
+[ECMAScript("vu-icons/VuBreadcrumb")]
 public sealed class VuBreadcrumb : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrickWall</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrickWall</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrickWall", Transform.Component, "VuBrickWall")]
+[ECMAScript("vu-icons/VuBrickWall")]
 public sealed class VuBrickWall : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrickWallFire</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrickWallFire</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrickWallFire", Transform.Component, "VuBrickWallFire")]
+[ECMAScript("vu-icons/VuBrickWallFire")]
 public sealed class VuBrickWallFire : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrickWallShield</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrickWallShield</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrickWallShield", Transform.Component, "VuBrickWallShield")]
+[ECMAScript("vu-icons/VuBrickWallShield")]
 public sealed class VuBrickWallShield : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBriefcase</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBriefcase</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBriefcase", Transform.Component, "VuBriefcase")]
+[ECMAScript("vu-icons/VuBriefcase")]
 public sealed class VuBriefcase : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseBusiness</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBriefcaseBusiness</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBriefcaseBusiness", Transform.Component, "VuBriefcaseBusiness")]
+[ECMAScript("vu-icons/VuBriefcaseBusiness")]
 public sealed class VuBriefcaseBusiness : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseConveyorBelt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBriefcaseConveyorBelt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBriefcaseConveyorBelt", Transform.Component, "VuBriefcaseConveyorBelt")]
+[ECMAScript("vu-icons/VuBriefcaseConveyorBelt")]
 public sealed class VuBriefcaseConveyorBelt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseMedical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBriefcaseMedical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBriefcaseMedical", Transform.Component, "VuBriefcaseMedical")]
+[ECMAScript("vu-icons/VuBriefcaseMedical")]
 public sealed class VuBriefcaseMedical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBringToFront</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBringToFront</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBringToFront", Transform.Component, "VuBringToFront")]
+[ECMAScript("vu-icons/VuBringToFront")]
 public sealed class VuBringToFront : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrush</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrush</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrush", Transform.Component, "VuBrush")]
+[ECMAScript("vu-icons/VuBrush")]
 public sealed class VuBrush : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBrushCleaning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBrushCleaning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBrushCleaning", Transform.Component, "VuBrushCleaning")]
+[ECMAScript("vu-icons/VuBrushCleaning")]
 public sealed class VuBrushCleaning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBubbles</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBubbles</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBubbles", Transform.Component, "VuBubbles")]
+[ECMAScript("vu-icons/VuBubbles")]
 public sealed class VuBubbles : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBug</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBug</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBug", Transform.Component, "VuBug")]
+[ECMAScript("vu-icons/VuBug")]
 public sealed class VuBug : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBugOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBugOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBugOff", Transform.Component, "VuBugOff")]
+[ECMAScript("vu-icons/VuBugOff")]
 public sealed class VuBugOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBugPlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBugPlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBugPlay", Transform.Component, "VuBugPlay")]
+[ECMAScript("vu-icons/VuBugPlay")]
 public sealed class VuBugPlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBuilding</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBuilding</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBuilding", Transform.Component, "VuBuilding")]
+[ECMAScript("vu-icons/VuBuilding")]
 public sealed class VuBuilding : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBuilding2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBuilding2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBuilding2", Transform.Component, "VuBuilding2")]
+[ECMAScript("vu-icons/VuBuilding2")]
 public sealed class VuBuilding2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBus", Transform.Component, "VuBus")]
+[ECMAScript("vu-icons/VuBus")]
 public sealed class VuBus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuBusFront</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuBusFront</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuBusFront", Transform.Component, "VuBusFront")]
+[ECMAScript("vu-icons/VuBusFront")]
 public sealed class VuBusFront : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCable</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCable</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCable", Transform.Component, "VuCable")]
+[ECMAScript("vu-icons/VuCable")]
 public sealed class VuCable : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCableCar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCableCar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCableCar", Transform.Component, "VuCableCar")]
+[ECMAScript("vu-icons/VuCableCar")]
 public sealed class VuCableCar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCake</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCake</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCake", Transform.Component, "VuCake")]
+[ECMAScript("vu-icons/VuCake")]
 public sealed class VuCake : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCakeSlice</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCakeSlice</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCakeSlice", Transform.Component, "VuCakeSlice")]
+[ECMAScript("vu-icons/VuCakeSlice")]
 public sealed class VuCakeSlice : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalculator</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalculator</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalculator", Transform.Component, "VuCalculator")]
+[ECMAScript("vu-icons/VuCalculator")]
 public sealed class VuCalculator : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendar", Transform.Component, "VuCalendar")]
+[ECMAScript("vu-icons/VuCalendar")]
 public sealed class VuCalendar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendar1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendar1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendar1", Transform.Component, "VuCalendar1")]
+[ECMAScript("vu-icons/VuCalendar1")]
 public sealed class VuCalendar1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarArrowDown", Transform.Component, "VuCalendarArrowDown")]
+[ECMAScript("vu-icons/VuCalendarArrowDown")]
 public sealed class VuCalendarArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarArrowUp", Transform.Component, "VuCalendarArrowUp")]
+[ECMAScript("vu-icons/VuCalendarArrowUp")]
 public sealed class VuCalendarArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarCheck", Transform.Component, "VuCalendarCheck")]
+[ECMAScript("vu-icons/VuCalendarCheck")]
 public sealed class VuCalendarCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarCheck2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarCheck2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarCheck2", Transform.Component, "VuCalendarCheck2")]
+[ECMAScript("vu-icons/VuCalendarCheck2")]
 public sealed class VuCalendarCheck2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarClock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarClock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarClock", Transform.Component, "VuCalendarClock")]
+[ECMAScript("vu-icons/VuCalendarClock")]
 public sealed class VuCalendarClock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarCog", Transform.Component, "VuCalendarCog")]
+[ECMAScript("vu-icons/VuCalendarCog")]
 public sealed class VuCalendarCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarDays</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarDays</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarDays", Transform.Component, "VuCalendarDays")]
+[ECMAScript("vu-icons/VuCalendarDays")]
 public sealed class VuCalendarDays : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarFold</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarFold</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarFold", Transform.Component, "VuCalendarFold")]
+[ECMAScript("vu-icons/VuCalendarFold")]
 public sealed class VuCalendarFold : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarHeart", Transform.Component, "VuCalendarHeart")]
+[ECMAScript("vu-icons/VuCalendarHeart")]
 public sealed class VuCalendarHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarMinus", Transform.Component, "VuCalendarMinus")]
+[ECMAScript("vu-icons/VuCalendarMinus")]
 public sealed class VuCalendarMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarMinus2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarMinus2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarMinus2", Transform.Component, "VuCalendarMinus2")]
+[ECMAScript("vu-icons/VuCalendarMinus2")]
 public sealed class VuCalendarMinus2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarOff", Transform.Component, "VuCalendarOff")]
+[ECMAScript("vu-icons/VuCalendarOff")]
 public sealed class VuCalendarOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarPlus", Transform.Component, "VuCalendarPlus")]
+[ECMAScript("vu-icons/VuCalendarPlus")]
 public sealed class VuCalendarPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarPlus2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarPlus2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarPlus2", Transform.Component, "VuCalendarPlus2")]
+[ECMAScript("vu-icons/VuCalendarPlus2")]
 public sealed class VuCalendarPlus2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarRange</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarRange</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarRange", Transform.Component, "VuCalendarRange")]
+[ECMAScript("vu-icons/VuCalendarRange")]
 public sealed class VuCalendarRange : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarSearch", Transform.Component, "VuCalendarSearch")]
+[ECMAScript("vu-icons/VuCalendarSearch")]
 public sealed class VuCalendarSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarSync</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarSync</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarSync", Transform.Component, "VuCalendarSync")]
+[ECMAScript("vu-icons/VuCalendarSync")]
 public sealed class VuCalendarSync : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarX", Transform.Component, "VuCalendarX")]
+[ECMAScript("vu-icons/VuCalendarX")]
 public sealed class VuCalendarX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendarX2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendarX2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendarX2", Transform.Component, "VuCalendarX2")]
+[ECMAScript("vu-icons/VuCalendarX2")]
 public sealed class VuCalendarX2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCalendars</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCalendars</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCalendars", Transform.Component, "VuCalendars")]
+[ECMAScript("vu-icons/VuCalendars")]
 public sealed class VuCalendars : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCamera</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCamera</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCamera", Transform.Component, "VuCamera")]
+[ECMAScript("vu-icons/VuCamera")]
 public sealed class VuCamera : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCameraOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCameraOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCameraOff", Transform.Component, "VuCameraOff")]
+[ECMAScript("vu-icons/VuCameraOff")]
 public sealed class VuCameraOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCandlestickChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCandlestickChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCandlestickChart", Transform.Component, "VuCandlestickChart")]
+[ECMAScript("vu-icons/VuCandlestickChart")]
 public sealed class VuCandlestickChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCandy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCandy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCandy", Transform.Component, "VuCandy")]
+[ECMAScript("vu-icons/VuCandy")]
 public sealed class VuCandy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCandyCane</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCandyCane</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCandyCane", Transform.Component, "VuCandyCane")]
+[ECMAScript("vu-icons/VuCandyCane")]
 public sealed class VuCandyCane : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCandyOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCandyOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCandyOff", Transform.Component, "VuCandyOff")]
+[ECMAScript("vu-icons/VuCandyOff")]
 public sealed class VuCandyOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCannabis</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCannabis</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCannabis", Transform.Component, "VuCannabis")]
+[ECMAScript("vu-icons/VuCannabis")]
 public sealed class VuCannabis : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCannabisOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCannabisOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCannabisOff", Transform.Component, "VuCannabisOff")]
+[ECMAScript("vu-icons/VuCannabisOff")]
 public sealed class VuCannabisOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCaptions</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCaptions</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCaptions", Transform.Component, "VuCaptions")]
+[ECMAScript("vu-icons/VuCaptions")]
 public sealed class VuCaptions : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCaptionsOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCaptionsOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCaptionsOff", Transform.Component, "VuCaptionsOff")]
+[ECMAScript("vu-icons/VuCaptionsOff")]
 public sealed class VuCaptionsOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCar", Transform.Component, "VuCar")]
+[ECMAScript("vu-icons/VuCar")]
 public sealed class VuCar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCarFront</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCarFront</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCarFront", Transform.Component, "VuCarFront")]
+[ECMAScript("vu-icons/VuCarFront")]
 public sealed class VuCarFront : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCarTaxiFront</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCarTaxiFront</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCarTaxiFront", Transform.Component, "VuCarTaxiFront")]
+[ECMAScript("vu-icons/VuCarTaxiFront")]
 public sealed class VuCarTaxiFront : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCaravan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCaravan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCaravan", Transform.Component, "VuCaravan")]
+[ECMAScript("vu-icons/VuCaravan")]
 public sealed class VuCaravan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCardSim</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCardSim</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCardSim", Transform.Component, "VuCardSim")]
+[ECMAScript("vu-icons/VuCardSim")]
 public sealed class VuCardSim : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCarrot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCarrot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCarrot", Transform.Component, "VuCarrot")]
+[ECMAScript("vu-icons/VuCarrot")]
 public sealed class VuCarrot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCaseLower</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCaseLower</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCaseLower", Transform.Component, "VuCaseLower")]
+[ECMAScript("vu-icons/VuCaseLower")]
 public sealed class VuCaseLower : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCaseSensitive</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCaseSensitive</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCaseSensitive", Transform.Component, "VuCaseSensitive")]
+[ECMAScript("vu-icons/VuCaseSensitive")]
 public sealed class VuCaseSensitive : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCaseUpper</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCaseUpper</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCaseUpper", Transform.Component, "VuCaseUpper")]
+[ECMAScript("vu-icons/VuCaseUpper")]
 public sealed class VuCaseUpper : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCassetteTape</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCassetteTape</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCassetteTape", Transform.Component, "VuCassetteTape")]
+[ECMAScript("vu-icons/VuCassetteTape")]
 public sealed class VuCassetteTape : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCast</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCast</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCast", Transform.Component, "VuCast")]
+[ECMAScript("vu-icons/VuCast")]
 public sealed class VuCast : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCastle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCastle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCastle", Transform.Component, "VuCastle")]
+[ECMAScript("vu-icons/VuCastle")]
 public sealed class VuCastle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCat", Transform.Component, "VuCat")]
+[ECMAScript("vu-icons/VuCat")]
 public sealed class VuCat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCategory</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCategory</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCategory", Transform.Component, "VuCategory")]
+[ECMAScript("vu-icons/VuCategory")]
 public sealed class VuCategory : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCctv</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCctv</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCctv", Transform.Component, "VuCctv")]
+[ECMAScript("vu-icons/VuCctv")]
 public sealed class VuCctv : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCharging</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCharging</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCharging", Transform.Component, "VuCharging")]
+[ECMAScript("vu-icons/VuCharging")]
 public sealed class VuCharging : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartArea</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartArea</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartArea", Transform.Component, "VuChartArea")]
+[ECMAScript("vu-icons/VuChartArea")]
 public sealed class VuChartArea : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartBar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartBar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartBar", Transform.Component, "VuChartBar")]
+[ECMAScript("vu-icons/VuChartBar")]
 public sealed class VuChartBar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartBarBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartBarBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartBarBig", Transform.Component, "VuChartBarBig")]
+[ECMAScript("vu-icons/VuChartBarBig")]
 public sealed class VuChartBarBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartBarDecreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartBarDecreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartBarDecreasing", Transform.Component, "VuChartBarDecreasing")]
+[ECMAScript("vu-icons/VuChartBarDecreasing")]
 public sealed class VuChartBarDecreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartBarIncreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartBarIncreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartBarIncreasing", Transform.Component, "VuChartBarIncreasing")]
+[ECMAScript("vu-icons/VuChartBarIncreasing")]
 public sealed class VuChartBarIncreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartBarStacked</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartBarStacked</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartBarStacked", Transform.Component, "VuChartBarStacked")]
+[ECMAScript("vu-icons/VuChartBarStacked")]
 public sealed class VuChartBarStacked : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartCandlestick</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartCandlestick</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartCandlestick", Transform.Component, "VuChartCandlestick")]
+[ECMAScript("vu-icons/VuChartCandlestick")]
 public sealed class VuChartCandlestick : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartColumn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartColumn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartColumn", Transform.Component, "VuChartColumn")]
+[ECMAScript("vu-icons/VuChartColumn")]
 public sealed class VuChartColumn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartColumnBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartColumnBig", Transform.Component, "VuChartColumnBig")]
+[ECMAScript("vu-icons/VuChartColumnBig")]
 public sealed class VuChartColumnBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnDecreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartColumnDecreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartColumnDecreasing", Transform.Component, "VuChartColumnDecreasing")]
+[ECMAScript("vu-icons/VuChartColumnDecreasing")]
 public sealed class VuChartColumnDecreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnIncreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartColumnIncreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartColumnIncreasing", Transform.Component, "VuChartColumnIncreasing")]
+[ECMAScript("vu-icons/VuChartColumnIncreasing")]
 public sealed class VuChartColumnIncreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartColumnStacked</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartColumnStacked</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartColumnStacked", Transform.Component, "VuChartColumnStacked")]
+[ECMAScript("vu-icons/VuChartColumnStacked")]
 public sealed class VuChartColumnStacked : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartGantt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartGantt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartGantt", Transform.Component, "VuChartGantt")]
+[ECMAScript("vu-icons/VuChartGantt")]
 public sealed class VuChartGantt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartLine", Transform.Component, "VuChartLine")]
+[ECMAScript("vu-icons/VuChartLine")]
 public sealed class VuChartLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartNetwork</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartNetwork</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartNetwork", Transform.Component, "VuChartNetwork")]
+[ECMAScript("vu-icons/VuChartNetwork")]
 public sealed class VuChartNetwork : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartNoAxesColumn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartNoAxesColumn", Transform.Component, "VuChartNoAxesColumn")]
+[ECMAScript("vu-icons/VuChartNoAxesColumn")]
 public sealed class VuChartNoAxesColumn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumnDecreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartNoAxesColumnDecreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartNoAxesColumnDecreasing", Transform.Component, "VuChartNoAxesColumnDecreasing")]
+[ECMAScript("vu-icons/VuChartNoAxesColumnDecreasing")]
 public sealed class VuChartNoAxesColumnDecreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumnIncreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartNoAxesColumnIncreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartNoAxesColumnIncreasing", Transform.Component, "VuChartNoAxesColumnIncreasing")]
+[ECMAScript("vu-icons/VuChartNoAxesColumnIncreasing")]
 public sealed class VuChartNoAxesColumnIncreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesCombined</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartNoAxesCombined</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartNoAxesCombined", Transform.Component, "VuChartNoAxesCombined")]
+[ECMAScript("vu-icons/VuChartNoAxesCombined")]
 public sealed class VuChartNoAxesCombined : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesGantt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartNoAxesGantt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartNoAxesGantt", Transform.Component, "VuChartNoAxesGantt")]
+[ECMAScript("vu-icons/VuChartNoAxesGantt")]
 public sealed class VuChartNoAxesGantt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartPie</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartPie</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartPie", Transform.Component, "VuChartPie")]
+[ECMAScript("vu-icons/VuChartPie")]
 public sealed class VuChartPie : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartScatter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartScatter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartScatter", Transform.Component, "VuChartScatter")]
+[ECMAScript("vu-icons/VuChartScatter")]
 public sealed class VuChartScatter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChartSpline</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChartSpline</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChartSpline", Transform.Component, "VuChartSpline")]
+[ECMAScript("vu-icons/VuChartSpline")]
 public sealed class VuChartSpline : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCheck", Transform.Component, "VuCheck")]
+[ECMAScript("vu-icons/VuCheck")]
 public sealed class VuCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCheckCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCheckCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCheckCheck", Transform.Component, "VuCheckCheck")]
+[ECMAScript("vu-icons/VuCheckCheck")]
 public sealed class VuCheckCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCheckLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCheckLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCheckLine", Transform.Component, "VuCheckLine")]
+[ECMAScript("vu-icons/VuCheckLine")]
 public sealed class VuCheckLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCheckup</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCheckup</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCheckup", Transform.Component, "VuCheckup")]
+[ECMAScript("vu-icons/VuCheckup")]
 public sealed class VuCheckup : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChefHat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChefHat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChefHat", Transform.Component, "VuChefHat")]
+[ECMAScript("vu-icons/VuChefHat")]
 public sealed class VuChefHat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCherry</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCherry</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCherry", Transform.Component, "VuCherry")]
+[ECMAScript("vu-icons/VuCherry")]
 public sealed class VuCherry : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChessBishop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChessBishop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChessBishop", Transform.Component, "VuChessBishop")]
+[ECMAScript("vu-icons/VuChessBishop")]
 public sealed class VuChessBishop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChessKing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChessKing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChessKing", Transform.Component, "VuChessKing")]
+[ECMAScript("vu-icons/VuChessKing")]
 public sealed class VuChessKing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChessKnight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChessKnight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChessKnight", Transform.Component, "VuChessKnight")]
+[ECMAScript("vu-icons/VuChessKnight")]
 public sealed class VuChessKnight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChessPawn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChessPawn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChessPawn", Transform.Component, "VuChessPawn")]
+[ECMAScript("vu-icons/VuChessPawn")]
 public sealed class VuChessPawn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChessQueen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChessQueen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChessQueen", Transform.Component, "VuChessQueen")]
+[ECMAScript("vu-icons/VuChessQueen")]
 public sealed class VuChessQueen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChessRook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChessRook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChessRook", Transform.Component, "VuChessRook")]
+[ECMAScript("vu-icons/VuChessRook")]
 public sealed class VuChessRook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronDown", Transform.Component, "VuChevronDown")]
+[ECMAScript("vu-icons/VuChevronDown")]
 public sealed class VuChevronDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronFirst</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronFirst</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronFirst", Transform.Component, "VuChevronFirst")]
+[ECMAScript("vu-icons/VuChevronFirst")]
 public sealed class VuChevronFirst : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronLast</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronLast</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronLast", Transform.Component, "VuChevronLast")]
+[ECMAScript("vu-icons/VuChevronLast")]
 public sealed class VuChevronLast : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronLeft", Transform.Component, "VuChevronLeft")]
+[ECMAScript("vu-icons/VuChevronLeft")]
 public sealed class VuChevronLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronRight", Transform.Component, "VuChevronRight")]
+[ECMAScript("vu-icons/VuChevronRight")]
 public sealed class VuChevronRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronUp", Transform.Component, "VuChevronUp")]
+[ECMAScript("vu-icons/VuChevronUp")]
 public sealed class VuChevronUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsDown", Transform.Component, "VuChevronsDown")]
+[ECMAScript("vu-icons/VuChevronsDown")]
 public sealed class VuChevronsDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsDownUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsDownUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsDownUp", Transform.Component, "VuChevronsDownUp")]
+[ECMAScript("vu-icons/VuChevronsDownUp")]
 public sealed class VuChevronsDownUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsLeft", Transform.Component, "VuChevronsLeft")]
+[ECMAScript("vu-icons/VuChevronsLeft")]
 public sealed class VuChevronsLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeftRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsLeftRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsLeftRight", Transform.Component, "VuChevronsLeftRight")]
+[ECMAScript("vu-icons/VuChevronsLeftRight")]
 public sealed class VuChevronsLeftRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeftRightEllipsis</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsLeftRightEllipsis</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsLeftRightEllipsis", Transform.Component, "VuChevronsLeftRightEllipsis")]
+[ECMAScript("vu-icons/VuChevronsLeftRightEllipsis")]
 public sealed class VuChevronsLeftRightEllipsis : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsRight", Transform.Component, "VuChevronsRight")]
+[ECMAScript("vu-icons/VuChevronsRight")]
 public sealed class VuChevronsRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsRightLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsRightLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsRightLeft", Transform.Component, "VuChevronsRightLeft")]
+[ECMAScript("vu-icons/VuChevronsRightLeft")]
 public sealed class VuChevronsRightLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsUp", Transform.Component, "VuChevronsUp")]
+[ECMAScript("vu-icons/VuChevronsUp")]
 public sealed class VuChevronsUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChevronsUpDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChevronsUpDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChevronsUpDown", Transform.Component, "VuChevronsUpDown")]
+[ECMAScript("vu-icons/VuChevronsUpDown")]
 public sealed class VuChevronsUpDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChrome</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChrome</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChrome", Transform.Component, "VuChrome")]
+[ECMAScript("vu-icons/VuChrome")]
 public sealed class VuChrome : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChromium</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChromium</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChromium", Transform.Component, "VuChromium")]
+[ECMAScript("vu-icons/VuChromium")]
 public sealed class VuChromium : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuChurch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuChurch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuChurch", Transform.Component, "VuChurch")]
+[ECMAScript("vu-icons/VuChurch")]
 public sealed class VuChurch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCigarette</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCigarette</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCigarette", Transform.Component, "VuCigarette")]
+[ECMAScript("vu-icons/VuCigarette")]
 public sealed class VuCigarette : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCigaretteOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCigaretteOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCigaretteOff", Transform.Component, "VuCigaretteOff")]
+[ECMAScript("vu-icons/VuCigaretteOff")]
 public sealed class VuCigaretteOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircle", Transform.Component, "VuCircle")]
+[ECMAScript("vu-icons/VuCircle")]
 public sealed class VuCircle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleAlert", Transform.Component, "VuCircleAlert")]
+[ECMAScript("vu-icons/VuCircleAlert")]
 public sealed class VuCircleAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowDown", Transform.Component, "VuCircleArrowDown")]
+[ECMAScript("vu-icons/VuCircleArrowDown")]
 public sealed class VuCircleArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowLeft", Transform.Component, "VuCircleArrowLeft")]
+[ECMAScript("vu-icons/VuCircleArrowLeft")]
 public sealed class VuCircleArrowLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutDownLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowOutDownLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowOutDownLeft", Transform.Component, "VuCircleArrowOutDownLeft")]
+[ECMAScript("vu-icons/VuCircleArrowOutDownLeft")]
 public sealed class VuCircleArrowOutDownLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutDownRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowOutDownRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowOutDownRight", Transform.Component, "VuCircleArrowOutDownRight")]
+[ECMAScript("vu-icons/VuCircleArrowOutDownRight")]
 public sealed class VuCircleArrowOutDownRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutUpLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowOutUpLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowOutUpLeft", Transform.Component, "VuCircleArrowOutUpLeft")]
+[ECMAScript("vu-icons/VuCircleArrowOutUpLeft")]
 public sealed class VuCircleArrowOutUpLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutUpRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowOutUpRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowOutUpRight", Transform.Component, "VuCircleArrowOutUpRight")]
+[ECMAScript("vu-icons/VuCircleArrowOutUpRight")]
 public sealed class VuCircleArrowOutUpRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowRight", Transform.Component, "VuCircleArrowRight")]
+[ECMAScript("vu-icons/VuCircleArrowRight")]
 public sealed class VuCircleArrowRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleArrowUp", Transform.Component, "VuCircleArrowUp")]
+[ECMAScript("vu-icons/VuCircleArrowUp")]
 public sealed class VuCircleArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleCheck", Transform.Component, "VuCircleCheck")]
+[ECMAScript("vu-icons/VuCircleCheck")]
 public sealed class VuCircleCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleCheckBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleCheckBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleCheckBig", Transform.Component, "VuCircleCheckBig")]
+[ECMAScript("vu-icons/VuCircleCheckBig")]
 public sealed class VuCircleCheckBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleChevronDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleChevronDown", Transform.Component, "VuCircleChevronDown")]
+[ECMAScript("vu-icons/VuCircleChevronDown")]
 public sealed class VuCircleChevronDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleChevronLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleChevronLeft", Transform.Component, "VuCircleChevronLeft")]
+[ECMAScript("vu-icons/VuCircleChevronLeft")]
 public sealed class VuCircleChevronLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleChevronRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleChevronRight", Transform.Component, "VuCircleChevronRight")]
+[ECMAScript("vu-icons/VuCircleChevronRight")]
 public sealed class VuCircleChevronRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleChevronUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleChevronUp", Transform.Component, "VuCircleChevronUp")]
+[ECMAScript("vu-icons/VuCircleChevronUp")]
 public sealed class VuCircleChevronUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleDashed", Transform.Component, "VuCircleDashed")]
+[ECMAScript("vu-icons/VuCircleDashed")]
 public sealed class VuCircleDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleDivide</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleDivide</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleDivide", Transform.Component, "VuCircleDivide")]
+[ECMAScript("vu-icons/VuCircleDivide")]
 public sealed class VuCircleDivide : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleDollarSign</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleDollarSign</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleDollarSign", Transform.Component, "VuCircleDollarSign")]
+[ECMAScript("vu-icons/VuCircleDollarSign")]
 public sealed class VuCircleDollarSign : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleDot", Transform.Component, "VuCircleDot")]
+[ECMAScript("vu-icons/VuCircleDot")]
 public sealed class VuCircleDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleDotDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleDotDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleDotDashed", Transform.Component, "VuCircleDotDashed")]
+[ECMAScript("vu-icons/VuCircleDotDashed")]
 public sealed class VuCircleDotDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleEllipsis</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleEllipsis</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleEllipsis", Transform.Component, "VuCircleEllipsis")]
+[ECMAScript("vu-icons/VuCircleEllipsis")]
 public sealed class VuCircleEllipsis : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleEqual</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleEqual</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleEqual", Transform.Component, "VuCircleEqual")]
+[ECMAScript("vu-icons/VuCircleEqual")]
 public sealed class VuCircleEqual : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleFadingArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleFadingArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleFadingArrowUp", Transform.Component, "VuCircleFadingArrowUp")]
+[ECMAScript("vu-icons/VuCircleFadingArrowUp")]
 public sealed class VuCircleFadingArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleFadingPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleFadingPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleFadingPlus", Transform.Component, "VuCircleFadingPlus")]
+[ECMAScript("vu-icons/VuCircleFadingPlus")]
 public sealed class VuCircleFadingPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleGauge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleGauge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleGauge", Transform.Component, "VuCircleGauge")]
+[ECMAScript("vu-icons/VuCircleGauge")]
 public sealed class VuCircleGauge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleMinus", Transform.Component, "VuCircleMinus")]
+[ECMAScript("vu-icons/VuCircleMinus")]
 public sealed class VuCircleMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleOff", Transform.Component, "VuCircleOff")]
+[ECMAScript("vu-icons/VuCircleOff")]
 public sealed class VuCircleOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleParking</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleParking</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleParking", Transform.Component, "VuCircleParking")]
+[ECMAScript("vu-icons/VuCircleParking")]
 public sealed class VuCircleParking : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleParkingOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleParkingOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleParkingOff", Transform.Component, "VuCircleParkingOff")]
+[ECMAScript("vu-icons/VuCircleParkingOff")]
 public sealed class VuCircleParkingOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePause</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePause</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePause", Transform.Component, "VuCirclePause")]
+[ECMAScript("vu-icons/VuCirclePause")]
 public sealed class VuCirclePause : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePercent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePercent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePercent", Transform.Component, "VuCirclePercent")]
+[ECMAScript("vu-icons/VuCirclePercent")]
 public sealed class VuCirclePercent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePile</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePile</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePile", Transform.Component, "VuCirclePile")]
+[ECMAScript("vu-icons/VuCirclePile")]
 public sealed class VuCirclePile : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePlay", Transform.Component, "VuCirclePlay")]
+[ECMAScript("vu-icons/VuCirclePlay")]
 public sealed class VuCirclePlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePlus", Transform.Component, "VuCirclePlus")]
+[ECMAScript("vu-icons/VuCirclePlus")]
 public sealed class VuCirclePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePoundSterling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePoundSterling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePoundSterling", Transform.Component, "VuCirclePoundSterling")]
+[ECMAScript("vu-icons/VuCirclePoundSterling")]
 public sealed class VuCirclePoundSterling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCirclePower</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCirclePower</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCirclePower", Transform.Component, "VuCirclePower")]
+[ECMAScript("vu-icons/VuCirclePower")]
 public sealed class VuCirclePower : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleQuestionMark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleQuestionMark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleQuestionMark", Transform.Component, "VuCircleQuestionMark")]
+[ECMAScript("vu-icons/VuCircleQuestionMark")]
 public sealed class VuCircleQuestionMark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleSlash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleSlash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleSlash", Transform.Component, "VuCircleSlash")]
+[ECMAScript("vu-icons/VuCircleSlash")]
 public sealed class VuCircleSlash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleSlash2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleSlash2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleSlash2", Transform.Component, "VuCircleSlash2")]
+[ECMAScript("vu-icons/VuCircleSlash2")]
 public sealed class VuCircleSlash2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleSmall</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleSmall</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleSmall", Transform.Component, "VuCircleSmall")]
+[ECMAScript("vu-icons/VuCircleSmall")]
 public sealed class VuCircleSmall : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleStar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleStar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleStar", Transform.Component, "VuCircleStar")]
+[ECMAScript("vu-icons/VuCircleStar")]
 public sealed class VuCircleStar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleStop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleStop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleStop", Transform.Component, "VuCircleStop")]
+[ECMAScript("vu-icons/VuCircleStop")]
 public sealed class VuCircleStop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleUser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleUser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleUser", Transform.Component, "VuCircleUser")]
+[ECMAScript("vu-icons/VuCircleUser")]
 public sealed class VuCircleUser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleUserRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleUserRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleUserRound", Transform.Component, "VuCircleUserRound")]
+[ECMAScript("vu-icons/VuCircleUserRound")]
 public sealed class VuCircleUserRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircleX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircleX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircleX", Transform.Component, "VuCircleX")]
+[ECMAScript("vu-icons/VuCircleX")]
 public sealed class VuCircleX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCircuitBoard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCircuitBoard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCircuitBoard", Transform.Component, "VuCircuitBoard")]
+[ECMAScript("vu-icons/VuCircuitBoard")]
 public sealed class VuCircuitBoard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCitrus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCitrus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCitrus", Transform.Component, "VuCitrus")]
+[ECMAScript("vu-icons/VuCitrus")]
 public sealed class VuCitrus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClapperboard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClapperboard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClapperboard", Transform.Component, "VuClapperboard")]
+[ECMAScript("vu-icons/VuClapperboard")]
 public sealed class VuClapperboard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClassroom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClassroom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClassroom", Transform.Component, "VuClassroom")]
+[ECMAScript("vu-icons/VuClassroom")]
 public sealed class VuClassroom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboard", Transform.Component, "VuClipboard")]
+[ECMAScript("vu-icons/VuClipboard")]
 public sealed class VuClipboard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardCheck", Transform.Component, "VuClipboardCheck")]
+[ECMAScript("vu-icons/VuClipboardCheck")]
 public sealed class VuClipboardCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardClock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardClock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardClock", Transform.Component, "VuClipboardClock")]
+[ECMAScript("vu-icons/VuClipboardClock")]
 public sealed class VuClipboardClock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardCopy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardCopy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardCopy", Transform.Component, "VuClipboardCopy")]
+[ECMAScript("vu-icons/VuClipboardCopy")]
 public sealed class VuClipboardCopy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardList</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardList</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardList", Transform.Component, "VuClipboardList")]
+[ECMAScript("vu-icons/VuClipboardList")]
 public sealed class VuClipboardList : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardMinus", Transform.Component, "VuClipboardMinus")]
+[ECMAScript("vu-icons/VuClipboardMinus")]
 public sealed class VuClipboardMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPaste</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardPaste</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardPaste", Transform.Component, "VuClipboardPaste")]
+[ECMAScript("vu-icons/VuClipboardPaste")]
 public sealed class VuClipboardPaste : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardPen", Transform.Component, "VuClipboardPen")]
+[ECMAScript("vu-icons/VuClipboardPen")]
 public sealed class VuClipboardPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPenLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardPenLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardPenLine", Transform.Component, "VuClipboardPenLine")]
+[ECMAScript("vu-icons/VuClipboardPenLine")]
 public sealed class VuClipboardPenLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardPlus", Transform.Component, "VuClipboardPlus")]
+[ECMAScript("vu-icons/VuClipboardPlus")]
 public sealed class VuClipboardPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardType</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardType</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardType", Transform.Component, "VuClipboardType")]
+[ECMAScript("vu-icons/VuClipboardType")]
 public sealed class VuClipboardType : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClipboardX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClipboardX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClipboardX", Transform.Component, "VuClipboardX")]
+[ECMAScript("vu-icons/VuClipboardX")]
 public sealed class VuClipboardX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock", Transform.Component, "VuClock")]
+[ECMAScript("vu-icons/VuClock")]
 public sealed class VuClock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock1", Transform.Component, "VuClock1")]
+[ECMAScript("vu-icons/VuClock1")]
 public sealed class VuClock1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock10</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock10</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock10", Transform.Component, "VuClock10")]
+[ECMAScript("vu-icons/VuClock10")]
 public sealed class VuClock10 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock11</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock11</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock11", Transform.Component, "VuClock11")]
+[ECMAScript("vu-icons/VuClock11")]
 public sealed class VuClock11 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock12</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock12</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock12", Transform.Component, "VuClock12")]
+[ECMAScript("vu-icons/VuClock12")]
 public sealed class VuClock12 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock2", Transform.Component, "VuClock2")]
+[ECMAScript("vu-icons/VuClock2")]
 public sealed class VuClock2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock3", Transform.Component, "VuClock3")]
+[ECMAScript("vu-icons/VuClock3")]
 public sealed class VuClock3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock4", Transform.Component, "VuClock4")]
+[ECMAScript("vu-icons/VuClock4")]
 public sealed class VuClock4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock5</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock5</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock5", Transform.Component, "VuClock5")]
+[ECMAScript("vu-icons/VuClock5")]
 public sealed class VuClock5 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock6</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock6</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock6", Transform.Component, "VuClock6")]
+[ECMAScript("vu-icons/VuClock6")]
 public sealed class VuClock6 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock7</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock7</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock7", Transform.Component, "VuClock7")]
+[ECMAScript("vu-icons/VuClock7")]
 public sealed class VuClock7 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock8</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock8</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock8", Transform.Component, "VuClock8")]
+[ECMAScript("vu-icons/VuClock8")]
 public sealed class VuClock8 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClock9</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClock9</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClock9", Transform.Component, "VuClock9")]
+[ECMAScript("vu-icons/VuClock9")]
 public sealed class VuClock9 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClockAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClockAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClockAlert", Transform.Component, "VuClockAlert")]
+[ECMAScript("vu-icons/VuClockAlert")]
 public sealed class VuClockAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClockArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClockArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClockArrowDown", Transform.Component, "VuClockArrowDown")]
+[ECMAScript("vu-icons/VuClockArrowDown")]
 public sealed class VuClockArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClockArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClockArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClockArrowUp", Transform.Component, "VuClockArrowUp")]
+[ECMAScript("vu-icons/VuClockArrowUp")]
 public sealed class VuClockArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClockCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClockCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClockCheck", Transform.Component, "VuClockCheck")]
+[ECMAScript("vu-icons/VuClockCheck")]
 public sealed class VuClockCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClockFading</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClockFading</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClockFading", Transform.Component, "VuClockFading")]
+[ECMAScript("vu-icons/VuClockFading")]
 public sealed class VuClockFading : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClockPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClockPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClockPlus", Transform.Component, "VuClockPlus")]
+[ECMAScript("vu-icons/VuClockPlus")]
 public sealed class VuClockPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClose</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClose</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClose", Transform.Component, "VuClose")]
+[ECMAScript("vu-icons/VuClose")]
 public sealed class VuClose : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClosedCaption</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClosedCaption</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClosedCaption", Transform.Component, "VuClosedCaption")]
+[ECMAScript("vu-icons/VuClosedCaption")]
 public sealed class VuClosedCaption : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloud</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloud</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloud", Transform.Component, "VuCloud")]
+[ECMAScript("vu-icons/VuCloud")]
 public sealed class VuCloud : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudAlert", Transform.Component, "VuCloudAlert")]
+[ECMAScript("vu-icons/VuCloudAlert")]
 public sealed class VuCloudAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudBackup</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudBackup</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudBackup", Transform.Component, "VuCloudBackup")]
+[ECMAScript("vu-icons/VuCloudBackup")]
 public sealed class VuCloudBackup : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudCheck", Transform.Component, "VuCloudCheck")]
+[ECMAScript("vu-icons/VuCloudCheck")]
 public sealed class VuCloudCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudCog", Transform.Component, "VuCloudCog")]
+[ECMAScript("vu-icons/VuCloudCog")]
 public sealed class VuCloudCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudDownload</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudDownload</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudDownload", Transform.Component, "VuCloudDownload")]
+[ECMAScript("vu-icons/VuCloudDownload")]
 public sealed class VuCloudDownload : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudDrizzle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudDrizzle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudDrizzle", Transform.Component, "VuCloudDrizzle")]
+[ECMAScript("vu-icons/VuCloudDrizzle")]
 public sealed class VuCloudDrizzle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudFog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudFog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudFog", Transform.Component, "VuCloudFog")]
+[ECMAScript("vu-icons/VuCloudFog")]
 public sealed class VuCloudFog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudHail</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudHail</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudHail", Transform.Component, "VuCloudHail")]
+[ECMAScript("vu-icons/VuCloudHail")]
 public sealed class VuCloudHail : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudLightning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudLightning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudLightning", Transform.Component, "VuCloudLightning")]
+[ECMAScript("vu-icons/VuCloudLightning")]
 public sealed class VuCloudLightning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudMoon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudMoon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudMoon", Transform.Component, "VuCloudMoon")]
+[ECMAScript("vu-icons/VuCloudMoon")]
 public sealed class VuCloudMoon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudMoonRain</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudMoonRain</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudMoonRain", Transform.Component, "VuCloudMoonRain")]
+[ECMAScript("vu-icons/VuCloudMoonRain")]
 public sealed class VuCloudMoonRain : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudOff", Transform.Component, "VuCloudOff")]
+[ECMAScript("vu-icons/VuCloudOff")]
 public sealed class VuCloudOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudRain</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudRain</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudRain", Transform.Component, "VuCloudRain")]
+[ECMAScript("vu-icons/VuCloudRain")]
 public sealed class VuCloudRain : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudRainWind</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudRainWind</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudRainWind", Transform.Component, "VuCloudRainWind")]
+[ECMAScript("vu-icons/VuCloudRainWind")]
 public sealed class VuCloudRainWind : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudSnow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudSnow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudSnow", Transform.Component, "VuCloudSnow")]
+[ECMAScript("vu-icons/VuCloudSnow")]
 public sealed class VuCloudSnow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudSun</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudSun</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudSun", Transform.Component, "VuCloudSun")]
+[ECMAScript("vu-icons/VuCloudSun")]
 public sealed class VuCloudSun : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudSunRain</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudSunRain</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudSunRain", Transform.Component, "VuCloudSunRain")]
+[ECMAScript("vu-icons/VuCloudSunRain")]
 public sealed class VuCloudSunRain : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudSync</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudSync</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudSync", Transform.Component, "VuCloudSync")]
+[ECMAScript("vu-icons/VuCloudSync")]
 public sealed class VuCloudSync : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudUpload</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudUpload</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudUpload", Transform.Component, "VuCloudUpload")]
+[ECMAScript("vu-icons/VuCloudUpload")]
 public sealed class VuCloudUpload : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCloudy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCloudy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCloudy", Transform.Component, "VuCloudy")]
+[ECMAScript("vu-icons/VuCloudy")]
 public sealed class VuCloudy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClover</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClover</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClover", Transform.Component, "VuClover")]
+[ECMAScript("vu-icons/VuClover")]
 public sealed class VuClover : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuClub</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuClub</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuClub", Transform.Component, "VuClub")]
+[ECMAScript("vu-icons/VuClub")]
 public sealed class VuClub : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCode", Transform.Component, "VuCode")]
+[ECMAScript("vu-icons/VuCode")]
 public sealed class VuCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCodeXml</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCodeXml</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCodeXml", Transform.Component, "VuCodeXml")]
+[ECMAScript("vu-icons/VuCodeXml")]
 public sealed class VuCodeXml : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCodepen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCodepen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCodepen", Transform.Component, "VuCodepen")]
+[ECMAScript("vu-icons/VuCodepen")]
 public sealed class VuCodepen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCodesandbox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCodesandbox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCodesandbox", Transform.Component, "VuCodesandbox")]
+[ECMAScript("vu-icons/VuCodesandbox")]
 public sealed class VuCodesandbox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCoffee</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCoffee</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCoffee", Transform.Component, "VuCoffee")]
+[ECMAScript("vu-icons/VuCoffee")]
 public sealed class VuCoffee : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCog", Transform.Component, "VuCog")]
+[ECMAScript("vu-icons/VuCog")]
 public sealed class VuCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCoins</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCoins</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCoins", Transform.Component, "VuCoins")]
+[ECMAScript("vu-icons/VuCoins")]
 public sealed class VuCoins : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuColumns2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuColumns2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuColumns2", Transform.Component, "VuColumns2")]
+[ECMAScript("vu-icons/VuColumns2")]
 public sealed class VuColumns2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuColumns3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuColumns3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuColumns3", Transform.Component, "VuColumns3")]
+[ECMAScript("vu-icons/VuColumns3")]
 public sealed class VuColumns3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuColumns3Cog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuColumns3Cog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuColumns3Cog", Transform.Component, "VuColumns3Cog")]
+[ECMAScript("vu-icons/VuColumns3Cog")]
 public sealed class VuColumns3Cog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuColumns4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuColumns4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuColumns4", Transform.Component, "VuColumns4")]
+[ECMAScript("vu-icons/VuColumns4")]
 public sealed class VuColumns4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCombine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCombine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCombine", Transform.Component, "VuCombine")]
+[ECMAScript("vu-icons/VuCombine")]
 public sealed class VuCombine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCommand</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCommand</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCommand", Transform.Component, "VuCommand")]
+[ECMAScript("vu-icons/VuCommand")]
 public sealed class VuCommand : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuComment</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuComment</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuComment", Transform.Component, "VuComment")]
+[ECMAScript("vu-icons/VuComment")]
 public sealed class VuComment : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCompass</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCompass</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCompass", Transform.Component, "VuCompass")]
+[ECMAScript("vu-icons/VuCompass")]
 public sealed class VuCompass : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCompleted</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCompleted</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCompleted", Transform.Component, "VuCompleted")]
+[ECMAScript("vu-icons/VuCompleted")]
 public sealed class VuCompleted : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuComponent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuComponent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuComponent", Transform.Component, "VuComponent")]
+[ECMAScript("vu-icons/VuComponent")]
 public sealed class VuComponent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuComputer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuComputer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuComputer", Transform.Component, "VuComputer")]
+[ECMAScript("vu-icons/VuComputer")]
 public sealed class VuComputer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuConciergeBell</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuConciergeBell</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuConciergeBell", Transform.Component, "VuConciergeBell")]
+[ECMAScript("vu-icons/VuConciergeBell")]
 public sealed class VuConciergeBell : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCone", Transform.Component, "VuCone")]
+[ECMAScript("vu-icons/VuCone")]
 public sealed class VuCone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuConstruction</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuConstruction</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuConstruction", Transform.Component, "VuConstruction")]
+[ECMAScript("vu-icons/VuConstruction")]
 public sealed class VuConstruction : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuContact</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuContact</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuContact", Transform.Component, "VuContact")]
+[ECMAScript("vu-icons/VuContact")]
 public sealed class VuContact : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuContactRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuContactRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuContactRound", Transform.Component, "VuContactRound")]
+[ECMAScript("vu-icons/VuContactRound")]
 public sealed class VuContactRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuContainer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuContainer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuContainer", Transform.Component, "VuContainer")]
+[ECMAScript("vu-icons/VuContainer")]
 public sealed class VuContainer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuContrast</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuContrast</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuContrast", Transform.Component, "VuContrast")]
+[ECMAScript("vu-icons/VuContrast")]
 public sealed class VuContrast : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCookie</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCookie</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCookie", Transform.Component, "VuCookie")]
+[ECMAScript("vu-icons/VuCookie")]
 public sealed class VuCookie : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCookingPot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCookingPot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCookingPot", Transform.Component, "VuCookingPot")]
+[ECMAScript("vu-icons/VuCookingPot")]
 public sealed class VuCookingPot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopy", Transform.Component, "VuCopy")]
+[ECMAScript("vu-icons/VuCopy")]
 public sealed class VuCopy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopyCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopyCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopyCheck", Transform.Component, "VuCopyCheck")]
+[ECMAScript("vu-icons/VuCopyCheck")]
 public sealed class VuCopyCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopyMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopyMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopyMinus", Transform.Component, "VuCopyMinus")]
+[ECMAScript("vu-icons/VuCopyMinus")]
 public sealed class VuCopyMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopyPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopyPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopyPlus", Transform.Component, "VuCopyPlus")]
+[ECMAScript("vu-icons/VuCopyPlus")]
 public sealed class VuCopyPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopySlash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopySlash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopySlash", Transform.Component, "VuCopySlash")]
+[ECMAScript("vu-icons/VuCopySlash")]
 public sealed class VuCopySlash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopyX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopyX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopyX", Transform.Component, "VuCopyX")]
+[ECMAScript("vu-icons/VuCopyX")]
 public sealed class VuCopyX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopyleft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopyleft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopyleft", Transform.Component, "VuCopyleft")]
+[ECMAScript("vu-icons/VuCopyleft")]
 public sealed class VuCopyleft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCopyright</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCopyright</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCopyright", Transform.Component, "VuCopyright")]
+[ECMAScript("vu-icons/VuCopyright")]
 public sealed class VuCopyright : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerDownLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerDownLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerDownLeft", Transform.Component, "VuCornerDownLeft")]
+[ECMAScript("vu-icons/VuCornerDownLeft")]
 public sealed class VuCornerDownLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerDownRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerDownRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerDownRight", Transform.Component, "VuCornerDownRight")]
+[ECMAScript("vu-icons/VuCornerDownRight")]
 public sealed class VuCornerDownRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerLeftDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerLeftDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerLeftDown", Transform.Component, "VuCornerLeftDown")]
+[ECMAScript("vu-icons/VuCornerLeftDown")]
 public sealed class VuCornerLeftDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerLeftUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerLeftUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerLeftUp", Transform.Component, "VuCornerLeftUp")]
+[ECMAScript("vu-icons/VuCornerLeftUp")]
 public sealed class VuCornerLeftUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerRightDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerRightDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerRightDown", Transform.Component, "VuCornerRightDown")]
+[ECMAScript("vu-icons/VuCornerRightDown")]
 public sealed class VuCornerRightDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerRightUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerRightUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerRightUp", Transform.Component, "VuCornerRightUp")]
+[ECMAScript("vu-icons/VuCornerRightUp")]
 public sealed class VuCornerRightUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerUpLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerUpLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerUpLeft", Transform.Component, "VuCornerUpLeft")]
+[ECMAScript("vu-icons/VuCornerUpLeft")]
 public sealed class VuCornerUpLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCornerUpRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCornerUpRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCornerUpRight", Transform.Component, "VuCornerUpRight")]
+[ECMAScript("vu-icons/VuCornerUpRight")]
 public sealed class VuCornerUpRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCoupon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCoupon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCoupon", Transform.Component, "VuCoupon")]
+[ECMAScript("vu-icons/VuCoupon")]
 public sealed class VuCoupon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCourse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCourse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCourse", Transform.Component, "VuCourse")]
+[ECMAScript("vu-icons/VuCourse")]
 public sealed class VuCourse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCpu</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCpu</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCpu", Transform.Component, "VuCpu")]
+[ECMAScript("vu-icons/VuCpu")]
 public sealed class VuCpu : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCreativeCommons</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCreativeCommons</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCreativeCommons", Transform.Component, "VuCreativeCommons")]
+[ECMAScript("vu-icons/VuCreativeCommons")]
 public sealed class VuCreativeCommons : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCreditCard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCreditCard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCreditCard", Transform.Component, "VuCreditCard")]
+[ECMAScript("vu-icons/VuCreditCard")]
 public sealed class VuCreditCard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCroissant</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCroissant</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCroissant", Transform.Component, "VuCroissant")]
+[ECMAScript("vu-icons/VuCroissant")]
 public sealed class VuCroissant : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCrop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCrop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCrop", Transform.Component, "VuCrop")]
+[ECMAScript("vu-icons/VuCrop")]
 public sealed class VuCrop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCross</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCross</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCross", Transform.Component, "VuCross")]
+[ECMAScript("vu-icons/VuCross")]
 public sealed class VuCross : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCrosshair</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCrosshair</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCrosshair", Transform.Component, "VuCrosshair")]
+[ECMAScript("vu-icons/VuCrosshair")]
 public sealed class VuCrosshair : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCrown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCrown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCrown", Transform.Component, "VuCrown")]
+[ECMAScript("vu-icons/VuCrown")]
 public sealed class VuCrown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCuboid</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCuboid</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCuboid", Transform.Component, "VuCuboid")]
+[ECMAScript("vu-icons/VuCuboid")]
 public sealed class VuCuboid : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCupSoda</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCupSoda</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCupSoda", Transform.Component, "VuCupSoda")]
+[ECMAScript("vu-icons/VuCupSoda")]
 public sealed class VuCupSoda : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCurrency</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCurrency</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCurrency", Transform.Component, "VuCurrency")]
+[ECMAScript("vu-icons/VuCurrency")]
 public sealed class VuCurrency : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCut</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCut</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCut", Transform.Component, "VuCut")]
+[ECMAScript("vu-icons/VuCut")]
 public sealed class VuCut : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuCylinder</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuCylinder</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuCylinder", Transform.Component, "VuCylinder")]
+[ECMAScript("vu-icons/VuCylinder")]
 public sealed class VuCylinder : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDam</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDam</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDam", Transform.Component, "VuDam")]
+[ECMAScript("vu-icons/VuDam")]
 public sealed class VuDam : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDataCompare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDataCompare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDataCompare", Transform.Component, "VuDataCompare")]
+[ECMAScript("vu-icons/VuDataCompare")]
 public sealed class VuDataCompare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDataExport</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDataExport</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDataExport", Transform.Component, "VuDataExport")]
+[ECMAScript("vu-icons/VuDataExport")]
 public sealed class VuDataExport : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDataFilter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDataFilter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDataFilter", Transform.Component, "VuDataFilter")]
+[ECMAScript("vu-icons/VuDataFilter")]
 public sealed class VuDataFilter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDataRefresh</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDataRefresh</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDataRefresh", Transform.Component, "VuDataRefresh")]
+[ECMAScript("vu-icons/VuDataRefresh")]
 public sealed class VuDataRefresh : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDatabase</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDatabase</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDatabase", Transform.Component, "VuDatabase")]
+[ECMAScript("vu-icons/VuDatabase")]
 public sealed class VuDatabase : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDatabaseBackup</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDatabaseBackup</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDatabaseBackup", Transform.Component, "VuDatabaseBackup")]
+[ECMAScript("vu-icons/VuDatabaseBackup")]
 public sealed class VuDatabaseBackup : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDatabaseZap</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDatabaseZap</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDatabaseZap", Transform.Component, "VuDatabaseZap")]
+[ECMAScript("vu-icons/VuDatabaseZap")]
 public sealed class VuDatabaseZap : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDecimalsArrowLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDecimalsArrowLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDecimalsArrowLeft", Transform.Component, "VuDecimalsArrowLeft")]
+[ECMAScript("vu-icons/VuDecimalsArrowLeft")]
 public sealed class VuDecimalsArrowLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDecimalsArrowRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDecimalsArrowRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDecimalsArrowRight", Transform.Component, "VuDecimalsArrowRight")]
+[ECMAScript("vu-icons/VuDecimalsArrowRight")]
 public sealed class VuDecimalsArrowRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDelete</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDelete</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDelete", Transform.Component, "VuDelete")]
+[ECMAScript("vu-icons/VuDelete")]
 public sealed class VuDelete : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDelivery</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDelivery</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDelivery", Transform.Component, "VuDelivery")]
+[ECMAScript("vu-icons/VuDelivery")]
 public sealed class VuDelivery : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDessert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDessert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDessert", Transform.Component, "VuDessert")]
+[ECMAScript("vu-icons/VuDessert")]
 public sealed class VuDessert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiameter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiameter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiameter", Transform.Component, "VuDiameter")]
+[ECMAScript("vu-icons/VuDiameter")]
 public sealed class VuDiameter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiamond</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiamond</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiamond", Transform.Component, "VuDiamond")]
+[ECMAScript("vu-icons/VuDiamond")]
 public sealed class VuDiamond : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiamondMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiamondMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiamondMinus", Transform.Component, "VuDiamondMinus")]
+[ECMAScript("vu-icons/VuDiamondMinus")]
 public sealed class VuDiamondMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiamondPercent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiamondPercent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiamondPercent", Transform.Component, "VuDiamondPercent")]
+[ECMAScript("vu-icons/VuDiamondPercent")]
 public sealed class VuDiamondPercent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiamondPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiamondPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiamondPlus", Transform.Component, "VuDiamondPlus")]
+[ECMAScript("vu-icons/VuDiamondPlus")]
 public sealed class VuDiamondPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDice1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDice1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDice1", Transform.Component, "VuDice1")]
+[ECMAScript("vu-icons/VuDice1")]
 public sealed class VuDice1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDice2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDice2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDice2", Transform.Component, "VuDice2")]
+[ECMAScript("vu-icons/VuDice2")]
 public sealed class VuDice2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDice3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDice3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDice3", Transform.Component, "VuDice3")]
+[ECMAScript("vu-icons/VuDice3")]
 public sealed class VuDice3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDice4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDice4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDice4", Transform.Component, "VuDice4")]
+[ECMAScript("vu-icons/VuDice4")]
 public sealed class VuDice4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDice5</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDice5</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDice5", Transform.Component, "VuDice5")]
+[ECMAScript("vu-icons/VuDice5")]
 public sealed class VuDice5 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDice6</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDice6</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDice6", Transform.Component, "VuDice6")]
+[ECMAScript("vu-icons/VuDice6")]
 public sealed class VuDice6 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDices</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDices</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDices", Transform.Component, "VuDices")]
+[ECMAScript("vu-icons/VuDices")]
 public sealed class VuDices : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiff", Transform.Component, "VuDiff")]
+[ECMAScript("vu-icons/VuDiff")]
 public sealed class VuDiff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDisabled</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDisabled</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDisabled", Transform.Component, "VuDisabled")]
+[ECMAScript("vu-icons/VuDisabled")]
 public sealed class VuDisabled : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDisc</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDisc</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDisc", Transform.Component, "VuDisc")]
+[ECMAScript("vu-icons/VuDisc")]
 public sealed class VuDisc : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDisc2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDisc2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDisc2", Transform.Component, "VuDisc2")]
+[ECMAScript("vu-icons/VuDisc2")]
 public sealed class VuDisc2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDisc3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDisc3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDisc3", Transform.Component, "VuDisc3")]
+[ECMAScript("vu-icons/VuDisc3")]
 public sealed class VuDisc3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDiscAlbum</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDiscAlbum</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDiscAlbum", Transform.Component, "VuDiscAlbum")]
+[ECMAScript("vu-icons/VuDiscAlbum")]
 public sealed class VuDiscAlbum : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDislike</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDislike</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDislike", Transform.Component, "VuDislike")]
+[ECMAScript("vu-icons/VuDislike")]
 public sealed class VuDislike : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDivide</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDivide</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDivide", Transform.Component, "VuDivide")]
+[ECMAScript("vu-icons/VuDivide")]
 public sealed class VuDivide : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDna</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDna</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDna", Transform.Component, "VuDna")]
+[ECMAScript("vu-icons/VuDna")]
 public sealed class VuDna : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDnaOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDnaOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDnaOff", Transform.Component, "VuDnaOff")]
+[ECMAScript("vu-icons/VuDnaOff")]
 public sealed class VuDnaOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDock", Transform.Component, "VuDock")]
+[ECMAScript("vu-icons/VuDock")]
 public sealed class VuDock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDog", Transform.Component, "VuDog")]
+[ECMAScript("vu-icons/VuDog")]
 public sealed class VuDog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDollarSign</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDollarSign</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDollarSign", Transform.Component, "VuDollarSign")]
+[ECMAScript("vu-icons/VuDollarSign")]
 public sealed class VuDollarSign : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDonut</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDonut</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDonut", Transform.Component, "VuDonut")]
+[ECMAScript("vu-icons/VuDonut")]
 public sealed class VuDonut : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDoorClosed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDoorClosed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDoorClosed", Transform.Component, "VuDoorClosed")]
+[ECMAScript("vu-icons/VuDoorClosed")]
 public sealed class VuDoorClosed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDoorClosedLocked</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDoorClosedLocked</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDoorClosedLocked", Transform.Component, "VuDoorClosedLocked")]
+[ECMAScript("vu-icons/VuDoorClosedLocked")]
 public sealed class VuDoorClosedLocked : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDoorOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDoorOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDoorOpen", Transform.Component, "VuDoorOpen")]
+[ECMAScript("vu-icons/VuDoorOpen")]
 public sealed class VuDoorOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDot", Transform.Component, "VuDot")]
+[ECMAScript("vu-icons/VuDot")]
 public sealed class VuDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDoughnutChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDoughnutChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDoughnutChart", Transform.Component, "VuDoughnutChart")]
+[ECMAScript("vu-icons/VuDoughnutChart")]
 public sealed class VuDoughnutChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDownload</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDownload</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDownload", Transform.Component, "VuDownload")]
+[ECMAScript("vu-icons/VuDownload")]
 public sealed class VuDownload : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDraftingCompass</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDraftingCompass</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDraftingCompass", Transform.Component, "VuDraftingCompass")]
+[ECMAScript("vu-icons/VuDraftingCompass")]
 public sealed class VuDraftingCompass : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDrama</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDrama</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDrama", Transform.Component, "VuDrama")]
+[ECMAScript("vu-icons/VuDrama")]
 public sealed class VuDrama : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDribbble</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDribbble</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDribbble", Transform.Component, "VuDribbble")]
+[ECMAScript("vu-icons/VuDribbble")]
 public sealed class VuDribbble : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDrill</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDrill</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDrill", Transform.Component, "VuDrill")]
+[ECMAScript("vu-icons/VuDrill")]
 public sealed class VuDrill : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDrone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDrone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDrone", Transform.Component, "VuDrone")]
+[ECMAScript("vu-icons/VuDrone")]
 public sealed class VuDrone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDroplet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDroplet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDroplet", Transform.Component, "VuDroplet")]
+[ECMAScript("vu-icons/VuDroplet")]
 public sealed class VuDroplet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDropletOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDropletOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDropletOff", Transform.Component, "VuDropletOff")]
+[ECMAScript("vu-icons/VuDropletOff")]
 public sealed class VuDropletOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDroplets</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDroplets</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDroplets", Transform.Component, "VuDroplets")]
+[ECMAScript("vu-icons/VuDroplets")]
 public sealed class VuDroplets : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDrum</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDrum</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDrum", Transform.Component, "VuDrum")]
+[ECMAScript("vu-icons/VuDrum")]
 public sealed class VuDrum : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDrumstick</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDrumstick</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDrumstick", Transform.Component, "VuDrumstick")]
+[ECMAScript("vu-icons/VuDrumstick")]
 public sealed class VuDrumstick : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuDumbbell</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuDumbbell</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuDumbbell", Transform.Component, "VuDumbbell")]
+[ECMAScript("vu-icons/VuDumbbell")]
 public sealed class VuDumbbell : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEar", Transform.Component, "VuEar")]
+[ECMAScript("vu-icons/VuEar")]
 public sealed class VuEar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEarOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEarOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEarOff", Transform.Component, "VuEarOff")]
+[ECMAScript("vu-icons/VuEarOff")]
 public sealed class VuEarOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEarth</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEarth</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEarth", Transform.Component, "VuEarth")]
+[ECMAScript("vu-icons/VuEarth")]
 public sealed class VuEarth : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEarthLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEarthLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEarthLock", Transform.Component, "VuEarthLock")]
+[ECMAScript("vu-icons/VuEarthLock")]
 public sealed class VuEarthLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEclipse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEclipse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEclipse", Transform.Component, "VuEclipse")]
+[ECMAScript("vu-icons/VuEclipse")]
 public sealed class VuEclipse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEdit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEdit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEdit", Transform.Component, "VuEdit")]
+[ECMAScript("vu-icons/VuEdit")]
 public sealed class VuEdit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEgg</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEgg</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEgg", Transform.Component, "VuEgg")]
+[ECMAScript("vu-icons/VuEgg")]
 public sealed class VuEgg : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEggFried</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEggFried</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEggFried", Transform.Component, "VuEggFried")]
+[ECMAScript("vu-icons/VuEggFried")]
 public sealed class VuEggFried : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEggOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEggOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEggOff", Transform.Component, "VuEggOff")]
+[ECMAScript("vu-icons/VuEggOff")]
 public sealed class VuEggOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEllipsis</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEllipsis</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEllipsis", Transform.Component, "VuEllipsis")]
+[ECMAScript("vu-icons/VuEllipsis")]
 public sealed class VuEllipsis : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEllipsisVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEllipsisVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEllipsisVertical", Transform.Component, "VuEllipsisVertical")]
+[ECMAScript("vu-icons/VuEllipsisVertical")]
 public sealed class VuEllipsisVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEnter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEnter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEnter", Transform.Component, "VuEnter")]
+[ECMAScript("vu-icons/VuEnter")]
 public sealed class VuEnter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEqual</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEqual</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEqual", Transform.Component, "VuEqual")]
+[ECMAScript("vu-icons/VuEqual")]
 public sealed class VuEqual : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEqualApproximately</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEqualApproximately</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEqualApproximately", Transform.Component, "VuEqualApproximately")]
+[ECMAScript("vu-icons/VuEqualApproximately")]
 public sealed class VuEqualApproximately : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEqualNot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEqualNot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEqualNot", Transform.Component, "VuEqualNot")]
+[ECMAScript("vu-icons/VuEqualNot")]
 public sealed class VuEqualNot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEraser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEraser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEraser", Transform.Component, "VuEraser")]
+[ECMAScript("vu-icons/VuEraser")]
 public sealed class VuEraser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuError</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuError</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuError", Transform.Component, "VuError")]
+[ECMAScript("vu-icons/VuError")]
 public sealed class VuError : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEthernetPort</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEthernetPort</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEthernetPort", Transform.Component, "VuEthernetPort")]
+[ECMAScript("vu-icons/VuEthernetPort")]
 public sealed class VuEthernetPort : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEuro</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEuro</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEuro", Transform.Component, "VuEuro")]
+[ECMAScript("vu-icons/VuEuro")]
 public sealed class VuEuro : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEvCharger</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEvCharger</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEvCharger", Transform.Component, "VuEvCharger")]
+[ECMAScript("vu-icons/VuEvCharger")]
 public sealed class VuEvCharger : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuExam</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuExam</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuExam", Transform.Component, "VuExam")]
+[ECMAScript("vu-icons/VuExam")]
 public sealed class VuExam : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuExitFullscreen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuExitFullscreen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuExitFullscreen", Transform.Component, "VuExitFullscreen")]
+[ECMAScript("vu-icons/VuExitFullscreen")]
 public sealed class VuExitFullscreen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuExpand</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuExpand</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuExpand", Transform.Component, "VuExpand")]
+[ECMAScript("vu-icons/VuExpand")]
 public sealed class VuExpand : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuExternalLink</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuExternalLink</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuExternalLink", Transform.Component, "VuExternalLink")]
+[ECMAScript("vu-icons/VuExternalLink")]
 public sealed class VuExternalLink : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEye</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEye</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEye", Transform.Component, "VuEye")]
+[ECMAScript("vu-icons/VuEye")]
 public sealed class VuEye : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEyeClosed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEyeClosed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEyeClosed", Transform.Component, "VuEyeClosed")]
+[ECMAScript("vu-icons/VuEyeClosed")]
 public sealed class VuEyeClosed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuEyeOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuEyeOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuEyeOff", Transform.Component, "VuEyeOff")]
+[ECMAScript("vu-icons/VuEyeOff")]
 public sealed class VuEyeOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFacebook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFacebook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFacebook", Transform.Component, "VuFacebook")]
+[ECMAScript("vu-icons/VuFacebook")]
 public sealed class VuFacebook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFactory</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFactory</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFactory", Transform.Component, "VuFactory")]
+[ECMAScript("vu-icons/VuFactory")]
 public sealed class VuFactory : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFailure</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFailure</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFailure", Transform.Component, "VuFailure")]
+[ECMAScript("vu-icons/VuFailure")]
 public sealed class VuFailure : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFan", Transform.Component, "VuFan")]
+[ECMAScript("vu-icons/VuFan")]
 public sealed class VuFan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFastBackward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFastBackward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFastBackward", Transform.Component, "VuFastBackward")]
+[ECMAScript("vu-icons/VuFastBackward")]
 public sealed class VuFastBackward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFastForward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFastForward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFastForward", Transform.Component, "VuFastForward")]
+[ECMAScript("vu-icons/VuFastForward")]
 public sealed class VuFastForward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFavorite</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFavorite</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFavorite", Transform.Component, "VuFavorite")]
+[ECMAScript("vu-icons/VuFavorite")]
 public sealed class VuFavorite : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFeather</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFeather</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFeather", Transform.Component, "VuFeather")]
+[ECMAScript("vu-icons/VuFeather")]
 public sealed class VuFeather : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFence</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFence</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFence", Transform.Component, "VuFence")]
+[ECMAScript("vu-icons/VuFence")]
 public sealed class VuFence : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFerrisWheel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFerrisWheel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFerrisWheel", Transform.Component, "VuFerrisWheel")]
+[ECMAScript("vu-icons/VuFerrisWheel")]
 public sealed class VuFerrisWheel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFigma</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFigma</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFigma", Transform.Component, "VuFigma")]
+[ECMAScript("vu-icons/VuFigma")]
 public sealed class VuFigma : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFile</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFile</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFile", Transform.Component, "VuFile")]
+[ECMAScript("vu-icons/VuFile")]
 public sealed class VuFile : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileArchive</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileArchive</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileArchive", Transform.Component, "VuFileArchive")]
+[ECMAScript("vu-icons/VuFileArchive")]
 public sealed class VuFileArchive : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileAudio</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileAudio</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileAudio", Transform.Component, "VuFileAudio")]
+[ECMAScript("vu-icons/VuFileAudio")]
 public sealed class VuFileAudio : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileAudio2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileAudio2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileAudio2", Transform.Component, "VuFileAudio2")]
+[ECMAScript("vu-icons/VuFileAudio2")]
 public sealed class VuFileAudio2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileAxis3d</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileAxis3d</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileAxis3d", Transform.Component, "VuFileAxis3d")]
+[ECMAScript("vu-icons/VuFileAxis3d")]
 public sealed class VuFileAxis3d : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileBadge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileBadge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileBadge", Transform.Component, "VuFileBadge")]
+[ECMAScript("vu-icons/VuFileBadge")]
 public sealed class VuFileBadge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileBadge2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileBadge2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileBadge2", Transform.Component, "VuFileBadge2")]
+[ECMAScript("vu-icons/VuFileBadge2")]
 public sealed class VuFileBadge2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileBox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileBox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileBox", Transform.Component, "VuFileBox")]
+[ECMAScript("vu-icons/VuFileBox")]
 public sealed class VuFileBox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileBraces</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileBraces</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileBraces", Transform.Component, "VuFileBraces")]
+[ECMAScript("vu-icons/VuFileBraces")]
 public sealed class VuFileBraces : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileBracesCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileBracesCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileBracesCorner", Transform.Component, "VuFileBracesCorner")]
+[ECMAScript("vu-icons/VuFileBracesCorner")]
 public sealed class VuFileBracesCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileChartColumn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileChartColumn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileChartColumn", Transform.Component, "VuFileChartColumn")]
+[ECMAScript("vu-icons/VuFileChartColumn")]
 public sealed class VuFileChartColumn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileChartColumnIncreasing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileChartColumnIncreasing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileChartColumnIncreasing", Transform.Component, "VuFileChartColumnIncreasing")]
+[ECMAScript("vu-icons/VuFileChartColumnIncreasing")]
 public sealed class VuFileChartColumnIncreasing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileChartLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileChartLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileChartLine", Transform.Component, "VuFileChartLine")]
+[ECMAScript("vu-icons/VuFileChartLine")]
 public sealed class VuFileChartLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileChartPie</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileChartPie</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileChartPie", Transform.Component, "VuFileChartPie")]
+[ECMAScript("vu-icons/VuFileChartPie")]
 public sealed class VuFileChartPie : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCheck", Transform.Component, "VuFileCheck")]
+[ECMAScript("vu-icons/VuFileCheck")]
 public sealed class VuFileCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCheck2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCheck2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCheck2", Transform.Component, "VuFileCheck2")]
+[ECMAScript("vu-icons/VuFileCheck2")]
 public sealed class VuFileCheck2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCheckCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCheckCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCheckCorner", Transform.Component, "VuFileCheckCorner")]
+[ECMAScript("vu-icons/VuFileCheckCorner")]
 public sealed class VuFileCheckCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileClock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileClock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileClock", Transform.Component, "VuFileClock")]
+[ECMAScript("vu-icons/VuFileClock")]
 public sealed class VuFileClock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCode", Transform.Component, "VuFileCode")]
+[ECMAScript("vu-icons/VuFileCode")]
 public sealed class VuFileCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCode2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCode2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCode2", Transform.Component, "VuFileCode2")]
+[ECMAScript("vu-icons/VuFileCode2")]
 public sealed class VuFileCode2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCodeCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCodeCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCodeCorner", Transform.Component, "VuFileCodeCorner")]
+[ECMAScript("vu-icons/VuFileCodeCorner")]
 public sealed class VuFileCodeCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileCog", Transform.Component, "VuFileCog")]
+[ECMAScript("vu-icons/VuFileCog")]
 public sealed class VuFileCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileDiff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileDiff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileDiff", Transform.Component, "VuFileDiff")]
+[ECMAScript("vu-icons/VuFileDiff")]
 public sealed class VuFileDiff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileDigit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileDigit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileDigit", Transform.Component, "VuFileDigit")]
+[ECMAScript("vu-icons/VuFileDigit")]
 public sealed class VuFileDigit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileDown", Transform.Component, "VuFileDown")]
+[ECMAScript("vu-icons/VuFileDown")]
 public sealed class VuFileDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileExclamationPoint</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileExclamationPoint</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileExclamationPoint", Transform.Component, "VuFileExclamationPoint")]
+[ECMAScript("vu-icons/VuFileExclamationPoint")]
 public sealed class VuFileExclamationPoint : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileHeadphone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileHeadphone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileHeadphone", Transform.Component, "VuFileHeadphone")]
+[ECMAScript("vu-icons/VuFileHeadphone")]
 public sealed class VuFileHeadphone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileHeart", Transform.Component, "VuFileHeart")]
+[ECMAScript("vu-icons/VuFileHeart")]
 public sealed class VuFileHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileImage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileImage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileImage", Transform.Component, "VuFileImage")]
+[ECMAScript("vu-icons/VuFileImage")]
 public sealed class VuFileImage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileInput</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileInput</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileInput", Transform.Component, "VuFileInput")]
+[ECMAScript("vu-icons/VuFileInput")]
 public sealed class VuFileInput : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileJson</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileJson</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileJson", Transform.Component, "VuFileJson")]
+[ECMAScript("vu-icons/VuFileJson")]
 public sealed class VuFileJson : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileJson2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileJson2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileJson2", Transform.Component, "VuFileJson2")]
+[ECMAScript("vu-icons/VuFileJson2")]
 public sealed class VuFileJson2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileKey</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileKey</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileKey", Transform.Component, "VuFileKey")]
+[ECMAScript("vu-icons/VuFileKey")]
 public sealed class VuFileKey : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileKey2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileKey2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileKey2", Transform.Component, "VuFileKey2")]
+[ECMAScript("vu-icons/VuFileKey2")]
 public sealed class VuFileKey2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileLock", Transform.Component, "VuFileLock")]
+[ECMAScript("vu-icons/VuFileLock")]
 public sealed class VuFileLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileLock2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileLock2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileLock2", Transform.Component, "VuFileLock2")]
+[ECMAScript("vu-icons/VuFileLock2")]
 public sealed class VuFileLock2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileMinus", Transform.Component, "VuFileMinus")]
+[ECMAScript("vu-icons/VuFileMinus")]
 public sealed class VuFileMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileMinus2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileMinus2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileMinus2", Transform.Component, "VuFileMinus2")]
+[ECMAScript("vu-icons/VuFileMinus2")]
 public sealed class VuFileMinus2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileMinusCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileMinusCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileMinusCorner", Transform.Component, "VuFileMinusCorner")]
+[ECMAScript("vu-icons/VuFileMinusCorner")]
 public sealed class VuFileMinusCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileMusic</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileMusic</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileMusic", Transform.Component, "VuFileMusic")]
+[ECMAScript("vu-icons/VuFileMusic")]
 public sealed class VuFileMusic : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileOutput</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileOutput</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileOutput", Transform.Component, "VuFileOutput")]
+[ECMAScript("vu-icons/VuFileOutput")]
 public sealed class VuFileOutput : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePen", Transform.Component, "VuFilePen")]
+[ECMAScript("vu-icons/VuFilePen")]
 public sealed class VuFilePen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePenLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePenLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePenLine", Transform.Component, "VuFilePenLine")]
+[ECMAScript("vu-icons/VuFilePenLine")]
 public sealed class VuFilePenLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePieChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePieChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePieChart", Transform.Component, "VuFilePieChart")]
+[ECMAScript("vu-icons/VuFilePieChart")]
 public sealed class VuFilePieChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePlay", Transform.Component, "VuFilePlay")]
+[ECMAScript("vu-icons/VuFilePlay")]
 public sealed class VuFilePlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePlus", Transform.Component, "VuFilePlus")]
+[ECMAScript("vu-icons/VuFilePlus")]
 public sealed class VuFilePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePlus2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePlus2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePlus2", Transform.Component, "VuFilePlus2")]
+[ECMAScript("vu-icons/VuFilePlus2")]
 public sealed class VuFilePlus2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilePlusCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilePlusCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilePlusCorner", Transform.Component, "VuFilePlusCorner")]
+[ECMAScript("vu-icons/VuFilePlusCorner")]
 public sealed class VuFilePlusCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileQuestionMark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileQuestionMark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileQuestionMark", Transform.Component, "VuFileQuestionMark")]
+[ECMAScript("vu-icons/VuFileQuestionMark")]
 public sealed class VuFileQuestionMark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileScan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileScan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileScan", Transform.Component, "VuFileScan")]
+[ECMAScript("vu-icons/VuFileScan")]
 public sealed class VuFileScan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSearch", Transform.Component, "VuFileSearch")]
+[ECMAScript("vu-icons/VuFileSearch")]
 public sealed class VuFileSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSearch2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSearch2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSearch2", Transform.Component, "VuFileSearch2")]
+[ECMAScript("vu-icons/VuFileSearch2")]
 public sealed class VuFileSearch2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSearchCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSearchCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSearchCorner", Transform.Component, "VuFileSearchCorner")]
+[ECMAScript("vu-icons/VuFileSearchCorner")]
 public sealed class VuFileSearchCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSignal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSignal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSignal", Transform.Component, "VuFileSignal")]
+[ECMAScript("vu-icons/VuFileSignal")]
 public sealed class VuFileSignal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSliders</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSliders</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSliders", Transform.Component, "VuFileSliders")]
+[ECMAScript("vu-icons/VuFileSliders")]
 public sealed class VuFileSliders : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSpreadsheet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSpreadsheet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSpreadsheet", Transform.Component, "VuFileSpreadsheet")]
+[ECMAScript("vu-icons/VuFileSpreadsheet")]
 public sealed class VuFileSpreadsheet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileStack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileStack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileStack", Transform.Component, "VuFileStack")]
+[ECMAScript("vu-icons/VuFileStack")]
 public sealed class VuFileStack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileSymlink</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileSymlink</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileSymlink", Transform.Component, "VuFileSymlink")]
+[ECMAScript("vu-icons/VuFileSymlink")]
 public sealed class VuFileSymlink : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileTerminal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileTerminal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileTerminal", Transform.Component, "VuFileTerminal")]
+[ECMAScript("vu-icons/VuFileTerminal")]
 public sealed class VuFileTerminal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileText", Transform.Component, "VuFileText")]
+[ECMAScript("vu-icons/VuFileText")]
 public sealed class VuFileText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileType</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileType</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileType", Transform.Component, "VuFileType")]
+[ECMAScript("vu-icons/VuFileType")]
 public sealed class VuFileType : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileType2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileType2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileType2", Transform.Component, "VuFileType2")]
+[ECMAScript("vu-icons/VuFileType2")]
 public sealed class VuFileType2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileTypeCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileTypeCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileTypeCorner", Transform.Component, "VuFileTypeCorner")]
+[ECMAScript("vu-icons/VuFileTypeCorner")]
 public sealed class VuFileTypeCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileUp", Transform.Component, "VuFileUp")]
+[ECMAScript("vu-icons/VuFileUp")]
 public sealed class VuFileUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileUser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileUser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileUser", Transform.Component, "VuFileUser")]
+[ECMAScript("vu-icons/VuFileUser")]
 public sealed class VuFileUser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileVideoCamera</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileVideoCamera</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileVideoCamera", Transform.Component, "VuFileVideoCamera")]
+[ECMAScript("vu-icons/VuFileVideoCamera")]
 public sealed class VuFileVideoCamera : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileVolume</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileVolume</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileVolume", Transform.Component, "VuFileVolume")]
+[ECMAScript("vu-icons/VuFileVolume")]
 public sealed class VuFileVolume : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileVolume2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileVolume2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileVolume2", Transform.Component, "VuFileVolume2")]
+[ECMAScript("vu-icons/VuFileVolume2")]
 public sealed class VuFileVolume2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileWarning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileWarning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileWarning", Transform.Component, "VuFileWarning")]
+[ECMAScript("vu-icons/VuFileWarning")]
 public sealed class VuFileWarning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileX", Transform.Component, "VuFileX")]
+[ECMAScript("vu-icons/VuFileX")]
 public sealed class VuFileX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileX2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileX2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileX2", Transform.Component, "VuFileX2")]
+[ECMAScript("vu-icons/VuFileX2")]
 public sealed class VuFileX2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFileXCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFileXCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFileXCorner", Transform.Component, "VuFileXCorner")]
+[ECMAScript("vu-icons/VuFileXCorner")]
 public sealed class VuFileXCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFiles</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFiles</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFiles", Transform.Component, "VuFiles")]
+[ECMAScript("vu-icons/VuFiles")]
 public sealed class VuFiles : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilm</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilm</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilm", Transform.Component, "VuFilm")]
+[ECMAScript("vu-icons/VuFilm")]
 public sealed class VuFilm : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilter", Transform.Component, "VuFilter")]
+[ECMAScript("vu-icons/VuFilter")]
 public sealed class VuFilter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFilterX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFilterX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFilterX", Transform.Component, "VuFilterX")]
+[ECMAScript("vu-icons/VuFilterX")]
 public sealed class VuFilterX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFinance</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFinance</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFinance", Transform.Component, "VuFinance")]
+[ECMAScript("vu-icons/VuFinance")]
 public sealed class VuFinance : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFingerprintPattern</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFingerprintPattern</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFingerprintPattern", Transform.Component, "VuFingerprintPattern")]
+[ECMAScript("vu-icons/VuFingerprintPattern")]
 public sealed class VuFingerprintPattern : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFireExtinguisher</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFireExtinguisher</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFireExtinguisher", Transform.Component, "VuFireExtinguisher")]
+[ECMAScript("vu-icons/VuFireExtinguisher")]
 public sealed class VuFireExtinguisher : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFish</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFish</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFish", Transform.Component, "VuFish")]
+[ECMAScript("vu-icons/VuFish")]
 public sealed class VuFish : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFishOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFishOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFishOff", Transform.Component, "VuFishOff")]
+[ECMAScript("vu-icons/VuFishOff")]
 public sealed class VuFishOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFishSymbol</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFishSymbol</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFishSymbol", Transform.Component, "VuFishSymbol")]
+[ECMAScript("vu-icons/VuFishSymbol")]
 public sealed class VuFishSymbol : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFishingHook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFishingHook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFishingHook", Transform.Component, "VuFishingHook")]
+[ECMAScript("vu-icons/VuFishingHook")]
 public sealed class VuFishingHook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFitness</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFitness</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFitness", Transform.Component, "VuFitness")]
+[ECMAScript("vu-icons/VuFitness")]
 public sealed class VuFitness : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlag</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlag</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlag", Transform.Component, "VuFlag")]
+[ECMAScript("vu-icons/VuFlag")]
 public sealed class VuFlag : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlagOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlagOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlagOff", Transform.Component, "VuFlagOff")]
+[ECMAScript("vu-icons/VuFlagOff")]
 public sealed class VuFlagOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlagTriangleLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlagTriangleLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlagTriangleLeft", Transform.Component, "VuFlagTriangleLeft")]
+[ECMAScript("vu-icons/VuFlagTriangleLeft")]
 public sealed class VuFlagTriangleLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlagTriangleRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlagTriangleRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlagTriangleRight", Transform.Component, "VuFlagTriangleRight")]
+[ECMAScript("vu-icons/VuFlagTriangleRight")]
 public sealed class VuFlagTriangleRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlame</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlame</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlame", Transform.Component, "VuFlame")]
+[ECMAScript("vu-icons/VuFlame")]
 public sealed class VuFlame : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlameKindling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlameKindling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlameKindling", Transform.Component, "VuFlameKindling")]
+[ECMAScript("vu-icons/VuFlameKindling")]
 public sealed class VuFlameKindling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlashlight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlashlight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlashlight", Transform.Component, "VuFlashlight")]
+[ECMAScript("vu-icons/VuFlashlight")]
 public sealed class VuFlashlight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlashlightOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlashlightOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlashlightOff", Transform.Component, "VuFlashlightOff")]
+[ECMAScript("vu-icons/VuFlashlightOff")]
 public sealed class VuFlashlightOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlaskConical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlaskConical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlaskConical", Transform.Component, "VuFlaskConical")]
+[ECMAScript("vu-icons/VuFlaskConical")]
 public sealed class VuFlaskConical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlaskConicalOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlaskConicalOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlaskConicalOff", Transform.Component, "VuFlaskConicalOff")]
+[ECMAScript("vu-icons/VuFlaskConicalOff")]
 public sealed class VuFlaskConicalOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlaskRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlaskRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlaskRound", Transform.Component, "VuFlaskRound")]
+[ECMAScript("vu-icons/VuFlaskRound")]
 public sealed class VuFlaskRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlipHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlipHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlipHorizontal", Transform.Component, "VuFlipHorizontal")]
+[ECMAScript("vu-icons/VuFlipHorizontal")]
 public sealed class VuFlipHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlipHorizontal2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlipHorizontal2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlipHorizontal2", Transform.Component, "VuFlipHorizontal2")]
+[ECMAScript("vu-icons/VuFlipHorizontal2")]
 public sealed class VuFlipHorizontal2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlipVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlipVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlipVertical", Transform.Component, "VuFlipVertical")]
+[ECMAScript("vu-icons/VuFlipVertical")]
 public sealed class VuFlipVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlipVertical2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlipVertical2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlipVertical2", Transform.Component, "VuFlipVertical2")]
+[ECMAScript("vu-icons/VuFlipVertical2")]
 public sealed class VuFlipVertical2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlower</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlower</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlower", Transform.Component, "VuFlower")]
+[ECMAScript("vu-icons/VuFlower")]
 public sealed class VuFlower : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFlower2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFlower2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFlower2", Transform.Component, "VuFlower2")]
+[ECMAScript("vu-icons/VuFlower2")]
 public sealed class VuFlower2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFocus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFocus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFocus", Transform.Component, "VuFocus")]
+[ECMAScript("vu-icons/VuFocus")]
 public sealed class VuFocus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFoldHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFoldHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFoldHorizontal", Transform.Component, "VuFoldHorizontal")]
+[ECMAScript("vu-icons/VuFoldHorizontal")]
 public sealed class VuFoldHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFoldVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFoldVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFoldVertical", Transform.Component, "VuFoldVertical")]
+[ECMAScript("vu-icons/VuFoldVertical")]
 public sealed class VuFoldVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolder</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolder</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolder", Transform.Component, "VuFolder")]
+[ECMAScript("vu-icons/VuFolder")]
 public sealed class VuFolder : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderArchive</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderArchive</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderArchive", Transform.Component, "VuFolderArchive")]
+[ECMAScript("vu-icons/VuFolderArchive")]
 public sealed class VuFolderArchive : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderCheck", Transform.Component, "VuFolderCheck")]
+[ECMAScript("vu-icons/VuFolderCheck")]
 public sealed class VuFolderCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderClock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderClock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderClock", Transform.Component, "VuFolderClock")]
+[ECMAScript("vu-icons/VuFolderClock")]
 public sealed class VuFolderClock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderClosed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderClosed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderClosed", Transform.Component, "VuFolderClosed")]
+[ECMAScript("vu-icons/VuFolderClosed")]
 public sealed class VuFolderClosed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderCode", Transform.Component, "VuFolderCode")]
+[ECMAScript("vu-icons/VuFolderCode")]
 public sealed class VuFolderCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderCog", Transform.Component, "VuFolderCog")]
+[ECMAScript("vu-icons/VuFolderCog")]
 public sealed class VuFolderCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderDot", Transform.Component, "VuFolderDot")]
+[ECMAScript("vu-icons/VuFolderDot")]
 public sealed class VuFolderDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderDown", Transform.Component, "VuFolderDown")]
+[ECMAScript("vu-icons/VuFolderDown")]
 public sealed class VuFolderDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderGit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderGit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderGit", Transform.Component, "VuFolderGit")]
+[ECMAScript("vu-icons/VuFolderGit")]
 public sealed class VuFolderGit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderGit2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderGit2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderGit2", Transform.Component, "VuFolderGit2")]
+[ECMAScript("vu-icons/VuFolderGit2")]
 public sealed class VuFolderGit2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderHeart", Transform.Component, "VuFolderHeart")]
+[ECMAScript("vu-icons/VuFolderHeart")]
 public sealed class VuFolderHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderInput</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderInput</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderInput", Transform.Component, "VuFolderInput")]
+[ECMAScript("vu-icons/VuFolderInput")]
 public sealed class VuFolderInput : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderKanban</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderKanban</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderKanban", Transform.Component, "VuFolderKanban")]
+[ECMAScript("vu-icons/VuFolderKanban")]
 public sealed class VuFolderKanban : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderKey</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderKey</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderKey", Transform.Component, "VuFolderKey")]
+[ECMAScript("vu-icons/VuFolderKey")]
 public sealed class VuFolderKey : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderLock", Transform.Component, "VuFolderLock")]
+[ECMAScript("vu-icons/VuFolderLock")]
 public sealed class VuFolderLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderMinus", Transform.Component, "VuFolderMinus")]
+[ECMAScript("vu-icons/VuFolderMinus")]
 public sealed class VuFolderMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderOpen", Transform.Component, "VuFolderOpen")]
+[ECMAScript("vu-icons/VuFolderOpen")]
 public sealed class VuFolderOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderOpenDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderOpenDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderOpenDot", Transform.Component, "VuFolderOpenDot")]
+[ECMAScript("vu-icons/VuFolderOpenDot")]
 public sealed class VuFolderOpenDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderOutput</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderOutput</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderOutput", Transform.Component, "VuFolderOutput")]
+[ECMAScript("vu-icons/VuFolderOutput")]
 public sealed class VuFolderOutput : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderPen", Transform.Component, "VuFolderPen")]
+[ECMAScript("vu-icons/VuFolderPen")]
 public sealed class VuFolderPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderPlus", Transform.Component, "VuFolderPlus")]
+[ECMAScript("vu-icons/VuFolderPlus")]
 public sealed class VuFolderPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderRoot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderRoot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderRoot", Transform.Component, "VuFolderRoot")]
+[ECMAScript("vu-icons/VuFolderRoot")]
 public sealed class VuFolderRoot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderSearch", Transform.Component, "VuFolderSearch")]
+[ECMAScript("vu-icons/VuFolderSearch")]
 public sealed class VuFolderSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderSearch2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderSearch2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderSearch2", Transform.Component, "VuFolderSearch2")]
+[ECMAScript("vu-icons/VuFolderSearch2")]
 public sealed class VuFolderSearch2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderSymlink</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderSymlink</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderSymlink", Transform.Component, "VuFolderSymlink")]
+[ECMAScript("vu-icons/VuFolderSymlink")]
 public sealed class VuFolderSymlink : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderSync</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderSync</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderSync", Transform.Component, "VuFolderSync")]
+[ECMAScript("vu-icons/VuFolderSync")]
 public sealed class VuFolderSync : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderTree</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderTree</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderTree", Transform.Component, "VuFolderTree")]
+[ECMAScript("vu-icons/VuFolderTree")]
 public sealed class VuFolderTree : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderUp", Transform.Component, "VuFolderUp")]
+[ECMAScript("vu-icons/VuFolderUp")]
 public sealed class VuFolderUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolderX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolderX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolderX", Transform.Component, "VuFolderX")]
+[ECMAScript("vu-icons/VuFolderX")]
 public sealed class VuFolderX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFolders</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFolders</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFolders", Transform.Component, "VuFolders")]
+[ECMAScript("vu-icons/VuFolders")]
 public sealed class VuFolders : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFollow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFollow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFollow", Transform.Component, "VuFollow")]
+[ECMAScript("vu-icons/VuFollow")]
 public sealed class VuFollow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFollowers</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFollowers</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFollowers", Transform.Component, "VuFollowers")]
+[ECMAScript("vu-icons/VuFollowers")]
 public sealed class VuFollowers : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFood</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFood</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFood", Transform.Component, "VuFood")]
+[ECMAScript("vu-icons/VuFood")]
 public sealed class VuFood : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFootprints</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFootprints</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFootprints", Transform.Component, "VuFootprints")]
+[ECMAScript("vu-icons/VuFootprints")]
 public sealed class VuFootprints : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuForklift</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuForklift</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuForklift", Transform.Component, "VuForklift")]
+[ECMAScript("vu-icons/VuForklift")]
 public sealed class VuForklift : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuForm</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuForm</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuForm", Transform.Component, "VuForm")]
+[ECMAScript("vu-icons/VuForm")]
 public sealed class VuForm : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuForward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuForward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuForward", Transform.Component, "VuForward")]
+[ECMAScript("vu-icons/VuForward")]
 public sealed class VuForward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFrame</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFrame</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFrame", Transform.Component, "VuFrame")]
+[ECMAScript("vu-icons/VuFrame")]
 public sealed class VuFrame : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFramer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFramer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFramer", Transform.Component, "VuFramer")]
+[ECMAScript("vu-icons/VuFramer")]
 public sealed class VuFramer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFrown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFrown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFrown", Transform.Component, "VuFrown")]
+[ECMAScript("vu-icons/VuFrown")]
 public sealed class VuFrown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFuel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFuel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFuel", Transform.Component, "VuFuel")]
+[ECMAScript("vu-icons/VuFuel")]
 public sealed class VuFuel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFullscreen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFullscreen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFullscreen", Transform.Component, "VuFullscreen")]
+[ECMAScript("vu-icons/VuFullscreen")]
 public sealed class VuFullscreen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFunnel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFunnel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFunnel", Transform.Component, "VuFunnel")]
+[ECMAScript("vu-icons/VuFunnel")]
 public sealed class VuFunnel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFunnelChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFunnelChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFunnelChart", Transform.Component, "VuFunnelChart")]
+[ECMAScript("vu-icons/VuFunnelChart")]
 public sealed class VuFunnelChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFunnelPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFunnelPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFunnelPlus", Transform.Component, "VuFunnelPlus")]
+[ECMAScript("vu-icons/VuFunnelPlus")]
 public sealed class VuFunnelPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuFunnelX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuFunnelX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuFunnelX", Transform.Component, "VuFunnelX")]
+[ECMAScript("vu-icons/VuFunnelX")]
 public sealed class VuFunnelX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGalleryHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGalleryHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGalleryHorizontal", Transform.Component, "VuGalleryHorizontal")]
+[ECMAScript("vu-icons/VuGalleryHorizontal")]
 public sealed class VuGalleryHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGalleryHorizontalEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGalleryHorizontalEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGalleryHorizontalEnd", Transform.Component, "VuGalleryHorizontalEnd")]
+[ECMAScript("vu-icons/VuGalleryHorizontalEnd")]
 public sealed class VuGalleryHorizontalEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGalleryThumbnails</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGalleryThumbnails</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGalleryThumbnails", Transform.Component, "VuGalleryThumbnails")]
+[ECMAScript("vu-icons/VuGalleryThumbnails")]
 public sealed class VuGalleryThumbnails : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGalleryVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGalleryVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGalleryVertical", Transform.Component, "VuGalleryVertical")]
+[ECMAScript("vu-icons/VuGalleryVertical")]
 public sealed class VuGalleryVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGalleryVerticalEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGalleryVerticalEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGalleryVerticalEnd", Transform.Component, "VuGalleryVerticalEnd")]
+[ECMAScript("vu-icons/VuGalleryVerticalEnd")]
 public sealed class VuGalleryVerticalEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGamepad</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGamepad</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGamepad", Transform.Component, "VuGamepad")]
+[ECMAScript("vu-icons/VuGamepad")]
 public sealed class VuGamepad : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGamepad2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGamepad2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGamepad2", Transform.Component, "VuGamepad2")]
+[ECMAScript("vu-icons/VuGamepad2")]
 public sealed class VuGamepad2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGamepadDirectional</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGamepadDirectional</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGamepadDirectional", Transform.Component, "VuGamepadDirectional")]
+[ECMAScript("vu-icons/VuGamepadDirectional")]
 public sealed class VuGamepadDirectional : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGauge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGauge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGauge", Transform.Component, "VuGauge")]
+[ECMAScript("vu-icons/VuGauge")]
 public sealed class VuGauge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGavel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGavel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGavel", Transform.Component, "VuGavel")]
+[ECMAScript("vu-icons/VuGavel")]
 public sealed class VuGavel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGem</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGem</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGem", Transform.Component, "VuGem")]
+[ECMAScript("vu-icons/VuGem")]
 public sealed class VuGem : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGeorgianLari</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGeorgianLari</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGeorgianLari", Transform.Component, "VuGeorgianLari")]
+[ECMAScript("vu-icons/VuGeorgianLari")]
 public sealed class VuGeorgianLari : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGhost</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGhost</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGhost", Transform.Component, "VuGhost")]
+[ECMAScript("vu-icons/VuGhost")]
 public sealed class VuGhost : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGift</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGift</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGift", Transform.Component, "VuGift")]
+[ECMAScript("vu-icons/VuGift")]
 public sealed class VuGift : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitBranch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitBranch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitBranch", Transform.Component, "VuGitBranch")]
+[ECMAScript("vu-icons/VuGitBranch")]
 public sealed class VuGitBranch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitBranchMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitBranchMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitBranchMinus", Transform.Component, "VuGitBranchMinus")]
+[ECMAScript("vu-icons/VuGitBranchMinus")]
 public sealed class VuGitBranchMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitBranchPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitBranchPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitBranchPlus", Transform.Component, "VuGitBranchPlus")]
+[ECMAScript("vu-icons/VuGitBranchPlus")]
 public sealed class VuGitBranchPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitCommitHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitCommitHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitCommitHorizontal", Transform.Component, "VuGitCommitHorizontal")]
+[ECMAScript("vu-icons/VuGitCommitHorizontal")]
 public sealed class VuGitCommitHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitCommitVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitCommitVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitCommitVertical", Transform.Component, "VuGitCommitVertical")]
+[ECMAScript("vu-icons/VuGitCommitVertical")]
 public sealed class VuGitCommitVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitCompare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitCompare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitCompare", Transform.Component, "VuGitCompare")]
+[ECMAScript("vu-icons/VuGitCompare")]
 public sealed class VuGitCompare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitCompareArrows</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitCompareArrows</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitCompareArrows", Transform.Component, "VuGitCompareArrows")]
+[ECMAScript("vu-icons/VuGitCompareArrows")]
 public sealed class VuGitCompareArrows : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitFork</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitFork</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitFork", Transform.Component, "VuGitFork")]
+[ECMAScript("vu-icons/VuGitFork")]
 public sealed class VuGitFork : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitGraph</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitGraph</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitGraph", Transform.Component, "VuGitGraph")]
+[ECMAScript("vu-icons/VuGitGraph")]
 public sealed class VuGitGraph : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitMerge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitMerge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitMerge", Transform.Component, "VuGitMerge")]
+[ECMAScript("vu-icons/VuGitMerge")]
 public sealed class VuGitMerge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequest</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitPullRequest</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitPullRequest", Transform.Component, "VuGitPullRequest")]
+[ECMAScript("vu-icons/VuGitPullRequest")]
 public sealed class VuGitPullRequest : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestArrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitPullRequestArrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitPullRequestArrow", Transform.Component, "VuGitPullRequestArrow")]
+[ECMAScript("vu-icons/VuGitPullRequestArrow")]
 public sealed class VuGitPullRequestArrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestClosed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitPullRequestClosed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitPullRequestClosed", Transform.Component, "VuGitPullRequestClosed")]
+[ECMAScript("vu-icons/VuGitPullRequestClosed")]
 public sealed class VuGitPullRequestClosed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestCreate</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitPullRequestCreate</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitPullRequestCreate", Transform.Component, "VuGitPullRequestCreate")]
+[ECMAScript("vu-icons/VuGitPullRequestCreate")]
 public sealed class VuGitPullRequestCreate : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestCreateArrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitPullRequestCreateArrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitPullRequestCreateArrow", Transform.Component, "VuGitPullRequestCreateArrow")]
+[ECMAScript("vu-icons/VuGitPullRequestCreateArrow")]
 public sealed class VuGitPullRequestCreateArrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestDraft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitPullRequestDraft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitPullRequestDraft", Transform.Component, "VuGitPullRequestDraft")]
+[ECMAScript("vu-icons/VuGitPullRequestDraft")]
 public sealed class VuGitPullRequestDraft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGithub</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGithub</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGithub", Transform.Component, "VuGithub")]
+[ECMAScript("vu-icons/VuGithub")]
 public sealed class VuGithub : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGitlab</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGitlab</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGitlab", Transform.Component, "VuGitlab")]
+[ECMAScript("vu-icons/VuGitlab")]
 public sealed class VuGitlab : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGlassWater</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGlassWater</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGlassWater", Transform.Component, "VuGlassWater")]
+[ECMAScript("vu-icons/VuGlassWater")]
 public sealed class VuGlassWater : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGlasses</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGlasses</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGlasses", Transform.Component, "VuGlasses")]
+[ECMAScript("vu-icons/VuGlasses")]
 public sealed class VuGlasses : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGlobe</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGlobe</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGlobe", Transform.Component, "VuGlobe")]
+[ECMAScript("vu-icons/VuGlobe")]
 public sealed class VuGlobe : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGlobeLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGlobeLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGlobeLock", Transform.Component, "VuGlobeLock")]
+[ECMAScript("vu-icons/VuGlobeLock")]
 public sealed class VuGlobeLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGlobeX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGlobeX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGlobeX", Transform.Component, "VuGlobeX")]
+[ECMAScript("vu-icons/VuGlobeX")]
 public sealed class VuGlobeX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGoal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGoal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGoal", Transform.Component, "VuGoal")]
+[ECMAScript("vu-icons/VuGoal")]
 public sealed class VuGoal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGpu</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGpu</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGpu", Transform.Component, "VuGpu")]
+[ECMAScript("vu-icons/VuGpu")]
 public sealed class VuGpu : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGraduationCap</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGraduationCap</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGraduationCap", Transform.Component, "VuGraduationCap")]
+[ECMAScript("vu-icons/VuGraduationCap")]
 public sealed class VuGraduationCap : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrape</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrape</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrape", Transform.Component, "VuGrape")]
+[ECMAScript("vu-icons/VuGrape")]
 public sealed class VuGrape : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrid2x2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrid2x2", Transform.Component, "VuGrid2x2")]
+[ECMAScript("vu-icons/VuGrid2x2")]
 public sealed class VuGrid2x2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2Check</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrid2x2Check</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrid2x2Check", Transform.Component, "VuGrid2x2Check")]
+[ECMAScript("vu-icons/VuGrid2x2Check")]
 public sealed class VuGrid2x2Check : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2Plus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrid2x2Plus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrid2x2Plus", Transform.Component, "VuGrid2x2Plus")]
+[ECMAScript("vu-icons/VuGrid2x2Plus")]
 public sealed class VuGrid2x2Plus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2X</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrid2x2X</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrid2x2X", Transform.Component, "VuGrid2x2X")]
+[ECMAScript("vu-icons/VuGrid2x2X")]
 public sealed class VuGrid2x2X : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrid3x2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrid3x2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrid3x2", Transform.Component, "VuGrid3x2")]
+[ECMAScript("vu-icons/VuGrid3x2")]
 public sealed class VuGrid3x2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrid3x3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrid3x3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrid3x3", Transform.Component, "VuGrid3x3")]
+[ECMAScript("vu-icons/VuGrid3x3")]
 public sealed class VuGrid3x3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGrip</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGrip</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGrip", Transform.Component, "VuGrip")]
+[ECMAScript("vu-icons/VuGrip")]
 public sealed class VuGrip : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGripHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGripHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGripHorizontal", Transform.Component, "VuGripHorizontal")]
+[ECMAScript("vu-icons/VuGripHorizontal")]
 public sealed class VuGripHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGripVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGripVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGripVertical", Transform.Component, "VuGripVertical")]
+[ECMAScript("vu-icons/VuGripVertical")]
 public sealed class VuGripVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGroup</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGroup</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGroup", Transform.Component, "VuGroup")]
+[ECMAScript("vu-icons/VuGroup")]
 public sealed class VuGroup : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGroupBuy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGroupBuy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGroupBuy", Transform.Component, "VuGroupBuy")]
+[ECMAScript("vu-icons/VuGroupBuy")]
 public sealed class VuGroupBuy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuGuitar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuGuitar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuGuitar", Transform.Component, "VuGuitar")]
+[ECMAScript("vu-icons/VuGuitar")]
 public sealed class VuGuitar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHam</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHam</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHam", Transform.Component, "VuHam")]
+[ECMAScript("vu-icons/VuHam")]
 public sealed class VuHam : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHamburger</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHamburger</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHamburger", Transform.Component, "VuHamburger")]
+[ECMAScript("vu-icons/VuHamburger")]
 public sealed class VuHamburger : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHammer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHammer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHammer", Transform.Component, "VuHammer")]
+[ECMAScript("vu-icons/VuHammer")]
 public sealed class VuHammer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHand</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHand</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHand", Transform.Component, "VuHand")]
+[ECMAScript("vu-icons/VuHand")]
 public sealed class VuHand : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandCoins</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandCoins</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandCoins", Transform.Component, "VuHandCoins")]
+[ECMAScript("vu-icons/VuHandCoins")]
 public sealed class VuHandCoins : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandFist</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandFist</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandFist", Transform.Component, "VuHandFist")]
+[ECMAScript("vu-icons/VuHandFist")]
 public sealed class VuHandFist : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandGrab</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandGrab</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandGrab", Transform.Component, "VuHandGrab")]
+[ECMAScript("vu-icons/VuHandGrab")]
 public sealed class VuHandGrab : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandHeart", Transform.Component, "VuHandHeart")]
+[ECMAScript("vu-icons/VuHandHeart")]
 public sealed class VuHandHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandHelping</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandHelping</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandHelping", Transform.Component, "VuHandHelping")]
+[ECMAScript("vu-icons/VuHandHelping")]
 public sealed class VuHandHelping : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandMetal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandMetal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandMetal", Transform.Component, "VuHandMetal")]
+[ECMAScript("vu-icons/VuHandMetal")]
 public sealed class VuHandMetal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandPlatter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandPlatter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandPlatter", Transform.Component, "VuHandPlatter")]
+[ECMAScript("vu-icons/VuHandPlatter")]
 public sealed class VuHandPlatter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandbag</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandbag</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandbag", Transform.Component, "VuHandbag")]
+[ECMAScript("vu-icons/VuHandbag")]
 public sealed class VuHandbag : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHandshake</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHandshake</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHandshake", Transform.Component, "VuHandshake")]
+[ECMAScript("vu-icons/VuHandshake")]
 public sealed class VuHandshake : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHardDrive</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHardDrive</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHardDrive", Transform.Component, "VuHardDrive")]
+[ECMAScript("vu-icons/VuHardDrive")]
 public sealed class VuHardDrive : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHardDriveDownload</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHardDriveDownload</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHardDriveDownload", Transform.Component, "VuHardDriveDownload")]
+[ECMAScript("vu-icons/VuHardDriveDownload")]
 public sealed class VuHardDriveDownload : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHardDriveUpload</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHardDriveUpload</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHardDriveUpload", Transform.Component, "VuHardDriveUpload")]
+[ECMAScript("vu-icons/VuHardDriveUpload")]
 public sealed class VuHardDriveUpload : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHardHat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHardHat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHardHat", Transform.Component, "VuHardHat")]
+[ECMAScript("vu-icons/VuHardHat")]
 public sealed class VuHardHat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHash", Transform.Component, "VuHash")]
+[ECMAScript("vu-icons/VuHash")]
 public sealed class VuHash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHatGlasses</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHatGlasses</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHatGlasses", Transform.Component, "VuHatGlasses")]
+[ECMAScript("vu-icons/VuHatGlasses")]
 public sealed class VuHatGlasses : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHaze</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHaze</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHaze", Transform.Component, "VuHaze")]
+[ECMAScript("vu-icons/VuHaze")]
 public sealed class VuHaze : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHd", Transform.Component, "VuHd")]
+[ECMAScript("vu-icons/VuHd")]
 public sealed class VuHd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHdmiPort</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHdmiPort</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHdmiPort", Transform.Component, "VuHdmiPort")]
+[ECMAScript("vu-icons/VuHdmiPort")]
 public sealed class VuHdmiPort : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading", Transform.Component, "VuHeading")]
+[ECMAScript("vu-icons/VuHeading")]
 public sealed class VuHeading : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading1", Transform.Component, "VuHeading1")]
+[ECMAScript("vu-icons/VuHeading1")]
 public sealed class VuHeading1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading2", Transform.Component, "VuHeading2")]
+[ECMAScript("vu-icons/VuHeading2")]
 public sealed class VuHeading2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading3", Transform.Component, "VuHeading3")]
+[ECMAScript("vu-icons/VuHeading3")]
 public sealed class VuHeading3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading4", Transform.Component, "VuHeading4")]
+[ECMAScript("vu-icons/VuHeading4")]
 public sealed class VuHeading4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading5</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading5</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading5", Transform.Component, "VuHeading5")]
+[ECMAScript("vu-icons/VuHeading5")]
 public sealed class VuHeading5 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeading6</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeading6</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeading6", Transform.Component, "VuHeading6")]
+[ECMAScript("vu-icons/VuHeading6")]
 public sealed class VuHeading6 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeadphoneOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeadphoneOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeadphoneOff", Transform.Component, "VuHeadphoneOff")]
+[ECMAScript("vu-icons/VuHeadphoneOff")]
 public sealed class VuHeadphoneOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeadphones</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeadphones</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeadphones", Transform.Component, "VuHeadphones")]
+[ECMAScript("vu-icons/VuHeadphones")]
 public sealed class VuHeadphones : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeadset</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeadset</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeadset", Transform.Component, "VuHeadset")]
+[ECMAScript("vu-icons/VuHeadset")]
 public sealed class VuHeadset : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeart", Transform.Component, "VuHeart")]
+[ECMAScript("vu-icons/VuHeart")]
 public sealed class VuHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeartCrack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeartCrack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeartCrack", Transform.Component, "VuHeartCrack")]
+[ECMAScript("vu-icons/VuHeartCrack")]
 public sealed class VuHeartCrack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeartHandshake</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeartHandshake</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeartHandshake", Transform.Component, "VuHeartHandshake")]
+[ECMAScript("vu-icons/VuHeartHandshake")]
 public sealed class VuHeartHandshake : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeartMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeartMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeartMinus", Transform.Component, "VuHeartMinus")]
+[ECMAScript("vu-icons/VuHeartMinus")]
 public sealed class VuHeartMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeartOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeartOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeartOff", Transform.Component, "VuHeartOff")]
+[ECMAScript("vu-icons/VuHeartOff")]
 public sealed class VuHeartOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeartPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeartPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeartPlus", Transform.Component, "VuHeartPlus")]
+[ECMAScript("vu-icons/VuHeartPlus")]
 public sealed class VuHeartPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeartPulse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeartPulse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeartPulse", Transform.Component, "VuHeartPulse")]
+[ECMAScript("vu-icons/VuHeartPulse")]
 public sealed class VuHeartPulse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHeater</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHeater</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHeater", Transform.Component, "VuHeater")]
+[ECMAScript("vu-icons/VuHeater")]
 public sealed class VuHeater : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHelicopter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHelicopter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHelicopter", Transform.Component, "VuHelicopter")]
+[ECMAScript("vu-icons/VuHelicopter")]
 public sealed class VuHelicopter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHexagon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHexagon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHexagon", Transform.Component, "VuHexagon")]
+[ECMAScript("vu-icons/VuHexagon")]
 public sealed class VuHexagon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHighlighter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHighlighter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHighlighter", Transform.Component, "VuHighlighter")]
+[ECMAScript("vu-icons/VuHighlighter")]
 public sealed class VuHighlighter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHint</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHint</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHint", Transform.Component, "VuHint")]
+[ECMAScript("vu-icons/VuHint")]
 public sealed class VuHint : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHistory</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHistory</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHistory", Transform.Component, "VuHistory")]
+[ECMAScript("vu-icons/VuHistory")]
 public sealed class VuHistory : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHome</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHome</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHome", Transform.Component, "VuHome")]
+[ECMAScript("vu-icons/VuHome")]
 public sealed class VuHome : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHomework</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHomework</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHomework", Transform.Component, "VuHomework")]
+[ECMAScript("vu-icons/VuHomework")]
 public sealed class VuHomework : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHop", Transform.Component, "VuHop")]
+[ECMAScript("vu-icons/VuHop")]
 public sealed class VuHop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHopOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHopOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHopOff", Transform.Component, "VuHopOff")]
+[ECMAScript("vu-icons/VuHopOff")]
 public sealed class VuHopOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHospital</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHospital</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHospital", Transform.Component, "VuHospital")]
+[ECMAScript("vu-icons/VuHospital")]
 public sealed class VuHospital : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHotel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHotel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHotel", Transform.Component, "VuHotel")]
+[ECMAScript("vu-icons/VuHotel")]
 public sealed class VuHotel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHourglass</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHourglass</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHourglass", Transform.Component, "VuHourglass")]
+[ECMAScript("vu-icons/VuHourglass")]
 public sealed class VuHourglass : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHouse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHouse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHouse", Transform.Component, "VuHouse")]
+[ECMAScript("vu-icons/VuHouse")]
 public sealed class VuHouse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHouseHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHouseHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHouseHeart", Transform.Component, "VuHouseHeart")]
+[ECMAScript("vu-icons/VuHouseHeart")]
 public sealed class VuHouseHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHousePlug</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHousePlug</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHousePlug", Transform.Component, "VuHousePlug")]
+[ECMAScript("vu-icons/VuHousePlug")]
 public sealed class VuHousePlug : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHousePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHousePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHousePlus", Transform.Component, "VuHousePlus")]
+[ECMAScript("vu-icons/VuHousePlus")]
 public sealed class VuHousePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuHouseWifi</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuHouseWifi</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuHouseWifi", Transform.Component, "VuHouseWifi")]
+[ECMAScript("vu-icons/VuHouseWifi")]
 public sealed class VuHouseWifi : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIceCreamBowl</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIceCreamBowl</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIceCreamBowl", Transform.Component, "VuIceCreamBowl")]
+[ECMAScript("vu-icons/VuIceCreamBowl")]
 public sealed class VuIceCreamBowl : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIceCreamCone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIceCreamCone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIceCreamCone", Transform.Component, "VuIceCreamCone")]
+[ECMAScript("vu-icons/VuIceCreamCone")]
 public sealed class VuIceCreamCone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIdCard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIdCard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIdCard", Transform.Component, "VuIdCard")]
+[ECMAScript("vu-icons/VuIdCard")]
 public sealed class VuIdCard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIdCardLanyard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIdCardLanyard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIdCardLanyard", Transform.Component, "VuIdCardLanyard")]
+[ECMAScript("vu-icons/VuIdCardLanyard")]
 public sealed class VuIdCardLanyard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImage", Transform.Component, "VuImage")]
+[ECMAScript("vu-icons/VuImage")]
 public sealed class VuImage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImageDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImageDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImageDown", Transform.Component, "VuImageDown")]
+[ECMAScript("vu-icons/VuImageDown")]
 public sealed class VuImageDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImageMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImageMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImageMinus", Transform.Component, "VuImageMinus")]
+[ECMAScript("vu-icons/VuImageMinus")]
 public sealed class VuImageMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImageOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImageOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImageOff", Transform.Component, "VuImageOff")]
+[ECMAScript("vu-icons/VuImageOff")]
 public sealed class VuImageOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImagePlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImagePlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImagePlay", Transform.Component, "VuImagePlay")]
+[ECMAScript("vu-icons/VuImagePlay")]
 public sealed class VuImagePlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImagePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImagePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImagePlus", Transform.Component, "VuImagePlus")]
+[ECMAScript("vu-icons/VuImagePlus")]
 public sealed class VuImagePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImageUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImageUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImageUp", Transform.Component, "VuImageUp")]
+[ECMAScript("vu-icons/VuImageUp")]
 public sealed class VuImageUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImageUpscale</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImageUpscale</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImageUpscale", Transform.Component, "VuImageUpscale")]
+[ECMAScript("vu-icons/VuImageUpscale")]
 public sealed class VuImageUpscale : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImages</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImages</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImages", Transform.Component, "VuImages")]
+[ECMAScript("vu-icons/VuImages")]
 public sealed class VuImages : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuImport</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuImport</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuImport", Transform.Component, "VuImport")]
+[ECMAScript("vu-icons/VuImport")]
 public sealed class VuImport : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInProgress</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInProgress</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInProgress", Transform.Component, "VuInProgress")]
+[ECMAScript("vu-icons/VuInProgress")]
 public sealed class VuInProgress : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInbox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInbox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInbox", Transform.Component, "VuInbox")]
+[ECMAScript("vu-icons/VuInbox")]
 public sealed class VuInbox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIncomplete</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIncomplete</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIncomplete", Transform.Component, "VuIncomplete")]
+[ECMAScript("vu-icons/VuIncomplete")]
 public sealed class VuIncomplete : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIndentDecrease</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIndentDecrease</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIndentDecrease", Transform.Component, "VuIndentDecrease")]
+[ECMAScript("vu-icons/VuIndentDecrease")]
 public sealed class VuIndentDecrease : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIndentIncrease</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIndentIncrease</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIndentIncrease", Transform.Component, "VuIndentIncrease")]
+[ECMAScript("vu-icons/VuIndentIncrease")]
 public sealed class VuIndentIncrease : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIndianRupee</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIndianRupee</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIndianRupee", Transform.Component, "VuIndianRupee")]
+[ECMAScript("vu-icons/VuIndianRupee")]
 public sealed class VuIndianRupee : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInfinity</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInfinity</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInfinity", Transform.Component, "VuInfinity")]
+[ECMAScript("vu-icons/VuInfinity")]
 public sealed class VuInfinity : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInfo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInfo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInfo", Transform.Component, "VuInfo")]
+[ECMAScript("vu-icons/VuInfo")]
 public sealed class VuInfo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInspectionPanel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInspectionPanel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInspectionPanel", Transform.Component, "VuInspectionPanel")]
+[ECMAScript("vu-icons/VuInspectionPanel")]
 public sealed class VuInspectionPanel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInstagram</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInstagram</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInstagram", Transform.Component, "VuInstagram")]
+[ECMAScript("vu-icons/VuInstagram")]
 public sealed class VuInstagram : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInsurance</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInsurance</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInsurance", Transform.Component, "VuInsurance")]
+[ECMAScript("vu-icons/VuInsurance")]
 public sealed class VuInsurance : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuInvoice</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuInvoice</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuInvoice", Transform.Component, "VuInvoice")]
+[ECMAScript("vu-icons/VuInvoice")]
 public sealed class VuInvoice : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuItalic</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuItalic</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuItalic", Transform.Component, "VuItalic")]
+[ECMAScript("vu-icons/VuItalic")]
 public sealed class VuItalic : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIterationCcw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIterationCcw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIterationCcw", Transform.Component, "VuIterationCcw")]
+[ECMAScript("vu-icons/VuIterationCcw")]
 public sealed class VuIterationCcw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuIterationCw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuIterationCw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuIterationCw", Transform.Component, "VuIterationCw")]
+[ECMAScript("vu-icons/VuIterationCw")]
 public sealed class VuIterationCw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuJapaneseYen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuJapaneseYen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuJapaneseYen", Transform.Component, "VuJapaneseYen")]
+[ECMAScript("vu-icons/VuJapaneseYen")]
 public sealed class VuJapaneseYen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuJoystick</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuJoystick</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuJoystick", Transform.Component, "VuJoystick")]
+[ECMAScript("vu-icons/VuJoystick")]
 public sealed class VuJoystick : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKanban</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKanban</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKanban", Transform.Component, "VuKanban")]
+[ECMAScript("vu-icons/VuKanban")]
 public sealed class VuKanban : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKayak</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKayak</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKayak", Transform.Component, "VuKayak")]
+[ECMAScript("vu-icons/VuKayak")]
 public sealed class VuKayak : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKey</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKey</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKey", Transform.Component, "VuKey")]
+[ECMAScript("vu-icons/VuKey")]
 public sealed class VuKey : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKeyRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKeyRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKeyRound", Transform.Component, "VuKeyRound")]
+[ECMAScript("vu-icons/VuKeyRound")]
 public sealed class VuKeyRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKeySquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKeySquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKeySquare", Transform.Component, "VuKeySquare")]
+[ECMAScript("vu-icons/VuKeySquare")]
 public sealed class VuKeySquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKeyboard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKeyboard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKeyboard", Transform.Component, "VuKeyboard")]
+[ECMAScript("vu-icons/VuKeyboard")]
 public sealed class VuKeyboard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKeyboardMusic</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKeyboardMusic</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKeyboardMusic", Transform.Component, "VuKeyboardMusic")]
+[ECMAScript("vu-icons/VuKeyboardMusic")]
 public sealed class VuKeyboardMusic : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuKeyboardOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuKeyboardOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuKeyboardOff", Transform.Component, "VuKeyboardOff")]
+[ECMAScript("vu-icons/VuKeyboardOff")]
 public sealed class VuKeyboardOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLaboratory</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLaboratory</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLaboratory", Transform.Component, "VuLaboratory")]
+[ECMAScript("vu-icons/VuLaboratory")]
 public sealed class VuLaboratory : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLamp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLamp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLamp", Transform.Component, "VuLamp")]
+[ECMAScript("vu-icons/VuLamp")]
 public sealed class VuLamp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLampCeiling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLampCeiling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLampCeiling", Transform.Component, "VuLampCeiling")]
+[ECMAScript("vu-icons/VuLampCeiling")]
 public sealed class VuLampCeiling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLampDesk</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLampDesk</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLampDesk", Transform.Component, "VuLampDesk")]
+[ECMAScript("vu-icons/VuLampDesk")]
 public sealed class VuLampDesk : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLampFloor</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLampFloor</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLampFloor", Transform.Component, "VuLampFloor")]
+[ECMAScript("vu-icons/VuLampFloor")]
 public sealed class VuLampFloor : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLampWallDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLampWallDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLampWallDown", Transform.Component, "VuLampWallDown")]
+[ECMAScript("vu-icons/VuLampWallDown")]
 public sealed class VuLampWallDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLampWallUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLampWallUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLampWallUp", Transform.Component, "VuLampWallUp")]
+[ECMAScript("vu-icons/VuLampWallUp")]
 public sealed class VuLampWallUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLandPlot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLandPlot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLandPlot", Transform.Component, "VuLandPlot")]
+[ECMAScript("vu-icons/VuLandPlot")]
 public sealed class VuLandPlot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLandmark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLandmark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLandmark", Transform.Component, "VuLandmark")]
+[ECMAScript("vu-icons/VuLandmark")]
 public sealed class VuLandmark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLanguages</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLanguages</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLanguages", Transform.Component, "VuLanguages")]
+[ECMAScript("vu-icons/VuLanguages")]
 public sealed class VuLanguages : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLaptop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLaptop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLaptop", Transform.Component, "VuLaptop")]
+[ECMAScript("vu-icons/VuLaptop")]
 public sealed class VuLaptop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLaptopMinimal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLaptopMinimal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLaptopMinimal", Transform.Component, "VuLaptopMinimal")]
+[ECMAScript("vu-icons/VuLaptopMinimal")]
 public sealed class VuLaptopMinimal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLaptopMinimalCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLaptopMinimalCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLaptopMinimalCheck", Transform.Component, "VuLaptopMinimalCheck")]
+[ECMAScript("vu-icons/VuLaptopMinimalCheck")]
 public sealed class VuLaptopMinimalCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLasso</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLasso</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLasso", Transform.Component, "VuLasso")]
+[ECMAScript("vu-icons/VuLasso")]
 public sealed class VuLasso : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLassoSelect</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLassoSelect</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLassoSelect", Transform.Component, "VuLassoSelect")]
+[ECMAScript("vu-icons/VuLassoSelect")]
 public sealed class VuLassoSelect : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLaugh</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLaugh</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLaugh", Transform.Component, "VuLaugh")]
+[ECMAScript("vu-icons/VuLaugh")]
 public sealed class VuLaugh : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayers</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayers</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayers", Transform.Component, "VuLayers")]
+[ECMAScript("vu-icons/VuLayers")]
 public sealed class VuLayers : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayers2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayers2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayers2", Transform.Component, "VuLayers2")]
+[ECMAScript("vu-icons/VuLayers2")]
 public sealed class VuLayers2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayers3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayers3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayers3", Transform.Component, "VuLayers3")]
+[ECMAScript("vu-icons/VuLayers3")]
 public sealed class VuLayers3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayersPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayersPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayersPlus", Transform.Component, "VuLayersPlus")]
+[ECMAScript("vu-icons/VuLayersPlus")]
 public sealed class VuLayersPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayoutDashboard</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayoutDashboard</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayoutDashboard", Transform.Component, "VuLayoutDashboard")]
+[ECMAScript("vu-icons/VuLayoutDashboard")]
 public sealed class VuLayoutDashboard : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayoutGrid</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayoutGrid</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayoutGrid", Transform.Component, "VuLayoutGrid")]
+[ECMAScript("vu-icons/VuLayoutGrid")]
 public sealed class VuLayoutGrid : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayoutList</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayoutList</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayoutList", Transform.Component, "VuLayoutList")]
+[ECMAScript("vu-icons/VuLayoutList")]
 public sealed class VuLayoutList : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayoutPanelLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayoutPanelLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayoutPanelLeft", Transform.Component, "VuLayoutPanelLeft")]
+[ECMAScript("vu-icons/VuLayoutPanelLeft")]
 public sealed class VuLayoutPanelLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayoutPanelTop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayoutPanelTop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayoutPanelTop", Transform.Component, "VuLayoutPanelTop")]
+[ECMAScript("vu-icons/VuLayoutPanelTop")]
 public sealed class VuLayoutPanelTop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLayoutTemplate</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLayoutTemplate</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLayoutTemplate", Transform.Component, "VuLayoutTemplate")]
+[ECMAScript("vu-icons/VuLayoutTemplate")]
 public sealed class VuLayoutTemplate : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLeaf</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLeaf</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLeaf", Transform.Component, "VuLeaf")]
+[ECMAScript("vu-icons/VuLeaf")]
 public sealed class VuLeaf : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLeafyGreen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLeafyGreen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLeafyGreen", Transform.Component, "VuLeafyGreen")]
+[ECMAScript("vu-icons/VuLeafyGreen")]
 public sealed class VuLeafyGreen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLectern</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLectern</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLectern", Transform.Component, "VuLectern")]
+[ECMAScript("vu-icons/VuLectern")]
 public sealed class VuLectern : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLetterText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLetterText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLetterText", Transform.Component, "VuLetterText")]
+[ECMAScript("vu-icons/VuLetterText")]
 public sealed class VuLetterText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLibrary</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLibrary</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLibrary", Transform.Component, "VuLibrary")]
+[ECMAScript("vu-icons/VuLibrary")]
 public sealed class VuLibrary : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLibraryBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLibraryBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLibraryBig", Transform.Component, "VuLibraryBig")]
+[ECMAScript("vu-icons/VuLibraryBig")]
 public sealed class VuLibraryBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLifeBuoy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLifeBuoy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLifeBuoy", Transform.Component, "VuLifeBuoy")]
+[ECMAScript("vu-icons/VuLifeBuoy")]
 public sealed class VuLifeBuoy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLigature</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLigature</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLigature", Transform.Component, "VuLigature")]
+[ECMAScript("vu-icons/VuLigature")]
 public sealed class VuLigature : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLightbulb</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLightbulb</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLightbulb", Transform.Component, "VuLightbulb")]
+[ECMAScript("vu-icons/VuLightbulb")]
 public sealed class VuLightbulb : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLightbulbOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLightbulbOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLightbulbOff", Transform.Component, "VuLightbulbOff")]
+[ECMAScript("vu-icons/VuLightbulbOff")]
 public sealed class VuLightbulbOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLike</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLike</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLike", Transform.Component, "VuLike")]
+[ECMAScript("vu-icons/VuLike")]
 public sealed class VuLike : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLineChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLineChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLineChart", Transform.Component, "VuLineChart")]
+[ECMAScript("vu-icons/VuLineChart")]
 public sealed class VuLineChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLineSquiggle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLineSquiggle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLineSquiggle", Transform.Component, "VuLineSquiggle")]
+[ECMAScript("vu-icons/VuLineSquiggle")]
 public sealed class VuLineSquiggle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLink</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLink</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLink", Transform.Component, "VuLink")]
+[ECMAScript("vu-icons/VuLink")]
 public sealed class VuLink : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLink2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLink2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLink2", Transform.Component, "VuLink2")]
+[ECMAScript("vu-icons/VuLink2")]
 public sealed class VuLink2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLink2Off</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLink2Off</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLink2Off", Transform.Component, "VuLink2Off")]
+[ECMAScript("vu-icons/VuLink2Off")]
 public sealed class VuLink2Off : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLinkedin</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLinkedin</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLinkedin", Transform.Component, "VuLinkedin")]
+[ECMAScript("vu-icons/VuLinkedin")]
 public sealed class VuLinkedin : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuList</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuList</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuList", Transform.Component, "VuList")]
+[ECMAScript("vu-icons/VuList")]
 public sealed class VuList : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListCheck", Transform.Component, "VuListCheck")]
+[ECMAScript("vu-icons/VuListCheck")]
 public sealed class VuListCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListChecks</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListChecks</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListChecks", Transform.Component, "VuListChecks")]
+[ECMAScript("vu-icons/VuListChecks")]
 public sealed class VuListChecks : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListChevronsDownUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListChevronsDownUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListChevronsDownUp", Transform.Component, "VuListChevronsDownUp")]
+[ECMAScript("vu-icons/VuListChevronsDownUp")]
 public sealed class VuListChevronsDownUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListChevronsUpDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListChevronsUpDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListChevronsUpDown", Transform.Component, "VuListChevronsUpDown")]
+[ECMAScript("vu-icons/VuListChevronsUpDown")]
 public sealed class VuListChevronsUpDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListCollapse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListCollapse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListCollapse", Transform.Component, "VuListCollapse")]
+[ECMAScript("vu-icons/VuListCollapse")]
 public sealed class VuListCollapse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListEnd", Transform.Component, "VuListEnd")]
+[ECMAScript("vu-icons/VuListEnd")]
 public sealed class VuListEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListFilter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListFilter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListFilter", Transform.Component, "VuListFilter")]
+[ECMAScript("vu-icons/VuListFilter")]
 public sealed class VuListFilter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListFilterPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListFilterPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListFilterPlus", Transform.Component, "VuListFilterPlus")]
+[ECMAScript("vu-icons/VuListFilterPlus")]
 public sealed class VuListFilterPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListIndentDecrease</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListIndentDecrease</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListIndentDecrease", Transform.Component, "VuListIndentDecrease")]
+[ECMAScript("vu-icons/VuListIndentDecrease")]
 public sealed class VuListIndentDecrease : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListIndentIncrease</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListIndentIncrease</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListIndentIncrease", Transform.Component, "VuListIndentIncrease")]
+[ECMAScript("vu-icons/VuListIndentIncrease")]
 public sealed class VuListIndentIncrease : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListMinus", Transform.Component, "VuListMinus")]
+[ECMAScript("vu-icons/VuListMinus")]
 public sealed class VuListMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListMusic</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListMusic</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListMusic", Transform.Component, "VuListMusic")]
+[ECMAScript("vu-icons/VuListMusic")]
 public sealed class VuListMusic : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListOrdered</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListOrdered</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListOrdered", Transform.Component, "VuListOrdered")]
+[ECMAScript("vu-icons/VuListOrdered")]
 public sealed class VuListOrdered : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListPlus", Transform.Component, "VuListPlus")]
+[ECMAScript("vu-icons/VuListPlus")]
 public sealed class VuListPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListRestart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListRestart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListRestart", Transform.Component, "VuListRestart")]
+[ECMAScript("vu-icons/VuListRestart")]
 public sealed class VuListRestart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListStart", Transform.Component, "VuListStart")]
+[ECMAScript("vu-icons/VuListStart")]
 public sealed class VuListStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListTodo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListTodo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListTodo", Transform.Component, "VuListTodo")]
+[ECMAScript("vu-icons/VuListTodo")]
 public sealed class VuListTodo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListTree</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListTree</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListTree", Transform.Component, "VuListTree")]
+[ECMAScript("vu-icons/VuListTree")]
 public sealed class VuListTree : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListVideo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListVideo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListVideo", Transform.Component, "VuListVideo")]
+[ECMAScript("vu-icons/VuListVideo")]
 public sealed class VuListVideo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuListX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuListX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuListX", Transform.Component, "VuListX")]
+[ECMAScript("vu-icons/VuListX")]
 public sealed class VuListX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLoader</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLoader</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLoader", Transform.Component, "VuLoader")]
+[ECMAScript("vu-icons/VuLoader")]
 public sealed class VuLoader : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLoaderCircle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLoaderCircle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLoaderCircle", Transform.Component, "VuLoaderCircle")]
+[ECMAScript("vu-icons/VuLoaderCircle")]
 public sealed class VuLoaderCircle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLoaderPinwheel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLoaderPinwheel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLoaderPinwheel", Transform.Component, "VuLoaderPinwheel")]
+[ECMAScript("vu-icons/VuLoaderPinwheel")]
 public sealed class VuLoaderPinwheel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLoading</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLoading</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLoading", Transform.Component, "VuLoading")]
+[ECMAScript("vu-icons/VuLoading")]
 public sealed class VuLoading : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLocate</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLocate</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLocate", Transform.Component, "VuLocate")]
+[ECMAScript("vu-icons/VuLocate")]
 public sealed class VuLocate : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLocateFixed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLocateFixed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLocateFixed", Transform.Component, "VuLocateFixed")]
+[ECMAScript("vu-icons/VuLocateFixed")]
 public sealed class VuLocateFixed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLocateOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLocateOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLocateOff", Transform.Component, "VuLocateOff")]
+[ECMAScript("vu-icons/VuLocateOff")]
 public sealed class VuLocateOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLocation</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLocation</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLocation", Transform.Component, "VuLocation")]
+[ECMAScript("vu-icons/VuLocation")]
 public sealed class VuLocation : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLock", Transform.Component, "VuLock")]
+[ECMAScript("vu-icons/VuLock")]
 public sealed class VuLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLockKeyhole</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLockKeyhole</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLockKeyhole", Transform.Component, "VuLockKeyhole")]
+[ECMAScript("vu-icons/VuLockKeyhole")]
 public sealed class VuLockKeyhole : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLockKeyholeOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLockKeyholeOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLockKeyholeOpen", Transform.Component, "VuLockKeyholeOpen")]
+[ECMAScript("vu-icons/VuLockKeyholeOpen")]
 public sealed class VuLockKeyholeOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLockOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLockOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLockOpen", Transform.Component, "VuLockOpen")]
+[ECMAScript("vu-icons/VuLockOpen")]
 public sealed class VuLockOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLockScreen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLockScreen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLockScreen", Transform.Component, "VuLockScreen")]
+[ECMAScript("vu-icons/VuLockScreen")]
 public sealed class VuLockScreen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLogIn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLogIn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLogIn", Transform.Component, "VuLogIn")]
+[ECMAScript("vu-icons/VuLogIn")]
 public sealed class VuLogIn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLogOut</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLogOut</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLogOut", Transform.Component, "VuLogOut")]
+[ECMAScript("vu-icons/VuLogOut")]
 public sealed class VuLogOut : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLogs</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLogs</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLogs", Transform.Component, "VuLogs")]
+[ECMAScript("vu-icons/VuLogs")]
 public sealed class VuLogs : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLollipop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLollipop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLollipop", Transform.Component, "VuLollipop")]
+[ECMAScript("vu-icons/VuLollipop")]
 public sealed class VuLollipop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuLuggage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuLuggage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuLuggage", Transform.Component, "VuLuggage")]
+[ECMAScript("vu-icons/VuLuggage")]
 public sealed class VuLuggage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMagnet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMagnet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMagnet", Transform.Component, "VuMagnet")]
+[ECMAScript("vu-icons/VuMagnet")]
 public sealed class VuMagnet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMail</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMail</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMail", Transform.Component, "VuMail")]
+[ECMAScript("vu-icons/VuMail")]
 public sealed class VuMail : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailCheck", Transform.Component, "VuMailCheck")]
+[ECMAScript("vu-icons/VuMailCheck")]
 public sealed class VuMailCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailMinus", Transform.Component, "VuMailMinus")]
+[ECMAScript("vu-icons/VuMailMinus")]
 public sealed class VuMailMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailOpen", Transform.Component, "VuMailOpen")]
+[ECMAScript("vu-icons/VuMailOpen")]
 public sealed class VuMailOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailPlus", Transform.Component, "VuMailPlus")]
+[ECMAScript("vu-icons/VuMailPlus")]
 public sealed class VuMailPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailQuestionMark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailQuestionMark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailQuestionMark", Transform.Component, "VuMailQuestionMark")]
+[ECMAScript("vu-icons/VuMailQuestionMark")]
 public sealed class VuMailQuestionMark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailSearch", Transform.Component, "VuMailSearch")]
+[ECMAScript("vu-icons/VuMailSearch")]
 public sealed class VuMailSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailWarning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailWarning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailWarning", Transform.Component, "VuMailWarning")]
+[ECMAScript("vu-icons/VuMailWarning")]
 public sealed class VuMailWarning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailX", Transform.Component, "VuMailX")]
+[ECMAScript("vu-icons/VuMailX")]
 public sealed class VuMailX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMailbox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMailbox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMailbox", Transform.Component, "VuMailbox")]
+[ECMAScript("vu-icons/VuMailbox")]
 public sealed class VuMailbox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMails</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMails</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMails", Transform.Component, "VuMails")]
+[ECMAScript("vu-icons/VuMails")]
 public sealed class VuMails : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMap</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMap</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMap", Transform.Component, "VuMap")]
+[ECMAScript("vu-icons/VuMap")]
 public sealed class VuMap : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapMinus", Transform.Component, "VuMapMinus")]
+[ECMAScript("vu-icons/VuMapMinus")]
 public sealed class VuMapMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPin</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPin</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPin", Transform.Component, "VuMapPin")]
+[ECMAScript("vu-icons/VuMapPin")]
 public sealed class VuMapPin : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinCheck", Transform.Component, "VuMapPinCheck")]
+[ECMAScript("vu-icons/VuMapPinCheck")]
 public sealed class VuMapPinCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinCheckInside</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinCheckInside</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinCheckInside", Transform.Component, "VuMapPinCheckInside")]
+[ECMAScript("vu-icons/VuMapPinCheckInside")]
 public sealed class VuMapPinCheckInside : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinHouse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinHouse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinHouse", Transform.Component, "VuMapPinHouse")]
+[ECMAScript("vu-icons/VuMapPinHouse")]
 public sealed class VuMapPinHouse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinMinus", Transform.Component, "VuMapPinMinus")]
+[ECMAScript("vu-icons/VuMapPinMinus")]
 public sealed class VuMapPinMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinMinusInside</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinMinusInside</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinMinusInside", Transform.Component, "VuMapPinMinusInside")]
+[ECMAScript("vu-icons/VuMapPinMinusInside")]
 public sealed class VuMapPinMinusInside : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinOff", Transform.Component, "VuMapPinOff")]
+[ECMAScript("vu-icons/VuMapPinOff")]
 public sealed class VuMapPinOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinPen", Transform.Component, "VuMapPinPen")]
+[ECMAScript("vu-icons/VuMapPinPen")]
 public sealed class VuMapPinPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinPlus", Transform.Component, "VuMapPinPlus")]
+[ECMAScript("vu-icons/VuMapPinPlus")]
 public sealed class VuMapPinPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinPlusInside</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinPlusInside</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinPlusInside", Transform.Component, "VuMapPinPlusInside")]
+[ECMAScript("vu-icons/VuMapPinPlusInside")]
 public sealed class VuMapPinPlusInside : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinX", Transform.Component, "VuMapPinX")]
+[ECMAScript("vu-icons/VuMapPinX")]
 public sealed class VuMapPinX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinXInside</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinXInside</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinXInside", Transform.Component, "VuMapPinXInside")]
+[ECMAScript("vu-icons/VuMapPinXInside")]
 public sealed class VuMapPinXInside : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPinned</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPinned</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPinned", Transform.Component, "VuMapPinned")]
+[ECMAScript("vu-icons/VuMapPinned")]
 public sealed class VuMapPinned : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMapPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMapPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMapPlus", Transform.Component, "VuMapPlus")]
+[ECMAScript("vu-icons/VuMapPlus")]
 public sealed class VuMapPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMars</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMars</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMars", Transform.Component, "VuMars")]
+[ECMAScript("vu-icons/VuMars")]
 public sealed class VuMars : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMarsStroke</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMarsStroke</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMarsStroke", Transform.Component, "VuMarsStroke")]
+[ECMAScript("vu-icons/VuMarsStroke")]
 public sealed class VuMarsStroke : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMartini</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMartini</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMartini", Transform.Component, "VuMartini")]
+[ECMAScript("vu-icons/VuMartini")]
 public sealed class VuMartini : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMask</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMask</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMask", Transform.Component, "VuMask")]
+[ECMAScript("vu-icons/VuMask")]
 public sealed class VuMask : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMaximize</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMaximize</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMaximize", Transform.Component, "VuMaximize")]
+[ECMAScript("vu-icons/VuMaximize")]
 public sealed class VuMaximize : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMaximize2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMaximize2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMaximize2", Transform.Component, "VuMaximize2")]
+[ECMAScript("vu-icons/VuMaximize2")]
 public sealed class VuMaximize2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMedal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMedal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMedal", Transform.Component, "VuMedal")]
+[ECMAScript("vu-icons/VuMedal")]
 public sealed class VuMedal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMedicalRecord</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMedicalRecord</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMedicalRecord", Transform.Component, "VuMedicalRecord")]
+[ECMAScript("vu-icons/VuMedicalRecord")]
 public sealed class VuMedicalRecord : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMedicine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMedicine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMedicine", Transform.Component, "VuMedicine")]
+[ECMAScript("vu-icons/VuMedicine")]
 public sealed class VuMedicine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMegaphone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMegaphone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMegaphone", Transform.Component, "VuMegaphone")]
+[ECMAScript("vu-icons/VuMegaphone")]
 public sealed class VuMegaphone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMegaphoneOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMegaphoneOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMegaphoneOff", Transform.Component, "VuMegaphoneOff")]
+[ECMAScript("vu-icons/VuMegaphoneOff")]
 public sealed class VuMegaphoneOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMeh</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMeh</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMeh", Transform.Component, "VuMeh")]
+[ECMAScript("vu-icons/VuMeh")]
 public sealed class VuMeh : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMemoryStick</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMemoryStick</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMemoryStick", Transform.Component, "VuMemoryStick")]
+[ECMAScript("vu-icons/VuMemoryStick")]
 public sealed class VuMemoryStick : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMenu</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMenu</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMenu", Transform.Component, "VuMenu")]
+[ECMAScript("vu-icons/VuMenu")]
 public sealed class VuMenu : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMerge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMerge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMerge", Transform.Component, "VuMerge")]
+[ECMAScript("vu-icons/VuMerge")]
 public sealed class VuMerge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessage", Transform.Component, "VuMessage")]
+[ECMAScript("vu-icons/VuMessage")]
 public sealed class VuMessage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircle", Transform.Component, "VuMessageCircle")]
+[ECMAScript("vu-icons/VuMessageCircle")]
 public sealed class VuMessageCircle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleCode", Transform.Component, "VuMessageCircleCode")]
+[ECMAScript("vu-icons/VuMessageCircleCode")]
 public sealed class VuMessageCircleCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleDashed", Transform.Component, "VuMessageCircleDashed")]
+[ECMAScript("vu-icons/VuMessageCircleDashed")]
 public sealed class VuMessageCircleDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleHeart", Transform.Component, "VuMessageCircleHeart")]
+[ECMAScript("vu-icons/VuMessageCircleHeart")]
 public sealed class VuMessageCircleHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleMore</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleMore</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleMore", Transform.Component, "VuMessageCircleMore")]
+[ECMAScript("vu-icons/VuMessageCircleMore")]
 public sealed class VuMessageCircleMore : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleOff", Transform.Component, "VuMessageCircleOff")]
+[ECMAScript("vu-icons/VuMessageCircleOff")]
 public sealed class VuMessageCircleOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCirclePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCirclePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCirclePlus", Transform.Component, "VuMessageCirclePlus")]
+[ECMAScript("vu-icons/VuMessageCirclePlus")]
 public sealed class VuMessageCirclePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleQuestionMark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleQuestionMark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleQuestionMark", Transform.Component, "VuMessageCircleQuestionMark")]
+[ECMAScript("vu-icons/VuMessageCircleQuestionMark")]
 public sealed class VuMessageCircleQuestionMark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleReply</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleReply</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleReply", Transform.Component, "VuMessageCircleReply")]
+[ECMAScript("vu-icons/VuMessageCircleReply")]
 public sealed class VuMessageCircleReply : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleWarning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleWarning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleWarning", Transform.Component, "VuMessageCircleWarning")]
+[ECMAScript("vu-icons/VuMessageCircleWarning")]
 public sealed class VuMessageCircleWarning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageCircleX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageCircleX", Transform.Component, "VuMessageCircleX")]
+[ECMAScript("vu-icons/VuMessageCircleX")]
 public sealed class VuMessageCircleX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessagePrivate</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessagePrivate</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessagePrivate", Transform.Component, "VuMessagePrivate")]
+[ECMAScript("vu-icons/VuMessagePrivate")]
 public sealed class VuMessagePrivate : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquare", Transform.Component, "VuMessageSquare")]
+[ECMAScript("vu-icons/VuMessageSquare")]
 public sealed class VuMessageSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareCode", Transform.Component, "VuMessageSquareCode")]
+[ECMAScript("vu-icons/VuMessageSquareCode")]
 public sealed class VuMessageSquareCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareDashed", Transform.Component, "VuMessageSquareDashed")]
+[ECMAScript("vu-icons/VuMessageSquareDashed")]
 public sealed class VuMessageSquareDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDiff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareDiff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareDiff", Transform.Component, "VuMessageSquareDiff")]
+[ECMAScript("vu-icons/VuMessageSquareDiff")]
 public sealed class VuMessageSquareDiff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareDot", Transform.Component, "VuMessageSquareDot")]
+[ECMAScript("vu-icons/VuMessageSquareDot")]
 public sealed class VuMessageSquareDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareHeart", Transform.Component, "VuMessageSquareHeart")]
+[ECMAScript("vu-icons/VuMessageSquareHeart")]
 public sealed class VuMessageSquareHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareLock", Transform.Component, "VuMessageSquareLock")]
+[ECMAScript("vu-icons/VuMessageSquareLock")]
 public sealed class VuMessageSquareLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareMore</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareMore</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareMore", Transform.Component, "VuMessageSquareMore")]
+[ECMAScript("vu-icons/VuMessageSquareMore")]
 public sealed class VuMessageSquareMore : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareOff", Transform.Component, "VuMessageSquareOff")]
+[ECMAScript("vu-icons/VuMessageSquareOff")]
 public sealed class VuMessageSquareOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquarePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquarePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquarePlus", Transform.Component, "VuMessageSquarePlus")]
+[ECMAScript("vu-icons/VuMessageSquarePlus")]
 public sealed class VuMessageSquarePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareQuote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareQuote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareQuote", Transform.Component, "VuMessageSquareQuote")]
+[ECMAScript("vu-icons/VuMessageSquareQuote")]
 public sealed class VuMessageSquareQuote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareReply</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareReply</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareReply", Transform.Component, "VuMessageSquareReply")]
+[ECMAScript("vu-icons/VuMessageSquareReply")]
 public sealed class VuMessageSquareReply : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareShare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareShare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareShare", Transform.Component, "VuMessageSquareShare")]
+[ECMAScript("vu-icons/VuMessageSquareShare")]
 public sealed class VuMessageSquareShare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareText", Transform.Component, "VuMessageSquareText")]
+[ECMAScript("vu-icons/VuMessageSquareText")]
 public sealed class VuMessageSquareText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareWarning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareWarning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareWarning", Transform.Component, "VuMessageSquareWarning")]
+[ECMAScript("vu-icons/VuMessageSquareWarning")]
 public sealed class VuMessageSquareWarning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessageSquareX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessageSquareX", Transform.Component, "VuMessageSquareX")]
+[ECMAScript("vu-icons/VuMessageSquareX")]
 public sealed class VuMessageSquareX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMessagesSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMessagesSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMessagesSquare", Transform.Component, "VuMessagesSquare")]
+[ECMAScript("vu-icons/VuMessagesSquare")]
 public sealed class VuMessagesSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMic</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMic</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMic", Transform.Component, "VuMic")]
+[ECMAScript("vu-icons/VuMic")]
 public sealed class VuMic : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMicOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMicOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMicOff", Transform.Component, "VuMicOff")]
+[ECMAScript("vu-icons/VuMicOff")]
 public sealed class VuMicOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMicVocal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMicVocal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMicVocal", Transform.Component, "VuMicVocal")]
+[ECMAScript("vu-icons/VuMicVocal")]
 public sealed class VuMicVocal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMicrochip</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMicrochip</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMicrochip", Transform.Component, "VuMicrochip")]
+[ECMAScript("vu-icons/VuMicrochip")]
 public sealed class VuMicrochip : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMicroscope</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMicroscope</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMicroscope", Transform.Component, "VuMicroscope")]
+[ECMAScript("vu-icons/VuMicroscope")]
 public sealed class VuMicroscope : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMicrowave</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMicrowave</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMicrowave", Transform.Component, "VuMicrowave")]
+[ECMAScript("vu-icons/VuMicrowave")]
 public sealed class VuMicrowave : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMilestone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMilestone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMilestone", Transform.Component, "VuMilestone")]
+[ECMAScript("vu-icons/VuMilestone")]
 public sealed class VuMilestone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMilk</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMilk</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMilk", Transform.Component, "VuMilk")]
+[ECMAScript("vu-icons/VuMilk")]
 public sealed class VuMilk : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMilkOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMilkOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMilkOff", Transform.Component, "VuMilkOff")]
+[ECMAScript("vu-icons/VuMilkOff")]
 public sealed class VuMilkOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMinimize</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMinimize</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMinimize", Transform.Component, "VuMinimize")]
+[ECMAScript("vu-icons/VuMinimize")]
 public sealed class VuMinimize : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMinimize2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMinimize2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMinimize2", Transform.Component, "VuMinimize2")]
+[ECMAScript("vu-icons/VuMinimize2")]
 public sealed class VuMinimize2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMinus", Transform.Component, "VuMinus")]
+[ECMAScript("vu-icons/VuMinus")]
 public sealed class VuMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitor</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitor</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitor", Transform.Component, "VuMonitor")]
+[ECMAScript("vu-icons/VuMonitor")]
 public sealed class VuMonitor : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorCheck", Transform.Component, "VuMonitorCheck")]
+[ECMAScript("vu-icons/VuMonitorCheck")]
 public sealed class VuMonitorCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorCloud</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorCloud</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorCloud", Transform.Component, "VuMonitorCloud")]
+[ECMAScript("vu-icons/VuMonitorCloud")]
 public sealed class VuMonitorCloud : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorCog", Transform.Component, "VuMonitorCog")]
+[ECMAScript("vu-icons/VuMonitorCog")]
 public sealed class VuMonitorCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorDot", Transform.Component, "VuMonitorDot")]
+[ECMAScript("vu-icons/VuMonitorDot")]
 public sealed class VuMonitorDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorDown", Transform.Component, "VuMonitorDown")]
+[ECMAScript("vu-icons/VuMonitorDown")]
 public sealed class VuMonitorDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorOff", Transform.Component, "VuMonitorOff")]
+[ECMAScript("vu-icons/VuMonitorOff")]
 public sealed class VuMonitorOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorPause</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorPause</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorPause", Transform.Component, "VuMonitorPause")]
+[ECMAScript("vu-icons/VuMonitorPause")]
 public sealed class VuMonitorPause : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorPlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorPlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorPlay", Transform.Component, "VuMonitorPlay")]
+[ECMAScript("vu-icons/VuMonitorPlay")]
 public sealed class VuMonitorPlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorSmartphone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorSmartphone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorSmartphone", Transform.Component, "VuMonitorSmartphone")]
+[ECMAScript("vu-icons/VuMonitorSmartphone")]
 public sealed class VuMonitorSmartphone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorSpeaker</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorSpeaker</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorSpeaker", Transform.Component, "VuMonitorSpeaker")]
+[ECMAScript("vu-icons/VuMonitorSpeaker")]
 public sealed class VuMonitorSpeaker : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorStop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorStop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorStop", Transform.Component, "VuMonitorStop")]
+[ECMAScript("vu-icons/VuMonitorStop")]
 public sealed class VuMonitorStop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorUp", Transform.Component, "VuMonitorUp")]
+[ECMAScript("vu-icons/VuMonitorUp")]
 public sealed class VuMonitorUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMonitorX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMonitorX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMonitorX", Transform.Component, "VuMonitorX")]
+[ECMAScript("vu-icons/VuMonitorX")]
 public sealed class VuMonitorX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoon", Transform.Component, "VuMoon")]
+[ECMAScript("vu-icons/VuMoon")]
 public sealed class VuMoon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoonStar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoonStar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoonStar", Transform.Component, "VuMoonStar")]
+[ECMAScript("vu-icons/VuMoonStar")]
 public sealed class VuMoonStar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMotorbike</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMotorbike</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMotorbike", Transform.Component, "VuMotorbike")]
+[ECMAScript("vu-icons/VuMotorbike")]
 public sealed class VuMotorbike : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMountain</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMountain</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMountain", Transform.Component, "VuMountain")]
+[ECMAScript("vu-icons/VuMountain")]
 public sealed class VuMountain : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMountainSnow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMountainSnow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMountainSnow", Transform.Component, "VuMountainSnow")]
+[ECMAScript("vu-icons/VuMountainSnow")]
 public sealed class VuMountainSnow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMouse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMouse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMouse", Transform.Component, "VuMouse")]
+[ECMAScript("vu-icons/VuMouse")]
 public sealed class VuMouse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMouseOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMouseOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMouseOff", Transform.Component, "VuMouseOff")]
+[ECMAScript("vu-icons/VuMouseOff")]
 public sealed class VuMouseOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMousePointer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMousePointer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMousePointer", Transform.Component, "VuMousePointer")]
+[ECMAScript("vu-icons/VuMousePointer")]
 public sealed class VuMousePointer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMousePointer2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMousePointer2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMousePointer2", Transform.Component, "VuMousePointer2")]
+[ECMAScript("vu-icons/VuMousePointer2")]
 public sealed class VuMousePointer2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMousePointer2Off</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMousePointer2Off</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMousePointer2Off", Transform.Component, "VuMousePointer2Off")]
+[ECMAScript("vu-icons/VuMousePointer2Off")]
 public sealed class VuMousePointer2Off : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMousePointerBan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMousePointerBan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMousePointerBan", Transform.Component, "VuMousePointerBan")]
+[ECMAScript("vu-icons/VuMousePointerBan")]
 public sealed class VuMousePointerBan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMousePointerClick</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMousePointerClick</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMousePointerClick", Transform.Component, "VuMousePointerClick")]
+[ECMAScript("vu-icons/VuMousePointerClick")]
 public sealed class VuMousePointerClick : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMove</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMove</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMove", Transform.Component, "VuMove")]
+[ECMAScript("vu-icons/VuMove")]
 public sealed class VuMove : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMove3d</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMove3d</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMove3d", Transform.Component, "VuMove3d")]
+[ECMAScript("vu-icons/VuMove3d")]
 public sealed class VuMove3d : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveDiagonal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveDiagonal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveDiagonal", Transform.Component, "VuMoveDiagonal")]
+[ECMAScript("vu-icons/VuMoveDiagonal")]
 public sealed class VuMoveDiagonal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveDiagonal2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveDiagonal2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveDiagonal2", Transform.Component, "VuMoveDiagonal2")]
+[ECMAScript("vu-icons/VuMoveDiagonal2")]
 public sealed class VuMoveDiagonal2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveDown", Transform.Component, "VuMoveDown")]
+[ECMAScript("vu-icons/VuMoveDown")]
 public sealed class VuMoveDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveDownLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveDownLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveDownLeft", Transform.Component, "VuMoveDownLeft")]
+[ECMAScript("vu-icons/VuMoveDownLeft")]
 public sealed class VuMoveDownLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveDownRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveDownRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveDownRight", Transform.Component, "VuMoveDownRight")]
+[ECMAScript("vu-icons/VuMoveDownRight")]
 public sealed class VuMoveDownRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveHorizontal", Transform.Component, "VuMoveHorizontal")]
+[ECMAScript("vu-icons/VuMoveHorizontal")]
 public sealed class VuMoveHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveLeft", Transform.Component, "VuMoveLeft")]
+[ECMAScript("vu-icons/VuMoveLeft")]
 public sealed class VuMoveLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveRight", Transform.Component, "VuMoveRight")]
+[ECMAScript("vu-icons/VuMoveRight")]
 public sealed class VuMoveRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveUp", Transform.Component, "VuMoveUp")]
+[ECMAScript("vu-icons/VuMoveUp")]
 public sealed class VuMoveUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveUpLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveUpLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveUpLeft", Transform.Component, "VuMoveUpLeft")]
+[ECMAScript("vu-icons/VuMoveUpLeft")]
 public sealed class VuMoveUpLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveUpRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveUpRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveUpRight", Transform.Component, "VuMoveUpRight")]
+[ECMAScript("vu-icons/VuMoveUpRight")]
 public sealed class VuMoveUpRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMoveVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMoveVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMoveVertical", Transform.Component, "VuMoveVertical")]
+[ECMAScript("vu-icons/VuMoveVertical")]
 public sealed class VuMoveVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMovie</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMovie</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMovie", Transform.Component, "VuMovie")]
+[ECMAScript("vu-icons/VuMovie")]
 public sealed class VuMovie : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMultiply</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMultiply</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMultiply", Transform.Component, "VuMultiply")]
+[ECMAScript("vu-icons/VuMultiply")]
 public sealed class VuMultiply : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMusic</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMusic</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMusic", Transform.Component, "VuMusic")]
+[ECMAScript("vu-icons/VuMusic")]
 public sealed class VuMusic : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMusic2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMusic2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMusic2", Transform.Component, "VuMusic2")]
+[ECMAScript("vu-icons/VuMusic2")]
 public sealed class VuMusic2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMusic3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMusic3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMusic3", Transform.Component, "VuMusic3")]
+[ECMAScript("vu-icons/VuMusic3")]
 public sealed class VuMusic3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuMusic4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuMusic4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuMusic4", Transform.Component, "VuMusic4")]
+[ECMAScript("vu-icons/VuMusic4")]
 public sealed class VuMusic4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNavigation</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNavigation</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNavigation", Transform.Component, "VuNavigation")]
+[ECMAScript("vu-icons/VuNavigation")]
 public sealed class VuNavigation : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNavigation2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNavigation2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNavigation2", Transform.Component, "VuNavigation2")]
+[ECMAScript("vu-icons/VuNavigation2")]
 public sealed class VuNavigation2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNavigation2Off</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNavigation2Off</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNavigation2Off", Transform.Component, "VuNavigation2Off")]
+[ECMAScript("vu-icons/VuNavigation2Off")]
 public sealed class VuNavigation2Off : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNavigationDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNavigationDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNavigationDot", Transform.Component, "VuNavigationDot")]
+[ECMAScript("vu-icons/VuNavigationDot")]
 public sealed class VuNavigationDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNavigationOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNavigationOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNavigationOff", Transform.Component, "VuNavigationOff")]
+[ECMAScript("vu-icons/VuNavigationOff")]
 public sealed class VuNavigationOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNetwork</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNetwork</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNetwork", Transform.Component, "VuNetwork")]
+[ECMAScript("vu-icons/VuNetwork")]
 public sealed class VuNetwork : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNewspaper</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNewspaper</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNewspaper", Transform.Component, "VuNewspaper")]
+[ECMAScript("vu-icons/VuNewspaper")]
 public sealed class VuNewspaper : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNfc</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNfc</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNfc", Transform.Component, "VuNfc")]
+[ECMAScript("vu-icons/VuNfc")]
 public sealed class VuNfc : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNonBinary</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNonBinary</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNonBinary", Transform.Component, "VuNonBinary")]
+[ECMAScript("vu-icons/VuNonBinary")]
 public sealed class VuNonBinary : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNote", Transform.Component, "VuNote")]
+[ECMAScript("vu-icons/VuNote")]
 public sealed class VuNote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNotebook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNotebook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNotebook", Transform.Component, "VuNotebook")]
+[ECMAScript("vu-icons/VuNotebook")]
 public sealed class VuNotebook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNotebookPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNotebookPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNotebookPen", Transform.Component, "VuNotebookPen")]
+[ECMAScript("vu-icons/VuNotebookPen")]
 public sealed class VuNotebookPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNotebookTabs</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNotebookTabs</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNotebookTabs", Transform.Component, "VuNotebookTabs")]
+[ECMAScript("vu-icons/VuNotebookTabs")]
 public sealed class VuNotebookTabs : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNotebookText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNotebookText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNotebookText", Transform.Component, "VuNotebookText")]
+[ECMAScript("vu-icons/VuNotebookText")]
 public sealed class VuNotebookText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNotepadText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNotepadText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNotepadText", Transform.Component, "VuNotepadText")]
+[ECMAScript("vu-icons/VuNotepadText")]
 public sealed class VuNotepadText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNotepadTextDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNotepadTextDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNotepadTextDashed", Transform.Component, "VuNotepadTextDashed")]
+[ECMAScript("vu-icons/VuNotepadTextDashed")]
 public sealed class VuNotepadTextDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNut</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNut</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNut", Transform.Component, "VuNut")]
+[ECMAScript("vu-icons/VuNut")]
 public sealed class VuNut : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuNutOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuNutOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuNutOff", Transform.Component, "VuNutOff")]
+[ECMAScript("vu-icons/VuNutOff")]
 public sealed class VuNutOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOctagon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOctagon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOctagon", Transform.Component, "VuOctagon")]
+[ECMAScript("vu-icons/VuOctagon")]
 public sealed class VuOctagon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOctagonAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOctagonAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOctagonAlert", Transform.Component, "VuOctagonAlert")]
+[ECMAScript("vu-icons/VuOctagonAlert")]
 public sealed class VuOctagonAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOctagonMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOctagonMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOctagonMinus", Transform.Component, "VuOctagonMinus")]
+[ECMAScript("vu-icons/VuOctagonMinus")]
 public sealed class VuOctagonMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOctagonPause</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOctagonPause</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOctagonPause", Transform.Component, "VuOctagonPause")]
+[ECMAScript("vu-icons/VuOctagonPause")]
 public sealed class VuOctagonPause : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOctagonX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOctagonX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOctagonX", Transform.Component, "VuOctagonX")]
+[ECMAScript("vu-icons/VuOctagonX")]
 public sealed class VuOctagonX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOmega</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOmega</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOmega", Transform.Component, "VuOmega")]
+[ECMAScript("vu-icons/VuOmega")]
 public sealed class VuOmega : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOption</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOption</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOption", Transform.Component, "VuOption")]
+[ECMAScript("vu-icons/VuOption")]
 public sealed class VuOption : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOrbit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOrbit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOrbit", Transform.Component, "VuOrbit")]
+[ECMAScript("vu-icons/VuOrbit")]
 public sealed class VuOrbit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuOrigami</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuOrigami</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuOrigami", Transform.Component, "VuOrigami")]
+[ECMAScript("vu-icons/VuOrigami")]
 public sealed class VuOrigami : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackage</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackage</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackage", Transform.Component, "VuPackage")]
+[ECMAScript("vu-icons/VuPackage")]
 public sealed class VuPackage : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackage2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackage2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackage2", Transform.Component, "VuPackage2")]
+[ECMAScript("vu-icons/VuPackage2")]
 public sealed class VuPackage2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackageCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackageCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackageCheck", Transform.Component, "VuPackageCheck")]
+[ECMAScript("vu-icons/VuPackageCheck")]
 public sealed class VuPackageCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackageMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackageMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackageMinus", Transform.Component, "VuPackageMinus")]
+[ECMAScript("vu-icons/VuPackageMinus")]
 public sealed class VuPackageMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackageOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackageOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackageOpen", Transform.Component, "VuPackageOpen")]
+[ECMAScript("vu-icons/VuPackageOpen")]
 public sealed class VuPackageOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackagePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackagePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackagePlus", Transform.Component, "VuPackagePlus")]
+[ECMAScript("vu-icons/VuPackagePlus")]
 public sealed class VuPackagePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackageSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackageSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackageSearch", Transform.Component, "VuPackageSearch")]
+[ECMAScript("vu-icons/VuPackageSearch")]
 public sealed class VuPackageSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPackageX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPackageX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPackageX", Transform.Component, "VuPackageX")]
+[ECMAScript("vu-icons/VuPackageX")]
 public sealed class VuPackageX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPagination</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPagination</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPagination", Transform.Component, "VuPagination")]
+[ECMAScript("vu-icons/VuPagination")]
 public sealed class VuPagination : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaintBucket</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaintBucket</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaintBucket", Transform.Component, "VuPaintBucket")]
+[ECMAScript("vu-icons/VuPaintBucket")]
 public sealed class VuPaintBucket : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaintRoller</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaintRoller</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaintRoller", Transform.Component, "VuPaintRoller")]
+[ECMAScript("vu-icons/VuPaintRoller")]
 public sealed class VuPaintRoller : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaintbrush</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaintbrush</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaintbrush", Transform.Component, "VuPaintbrush")]
+[ECMAScript("vu-icons/VuPaintbrush")]
 public sealed class VuPaintbrush : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaintbrushVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaintbrushVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaintbrushVertical", Transform.Component, "VuPaintbrushVertical")]
+[ECMAScript("vu-icons/VuPaintbrushVertical")]
 public sealed class VuPaintbrushVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPalette</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPalette</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPalette", Transform.Component, "VuPalette")]
+[ECMAScript("vu-icons/VuPalette")]
 public sealed class VuPalette : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanda</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanda</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanda", Transform.Component, "VuPanda")]
+[ECMAScript("vu-icons/VuPanda")]
 public sealed class VuPanda : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelBottom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelBottom", Transform.Component, "VuPanelBottom")]
+[ECMAScript("vu-icons/VuPanelBottom")]
 public sealed class VuPanelBottom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomClose</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelBottomClose</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelBottomClose", Transform.Component, "VuPanelBottomClose")]
+[ECMAScript("vu-icons/VuPanelBottomClose")]
 public sealed class VuPanelBottomClose : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelBottomDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelBottomDashed", Transform.Component, "VuPanelBottomDashed")]
+[ECMAScript("vu-icons/VuPanelBottomDashed")]
 public sealed class VuPanelBottomDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelBottomOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelBottomOpen", Transform.Component, "VuPanelBottomOpen")]
+[ECMAScript("vu-icons/VuPanelBottomOpen")]
 public sealed class VuPanelBottomOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelLeft", Transform.Component, "VuPanelLeft")]
+[ECMAScript("vu-icons/VuPanelLeft")]
 public sealed class VuPanelLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftClose</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelLeftClose</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelLeftClose", Transform.Component, "VuPanelLeftClose")]
+[ECMAScript("vu-icons/VuPanelLeftClose")]
 public sealed class VuPanelLeftClose : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelLeftDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelLeftDashed", Transform.Component, "VuPanelLeftDashed")]
+[ECMAScript("vu-icons/VuPanelLeftDashed")]
 public sealed class VuPanelLeftDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelLeftOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelLeftOpen", Transform.Component, "VuPanelLeftOpen")]
+[ECMAScript("vu-icons/VuPanelLeftOpen")]
 public sealed class VuPanelLeftOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftRightDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelLeftRightDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelLeftRightDashed", Transform.Component, "VuPanelLeftRightDashed")]
+[ECMAScript("vu-icons/VuPanelLeftRightDashed")]
 public sealed class VuPanelLeftRightDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelRight", Transform.Component, "VuPanelRight")]
+[ECMAScript("vu-icons/VuPanelRight")]
 public sealed class VuPanelRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelRightClose</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelRightClose</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelRightClose", Transform.Component, "VuPanelRightClose")]
+[ECMAScript("vu-icons/VuPanelRightClose")]
 public sealed class VuPanelRightClose : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelRightDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelRightDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelRightDashed", Transform.Component, "VuPanelRightDashed")]
+[ECMAScript("vu-icons/VuPanelRightDashed")]
 public sealed class VuPanelRightDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelRightOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelRightOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelRightOpen", Transform.Component, "VuPanelRightOpen")]
+[ECMAScript("vu-icons/VuPanelRightOpen")]
 public sealed class VuPanelRightOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelTop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelTop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelTop", Transform.Component, "VuPanelTop")]
+[ECMAScript("vu-icons/VuPanelTop")]
 public sealed class VuPanelTop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopBottomDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelTopBottomDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelTopBottomDashed", Transform.Component, "VuPanelTopBottomDashed")]
+[ECMAScript("vu-icons/VuPanelTopBottomDashed")]
 public sealed class VuPanelTopBottomDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopClose</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelTopClose</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelTopClose", Transform.Component, "VuPanelTopClose")]
+[ECMAScript("vu-icons/VuPanelTopClose")]
 public sealed class VuPanelTopClose : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelTopDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelTopDashed", Transform.Component, "VuPanelTopDashed")]
+[ECMAScript("vu-icons/VuPanelTopDashed")]
 public sealed class VuPanelTopDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelTopOpen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelTopOpen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelTopOpen", Transform.Component, "VuPanelTopOpen")]
+[ECMAScript("vu-icons/VuPanelTopOpen")]
 public sealed class VuPanelTopOpen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelsLeftBottom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelsLeftBottom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelsLeftBottom", Transform.Component, "VuPanelsLeftBottom")]
+[ECMAScript("vu-icons/VuPanelsLeftBottom")]
 public sealed class VuPanelsLeftBottom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelsRightBottom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelsRightBottom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelsRightBottom", Transform.Component, "VuPanelsRightBottom")]
+[ECMAScript("vu-icons/VuPanelsRightBottom")]
 public sealed class VuPanelsRightBottom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPanelsTopLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPanelsTopLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPanelsTopLeft", Transform.Component, "VuPanelsTopLeft")]
+[ECMAScript("vu-icons/VuPanelsTopLeft")]
 public sealed class VuPanelsTopLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaperclip</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaperclip</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaperclip", Transform.Component, "VuPaperclip")]
+[ECMAScript("vu-icons/VuPaperclip")]
 public sealed class VuPaperclip : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuParentheses</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuParentheses</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuParentheses", Transform.Component, "VuParentheses")]
+[ECMAScript("vu-icons/VuParentheses")]
 public sealed class VuParentheses : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuParkingMeter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuParkingMeter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuParkingMeter", Transform.Component, "VuParkingMeter")]
+[ECMAScript("vu-icons/VuParkingMeter")]
 public sealed class VuParkingMeter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPartyPopper</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPartyPopper</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPartyPopper", Transform.Component, "VuPartyPopper")]
+[ECMAScript("vu-icons/VuPartyPopper")]
 public sealed class VuPartyPopper : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaste</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaste</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaste", Transform.Component, "VuPaste")]
+[ECMAScript("vu-icons/VuPaste")]
 public sealed class VuPaste : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPause</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPause</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPause", Transform.Component, "VuPause")]
+[ECMAScript("vu-icons/VuPause")]
 public sealed class VuPause : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPawPrint</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPawPrint</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPawPrint", Transform.Component, "VuPawPrint")]
+[ECMAScript("vu-icons/VuPawPrint")]
 public sealed class VuPawPrint : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPayment</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPayment</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPayment", Transform.Component, "VuPayment")]
+[ECMAScript("vu-icons/VuPayment")]
 public sealed class VuPayment : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPaymentMedical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPaymentMedical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPaymentMedical", Transform.Component, "VuPaymentMedical")]
+[ECMAScript("vu-icons/VuPaymentMedical")]
 public sealed class VuPaymentMedical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPcCase</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPcCase</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPcCase", Transform.Component, "VuPcCase")]
+[ECMAScript("vu-icons/VuPcCase")]
 public sealed class VuPcCase : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPen", Transform.Component, "VuPen")]
+[ECMAScript("vu-icons/VuPen")]
 public sealed class VuPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPenLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPenLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPenLine", Transform.Component, "VuPenLine")]
+[ECMAScript("vu-icons/VuPenLine")]
 public sealed class VuPenLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPenOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPenOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPenOff", Transform.Component, "VuPenOff")]
+[ECMAScript("vu-icons/VuPenOff")]
 public sealed class VuPenOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPenTool</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPenTool</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPenTool", Transform.Component, "VuPenTool")]
+[ECMAScript("vu-icons/VuPenTool")]
 public sealed class VuPenTool : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPencil</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPencil</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPencil", Transform.Component, "VuPencil")]
+[ECMAScript("vu-icons/VuPencil")]
 public sealed class VuPencil : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPencilLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPencilLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPencilLine", Transform.Component, "VuPencilLine")]
+[ECMAScript("vu-icons/VuPencilLine")]
 public sealed class VuPencilLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPencilOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPencilOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPencilOff", Transform.Component, "VuPencilOff")]
+[ECMAScript("vu-icons/VuPencilOff")]
 public sealed class VuPencilOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPencilRuler</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPencilRuler</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPencilRuler", Transform.Component, "VuPencilRuler")]
+[ECMAScript("vu-icons/VuPencilRuler")]
 public sealed class VuPencilRuler : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPentagon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPentagon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPentagon", Transform.Component, "VuPentagon")]
+[ECMAScript("vu-icons/VuPentagon")]
 public sealed class VuPentagon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPercent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPercent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPercent", Transform.Component, "VuPercent")]
+[ECMAScript("vu-icons/VuPercent")]
 public sealed class VuPercent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPersonStanding</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPersonStanding</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPersonStanding", Transform.Component, "VuPersonStanding")]
+[ECMAScript("vu-icons/VuPersonStanding")]
 public sealed class VuPersonStanding : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhilippinePeso</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhilippinePeso</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhilippinePeso", Transform.Component, "VuPhilippinePeso")]
+[ECMAScript("vu-icons/VuPhilippinePeso")]
 public sealed class VuPhilippinePeso : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhone", Transform.Component, "VuPhone")]
+[ECMAScript("vu-icons/VuPhone")]
 public sealed class VuPhone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhoneCall</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhoneCall</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhoneCall", Transform.Component, "VuPhoneCall")]
+[ECMAScript("vu-icons/VuPhoneCall")]
 public sealed class VuPhoneCall : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhoneForwarded</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhoneForwarded</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhoneForwarded", Transform.Component, "VuPhoneForwarded")]
+[ECMAScript("vu-icons/VuPhoneForwarded")]
 public sealed class VuPhoneForwarded : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhoneIncoming</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhoneIncoming</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhoneIncoming", Transform.Component, "VuPhoneIncoming")]
+[ECMAScript("vu-icons/VuPhoneIncoming")]
 public sealed class VuPhoneIncoming : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhoneMissed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhoneMissed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhoneMissed", Transform.Component, "VuPhoneMissed")]
+[ECMAScript("vu-icons/VuPhoneMissed")]
 public sealed class VuPhoneMissed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhoneOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhoneOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhoneOff", Transform.Component, "VuPhoneOff")]
+[ECMAScript("vu-icons/VuPhoneOff")]
 public sealed class VuPhoneOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPhoneOutgoing</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPhoneOutgoing</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPhoneOutgoing", Transform.Component, "VuPhoneOutgoing")]
+[ECMAScript("vu-icons/VuPhoneOutgoing")]
 public sealed class VuPhoneOutgoing : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPi</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPi</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPi", Transform.Component, "VuPi")]
+[ECMAScript("vu-icons/VuPi")]
 public sealed class VuPi : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPiano</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPiano</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPiano", Transform.Component, "VuPiano")]
+[ECMAScript("vu-icons/VuPiano")]
 public sealed class VuPiano : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPickaxe</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPickaxe</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPickaxe", Transform.Component, "VuPickaxe")]
+[ECMAScript("vu-icons/VuPickaxe")]
 public sealed class VuPickaxe : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPictureInPicture</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPictureInPicture</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPictureInPicture", Transform.Component, "VuPictureInPicture")]
+[ECMAScript("vu-icons/VuPictureInPicture")]
 public sealed class VuPictureInPicture : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPictureInPicture2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPictureInPicture2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPictureInPicture2", Transform.Component, "VuPictureInPicture2")]
+[ECMAScript("vu-icons/VuPictureInPicture2")]
 public sealed class VuPictureInPicture2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPieChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPieChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPieChart", Transform.Component, "VuPieChart")]
+[ECMAScript("vu-icons/VuPieChart")]
 public sealed class VuPieChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPiggyBank</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPiggyBank</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPiggyBank", Transform.Component, "VuPiggyBank")]
+[ECMAScript("vu-icons/VuPiggyBank")]
 public sealed class VuPiggyBank : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPilcrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPilcrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPilcrow", Transform.Component, "VuPilcrow")]
+[ECMAScript("vu-icons/VuPilcrow")]
 public sealed class VuPilcrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPilcrowLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPilcrowLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPilcrowLeft", Transform.Component, "VuPilcrowLeft")]
+[ECMAScript("vu-icons/VuPilcrowLeft")]
 public sealed class VuPilcrowLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPilcrowRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPilcrowRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPilcrowRight", Transform.Component, "VuPilcrowRight")]
+[ECMAScript("vu-icons/VuPilcrowRight")]
 public sealed class VuPilcrowRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPill</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPill</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPill", Transform.Component, "VuPill")]
+[ECMAScript("vu-icons/VuPill")]
 public sealed class VuPill : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPillBottle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPillBottle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPillBottle", Transform.Component, "VuPillBottle")]
+[ECMAScript("vu-icons/VuPillBottle")]
 public sealed class VuPillBottle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPin</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPin</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPin", Transform.Component, "VuPin")]
+[ECMAScript("vu-icons/VuPin")]
 public sealed class VuPin : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPinOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPinOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPinOff", Transform.Component, "VuPinOff")]
+[ECMAScript("vu-icons/VuPinOff")]
 public sealed class VuPinOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPipette</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPipette</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPipette", Transform.Component, "VuPipette")]
+[ECMAScript("vu-icons/VuPipette")]
 public sealed class VuPipette : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPizza</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPizza</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPizza", Transform.Component, "VuPizza")]
+[ECMAScript("vu-icons/VuPizza")]
 public sealed class VuPizza : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlane</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlane</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlane", Transform.Component, "VuPlane")]
+[ECMAScript("vu-icons/VuPlane")]
 public sealed class VuPlane : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlaneLanding</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlaneLanding</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlaneLanding", Transform.Component, "VuPlaneLanding")]
+[ECMAScript("vu-icons/VuPlaneLanding")]
 public sealed class VuPlaneLanding : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlaneTakeoff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlaneTakeoff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlaneTakeoff", Transform.Component, "VuPlaneTakeoff")]
+[ECMAScript("vu-icons/VuPlaneTakeoff")]
 public sealed class VuPlaneTakeoff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlay", Transform.Component, "VuPlay")]
+[ECMAScript("vu-icons/VuPlay")]
 public sealed class VuPlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlug</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlug</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlug", Transform.Component, "VuPlug")]
+[ECMAScript("vu-icons/VuPlug")]
 public sealed class VuPlug : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlug2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlug2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlug2", Transform.Component, "VuPlug2")]
+[ECMAScript("vu-icons/VuPlug2")]
 public sealed class VuPlug2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlugZap</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlugZap</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlugZap", Transform.Component, "VuPlugZap")]
+[ECMAScript("vu-icons/VuPlugZap")]
 public sealed class VuPlugZap : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPlus", Transform.Component, "VuPlus")]
+[ECMAScript("vu-icons/VuPlus")]
 public sealed class VuPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPocket</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPocket</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPocket", Transform.Component, "VuPocket")]
+[ECMAScript("vu-icons/VuPocket")]
 public sealed class VuPocket : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPocketKnife</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPocketKnife</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPocketKnife", Transform.Component, "VuPocketKnife")]
+[ECMAScript("vu-icons/VuPocketKnife")]
 public sealed class VuPocketKnife : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPodcast</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPodcast</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPodcast", Transform.Component, "VuPodcast")]
+[ECMAScript("vu-icons/VuPodcast")]
 public sealed class VuPodcast : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPointer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPointer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPointer", Transform.Component, "VuPointer")]
+[ECMAScript("vu-icons/VuPointer")]
 public sealed class VuPointer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPointerOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPointerOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPointerOff", Transform.Component, "VuPointerOff")]
+[ECMAScript("vu-icons/VuPointerOff")]
 public sealed class VuPointerOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPoints</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPoints</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPoints", Transform.Component, "VuPoints")]
+[ECMAScript("vu-icons/VuPoints")]
 public sealed class VuPoints : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPopcorn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPopcorn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPopcorn", Transform.Component, "VuPopcorn")]
+[ECMAScript("vu-icons/VuPopcorn")]
 public sealed class VuPopcorn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPopsicle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPopsicle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPopsicle", Transform.Component, "VuPopsicle")]
+[ECMAScript("vu-icons/VuPopsicle")]
 public sealed class VuPopsicle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPoundSterling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPoundSterling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPoundSterling", Transform.Component, "VuPoundSterling")]
+[ECMAScript("vu-icons/VuPoundSterling")]
 public sealed class VuPoundSterling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPower</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPower</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPower", Transform.Component, "VuPower")]
+[ECMAScript("vu-icons/VuPower")]
 public sealed class VuPower : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPowerOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPowerOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPowerOff", Transform.Component, "VuPowerOff")]
+[ECMAScript("vu-icons/VuPowerOff")]
 public sealed class VuPowerOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPresentation</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPresentation</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPresentation", Transform.Component, "VuPresentation")]
+[ECMAScript("vu-icons/VuPresentation")]
 public sealed class VuPresentation : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPrinter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPrinter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPrinter", Transform.Component, "VuPrinter")]
+[ECMAScript("vu-icons/VuPrinter")]
 public sealed class VuPrinter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPrinterCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPrinterCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPrinterCheck", Transform.Component, "VuPrinterCheck")]
+[ECMAScript("vu-icons/VuPrinterCheck")]
 public sealed class VuPrinterCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuProduct</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuProduct</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuProduct", Transform.Component, "VuProduct")]
+[ECMAScript("vu-icons/VuProduct")]
 public sealed class VuProduct : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuProjector</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuProjector</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuProjector", Transform.Component, "VuProjector")]
+[ECMAScript("vu-icons/VuProjector")]
 public sealed class VuProjector : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuProportions</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuProportions</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuProportions", Transform.Component, "VuProportions")]
+[ECMAScript("vu-icons/VuProportions")]
 public sealed class VuProportions : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPuzzle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPuzzle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPuzzle", Transform.Component, "VuPuzzle")]
+[ECMAScript("vu-icons/VuPuzzle")]
 public sealed class VuPuzzle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuPyramid</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuPyramid</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuPyramid", Transform.Component, "VuPyramid")]
+[ECMAScript("vu-icons/VuPyramid")]
 public sealed class VuPyramid : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuQrCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuQrCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuQrCode", Transform.Component, "VuQrCode")]
+[ECMAScript("vu-icons/VuQrCode")]
 public sealed class VuQrCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuQrcodeBox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuQrcodeBox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuQrcodeBox", Transform.Component, "VuQrcodeBox")]
+[ECMAScript("vu-icons/VuQrcodeBox")]
 public sealed class VuQrcodeBox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuQuote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuQuote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuQuote", Transform.Component, "VuQuote")]
+[ECMAScript("vu-icons/VuQuote")]
 public sealed class VuQuote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRabbit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRabbit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRabbit", Transform.Component, "VuRabbit")]
+[ECMAScript("vu-icons/VuRabbit")]
 public sealed class VuRabbit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadar", Transform.Component, "VuRadar")]
+[ECMAScript("vu-icons/VuRadar")]
 public sealed class VuRadar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadarChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadarChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadarChart", Transform.Component, "VuRadarChart")]
+[ECMAScript("vu-icons/VuRadarChart")]
 public sealed class VuRadarChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadiation</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadiation</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadiation", Transform.Component, "VuRadiation")]
+[ECMAScript("vu-icons/VuRadiation")]
 public sealed class VuRadiation : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadical", Transform.Component, "VuRadical")]
+[ECMAScript("vu-icons/VuRadical")]
 public sealed class VuRadical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadio</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadio</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadio", Transform.Component, "VuRadio")]
+[ECMAScript("vu-icons/VuRadio")]
 public sealed class VuRadio : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadioReceiver</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadioReceiver</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadioReceiver", Transform.Component, "VuRadioReceiver")]
+[ECMAScript("vu-icons/VuRadioReceiver")]
 public sealed class VuRadioReceiver : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadioTower</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadioTower</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadioTower", Transform.Component, "VuRadioTower")]
+[ECMAScript("vu-icons/VuRadioTower")]
 public sealed class VuRadioTower : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRadius</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRadius</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRadius", Transform.Component, "VuRadius")]
+[ECMAScript("vu-icons/VuRadius")]
 public sealed class VuRadius : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRailSymbol</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRailSymbol</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRailSymbol", Transform.Component, "VuRailSymbol")]
+[ECMAScript("vu-icons/VuRailSymbol")]
 public sealed class VuRailSymbol : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRainbow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRainbow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRainbow", Transform.Component, "VuRainbow")]
+[ECMAScript("vu-icons/VuRainbow")]
 public sealed class VuRainbow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRainy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRainy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRainy", Transform.Component, "VuRainy")]
+[ECMAScript("vu-icons/VuRainy")]
 public sealed class VuRainy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRat", Transform.Component, "VuRat")]
+[ECMAScript("vu-icons/VuRat")]
 public sealed class VuRat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRatio</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRatio</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRatio", Transform.Component, "VuRatio")]
+[ECMAScript("vu-icons/VuRatio")]
 public sealed class VuRatio : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRead</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRead</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRead", Transform.Component, "VuRead")]
+[ECMAScript("vu-icons/VuRead")]
 public sealed class VuRead : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceipt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceipt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceipt", Transform.Component, "VuReceipt")]
+[ECMAScript("vu-icons/VuReceipt")]
 public sealed class VuReceipt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptCent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptCent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptCent", Transform.Component, "VuReceiptCent")]
+[ECMAScript("vu-icons/VuReceiptCent")]
 public sealed class VuReceiptCent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptEuro</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptEuro</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptEuro", Transform.Component, "VuReceiptEuro")]
+[ECMAScript("vu-icons/VuReceiptEuro")]
 public sealed class VuReceiptEuro : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptIndianRupee</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptIndianRupee</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptIndianRupee", Transform.Component, "VuReceiptIndianRupee")]
+[ECMAScript("vu-icons/VuReceiptIndianRupee")]
 public sealed class VuReceiptIndianRupee : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptJapaneseYen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptJapaneseYen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptJapaneseYen", Transform.Component, "VuReceiptJapaneseYen")]
+[ECMAScript("vu-icons/VuReceiptJapaneseYen")]
 public sealed class VuReceiptJapaneseYen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptPoundSterling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptPoundSterling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptPoundSterling", Transform.Component, "VuReceiptPoundSterling")]
+[ECMAScript("vu-icons/VuReceiptPoundSterling")]
 public sealed class VuReceiptPoundSterling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptRussianRuble</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptRussianRuble</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptRussianRuble", Transform.Component, "VuReceiptRussianRuble")]
+[ECMAScript("vu-icons/VuReceiptRussianRuble")]
 public sealed class VuReceiptRussianRuble : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptSwissFranc</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptSwissFranc</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptSwissFranc", Transform.Component, "VuReceiptSwissFranc")]
+[ECMAScript("vu-icons/VuReceiptSwissFranc")]
 public sealed class VuReceiptSwissFranc : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptText", Transform.Component, "VuReceiptText")]
+[ECMAScript("vu-icons/VuReceiptText")]
 public sealed class VuReceiptText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReceiptTurkishLira</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReceiptTurkishLira</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReceiptTurkishLira", Transform.Component, "VuReceiptTurkishLira")]
+[ECMAScript("vu-icons/VuReceiptTurkishLira")]
 public sealed class VuReceiptTurkishLira : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRecharge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRecharge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRecharge", Transform.Component, "VuRecharge")]
+[ECMAScript("vu-icons/VuRecharge")]
 public sealed class VuRecharge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRectangleCircle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRectangleCircle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRectangleCircle", Transform.Component, "VuRectangleCircle")]
+[ECMAScript("vu-icons/VuRectangleCircle")]
 public sealed class VuRectangleCircle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRectangleEllipsis</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRectangleEllipsis</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRectangleEllipsis", Transform.Component, "VuRectangleEllipsis")]
+[ECMAScript("vu-icons/VuRectangleEllipsis")]
 public sealed class VuRectangleEllipsis : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRectangleGoggles</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRectangleGoggles</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRectangleGoggles", Transform.Component, "VuRectangleGoggles")]
+[ECMAScript("vu-icons/VuRectangleGoggles")]
 public sealed class VuRectangleGoggles : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRectangleHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRectangleHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRectangleHorizontal", Transform.Component, "VuRectangleHorizontal")]
+[ECMAScript("vu-icons/VuRectangleHorizontal")]
 public sealed class VuRectangleHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRectangleVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRectangleVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRectangleVertical", Transform.Component, "VuRectangleVertical")]
+[ECMAScript("vu-icons/VuRectangleVertical")]
 public sealed class VuRectangleVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRecycle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRecycle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRecycle", Transform.Component, "VuRecycle")]
+[ECMAScript("vu-icons/VuRecycle")]
 public sealed class VuRecycle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRedo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRedo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRedo", Transform.Component, "VuRedo")]
+[ECMAScript("vu-icons/VuRedo")]
 public sealed class VuRedo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRedo2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRedo2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRedo2", Transform.Component, "VuRedo2")]
+[ECMAScript("vu-icons/VuRedo2")]
 public sealed class VuRedo2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRedoDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRedoDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRedoDot", Transform.Component, "VuRedoDot")]
+[ECMAScript("vu-icons/VuRedoDot")]
 public sealed class VuRedoDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefresh</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefresh</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefresh", Transform.Component, "VuRefresh")]
+[ECMAScript("vu-icons/VuRefresh")]
 public sealed class VuRefresh : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCcw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefreshCcw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefreshCcw", Transform.Component, "VuRefreshCcw")]
+[ECMAScript("vu-icons/VuRefreshCcw")]
 public sealed class VuRefreshCcw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCcwDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefreshCcwDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefreshCcwDot", Transform.Component, "VuRefreshCcwDot")]
+[ECMAScript("vu-icons/VuRefreshCcwDot")]
 public sealed class VuRefreshCcwDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefreshCw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefreshCw", Transform.Component, "VuRefreshCw")]
+[ECMAScript("vu-icons/VuRefreshCw")]
 public sealed class VuRefreshCw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefreshCwOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefreshCwOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefreshCwOff", Transform.Component, "VuRefreshCwOff")]
+[ECMAScript("vu-icons/VuRefreshCwOff")]
 public sealed class VuRefreshCwOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefrigerator</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefrigerator</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefrigerator", Transform.Component, "VuRefrigerator")]
+[ECMAScript("vu-icons/VuRefrigerator")]
 public sealed class VuRefrigerator : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRefund</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRefund</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRefund", Transform.Component, "VuRefund")]
+[ECMAScript("vu-icons/VuRefund")]
 public sealed class VuRefund : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRegex</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRegex</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRegex", Transform.Component, "VuRegex")]
+[ECMAScript("vu-icons/VuRegex")]
 public sealed class VuRegex : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRemoveFormatting</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRemoveFormatting</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRemoveFormatting", Transform.Component, "VuRemoveFormatting")]
+[ECMAScript("vu-icons/VuRemoveFormatting")]
 public sealed class VuRemoveFormatting : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRepeat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRepeat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRepeat", Transform.Component, "VuRepeat")]
+[ECMAScript("vu-icons/VuRepeat")]
 public sealed class VuRepeat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRepeat1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRepeat1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRepeat1", Transform.Component, "VuRepeat1")]
+[ECMAScript("vu-icons/VuRepeat1")]
 public sealed class VuRepeat1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRepeat2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRepeat2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRepeat2", Transform.Component, "VuRepeat2")]
+[ECMAScript("vu-icons/VuRepeat2")]
 public sealed class VuRepeat2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReplace</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReplace</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReplace", Transform.Component, "VuReplace")]
+[ECMAScript("vu-icons/VuReplace")]
 public sealed class VuReplace : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReplaceAll</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReplaceAll</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReplaceAll", Transform.Component, "VuReplaceAll")]
+[ECMAScript("vu-icons/VuReplaceAll")]
 public sealed class VuReplaceAll : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReply</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReply</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReply", Transform.Component, "VuReply")]
+[ECMAScript("vu-icons/VuReply")]
 public sealed class VuReply : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReplyAll</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReplyAll</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReplyAll", Transform.Component, "VuReplyAll")]
+[ECMAScript("vu-icons/VuReplyAll")]
 public sealed class VuReplyAll : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReport</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReport</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReport", Transform.Component, "VuReport")]
+[ECMAScript("vu-icons/VuReport")]
 public sealed class VuReport : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuReportMedical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuReportMedical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuReportMedical", Transform.Component, "VuReportMedical")]
+[ECMAScript("vu-icons/VuReportMedical")]
 public sealed class VuReportMedical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRewind</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRewind</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRewind", Transform.Component, "VuRewind")]
+[ECMAScript("vu-icons/VuRewind")]
 public sealed class VuRewind : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRibbon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRibbon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRibbon", Transform.Component, "VuRibbon")]
+[ECMAScript("vu-icons/VuRibbon")]
 public sealed class VuRibbon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRocket</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRocket</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRocket", Transform.Component, "VuRocket")]
+[ECMAScript("vu-icons/VuRocket")]
 public sealed class VuRocket : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRockingChair</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRockingChair</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRockingChair", Transform.Component, "VuRockingChair")]
+[ECMAScript("vu-icons/VuRockingChair")]
 public sealed class VuRockingChair : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRollerCoaster</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRollerCoaster</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRollerCoaster", Transform.Component, "VuRollerCoaster")]
+[ECMAScript("vu-icons/VuRollerCoaster")]
 public sealed class VuRollerCoaster : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRose</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRose</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRose", Transform.Component, "VuRose")]
+[ECMAScript("vu-icons/VuRose")]
 public sealed class VuRose : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRotate3d</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRotate3d</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRotate3d", Transform.Component, "VuRotate3d")]
+[ECMAScript("vu-icons/VuRotate3d")]
 public sealed class VuRotate3d : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRotateCcw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRotateCcw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRotateCcw", Transform.Component, "VuRotateCcw")]
+[ECMAScript("vu-icons/VuRotateCcw")]
 public sealed class VuRotateCcw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRotateCcwKey</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRotateCcwKey</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRotateCcwKey", Transform.Component, "VuRotateCcwKey")]
+[ECMAScript("vu-icons/VuRotateCcwKey")]
 public sealed class VuRotateCcwKey : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRotateCcwSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRotateCcwSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRotateCcwSquare", Transform.Component, "VuRotateCcwSquare")]
+[ECMAScript("vu-icons/VuRotateCcwSquare")]
 public sealed class VuRotateCcwSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRotateCw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRotateCw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRotateCw", Transform.Component, "VuRotateCw")]
+[ECMAScript("vu-icons/VuRotateCw")]
 public sealed class VuRotateCw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRotateCwSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRotateCwSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRotateCwSquare", Transform.Component, "VuRotateCwSquare")]
+[ECMAScript("vu-icons/VuRotateCwSquare")]
 public sealed class VuRotateCwSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRoute</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRoute</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRoute", Transform.Component, "VuRoute")]
+[ECMAScript("vu-icons/VuRoute")]
 public sealed class VuRoute : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRouteOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRouteOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRouteOff", Transform.Component, "VuRouteOff")]
+[ECMAScript("vu-icons/VuRouteOff")]
 public sealed class VuRouteOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRouter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRouter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRouter", Transform.Component, "VuRouter")]
+[ECMAScript("vu-icons/VuRouter")]
 public sealed class VuRouter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRows2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRows2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRows2", Transform.Component, "VuRows2")]
+[ECMAScript("vu-icons/VuRows2")]
 public sealed class VuRows2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRows3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRows3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRows3", Transform.Component, "VuRows3")]
+[ECMAScript("vu-icons/VuRows3")]
 public sealed class VuRows3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRows4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRows4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRows4", Transform.Component, "VuRows4")]
+[ECMAScript("vu-icons/VuRows4")]
 public sealed class VuRows4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRss</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRss</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRss", Transform.Component, "VuRss")]
+[ECMAScript("vu-icons/VuRss")]
 public sealed class VuRss : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRuler</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRuler</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRuler", Transform.Component, "VuRuler")]
+[ECMAScript("vu-icons/VuRuler")]
 public sealed class VuRuler : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRulerDimensionLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRulerDimensionLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRulerDimensionLine", Transform.Component, "VuRulerDimensionLine")]
+[ECMAScript("vu-icons/VuRulerDimensionLine")]
 public sealed class VuRulerDimensionLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuRussianRuble</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuRussianRuble</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuRussianRuble", Transform.Component, "VuRussianRuble")]
+[ECMAScript("vu-icons/VuRussianRuble")]
 public sealed class VuRussianRuble : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSailboat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSailboat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSailboat", Transform.Component, "VuSailboat")]
+[ECMAScript("vu-icons/VuSailboat")]
 public sealed class VuSailboat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSalad</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSalad</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSalad", Transform.Component, "VuSalad")]
+[ECMAScript("vu-icons/VuSalad")]
 public sealed class VuSalad : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSandwich</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSandwich</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSandwich", Transform.Component, "VuSandwich")]
+[ECMAScript("vu-icons/VuSandwich")]
 public sealed class VuSandwich : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSatellite</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSatellite</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSatellite", Transform.Component, "VuSatellite")]
+[ECMAScript("vu-icons/VuSatellite")]
 public sealed class VuSatellite : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSatelliteDish</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSatelliteDish</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSatelliteDish", Transform.Component, "VuSatelliteDish")]
+[ECMAScript("vu-icons/VuSatelliteDish")]
 public sealed class VuSatelliteDish : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSaudiRiyal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSaudiRiyal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSaudiRiyal", Transform.Component, "VuSaudiRiyal")]
+[ECMAScript("vu-icons/VuSaudiRiyal")]
 public sealed class VuSaudiRiyal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSave</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSave</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSave", Transform.Component, "VuSave")]
+[ECMAScript("vu-icons/VuSave")]
 public sealed class VuSave : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSaveAll</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSaveAll</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSaveAll", Transform.Component, "VuSaveAll")]
+[ECMAScript("vu-icons/VuSaveAll")]
 public sealed class VuSaveAll : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSaveOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSaveOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSaveOff", Transform.Component, "VuSaveOff")]
+[ECMAScript("vu-icons/VuSaveOff")]
 public sealed class VuSaveOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScale</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScale</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScale", Transform.Component, "VuScale")]
+[ECMAScript("vu-icons/VuScale")]
 public sealed class VuScale : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScale3d</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScale3d</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScale3d", Transform.Component, "VuScale3d")]
+[ECMAScript("vu-icons/VuScale3d")]
 public sealed class VuScale3d : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScaling</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScaling</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScaling", Transform.Component, "VuScaling")]
+[ECMAScript("vu-icons/VuScaling")]
 public sealed class VuScaling : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScan", Transform.Component, "VuScan")]
+[ECMAScript("vu-icons/VuScan")]
 public sealed class VuScan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanBarcode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanBarcode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanBarcode", Transform.Component, "VuScanBarcode")]
+[ECMAScript("vu-icons/VuScanBarcode")]
 public sealed class VuScanBarcode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanEye</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanEye</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanEye", Transform.Component, "VuScanEye")]
+[ECMAScript("vu-icons/VuScanEye")]
 public sealed class VuScanEye : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanFace</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanFace</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanFace", Transform.Component, "VuScanFace")]
+[ECMAScript("vu-icons/VuScanFace")]
 public sealed class VuScanFace : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanHeart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanHeart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanHeart", Transform.Component, "VuScanHeart")]
+[ECMAScript("vu-icons/VuScanHeart")]
 public sealed class VuScanHeart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanLine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanLine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanLine", Transform.Component, "VuScanLine")]
+[ECMAScript("vu-icons/VuScanLine")]
 public sealed class VuScanLine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanQrCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanQrCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanQrCode", Transform.Component, "VuScanQrCode")]
+[ECMAScript("vu-icons/VuScanQrCode")]
 public sealed class VuScanQrCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanSearch", Transform.Component, "VuScanSearch")]
+[ECMAScript("vu-icons/VuScanSearch")]
 public sealed class VuScanSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScanText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScanText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScanText", Transform.Component, "VuScanText")]
+[ECMAScript("vu-icons/VuScanText")]
 public sealed class VuScanText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScatterChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScatterChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScatterChart", Transform.Component, "VuScatterChart")]
+[ECMAScript("vu-icons/VuScatterChart")]
 public sealed class VuScatterChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSchool</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSchool</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSchool", Transform.Component, "VuSchool")]
+[ECMAScript("vu-icons/VuSchool")]
 public sealed class VuSchool : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScissors</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScissors</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScissors", Transform.Component, "VuScissors")]
+[ECMAScript("vu-icons/VuScissors")]
 public sealed class VuScissors : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScissorsLineDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScissorsLineDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScissorsLineDashed", Transform.Component, "VuScissorsLineDashed")]
+[ECMAScript("vu-icons/VuScissorsLineDashed")]
 public sealed class VuScissorsLineDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScooter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScooter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScooter", Transform.Component, "VuScooter")]
+[ECMAScript("vu-icons/VuScooter")]
 public sealed class VuScooter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScreenShare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScreenShare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScreenShare", Transform.Component, "VuScreenShare")]
+[ECMAScript("vu-icons/VuScreenShare")]
 public sealed class VuScreenShare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScreenShareOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScreenShareOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScreenShareOff", Transform.Component, "VuScreenShareOff")]
+[ECMAScript("vu-icons/VuScreenShareOff")]
 public sealed class VuScreenShareOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScreenshot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScreenshot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScreenshot", Transform.Component, "VuScreenshot")]
+[ECMAScript("vu-icons/VuScreenshot")]
 public sealed class VuScreenshot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScroll</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScroll</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScroll", Transform.Component, "VuScroll")]
+[ECMAScript("vu-icons/VuScroll")]
 public sealed class VuScroll : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuScrollText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuScrollText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuScrollText", Transform.Component, "VuScrollText")]
+[ECMAScript("vu-icons/VuScrollText")]
 public sealed class VuScrollText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearch", Transform.Component, "VuSearch")]
+[ECMAScript("vu-icons/VuSearch")]
 public sealed class VuSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearchAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearchAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearchAlert", Transform.Component, "VuSearchAlert")]
+[ECMAScript("vu-icons/VuSearchAlert")]
 public sealed class VuSearchAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearchCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearchCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearchCheck", Transform.Component, "VuSearchCheck")]
+[ECMAScript("vu-icons/VuSearchCheck")]
 public sealed class VuSearchCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearchCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearchCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearchCode", Transform.Component, "VuSearchCode")]
+[ECMAScript("vu-icons/VuSearchCode")]
 public sealed class VuSearchCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearchLarge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearchLarge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearchLarge", Transform.Component, "VuSearchLarge")]
+[ECMAScript("vu-icons/VuSearchLarge")]
 public sealed class VuSearchLarge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearchSlash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearchSlash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearchSlash", Transform.Component, "VuSearchSlash")]
+[ECMAScript("vu-icons/VuSearchSlash")]
 public sealed class VuSearchSlash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSearchX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSearchX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSearchX", Transform.Component, "VuSearchX")]
+[ECMAScript("vu-icons/VuSearchX")]
 public sealed class VuSearchX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSection</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSection</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSection", Transform.Component, "VuSection")]
+[ECMAScript("vu-icons/VuSection")]
 public sealed class VuSection : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSelected</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSelected</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSelected", Transform.Component, "VuSelected")]
+[ECMAScript("vu-icons/VuSelected")]
 public sealed class VuSelected : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSend</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSend</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSend", Transform.Component, "VuSend")]
+[ECMAScript("vu-icons/VuSend")]
 public sealed class VuSend : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSendHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSendHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSendHorizontal", Transform.Component, "VuSendHorizontal")]
+[ECMAScript("vu-icons/VuSendHorizontal")]
 public sealed class VuSendHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSendToBack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSendToBack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSendToBack", Transform.Component, "VuSendToBack")]
+[ECMAScript("vu-icons/VuSendToBack")]
 public sealed class VuSendToBack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSeparatorHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSeparatorHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSeparatorHorizontal", Transform.Component, "VuSeparatorHorizontal")]
+[ECMAScript("vu-icons/VuSeparatorHorizontal")]
 public sealed class VuSeparatorHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSeparatorVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSeparatorVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSeparatorVertical", Transform.Component, "VuSeparatorVertical")]
+[ECMAScript("vu-icons/VuSeparatorVertical")]
 public sealed class VuSeparatorVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuServer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuServer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuServer", Transform.Component, "VuServer")]
+[ECMAScript("vu-icons/VuServer")]
 public sealed class VuServer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuServerCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuServerCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuServerCog", Transform.Component, "VuServerCog")]
+[ECMAScript("vu-icons/VuServerCog")]
 public sealed class VuServerCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuServerCrash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuServerCrash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuServerCrash", Transform.Component, "VuServerCrash")]
+[ECMAScript("vu-icons/VuServerCrash")]
 public sealed class VuServerCrash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuServerOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuServerOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuServerOff", Transform.Component, "VuServerOff")]
+[ECMAScript("vu-icons/VuServerOff")]
 public sealed class VuServerOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSettings</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSettings</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSettings", Transform.Component, "VuSettings")]
+[ECMAScript("vu-icons/VuSettings")]
 public sealed class VuSettings : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSettings2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSettings2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSettings2", Transform.Component, "VuSettings2")]
+[ECMAScript("vu-icons/VuSettings2")]
 public sealed class VuSettings2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShapes</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShapes</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShapes", Transform.Component, "VuShapes")]
+[ECMAScript("vu-icons/VuShapes")]
 public sealed class VuShapes : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShare", Transform.Component, "VuShare")]
+[ECMAScript("vu-icons/VuShare")]
 public sealed class VuShare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShare2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShare2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShare2", Transform.Component, "VuShare2")]
+[ECMAScript("vu-icons/VuShare2")]
 public sealed class VuShare2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSheet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSheet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSheet", Transform.Component, "VuSheet")]
+[ECMAScript("vu-icons/VuSheet")]
 public sealed class VuSheet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShell</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShell</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShell", Transform.Component, "VuShell")]
+[ECMAScript("vu-icons/VuShell")]
 public sealed class VuShell : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShield</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShield</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShield", Transform.Component, "VuShield")]
+[ECMAScript("vu-icons/VuShield")]
 public sealed class VuShield : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldAlert", Transform.Component, "VuShieldAlert")]
+[ECMAScript("vu-icons/VuShieldAlert")]
 public sealed class VuShieldAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldBan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldBan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldBan", Transform.Component, "VuShieldBan")]
+[ECMAScript("vu-icons/VuShieldBan")]
 public sealed class VuShieldBan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldCheck", Transform.Component, "VuShieldCheck")]
+[ECMAScript("vu-icons/VuShieldCheck")]
 public sealed class VuShieldCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldEllipsis</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldEllipsis</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldEllipsis", Transform.Component, "VuShieldEllipsis")]
+[ECMAScript("vu-icons/VuShieldEllipsis")]
 public sealed class VuShieldEllipsis : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldHalf</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldHalf</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldHalf", Transform.Component, "VuShieldHalf")]
+[ECMAScript("vu-icons/VuShieldHalf")]
 public sealed class VuShieldHalf : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldMinus", Transform.Component, "VuShieldMinus")]
+[ECMAScript("vu-icons/VuShieldMinus")]
 public sealed class VuShieldMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldOff", Transform.Component, "VuShieldOff")]
+[ECMAScript("vu-icons/VuShieldOff")]
 public sealed class VuShieldOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldPlus", Transform.Component, "VuShieldPlus")]
+[ECMAScript("vu-icons/VuShieldPlus")]
 public sealed class VuShieldPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldQuestionMark</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldQuestionMark</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldQuestionMark", Transform.Component, "VuShieldQuestionMark")]
+[ECMAScript("vu-icons/VuShieldQuestionMark")]
 public sealed class VuShieldQuestionMark : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldUser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldUser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldUser", Transform.Component, "VuShieldUser")]
+[ECMAScript("vu-icons/VuShieldUser")]
 public sealed class VuShieldUser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShieldX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShieldX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShieldX", Transform.Component, "VuShieldX")]
+[ECMAScript("vu-icons/VuShieldX")]
 public sealed class VuShieldX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShip</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShip</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShip", Transform.Component, "VuShip")]
+[ECMAScript("vu-icons/VuShip")]
 public sealed class VuShip : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShipWheel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShipWheel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShipWheel", Transform.Component, "VuShipWheel")]
+[ECMAScript("vu-icons/VuShipWheel")]
 public sealed class VuShipWheel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShirt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShirt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShirt", Transform.Component, "VuShirt")]
+[ECMAScript("vu-icons/VuShirt")]
 public sealed class VuShirt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShoppingBag</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShoppingBag</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShoppingBag", Transform.Component, "VuShoppingBag")]
+[ECMAScript("vu-icons/VuShoppingBag")]
 public sealed class VuShoppingBag : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShoppingBasket</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShoppingBasket</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShoppingBasket", Transform.Component, "VuShoppingBasket")]
+[ECMAScript("vu-icons/VuShoppingBasket")]
 public sealed class VuShoppingBasket : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShoppingCart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShoppingCart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShoppingCart", Transform.Component, "VuShoppingCart")]
+[ECMAScript("vu-icons/VuShoppingCart")]
 public sealed class VuShoppingCart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShovel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShovel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShovel", Transform.Component, "VuShovel")]
+[ECMAScript("vu-icons/VuShovel")]
 public sealed class VuShovel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShowerHead</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShowerHead</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShowerHead", Transform.Component, "VuShowerHead")]
+[ECMAScript("vu-icons/VuShowerHead")]
 public sealed class VuShowerHead : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShredder</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShredder</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShredder", Transform.Component, "VuShredder")]
+[ECMAScript("vu-icons/VuShredder")]
 public sealed class VuShredder : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShrimp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShrimp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShrimp", Transform.Component, "VuShrimp")]
+[ECMAScript("vu-icons/VuShrimp")]
 public sealed class VuShrimp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShrink</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShrink</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShrink", Transform.Component, "VuShrink")]
+[ECMAScript("vu-icons/VuShrink")]
 public sealed class VuShrink : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShrub</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShrub</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShrub", Transform.Component, "VuShrub")]
+[ECMAScript("vu-icons/VuShrub")]
 public sealed class VuShrub : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuShuffle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuShuffle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuShuffle", Transform.Component, "VuShuffle")]
+[ECMAScript("vu-icons/VuShuffle")]
 public sealed class VuShuffle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSidebar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSidebar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSidebar", Transform.Component, "VuSidebar")]
+[ECMAScript("vu-icons/VuSidebar")]
 public sealed class VuSidebar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSigma</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSigma</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSigma", Transform.Component, "VuSigma")]
+[ECMAScript("vu-icons/VuSigma")]
 public sealed class VuSigma : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignal", Transform.Component, "VuSignal")]
+[ECMAScript("vu-icons/VuSignal")]
 public sealed class VuSignal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignalHigh</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignalHigh</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignalHigh", Transform.Component, "VuSignalHigh")]
+[ECMAScript("vu-icons/VuSignalHigh")]
 public sealed class VuSignalHigh : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignalLow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignalLow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignalLow", Transform.Component, "VuSignalLow")]
+[ECMAScript("vu-icons/VuSignalLow")]
 public sealed class VuSignalLow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignalMedium</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignalMedium</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignalMedium", Transform.Component, "VuSignalMedium")]
+[ECMAScript("vu-icons/VuSignalMedium")]
 public sealed class VuSignalMedium : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignalZero</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignalZero</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignalZero", Transform.Component, "VuSignalZero")]
+[ECMAScript("vu-icons/VuSignalZero")]
 public sealed class VuSignalZero : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignature</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignature</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignature", Transform.Component, "VuSignature")]
+[ECMAScript("vu-icons/VuSignature")]
 public sealed class VuSignature : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignpost</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignpost</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignpost", Transform.Component, "VuSignpost")]
+[ECMAScript("vu-icons/VuSignpost")]
 public sealed class VuSignpost : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSignpostBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSignpostBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSignpostBig", Transform.Component, "VuSignpostBig")]
+[ECMAScript("vu-icons/VuSignpostBig")]
 public sealed class VuSignpostBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSiren</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSiren</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSiren", Transform.Component, "VuSiren")]
+[ECMAScript("vu-icons/VuSiren")]
 public sealed class VuSiren : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSkipBack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSkipBack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSkipBack", Transform.Component, "VuSkipBack")]
+[ECMAScript("vu-icons/VuSkipBack")]
 public sealed class VuSkipBack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSkipBackward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSkipBackward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSkipBackward", Transform.Component, "VuSkipBackward")]
+[ECMAScript("vu-icons/VuSkipBackward")]
 public sealed class VuSkipBackward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSkipForward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSkipForward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSkipForward", Transform.Component, "VuSkipForward")]
+[ECMAScript("vu-icons/VuSkipForward")]
 public sealed class VuSkipForward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSkull</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSkull</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSkull", Transform.Component, "VuSkull")]
+[ECMAScript("vu-icons/VuSkull")]
 public sealed class VuSkull : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSlack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSlack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSlack", Transform.Component, "VuSlack")]
+[ECMAScript("vu-icons/VuSlack")]
 public sealed class VuSlack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSlash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSlash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSlash", Transform.Component, "VuSlash")]
+[ECMAScript("vu-icons/VuSlash")]
 public sealed class VuSlash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSlice</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSlice</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSlice", Transform.Component, "VuSlice")]
+[ECMAScript("vu-icons/VuSlice")]
 public sealed class VuSlice : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSlidersHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSlidersHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSlidersHorizontal", Transform.Component, "VuSlidersHorizontal")]
+[ECMAScript("vu-icons/VuSlidersHorizontal")]
 public sealed class VuSlidersHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSlidersVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSlidersVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSlidersVertical", Transform.Component, "VuSlidersVertical")]
+[ECMAScript("vu-icons/VuSlidersVertical")]
 public sealed class VuSlidersVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSmartphone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSmartphone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSmartphone", Transform.Component, "VuSmartphone")]
+[ECMAScript("vu-icons/VuSmartphone")]
 public sealed class VuSmartphone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSmartphoneCharging</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSmartphoneCharging</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSmartphoneCharging", Transform.Component, "VuSmartphoneCharging")]
+[ECMAScript("vu-icons/VuSmartphoneCharging")]
 public sealed class VuSmartphoneCharging : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSmartphoneNfc</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSmartphoneNfc</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSmartphoneNfc", Transform.Component, "VuSmartphoneNfc")]
+[ECMAScript("vu-icons/VuSmartphoneNfc")]
 public sealed class VuSmartphoneNfc : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSmile</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSmile</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSmile", Transform.Component, "VuSmile")]
+[ECMAScript("vu-icons/VuSmile")]
 public sealed class VuSmile : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSmilePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSmilePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSmilePlus", Transform.Component, "VuSmilePlus")]
+[ECMAScript("vu-icons/VuSmilePlus")]
 public sealed class VuSmilePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSnail</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSnail</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSnail", Transform.Component, "VuSnail")]
+[ECMAScript("vu-icons/VuSnail")]
 public sealed class VuSnail : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSnowflake</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSnowflake</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSnowflake", Transform.Component, "VuSnowflake")]
+[ECMAScript("vu-icons/VuSnowflake")]
 public sealed class VuSnowflake : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSoapDispenserDroplet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSoapDispenserDroplet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSoapDispenserDroplet", Transform.Component, "VuSoapDispenserDroplet")]
+[ECMAScript("vu-icons/VuSoapDispenserDroplet")]
 public sealed class VuSoapDispenserDroplet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSofa</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSofa</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSofa", Transform.Component, "VuSofa")]
+[ECMAScript("vu-icons/VuSofa")]
 public sealed class VuSofa : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSolarPanel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSolarPanel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSolarPanel", Transform.Component, "VuSolarPanel")]
+[ECMAScript("vu-icons/VuSolarPanel")]
 public sealed class VuSolarPanel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSort</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSort</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSort", Transform.Component, "VuSort")]
+[ECMAScript("vu-icons/VuSort")]
 public sealed class VuSort : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSoup</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSoup</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSoup", Transform.Component, "VuSoup")]
+[ECMAScript("vu-icons/VuSoup")]
 public sealed class VuSoup : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpace</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpace</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpace", Transform.Component, "VuSpace")]
+[ECMAScript("vu-icons/VuSpace")]
 public sealed class VuSpace : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpade</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpade</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpade", Transform.Component, "VuSpade")]
+[ECMAScript("vu-icons/VuSpade")]
 public sealed class VuSpade : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSparkle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSparkle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSparkle", Transform.Component, "VuSparkle")]
+[ECMAScript("vu-icons/VuSparkle")]
 public sealed class VuSparkle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSparkles</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSparkles</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSparkles", Transform.Component, "VuSparkles")]
+[ECMAScript("vu-icons/VuSparkles")]
 public sealed class VuSparkles : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpeaker</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpeaker</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpeaker", Transform.Component, "VuSpeaker")]
+[ECMAScript("vu-icons/VuSpeaker")]
 public sealed class VuSpeaker : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpeech</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpeech</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpeech", Transform.Component, "VuSpeech")]
+[ECMAScript("vu-icons/VuSpeech")]
 public sealed class VuSpeech : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpellCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpellCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpellCheck", Transform.Component, "VuSpellCheck")]
+[ECMAScript("vu-icons/VuSpellCheck")]
 public sealed class VuSpellCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpellCheck2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpellCheck2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpellCheck2", Transform.Component, "VuSpellCheck2")]
+[ECMAScript("vu-icons/VuSpellCheck2")]
 public sealed class VuSpellCheck2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpline</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpline</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpline", Transform.Component, "VuSpline")]
+[ECMAScript("vu-icons/VuSpline")]
 public sealed class VuSpline : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSplinePointer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSplinePointer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSplinePointer", Transform.Component, "VuSplinePointer")]
+[ECMAScript("vu-icons/VuSplinePointer")]
 public sealed class VuSplinePointer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSplit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSplit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSplit", Transform.Component, "VuSplit")]
+[ECMAScript("vu-icons/VuSplit")]
 public sealed class VuSplit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSplitBill</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSplitBill</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSplitBill", Transform.Component, "VuSplitBill")]
+[ECMAScript("vu-icons/VuSplitBill")]
 public sealed class VuSplitBill : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpool</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpool</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpool", Transform.Component, "VuSpool")]
+[ECMAScript("vu-icons/VuSpool")]
 public sealed class VuSpool : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSports</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSports</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSports", Transform.Component, "VuSports")]
+[ECMAScript("vu-icons/VuSports")]
 public sealed class VuSports : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSpotlight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSpotlight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSpotlight", Transform.Component, "VuSpotlight")]
+[ECMAScript("vu-icons/VuSpotlight")]
 public sealed class VuSpotlight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSprayCan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSprayCan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSprayCan", Transform.Component, "VuSprayCan")]
+[ECMAScript("vu-icons/VuSprayCan")]
 public sealed class VuSprayCan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSprout</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSprout</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSprout", Transform.Component, "VuSprout")]
+[ECMAScript("vu-icons/VuSprout")]
 public sealed class VuSprout : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquare", Transform.Component, "VuSquare")]
+[ECMAScript("vu-icons/VuSquare")]
 public sealed class VuSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareActivity</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareActivity</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareActivity", Transform.Component, "VuSquareActivity")]
+[ECMAScript("vu-icons/VuSquareActivity")]
 public sealed class VuSquareActivity : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowDown", Transform.Component, "VuSquareArrowDown")]
+[ECMAScript("vu-icons/VuSquareArrowDown")]
 public sealed class VuSquareArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDownLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowDownLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowDownLeft", Transform.Component, "VuSquareArrowDownLeft")]
+[ECMAScript("vu-icons/VuSquareArrowDownLeft")]
 public sealed class VuSquareArrowDownLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDownRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowDownRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowDownRight", Transform.Component, "VuSquareArrowDownRight")]
+[ECMAScript("vu-icons/VuSquareArrowDownRight")]
 public sealed class VuSquareArrowDownRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowLeft", Transform.Component, "VuSquareArrowLeft")]
+[ECMAScript("vu-icons/VuSquareArrowLeft")]
 public sealed class VuSquareArrowLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutDownLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowOutDownLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowOutDownLeft", Transform.Component, "VuSquareArrowOutDownLeft")]
+[ECMAScript("vu-icons/VuSquareArrowOutDownLeft")]
 public sealed class VuSquareArrowOutDownLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutDownRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowOutDownRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowOutDownRight", Transform.Component, "VuSquareArrowOutDownRight")]
+[ECMAScript("vu-icons/VuSquareArrowOutDownRight")]
 public sealed class VuSquareArrowOutDownRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutUpLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowOutUpLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowOutUpLeft", Transform.Component, "VuSquareArrowOutUpLeft")]
+[ECMAScript("vu-icons/VuSquareArrowOutUpLeft")]
 public sealed class VuSquareArrowOutUpLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutUpRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowOutUpRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowOutUpRight", Transform.Component, "VuSquareArrowOutUpRight")]
+[ECMAScript("vu-icons/VuSquareArrowOutUpRight")]
 public sealed class VuSquareArrowOutUpRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowRight", Transform.Component, "VuSquareArrowRight")]
+[ECMAScript("vu-icons/VuSquareArrowRight")]
 public sealed class VuSquareArrowRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowUp", Transform.Component, "VuSquareArrowUp")]
+[ECMAScript("vu-icons/VuSquareArrowUp")]
 public sealed class VuSquareArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUpLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowUpLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowUpLeft", Transform.Component, "VuSquareArrowUpLeft")]
+[ECMAScript("vu-icons/VuSquareArrowUpLeft")]
 public sealed class VuSquareArrowUpLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUpRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareArrowUpRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareArrowUpRight", Transform.Component, "VuSquareArrowUpRight")]
+[ECMAScript("vu-icons/VuSquareArrowUpRight")]
 public sealed class VuSquareArrowUpRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareAsterisk</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareAsterisk</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareAsterisk", Transform.Component, "VuSquareAsterisk")]
+[ECMAScript("vu-icons/VuSquareAsterisk")]
 public sealed class VuSquareAsterisk : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareBottomDashedScissors</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareBottomDashedScissors</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareBottomDashedScissors", Transform.Component, "VuSquareBottomDashedScissors")]
+[ECMAScript("vu-icons/VuSquareBottomDashedScissors")]
 public sealed class VuSquareBottomDashedScissors : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareChartGantt</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareChartGantt</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareChartGantt", Transform.Component, "VuSquareChartGantt")]
+[ECMAScript("vu-icons/VuSquareChartGantt")]
 public sealed class VuSquareChartGantt : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareCheck", Transform.Component, "VuSquareCheck")]
+[ECMAScript("vu-icons/VuSquareCheck")]
 public sealed class VuSquareCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareCheckBig</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareCheckBig</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareCheckBig", Transform.Component, "VuSquareCheckBig")]
+[ECMAScript("vu-icons/VuSquareCheckBig")]
 public sealed class VuSquareCheckBig : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareChevronDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareChevronDown", Transform.Component, "VuSquareChevronDown")]
+[ECMAScript("vu-icons/VuSquareChevronDown")]
 public sealed class VuSquareChevronDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareChevronLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareChevronLeft", Transform.Component, "VuSquareChevronLeft")]
+[ECMAScript("vu-icons/VuSquareChevronLeft")]
 public sealed class VuSquareChevronLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareChevronRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareChevronRight", Transform.Component, "VuSquareChevronRight")]
+[ECMAScript("vu-icons/VuSquareChevronRight")]
 public sealed class VuSquareChevronRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareChevronUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareChevronUp", Transform.Component, "VuSquareChevronUp")]
+[ECMAScript("vu-icons/VuSquareChevronUp")]
 public sealed class VuSquareChevronUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareCode", Transform.Component, "VuSquareCode")]
+[ECMAScript("vu-icons/VuSquareCode")]
 public sealed class VuSquareCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDashed", Transform.Component, "VuSquareDashed")]
+[ECMAScript("vu-icons/VuSquareDashed")]
 public sealed class VuSquareDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedBottom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDashedBottom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDashedBottom", Transform.Component, "VuSquareDashedBottom")]
+[ECMAScript("vu-icons/VuSquareDashedBottom")]
 public sealed class VuSquareDashedBottom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedBottomCode</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDashedBottomCode</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDashedBottomCode", Transform.Component, "VuSquareDashedBottomCode")]
+[ECMAScript("vu-icons/VuSquareDashedBottomCode")]
 public sealed class VuSquareDashedBottomCode : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedKanban</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDashedKanban</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDashedKanban", Transform.Component, "VuSquareDashedKanban")]
+[ECMAScript("vu-icons/VuSquareDashedKanban")]
 public sealed class VuSquareDashedKanban : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedMousePointer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDashedMousePointer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDashedMousePointer", Transform.Component, "VuSquareDashedMousePointer")]
+[ECMAScript("vu-icons/VuSquareDashedMousePointer")]
 public sealed class VuSquareDashedMousePointer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedTopSolid</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDashedTopSolid</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDashedTopSolid", Transform.Component, "VuSquareDashedTopSolid")]
+[ECMAScript("vu-icons/VuSquareDashedTopSolid")]
 public sealed class VuSquareDashedTopSolid : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDivide</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDivide</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDivide", Transform.Component, "VuSquareDivide")]
+[ECMAScript("vu-icons/VuSquareDivide")]
 public sealed class VuSquareDivide : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareDot", Transform.Component, "VuSquareDot")]
+[ECMAScript("vu-icons/VuSquareDot")]
 public sealed class VuSquareDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareEqual</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareEqual</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareEqual", Transform.Component, "VuSquareEqual")]
+[ECMAScript("vu-icons/VuSquareEqual")]
 public sealed class VuSquareEqual : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareFunction</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareFunction</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareFunction", Transform.Component, "VuSquareFunction")]
+[ECMAScript("vu-icons/VuSquareFunction")]
 public sealed class VuSquareFunction : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareKanban</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareKanban</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareKanban", Transform.Component, "VuSquareKanban")]
+[ECMAScript("vu-icons/VuSquareKanban")]
 public sealed class VuSquareKanban : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareLibrary</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareLibrary</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareLibrary", Transform.Component, "VuSquareLibrary")]
+[ECMAScript("vu-icons/VuSquareLibrary")]
 public sealed class VuSquareLibrary : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareM</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareM</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareM", Transform.Component, "VuSquareM")]
+[ECMAScript("vu-icons/VuSquareM")]
 public sealed class VuSquareM : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareMenu</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareMenu</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareMenu", Transform.Component, "VuSquareMenu")]
+[ECMAScript("vu-icons/VuSquareMenu")]
 public sealed class VuSquareMenu : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareMinus", Transform.Component, "VuSquareMinus")]
+[ECMAScript("vu-icons/VuSquareMinus")]
 public sealed class VuSquareMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareMousePointer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareMousePointer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareMousePointer", Transform.Component, "VuSquareMousePointer")]
+[ECMAScript("vu-icons/VuSquareMousePointer")]
 public sealed class VuSquareMousePointer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareParking</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareParking</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareParking", Transform.Component, "VuSquareParking")]
+[ECMAScript("vu-icons/VuSquareParking")]
 public sealed class VuSquareParking : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareParkingOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareParkingOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareParkingOff", Transform.Component, "VuSquareParkingOff")]
+[ECMAScript("vu-icons/VuSquareParkingOff")]
 public sealed class VuSquareParkingOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePause</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePause</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePause", Transform.Component, "VuSquarePause")]
+[ECMAScript("vu-icons/VuSquarePause")]
 public sealed class VuSquarePause : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePen", Transform.Component, "VuSquarePen")]
+[ECMAScript("vu-icons/VuSquarePen")]
 public sealed class VuSquarePen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePercent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePercent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePercent", Transform.Component, "VuSquarePercent")]
+[ECMAScript("vu-icons/VuSquarePercent")]
 public sealed class VuSquarePercent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePi</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePi</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePi", Transform.Component, "VuSquarePi")]
+[ECMAScript("vu-icons/VuSquarePi")]
 public sealed class VuSquarePi : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePilcrow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePilcrow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePilcrow", Transform.Component, "VuSquarePilcrow")]
+[ECMAScript("vu-icons/VuSquarePilcrow")]
 public sealed class VuSquarePilcrow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePlay", Transform.Component, "VuSquarePlay")]
+[ECMAScript("vu-icons/VuSquarePlay")]
 public sealed class VuSquarePlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePlus", Transform.Component, "VuSquarePlus")]
+[ECMAScript("vu-icons/VuSquarePlus")]
 public sealed class VuSquarePlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquarePower</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquarePower</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquarePower", Transform.Component, "VuSquarePower")]
+[ECMAScript("vu-icons/VuSquarePower")]
 public sealed class VuSquarePower : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareRadical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareRadical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareRadical", Transform.Component, "VuSquareRadical")]
+[ECMAScript("vu-icons/VuSquareRadical")]
 public sealed class VuSquareRadical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareRoundCorner</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareRoundCorner</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareRoundCorner", Transform.Component, "VuSquareRoundCorner")]
+[ECMAScript("vu-icons/VuSquareRoundCorner")]
 public sealed class VuSquareRoundCorner : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareScissors</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareScissors</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareScissors", Transform.Component, "VuSquareScissors")]
+[ECMAScript("vu-icons/VuSquareScissors")]
 public sealed class VuSquareScissors : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareSigma</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareSigma</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareSigma", Transform.Component, "VuSquareSigma")]
+[ECMAScript("vu-icons/VuSquareSigma")]
 public sealed class VuSquareSigma : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareSlash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareSlash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareSlash", Transform.Component, "VuSquareSlash")]
+[ECMAScript("vu-icons/VuSquareSlash")]
 public sealed class VuSquareSlash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareSplitHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareSplitHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareSplitHorizontal", Transform.Component, "VuSquareSplitHorizontal")]
+[ECMAScript("vu-icons/VuSquareSplitHorizontal")]
 public sealed class VuSquareSplitHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareSplitVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareSplitVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareSplitVertical", Transform.Component, "VuSquareSplitVertical")]
+[ECMAScript("vu-icons/VuSquareSplitVertical")]
 public sealed class VuSquareSplitVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareSquare", Transform.Component, "VuSquareSquare")]
+[ECMAScript("vu-icons/VuSquareSquare")]
 public sealed class VuSquareSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareStack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareStack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareStack", Transform.Component, "VuSquareStack")]
+[ECMAScript("vu-icons/VuSquareStack")]
 public sealed class VuSquareStack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareStar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareStar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareStar", Transform.Component, "VuSquareStar")]
+[ECMAScript("vu-icons/VuSquareStar")]
 public sealed class VuSquareStar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareStop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareStop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareStop", Transform.Component, "VuSquareStop")]
+[ECMAScript("vu-icons/VuSquareStop")]
 public sealed class VuSquareStop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareTerminal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareTerminal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareTerminal", Transform.Component, "VuSquareTerminal")]
+[ECMAScript("vu-icons/VuSquareTerminal")]
 public sealed class VuSquareTerminal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareUser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareUser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareUser", Transform.Component, "VuSquareUser")]
+[ECMAScript("vu-icons/VuSquareUser")]
 public sealed class VuSquareUser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareUserRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareUserRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareUserRound", Transform.Component, "VuSquareUserRound")]
+[ECMAScript("vu-icons/VuSquareUserRound")]
 public sealed class VuSquareUserRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquareX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquareX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquareX", Transform.Component, "VuSquareX")]
+[ECMAScript("vu-icons/VuSquareX")]
 public sealed class VuSquareX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquaresExclude</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquaresExclude</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquaresExclude", Transform.Component, "VuSquaresExclude")]
+[ECMAScript("vu-icons/VuSquaresExclude")]
 public sealed class VuSquaresExclude : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquaresIntersect</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquaresIntersect</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquaresIntersect", Transform.Component, "VuSquaresIntersect")]
+[ECMAScript("vu-icons/VuSquaresIntersect")]
 public sealed class VuSquaresIntersect : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquaresSubtract</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquaresSubtract</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquaresSubtract", Transform.Component, "VuSquaresSubtract")]
+[ECMAScript("vu-icons/VuSquaresSubtract")]
 public sealed class VuSquaresSubtract : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquaresUnite</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquaresUnite</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquaresUnite", Transform.Component, "VuSquaresUnite")]
+[ECMAScript("vu-icons/VuSquaresUnite")]
 public sealed class VuSquaresUnite : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquircle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquircle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquircle", Transform.Component, "VuSquircle")]
+[ECMAScript("vu-icons/VuSquircle")]
 public sealed class VuSquircle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquircleDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquircleDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquircleDashed", Transform.Component, "VuSquircleDashed")]
+[ECMAScript("vu-icons/VuSquircleDashed")]
 public sealed class VuSquircleDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSquirrel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSquirrel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSquirrel", Transform.Component, "VuSquirrel")]
+[ECMAScript("vu-icons/VuSquirrel")]
 public sealed class VuSquirrel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStamp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStamp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStamp", Transform.Component, "VuStamp")]
+[ECMAScript("vu-icons/VuStamp")]
 public sealed class VuStamp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStar", Transform.Component, "VuStar")]
+[ECMAScript("vu-icons/VuStar")]
 public sealed class VuStar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStarHalf</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStarHalf</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStarHalf", Transform.Component, "VuStarHalf")]
+[ECMAScript("vu-icons/VuStarHalf")]
 public sealed class VuStarHalf : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStarOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStarOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStarOff", Transform.Component, "VuStarOff")]
+[ECMAScript("vu-icons/VuStarOff")]
 public sealed class VuStarOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStatistics</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStatistics</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStatistics", Transform.Component, "VuStatistics")]
+[ECMAScript("vu-icons/VuStatistics")]
 public sealed class VuStatistics : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStepBack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStepBack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStepBack", Transform.Component, "VuStepBack")]
+[ECMAScript("vu-icons/VuStepBack")]
 public sealed class VuStepBack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStepForward</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStepForward</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStepForward", Transform.Component, "VuStepForward")]
+[ECMAScript("vu-icons/VuStepForward")]
 public sealed class VuStepForward : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStethoscope</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStethoscope</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStethoscope", Transform.Component, "VuStethoscope")]
+[ECMAScript("vu-icons/VuStethoscope")]
 public sealed class VuStethoscope : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSticker</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSticker</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSticker", Transform.Component, "VuSticker")]
+[ECMAScript("vu-icons/VuSticker")]
 public sealed class VuSticker : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStickyNote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStickyNote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStickyNote", Transform.Component, "VuStickyNote")]
+[ECMAScript("vu-icons/VuStickyNote")]
 public sealed class VuStickyNote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStone", Transform.Component, "VuStone")]
+[ECMAScript("vu-icons/VuStone")]
 public sealed class VuStone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStop", Transform.Component, "VuStop")]
+[ECMAScript("vu-icons/VuStop")]
 public sealed class VuStop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStore</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStore</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStore", Transform.Component, "VuStore")]
+[ECMAScript("vu-icons/VuStore")]
 public sealed class VuStore : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStretchHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStretchHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStretchHorizontal", Transform.Component, "VuStretchHorizontal")]
+[ECMAScript("vu-icons/VuStretchHorizontal")]
 public sealed class VuStretchHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStretchVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStretchVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStretchVertical", Transform.Component, "VuStretchVertical")]
+[ECMAScript("vu-icons/VuStretchVertical")]
 public sealed class VuStretchVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuStrikethrough</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuStrikethrough</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuStrikethrough", Transform.Component, "VuStrikethrough")]
+[ECMAScript("vu-icons/VuStrikethrough")]
 public sealed class VuStrikethrough : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSubscript</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSubscript</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSubscript", Transform.Component, "VuSubscript")]
+[ECMAScript("vu-icons/VuSubscript")]
 public sealed class VuSubscript : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSubway</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSubway</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSubway", Transform.Component, "VuSubway")]
+[ECMAScript("vu-icons/VuSubway")]
 public sealed class VuSubway : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSuccess</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSuccess</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSuccess", Transform.Component, "VuSuccess")]
+[ECMAScript("vu-icons/VuSuccess")]
 public sealed class VuSuccess : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSun</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSun</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSun", Transform.Component, "VuSun")]
+[ECMAScript("vu-icons/VuSun")]
 public sealed class VuSun : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunDim</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunDim</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunDim", Transform.Component, "VuSunDim")]
+[ECMAScript("vu-icons/VuSunDim")]
 public sealed class VuSunDim : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunMedium</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunMedium</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunMedium", Transform.Component, "VuSunMedium")]
+[ECMAScript("vu-icons/VuSunMedium")]
 public sealed class VuSunMedium : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunMoon</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunMoon</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunMoon", Transform.Component, "VuSunMoon")]
+[ECMAScript("vu-icons/VuSunMoon")]
 public sealed class VuSunMoon : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunSnow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunSnow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunSnow", Transform.Component, "VuSunSnow")]
+[ECMAScript("vu-icons/VuSunSnow")]
 public sealed class VuSunSnow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunny</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunny</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunny", Transform.Component, "VuSunny")]
+[ECMAScript("vu-icons/VuSunny")]
 public sealed class VuSunny : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunrise</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunrise</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunrise", Transform.Component, "VuSunrise")]
+[ECMAScript("vu-icons/VuSunrise")]
 public sealed class VuSunrise : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSunset</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSunset</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSunset", Transform.Component, "VuSunset")]
+[ECMAScript("vu-icons/VuSunset")]
 public sealed class VuSunset : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSuperscript</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSuperscript</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSuperscript", Transform.Component, "VuSuperscript")]
+[ECMAScript("vu-icons/VuSuperscript")]
 public sealed class VuSuperscript : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSwatchBook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSwatchBook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSwatchBook", Transform.Component, "VuSwatchBook")]
+[ECMAScript("vu-icons/VuSwatchBook")]
 public sealed class VuSwatchBook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSwissFranc</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSwissFranc</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSwissFranc", Transform.Component, "VuSwissFranc")]
+[ECMAScript("vu-icons/VuSwissFranc")]
 public sealed class VuSwissFranc : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSwitchCamera</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSwitchCamera</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSwitchCamera", Transform.Component, "VuSwitchCamera")]
+[ECMAScript("vu-icons/VuSwitchCamera")]
 public sealed class VuSwitchCamera : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSword</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSword</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSword", Transform.Component, "VuSword")]
+[ECMAScript("vu-icons/VuSword")]
 public sealed class VuSword : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSwords</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSwords</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSwords", Transform.Component, "VuSwords")]
+[ECMAScript("vu-icons/VuSwords")]
 public sealed class VuSwords : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuSyringe</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuSyringe</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuSyringe", Transform.Component, "VuSyringe")]
+[ECMAScript("vu-icons/VuSyringe")]
 public sealed class VuSyringe : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTable</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTable</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTable", Transform.Component, "VuTable")]
+[ECMAScript("vu-icons/VuTable")]
 public sealed class VuTable : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTable2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTable2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTable2", Transform.Component, "VuTable2")]
+[ECMAScript("vu-icons/VuTable2")]
 public sealed class VuTable2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTableCellsMerge</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTableCellsMerge</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTableCellsMerge", Transform.Component, "VuTableCellsMerge")]
+[ECMAScript("vu-icons/VuTableCellsMerge")]
 public sealed class VuTableCellsMerge : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTableCellsSplit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTableCellsSplit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTableCellsSplit", Transform.Component, "VuTableCellsSplit")]
+[ECMAScript("vu-icons/VuTableCellsSplit")]
 public sealed class VuTableCellsSplit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTableColumnsSplit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTableColumnsSplit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTableColumnsSplit", Transform.Component, "VuTableColumnsSplit")]
+[ECMAScript("vu-icons/VuTableColumnsSplit")]
 public sealed class VuTableColumnsSplit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTableOfContents</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTableOfContents</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTableOfContents", Transform.Component, "VuTableOfContents")]
+[ECMAScript("vu-icons/VuTableOfContents")]
 public sealed class VuTableOfContents : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTableProperties</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTableProperties</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTableProperties", Transform.Component, "VuTableProperties")]
+[ECMAScript("vu-icons/VuTableProperties")]
 public sealed class VuTableProperties : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTableRowsSplit</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTableRowsSplit</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTableRowsSplit", Transform.Component, "VuTableRowsSplit")]
+[ECMAScript("vu-icons/VuTableRowsSplit")]
 public sealed class VuTableRowsSplit : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTablet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTablet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTablet", Transform.Component, "VuTablet")]
+[ECMAScript("vu-icons/VuTablet")]
 public sealed class VuTablet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTabletSmartphone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTabletSmartphone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTabletSmartphone", Transform.Component, "VuTabletSmartphone")]
+[ECMAScript("vu-icons/VuTabletSmartphone")]
 public sealed class VuTabletSmartphone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTablets</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTablets</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTablets", Transform.Component, "VuTablets")]
+[ECMAScript("vu-icons/VuTablets")]
 public sealed class VuTablets : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTag</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTag</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTag", Transform.Component, "VuTag")]
+[ECMAScript("vu-icons/VuTag")]
 public sealed class VuTag : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTags</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTags</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTags", Transform.Component, "VuTags")]
+[ECMAScript("vu-icons/VuTags")]
 public sealed class VuTags : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTakeout</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTakeout</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTakeout", Transform.Component, "VuTakeout")]
+[ECMAScript("vu-icons/VuTakeout")]
 public sealed class VuTakeout : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTally1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTally1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTally1", Transform.Component, "VuTally1")]
+[ECMAScript("vu-icons/VuTally1")]
 public sealed class VuTally1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTally2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTally2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTally2", Transform.Component, "VuTally2")]
+[ECMAScript("vu-icons/VuTally2")]
 public sealed class VuTally2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTally3</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTally3</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTally3", Transform.Component, "VuTally3")]
+[ECMAScript("vu-icons/VuTally3")]
 public sealed class VuTally3 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTally4</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTally4</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTally4", Transform.Component, "VuTally4")]
+[ECMAScript("vu-icons/VuTally4")]
 public sealed class VuTally4 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTally5</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTally5</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTally5", Transform.Component, "VuTally5")]
+[ECMAScript("vu-icons/VuTally5")]
 public sealed class VuTally5 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTangent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTangent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTangent", Transform.Component, "VuTangent")]
+[ECMAScript("vu-icons/VuTangent")]
 public sealed class VuTangent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTarget</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTarget</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTarget", Transform.Component, "VuTarget")]
+[ECMAScript("vu-icons/VuTarget")]
 public sealed class VuTarget : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTelescope</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTelescope</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTelescope", Transform.Component, "VuTelescope")]
+[ECMAScript("vu-icons/VuTelescope")]
 public sealed class VuTelescope : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTent", Transform.Component, "VuTent")]
+[ECMAScript("vu-icons/VuTent")]
 public sealed class VuTent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTentTree</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTentTree</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTentTree", Transform.Component, "VuTentTree")]
+[ECMAScript("vu-icons/VuTentTree")]
 public sealed class VuTentTree : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTerminal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTerminal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTerminal", Transform.Component, "VuTerminal")]
+[ECMAScript("vu-icons/VuTerminal")]
 public sealed class VuTerminal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTestTube</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTestTube</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTestTube", Transform.Component, "VuTestTube")]
+[ECMAScript("vu-icons/VuTestTube")]
 public sealed class VuTestTube : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTestTubeDiagonal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTestTubeDiagonal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTestTubeDiagonal", Transform.Component, "VuTestTubeDiagonal")]
+[ECMAScript("vu-icons/VuTestTubeDiagonal")]
 public sealed class VuTestTubeDiagonal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTestTubes</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTestTubes</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTestTubes", Transform.Component, "VuTestTubes")]
+[ECMAScript("vu-icons/VuTestTubes")]
 public sealed class VuTestTubes : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuText", Transform.Component, "VuText")]
+[ECMAScript("vu-icons/VuText")]
 public sealed class VuText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignCenter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextAlignCenter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextAlignCenter", Transform.Component, "VuTextAlignCenter")]
+[ECMAScript("vu-icons/VuTextAlignCenter")]
 public sealed class VuTextAlignCenter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignEnd</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextAlignEnd</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextAlignEnd", Transform.Component, "VuTextAlignEnd")]
+[ECMAScript("vu-icons/VuTextAlignEnd")]
 public sealed class VuTextAlignEnd : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignJustify</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextAlignJustify</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextAlignJustify", Transform.Component, "VuTextAlignJustify")]
+[ECMAScript("vu-icons/VuTextAlignJustify")]
 public sealed class VuTextAlignJustify : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextAlignStart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextAlignStart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextAlignStart", Transform.Component, "VuTextAlignStart")]
+[ECMAScript("vu-icons/VuTextAlignStart")]
 public sealed class VuTextAlignStart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextCursor</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextCursor</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextCursor", Transform.Component, "VuTextCursor")]
+[ECMAScript("vu-icons/VuTextCursor")]
 public sealed class VuTextCursor : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextCursorInput</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextCursorInput</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextCursorInput", Transform.Component, "VuTextCursorInput")]
+[ECMAScript("vu-icons/VuTextCursorInput")]
 public sealed class VuTextCursorInput : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextInitial</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextInitial</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextInitial", Transform.Component, "VuTextInitial")]
+[ECMAScript("vu-icons/VuTextInitial")]
 public sealed class VuTextInitial : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextQuote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextQuote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextQuote", Transform.Component, "VuTextQuote")]
+[ECMAScript("vu-icons/VuTextQuote")]
 public sealed class VuTextQuote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextSearch", Transform.Component, "VuTextSearch")]
+[ECMAScript("vu-icons/VuTextSearch")]
 public sealed class VuTextSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextSelect</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextSelect</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextSelect", Transform.Component, "VuTextSelect")]
+[ECMAScript("vu-icons/VuTextSelect")]
 public sealed class VuTextSelect : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTextWrap</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTextWrap</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTextWrap", Transform.Component, "VuTextWrap")]
+[ECMAScript("vu-icons/VuTextWrap")]
 public sealed class VuTextWrap : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTheater</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTheater</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTheater", Transform.Component, "VuTheater")]
+[ECMAScript("vu-icons/VuTheater")]
 public sealed class VuTheater : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuThermometer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuThermometer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuThermometer", Transform.Component, "VuThermometer")]
+[ECMAScript("vu-icons/VuThermometer")]
 public sealed class VuThermometer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuThermometerSnowflake</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuThermometerSnowflake</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuThermometerSnowflake", Transform.Component, "VuThermometerSnowflake")]
+[ECMAScript("vu-icons/VuThermometerSnowflake")]
 public sealed class VuThermometerSnowflake : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuThermometerSun</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuThermometerSun</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuThermometerSun", Transform.Component, "VuThermometerSun")]
+[ECMAScript("vu-icons/VuThermometerSun")]
 public sealed class VuThermometerSun : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuThumbsDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuThumbsDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuThumbsDown", Transform.Component, "VuThumbsDown")]
+[ECMAScript("vu-icons/VuThumbsDown")]
 public sealed class VuThumbsDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuThumbsUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuThumbsUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuThumbsUp", Transform.Component, "VuThumbsUp")]
+[ECMAScript("vu-icons/VuThumbsUp")]
 public sealed class VuThumbsUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicket</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicket</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicket", Transform.Component, "VuTicket")]
+[ECMAScript("vu-icons/VuTicket")]
 public sealed class VuTicket : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketCheck", Transform.Component, "VuTicketCheck")]
+[ECMAScript("vu-icons/VuTicketCheck")]
 public sealed class VuTicketCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketMinus", Transform.Component, "VuTicketMinus")]
+[ECMAScript("vu-icons/VuTicketMinus")]
 public sealed class VuTicketMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketPercent</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketPercent</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketPercent", Transform.Component, "VuTicketPercent")]
+[ECMAScript("vu-icons/VuTicketPercent")]
 public sealed class VuTicketPercent : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketPlus", Transform.Component, "VuTicketPlus")]
+[ECMAScript("vu-icons/VuTicketPlus")]
 public sealed class VuTicketPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketSlash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketSlash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketSlash", Transform.Component, "VuTicketSlash")]
+[ECMAScript("vu-icons/VuTicketSlash")]
 public sealed class VuTicketSlash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketX", Transform.Component, "VuTicketX")]
+[ECMAScript("vu-icons/VuTicketX")]
 public sealed class VuTicketX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTickets</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTickets</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTickets", Transform.Component, "VuTickets")]
+[ECMAScript("vu-icons/VuTickets")]
 public sealed class VuTickets : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTicketsPlane</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTicketsPlane</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTicketsPlane", Transform.Component, "VuTicketsPlane")]
+[ECMAScript("vu-icons/VuTicketsPlane")]
 public sealed class VuTicketsPlane : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTimer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTimer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTimer", Transform.Component, "VuTimer")]
+[ECMAScript("vu-icons/VuTimer")]
 public sealed class VuTimer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTimerOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTimerOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTimerOff", Transform.Component, "VuTimerOff")]
+[ECMAScript("vu-icons/VuTimerOff")]
 public sealed class VuTimerOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTimerReset</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTimerReset</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTimerReset", Transform.Component, "VuTimerReset")]
+[ECMAScript("vu-icons/VuTimerReset")]
 public sealed class VuTimerReset : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToBottom</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToBottom</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToBottom", Transform.Component, "VuToBottom")]
+[ECMAScript("vu-icons/VuToBottom")]
 public sealed class VuToBottom : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToTop</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToTop</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToTop", Transform.Component, "VuToTop")]
+[ECMAScript("vu-icons/VuToTop")]
 public sealed class VuToTop : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToggleLeft</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToggleLeft</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToggleLeft", Transform.Component, "VuToggleLeft")]
+[ECMAScript("vu-icons/VuToggleLeft")]
 public sealed class VuToggleLeft : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToggleRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToggleRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToggleRight", Transform.Component, "VuToggleRight")]
+[ECMAScript("vu-icons/VuToggleRight")]
 public sealed class VuToggleRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToilet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToilet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToilet", Transform.Component, "VuToilet")]
+[ECMAScript("vu-icons/VuToilet")]
 public sealed class VuToilet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToolCase</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToolCase</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToolCase", Transform.Component, "VuToolCase")]
+[ECMAScript("vu-icons/VuToolCase")]
 public sealed class VuToolCase : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToolbox</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToolbox</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToolbox", Transform.Component, "VuToolbox")]
+[ECMAScript("vu-icons/VuToolbox")]
 public sealed class VuToolbox : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTopBar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTopBar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTopBar", Transform.Component, "VuTopBar")]
+[ECMAScript("vu-icons/VuTopBar")]
 public sealed class VuTopBar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTornado</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTornado</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTornado", Transform.Component, "VuTornado")]
+[ECMAScript("vu-icons/VuTornado")]
 public sealed class VuTornado : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTorus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTorus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTorus", Transform.Component, "VuTorus")]
+[ECMAScript("vu-icons/VuTorus")]
 public sealed class VuTorus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTouchpad</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTouchpad</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTouchpad", Transform.Component, "VuTouchpad")]
+[ECMAScript("vu-icons/VuTouchpad")]
 public sealed class VuTouchpad : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTouchpadOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTouchpadOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTouchpadOff", Transform.Component, "VuTouchpadOff")]
+[ECMAScript("vu-icons/VuTouchpadOff")]
 public sealed class VuTouchpadOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTowerControl</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTowerControl</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTowerControl", Transform.Component, "VuTowerControl")]
+[ECMAScript("vu-icons/VuTowerControl")]
 public sealed class VuTowerControl : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuToyBrick</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuToyBrick</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuToyBrick", Transform.Component, "VuToyBrick")]
+[ECMAScript("vu-icons/VuToyBrick")]
 public sealed class VuToyBrick : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTractor</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTractor</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTractor", Transform.Component, "VuTractor")]
+[ECMAScript("vu-icons/VuTractor")]
 public sealed class VuTractor : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrafficCone</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrafficCone</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrafficCone", Transform.Component, "VuTrafficCone")]
+[ECMAScript("vu-icons/VuTrafficCone")]
 public sealed class VuTrafficCone : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrain</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrain</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrain", Transform.Component, "VuTrain")]
+[ECMAScript("vu-icons/VuTrain")]
 public sealed class VuTrain : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrainFront</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrainFront</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrainFront", Transform.Component, "VuTrainFront")]
+[ECMAScript("vu-icons/VuTrainFront")]
 public sealed class VuTrainFront : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrainFrontTunnel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrainFrontTunnel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrainFrontTunnel", Transform.Component, "VuTrainFrontTunnel")]
+[ECMAScript("vu-icons/VuTrainFrontTunnel")]
 public sealed class VuTrainFrontTunnel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrainTrack</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrainTrack</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrainTrack", Transform.Component, "VuTrainTrack")]
+[ECMAScript("vu-icons/VuTrainTrack")]
 public sealed class VuTrainTrack : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTramFront</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTramFront</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTramFront", Transform.Component, "VuTramFront")]
+[ECMAScript("vu-icons/VuTramFront")]
 public sealed class VuTramFront : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTransfer</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTransfer</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTransfer", Transform.Component, "VuTransfer")]
+[ECMAScript("vu-icons/VuTransfer")]
 public sealed class VuTransfer : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTransgender</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTransgender</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTransgender", Transform.Component, "VuTransgender")]
+[ECMAScript("vu-icons/VuTransgender")]
 public sealed class VuTransgender : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrash</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrash</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrash", Transform.Component, "VuTrash")]
+[ECMAScript("vu-icons/VuTrash")]
 public sealed class VuTrash : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrash2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrash2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrash2", Transform.Component, "VuTrash2")]
+[ECMAScript("vu-icons/VuTrash2")]
 public sealed class VuTrash2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTravel</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTravel</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTravel", Transform.Component, "VuTravel")]
+[ECMAScript("vu-icons/VuTravel")]
 public sealed class VuTravel : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTreeDeciduous</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTreeDeciduous</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTreeDeciduous", Transform.Component, "VuTreeDeciduous")]
+[ECMAScript("vu-icons/VuTreeDeciduous")]
 public sealed class VuTreeDeciduous : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTreePalm</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTreePalm</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTreePalm", Transform.Component, "VuTreePalm")]
+[ECMAScript("vu-icons/VuTreePalm")]
 public sealed class VuTreePalm : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTreePine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTreePine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTreePine", Transform.Component, "VuTreePine")]
+[ECMAScript("vu-icons/VuTreePine")]
 public sealed class VuTreePine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrees</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrees</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrees", Transform.Component, "VuTrees")]
+[ECMAScript("vu-icons/VuTrees")]
 public sealed class VuTrees : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrello</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrello</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrello", Transform.Component, "VuTrello")]
+[ECMAScript("vu-icons/VuTrello")]
 public sealed class VuTrello : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrendingDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrendingDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrendingDown", Transform.Component, "VuTrendingDown")]
+[ECMAScript("vu-icons/VuTrendingDown")]
 public sealed class VuTrendingDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrendingUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrendingUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrendingUp", Transform.Component, "VuTrendingUp")]
+[ECMAScript("vu-icons/VuTrendingUp")]
 public sealed class VuTrendingUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrendingUpDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrendingUpDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrendingUpDown", Transform.Component, "VuTrendingUpDown")]
+[ECMAScript("vu-icons/VuTrendingUpDown")]
 public sealed class VuTrendingUpDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTriangle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTriangle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTriangle", Transform.Component, "VuTriangle")]
+[ECMAScript("vu-icons/VuTriangle")]
 public sealed class VuTriangle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTriangleAlert</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTriangleAlert</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTriangleAlert", Transform.Component, "VuTriangleAlert")]
+[ECMAScript("vu-icons/VuTriangleAlert")]
 public sealed class VuTriangleAlert : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTriangleDashed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTriangleDashed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTriangleDashed", Transform.Component, "VuTriangleDashed")]
+[ECMAScript("vu-icons/VuTriangleDashed")]
 public sealed class VuTriangleDashed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTriangleRight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTriangleRight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTriangleRight", Transform.Component, "VuTriangleRight")]
+[ECMAScript("vu-icons/VuTriangleRight")]
 public sealed class VuTriangleRight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTrophy</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTrophy</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTrophy", Transform.Component, "VuTrophy")]
+[ECMAScript("vu-icons/VuTrophy")]
 public sealed class VuTrophy : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTruck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTruck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTruck", Transform.Component, "VuTruck")]
+[ECMAScript("vu-icons/VuTruck")]
 public sealed class VuTruck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTruckElectric</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTruckElectric</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTruckElectric", Transform.Component, "VuTruckElectric")]
+[ECMAScript("vu-icons/VuTruckElectric")]
 public sealed class VuTruckElectric : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTurkishLira</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTurkishLira</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTurkishLira", Transform.Component, "VuTurkishLira")]
+[ECMAScript("vu-icons/VuTurkishLira")]
 public sealed class VuTurkishLira : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTurntable</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTurntable</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTurntable", Transform.Component, "VuTurntable")]
+[ECMAScript("vu-icons/VuTurntable")]
 public sealed class VuTurntable : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTurtle</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTurtle</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTurtle", Transform.Component, "VuTurtle")]
+[ECMAScript("vu-icons/VuTurtle")]
 public sealed class VuTurtle : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTv</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTv</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTv", Transform.Component, "VuTv")]
+[ECMAScript("vu-icons/VuTv")]
 public sealed class VuTv : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTvMinimal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTvMinimal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTvMinimal", Transform.Component, "VuTvMinimal")]
+[ECMAScript("vu-icons/VuTvMinimal")]
 public sealed class VuTvMinimal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTvMinimalPlay</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTvMinimalPlay</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTvMinimalPlay", Transform.Component, "VuTvMinimalPlay")]
+[ECMAScript("vu-icons/VuTvMinimalPlay")]
 public sealed class VuTvMinimalPlay : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTwitch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTwitch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTwitch", Transform.Component, "VuTwitch")]
+[ECMAScript("vu-icons/VuTwitch")]
 public sealed class VuTwitch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTwitter</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTwitter</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTwitter", Transform.Component, "VuTwitter")]
+[ECMAScript("vu-icons/VuTwitter")]
 public sealed class VuTwitter : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuType</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuType</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuType", Transform.Component, "VuType")]
+[ECMAScript("vu-icons/VuType")]
 public sealed class VuType : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuTypeOutline</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuTypeOutline</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuTypeOutline", Transform.Component, "VuTypeOutline")]
+[ECMAScript("vu-icons/VuTypeOutline")]
 public sealed class VuTypeOutline : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUmbrella</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUmbrella</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUmbrella", Transform.Component, "VuUmbrella")]
+[ECMAScript("vu-icons/VuUmbrella")]
 public sealed class VuUmbrella : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUmbrellaOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUmbrellaOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUmbrellaOff", Transform.Component, "VuUmbrellaOff")]
+[ECMAScript("vu-icons/VuUmbrellaOff")]
 public sealed class VuUmbrellaOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnderline</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnderline</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnderline", Transform.Component, "VuUnderline")]
+[ECMAScript("vu-icons/VuUnderline")]
 public sealed class VuUnderline : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUndo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUndo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUndo", Transform.Component, "VuUndo")]
+[ECMAScript("vu-icons/VuUndo")]
 public sealed class VuUndo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUndo2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUndo2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUndo2", Transform.Component, "VuUndo2")]
+[ECMAScript("vu-icons/VuUndo2")]
 public sealed class VuUndo2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUndoDot</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUndoDot</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUndoDot", Transform.Component, "VuUndoDot")]
+[ECMAScript("vu-icons/VuUndoDot")]
 public sealed class VuUndoDot : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnfoldHorizontal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnfoldHorizontal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnfoldHorizontal", Transform.Component, "VuUnfoldHorizontal")]
+[ECMAScript("vu-icons/VuUnfoldHorizontal")]
 public sealed class VuUnfoldHorizontal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnfoldVertical</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnfoldVertical</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnfoldVertical", Transform.Component, "VuUnfoldVertical")]
+[ECMAScript("vu-icons/VuUnfoldVertical")]
 public sealed class VuUnfoldVertical : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnfollow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnfollow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnfollow", Transform.Component, "VuUnfollow")]
+[ECMAScript("vu-icons/VuUnfollow")]
 public sealed class VuUnfollow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUngroup</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUngroup</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUngroup", Transform.Component, "VuUngroup")]
+[ECMAScript("vu-icons/VuUngroup")]
 public sealed class VuUngroup : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUniversity</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUniversity</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUniversity", Transform.Component, "VuUniversity")]
+[ECMAScript("vu-icons/VuUniversity")]
 public sealed class VuUniversity : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnlink</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnlink</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnlink", Transform.Component, "VuUnlink")]
+[ECMAScript("vu-icons/VuUnlink")]
 public sealed class VuUnlink : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnlink2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnlink2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnlink2", Transform.Component, "VuUnlink2")]
+[ECMAScript("vu-icons/VuUnlink2")]
 public sealed class VuUnlink2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnlock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnlock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnlock", Transform.Component, "VuUnlock")]
+[ECMAScript("vu-icons/VuUnlock")]
 public sealed class VuUnlock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnplug</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnplug</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnplug", Transform.Component, "VuUnplug")]
+[ECMAScript("vu-icons/VuUnplug")]
 public sealed class VuUnplug : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnread</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnread</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnread", Transform.Component, "VuUnread")]
+[ECMAScript("vu-icons/VuUnread")]
 public sealed class VuUnread : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUnselected</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUnselected</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUnselected", Transform.Component, "VuUnselected")]
+[ECMAScript("vu-icons/VuUnselected")]
 public sealed class VuUnselected : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUpload</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUpload</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUpload", Transform.Component, "VuUpload")]
+[ECMAScript("vu-icons/VuUpload")]
 public sealed class VuUpload : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUsb</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUsb</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUsb", Transform.Component, "VuUsb")]
+[ECMAScript("vu-icons/VuUsb")]
 public sealed class VuUsb : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUser</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUser</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUser", Transform.Component, "VuUser")]
+[ECMAScript("vu-icons/VuUser")]
 public sealed class VuUser : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserCheck", Transform.Component, "VuUserCheck")]
+[ECMAScript("vu-icons/VuUserCheck")]
 public sealed class VuUserCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserCog", Transform.Component, "VuUserCog")]
+[ECMAScript("vu-icons/VuUserCog")]
 public sealed class VuUserCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserLock</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserLock</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserLock", Transform.Component, "VuUserLock")]
+[ECMAScript("vu-icons/VuUserLock")]
 public sealed class VuUserLock : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserMinus", Transform.Component, "VuUserMinus")]
+[ECMAScript("vu-icons/VuUserMinus")]
 public sealed class VuUserMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserPen", Transform.Component, "VuUserPen")]
+[ECMAScript("vu-icons/VuUserPen")]
 public sealed class VuUserPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserPlus", Transform.Component, "VuUserPlus")]
+[ECMAScript("vu-icons/VuUserPlus")]
 public sealed class VuUserPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRound", Transform.Component, "VuUserRound")]
+[ECMAScript("vu-icons/VuUserRound")]
 public sealed class VuUserRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundCheck</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundCheck</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundCheck", Transform.Component, "VuUserRoundCheck")]
+[ECMAScript("vu-icons/VuUserRoundCheck")]
 public sealed class VuUserRoundCheck : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundCog", Transform.Component, "VuUserRoundCog")]
+[ECMAScript("vu-icons/VuUserRoundCog")]
 public sealed class VuUserRoundCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundMinus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundMinus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundMinus", Transform.Component, "VuUserRoundMinus")]
+[ECMAScript("vu-icons/VuUserRoundMinus")]
 public sealed class VuUserRoundMinus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundPen", Transform.Component, "VuUserRoundPen")]
+[ECMAScript("vu-icons/VuUserRoundPen")]
 public sealed class VuUserRoundPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundPlus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundPlus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundPlus", Transform.Component, "VuUserRoundPlus")]
+[ECMAScript("vu-icons/VuUserRoundPlus")]
 public sealed class VuUserRoundPlus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundSearch", Transform.Component, "VuUserRoundSearch")]
+[ECMAScript("vu-icons/VuUserRoundSearch")]
 public sealed class VuUserRoundSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserRoundX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserRoundX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserRoundX", Transform.Component, "VuUserRoundX")]
+[ECMAScript("vu-icons/VuUserRoundX")]
 public sealed class VuUserRoundX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserSearch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserSearch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserSearch", Transform.Component, "VuUserSearch")]
+[ECMAScript("vu-icons/VuUserSearch")]
 public sealed class VuUserSearch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserStar</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserStar</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserStar", Transform.Component, "VuUserStar")]
+[ECMAScript("vu-icons/VuUserStar")]
 public sealed class VuUserStar : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUserX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUserX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUserX", Transform.Component, "VuUserX")]
+[ECMAScript("vu-icons/VuUserX")]
 public sealed class VuUserX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUsers</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUsers</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUsers", Transform.Component, "VuUsers")]
+[ECMAScript("vu-icons/VuUsers")]
 public sealed class VuUsers : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUsersRound</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUsersRound</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUsersRound", Transform.Component, "VuUsersRound")]
+[ECMAScript("vu-icons/VuUsersRound")]
 public sealed class VuUsersRound : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUtensils</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUtensils</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUtensils", Transform.Component, "VuUtensils")]
+[ECMAScript("vu-icons/VuUtensils")]
 public sealed class VuUtensils : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUtensilsCrossed</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUtensilsCrossed</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUtensilsCrossed", Transform.Component, "VuUtensilsCrossed")]
+[ECMAScript("vu-icons/VuUtensilsCrossed")]
 public sealed class VuUtensilsCrossed : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuUtilityPole</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuUtilityPole</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuUtilityPole", Transform.Component, "VuUtilityPole")]
+[ECMAScript("vu-icons/VuUtilityPole")]
 public sealed class VuUtilityPole : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVan", Transform.Component, "VuVan")]
+[ECMAScript("vu-icons/VuVan")]
 public sealed class VuVan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVariable</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVariable</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVariable", Transform.Component, "VuVariable")]
+[ECMAScript("vu-icons/VuVariable")]
 public sealed class VuVariable : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVault</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVault</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVault", Transform.Component, "VuVault")]
+[ECMAScript("vu-icons/VuVault")]
 public sealed class VuVault : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVectorSquare</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVectorSquare</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVectorSquare", Transform.Component, "VuVectorSquare")]
+[ECMAScript("vu-icons/VuVectorSquare")]
 public sealed class VuVectorSquare : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVegan</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVegan</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVegan", Transform.Component, "VuVegan")]
+[ECMAScript("vu-icons/VuVegan")]
 public sealed class VuVegan : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVenetianMask</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVenetianMask</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVenetianMask", Transform.Component, "VuVenetianMask")]
+[ECMAScript("vu-icons/VuVenetianMask")]
 public sealed class VuVenetianMask : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVenus</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVenus</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVenus", Transform.Component, "VuVenus")]
+[ECMAScript("vu-icons/VuVenus")]
 public sealed class VuVenus : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVenusAndMars</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVenusAndMars</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVenusAndMars", Transform.Component, "VuVenusAndMars")]
+[ECMAScript("vu-icons/VuVenusAndMars")]
 public sealed class VuVenusAndMars : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVibrate</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVibrate</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVibrate", Transform.Component, "VuVibrate")]
+[ECMAScript("vu-icons/VuVibrate")]
 public sealed class VuVibrate : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVibrateOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVibrateOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVibrateOff", Transform.Component, "VuVibrateOff")]
+[ECMAScript("vu-icons/VuVibrateOff")]
 public sealed class VuVibrateOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVideo</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVideo</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVideo", Transform.Component, "VuVideo")]
+[ECMAScript("vu-icons/VuVideo")]
 public sealed class VuVideo : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVideoOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVideoOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVideoOff", Transform.Component, "VuVideoOff")]
+[ECMAScript("vu-icons/VuVideoOff")]
 public sealed class VuVideoOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVideotape</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVideotape</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVideotape", Transform.Component, "VuVideotape")]
+[ECMAScript("vu-icons/VuVideotape")]
 public sealed class VuVideotape : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuView</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuView</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuView", Transform.Component, "VuView")]
+[ECMAScript("vu-icons/VuView")]
 public sealed class VuView : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVoicemail</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVoicemail</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVoicemail", Transform.Component, "VuVoicemail")]
+[ECMAScript("vu-icons/VuVoicemail")]
 public sealed class VuVoicemail : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolleyball</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolleyball</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolleyball", Transform.Component, "VuVolleyball")]
+[ECMAScript("vu-icons/VuVolleyball")]
 public sealed class VuVolleyball : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolume</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolume</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolume", Transform.Component, "VuVolume")]
+[ECMAScript("vu-icons/VuVolume")]
 public sealed class VuVolume : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolume1</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolume1</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolume1", Transform.Component, "VuVolume1")]
+[ECMAScript("vu-icons/VuVolume1")]
 public sealed class VuVolume1 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolume2</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolume2</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolume2", Transform.Component, "VuVolume2")]
+[ECMAScript("vu-icons/VuVolume2")]
 public sealed class VuVolume2 : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolumeDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolumeDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolumeDown", Transform.Component, "VuVolumeDown")]
+[ECMAScript("vu-icons/VuVolumeDown")]
 public sealed class VuVolumeDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolumeOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolumeOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolumeOff", Transform.Component, "VuVolumeOff")]
+[ECMAScript("vu-icons/VuVolumeOff")]
 public sealed class VuVolumeOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolumeOn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolumeOn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolumeOn", Transform.Component, "VuVolumeOn")]
+[ECMAScript("vu-icons/VuVolumeOn")]
 public sealed class VuVolumeOn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolumeUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolumeUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolumeUp", Transform.Component, "VuVolumeUp")]
+[ECMAScript("vu-icons/VuVolumeUp")]
 public sealed class VuVolumeUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVolumeX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVolumeX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVolumeX", Transform.Component, "VuVolumeX")]
+[ECMAScript("vu-icons/VuVolumeX")]
 public sealed class VuVolumeX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuVote</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuVote</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuVote", Transform.Component, "VuVote")]
+[ECMAScript("vu-icons/VuVote")]
 public sealed class VuVote : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWalk</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWalk</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWalk", Transform.Component, "VuWalk")]
+[ECMAScript("vu-icons/VuWalk")]
 public sealed class VuWalk : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWallet</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWallet</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWallet", Transform.Component, "VuWallet")]
+[ECMAScript("vu-icons/VuWallet")]
 public sealed class VuWallet : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWalletCards</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWalletCards</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWalletCards", Transform.Component, "VuWalletCards")]
+[ECMAScript("vu-icons/VuWalletCards")]
 public sealed class VuWalletCards : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWalletMinimal</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWalletMinimal</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWalletMinimal", Transform.Component, "VuWalletMinimal")]
+[ECMAScript("vu-icons/VuWalletMinimal")]
 public sealed class VuWalletMinimal : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWallpaper</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWallpaper</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWallpaper", Transform.Component, "VuWallpaper")]
+[ECMAScript("vu-icons/VuWallpaper")]
 public sealed class VuWallpaper : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWand</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWand</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWand", Transform.Component, "VuWand")]
+[ECMAScript("vu-icons/VuWand")]
 public sealed class VuWand : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWandSparkles</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWandSparkles</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWandSparkles", Transform.Component, "VuWandSparkles")]
+[ECMAScript("vu-icons/VuWandSparkles")]
 public sealed class VuWandSparkles : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWarehouse</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWarehouse</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWarehouse", Transform.Component, "VuWarehouse")]
+[ECMAScript("vu-icons/VuWarehouse")]
 public sealed class VuWarehouse : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWarning</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWarning</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWarning", Transform.Component, "VuWarning")]
+[ECMAScript("vu-icons/VuWarning")]
 public sealed class VuWarning : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWashingMachine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWashingMachine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWashingMachine", Transform.Component, "VuWashingMachine")]
+[ECMAScript("vu-icons/VuWashingMachine")]
 public sealed class VuWashingMachine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWatch</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWatch</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWatch", Transform.Component, "VuWatch")]
+[ECMAScript("vu-icons/VuWatch")]
 public sealed class VuWatch : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWaterfallChart</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWaterfallChart</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWaterfallChart", Transform.Component, "VuWaterfallChart")]
+[ECMAScript("vu-icons/VuWaterfallChart")]
 public sealed class VuWaterfallChart : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWaves</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWaves</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWaves", Transform.Component, "VuWaves")]
+[ECMAScript("vu-icons/VuWaves")]
 public sealed class VuWaves : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWavesArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWavesArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWavesArrowDown", Transform.Component, "VuWavesArrowDown")]
+[ECMAScript("vu-icons/VuWavesArrowDown")]
 public sealed class VuWavesArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWavesArrowUp</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWavesArrowUp</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWavesArrowUp", Transform.Component, "VuWavesArrowUp")]
+[ECMAScript("vu-icons/VuWavesArrowUp")]
 public sealed class VuWavesArrowUp : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWavesLadder</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWavesLadder</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWavesLadder", Transform.Component, "VuWavesLadder")]
+[ECMAScript("vu-icons/VuWavesLadder")]
 public sealed class VuWavesLadder : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWaypoints</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWaypoints</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWaypoints", Transform.Component, "VuWaypoints")]
+[ECMAScript("vu-icons/VuWaypoints")]
 public sealed class VuWaypoints : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWebcam</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWebcam</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWebcam", Transform.Component, "VuWebcam")]
+[ECMAScript("vu-icons/VuWebcam")]
 public sealed class VuWebcam : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWebhook</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWebhook</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWebhook", Transform.Component, "VuWebhook")]
+[ECMAScript("vu-icons/VuWebhook")]
 public sealed class VuWebhook : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWebhookOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWebhookOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWebhookOff", Transform.Component, "VuWebhookOff")]
+[ECMAScript("vu-icons/VuWebhookOff")]
 public sealed class VuWebhookOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWeight</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWeight</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWeight", Transform.Component, "VuWeight")]
+[ECMAScript("vu-icons/VuWeight")]
 public sealed class VuWeight : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWeightTilde</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWeightTilde</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWeightTilde", Transform.Component, "VuWeightTilde")]
+[ECMAScript("vu-icons/VuWeightTilde")]
 public sealed class VuWeightTilde : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWheat</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWheat</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWheat", Transform.Component, "VuWheat")]
+[ECMAScript("vu-icons/VuWheat")]
 public sealed class VuWheat : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWheatOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWheatOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWheatOff", Transform.Component, "VuWheatOff")]
+[ECMAScript("vu-icons/VuWheatOff")]
 public sealed class VuWheatOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWholeWord</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWholeWord</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWholeWord", Transform.Component, "VuWholeWord")]
+[ECMAScript("vu-icons/VuWholeWord")]
 public sealed class VuWholeWord : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifi</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifi</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifi", Transform.Component, "VuWifi")]
+[ECMAScript("vu-icons/VuWifi")]
 public sealed class VuWifi : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiCog</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiCog</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiCog", Transform.Component, "VuWifiCog")]
+[ECMAScript("vu-icons/VuWifiCog")]
 public sealed class VuWifiCog : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiHigh</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiHigh</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiHigh", Transform.Component, "VuWifiHigh")]
+[ECMAScript("vu-icons/VuWifiHigh")]
 public sealed class VuWifiHigh : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiLow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiLow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiLow", Transform.Component, "VuWifiLow")]
+[ECMAScript("vu-icons/VuWifiLow")]
 public sealed class VuWifiLow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiOff", Transform.Component, "VuWifiOff")]
+[ECMAScript("vu-icons/VuWifiOff")]
 public sealed class VuWifiOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiPen</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiPen</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiPen", Transform.Component, "VuWifiPen")]
+[ECMAScript("vu-icons/VuWifiPen")]
 public sealed class VuWifiPen : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiSync</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiSync</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiSync", Transform.Component, "VuWifiSync")]
+[ECMAScript("vu-icons/VuWifiSync")]
 public sealed class VuWifiSync : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWifiZero</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWifiZero</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWifiZero", Transform.Component, "VuWifiZero")]
+[ECMAScript("vu-icons/VuWifiZero")]
 public sealed class VuWifiZero : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWind</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWind</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWind", Transform.Component, "VuWind")]
+[ECMAScript("vu-icons/VuWind")]
 public sealed class VuWind : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWindArrowDown</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWindArrowDown</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWindArrowDown", Transform.Component, "VuWindArrowDown")]
+[ECMAScript("vu-icons/VuWindArrowDown")]
 public sealed class VuWindArrowDown : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWine</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWine</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWine", Transform.Component, "VuWine")]
+[ECMAScript("vu-icons/VuWine")]
 public sealed class VuWine : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWineOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWineOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWineOff", Transform.Component, "VuWineOff")]
+[ECMAScript("vu-icons/VuWineOff")]
 public sealed class VuWineOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWishlist</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWishlist</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWishlist", Transform.Component, "VuWishlist")]
+[ECMAScript("vu-icons/VuWishlist")]
 public sealed class VuWishlist : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWithdraw</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWithdraw</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWithdraw", Transform.Component, "VuWithdraw")]
+[ECMAScript("vu-icons/VuWithdraw")]
 public sealed class VuWithdraw : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWorkflow</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWorkflow</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWorkflow", Transform.Component, "VuWorkflow")]
+[ECMAScript("vu-icons/VuWorkflow")]
 public sealed class VuWorkflow : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWorm</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWorm</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWorm", Transform.Component, "VuWorm")]
+[ECMAScript("vu-icons/VuWorm")]
 public sealed class VuWorm : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWrapText</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWrapText</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWrapText", Transform.Component, "VuWrapText")]
+[ECMAScript("vu-icons/VuWrapText")]
 public sealed class VuWrapText : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuWrench</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuWrench</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuWrench", Transform.Component, "VuWrench")]
+[ECMAScript("vu-icons/VuWrench")]
 public sealed class VuWrench : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuX</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuX</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuX", Transform.Component, "VuX")]
+[ECMAScript("vu-icons/VuX")]
 public sealed class VuX : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuYoutube</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuYoutube</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuYoutube", Transform.Component, "VuYoutube")]
+[ECMAScript("vu-icons/VuYoutube")]
 public sealed class VuYoutube : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuZap</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuZap</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuZap", Transform.Component, "VuZap")]
+[ECMAScript("vu-icons/VuZap")]
 public sealed class VuZap : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuZapOff</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuZapOff</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuZapOff", Transform.Component, "VuZapOff")]
+[ECMAScript("vu-icons/VuZapOff")]
 public sealed class VuZapOff : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuZoomIn</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuZoomIn</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuZoomIn", Transform.Component, "VuZoomIn")]
+[ECMAScript("vu-icons/VuZoomIn")]
 public sealed class VuZoomIn : VuIconComponentBase;
 
 /// <summary>Vue 3 &amp; UniApp Icon VuZoomOut</summary>
 /// <remarks>Embedded browser bridge for upstream <c>VuZoomOut</c>; only this SVG module is materialized for static usage.</remarks>
-[ECMAScript("vu-icons/VuZoomOut", Transform.Component, "VuZoomOut")]
+[ECMAScript("vu-icons/VuZoomOut")]
 public sealed class VuZoomOut : VuIconComponentBase;

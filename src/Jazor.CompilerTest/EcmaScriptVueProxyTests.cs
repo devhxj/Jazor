@@ -3166,7 +3166,7 @@ public sealed class EcmaScriptVueProxyTests
                 type.IsClass &&
                 !type.IsAbstract &&
                 typeof(Microsoft.AspNetCore.Components.ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScriptAttribute>() is { Transform: Transform.Component })
+                type.GetCustomAttribute<ECMAScriptAttribute>()?.Import is not null)
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
 
@@ -3247,7 +3247,7 @@ public sealed class EcmaScriptVueProxyTests
             .Where(static type =>
                 type.Namespace == "ECMAScript.Vuetify" &&
                 typeof(ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScriptAttribute>() is { Transform: Transform.Component })
+                type.GetCustomAttribute<ECMAScriptAttribute>()?.Import is not null)
             .ToArray();
 
         var eventProperties = componentTypes
@@ -3325,21 +3325,20 @@ public sealed class EcmaScriptVueProxyTests
                 $"tdesign-vue-next/{contract.Module}/{contract.RuntimeExport}",
                 component!.Import,
                 componentType.FullName);
-            Assert.AreEqual(Transform.Component, component.Transform, componentType.FullName);
-            Assert.AreEqual(contract.RuntimeExport, component.ExportName, componentType.FullName);
-            CollectionAssert.Contains(runtimeExports, component.ExportName, componentType.FullName);
+            Assert.AreEqual(contract.RuntimeExport, componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name, componentType.FullName);
+            CollectionAssert.Contains(runtimeExports, componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name, componentType.FullName);
 
             var componentExport = componentExports.Single(property => property.Name == componentType.Name);
             Assert.AreEqual(typeof(ITDesignComponent), componentExport.PropertyType, componentType.FullName);
             Assert.AreEqual(
-                component.ExportName,
+                componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name,
                 componentExport.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name,
                 componentType.FullName);
 
             var registryProperty = registryProperties.Single(property => property.Name == componentType.Name);
             Assert.AreEqual(typeof(ITDesignComponent), registryProperty.PropertyType.UnwrapNullable(), componentType.FullName);
             Assert.AreEqual(
-                $"@#{component.ExportName}",
+                $"@#{componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name}",
                 registryProperty.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description,
                 componentType.FullName);
 
@@ -4175,7 +4174,7 @@ public sealed class EcmaScriptVueProxyTests
                 !type.IsAbstract &&
                 !type.ContainsGenericParameters &&
                 typeof(ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScriptAttribute>() is { Transform: Transform.Component })
+                type.GetCustomAttribute<ECMAScriptAttribute>()?.Import is not null)
             .OrderBy(static type => type.Name, StringComparer.Ordinal)
             .ToArray();
 
@@ -4472,7 +4471,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsNotNull(runtime, member.Name);
         Assert.AreEqual(expectedImport, runtime!.Import, member.Name);
-        Assert.AreEqual(Transform.Import, runtime.Transform, member.Name);
+        
     }
 
     private static void AssertEcmaScriptSupport(Type type)

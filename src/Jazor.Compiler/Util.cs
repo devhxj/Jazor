@@ -443,18 +443,9 @@ public static class Util
             return false;
 
         var metadataName = attributeClass.ToDisplayString();
-        if (metadataName == ECMAScriptModuleAttributeMetadataName)
-            return true;
-        if (metadataName != ECMAScriptAttributeMetadataName)
-            return false;
-
-        if (attribute.ConstructorArguments.Length >= 2 &&
-            attribute.ConstructorArguments[1].Value is int transform)
-        {
-            return transform is (int)Transform.Allow or (int)Transform.Import;
-        }
-
-        return true;
+        // [ECMAScriptModule] 标注生成模块，[ECMAScript] 标注宿主契约与外部绑定；两者都是 support marker。
+        // 组件身份不再由特性表达（改由 ComponentBase + Vue marker 约定判定），因此这里不做组件排除。
+        return metadataName is ECMAScriptModuleAttributeMetadataName or ECMAScriptAttributeMetadataName;
     }
 
     internal static string? GetECMAScriptModuleImportPath(ITypeSymbol symbol)
@@ -472,23 +463,13 @@ public static class Util
             var metadataName = attribute.AttributeClass?.ToDisplayString();
             if (metadataName == ECMAScriptAttributeMetadataName)
             {
+                // [ECMAScript] 只有一个 import 参数。组件身份由 ComponentBase + Vue marker 约定判定，
+                // 因此这里不再需要按 transform 跳过组件声明。
                 if (attribute.ConstructorArguments.Length == 0 ||
                     attribute.ConstructorArguments[0].Value is not string externalPath ||
                     string.IsNullOrWhiteSpace(externalPath))
                 {
                     continue;
-                }
-
-                if (attribute.ConstructorArguments.Length >= 2 &&
-                    attribute.ConstructorArguments[1].Value is int transform)
-                {
-                    if (transform == (int)Transform.Component)
-                        continue;
-                    if (transform != (int)Transform.Import)
-                    {
-                        throw new NotSupportedException(
-                            $"ECMAScript transform value '{transform}' is not supported for module imports.");
-                    }
                 }
 
                 return ECMAScriptModulePath.ValidateExternalImportSpecifier(externalPath);
@@ -538,11 +519,8 @@ public static class Util
                     continue;
                 }
 
-                if (attribute.ConstructorArguments.Length < 2)
-                    return true;
-
-                return attribute.ConstructorArguments[1].Value is int transform &&
-                       transform == (int)Transform.Import;
+                // [ECMAScript("specifier")] 即外部导入。组件与普通绑定使用同一条声明。
+                return true;
             }
         }
 

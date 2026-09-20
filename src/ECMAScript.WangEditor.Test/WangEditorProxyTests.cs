@@ -21,7 +21,6 @@ public sealed class WangEditorProxyTests
         var runtime = typeof(WangEditor).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime);
         Assert.AreEqual("@wangeditor/editor-for-vue", runtime!.Import);
-        Assert.AreEqual(Transform.Import, runtime.Transform);
     }
 
     [TestMethod]
@@ -30,12 +29,11 @@ public sealed class WangEditorProxyTests
         var editor = typeof(WangEditorComponent).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(editor);
         Assert.AreEqual("@wangeditor/editor-for-vue", editor!.Import);
-        Assert.AreEqual(Transform.Component, editor.Transform);
-        Assert.AreEqual("Editor", editor.ExportName);
+        Assert.AreEqual("Editor", typeof(WangEditorComponent).GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         var toolbar = typeof(WangEditorToolbar).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(toolbar);
-        Assert.AreEqual("Toolbar", toolbar!.ExportName);
+        Assert.AreEqual("Toolbar", typeof(WangEditorToolbar).GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         Assert.IsTrue(typeof(Microsoft.AspNetCore.Components.ComponentBase).IsAssignableFrom(typeof(WangEditorComponent)));
         Assert.IsTrue(typeof(Microsoft.AspNetCore.Components.ComponentBase).IsAssignableFrom(typeof(WangEditorToolbar)));

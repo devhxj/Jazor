@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 窗口组件的创作代理，用于分组面板导航。
 /// Vuetify window authoring proxy for grouped panel navigation.
 /// </summary>
-[ECMAScript("vuetify/components/VWindow", Transform.Component, "VWindow")]
+[ECMAScript("vuetify/components/VWindow")]
 public sealed class VWindow : ComponentBase, IVuetifyComponent
 {
     /// <summary>

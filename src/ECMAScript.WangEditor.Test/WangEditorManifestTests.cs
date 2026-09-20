@@ -66,17 +66,20 @@ public sealed class WangEditorManifestTests
     {
         var components = typeof(ECMAScript.WangEditor).Assembly.GetExportedTypes()
             .Select(static type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
-            .Where(static item => item.Attribute?.Transform == Transform.Component)
+            .Where(static item => item.Attribute?.Import is not null)
             .ToArray();
         Assert.IsTrue(components.Length >= 2);
         foreach (var component in components)
         {
             Assert.AreEqual("@wangeditor/editor-for-vue", component.Attribute!.Import);
-            Assert.IsFalse(string.IsNullOrWhiteSpace(component.Attribute.ExportName));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(
+                component.Type.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name));
         }
 
-        Assert.IsTrue(components.Any(static item => item.Attribute!.ExportName == "Editor"));
-        Assert.IsTrue(components.Any(static item => item.Attribute!.ExportName == "Toolbar"));
+        Assert.IsTrue(components.Any(static item =>
+            item.Type.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name == "Editor"));
+        Assert.IsTrue(components.Any(static item =>
+            item.Type.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name == "Toolbar"));
     }
 
     [TestMethod]

@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 多行文本输入框组件的编写代理。
 /// Vuetify textarea authoring proxy.
 /// </summary>
-[ECMAScript("vuetify/components/VTextarea", Transform.Component, "VTextarea")]
+[ECMAScript("vuetify/components/VTextarea")]
 public sealed class VTextarea : VInputComponentBase, IVuetifyComponent
 {
     /// <summary>

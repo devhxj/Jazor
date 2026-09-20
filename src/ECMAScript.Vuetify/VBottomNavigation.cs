@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 底部导航组件。
 /// Vuetify bottom navigation component.
 /// </summary>
-[ECMAScript("vuetify/components/VBottomNavigation", Transform.Component, "VBottomNavigation")]
+[ECMAScript("vuetify/components/VBottomNavigation")]
 public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
 {
     /// <summary>

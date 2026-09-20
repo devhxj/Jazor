@@ -3368,7 +3368,8 @@ public sealed class RenderEmitterPrivateContractTests
             public sealed class ModuleComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule(" ")]
-            [ECMAScript(" tdesign-vue-next ", Transform.Component, " Button ")]
+            [ECMAScriptName(" Button ")]
+            [ECMAScript(" tdesign-vue-next ")]
             public sealed class LibraryComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule]
@@ -3386,7 +3387,8 @@ public sealed class RenderEmitterPrivateContractTests
             [ECMAScript("vue")]
             public sealed class ImportMarkerComponent : ComponentBase, IVueComponent;
 
-            [ECMAScript(" ", Transform.Component, "Button")]
+            [ECMAScriptName("Button")]
+            [ECMAScript(" ")]
             public sealed class InvalidLibraryComponent : ComponentBase, IVueComponent;
 
             public sealed class SlotMapComponent : ComponentBase

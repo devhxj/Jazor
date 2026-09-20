@@ -43,8 +43,6 @@ public sealed class RazorSgVuIconsLibraryComponentTests
         Assert.IsNotNull(dynamicDescriptor);
         Assert.AreEqual("vu-icons/VuUser", staticDescriptor!.Import);
         Assert.AreEqual("vu-icons", dynamicDescriptor!.Import);
-        Assert.AreEqual(Transform.Component, staticDescriptor.Transform);
-        Assert.AreEqual(Transform.Component, dynamicDescriptor.Transform);
 
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/Icons.razor"),

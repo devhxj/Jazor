@@ -7,11 +7,16 @@ namespace Jazor.Common;
 /// Reads canonical external component binding metadata from Roslyn symbols.
 /// 从 Roslyn 符号读取统一的外部组件绑定元数据。
 /// </summary>
+/// <remarks>
+/// 组件身份由约定判定（派生 <c>ComponentBase</c> 且实现 Vue marker），不由特性表达。
+/// 因此这里只读取绑定本身：<c>[ECMAScript("specifier")]</c> 的 import specifier。
+/// 导出名由名字机制给出，调用方通过 <c>Jazor.Compiler.Util.GetConfigOrSymbolName</c> 解析。
+/// </remarks>
 public static class ECMAScriptComponentMetadata
 {
     private const string AttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
 
-    public readonly record struct ComponentImport(string ImportSpecifier, string? ExportName);
+    public readonly record struct ComponentImport(string ImportSpecifier);
 
     /// <summary>Determines whether one attribute instance is a valid component binding.</summary>
     public static bool IsComponentAttribute(AttributeData attribute)
@@ -19,7 +24,7 @@ public static class ECMAScriptComponentMetadata
         if (attribute is null)
             throw new ArgumentNullException(nameof(attribute));
 
-        return IsCanonicalAttribute(attribute) && TryRead(attribute, out _);
+        return TryRead(attribute, out _);
     }
 
     /// <summary>Reads a canonical component import descriptor.</summary>
@@ -28,46 +33,30 @@ public static class ECMAScriptComponentMetadata
         if (attribute is null)
             throw new ArgumentNullException(nameof(attribute));
 
-        if (IsCanonicalAttribute(attribute) && TryRead(attribute, out descriptor))
-            return true;
-
-        descriptor = default;
-        return false;
+        return TryRead(attribute, out descriptor);
     }
-
-    private static bool IsCanonicalAttribute(AttributeData attribute)
-        => string.Equals(
-            attribute.AttributeClass?.ToDisplayString(),
-            AttributeMetadataName,
-            StringComparison.Ordinal);
 
     private static bool TryRead(AttributeData attribute, out ComponentImport descriptor)
     {
         descriptor = default;
-        if (attribute.ConstructorArguments.Length < 2 ||
+        if (!string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                AttributeMetadataName,
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        // 无参形式是环境宿主契约，不构成组件绑定。
+        if (attribute.ConstructorArguments.Length != 1 ||
             attribute.ConstructorArguments[0].Value is not string importSpecifier ||
-            attribute.ConstructorArguments[1].Value is not int transform ||
-            transform != (int)Transform.Component ||
             string.IsNullOrWhiteSpace(importSpecifier))
         {
             return false;
         }
 
-        string? exportName = null;
-        if (attribute.ConstructorArguments.Length >= 3)
-        {
-            var exportArgument = attribute.ConstructorArguments[2];
-            if (exportArgument.Value is not null && exportArgument.Value is not string)
-                return false;
-
-            exportName = exportArgument.Value as string;
-            if (exportName is not null && string.IsNullOrWhiteSpace(exportName))
-                return false;
-        }
-
         descriptor = new ComponentImport(
-            ECMAScriptModulePath.ValidateExternalImportSpecifier(importSpecifier),
-            exportName?.Trim());
+            ECMAScriptModulePath.ValidateExternalImportSpecifier(importSpecifier));
         return true;
     }
 }

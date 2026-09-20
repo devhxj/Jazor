@@ -241,7 +241,6 @@ public sealed class DateFnsProxyTests
         var runtime = type.GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime, type.FullName);
         Assert.AreEqual(expectedImport, runtime!.Import, type.FullName);
-        Assert.AreEqual(Transform.Import, runtime.Transform, type.FullName);
     }
 
     private static void AssertNotObject(Type type, string location)

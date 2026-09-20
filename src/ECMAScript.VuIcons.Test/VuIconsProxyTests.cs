@@ -18,7 +18,7 @@ public sealed class VuIconsProxyTests
         var componentTypes = typeof(VuIcon).Assembly
             .GetExportedTypes()
             .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
-            .Where(static item => item.Attribute?.Transform == Transform.Component)
+            .Where(static item => item.Attribute?.Import is not null)
             .OrderBy(static item => item.Type.Name, StringComparer.Ordinal)
             .ToArray();
         var staticTypes = componentTypes
@@ -54,7 +54,7 @@ public sealed class VuIconsProxyTests
         {
             Assert.IsNotNull(attribute);
             Assert.IsTrue(imports.TryGetProperty(attribute!.Import!, out _), type.Name);
-            Assert.AreEqual(type.Name, attribute.ExportName, type.Name);
+            Assert.AreEqual(type.Name, type.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name, type.Name);
         }
     }
 

@@ -10,7 +10,8 @@ namespace ECMAScript;
 /// 面向前端列表拖拽排序的 Razor 创作代理；列表与插槽项类型由泛型参数精确表达。
 /// </summary>
 /// <typeparam name="TItem">列表元素类型。The list item type.</typeparam>
-[ECMAScript("vue-draggable-plus", Transform.Component, "VueDraggable")]
+[ECMAScriptName("VueDraggable")]
+[ECMAScript("vue-draggable-plus")]
 public sealed class VueDraggableList<TItem> : ComponentBase, IVueComponent
 {
     /// <summary>

@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 字段创作代理，用于组合自定义输入外观。
 /// Vuetify field authoring proxy for composing custom input chrome.
 /// </summary>
-[ECMAScript("vuetify/components/VField", Transform.Component, "VField")]
+[ECMAScript("vuetify/components/VField")]
 public sealed class VField : ComponentBase, IVuetifyComponent
 {
     /// <summary>

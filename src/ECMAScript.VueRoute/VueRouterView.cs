@@ -10,7 +10,8 @@ namespace ECMAScript;
 /// It preserves the scoped default slot so callers can render the matched
 /// component with the route context supplied by Vue Router.
 /// </summary>
-[ECMAScript("vue-router", Transform.Component, "RouterView")]
+[ECMAScriptName("RouterView")]
+[ECMAScript("vue-router")]
 public sealed class VueRouterView : ComponentBase, IVueComponent
 {
     /// <summary>

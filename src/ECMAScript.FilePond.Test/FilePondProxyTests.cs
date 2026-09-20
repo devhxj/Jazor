@@ -21,7 +21,6 @@ public sealed class FilePondProxyTests
         var runtime = typeof(FilePond).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(runtime);
         Assert.AreEqual("filepond", runtime!.Import);
-        Assert.AreEqual(Transform.Import, runtime.Transform);
     }
 
     [TestMethod]
@@ -33,9 +32,8 @@ public sealed class FilePondProxyTests
         var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(component);
         Assert.AreEqual("vue-filepond", component!.Import);
-        Assert.AreEqual(Transform.Component, component.Transform);
         // 上游适配器是默认导出的工厂，因此绑定 default 导出。
-        Assert.AreEqual("default", component.ExportName);
+        Assert.AreEqual("default", componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         var additionalAttributes = componentType.GetProperty(nameof(VueFilePond.AdditionalAttributes))!;
         Assert.IsTrue(additionalAttributes.GetCustomAttribute<Microsoft.AspNetCore.Components.ParameterAttribute>()!.CaptureUnmatchedValues);

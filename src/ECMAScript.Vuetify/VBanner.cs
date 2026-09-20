@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 横幅组件。
 /// Vuetify banner component.
 /// </summary>
-[ECMAScript("vuetify/components/VBanner", Transform.Component, "VBanner")]
+[ECMAScript("vuetify/components/VBanner")]
 public sealed class VBanner : ComponentBase, IVuetifyComponent
 {
     /// <summary>

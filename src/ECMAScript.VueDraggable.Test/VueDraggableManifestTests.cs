@@ -53,8 +53,7 @@ public sealed class VueDraggableManifestTests
         var attribute = typeof(ECMAScript.VueDraggableList<>).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(attribute);
         Assert.AreEqual("vue-draggable-plus", attribute!.Import);
-        Assert.AreEqual(Transform.Component, attribute.Transform);
-        Assert.AreEqual("VueDraggable", attribute.ExportName);
+        Assert.AreEqual("VueDraggable", typeof(ECMAScript.VueDraggableList<>).GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
 
         var bound = typeof(ECMAScript.VueDraggable)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)

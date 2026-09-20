@@ -115,13 +115,14 @@ internal static class VuetifyCatalogGenerator
                 if (attribute is null)
                     continue;
 
+                // 组件声明面：[ECMAScript("specifier")] 提供模块，导出名由 [ECMAScriptName] 给出。
                 var arguments = attribute.ArgumentList?.Arguments;
-                if (arguments is not { Count: 2 or 3 } ||
+                if (arguments is not { Count: 1 } ||
                     !TryReadString(arguments.Value[0], out var module) ||
-                    !TryReadComponentExport(arguments.Value, out var export))
+                    !TryReadComponentExport(declaration, out var export))
                 {
                     throw new InvalidOperationException(
-                        $"ECMAScript Component binding on {Path.GetFileName(path)} must declare module and export string literals.");
+                        $"ECMAScript Component binding on {Path.GetFileName(path)} must declare one module string literal and an [ECMAScriptName] export.");
                 }
 
                 var family = NormalizeComponentFamily(module, export);
@@ -138,7 +139,7 @@ internal static class VuetifyCatalogGenerator
         }
 
         if (components.Count == 0)
-            throw new InvalidOperationException("No [ECMAScript(..., Transform.Component, ...)] declarations were found in ECMAScript.Vuetify.");
+            throw new InvalidOperationException("No [ECMAScript(\"module\")] component declarations were found in ECMAScript.Vuetify.");
 
         return components
             .OrderBy(static component => component.Module, StringComparer.Ordinal)
@@ -284,14 +285,12 @@ internal static class VuetifyCatalogGenerator
             .SelectMany(static list => list.Attributes)
             .SingleOrDefault(IsComponentBinding);
         if (componentAttribute is not null &&
-            componentAttribute.ArgumentList?.Arguments is { Count: 2 or 3 } componentArguments &&
-            TryReadString(componentArguments[0], out _) &&
-            TryReadComponentExport(componentArguments, out var componentExport))
+            componentAttribute.ArgumentList?.Arguments is { Count: 1 } componentArguments &&
+            TryReadString(componentArguments[0], out _))
         {
+            // 只重写 specifier；导出名保留在 [ECMAScriptName] 上，由名字机制统一解析。
             var componentModule = GetComponentImportPath(component);
-            var replacement = componentArguments.Count == 2 && IsComponentTransform(componentArguments[1])
-                ? $"ECMAScript(\"{EscapeCSharpString(componentModule)}\", Transform.Component)"
-                : $"ECMAScript(\"{EscapeCSharpString(componentModule)}\", Transform.Component, \"{EscapeCSharpString(componentExport)}\")";
+            var replacement = $"ECMAScript(\"{EscapeCSharpString(componentModule)}\")";
             edits.Add(new TextEdit(
                 componentAttribute.Span.Start,
                 componentAttribute.Span.Length,
@@ -457,33 +456,31 @@ internal static class VuetifyCatalogGenerator
 
     private static bool IsComponentBinding(AttributeSyntax attribute)
         => (IsAttribute(attribute, "ECMAScript") &&
-            attribute.ArgumentList?.Arguments is { Count: 2 or 3 } arguments &&
-            IsComponentTransform(arguments[1]));
+            attribute.ArgumentList?.Arguments is { Count: 1 } arguments &&
+            TryReadString(arguments[0], out _));
 
-    private static bool TryReadComponentExport(
-        SeparatedSyntaxList<AttributeArgumentSyntax> arguments,
-        out string export)
+    /// <summary>
+    /// 从组件声明读取导出名：由 [ECMAScriptName] 给出，缺省回退类型名（名字机制的三态规则）。
+    /// </summary>
+    private static bool TryReadComponentExport(ClassDeclarationSyntax declaration, out string export)
     {
         export = string.Empty;
-        if (arguments.Count == 2)
-        {
-            if (IsComponentTransform(arguments[1]))
-            {
-                export = "default";
-                return true;
-            }
+        var nameAttribute = declaration.AttributeLists
+            .SelectMany(static list => list.Attributes)
+            .SingleOrDefault(IsECMAScriptName);
 
-            return false;
+        if (nameAttribute is null)
+        {
+            export = declaration.Identifier.ValueText;
+            return true;
         }
 
-        return IsComponentTransform(arguments[1]) && TryReadString(arguments[2], out export);
-    }
+        var arguments = nameAttribute.ArgumentList?.Arguments;
+        if (arguments is not { Count: 1 } || !TryReadString(arguments.Value[0], out export))
+            return false;
 
-    private static bool IsComponentTransform(AttributeArgumentSyntax argument)
-        => string.Equals(
-            argument.Expression.ToString(),
-            "Transform.Component",
-            StringComparison.Ordinal);
+        return !string.IsNullOrEmpty(export);
+    }
 
     private static bool IsECMAScriptName(AttributeSyntax attribute)
         => IsAttribute(attribute, "ECMAScriptName");

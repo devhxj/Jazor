@@ -13,7 +13,8 @@ namespace ECMAScript;
 /// proxy binds the default export; common options and callbacks travel through <see cref="Options"/>
 /// and remaining HTML attributes flow through the unmatched-values parameter.
 /// </summary>
-[ECMAScript("vue-filepond", Transform.Component, "default")]
+[ECMAScriptName("default")]
+[ECMAScript("vue-filepond")]
 public sealed class VueFilePond : ComponentBase, IVueComponent
 {
     /// <summary>

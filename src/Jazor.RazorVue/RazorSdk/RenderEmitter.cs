@@ -2035,7 +2035,7 @@ internal static class RenderEmitter
                             "Microsoft Blazor built-in UI component '" +
                             componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
                             "' is not supported by RazorVue. Use a ComponentBase + IVueComponent " +
-                            "component with [ECMAScriptModule] or [ECMAScript(import, Transform.Component, exportName)].");
+                            "component with [ECMAScriptModule] or [ECMAScript(\"package\")].");
                     }
                     var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
                     var componentExpression = isCascadingValue
@@ -4984,25 +4984,28 @@ internal static class RenderEmitter
         INamedTypeSymbol componentType)
     {
         EnsureRazorVueComponentContract(compilation, componentType);
+
+        // 导出名统一由名字机制给出（ECMAScriptName / Description("@#...")，缺省回退符号名）。
+        // 不再有组件专用的 "default" 回退：default 导出写成 [ECMAScriptName("default")]。
+        var exportName = Util.GetConfigOrSymbolName(componentType);
+
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (!string.IsNullOrWhiteSpace(exportPath))
-            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), "default");
+            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), exportName);
 
         foreach (var attribute in componentType.GetAttributes())
         {
             if (!ECMAScriptComponentMetadata.TryGetComponentImport(attribute, out var descriptor))
                 continue;
 
-            return new ComponentImportDescriptor(
-                descriptor.ImportSpecifier,
-                descriptor.ExportName ?? "default");
+            return new ComponentImportDescriptor(descriptor.ImportSpecifier, exportName);
         }
 
         throw new InvalidOperationException(
             "RazorVue component '" +
             componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
             "' must declare [ECMAScriptModule(\"./path\")] or " +
-            "[ECMAScript(\"package\", Transform.Component[, \"Export\"])] for direct render lowering.");
+            "[ECMAScript(\"package\")] for direct render lowering.");
     }
 
     private static void EnsureRazorVueComponentContract(

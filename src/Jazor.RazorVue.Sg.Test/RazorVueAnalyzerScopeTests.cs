@@ -271,10 +271,11 @@ public sealed partial class RazorVueAnalyzerScopeTests
                 public ReactWidget Use(ReactWidget widget) => widget;
             }
 
-            [ECMAScript("react-library", Transform.Component, "Widget")]
+            [ECMAScriptName("Widget")]
+            [ECMAScript("react-library")]
             public sealed class LibraryWidget;
 
-            [ECMAScript("react-library", Transform.Component, "ReactWidget")]
+            [ECMAScript("react-library")]
             public sealed class ReactWidget;
             """,
             includeVueContractReference: false);
