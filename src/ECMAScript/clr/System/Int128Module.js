@@ -1,6 +1,6 @@
-import { FromBigIntCore } from "System/HalfModule.js";
-import { AbsSigned, BigMulSigned, Clamp, CompareToObject, CopySignSigned, DivRemSigned, DivideSigned, EnsureRange, FromDecimal, FromFloatingChecked, FromFloatingSaturatingSigned, LeadingZeroCount, Log10, Log2Signed, MaxMagnitude, MinMagnitude, Parse, PopCount, RemainderSigned, RotateLeft, RotateRight, ToCheckedNumber, ToDecimal, TrailingZeroCount, TryParse } from "System/Numerics/BigIntIntegerRuntime.js";
-import { GetInt128HashCode, TryDecodeUtf8 } from "System/RuntimeModule.js";
+import { FromBigIntCore } from "./HalfModule.js";
+import { AbsSigned, BigMulSigned, Clamp, CompareToObject, CopySignSigned, DivRemSigned, DivideSigned, EnsureRange, FromDecimal, FromFloatingChecked, FromFloatingSaturatingSigned, LeadingZeroCount, Log10, Log2Signed, MaxMagnitude, MinMagnitude, Parse, PopCount, RemainderSigned, RotateLeft, RotateRight, ToCheckedNumber, ToDecimal, TrailingZeroCount, TryParse } from "./Numerics/BigIntIntegerRuntime.js";
+import { GetInt128HashCode, TryDecodeUtf8 } from "./RuntimeModule.js";
 function get_MinValueCore() {
   return BigInt("-170141183460469231731687303715884105728");
 }

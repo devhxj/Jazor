@@ -1,5 +1,5 @@
-import { DivRemUnsigned, LeadingZeroCount, Parse, PopCount, RotateLeft, RotateRight, TrailingZeroCount, TryParse } from "System/Numerics/BigIntIntegerRuntime.js";
-import { GetInt64HashCode, TryDecodeUtf8 } from "System/RuntimeModule.js";
+import { DivRemUnsigned, LeadingZeroCount, Parse, PopCount, RotateLeft, RotateRight, TrailingZeroCount, TryParse } from "./Numerics/BigIntIntegerRuntime.js";
+import { GetInt64HashCode, TryDecodeUtf8 } from "./RuntimeModule.js";
 function get_Mask() {
   return BigInt("18446744073709551615");
 }

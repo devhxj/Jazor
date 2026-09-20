@@ -1,5 +1,5 @@
-import { AddCore_c1d44e5d9916d4b9, Create_2c5622046787c7f9 } from "System/Collections/Generic/HashSetT1Module.js";
-import { CreateReadOnlyArrayView, MarkAsReadOnlySetCarrier } from "System/RuntimeModule.js";
+import { CreateReadOnlyArrayView, MarkAsReadOnlySetCarrier } from "../../RuntimeModule.js";
+import { AddCore_c1d44e5d9916d4b9, Create_2c5622046787c7f9 } from "../Generic/HashSetT1Module.js";
 function EnsureWholeNumber(value, parameterName) {
   if (isNaN(value) || Math.floor(value) !== value)
     throw new Error(`ArgumentOutOfRangeException: ${parameterName ?? ""} must be a whole number.`);

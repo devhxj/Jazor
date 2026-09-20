@@ -1,5 +1,5 @@
-import { GetStringRepresentation } from "System/RuntimeModule.js";
-import { _0333a0fd5f67d8a0, _189761f781df8770, _3ae4900da2b07b27 } from "System/StringModule.js";
+import { GetStringRepresentation } from "../../../System/RuntimeModule.js";
+import { _0333a0fd5f67d8a0, _189761f781df8770, _3ae4900da2b07b27 } from "../../../System/StringModule.js";
 /*jazor:clr-member static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, bool)*/
 export function getUriWithQueryParameterBoolean(navigationManager, name, value) {
   return GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);

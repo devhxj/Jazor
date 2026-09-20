@@ -1,4 +1,4 @@
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 export function MaterializeReadOnlyCharSpan(value) {
   let raw = value;
   if (raw === null)

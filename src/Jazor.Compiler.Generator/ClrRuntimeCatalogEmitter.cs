@@ -18,6 +18,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 /// </remarks>
 internal static class ClrRuntimeCatalogEmitter
 {
+    /// <summary>项目源码树中 CLR 源码 carrier 的根目录（相对项目根）。</summary>
+    internal const string ClrSourceRoot = "clr/";
+
     private const int ManifestSchemaVersion = 2;
     private const string LibraryId = "ecmascript";
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
@@ -56,9 +59,13 @@ internal static class ClrRuntimeCatalogEmitter
         {
             try
             {
+                // 该 carrier 的文件写在项目源码树的 clr/ 下（见下方 path = "clr/" + RelativePath）。
+                // 导入与目标使用同一前缀，因此 carrier 内部的相对 specifier 在两种视图下一致。
                 var options = new AstConverterOptions(
                     AstConverterProfile.ClrRuntime,
-                    symbol => ClrRuntimeSelection.ShouldInclude(candidate.RootType, symbol));
+                    symbol => ClrRuntimeSelection.ShouldInclude(candidate.RootType, symbol),
+                    CurrentModuleOutputPath: ClrSourceRoot + NormalizeRelativePath(candidate.RelativePath),
+                    ModuleCatalogOutputPrefix: ClrSourceRoot);
                 var module = new AstConverter(candidate.RootType, candidate.SemanticModel, options)
                     .Convert()
                     .GetAwaiter()
@@ -102,21 +109,31 @@ internal static class ClrRuntimeCatalogEmitter
             .Select(static module => module.RelativePath)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         generated = generated
-            .Select(module => module with
+            .Select(module =>
             {
-                ModuleDependencies = module.Imports
-                    .Where(modulePaths.Contains)
-                    .Select(NormalizeRelativePath)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
-                    .ToArray(),
-                PackageDependencies = module.Imports
-                    .Where(import => !modulePaths.Contains(import))
-                    .Where(ECMAScriptModulePath.IsPackageSpecifier)
-                    .Select(static import => import.Trim())
-                    .Distinct(StringComparer.Ordinal)
-                    .OrderBy(static value => value, StringComparer.Ordinal)
-                    .ToArray()
+                // 载体内部的 import 已写成相对 specifier（项目内模块必须如此），因此这里先把
+                // 每个 specifier 解析回逻辑路径，再按 modulePaths 分类。否则所有相对 specifier
+                // 都会被当成"非本图导入"，模块依赖会被误记为缺失。
+                var resolvedImports = module.Imports
+                    .Select(import => ResolveLogicalImport(module.RelativePath, import, modulePaths))
+                    .Where(static value => value is not null)
+                    .Select(static value => value!)
+                    .ToArray();
+                return module with
+                {
+                    ModuleDependencies = resolvedImports
+                        .Where(modulePaths.Contains)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+                        .ToArray(),
+                    PackageDependencies = resolvedImports
+                        .Where(import => !modulePaths.Contains(import))
+                        .Where(ECMAScriptModulePath.IsPackageSpecifier)
+                        .Select(static import => import.Trim())
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(static value => value, StringComparer.Ordinal)
+                        .ToArray()
+                };
             })
             .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
@@ -182,7 +199,7 @@ internal static class ClrRuntimeCatalogEmitter
         var imports = new SortedDictionary<string, object>(StringComparer.Ordinal);
         foreach (var module in modules)
         {
-            var path = "clr/" + module.RelativePath;
+            var path = ClrSourceRoot + module.RelativePath;
             imports[module.RelativePath] = new
             {
                 type = "module",
@@ -447,6 +464,33 @@ internal static class ClrRuntimeCatalogEmitter
         INamedTypeSymbol RootType,
         SemanticModel SemanticModel,
         string RelativePath);
+
+    /// <summary>
+    /// 把载体模块写出的 import specifier 解析回逻辑 carrier 路径。
+    ///
+    /// 相对 specifier 以调用方的项目输出位置为起点；解析出的项目路径去掉 carrier 前缀就是
+    /// 逻辑路径。裸 specifier 原样返回（真实包引用，如 "vue"）。
+    /// </summary>
+    private static string? ResolveLogicalImport(
+        string importerRelativePath,
+        string importSpecifier,
+        IReadOnlySet<string> knownModulePaths)
+    {
+        if (string.IsNullOrWhiteSpace(importSpecifier))
+            return null;
+
+        if (!importSpecifier.StartsWith(".", StringComparison.Ordinal))
+            return knownModulePaths.Contains(importSpecifier) ? importSpecifier : importSpecifier;
+
+        // 相对 specifier 需要用 ResolveRelativePath 按 importer 展开（而不是 ResolveRelativeToImporter，
+        // 后者是反方向：由两个项目路径反算相对 specifier）。
+        var importerProjectPath = ClrSourceRoot + NormalizeRelativePath(importerRelativePath);
+        var targetProjectPath = ECMAScriptModulePath.ResolveRelativePath(importerProjectPath, importSpecifier);
+        var normalized = NormalizeRelativePath(targetProjectPath);
+        return normalized.StartsWith(ClrSourceRoot, StringComparison.Ordinal)
+            ? normalized[ClrSourceRoot.Length..]
+            : normalized;
+    }
 
     private sealed record GeneratedClrRuntimeModule(
         string TypeName,

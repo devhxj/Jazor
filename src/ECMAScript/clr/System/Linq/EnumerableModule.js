@@ -1,11 +1,11 @@
-import { CompareCore } from "System/Collections/Generic/ComparerT1Module.js";
-import { Create_9a1218e69f90a6ca } from "System/Collections/Generic/DictionaryT2Module.js";
-import { EqualsCore, GetHashCodeCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { CreateFrom } from "System/Collections/Generic/HashSetT1Module.js";
-import { _0289dcf579b8a65e } from "System/Collections/Generic/IComparerT1Module.js";
-import { _dae184550b995be1, _f53ff8f6435182d7 } from "System/Collections/Generic/IEqualityComparerT1Module.js";
-import { _91a2436283a24315, _c11e0aef6b5ccf1e, _f5c1c0a2a040b000, _f73258f14e05c790 } from "System/DecimalModule.js";
-import { Create, GetKey } from "System/Linq/GroupingT2Module.js";
+import { CompareCore } from "../Collections/Generic/ComparerT1Module.js";
+import { Create_9a1218e69f90a6ca } from "../Collections/Generic/DictionaryT2Module.js";
+import { EqualsCore, GetHashCodeCore } from "../Collections/Generic/EqualityComparerT1Module.js";
+import { CreateFrom } from "../Collections/Generic/HashSetT1Module.js";
+import { _0289dcf579b8a65e } from "../Collections/Generic/IComparerT1Module.js";
+import { _dae184550b995be1, _f53ff8f6435182d7 } from "../Collections/Generic/IEqualityComparerT1Module.js";
+import { _91a2436283a24315, _c11e0aef6b5ccf1e, _f5c1c0a2a040b000, _f73258f14e05c790 } from "../DecimalModule.js";
+import { Create, GetKey } from "./GroupingT2Module.js";
 let OrderedStates = new WeakMap;
 let LookupComparers = new WeakMap;
 function Materialize(source) {

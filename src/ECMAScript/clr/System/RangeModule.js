@@ -1,4 +1,4 @@
-import { JIndex, JRange } from "System/RuntimeModule.js";
+import { JIndex, JRange } from "./RuntimeModule.js";
 function EqualsCore(left, right) {
   return left.value === right.value && left.fromEnd === right.fromEnd;
 }

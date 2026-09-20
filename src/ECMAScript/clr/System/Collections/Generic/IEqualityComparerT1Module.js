@@ -1,4 +1,4 @@
-import { EnsureComparerInstance } from "System/Collections/Generic/EqualityComparerT1Module.js";
+import { EnsureComparerInstance } from "./EqualityComparerT1Module.js";
 /*jazor:clr-member System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)*/
 export function _dae184550b995be1(instance, x, y) {
   EnsureComparerInstance(instance);

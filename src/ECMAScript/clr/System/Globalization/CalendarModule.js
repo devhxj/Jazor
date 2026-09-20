@@ -1,4 +1,4 @@
-import { _10c29328b0ef4014, _13ca7ecb3e3aade5, _1c4bd410ce12db05, _21a6ebc60ed3b388, _29ccd13d5e5508f8, _2c293866a460d9ea, _4c3723e9b82aa507, _5df8d3230f9681b9, _5f5d0a874674bdea, _6cdddcc68587ea95, _705c207141cada42, _7545c4d66f0f3604, _7ba83b2ccdd567b5, _81e475ed63f62602, _91a08597c1c93445, _9537b0490ec80689, _9917941c9da950b5, _c01c2927eaf2fefe, _cca1b99b56b6a322, _ce58c7d4d1c36fe3, _ce76f400b1aa26d3, _e32c11e11fbe2e3b, _fd5a2cde6fb4d6f5 } from "System/Globalization/GregorianCalendarModule.js";
+import { _10c29328b0ef4014, _13ca7ecb3e3aade5, _1c4bd410ce12db05, _21a6ebc60ed3b388, _29ccd13d5e5508f8, _2c293866a460d9ea, _4c3723e9b82aa507, _5df8d3230f9681b9, _5f5d0a874674bdea, _6cdddcc68587ea95, _705c207141cada42, _7545c4d66f0f3604, _7ba83b2ccdd567b5, _81e475ed63f62602, _91a08597c1c93445, _9537b0490ec80689, _9917941c9da950b5, _c01c2927eaf2fefe, _cca1b99b56b6a322, _ce58c7d4d1c36fe3, _ce76f400b1aa26d3, _e32c11e11fbe2e3b, _fd5a2cde6fb4d6f5 } from "./GregorianCalendarModule.js";
 /*jazor:clr-member virtual System.Globalization.Calendar.MinSupportedDateTime.get*/
 export function _a347363369470161(instance) {
   return _13ca7ecb3e3aade5(instance);

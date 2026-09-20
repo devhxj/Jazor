@@ -1,4 +1,4 @@
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 let LetterPattern = new RegExp("^\\p{L}$", "u");
 let NumberPattern = new RegExp("^\\p{N}$", "u");
 let PunctuationPattern = new RegExp("^\\p{P}$", "u");

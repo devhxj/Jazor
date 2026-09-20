@@ -1,5 +1,5 @@
-import { Create_9a1218e69f90a6ca } from "System/Collections/Generic/DictionaryT2Module.js";
-import { MarkAsReadOnlyDictionaryCarrier } from "System/RuntimeModule.js";
+import { MarkAsReadOnlyDictionaryCarrier } from "../../RuntimeModule.js";
+import { Create_9a1218e69f90a6ca } from "../Generic/DictionaryT2Module.js";
 function EnsureInstance(instance) {
   if (instance == null)
     throw new Error("NullReferenceException: instance is null.");

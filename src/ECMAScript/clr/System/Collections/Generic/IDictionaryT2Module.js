@@ -1,4 +1,4 @@
-import { IsReadOnlyDictionaryCarrier } from "System/RuntimeModule.js";
+import { IsReadOnlyDictionaryCarrier } from "../../RuntimeModule.js";
 function EnsureInstance(instance) {
   if (instance == null)
     throw new Error("NullReferenceException: instance is null.");

@@ -1,5 +1,5 @@
-import { TryDecodeUtf8 } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { TryDecodeUtf8 } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function TryParseUInt16Core(s, value) {
   value = 0;
   if (s === null)

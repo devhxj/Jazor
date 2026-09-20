@@ -1,4 +1,4 @@
-import { UnregisterCancellationCallback } from "System/RuntimeModule.js";
+import { UnregisterCancellationCallback } from "../RuntimeModule.js";
 /*jazor:clr-member System.Threading.CancellationTokenRegistration.Dispose()*/
 export function dispose(instance) {
   UnregisterCancellationCallback(instance);

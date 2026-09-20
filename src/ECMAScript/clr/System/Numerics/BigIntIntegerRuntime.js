@@ -1,5 +1,5 @@
-import { _be8b149ea0e1d76b } from "System/DecimalModule.js";
-import { IsFiniteCore } from "System/DoubleModule.js";
+import { _be8b149ea0e1d76b } from "../DecimalModule.js";
+import { IsFiniteCore } from "../DoubleModule.js";
 let DecimalIntegerPattern = new RegExp("^[+-]?\\d+$");
 export function CompareToObject(instance, value, typeName) {
   if (value === null)

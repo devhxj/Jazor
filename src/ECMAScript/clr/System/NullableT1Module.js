@@ -1,5 +1,5 @@
-import { CompareCore } from "System/Collections/Generic/ComparerT1Module.js";
-import { EqualsCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
+import { CompareCore } from "./Collections/Generic/ComparerT1Module.js";
+import { EqualsCore } from "./Collections/Generic/EqualityComparerT1Module.js";
 /*jazor:clr-member static System.Nullable.Compare<T>(T?, T?)*/
 export function _fcbe94e0f2cfc6f4(n1, n2) {
   if (!(n1 !== null && n1 !== undefined))

@@ -1,5 +1,5 @@
-import { Create_2c5622046787c7f9, IsProperSubsetOfCore, IsProperSupersetOfCore, IsSubsetOfCore, IsSupersetOfCore, OverlapsCore, SetEqualsCore } from "System/Collections/Generic/HashSetT1Module.js";
-import { MarkAsReadOnlySetCarrier } from "System/RuntimeModule.js";
+import { MarkAsReadOnlySetCarrier } from "../../RuntimeModule.js";
+import { Create_2c5622046787c7f9, IsProperSubsetOfCore, IsProperSupersetOfCore, IsSubsetOfCore, IsSupersetOfCore, OverlapsCore, SetEqualsCore } from "../Generic/HashSetT1Module.js";
 /*jazor:clr-member System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)*/
 export function _aede400efbd05842(set) {
   if (set === null)

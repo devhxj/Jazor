@@ -1,4 +1,4 @@
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 const EmptyGuid = "00000000-0000-0000-0000-000000000000";
 function GetHexValue(c) {
   if (c.charCodeAt(0) >= "0".charCodeAt(0) && c.charCodeAt(0) <= "9".charCodeAt(0))

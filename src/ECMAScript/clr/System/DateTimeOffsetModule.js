@@ -1,6 +1,6 @@
-import { IsFiniteCore, IsNaNCore } from "System/DoubleModule.js";
-import { CreateLocalDate, CreateLocalDateTime, CreateUtcDate, FormatDateOnlyText, GetDaysInMonth, GetInt64HashCode, JDateOnly, JDateTime, JDateTimeOffset, JTimeOnly, JTimeSpan, Pad2, Pad7, PadLeft, RequireGregorianCalendar } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { IsFiniteCore, IsNaNCore } from "./DoubleModule.js";
+import { CreateLocalDate, CreateLocalDateTime, CreateUtcDate, FormatDateOnlyText, GetDaysInMonth, GetInt64HashCode, JDateOnly, JDateTime, JDateTimeOffset, JTimeOnly, JTimeSpan, Pad2, Pad7, PadLeft, RequireGregorianCalendar } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function get_ZeroTicks() {
   return 0n;
 }

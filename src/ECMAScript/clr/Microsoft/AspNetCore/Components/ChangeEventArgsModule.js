@@ -1,4 +1,4 @@
-import { _b7c36408f0f172e9 } from "System/StringModule.js";
+import { _b7c36408f0f172e9 } from "../../../System/StringModule.js";
 let Values = new WeakMap;
 /*jazor:clr-member Microsoft.AspNetCore.Components.ChangeEventArgs.captureChangeEvent*/
 export function captureChangeEvent(event) {

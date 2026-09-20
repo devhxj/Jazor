@@ -1,7 +1,7 @@
-import { CompareCore, CompareObjectsCore } from "System/Collections/Generic/ComparerT1Module.js";
-import { _0289dcf579b8a65e } from "System/Collections/Generic/IComparerT1Module.js";
-import { _7dffdd7244581cc5 } from "System/Collections/IComparerModule.js";
-import { CreateReadOnlyArrayView } from "System/RuntimeModule.js";
+import { CompareCore, CompareObjectsCore } from "./Collections/Generic/ComparerT1Module.js";
+import { _0289dcf579b8a65e } from "./Collections/Generic/IComparerT1Module.js";
+import { _7dffdd7244581cc5 } from "./Collections/IComparerModule.js";
+import { CreateReadOnlyArrayView } from "./RuntimeModule.js";
 function CompareDefault(left, right) {
   return CompareCore(left, right);
 }

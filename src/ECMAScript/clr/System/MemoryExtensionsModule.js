@@ -1,6 +1,6 @@
-import { EqualsCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { MaterializeReadOnlyCharSpan } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { EqualsCore } from "./Collections/Generic/EqualityComparerT1Module.js";
+import { MaterializeReadOnlyCharSpan } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 /*jazor:clr-member System.ReadOnlySpan<char>.Trim()*/
 export function trim(source) {
   return MaterializeReadOnlyCharSpan(source).trim();

@@ -1,5 +1,5 @@
-import { _0dc538197c677986, _562f832fd220e768, _a5e8c6b27df6470b, add } from "System/Collections/Generic/ListT1Module.js";
-import { IsMutableListCarrier, RequireMutableListCarrier } from "System/RuntimeModule.js";
+import { IsMutableListCarrier, RequireMutableListCarrier } from "../RuntimeModule.js";
+import { _0dc538197c677986, _562f832fd220e768, _a5e8c6b27df6470b, add } from "./Generic/ListT1Module.js";
 function EnsureWholeNumber(value, parameterName) {
   if (isNaN(value) || Math.floor(value) !== value)
     throw new Error(`ArgumentOutOfRangeException: ${parameterName ?? ""} must be a whole number.`);

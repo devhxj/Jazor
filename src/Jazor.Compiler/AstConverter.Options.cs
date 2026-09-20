@@ -19,7 +19,9 @@ public sealed record AstConverterOptions(
     IReadOnlyDictionary<ISymbol, string>? DeclaredNames = null,
     SemanticWalkerHost? Host = null,
     AstConverterModulePolicy? ModulePolicy = null,
-    RuntimeClassPrivateStorage RuntimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields)
+    RuntimeClassPrivateStorage RuntimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields,
+    string? CurrentModuleOutputPath = null,
+    string ModuleCatalogOutputPrefix = "")
 {
     public static AstConverterOptions Default { get; } = new(AstConverterProfile.Standard);
 }

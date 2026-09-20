@@ -157,20 +157,30 @@ public sealed class ESGenerator : IIncrementalGenerator
 
             try
             {
+                // 生成模块的导入目标：本模块自身的输出路径是相对 specifier 的起点；
+                // CLR 源码 carrier 写在项目源码树的 clr/ 下（由 ClrRuntimeCatalogEmitter 决定），
+                // 因此这里用同一前缀解析 catalog 逻辑路径。
                 var converter = new AstConverter(
                     candidate.ClassSymbol,
                     candidate.SemanticModel,
-                    new AstConverterOptions(AstConverterProfile.ClrRuntime));
+                    new AstConverterOptions(
+                        AstConverterProfile.ClrRuntime,
+                        CurrentModuleOutputPath: plan.RelativePath,
+                        // 宿主生成时引用的 carrier 路径（Op.Import / 硬编码 carrier 引用）
+                        // 写在项目源码树的 clr/ 下。
+                        ModuleCatalogOutputPrefix: "clr/"));
                 var module = converter.Convert().GetAwaiter().GetResult();
+                // 产物图边记录的是**逻辑路径**（stable identity），而模块体里写的是相对
+                // specifier（D3）。因此判定 catalog 导入时先把相对 specifier 按本模块位置
+                // 还原成项目路径，再与逻辑集合比对。
                 var moduleCatalogImportPaths = new HashSet<string>(
                     converter.ModuleCatalogImportPaths.Select(ECMAScriptModulePath.NormalizeImportSpecifier),
                     StringComparer.Ordinal);
                 var packageImports = module?.Body
                     .OfType<ImportDeclaration>()
                     .Select(static declaration => declaration.Source.Value)
-                    .Where(source => !moduleCatalogImportPaths.Contains(
-                        ECMAScriptModulePath.NormalizeImportSpecifier(source)))
-                    .Where(ECMAScriptModulePath.IsPackageSpecifier)
+                    .Where(source => ECMAScriptModulePath.IsPackageSpecifier(source))
+                    .Where(source => !IsModuleCatalogImport(source, plan.RelativePath, moduleCatalogImportPaths))
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(static specifier => specifier, StringComparer.Ordinal)
                     .ToArray() ?? [];
@@ -405,6 +415,37 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static string NormalizeRelativePath(string path)
         => ECMAScriptModulePath.NormalizeRelativePath(path);
 
+    /// <summary>
+    /// 判定一个 import specifier 是否指向本图内的 ModuleCatalog 模块。
+    ///
+    /// 项目内引用写成相对 specifier，需要先用 <c>clr/</c> 前缀解析回项目路径，
+    /// 再映射回逻辑路径（CLR carrier 的逻辑路径不含前缀）。
+    /// </summary>
+    private static bool IsModuleCatalogImport(
+        string source,
+        string relativePath,
+        ISet<string> moduleCatalogImportPaths)
+    {
+        if (ECMAScriptModulePath.IsPackageSpecifier(source))
+            return false;
+
+        if (!source.StartsWith("./", StringComparison.Ordinal) &&
+            !source.StartsWith("../", StringComparison.Ordinal))
+        {
+            return moduleCatalogImportPaths.Contains(
+                ECMAScriptModulePath.NormalizeImportSpecifier(source));
+        }
+
+        var projectPath = ECMAScriptModulePath.ResolveRelativePath(relativePath, source);
+        if (moduleCatalogImportPaths.Contains(projectPath))
+            return true;
+
+        // CLR carrier 的逻辑路径省略 clr/ 前缀。
+        const string carrierRoot = "clr/";
+        return projectPath.StartsWith(carrierRoot, StringComparison.Ordinal) &&
+               moduleCatalogImportPaths.Contains(projectPath.Substring(carrierRoot.Length));
+    }
+
     private static IReadOnlyList<string> CollectModuleDependencies(
         Acornima.Ast.Module? module,
         string relativePath,
@@ -417,19 +458,34 @@ public sealed class ESGenerator : IIncrementalGenerator
         foreach (var declaration in module.Body.OfType<ImportDeclaration>())
         {
             var source = declaration.Source.Value;
-            var normalizedSource = ECMAScriptModulePath.NormalizeImportSpecifier(source);
-            var isModuleCatalogImport = moduleCatalogImportPaths.Contains(normalizedSource);
-            if (!isModuleCatalogImport &&
+            // 项目内模块写出的是相对 specifier（D3）；它不能走 NormalizeImportSpecifier，
+            // 那条路径面向逻辑/根相对路径并且会拒绝 ".."。
+            var isRelativeSpecifier = source.StartsWith("./", StringComparison.Ordinal) ||
+                                      source.StartsWith("../", StringComparison.Ordinal);
+            var isModuleCatalogImport = !isRelativeSpecifier &&
+                                        moduleCatalogImportPaths.Contains(
+                                            ECMAScriptModulePath.NormalizeImportSpecifier(source));
+            if (!isRelativeSpecifier &&
+                !isModuleCatalogImport &&
                 (string.Equals(source, "style.mjs", StringComparison.Ordinal) ||
                  ECMAScriptModulePath.IsPackageSpecifier(source)))
             {
                 continue;
             }
 
-            var dependency = source.StartsWith("./", StringComparison.Ordinal) ||
-                             source.StartsWith("../", StringComparison.Ordinal)
-                ? ECMAScriptModulePath.ResolveRelativePath(relativePath, source)
-                : NormalizeRelativePath(source);
+            // 两种形态都归一成"项目相对路径"，它才是产物图的边标识。
+            string dependency;
+            try
+            {
+                dependency = isRelativeSpecifier
+                    ? ECMAScriptModulePath.ResolveRelativePath(relativePath, source)
+                    : NormalizeRelativePath(source);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"DBG dep relativePath={relativePath} source={source} isRel={isRelativeSpecifier} isCatalog={isModuleCatalogImport}: {ex.Message}", ex);
+            }
             dependencies.Add(dependency);
         }
 

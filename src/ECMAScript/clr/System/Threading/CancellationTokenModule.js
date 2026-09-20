@@ -1,4 +1,4 @@
-import { RegisterCancellationCallback } from "System/RuntimeModule.js";
+import { RegisterCancellationCallback } from "../RuntimeModule.js";
 let NoneSignal = (new AbortController).signal;
 export function GetNoneSignal() {
   return NoneSignal;

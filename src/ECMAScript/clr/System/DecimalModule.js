@@ -1,6 +1,6 @@
-import { IsFiniteCore } from "System/DoubleModule.js";
-import { DecodeUtf8OrThrowFormat, GetStringHashCode, TryDecodeUtf8 } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { IsFiniteCore } from "./DoubleModule.js";
+import { DecodeUtf8OrThrowFormat, GetStringHashCode, TryDecodeUtf8 } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function get_MaxFractionDigits() {
   return 28;
 }

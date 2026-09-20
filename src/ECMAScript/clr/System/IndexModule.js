@@ -1,4 +1,4 @@
-import { JIndex } from "System/RuntimeModule.js";
+import { JIndex } from "./RuntimeModule.js";
 /*jazor:clr-member System.Index.Index()*/
 export function _94a150c0b38bdd79() {
   return new JIndex(0, false);

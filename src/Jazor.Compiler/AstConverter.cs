@@ -390,7 +390,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 ReservedImportNames,
                 _currentModuleImportPath,
                 ModuleDeclaredBindings,
-                _moduleCatalogImportPaths);
+                _moduleCatalogImportPaths,
+                _options.CurrentModuleOutputPath,
+                _options.ModuleCatalogOutputPrefix);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
         => syntax.SyntaxTree == _classModel.SyntaxTree

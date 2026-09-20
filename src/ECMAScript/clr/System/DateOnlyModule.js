@@ -1,5 +1,5 @@
-import { CreateLocalDateTime, CreateUtcDate, GetDaysInMonth, JDateOnly, JDateTime } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { CreateLocalDateTime, CreateUtcDate, GetDaysInMonth, JDateOnly, JDateTime } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function get_MaxDayNumber() {
   return 3652058;
 }

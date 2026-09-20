@@ -1,5 +1,5 @@
-import { EqualsCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { JQueue } from "System/RuntimeModule.js";
+import { JQueue } from "../../RuntimeModule.js";
+import { EqualsCore } from "./EqualityComparerT1Module.js";
 function EnsureInstance(instance) {
   if (instance == null)
     throw new Error("NullReferenceException: instance is null.");

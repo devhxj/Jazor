@@ -1162,7 +1162,7 @@ public partial class SemanticWalker
 		{
 			// ToList transfers a fresh Array into List<T> ownership. The runtime marker is the
 			// interface-mutation contract; ToArray deliberately remains an unmarked fixed array.
-			var markAsMutableListCarrier = context.BindExternalImportSpecifier(
+			var markAsMutableListCarrier = context.BindCarrierImportSpecifier(
 				"System/RuntimeModule.js",
 				"MarkAsMutableListCarrier");
 			intrinsicExpression = new CallExpression(

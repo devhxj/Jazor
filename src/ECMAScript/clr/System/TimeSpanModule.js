@@ -1,6 +1,6 @@
-import { IsFiniteCore, IsNaNCore } from "System/DoubleModule.js";
-import { GetInt64HashCode, JTimeSpan, Pad2, Pad7 } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { IsFiniteCore, IsNaNCore } from "./DoubleModule.js";
+import { GetInt64HashCode, JTimeSpan, Pad2, Pad7 } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function get_TicksPerMicrosecond() {
   return BigInt("10");
 }

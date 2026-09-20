@@ -1,14 +1,14 @@
-import { _42cbe2ef401fb8c9 } from "System/ByteModule.js";
-import { _09ee3a4652dbe73c, _4a816369b59f1ca3, _518facaaeeb29ead, _84028a6e79626057, _872018e11335480a, _a334f7e82122cfc2, _bc3a974d51c694ab, _be8b149ea0e1d76b, _ceb21f954af742e7, _e85678b4de2283e8, _e886400fbfdbdaaa, _ed803cf9c8c052f1 } from "System/DecimalModule.js";
-import { BitDecrementCore, BitIncrementCore, ILogBCore, Ieee754RemainderCore, RoundCore, RoundToEvenCore, SignCore } from "System/DoubleModule.js";
-import { _8ce36b36c4abd947, _b2c1f15fae072110 } from "System/Int16Module.js";
-import { _49bf8261f5cf3a4b, _d4cc9914e60e5643 } from "System/Int32Module.js";
-import { _28273cd350760efe, _6ae5b36df368d1e5 } from "System/Int64Module.js";
-import { _f0d5d38874458f27 } from "System/SByteModule.js";
-import { SignCore as i$13da0788953b6235 } from "System/SingleModule.js";
-import { _80e78c0aa0b98fef } from "System/UInt16Module.js";
-import { _8a073d758132b5bb } from "System/UInt32Module.js";
-import { _fbae7adf5aedb1a5 } from "System/UInt64Module.js";
+import { _42cbe2ef401fb8c9 } from "./ByteModule.js";
+import { _09ee3a4652dbe73c, _4a816369b59f1ca3, _518facaaeeb29ead, _84028a6e79626057, _872018e11335480a, _a334f7e82122cfc2, _bc3a974d51c694ab, _be8b149ea0e1d76b, _ceb21f954af742e7, _e85678b4de2283e8, _e886400fbfdbdaaa, _ed803cf9c8c052f1 } from "./DecimalModule.js";
+import { BitDecrementCore, BitIncrementCore, ILogBCore, Ieee754RemainderCore, RoundCore, RoundToEvenCore, SignCore } from "./DoubleModule.js";
+import { _8ce36b36c4abd947, _b2c1f15fae072110 } from "./Int16Module.js";
+import { _49bf8261f5cf3a4b, _d4cc9914e60e5643 } from "./Int32Module.js";
+import { _28273cd350760efe, _6ae5b36df368d1e5 } from "./Int64Module.js";
+import { _f0d5d38874458f27 } from "./SByteModule.js";
+import { SignCore as i$ad3494b6a242de8b } from "./SingleModule.js";
+import { _80e78c0aa0b98fef } from "./UInt16Module.js";
+import { _8a073d758132b5bb } from "./UInt32Module.js";
+import { _fbae7adf5aedb1a5 } from "./UInt64Module.js";
 function CompareCore(left, right) {
   if (isNaN(left))
     return isNaN(right) ? 0 : -1;
@@ -222,7 +222,7 @@ export function _9a554cfca79bdc59(value) {
 }
 /*jazor:clr-member static System.Math.Sign(float)*/
 export function _c0668680ba7ef96e(value) {
-  return i$13da0788953b6235(value);
+  return i$ad3494b6a242de8b(value);
 }
 /*jazor:clr-member static System.Math.Truncate(decimal)*/
 export function _abd9211e1e7514b4(d) {

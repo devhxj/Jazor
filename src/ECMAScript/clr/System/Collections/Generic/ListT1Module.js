@@ -1,6 +1,6 @@
-import { CompareCore } from "System/Collections/Generic/ComparerT1Module.js";
-import { _0289dcf579b8a65e } from "System/Collections/Generic/IComparerT1Module.js";
-import { CreateReadOnlyArrayView, MarkAsMutableListCarrier } from "System/RuntimeModule.js";
+import { CreateReadOnlyArrayView, MarkAsMutableListCarrier } from "../../RuntimeModule.js";
+import { CompareCore } from "./ComparerT1Module.js";
+import { _0289dcf579b8a65e } from "./IComparerT1Module.js";
 let MaxListCapacity = 2147483591;
 let Capacities = new WeakMap;
 function EnsureInstance(instance) {

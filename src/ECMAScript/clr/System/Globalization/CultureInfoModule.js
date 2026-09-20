@@ -1,5 +1,5 @@
-import { _23b9e8d671b5210e } from "System/Globalization/GregorianCalendarModule.js";
-import { _5ad63706a889c294, _d8080c573d45b4b4 } from "System/StringModule.js";
+import { _5ad63706a889c294, _d8080c573d45b4b4 } from "../StringModule.js";
+import { _23b9e8d671b5210e } from "./GregorianCalendarModule.js";
 const InvariantCultureName = "";
 const InvariantCultureDisplayName = "Invariant Language (Invariant Country)";
 const InvariantIetfLanguageTag = "";

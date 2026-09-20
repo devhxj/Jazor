@@ -111,6 +111,55 @@ public static class ECMAScriptModulePath
     /// Returns whether an import is resolved by a package manifest rather than Jazor's
     /// generated-module namespaces.
     /// </summary>
+    /// <summary>
+    /// Builds a relative import specifier from one project-relative module path to another.
+    ///
+    /// 与 <see cref="ResolveRelativePath"/> 不同：后者把"已经是相对的"specifier 按 importer 展开，
+    /// 而这里是从两个项目内输出路径反算相对 specifier。项目内模块必须用相对 specifier 互相引用——
+    /// 源码 carrier 是项目源码，不是包，裸 specifier 没有可解析的包上下文。
+    /// </summary>
+    public static string ResolveRelativeToImporter(string importerPath, string targetPath)
+    {
+        if (string.IsNullOrWhiteSpace(importerPath))
+            throw new InvalidOperationException("ECMAScriptModule importer path cannot be empty.");
+        if (string.IsNullOrWhiteSpace(targetPath))
+            throw new InvalidOperationException("ECMAScriptModule target path cannot be empty.");
+
+        var importer = importerPath.Replace('\\', '/').Trim().TrimStart('/');
+        var target = targetPath.Replace('\\', '/').Trim().TrimStart('/');
+        var importerSegments = importer
+            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToArray();
+        if (importerSegments.Length == 0)
+            throw new InvalidOperationException("ECMAScriptModule importer path cannot be empty.");
+
+        // 最后一段是 importer 文件本身；相对 specifier 从它的目录起算。
+        var importerDirectory = importerSegments.Take(importerSegments.Length - 1).ToArray();
+        var targetSegments = target
+            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToArray();
+
+        var commonLength = 0;
+        while (commonLength < targetSegments.Length &&
+               commonLength < importerDirectory.Length &&
+               string.Equals(targetSegments[commonLength], importerDirectory[commonLength], StringComparison.Ordinal))
+        {
+            commonLength++;
+        }
+
+        var relativeSegments = Enumerable
+            .Repeat("..", importerDirectory.Length - commonLength)
+            .Concat(targetSegments.Skip(commonLength))
+            .ToArray();
+        var relative = string.Join("/", relativeSegments);
+        if (string.IsNullOrWhiteSpace(relative))
+            relative = Path.GetFileName(target).Replace('\\', '/');
+
+        return relative.StartsWith(".", StringComparison.Ordinal) ? relative : "./" + relative;
+    }
+
     public static bool IsPackageSpecifier(string path)
     {
         if (string.IsNullOrWhiteSpace(path))

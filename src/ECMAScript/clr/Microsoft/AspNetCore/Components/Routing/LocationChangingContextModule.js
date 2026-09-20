@@ -1,4 +1,4 @@
-import { GetNoneSignal } from "System/Threading/CancellationTokenModule.js";
+import { GetNoneSignal } from "../../../../System/Threading/CancellationTokenModule.js";
 const PreventedKey = "__jazorNavigationPrevented";
 export function CreateLocationChangingContext(targetLocation, historyEntryState, isNavigationIntercepted, cancellationToken) {
   return {

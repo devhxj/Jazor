@@ -1,5 +1,5 @@
-import { GetStringRepresentation, MaterializeReadOnlyCharSpan } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { GetStringRepresentation, MaterializeReadOnlyCharSpan } from "../RuntimeModule.js";
+import { _5ad63706a889c294 } from "../StringModule.js";
 let DefaultCapacity = 16;
 let DefaultMaxCapacity = 2147483647;
 let CapacityStates = new WeakMap;

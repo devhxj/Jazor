@@ -1,5 +1,5 @@
-import { AbsSigned, DivRemSigned, LeadingZeroCount, Log2Signed, Parse, PopCount, RotateLeft, RotateRight, TrailingZeroCount, TryParse } from "System/Numerics/BigIntIntegerRuntime.js";
-import { GetInt64HashCode, TryDecodeUtf8 } from "System/RuntimeModule.js";
+import { AbsSigned, DivRemSigned, LeadingZeroCount, Log2Signed, Parse, PopCount, RotateLeft, RotateRight, TrailingZeroCount, TryParse } from "./Numerics/BigIntIntegerRuntime.js";
+import { GetInt64HashCode, TryDecodeUtf8 } from "./RuntimeModule.js";
 function get_RotateMask() {
   return BigInt("18446744073709551615");
 }

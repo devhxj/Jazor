@@ -1,6 +1,6 @@
-import { IsFiniteCore, IsNaNCore } from "System/DoubleModule.js";
-import { GetInt64HashCode, JTimeOnly, JTimeSpan } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { IsFiniteCore, IsNaNCore } from "./DoubleModule.js";
+import { GetInt64HashCode, JTimeOnly, JTimeSpan } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function get_TicksPerDay() {
   return BigInt("864000000000");
 }

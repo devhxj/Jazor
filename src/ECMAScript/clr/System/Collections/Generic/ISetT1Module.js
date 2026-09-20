@@ -1,5 +1,5 @@
-import { ExceptWithCore, IntersectWithCore, IsProperSubsetOfCore, IsProperSupersetOfCore, IsSubsetOfCore, IsSupersetOfCore, OverlapsCore, SetEqualsCore, SymmetricExceptWithCore, UnionWithCore, _e1d2ba750a2788cb } from "System/Collections/Generic/HashSetT1Module.js";
-import { IsReadOnlySetCarrier } from "System/RuntimeModule.js";
+import { IsReadOnlySetCarrier } from "../../RuntimeModule.js";
+import { ExceptWithCore, IntersectWithCore, IsProperSubsetOfCore, IsProperSupersetOfCore, IsSubsetOfCore, IsSupersetOfCore, OverlapsCore, SetEqualsCore, SymmetricExceptWithCore, UnionWithCore, _e1d2ba750a2788cb } from "./HashSetT1Module.js";
 function EnsureWritable(instance) {
   if (instance == null)
     throw new Error("NullReferenceException: instance is null.");

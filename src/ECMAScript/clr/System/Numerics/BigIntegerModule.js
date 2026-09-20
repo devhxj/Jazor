@@ -1,8 +1,8 @@
-import { GetHashCodeCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { _be8b149ea0e1d76b } from "System/DecimalModule.js";
-import { IsFiniteCore } from "System/DoubleModule.js";
-import { FromBigIntCore } from "System/HalfModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { GetHashCodeCore } from "../Collections/Generic/EqualityComparerT1Module.js";
+import { _be8b149ea0e1d76b } from "../DecimalModule.js";
+import { IsFiniteCore } from "../DoubleModule.js";
+import { FromBigIntCore } from "../HalfModule.js";
+import { _5ad63706a889c294 } from "../StringModule.js";
 function ParseBytesCore(bytes, isUnsigned, isBigEndian) {
   if (bytes.length === 0)
     return 0n;

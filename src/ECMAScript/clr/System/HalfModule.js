@@ -1,8 +1,8 @@
-import { GetHashCodeCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { AreEqualCore, CompareCore, IsFiniteCore, IsPow2Core, MaxMagnitudeCore, MaxMagnitudeNumberCore, MinMagnitudeCore, MinMagnitudeNumberCore, SignCore, TryParseCore } from "System/DoubleModule.js";
-import { FromFloatingChecked, FromFloatingCheckedUInt128, FromFloatingSaturatingSigned, FromFloatingSaturatingUnsigned } from "System/Numerics/BigIntIntegerRuntime.js";
-import { GetHighestSetBit, TryDecodeUtf8 } from "System/RuntimeModule.js";
-import { RoundCore } from "System/SingleModule.js";
+import { GetHashCodeCore } from "./Collections/Generic/EqualityComparerT1Module.js";
+import { AreEqualCore, CompareCore, IsFiniteCore, IsPow2Core, MaxMagnitudeCore, MaxMagnitudeNumberCore, MinMagnitudeCore, MinMagnitudeNumberCore, SignCore, TryParseCore } from "./DoubleModule.js";
+import { FromFloatingChecked, FromFloatingCheckedUInt128, FromFloatingSaturatingSigned, FromFloatingSaturatingUnsigned } from "./Numerics/BigIntIntegerRuntime.js";
+import { GetHighestSetBit, TryDecodeUtf8 } from "./RuntimeModule.js";
+import { RoundCore } from "./SingleModule.js";
 function RoundToHalf(value) {
   return Math.f16round(value);
 }

@@ -1,5 +1,5 @@
-import { TryDecodeUtf8 } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
+import { TryDecodeUtf8 } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
 function CompareCore(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }

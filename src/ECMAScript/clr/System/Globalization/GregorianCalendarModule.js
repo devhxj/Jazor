@@ -1,5 +1,5 @@
-import { _3353d31b02f2bed8, _aae197b95f9024a4, _eb38dc04224730ea, _fad0c74e1c9df5bb } from "System/DateTimeModule.js";
-import { CreateLocalDateTime, GetDaysInMonth, JDateTime, JGregorianCalendar } from "System/RuntimeModule.js";
+import { _3353d31b02f2bed8, _aae197b95f9024a4, _eb38dc04224730ea, _fad0c74e1c9df5bb } from "../DateTimeModule.js";
+import { CreateLocalDateTime, GetDaysInMonth, JDateTime, JGregorianCalendar } from "../RuntimeModule.js";
 function get_CurrentEra() {
   return 0;
 }

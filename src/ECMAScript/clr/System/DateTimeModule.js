@@ -1,7 +1,7 @@
-import { IsFiniteCore, IsNaNCore } from "System/DoubleModule.js";
-import { CreateLocalDate as i$bef5a205ba6f9c81, CreateLocalDateTime as i$31ea2871f7c34377, CreateUtcDate, FormatDateOnlyText, GetDaysInMonth, GetInt64HashCode, JDateOnly, JDateTime, JTimeSpan, Pad2, Pad7, PadLeft, RequireGregorianCalendar } from "System/RuntimeModule.js";
-import { _5ad63706a889c294 } from "System/StringModule.js";
-import { _a305982aa6859677 } from "System/TimeOnlyModule.js";
+import { IsFiniteCore, IsNaNCore } from "./DoubleModule.js";
+import { CreateLocalDate as i$485c3bdbb5801cbe, CreateLocalDateTime as i$aa2e784142b7ba62, CreateUtcDate, FormatDateOnlyText, GetDaysInMonth, GetInt64HashCode, JDateOnly, JDateTime, JTimeSpan, Pad2, Pad7, PadLeft, RequireGregorianCalendar } from "./RuntimeModule.js";
+import { _5ad63706a889c294 } from "./StringModule.js";
+import { _a305982aa6859677 } from "./TimeOnlyModule.js";
 function get_UnixEpochTicks() {
   return BigInt("621355968000000000");
 }
@@ -91,10 +91,10 @@ function CreateDefaultDateTime() {
   return new JDateTime("$ctor_31a0f1908d992f04", CreateLocalDate(1, 1, 1), get_DateTimeKindUnspecified());
 }
 function CreateLocalDate(year, month, day) {
-  return i$bef5a205ba6f9c81(year, month, day);
+  return i$485c3bdbb5801cbe(year, month, day);
 }
 function CreateLocalDateTime(year, month, day, hour, minute, second, millisecond) {
-  return i$31ea2871f7c34377(year, month, day, hour, minute, second, millisecond);
+  return i$aa2e784142b7ba62(year, month, day, hour, minute, second, millisecond);
 }
 function CreateFromTicks_113799a103c38477(ticks) {
   return CreateFromTicks_8e90031c765a4910(ticks, get_DateTimeKindUnspecified());

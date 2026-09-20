@@ -1,6 +1,6 @@
-import { GetHashCodeCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { RoundSingleCore, RoundToEvenCore as i$93aeebca0c7018b8 } from "System/DoubleModule.js";
-import { GetHighestSetBit, TryDecodeUtf8 } from "System/RuntimeModule.js";
+import { GetHashCodeCore } from "./Collections/Generic/EqualityComparerT1Module.js";
+import { RoundSingleCore, RoundToEvenCore as i$428a4511235c065a } from "./DoubleModule.js";
+import { GetHighestSetBit, TryDecodeUtf8 } from "./RuntimeModule.js";
 function AreEqualCore(left, right) {
   if (isNaN(left) || isNaN(right))
     return isNaN(left) && isNaN(right);
@@ -62,7 +62,7 @@ export function SignCore(value) {
   return 0;
 }
 function RoundToEvenCore(value) {
-  return Math.fround(i$93aeebca0c7018b8(value));
+  return Math.fround(i$428a4511235c065a(value));
 }
 export function RoundCore(value, digits, mode) {
   if (digits < 0 || digits > 6)

@@ -1,6 +1,6 @@
-import { GetHashCodeCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { _e1d2ba750a2788cb, createDefault } from "System/Collections/Generic/HashSetT1Module.js";
-import { GetStringRepresentation, MaterializeReadOnlyCharSpan } from "System/RuntimeModule.js";
+import { GetHashCodeCore } from "./Collections/Generic/EqualityComparerT1Module.js";
+import { _e1d2ba750a2788cb, createDefault } from "./Collections/Generic/HashSetT1Module.js";
+import { GetStringRepresentation, MaterializeReadOnlyCharSpan } from "./RuntimeModule.js";
 function EnsureNonNegativeWholeNumber(value, parameterName) {
   if (isNaN(value) || Math.floor(value) !== value || value < 0)
     throw new Error(`ArgumentOutOfRangeException: ${parameterName ?? ""} must be a non-negative whole number.`);

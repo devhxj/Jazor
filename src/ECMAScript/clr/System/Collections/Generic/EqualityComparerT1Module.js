@@ -1,4 +1,4 @@
-import { GetObjectHashCode } from "System/RuntimeModule.js";
+import { GetObjectHashCode } from "../../RuntimeModule.js";
 let DefaultInstance = null;
 export function EnsureComparerInstance(instance) {
   if (instance == null)

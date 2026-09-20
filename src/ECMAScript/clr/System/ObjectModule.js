@@ -1,4 +1,4 @@
-import { GetObjectHashCode } from "System/RuntimeModule.js";
+import { GetObjectHashCode } from "./RuntimeModule.js";
 /*jazor:clr-member virtual object.GetHashCode()*/
 export function _97891de43f43ceb4(instance) {
   if (instance === null)

@@ -1,5 +1,5 @@
-import { GetHashCodeCore } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { GetHighestSetBit, TryDecodeUtf8 } from "System/RuntimeModule.js";
+import { GetHashCodeCore } from "./Collections/Generic/EqualityComparerT1Module.js";
+import { GetHighestSetBit, TryDecodeUtf8 } from "./RuntimeModule.js";
 function IsInfinityCore(value) {
   return Object.is(value, Number.POSITIVE_INFINITY) || Object.is(value, Number.NEGATIVE_INFINITY);
 }

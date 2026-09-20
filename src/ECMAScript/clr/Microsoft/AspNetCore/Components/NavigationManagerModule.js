@@ -1,9 +1,9 @@
-import { GetUriWithFragmentCore, GetUriWithQueryParameterCore, GetUriWithQueryParametersObjectCore } from "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js";
-import { createLocationChangedEventArgs } from "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js";
-import { CreateLocationChangingContext, IsNavigationPrevented } from "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
-import { createNotFoundEventArgs } from "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js";
-import { _c80ae10aa1d0d795 } from "System/ExceptionModule.js";
-import { _0333a0fd5f67d8a0, _3ae4900da2b07b27, _946b7129a48c8114 } from "System/StringModule.js";
+import { _c80ae10aa1d0d795 } from "../../../System/ExceptionModule.js";
+import { _0333a0fd5f67d8a0, _3ae4900da2b07b27, _946b7129a48c8114 } from "../../../System/StringModule.js";
+import { GetUriWithFragmentCore, GetUriWithQueryParameterCore, GetUriWithQueryParametersObjectCore } from "./NavigationManagerExtensionsModule.js";
+import { createLocationChangedEventArgs } from "./Routing/LocationChangedEventArgsModule.js";
+import { CreateLocationChangingContext, IsNavigationPrevented } from "./Routing/LocationChangingContextModule.js";
+import { createNotFoundEventArgs } from "./Routing/NotFoundEventArgsModule.js";
 let LocationHandlers = new WeakMap;
 let NotFoundHandlers = new WeakMap;
 let LocationChangingHandlers = new WeakMap;

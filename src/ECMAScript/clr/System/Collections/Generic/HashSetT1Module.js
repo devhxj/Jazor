@@ -1,6 +1,6 @@
-import { EqualsCore, GetHashCodeCore, getDefault } from "System/Collections/Generic/EqualityComparerT1Module.js";
-import { _dae184550b995be1, _f53ff8f6435182d7 } from "System/Collections/Generic/IEqualityComparerT1Module.js";
-import { ExpandHashCollectionCapacity, GetHashCollectionCapacity } from "System/RuntimeModule.js";
+import { ExpandHashCollectionCapacity, GetHashCollectionCapacity } from "../../RuntimeModule.js";
+import { EqualsCore, GetHashCodeCore, getDefault } from "./EqualityComparerT1Module.js";
+import { _dae184550b995be1, _f53ff8f6435182d7 } from "./IEqualityComparerT1Module.js";
 let States = new WeakMap;
 let Capacities = new WeakMap;
 function EnsureInstance(instance) {
