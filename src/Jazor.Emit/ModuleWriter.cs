@@ -7,9 +7,8 @@ namespace Jazor.Emit;
 /// <summary>
 /// Materializes the modules collected from <c>Jazor.Generated.ModuleCatalog</c>.
 ///
-/// The writer deliberately has one commit boundary: all module files, source maps and the
-/// application manifest are prepared and validated in a sibling staging directory, then moved
-/// into place with backups. A failed write therefore leaves the previous materialization intact.
+/// 写入就地完成：每个文件先写同目录临时文件再 rename，避免半写文件；过期文件按清单差异删除。
+/// 不做 staging、备份或回滚——失败显式返回，下一次构建按同一规则收敛。
 /// </summary>
 internal sealed class ModuleWriter
 {
@@ -41,8 +40,8 @@ internal sealed class ModuleWriter
             var staleFiles = clean
                 ? FindStaleFiles(outputRoot, existingManifest, desiredFiles)
                 : [];
-            var transaction = new MaterializationTransaction(outputRoot, manifestFile);
-            return transaction.Commit(
+            var writer = new InPlaceMaterializer(outputRoot, manifestFile);
+            return writer.Commit(
                 desiredFiles,
                 staleFiles,
                 nextManifest,
@@ -407,7 +406,14 @@ internal sealed class ModuleWriter
         string Content,
         string Hash);
 
-    private sealed class MaterializationTransaction(string outputRoot, string manifestPath)
+    /// <summary>
+    /// 就地写入生成结果。
+    ///
+    /// 写入契约：单文件先写临时文件再 rename，避免出现半写文件；过期文件按清单差异就地删除。
+    /// 不做目录级 staging、备份或回滚——失败显式返回，下一次构建按同一规则收敛。
+    /// HMR 需要模块随时变更，整目录快照与之冲突（见 artifact-pipeline 的"写入与确定性"）。
+    /// </summary>
+    private sealed class InPlaceMaterializer(string outputRoot, string manifestPath)
     {
         private readonly string _outputRoot = Path.GetFullPath(outputRoot);
         private readonly string _manifestPath = Path.GetFullPath(manifestPath);
@@ -418,121 +424,73 @@ internal sealed class ModuleWriter
             ManifestModel manifest,
             Encoding encoding)
         {
-            var outputParent = Directory.GetParent(_outputRoot)?.FullName
-                ?? throw new InvalidOperationException($"Could not determine output parent for '{_outputRoot}'.");
-            var manifestParent = Directory.GetParent(_manifestPath)?.FullName
-                ?? throw new InvalidOperationException($"Could not determine manifest parent for '{_manifestPath}'.");
-            Directory.CreateDirectory(outputParent);
-            Directory.CreateDirectory(manifestParent);
-
-            var transactionRoot = Path.Combine(outputParent, ".jazor-emit-" + Guid.NewGuid().ToString("N"));
-            var stagedRoot = Path.Combine(transactionRoot, "files");
-            var backupRoot = Path.Combine(transactionRoot, "backup");
-            var stagedManifest = Path.Combine(transactionRoot, "jazor-manifest.json");
-            var backups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var committed = new List<string>();
-            var written = 0;
-            var skipped = 0;
-            var deleted = 0;
-
             try
             {
-                Directory.CreateDirectory(stagedRoot);
-                Directory.CreateDirectory(backupRoot);
-                foreach (var desired in desiredFiles.Values.OrderBy(static file => file.RelativePath, StringComparer.OrdinalIgnoreCase))
+                var written = 0;
+                var skipped = 0;
+                var deleted = 0;
+
+                foreach (var desired in desiredFiles.Values
+                             .OrderBy(static file => file.RelativePath, StringComparer.OrdinalIgnoreCase))
                 {
-                    var stagedPath = GetSafePath(stagedRoot, desired.RelativePath);
-                    var directory = Path.GetDirectoryName(stagedPath);
-                    if (!string.IsNullOrWhiteSpace(directory))
-                        Directory.CreateDirectory(directory);
-                    File.WriteAllText(stagedPath, desired.Content, encoding);
-                    var actual = ComputeSha256Hex(File.ReadAllText(stagedPath, encoding));
-                    if (!string.Equals(actual, desired.Hash, StringComparison.OrdinalIgnoreCase))
-                        throw new InvalidOperationException($"Staged generated file '{desired.RelativePath}' failed hash verification.");
-                }
+                    if (Directory.Exists(desired.TargetPath))
+                        throw new InvalidOperationException(
+                            $"Output target is a directory, not a file: '{desired.TargetPath}'.");
 
-                manifest.Save(stagedManifest);
-                var manifestBytes = File.ReadAllBytes(stagedManifest);
-
-                var targets = desiredFiles.Values
-                    .Select(static file => file.TargetPath)
-                    .Concat(staleFiles)
-                    .Append(_manifestPath)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                foreach (var target in targets)
-                {
-                    if (File.Exists(target))
-                    {
-                        var backup = Path.Combine(backupRoot, backups.Count.ToString("D8"));
-                        Directory.CreateDirectory(Path.GetDirectoryName(backup)!);
-                        File.Move(target, backup);
-                        backups[target] = backup;
-                    }
-                    else if (Directory.Exists(target))
-                    {
-                        throw new InvalidOperationException($"Output target is a directory, not a file: '{target}'.");
-                    }
-                }
-
-                foreach (var desired in desiredFiles.Values.OrderBy(static file => file.TargetPath, StringComparer.OrdinalIgnoreCase))
-                {
                     var directory = Path.GetDirectoryName(desired.TargetPath);
                     if (!string.IsNullOrWhiteSpace(directory))
                         Directory.CreateDirectory(directory);
-                    var stagedPath = GetSafePath(stagedRoot, desired.RelativePath);
-                    File.Move(stagedPath, desired.TargetPath);
-                    committed.Add(desired.TargetPath);
-                    if (backups.ContainsKey(desired.TargetPath))
-                        written++;
-                    else
-                        written++;
-                }
 
-                File.Move(stagedManifest, _manifestPath);
-                committed.Add(_manifestPath);
-                foreach (var target in staleFiles)
-                {
-                    if (backups.ContainsKey(target))
-                        deleted++;
-                }
-
-                // A file that was already byte-identical still participates in the atomic swap,
-                // but report it as skipped for the caller's incremental diagnostics.
-                foreach (var desired in desiredFiles.Values)
-                {
-                    var old = backups.TryGetValue(desired.TargetPath, out var backup)
-                        ? backup
-                        : null;
-                    if (old is not null && FilesEqual(old, desired.Content, encoding))
+                    if (File.Exists(desired.TargetPath) && FilesEqual(desired.TargetPath, desired.Content, encoding))
                     {
-                        written--;
                         skipped++;
+                        continue;
+                    }
+
+                    WriteAtomically(desired.TargetPath, desired.Content, encoding);
+                    written++;
+                }
+
+                // 清单最后写：它是"这一轮写了什么"的记录，只应在内容写入成功后更新。
+                WriteManifestAtomically(manifest);
+
+                foreach (var stale in staleFiles)
+                {
+                    if (File.Exists(stale))
+                    {
+                        File.Delete(stale);
+                        deleted++;
                     }
                 }
 
-                DeleteDirectory(transactionRoot);
                 return WriteResult.Success(written, skipped, deleted);
             }
             catch (Exception ex)
             {
-                foreach (var target in committed.AsEnumerable().Reverse())
-                    DeleteFile(target);
-                foreach (var pair in backups.OrderByDescending(static pair => pair.Value, StringComparer.OrdinalIgnoreCase))
-                {
-                    if (File.Exists(pair.Value) && !File.Exists(pair.Key))
-                    {
-                        var directory = Path.GetDirectoryName(pair.Key);
-                        if (!string.IsNullOrWhiteSpace(directory))
-                            Directory.CreateDirectory(directory);
-                        File.Move(pair.Value, pair.Key);
-                    }
-                }
-
-                DeleteDirectory(transactionRoot);
                 return WriteResult.Fail(5, ex.Message);
+            }
+        }
+
+        private void WriteManifestAtomically(ManifestModel manifest)
+        {
+            var directory = Path.GetDirectoryName(_manifestPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+            manifest.Save(_manifestPath);
+        }
+
+        private static void WriteAtomically(string targetPath, string content, Encoding encoding)
+        {
+            // 临时文件与目标同目录，保证 rename 在同一卷上是原子操作。
+            var temporaryPath = targetPath + ".jazor-tmp-" + Guid.NewGuid().ToString("N");
+            try
+            {
+                File.WriteAllText(temporaryPath, content, encoding);
+                File.Move(temporaryPath, targetPath, overwrite: true);
+            }
+            finally
+            {
+                DeleteFile(temporaryPath);
             }
         }
 
@@ -548,28 +506,10 @@ internal sealed class ModuleWriter
             }
         }
 
-        private static string GetSafePath(string root, string relativePath)
-        {
-            var normalizedRoot = Path.GetFullPath(root);
-            var rootWithSeparator = normalizedRoot.EndsWith(Path.DirectorySeparatorChar)
-                ? normalizedRoot
-                : normalizedRoot + Path.DirectorySeparatorChar;
-            var candidate = Path.GetFullPath(Path.Combine(normalizedRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
-            if (!candidate.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"Refusing to stage outside transaction directory: '{relativePath}'.");
-            return candidate;
-        }
-
         private static void DeleteFile(string path)
         {
             if (File.Exists(path))
                 File.Delete(path);
-        }
-
-        private static void DeleteDirectory(string path)
-        {
-            if (Directory.Exists(path))
-                Directory.Delete(path, recursive: true);
         }
     }
 }
