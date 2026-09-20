@@ -2,12 +2,10 @@ namespace Jazor.Emit;
 
 /// <summary>File-system inputs consumed by the Netpack bundler.</summary>
 internal sealed record BundleOptions(
-    string InputDirectory,
+    string ProjectRoot,
     string ManifestPath,
     string OutputPath,
-    string? SourceRoot = null,
     IReadOnlyList<string>? LibraryManifests = null,
     LibraryAssets? MaterializedLibraries = null,
     bool SourceMaps = true,
-    bool Minify = false,
-    string? PackageRoot = null);
+    bool Minify = false);

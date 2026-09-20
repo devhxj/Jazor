@@ -17,9 +17,7 @@ public sealed class ToolchainTests
             [
                 "build",
                 "--manifest", "manifest.json",
-                "--artifacts", "artifacts",
-                "--source-root", "src",
-                "--out-root", "dist"
+                "--root", "jazor"
             ],
             out var command,
             out var error);
@@ -39,9 +37,7 @@ public sealed class ToolchainTests
             [
                 "serve",
                 "--manifest", "manifest.json",
-                "--artifacts", "artifacts",
-                "--source-root", "src",
-                "--out-root", "dist"
+                "--root", "jazor"
             ],
             out var command,
             out var error);
@@ -61,9 +57,7 @@ public sealed class ToolchainTests
                 "build",
                 "--toolchain", "Deno",
                 "--manifest", "manifest.json",
-                "--artifacts", "artifacts",
-                "--source-root", "src",
-                "--out-root", "dist"
+                "--root", "jazor"
             ],
             out _,
             out var error);
@@ -73,20 +67,18 @@ public sealed class ToolchainTests
     }
 
     [TestMethod]
-    public void TryParse_RejectsMissingExplicitArtifactRoot()
+    public void TryParse_RejectsMissingProjectRoot()
     {
         var parsed = ToolchainCommand.TryParse(
             [
                 "build",
-                "--manifest", "manifest.json",
-                "--source-root", "src",
-                "--out-root", "dist"
+                "--manifest", "manifest.json"
             ],
             out _,
             out var error);
 
         Assert.IsFalse(parsed);
-        Assert.AreEqual("Missing required argument --artifacts.", error);
+        Assert.AreEqual("Missing required argument --root.", error);
     }
 
     [TestMethod]
@@ -96,9 +88,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
@@ -106,10 +96,8 @@ public sealed class ToolchainTests
             });
 
         Assert.AreEqual(Path.GetFullPath(workspace.ManifestPath), request.ManifestPath);
-        Assert.AreEqual(Path.GetFullPath(workspace.ArtifactRoot), request.ArtifactRoot);
-        Assert.AreEqual(Path.GetFullPath(workspace.SourceRoot), request.SourceRoot);
-        Assert.AreEqual(Path.GetFullPath(workspace.OutputRoot), request.OutputRoot);
-        Assert.AreEqual(Path.Combine(request.OutputRoot, "bundle.js"), request.BundleOutputPath);
+        Assert.AreEqual(Path.GetFullPath(workspace.ProjectRoot), request.ProjectRoot);
+        Assert.AreEqual(Path.Combine(request.BundleOutputDirectory, "bundle.js"), request.BundleOutputPath);
         CollectionAssert.AreEquivalent(
             new[]
             {
@@ -123,7 +111,7 @@ public sealed class ToolchainTests
     public async Task BuildAsync_NetpackProduction_ConsumesUnifiedRequestAndWritesBundle()
     {
         using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             export function Boot() {
               return "netpack-ready";
@@ -133,9 +121,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild
@@ -163,13 +149,13 @@ public sealed class ToolchainTests
     public async Task BuildAsync_NetpackProduction_BundlesGeneratedRouteCatalogThroughBlazorRoutingRuntime()
     {
         using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             import { createNavigationHost } from "@jazor/vue-runtime/blazor-routing.mjs";
 
             export const hasRouteHost = typeof createNavigationHost === "function";
             """);
-        WriteModule(workspace.ArtifactRoot, "@jazor/vue-runtime/routes.mjs",
+        WriteModule(workspace.ProjectRoot, "@jazor/vue-runtime/routes.mjs",
             """
             export const routes = [{
               template: "/tasks",
@@ -190,22 +176,20 @@ public sealed class ToolchainTests
                     "Sample.Host.AppModule",
                     "Sample.Host.AppModule",
                     "host/app.mjs",
-                    ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(workspace.ArtifactRoot, "host", "app.mjs"))),
+                    ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(workspace.ProjectRoot, "host", "app.mjs"))),
                     PackageImports: ["@jazor/vue-runtime/blazor-routing.mjs"]),
                 new ModuleEntry(
                     "Sample.Host",
                     "Jazor.Generated.RazorVue.RouteCatalog",
                     "Jazor.Generated.RazorVue.RouteCatalog",
                     "@jazor/vue-runtime/routes.mjs",
-                    ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(workspace.ArtifactRoot, "@jazor", "vue-runtime", "routes.mjs"))))
+                    ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(workspace.ProjectRoot, "@jazor", "vue-runtime", "routes.mjs"))))
             ]);
         manifest.Save(workspace.ManifestPath);
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
@@ -244,14 +228,14 @@ public sealed class ToolchainTests
     {
         using var workspace = new TestWorkspace();
 
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             import LocalCard from "./LocalCard.vue.mjs";
 
             export const ComponentName = LocalCard.name;
             export default LocalCard;
             """);
-        WriteModule(workspace.SourceRoot, "components/LocalCard.vue",
+        WriteModule(workspace.ProjectRoot, "components/LocalCard.vue",
             """
             <template>
               <section>Netpack SFC</section>
@@ -277,9 +261,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
@@ -299,18 +281,18 @@ public sealed class ToolchainTests
         Assert.DoesNotContain("./LocalCard.vue.mjs", script);
         Assert.DoesNotContain("server-renderer.esm-browser.prod.js", script);
         Assert.DoesNotContain("vue-devtools-api.esm-browser.js", script);
-        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.SourceRoot, "node_modules")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.ProjectRoot, "node_modules")));
     }
 
     [TestMethod]
     public async Task BuildAsync_NetpackProduction_CopiesManifestStaticAssetToOutputRoot()
     {
         using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             export const Ready = true;
             """);
-        WriteModule(workspace.SourceRoot, "assets/logo.svg",
+        WriteModule(workspace.ProjectRoot, "assets/logo.svg",
             """
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>
             """);
@@ -326,9 +308,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild
@@ -338,7 +318,7 @@ public sealed class ToolchainTests
 
         Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
 
-        var outputAssetPath = Path.Combine(workspace.OutputRoot, "assets", "logo.svg");
+        var outputAssetPath = Path.Combine(workspace.BundleOutputDirectory, "assets", "logo.svg");
         Assert.IsTrue(File.Exists(outputAssetPath), $"Expected static asset output: {outputAssetPath}");
         var asset = await File.ReadAllTextAsync(outputAssetPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("<svg", asset);
@@ -348,7 +328,7 @@ public sealed class ToolchainTests
     public async Task BuildAsync_MinifiedLibraryGraph_ShakesUnusedExportsAndPreservesReachableResources()
     {
         using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             import { used } from "tree-lib/used";
 
@@ -386,9 +366,7 @@ public sealed class ToolchainTests
         var libraryManifest = WriteSyntheticTreeShakingManifest(libraryRoot);
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             minify: true,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
@@ -407,7 +385,7 @@ public sealed class ToolchainTests
         Assert.DoesNotContain("DEAD_SENTINEL", bundle, StringComparison.Ordinal);
         Assert.DoesNotContain("UNREACHABLE_SENTINEL", bundle, StringComparison.Ordinal);
         Assert.DoesNotContain("UNUSED_ENTRY_SENTINEL", bundle, StringComparison.Ordinal);
-        Assert.IsFalse(Directory.EnumerateFiles(workspace.OutputRoot, "*.mjs", SearchOption.AllDirectories)
+        Assert.IsFalse(Directory.EnumerateFiles(workspace.BundleOutputDirectory, "*.mjs", SearchOption.AllDirectories)
             .Any(path => path.EndsWith("used.mjs", StringComparison.OrdinalIgnoreCase) ||
                          path.EndsWith("dependency.mjs", StringComparison.OrdinalIgnoreCase) ||
                          path.EndsWith("unreachable.mjs", StringComparison.OrdinalIgnoreCase)));
@@ -420,7 +398,7 @@ public sealed class ToolchainTests
 
         // 自有源码 carrier 按声明路径写入项目源码树，不再套 packages/<name>/ 合成包根。
         var workerPath = Path.Combine(
-            workspace.OutputRoot,
+            workspace.BundleOutputDirectory,
             "dist",
             "editor.worker.mjs");
         Assert.IsTrue(File.Exists(workerPath), $"Expected selected worker output: {workerPath}");
@@ -431,7 +409,7 @@ public sealed class ToolchainTests
     public async Task BuildAsync_NetpackProduction_BundlesSelectedVueDataUiStylesheetClosure()
     {
         using var workspace = new TestWorkspace();
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             import { VueUiDonut } from "vue-data-ui/vue-ui-donut";
 
@@ -441,9 +419,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             minify: true,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
@@ -483,7 +459,7 @@ public sealed class ToolchainTests
     {
         using var workspace = new TestWorkspace();
         WriteModule(
-            workspace.ArtifactRoot,
+            workspace.ProjectRoot,
             "host/app.mjs",
             $"import {{ {selectedExport} }} from \"{specifier}\";\n\n" +
             $"export const selectedBinding = {selectedExport};\n");
@@ -491,9 +467,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             minify: true,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
@@ -531,7 +505,7 @@ public sealed class ToolchainTests
     {
         using var workspace = new TestWorkspace();
         WriteModule(
-            workspace.ArtifactRoot,
+            workspace.ProjectRoot,
             "host/app.mjs",
             "import { useDraggable } from \"vue-draggable-plus\";\n\n" +
             "export const selectedBinding = useDraggable;\n");
@@ -539,9 +513,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             minify: true,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
@@ -589,7 +561,7 @@ public sealed class ToolchainTests
 
         using var workspace = new TestWorkspace();
 
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             import { createApp, nextTick } from "vue";
             import LocalCard from "./LocalCard.vue.mjs";
@@ -599,7 +571,7 @@ public sealed class ToolchainTests
               await nextTick();
             }
             """);
-        WriteModule(workspace.SourceRoot, "components/LocalCard.vue",
+        WriteModule(workspace.ProjectRoot, "components/LocalCard.vue",
             """
             <template>
               <section class="local-card">{{ title }}</section>
@@ -637,9 +609,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
@@ -652,10 +622,10 @@ public sealed class ToolchainTests
         Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
         Assert.IsTrue(File.Exists(request.BundleOutputPath), $"Expected browser bundle: {request.BundleOutputPath}");
 
-        WriteBrowserSmokeHarness(workspace.OutputRoot);
+        WriteBrowserSmokeHarness(workspace.BundleOutputDirectory);
         var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
             browserPath,
-            Path.Combine(workspace.OutputRoot, "index.html"),
+            Path.Combine(workspace.BundleOutputDirectory, "index.html"),
             virtualTimeBudgetMilliseconds: 20000);
         Assert.AreEqual(0, browser.ExitCode, browser.ToString());
 
@@ -682,7 +652,7 @@ public sealed class ToolchainTests
 
         using var workspace = new TestWorkspace();
 
-        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+        WriteModule(workspace.ProjectRoot, "host/app.mjs",
             """
             import { VBtn } from "vuetify/components/VBtn";
 
@@ -703,9 +673,7 @@ public sealed class ToolchainTests
 
         var request = ToolchainRequest.Create(
             workspace.ManifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot,
+            workspace.ProjectRoot,
             requiredCapabilities: new HashSet<ToolchainCapability>
             {
                 ToolchainCapability.ProductionBuild,
@@ -723,10 +691,10 @@ public sealed class ToolchainTests
         Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
         Assert.IsTrue(File.Exists(request.BundleOutputPath), $"Expected browser bundle: {request.BundleOutputPath}");
 
-        WriteVuetifyBrowserSmokeHarness(workspace.OutputRoot);
+        WriteVuetifyBrowserSmokeHarness(workspace.BundleOutputDirectory);
         var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
             browserPath,
-            Path.Combine(workspace.OutputRoot, "index.html"),
+            Path.Combine(workspace.BundleOutputDirectory, "index.html"),
             virtualTimeBudgetMilliseconds: 20000);
         Assert.AreEqual(0, browser.ExitCode, browser.ToString());
 
@@ -738,7 +706,7 @@ public sealed class ToolchainTests
         Assert.AreEqual("VBtn", smoke.GetProperty("text").GetString(), smoke.GetRawText());
         Assert.IsTrue(smoke.GetProperty("styleSheetCount").GetInt32() > 0, smoke.GetRawText());
 
-        var css = File.ReadAllText(Path.Combine(workspace.OutputRoot, "bundle.css"));
+        var css = File.ReadAllText(Path.Combine(workspace.BundleOutputDirectory, "bundle.css"));
         StringAssert.Contains(css, ".v-btn");
         Assert.IsFalse(css.Contains(".v-alert", StringComparison.Ordinal));
     }
@@ -750,19 +718,17 @@ public sealed class ToolchainTests
         WriteManifest(workspace, "host/app.mjs");
         var manifestPath = Path.Combine(workspace.RootPath, "jazor-manifest.json");
         File.Copy(workspace.ManifestPath, manifestPath);
-        Directory.Delete(workspace.ArtifactRoot, recursive: true);
+        Directory.Delete(workspace.ProjectRoot, recursive: true);
 
         var request = ToolchainRequest.Create(
             manifestPath,
-            workspace.ArtifactRoot,
-            workspace.SourceRoot,
-            workspace.OutputRoot);
+            workspace.ProjectRoot);
 
         var result = await new Toolchain().BuildAsync(request);
 
         Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual("JAZOR_TOOLCHAIN_ARTIFACT_ROOT_NOT_FOUND", result.Diagnostic?.Code);
-        Assert.Contains(workspace.ArtifactRoot, result.Diagnostic?.Message ?? string.Empty);
+        Assert.AreEqual("JAZOR_TOOLCHAIN_PROJECT_ROOT_NOT_FOUND", result.Diagnostic?.Code);
+        Assert.Contains(workspace.ProjectRoot, result.Diagnostic?.Message ?? string.Empty);
     }
 
     private static void WriteManifest(
@@ -772,7 +738,7 @@ public sealed class ToolchainTests
         IReadOnlyList<string>? packageImports = null)
     {
         var modulePath = Path.Combine(
-            workspace.ArtifactRoot,
+            workspace.ProjectRoot,
             relativePath.Replace('/', Path.DirectorySeparatorChar));
         var moduleHash = ArtifactHash.ComputeSha256(
             File.Exists(modulePath) ? File.ReadAllBytes(modulePath) : []);
@@ -794,7 +760,7 @@ public sealed class ToolchainTests
             manifest.Assets.AddRange(assets.Select(asset =>
             {
                 var sourcePath = Path.Combine(
-                    workspace.SourceRoot,
+                    workspace.ProjectRoot,
                     asset.SourcePath.Replace('/', Path.DirectorySeparatorChar));
                 return asset with { Hash = ArtifactHash.ComputeSha256(File.ReadAllBytes(sourcePath)) };
             }));
@@ -1018,21 +984,17 @@ public sealed class ToolchainTests
         public TestWorkspace()
         {
             RootPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
-            ArtifactRoot = Path.Combine(RootPath, "artifacts");
-            SourceRoot = Path.Combine(RootPath, "src");
-            OutputRoot = Path.Combine(RootPath, "dist");
-            ManifestPath = Path.Combine(ArtifactRoot, "jazor-manifest.json");
-            Directory.CreateDirectory(ArtifactRoot);
-            Directory.CreateDirectory(SourceRoot);
+            // 单一项目根：模块、资产、依赖恢复与 bundle 输出都落在同一个根下。
+            ProjectRoot = Path.Combine(RootPath, "jazor");
+            ManifestPath = Path.Combine(ProjectRoot, "jazor-manifest.json");
+            Directory.CreateDirectory(ProjectRoot);
         }
 
         public string RootPath { get; }
 
-        public string ArtifactRoot { get; }
+        public string ProjectRoot { get; }
 
-        public string SourceRoot { get; }
-
-        public string OutputRoot { get; }
+        public string BundleOutputDirectory => Path.Combine(ProjectRoot, "dist");
 
         public string ManifestPath { get; }
 

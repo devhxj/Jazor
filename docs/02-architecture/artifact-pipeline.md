@@ -129,6 +129,12 @@ Emit 在最终 `jazor/` 中就地完成写入、恢复、检查和构建。写�
 - `release`：从同一项目根调用 NetPack，输出 `dist/` 与 bundle metafile。
 - `JazorSSR=true`：在同一次项目生成与恢复中增加 `ssr-entry.js`，供 DenoHost 直接消费。
 
+### 单一项目根（已定）
+
+消费入口只接受**一个项目根**：`jazor/` 同时是模块输入、依赖恢复根、package 解析根与 bundle 输出根。`ToolchainRequest` 因此只带 `ProjectRoot` + `ManifestPath`，CLI 对应 `--root` + `--manifest`，bundle 固定在 `<projectRoot>/dist/bundle.js`（含 `.map` 与抽取出的 `.css`）。宿主侧的就绪探测同步为 `jazor-manifest.json` 或 `dist/bundle.js`。
+
+早期契约把同一个目录拆成 `ArtifactRoot`/`SourceRoot`/`OutputRoot`/`PackageRoot` 四个参数传入；生产路径上它们始终指向同一处，拆开只把"必须一致"的责任推给调用方。区分"调用方是否已恢复依赖"的判据改为是否传入物化结果（`MaterializedLibraries`）：Emit 先在自己的项目根完成 restore 再传结果，直接调用 Toolchain 的调用方没有恢复过，需要在临时工作区补一次同样的 restore。
+
 ## 验收证据
 
 - 生成的 `jazor/` 可由 Deno 2.9.7 在 `--no-remote` 与 frozen lock 下检查。

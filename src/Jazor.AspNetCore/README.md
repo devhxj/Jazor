@@ -44,7 +44,7 @@ SPA fallback 只在下游返回 **404**、响应尚未开始、没有选中 endp
 
 ## 目录、缓存与自定义挂载
 
-默认物理目录是 `ContentRootPath/jazor`。**注册中间件时**至少存在 `jazor-manifest.json` 或 `bundle.js` 才挂载；不会在首个请求重新探测。如果先启动空宿主、后首次生成产物，需要重启。探测通过仅代表允许挂载，不保证 SSR 文件完整。
+默认物理目录是 `ContentRootPath/jazor`。**注册中间件时**至少存在 `jazor-manifest.json` 或 `dist/bundle.js` 才挂载；不会在首个请求重新探测。如果先启动空宿主、后首次生成产物，需要重启。探测通过仅代表允许挂载，不保证 SSR 文件完整。
 
 已挂载目录的缺失文件默认直接返回 404。资源默认补充 `nosniff` 和 `Cache-Control: no-cache, must-revalidate`，保留已有头；配置 `ImmutableCachePathPrefixes` 才采用一年 immutable 缓存，应仅用于内容版本化 URL。前缀匹配 `Request.Path`，不含 `PathBase`。`OnPrepareResponse` 最后执行，可覆盖默认头。
 

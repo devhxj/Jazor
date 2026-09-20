@@ -7,7 +7,7 @@ public sealed class JazorSsrOptions
     /// Overrides the generated Jazor artifact root. Relative paths are resolved from the
     /// ASP.NET Core content root. Leave empty to discover the current debug or SSR release output.
     /// </summary>
-    /// <remarks>默认自动发现；SSR 目录必须包含 jazor-manifest.json、importmap.json、ssr-importmap.json 和 manifest.json，仅有 bundle.js 不够。</remarks>
+    /// <remarks>默认自动发现；SSR 目录必须包含 jazor-manifest.json、importmap.json、ssr-importmap.json 和 manifest.json，仅有 dist/bundle.js 不够。</remarks>
     public string? ArtifactRootPath { get; set; }
 
     /// <summary>

@@ -22,12 +22,16 @@ internal sealed record ToolchainDiagnostic(
     string Code,
     string Message);
 
-/// <summary>Normalized inputs for the fixed Netpack build lane.</summary>
+/// <summary>
+/// Normalized inputs for the fixed Netpack build lane.
+///
+/// 单一项目根：`jazor/` 同时是模块输入、依赖恢复根、package 解析根与 bundle 输出根。
+/// 消费侧的四个根（artifact / source / output / package）已收敛，因为它们在生产路径上
+/// 始终指向同一个目录；拆开只会让调用方需要自己保证一致性。
+/// </summary>
 internal sealed record ToolchainRequest(
     string ManifestPath,
-    string ArtifactRoot,
-    string SourceRoot,
-    string OutputRoot,
+    string ProjectRoot,
     BuildMode Mode,
     bool SourceMaps,
     bool Minify,
@@ -35,18 +39,20 @@ internal sealed record ToolchainRequest(
     IReadOnlySet<ToolchainCapability> RequiredCapabilities,
     IReadOnlyDictionary<string, string> VersionConstraints,
     IReadOnlyList<string> LibraryManifests,
-    LibraryAssets? MaterializedLibraries,
-    string? PackageRoot = null)
+    LibraryAssets? MaterializedLibraries)
 {
     public const string DefaultBundleFileName = "bundle.js";
 
-    public string BundleOutputPath => Path.Combine(OutputRoot, DefaultBundleFileName);
+    /// <summary>Bundle 输出目录固定在项目根下的 <c>dist/</c>。</summary>
+    public const string BundleOutputDirectoryName = "dist";
+
+    public string BundleOutputDirectory => Path.Combine(ProjectRoot, BundleOutputDirectoryName);
+
+    public string BundleOutputPath => Path.Combine(BundleOutputDirectory, DefaultBundleFileName);
 
     public static ToolchainRequest Create(
         string manifestPath,
-        string artifactRoot,
-        string sourceRoot,
-        string outputRoot,
+        string projectRoot,
         BuildMode mode = BuildMode.Production,
         bool sourceMaps = true,
         bool minify = false,
@@ -54,14 +60,11 @@ internal sealed record ToolchainRequest(
         IReadOnlySet<ToolchainCapability>? requiredCapabilities = null,
         IReadOnlyDictionary<string, string>? versionConstraints = null,
         IReadOnlyList<string>? libraryManifests = null,
-        LibraryAssets? materializedLibraries = null,
-        string? packageRoot = null)
+        LibraryAssets? materializedLibraries = null)
     {
         return new ToolchainRequest(
             Path.GetFullPath(RequirePath(manifestPath, nameof(manifestPath))),
-            Path.GetFullPath(RequirePath(artifactRoot, nameof(artifactRoot))),
-            Path.GetFullPath(RequirePath(sourceRoot, nameof(sourceRoot))),
-            Path.GetFullPath(RequirePath(outputRoot, nameof(outputRoot))),
+            Path.GetFullPath(RequirePath(projectRoot, nameof(projectRoot))),
             mode,
             sourceMaps,
             minify,
@@ -69,8 +72,7 @@ internal sealed record ToolchainRequest(
             CopySet(requiredCapabilities),
             CopyDictionary(versionConstraints),
             CopyManifestPaths(libraryManifests),
-            materializedLibraries,
-            string.IsNullOrWhiteSpace(packageRoot) ? null : Path.GetFullPath(packageRoot));
+            materializedLibraries);
     }
 
     private static string RequirePath(string path, string name)
@@ -130,9 +132,7 @@ internal sealed record ToolchainCommand(
         }
 
         var manifestPath = string.Empty;
-        var artifactRoot = string.Empty;
-        var sourceRoot = string.Empty;
-        var outputRoot = string.Empty;
+        var projectRoot = string.Empty;
         var sourceMaps = true;
         var minify = false;
         var libraryManifests = new List<string>();
@@ -152,14 +152,8 @@ internal sealed record ToolchainCommand(
                 case "--manifest":
                     manifestPath = value;
                     break;
-                case "--artifacts":
-                    artifactRoot = value;
-                    break;
-                case "--source-root":
-                    sourceRoot = value;
-                    break;
-                case "--out-root":
-                    outputRoot = value;
+                case "--root":
+                    projectRoot = value;
                     break;
                 case "--sourcemaps":
                     if (!bool.TryParse(value, out sourceMaps))
@@ -187,9 +181,7 @@ internal sealed record ToolchainCommand(
         }
 
         if (!TryRequireArgument(manifestPath, "--manifest", out error) ||
-            !TryRequireArgument(artifactRoot, "--artifacts", out error) ||
-            !TryRequireArgument(sourceRoot, "--source-root", out error) ||
-            !TryRequireArgument(outputRoot, "--out-root", out error))
+            !TryRequireArgument(projectRoot, "--root", out error))
         {
             return false;
         }
@@ -214,9 +206,7 @@ internal sealed record ToolchainCommand(
             mode,
             ToolchainRequest.Create(
                 manifestPath,
-                artifactRoot,
-                sourceRoot,
-                outputRoot,
+                projectRoot,
                 mode,
                 sourceMaps,
                 minify,
@@ -278,20 +268,12 @@ internal sealed class Toolchain
                 $"Manifest was not found: '{request.ManifestPath}'.");
         }
 
-        if (!Directory.Exists(request.ArtifactRoot))
+        if (!Directory.Exists(request.ProjectRoot))
         {
             return ToolchainResult.Fail(
                 ContractFailureExitCode,
-                "JAZOR_TOOLCHAIN_ARTIFACT_ROOT_NOT_FOUND",
-                $"Artifact root was not found: '{request.ArtifactRoot}'.");
-        }
-
-        if (!Directory.Exists(request.SourceRoot))
-        {
-            return ToolchainResult.Fail(
-                ContractFailureExitCode,
-                "JAZOR_TOOLCHAIN_SOURCE_ROOT_NOT_FOUND",
-                $"Source root was not found: '{request.SourceRoot}'.");
+                "JAZOR_TOOLCHAIN_PROJECT_ROOT_NOT_FOUND",
+                $"Project root was not found: '{request.ProjectRoot}'.");
         }
 
         foreach (var libraryManifest in request.LibraryManifests)
@@ -329,19 +311,18 @@ internal sealed class Toolchain
             return UnsupportedCapability(capability);
         }
 
-        Directory.CreateDirectory(request.OutputRoot);
+        Directory.CreateDirectory(request.BundleOutputDirectory);
 
+        // 单一项目根：输入、依赖恢复根、package 解析根与输出全部落在 jazor/。
         var bundler = new NetpackBundler();
         var bundleResult = await bundler.BundleAsync(new BundleOptions(
-            request.ArtifactRoot,
+            request.ProjectRoot,
             request.ManifestPath,
             request.BundleOutputPath,
-            request.SourceRoot,
             request.LibraryManifests,
             request.MaterializedLibraries,
             request.SourceMaps,
-            request.Minify,
-            request.PackageRoot));
+            request.Minify));
 
         return bundleResult.IsSuccess
             ? ToolchainResult.Success(bundleResult.OutputPath!, bundleResult.ModuleCount)

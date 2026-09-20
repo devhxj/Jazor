@@ -34,9 +34,7 @@ public sealed class LegacyRazorVueContractRetirementTests
             [
                 "build",
                 "--manifest", "manifest.json",
-                "--artifacts", "artifacts",
-                "--source-root", "src",
-                "--out-root", "dist",
+                "--root", "jazor",
                 "--write-razorvue-update-plan", "plan.json"
             ],
             out _,

@@ -55,18 +55,15 @@ internal sealed class NetpackBundler
         if (relativePaths.Length == 0)
             return BundleResult.Fail(7, $"No modules were found in '{options.ManifestPath}'.");
 
-        Directory.CreateDirectory(options.InputDirectory);
+        Directory.CreateDirectory(options.ProjectRoot);
 
         var outputDirectory = Path.GetDirectoryName(options.OutputPath);
         if (!string.IsNullOrWhiteSpace(outputDirectory))
             Directory.CreateDirectory(outputDirectory);
 
-        // Emit supplies PackageRoot when it has already restored the graph. Keeping the
-        // temporary workspace below that root lets NetPack discover its node_modules through
-        // ordinary upward package resolution instead of rebuilding a second projection.
-        var bundleWorkspaceRoot = options.PackageRoot ??
-            (string.IsNullOrWhiteSpace(options.SourceRoot) ? options.InputDirectory : options.SourceRoot);
-        var bundleWorkspace = Path.Combine(bundleWorkspaceRoot, "__jazor_netpack_bundle__");
+        // 临时工作区留在项目根之下，NetPack 因此能通过普通的上溯 package 解析发现
+        // 已经恢复好的 node_modules，而不必重建第二份投影。（阶段 C 将整体移除该工作区。）
+        var bundleWorkspace = Path.Combine(options.ProjectRoot, "__jazor_netpack_bundle__");
         if (Directory.Exists(bundleWorkspace))
             Directory.Delete(bundleWorkspace, recursive: true);
 
@@ -82,10 +79,10 @@ internal sealed class NetpackBundler
                 manifest.Modules.SelectMany(static module => module.PackageImports ?? []),
                 relativePaths);
             if (useMaterializedLibraries)
-                CopyMaterializedLibraryFiles(options.InputDirectory, bundleWorkspace, libraries);
+                CopyMaterializedLibraryFiles(options.ProjectRoot, bundleWorkspace, libraries);
 
             var assets = useMaterializedLibraries
-                ? CopyMaterializedAssets(manifest, options.InputDirectory, bundleWorkspace)
+                ? CopyMaterializedAssets(manifest, options.ProjectRoot, bundleWorkspace)
                 : CopyAssets(manifest, options, bundleWorkspace);
             var externalPackageRewrites = new HashSet<string>(StringComparer.Ordinal);
             var importRewrites = new Dictionary<string, string>(
@@ -101,23 +98,18 @@ internal sealed class NetpackBundler
                 relativePaths,
                 importRewrites,
                 externalPackageRewrites);
-            var standalonePackageRoot = string.IsNullOrWhiteSpace(options.PackageRoot);
+            // 判据是"调用方是否已经恢复过依赖"：Emit 会先在自己的项目根完成 restore 并传入
+            // 物化结果，此时直接复用那份 node_modules；直接调用 Toolchain 的调用方没有恢复过，
+            // 因此必须补一次同样的 restore，否则 NetPack 解析不到任何上游包。
+            var standalonePackageRoot = options.MaterializedLibraries is null;
             if (standalonePackageRoot)
             {
-                // A direct Toolchain caller owns this temporary project, so it must complete
-                // the same package restore that Emit performs before handing the graph to
-                // NetPack. The MSBuild/Emit path supplies PackageRoot and reuses its already
-                // restored jazor/node_modules tree instead of restoring a second graph.
                 LibraryPackageWriter.WritePackageProject(bundleWorkspace, libraries);
             }
-            else if (!IsAncestorDirectory(options.PackageRoot!, bundleWorkspace))
-            {
-                throw new InvalidOperationException(
-                    $"Netpack package root '{options.PackageRoot}' must contain the bundle workspace '{bundleWorkspace}'.");
-            }
+
             foreach (var relativePath in relativePaths)
             {
-                var sourcePath = GetSafePath(options.InputDirectory, relativePath);
+                var sourcePath = GetSafePath(options.ProjectRoot, relativePath);
                 var targetPath = GetSafePath(bundleWorkspace, relativePath);
                 var targetDirectory = Path.GetDirectoryName(targetPath);
                 if (!string.IsNullOrWhiteSpace(targetDirectory))
@@ -242,7 +234,8 @@ internal sealed class NetpackBundler
                 netpackCssPaths
                     .Select(path => Path.Combine(netpackOutputDirectory, path))
                     .Concat(ResolveExternalStylesheetPaths(
-                        options.PackageRoot ?? bundleWorkspace,
+                        // 直接在临时工作区里恢复时，恢复结果也在那里；否则复用项目根的 node_modules。
+                        standalonePackageRoot ? bundleWorkspace : options.ProjectRoot,
                         libraries,
                         libraries.ExternalStyleModuleImports,
                         libraries.ExternalStylesheetPaths))
@@ -418,12 +411,12 @@ internal sealed class NetpackBundler
         if (manifest.Assets.Count == 0)
             return new PreparedAssets(rewrites, staticAssets);
 
-        if (string.IsNullOrWhiteSpace(options.SourceRoot))
-            throw new InvalidOperationException("Manifest assets require an explicit source root.");
+        if (string.IsNullOrWhiteSpace(options.ProjectRoot))
+            throw new InvalidOperationException("Manifest assets require the project root.");
 
         foreach (var asset in manifest.Assets)
         {
-            var sourcePath = GetSafePath(options.SourceRoot, asset.SourcePath);
+            var sourcePath = GetSafePath(options.ProjectRoot, asset.SourcePath);
             var artifactPath = GetSafePath(bundleWorkspace, asset.ArtifactPath);
             var artifactDirectory = Path.GetDirectoryName(artifactPath);
             if (!string.IsNullOrWhiteSpace(artifactDirectory))

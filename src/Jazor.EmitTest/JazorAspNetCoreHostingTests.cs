@@ -71,7 +71,9 @@ public sealed class JazorAspNetCoreHostingTests
         var sourceFilePath = Path.Combine(sourceDirectory, "Program.cs");
         Directory.CreateDirectory(Path.Combine(appBaseDirectory, "jazor"));
         Directory.CreateDirectory(Path.Combine(sourceDirectory, "jazor"));
-        File.WriteAllText(Path.Combine(appBaseDirectory, "jazor", "bundle.js"), "export {};\n");
+        // Bundle 输出固定在项目根的 dist/ 下。
+        Directory.CreateDirectory(Path.Combine(appBaseDirectory, "jazor", "dist"));
+        File.WriteAllText(Path.Combine(appBaseDirectory, "jazor", "dist", "bundle.js"), "export {};\n");
         File.WriteAllText(Path.Combine(sourceDirectory, "jazor", "jazor-manifest.json"), "{}");
         File.WriteAllText(sourceFilePath, "var builder = JazorWebApplication.CreateBuilder(args);");
 

@@ -9,8 +9,11 @@ public sealed class JazorArtifactOptions
     /// <summary>Default manifest used to detect a ready generated artifact graph.</summary>
     public const string ManifestProbeRelativePath = "jazor-manifest.json";
 
-    /// <summary>Fallback browser bundle used to detect a ready release artifact graph.</summary>
-    public const string BundleProbeRelativePath = "bundle.js";
+    /// <summary>
+    /// Fallback browser bundle used to detect a ready release artifact graph.
+    /// Bundle 输出固定在项目根的 <c>dist/</c> 下。
+    /// </summary>
+    public const string BundleProbeRelativePath = "dist/bundle.js";
 
     /// <summary>Initializes artifact discovery with manifest and release-bundle probes.</summary>
     public JazorArtifactOptions()
@@ -37,7 +40,7 @@ public sealed class JazorArtifactOptions
     public string DirectoryName { get; set; } = "jazor";
 
     /// <summary>Probe files checked once when registering the artifact mount.</summary>
-    /// <remarks>默认包含 jazor-manifest.json 和 bundle.js，任意一个存在即通过。仅在注册中间件时探测，不保证整个 SSR 图完整。</remarks>
+    /// <remarks>默认包含 jazor-manifest.json 和 dist/bundle.js，任意一个存在即通过。仅在注册中间件时探测，不保证整个 SSR 图完整。</remarks>
     public IList<string> ProbeRelativePaths { get; }
 
     /// <summary>Request-path prefixes that may receive immutable cache headers.</summary>

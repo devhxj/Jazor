@@ -274,17 +274,21 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 
 ##### B3 消费入口收敛
 
+**已落地（本切片）**：`ToolchainRequest` 的四根契约（`ArtifactRoot`/`SourceRoot`/`OutputRoot`/`PackageRoot`）收敛为单一 `ProjectRoot`，CLI 参数从 `--artifacts --source-root --out-root` 收敛为 `--root`，`BundleOutputPath` 固定在 `<projectRoot>/dist/bundle.js`。生产路径上这四个根始终指向同一个 `jazor/`，拆开只让调用方承担一致性责任。`BundleOptions` 同步收敛（`InputDirectory`/`SourceRoot`/`PackageRoot` → `ProjectRoot`）。
+
+区分「调用方已恢复依赖」的判据改为 `MaterializedLibraries is null`：Emit 先在自己的项目根完成 restore 再传物化结果，直接调用 Toolchain 的调用方没有恢复过，需要在临时工作区补一次同样的 restore。
+
+仍待完成（阶段 C 一并处理）：
+
 | 文件 | 类型 / 成员 | 处置 | 替代 |
 | --- | --- | --- | --- |
-| `NetpackBundler.cs` | bundle 工作区 `__jazor_netpack_bundle__`（`:69`）、合成入口 `__jazor_entry__`（`:168`）、`__jazor_netpack_output__`（`:189`）与 `finally` 清理（`:257`） | 退役 | 以 `jazor/` 为解析根、`entry.js` 为入口调用 NetPack，输出 `jazor/dist/` |
-| `NetpackBundler.cs` | `CopyMaterializedLibraryFiles:492`、`CopyMaterializedAssets:451`、`CopyLibraryPublishAssetsToOutput:547`、`CopyStaticAssetsToOutput:969` | 退役 | 资源由标准 import/URL 图进入打包，不再由 Emit/NetPack 逐文件搬运 |
-| `NetpackBundler.cs` | `WriteBundleCssAsync:577`、外部样式解析（`ResolveExternalStylesheetPaths:603`、`ResolveExternalStyleFile:713`） | 退役 | 样式是入口的 side-effect import，由打包器处理；Jazor 不拼接 CSS |
-| `NetpackBundler.cs` | `PrepareBundledRouteRuntime:368`、`RewriteModuleImports:986`、`SelectNetpackOutputs:1149`、`WriteOutputs:1098` | 保留 | 输出选择、source map 重命名与 import 重写仍是 bundle 交付契约 |
-| `Toolchain.cs` | `ToolchainRequest` 的四根契约（`ArtifactRoot`/`SourceRoot`/`OutputRoot`/`PackageRoot`，`:26`–`:43`）与 `ToolchainCommand.TryParse:107` 的 `build`/`serve --manifest --artifacts --source-root --out-root` 双命令族 | 改写 | 收敛为单项目根 + `entry.js`；`BundleOutputPath` 落在 `jazor/dist/` |
-| `Toolchain.cs` | `Toolchain.BuildAsync:262`、`ValidateRequest:271`、`BuildNetpackAsync:319`、`ToolchainResult:242`、`ToolchainDiagnostic:21` | 保留 | 调用契约与诊断结构不变，只换成单根 |
-| `DenoPackageRestorer.cs` | `RestoreAndCheckAsync:15`、`CheckAsync:107`、`RunAsync:400` | 保留 | argv 与 `DenoPackageRestorer` 一致；工作根改为最终 `jazor/`，删除 "staging root" 措辞（`:27`、`:74`） |
-| `CatalogReader.cs` | `CatalogReader`、`CatalogAssetRecord:350`、`CatalogReadResult:353` | 保留 | `ModuleCatalog` 读取与源码 carrier 写出 |
-| `EmitPipeline.cs` | `ValidateOptions:507`、`EnsureManifestIsOwnedByOutput:523`、`GetReservedOutputPaths:455`、`GetSafePath:535` | 保留 | 所有权、路径越界与输出冲突校验继续有效 |
+| `NetpackBundler.cs` | bundle 工作区 `__jazor_netpack_bundle__`、合成入口 `__jazor_entry__`、`__jazor_netpack_output__` 与 `finally` 清理 | 退役 | 以 `jazor/` 为解析根、`entry.js` 为入口调用 NetPack，输出 `jazor/dist/` |
+| `NetpackBundler.cs` | `CopyMaterializedLibraryFiles`、`CopyMaterializedAssets`、`CopyLibraryPublishAssetsToOutput`、`CopyStaticAssetsToOutput` | 退役 | 资源由标准 import/URL 图进入打包，不再由 Emit/NetPack 逐文件搬运 |
+| `NetpackBundler.cs` | `WriteBundleCssAsync`、外部样式解析（`ResolveExternalStylesheetPaths`、`ResolveExternalStyleFile`） | 退役 | 样式是入口的 side-effect import，由打包器处理；Jazor 不拼接 CSS |
+| `NetpackBundler.cs` | `PrepareBundledRouteRuntime`、`RewriteModuleImports`、`SelectNetpackOutputs`、`WriteOutputs` | 保留 | 输出选择、source map 重命名与 import 重写仍是 bundle 交付契约 |
+| `DenoPackageRestorer.cs` | `RestoreAndCheckAsync`、`CheckAsync`、`RunAsync` | 保留 | argv 一致；工作根已是最终 `jazor/` |
+| `CatalogReader.cs` | `CatalogReader`、`CatalogAssetRecord`、`CatalogReadResult` | 保留 | `ModuleCatalog` 读取与源码 carrier 写出 |
+| `EmitPipeline.cs` | `ValidateOptions`、`EnsureManifestIsOwnedByOutput`、`GetReservedOutputPaths`、`GetSafePath` | 保留 | 所有权、路径越界与输出冲突校验继续有效 |
 | `EmitPipeline.cs` | `RemoveBrowserRawProjection:475`、`DeleteOutputFile:500` | 改写 | 统一为基于 `jazor-manifest.json` 的清单差异清理，含 Release 投影裁剪 |
 | `ModuleWriter.cs` | `PrepareModules:57`、`PreparedModule:387`、`Equivalent:302`、`BuildManifest:208`、`ValidateManifestCollision:294` | 保留 | 纯校验与清单；hash/identity/依赖校验不变 |
 | `ModuleWriter.cs` | `BuildDesiredFiles:231`、`DesiredFile:404`、`FindStaleFiles:267`、`WriteResult:578` | 保留 | 过期文件就地删除 + `Written`/`Skipped`/`Deleted` 诊断，作为增量收敛的唯一机制 |

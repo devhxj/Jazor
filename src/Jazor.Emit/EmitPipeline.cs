@@ -231,21 +231,18 @@ internal sealed class EmitPipeline
 
     private static async Task<ToolchainResult> BuildBrowserBundleAsync(
         EmitOptions options,
-        string stagingRoot,
+        string projectRoot,
         string manifestPath,
         LibraryAssets materializedLibraries,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var sourceRoot = options.SourceRoot ?? Path.GetDirectoryName(options.RootAssemblyPath);
-        if (string.IsNullOrWhiteSpace(sourceRoot))
-            throw new InvalidOperationException("Release Emit requires a source root for bundle inputs.");
 
+        // 单一项目根：输入、依赖恢复根、package 解析根与 bundle 输出都在 jazor/ 下，
+        // 不再向 NetPack 传四个可能不一致的根。
         var request = ToolchainRequest.Create(
             manifestPath,
-            stagingRoot,
-            sourceRoot,
-            stagingRoot,
+            projectRoot,
             mode: BuildMode.Production,
             sourceMaps: true,
             minify: true,
@@ -256,8 +253,7 @@ internal sealed class EmitPipeline
                 ToolchainCapability.Minify
             },
             libraryManifests: options.LibraryManifests,
-            materializedLibraries: materializedLibraries,
-            packageRoot: stagingRoot);
+            materializedLibraries: materializedLibraries);
         return await new Toolchain().BuildAsync(request).ConfigureAwait(false);
     }
 

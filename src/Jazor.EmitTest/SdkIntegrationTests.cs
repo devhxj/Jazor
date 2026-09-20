@@ -575,8 +575,8 @@ public sealed class SdkIntegrationTests
             ["build", projectPath, .. commonArguments, "-p:JazorMode=release"]);
         Assert.AreEqual(0, releaseBuild.ExitCode, releaseBuild.ToString());
 
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"ECMAScript.Style bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"ECMAScript.Style bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(runtimePath), "Release must not retain the debug runtime module.");
@@ -621,7 +621,7 @@ public sealed class SdkIntegrationTests
 
         var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
         var debugManifestPath = Path.Combine(hostRoot, "jazor", "jazor-manifest.json");
-        var bundlePath = Path.Combine(hostRoot, "jazor", "bundle.js");
+        var bundlePath = Path.Combine(hostRoot, "jazor", "dist", "bundle.js");
 
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsFalse(
@@ -665,7 +665,7 @@ public sealed class SdkIntegrationTests
 
         var browserRoot = Path.Combine(projectRoot, "jazor");
         var ssrRoot = Path.Combine(browserRoot, "ssr");
-        Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "bundle.js")), "Release browser bundle was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "dist", "bundle.js")), "Release browser bundle was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "jazor-manifest.json")), "SSR application manifest was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "host", "app.mjs")), "SSR raw module graph was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "importmap.json")), "SSR browser import map was not generated.");
@@ -2755,8 +2755,8 @@ public sealed class SdkIntegrationTests
         var moduleRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(moduleRoot, "host", "app.mjs");
-        var bundlePath = Path.Combine(moduleRoot, "bundle.js");
-        var bundleSourceMapPath = Path.Combine(moduleRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(moduleRoot, "dist", "bundle.js");
+        var bundleSourceMapPath = Path.Combine(moduleRoot, "dist", "bundle.js.map");
 
         Assert.IsFalse(File.Exists(manifestPath), $"Release must not materialize a manifest: {manifestPath}");
         Assert.IsFalse(File.Exists(modulePath), $"Release must not materialize modules: {modulePath}");
@@ -3320,8 +3320,8 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var counterModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
-        var bundlePath = Path.Combine(bundleRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(bundleRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(bundleRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(bundleRoot, "dist", "bundle.js.map");
 
         Assert.IsFalse(File.Exists(manifestPath), $"Release must not materialize a manifest: {manifestPath}");
         Assert.IsFalse(File.Exists(counterModulePath), $"Release must not materialize modules: {counterModulePath}");
@@ -3599,8 +3599,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release TDesign bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release TDesign bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -3617,7 +3617,7 @@ public sealed class SdkIntegrationTests
             File.Exists(Path.Combine(outputRoot, "node_modules", "tdesign-vue-next", "package.json")),
             "The Release consumer did not restore the selected TDesign npm package.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(outputRoot, "bundle.css")),
+            File.Exists(Path.Combine(outputRoot, "dist", "bundle.css")),
             "The Release consumer did not emit the selected TDesign stylesheet closure.");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "tdesign-browser-harness");
@@ -3672,8 +3672,8 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "bundle.js")), "Release Element Plus bundle was not generated.");
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "bundle.js.map")), "Release Element Plus source map was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "bundle.js")), "Release Element Plus bundle was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "bundle.js.map")), "Release Element Plus source map was not generated.");
         Assert.IsFalse(Directory.Exists(Path.Combine(projectRoot, "node_modules")), "The isolated Element Plus consumer must not use frontend node_modules.");
         Assert.IsTrue(Directory.EnumerateFiles(outputRoot, "index.full.min.mjs", SearchOption.AllDirectories).Any(), "Element Plus ESM entry was not materialized.");
         Assert.IsTrue(Directory.EnumerateFiles(outputRoot, "index.css", SearchOption.AllDirectories).Any(), "Element Plus stylesheet was not materialized.");
@@ -3734,8 +3734,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release ElementReference bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release ElementReference bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -3822,8 +3822,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release core DOM event bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release core DOM event bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -3932,8 +3932,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release framework primitive bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release framework primitive source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -4046,8 +4046,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release navigation bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release navigation bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -4158,8 +4158,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release complex lifecycle bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release complex lifecycle bundle source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -4258,8 +4258,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"Release extended event bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"Release extended event source map was not generated: {bundleMapPath}");
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
@@ -6659,7 +6659,7 @@ public sealed class SdkIntegrationTests
               <head>
                 <meta charset="utf-8">
                 <title>Jazor RazorVue native TDesign browser smoke</title>
-                <link rel="stylesheet" href="./jazor/bundle.css">
+                <link rel="stylesheet" href="./jazor/dist/bundle.css">
                 <script>
                   window.__jazorSmokeFailures = [];
                   (function () {
@@ -6704,7 +6704,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
@@ -6854,7 +6854,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
@@ -7034,7 +7034,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
@@ -7225,7 +7225,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
@@ -7446,7 +7446,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
@@ -7660,7 +7660,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
@@ -7849,7 +7849,7 @@ public sealed class SdkIntegrationTests
               </head>
               <body>
                 <div id="app"></div>
-                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./jazor/dist/bundle.js"></script>
                 <script type="module" src="./smoke.mjs"></script>
               </body>
             </html>
