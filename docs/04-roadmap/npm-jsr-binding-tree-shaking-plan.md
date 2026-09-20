@@ -163,6 +163,8 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | B2 物化退役 | embedded carrier 按声明路径写入源码树；退役 `packages/` 投影、合成 `file:` 本地包与合成 `package-lock.json`；`LibraryPackageWriter` 收敛为根 `package.json` writer | `fba111da` |
 | D3 收尾 | carrier 逻辑键单列通道（`CarrierImportKeys`）：carrier 写出的 specifier 已是相对的，逻辑键无法从生成文本反推，供 `--library-manifest` 选择使用 | `907af628` |
 | D-2 绑定 specifier 收敛 | `[ECMAScript]` 改为上游公开入口；manifest 键收敛为同一 specifier 并按「模块 × 导出名」归并；生成器 `--check` 门禁改为按上游 `exports` 校验可解析性 | `b278bb57`、`d7f4327a` |
+| B3 单根收敛 | `ToolchainRequest` 四根 → `ProjectRoot`；CLI `--artifacts/--source-root/--out-root` → `--root`；bundle 固定 `jazor/dist/`；宿主探测同步 | `aae07532` |
+| E 交付证据 | CHANGELOG 逐项记录破坏性变更与迁移路径 | `6d4b0973` |
 
 当前测试基线：
 
@@ -174,7 +176,16 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | `Jazor.CLR.Test` | 4963 / 5089（126 个既有失败；改动前基线为 127） |
 | 生成器门禁 | `vuetify --check`、`elementplus --check`、`tdesign components --check` 全部通过 |
 
-仍未开始：B3（NetPack/Toolchain 单根收敛）、C（NetPack 与 SSR）、E（交付证据与 CHANGELOG）。
+### 剩余：阶段 C（NetPack 与 SSR 收敛）
+
+阶段 C 需要先落地**两个尚不存在的产物**，因此与前面的切片分开实施：
+
+- **`entry.js` / `ssr-entry.js` 的发射**。当前 Emit 不产出可见入口，NetPack 靠合成 `__jazor_entry__/<stem>.mjs`（按根程序集的模块列表 `export *`）充当入口，SSR 则由宿主在运行根写 `@jazor/ssr-runner.mjs`。C 阶段要把入口变成 Emit 的正式产物：浏览器 `entry.js`、SSR `ssr-entry.js`，二者都是普通项目源码，可被 Deno 与 NetPack 直接解析。
+- **NetPack 直接以项目根构图**。入口存在后，`__jazor_netpack_bundle__` 临时工作区（含 `CopyMaterializedLibraryFiles`/`CopyMaterializedAssets`/`CopyLibraryPublishAssetsToOutput`/`CopyStaticAssetsToOutput` 的逐文件搬运）与 `WriteBundleCssAsync`（样式拼接、`ResolveExternalStylesheetPaths`）一并退役：资源由标准 import/URL 图进入打包，样式由打包器处理。
+
+这两项是「Emit 生成项目并交棒」契约的最后一段，完成后 `jazor/` 才真正只由项目根、可见入口与标准 package resolution 构成。B3 已把消费入口的根收敛到位，因此 C 阶段不再需要触碰 `ToolchainRequest`。
+
+仍未开始：仅剩阶段 C（见下节）。
 
 ### D-2 已落地：绑定 specifier 收敛到上游公开入口
 
