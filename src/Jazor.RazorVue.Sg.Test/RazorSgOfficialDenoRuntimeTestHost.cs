@@ -38,7 +38,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 foreach (var module in supportingModules)
                     WriteFile(Path.Combine(root, module.Key), module.Value);
             }
-            MaterializeCatalogDependencies(root, moduleText, supportingModules);
+            MaterializeCatalogDependencies(root, moduleRelativePath, moduleText, supportingModules);
             MaterializeRazorVueRuntimeModules(root, moduleText, supportingModules);
             WriteFile(
                 Path.Combine(root, "package.json"),
@@ -244,8 +244,11 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
     {
         var imports = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            ["System/"] = "./System/",
-            ["Microsoft/"] = "./Microsoft/",
+            // carrier 物理布局由 ManifestModel 的 development 路径决定（含 clr/ 前缀）；
+            // 这里同时暴露逻辑前缀与项目前缀，覆盖两种引用形态。
+            ["System/"] = "./clr/System/",
+            ["Microsoft/"] = "./clr/Microsoft/",
+            ["clr/"] = "./clr/",
             ["@jazor/vue-runtime/"] = "./@jazor/vue-runtime/",
             ["vue"] = "./node_modules/vue/index.mjs",
         };
@@ -291,12 +294,15 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
 
     private static void MaterializeCatalogDependencies(
         string root,
+        string modulePath,
         string moduleText,
         IReadOnlyDictionary<string, string>? supportingModules)
     {
-        // Collect compiler-owned CLR imports from JavaScript module AST; package.json等
-        // supporting files are not JavaScript inputs.
-        var pendingPaths = new Queue<string>(GetCatalogImportPaths(moduleText));
+        // Collect compiler-owned carrier imports from the JavaScript module AST. 引用可能是
+        // 项目相对路径（载体之间）或 clr/、System/、Microsoft/ 前缀形态；三者都要归一到
+        // 清单键，并按各自的声明路径落盘，保持相对 import 可解析。
+        var pendingPaths = new Queue<(string ManifestKey, string ProjectPath)>(
+            GetCarrierManifestKeys(moduleText, modulePath).Select(key => (key, key)));
         if (supportingModules is not null)
         {
             foreach (var supportingModule in supportingModules)
@@ -304,26 +310,49 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 if (!IsJavaScriptModulePath(supportingModule.Key))
                     continue;
 
-                foreach (var path in GetCatalogImportPaths(supportingModule.Value))
-                    pendingPaths.Enqueue(path);
+                foreach (var path in GetCarrierManifestKeys(supportingModule.Value, supportingModule.Key))
+                    pendingPaths.Enqueue((path, path));
             }
         }
 
         var materializedPaths = new HashSet<string>(StringComparer.Ordinal);
-        while (pendingPaths.TryDequeue(out var relativePath))
+        while (pendingPaths.TryDequeue(out var pending))
         {
-            if (!materializedPaths.Add(relativePath))
+            if (!materializedPaths.Add(pending.ManifestKey))
                 continue;
 
-            if (!EcmascriptResourceModules.TryGetValue(relativePath, out var content))
+            if (!EcmascriptResourceModules.TryGetValue(pending.ManifestKey, out var content))
             {
                 throw new InvalidOperationException(
-                    $"ECMAScript resource package does not contain imported module '{relativePath}'.");
+                    $"ECMAScript resource package does not contain imported module '{pending.ManifestKey}'.");
             }
 
-            WriteFile(Path.Combine(root, relativePath), content);
-            foreach (var dependency in GetCatalogImportPaths(content))
-                pendingPaths.Enqueue(dependency);
+            WriteFile(Path.Combine(root, pending.ManifestKey.Replace('/', Path.DirectorySeparatorChar)), content);
+            // 载体内部的 import 也是相对的，解析基点必须用该载体自己的项目路径，
+            // 不能按文件名在清单里猜测。
+            foreach (var dependency in GetCarrierManifestKeys(content, pending.ManifestKey))
+                pendingPaths.Enqueue((dependency, dependency));
+        }
+    }
+
+    /// <summary>
+    /// 把 carrier 引用归一为清单逻辑键。
+    ///
+    /// 载体文件的清单键不含 clr/ 前缀（那是项目源码树前缀），因此相对 specifier
+    /// 需要先解析成项目路径、再与清单里的 development 路径比对。
+    /// </summary>
+    private static IEnumerable<string> GetCarrierManifestKeys(string moduleText, string? importerPath)
+    {
+        foreach (var specifier in GetCatalogImportPaths(moduleText, importerPath))
+        {
+            if (TryResolveCarrierKey(specifier.Replace('\\', '/'), importerPath, out var manifestKey))
+            {
+                yield return manifestKey;
+                continue;
+            }
+
+            throw new InvalidOperationException(
+                $"ECMAScript resource package does not contain imported module '{specifier}'.");
         }
     }
 
@@ -358,7 +387,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             // Runtime helpers can import CLR-owned modules directly (for example the
             // NavigationManager adapter). Materialize those catalog dependencies from the
             // helper content as well as from generated component modules.
-            MaterializeCatalogDependencies(root, content, supportingModules);
+            MaterializeCatalogDependencies(root, importPath, content, supportingModules);
         }
     }
 
@@ -381,13 +410,95 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
            path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase);
 
-    private static IEnumerable<string> GetCatalogImportPaths(string moduleText)
+    private static IEnumerable<string> GetCatalogImportPaths(string moduleText, string? importerPath)
         => new Parser().ParseModule(moduleText).Body
             .OfType<ImportDeclaration>()
             .Select(static import => import.Source.Value)
-            .Where(static path =>
-                path.StartsWith("System/", StringComparison.Ordinal) ||
-                path.StartsWith("Microsoft/", StringComparison.Ordinal));
+            .Where(path => IsCarrierModuleSpecifier(path, importerPath));
+
+    /// <summary>
+    /// 判断一个 specifier 是否指向 carrier 模块。
+    ///
+    /// 判据是"解析后的目标是否存在于 carrier 清单"：载体之间用相对 specifier 互引，
+    /// 组件模块用 clr/** 前缀引用载体，测试 fixture 也会用相对 specifier 引用自己的 helper。
+    /// 只有清单成员才算载体，因此必须先解析再判定，不能按前缀猜测。
+    /// </summary>
+    private static bool IsCarrierModuleSpecifier(string path, string? importerPath)
+        => TryResolveCarrierKey(path.Replace('\\', '/'), importerPath, out _);
+
+    /// <summary>
+    /// 把 carrier 引用解析为清单键。
+    ///
+    /// carrier 的清单键就是项目相对路径（含 clr/ 前缀），因此：
+    /// - clr/** 形态可直接命中；
+    /// - 相对 specifier 先按 importer 的最终位置解析成项目路径，再命中；
+    /// - 解析结果不在清单里的引用属于 fixture 自己的模块，不是 carrier。
+    /// </summary>
+    private static bool TryResolveCarrierKey(string specifier, string? importerPath, out string manifestKey)
+    {
+        manifestKey = string.Empty;
+        if (EcmascriptResourceModules.ContainsKey(specifier))
+        {
+            manifestKey = specifier;
+            return true;
+        }
+
+        // 非相对形态：Jazor.Vue 的 dist 载体仍按旧的无前缀写法引用 CLR 载体
+        // （Microsoft/**、System/**），import map 也按同样规则映射到 clr/。
+        if (!specifier.StartsWith("./", StringComparison.Ordinal) &&
+            !specifier.StartsWith("../", StringComparison.Ordinal))
+        {
+            var prefixed = "clr/" + specifier;
+            if (EcmascriptResourceModules.ContainsKey(prefixed))
+            {
+                manifestKey = prefixed;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (importerPath is null)
+            return false;
+
+        // 相对 specifier 只有落到清单声明的路径上才算 carrier。
+        var resolved = ResolveVirtualPath(importerPath.Replace('\\', '/'), specifier);
+        if (resolved is not null && EcmascriptResourceModules.ContainsKey(resolved))
+        {
+            manifestKey = resolved;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 按 POSIX 语义把相对 specifier 解析为项目路径，越出项目根的引用返回 null。
+    /// </summary>
+    private static string? ResolveVirtualPath(string importerPath, string specifier)
+    {
+        var separator = importerPath.LastIndexOf('/');
+        var segments = new List<string>(
+            separator < 0 ? [] : importerPath[..separator].Split('/'));
+        foreach (var segment in specifier.Split('/'))
+        {
+            switch (segment)
+            {
+                case "" or ".":
+                    continue;
+                case "..":
+                    if (segments.Count == 0)
+                        return null;
+                    segments.RemoveAt(segments.Count - 1);
+                    break;
+                default:
+                    segments.Add(segment);
+                    break;
+            }
+        }
+
+        return string.Join('/', segments);
+    }
 
     private static IReadOnlyDictionary<string, string> ReadEcmascriptResourceModules()
     {
@@ -401,19 +512,19 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         var resourceModules = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var entry in document.RootElement.GetProperty("imports").EnumerateObject())
         {
+            // 清单键就是 carrier 的项目相对路径（含 clr/ 前缀），与开发/生产字段一致。
             var production = entry.Value.GetProperty("production").GetString();
             if (string.IsNullOrWhiteSpace(production) ||
                 !production.StartsWith("clr/", StringComparison.Ordinal))
                 continue;
 
-            var relativePath = production["clr/".Length..];
             var sourcePath = Path.Combine(packageRoot, production.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(sourcePath))
                 throw new FileNotFoundException($"ECMAScript resource module '{production}' was not found.", sourcePath);
             var content = File.ReadAllText(sourcePath);
 
-            if (!resourceModules.TryAdd(relativePath, content))
-                throw new InvalidOperationException($"ECMAScript resource package contains duplicate path '{relativePath}'.");
+            if (!resourceModules.TryAdd(production, content))
+                throw new InvalidOperationException($"ECMAScript resource package contains duplicate path '{production}'.");
         }
 
         return resourceModules;

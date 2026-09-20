@@ -83,7 +83,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         var expectedRuntimePaths = CollectDependencyClosure(runtimeModules, "clr/System/StringModule.js");
         CollectionAssert.AreEquivalent(
             expectedRuntimePaths.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase).ToArray(),
-            retainedPaths.Where(static path => path.StartsWith("System/", StringComparison.OrdinalIgnoreCase))
+            retainedPaths.Where(static path => path.StartsWith("clr/System/", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
                 .ToArray());
     }
@@ -101,7 +101,7 @@ public sealed class ClrRuntimeCatalogReaderTests
 
         var runtimeModule = modules.Single(module => string.Equals(module.RelativePath, "clr/System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(runtimeModule.Content.Contains("from \"./RuntimeModule.js\"", StringComparison.Ordinal), runtimeModule.Content);
-        StringAssert.Contains(runtimeModule.Content, "import { _5ad63706a889c294 } from \"System/StringModule.js\";");
+        StringAssert.Contains(runtimeModule.Content, "import { _5ad63706a889c294 } from \"./StringModule.js\";");
         Assert.IsFalse(runtimeModule.Content.Contains("import { RuntimeModule", StringComparison.Ordinal), runtimeModule.Content);
         Assert.IsFalse(runtimeModule.Content.Contains("export const RuntimeModule = {", StringComparison.Ordinal), runtimeModule.Content);
         var queueStart = runtimeModule.Content.IndexOf("export class JQueue {", StringComparison.Ordinal);
@@ -202,7 +202,7 @@ public sealed class ClrRuntimeCatalogReaderTests
 
         var arrayModule = modules.Single(module => string.Equals(module.RelativePath, "clr/System/ArrayModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(arrayModule.Content, "let newArray = new Array(newSize);");
-        StringAssert.Contains(arrayModule.Content, "from \"System/Collections/Generic/ComparerT1Module.js\";");
+        StringAssert.Contains(arrayModule.Content, "from \"./Collections/Generic/ComparerT1Module.js\";");
         StringAssert.Contains(arrayModule.Content, "CompareCore");
         StringAssert.Contains(arrayModule.Content, "CompareObjectsCore");
         Assert.IsFalse(arrayModule.Content.Contains(".toString()", StringComparison.Ordinal), arrayModule.Content);
@@ -228,7 +228,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(doubleModule.Content.Contains("export const DoubleModule = {", StringComparison.Ordinal), doubleModule.Content);
 
         var int64Module = modules.Single(module => string.Equals(module.RelativePath, "clr/System/Int64Module.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(int64Module.Content, "from \"System/Numerics/BigIntIntegerRuntime.js\";");
+        StringAssert.Contains(int64Module.Content, "from \"./Numerics/BigIntIntegerRuntime.js\";");
         StringAssert.Contains(int64Module.Content, "return RotateLeft(value, rotateAmount, 64,");
         StringAssert.Contains(int64Module.Content, "return RotateRight(value, rotateAmount, 64,");
         Assert.IsFalse(int64Module.Content.Contains("function normalizeRotateBits(value)", StringComparison.Ordinal), int64Module.Content);

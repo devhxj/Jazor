@@ -24,7 +24,8 @@ internal static class RenderEmitter
     private const string CascadingValueRuntimeExportName = "CascadingValue";
     private const string CascadingValueMetadataName = "Microsoft.AspNetCore.Components.CascadingValue`1";
     private const string CascadingValueTypePropName = "__jazorCascadeType";
-    private const string ChangeEventArgsRuntimeModuleSpecifier = "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
+    // carrier 声明路径含项目源码树前缀（clr/），硬编码引用必须与声明和 manifest 键一致。
+    private const string ChangeEventArgsRuntimeModuleSpecifier = "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static bool TryEmit(
@@ -2336,7 +2337,8 @@ internal static class RenderEmitter
                 // ChangeEventArgs.Value is an event-time compatibility projection. Capture the
                 // shaped value once before the lowered callback can start async work; the helper
                 // remains CLR-owned and the render emitter only frames the listener call.
-                var captureHelper = context.Argument.BindImportSpecifier(
+                // carrier 是项目源码，引用要相对本组件模块计算（carrier-aware 绑定）。
+                var captureHelper = context.Argument.BindCarrierImportSpecifier(
                     ChangeEventArgsRuntimeModuleSpecifier,
                     "captureChangeEvent");
                 value = BuildChangeEventCaptureHandler(value, captureHelper);

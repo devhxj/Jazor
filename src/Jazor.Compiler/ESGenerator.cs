@@ -176,17 +176,21 @@ public sealed class ESGenerator : IIncrementalGenerator
                 var moduleCatalogImportPaths = new HashSet<string>(
                     converter.ModuleCatalogImportPaths.Select(ECMAScriptModulePath.NormalizeImportSpecifier),
                     StringComparer.Ordinal);
-                // 分类顺序很重要：本图内的 ModuleCatalog 模块必须先于 package 判定。
-                // 逻辑路径（如 features/greeter.mjs）在形式上与包说明符没有区别，
-                // 只有 catalog 集合能区分它们；否则本图模块会被当成库依赖泄漏进 packageImports。
-                var packageImports = module?.Body
+                // packageImports 有两类来源，键都必须是"可被清单解析的逻辑 specifier"：
+                // 1) 外部包引用——保留在生成文本里的裸 specifier；
+                // 2) carrier 引用——生成文本里是相对 specifier，但选择资源库需要逻辑键，
+                //    因此由 AstConverter 单独记录（无法从文本反推）。
+                var emittedPackageImports = module?.Body
                     .OfType<Acornima.Ast.ImportDeclaration>()
                     .Select(static declaration => declaration.Source.Value)
                     .Where(source => !IsModuleCatalogImport(source, plan.RelativePath, moduleCatalogImportPaths))
                     .Where(source => ECMAScriptModulePath.IsPackageSpecifier(source))
+                    .ToArray() ?? [];
+                var packageImports = emittedPackageImports
+                    .Concat(converter.CarrierImportKeys)
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(static specifier => specifier, StringComparer.Ordinal)
-                    .ToArray() ?? [];
+                    .ToArray();
                 GeneratedJavaScriptArtifact? artifact = null;
                 string content;
 

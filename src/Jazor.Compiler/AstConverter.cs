@@ -93,6 +93,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
     private readonly HashSet<string> _moduleCatalogImportPaths = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// carrier 引用的逻辑键（含 clr/ 前缀）。写出的 specifier 是相对的，
+    /// 因此这个键无法从生成文本反推，必须显式记录，供 --library-manifest 选择与图比对。
+    /// </summary>
+    private readonly HashSet<string> _carrierImportKeys = new(StringComparer.Ordinal);
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
         options?.MemberFilter,
@@ -125,6 +131,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// artifact-graph edges, not resource-library requirements.
     /// </summary>
     internal IReadOnlyCollection<string> ModuleCatalogImportPaths => _moduleCatalogImportPaths;
+
+    /// <summary>本模块引用到的 carrier 逻辑键，用于选择资源库清单。</summary>
+    internal IReadOnlyCollection<string> CarrierImportKeys => _carrierImportKeys;
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -392,7 +401,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 ModuleDeclaredBindings,
                 _moduleCatalogImportPaths,
                 _options.CurrentModuleOutputPath,
-                _options.ModuleCatalogOutputPrefix);
+                _options.ModuleCatalogOutputPrefix,
+                _carrierImportKeys);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
         => syntax.SyntaxTree == _classModel.SyntaxTree

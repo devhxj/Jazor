@@ -194,6 +194,16 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 **已定** 同一个上游模块可以由多处声明（不同创作面各有用途），但模块级事实必须一致：specifier、导出名、样式边。**不一致是构建错误**，不允许静默分叉。
 
+「导出名一致」的判据是**同一「模块 × 导出名」对**，不是"一个模块只能有一个组件"。一个上游模块导出多个组件是正常形态：
+
+| 上游模块 | 导出 | 说明 |
+| --- | --- | --- |
+| `vuetify/components/VCard` | `VCard`、`VCardActions`、`VCardItem`、`VCardSubtitle`、`VCardText`、`VCardTitle` | 六个组件共享 `lib/components/VCard/index.js` |
+| `vuetify/components/VGrid` | `VContainer`、`VCol`、`VRow`、`VSpacer` | 四个组件共享 `lib/components/VGrid/index.js` |
+| `tdesign-vue-next/es/button/index.mjs` | `Button`（含 `default`） | 单组件入口 |
+
+因此 `VCard` 与 `VCardActions` 声明同一个 specifier 是正确收敛，不是冲突；把它们拆成两个 specifier 反而会踩到上游不存在的路径——`vuetify@4.2.1` 的 `exports["./components/*"] → ./lib/components/*/index.js` 只对真实目录成立，而 `lib/components/` 下没有 `VCardActions` 目录。
+
 ### 编译器物化
 
 **已定** 声明由编译器在使用点物化：

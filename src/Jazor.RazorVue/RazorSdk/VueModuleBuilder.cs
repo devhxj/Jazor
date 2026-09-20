@@ -216,7 +216,8 @@ internal static class VueModuleBuilder
                 propertyReferenceRewriter: CreateDirectRenderSlotParameterPropertyReferenceRewriter(closure),
                 compilation: binding.Compilation,
                 injectRegistry: injectRegistry,
-                ordinaryRenderFeatures: ordinaryRenderFeatures));
+                ordinaryRenderFeatures: ordinaryRenderFeatures,
+                currentModuleOutputPath: relativePath));
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
         module = AppendFlattenedRuntimeClasses(module, converter, component, closure, cancellationToken);
         var initialization = ComponentInitializationLowerer.Build(
@@ -3946,12 +3947,26 @@ internal static class VueModuleBuilder
         string importerRelativePath)
     {
         var modulePath = declaration.Source.Value;
-        if (!modulePath.StartsWith("./", StringComparison.Ordinal))
-            return declaration;
+        if (modulePath.StartsWith("./", StringComparison.Ordinal))
+        {
+            var rebased = RebaseRootRelativeModuleSpecifier(modulePath, importerRelativePath);
+            return ImportDeclarationFactory.WithModulePath(declaration, rebased);
+        }
 
-        var rebasedPath = RebaseRootRelativeModuleSpecifier(modulePath, importerRelativePath);
-        return ImportDeclarationFactory.WithModulePath(declaration, rebasedPath);
+        // 项目内模块但写成项目相对路径（自有源码 carrier 的 clr/**）时同样需要 rebase：
+        // carrier 是项目源码，不是包，裸路径没有包上下文可供解析。
+        // 外部包说明符（vue、@scope/pkg）不含 clr/ 前缀，保持原样。
+        if (modulePath.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
+        {
+            var rebased = RebaseRootRelativeModuleSpecifier(modulePath, importerRelativePath);
+            return ImportDeclarationFactory.WithModulePath(declaration, rebased);
+        }
+
+        return declaration;
     }
+
+    /// <summary>项目源码树中 CLR 源码 carrier 的根目录。</summary>
+    private const string CarrierSourceRoot = "clr/";
 
     private static string RebaseRootRelativeModuleSpecifier(
         string rootRelativeSpecifier,

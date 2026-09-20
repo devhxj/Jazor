@@ -161,6 +161,7 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | 样式边 | `[Style]` 在使用点发射为 side-effect import，顺序即层叠顺序 | `16babeb4` |
 | D3 载体相对化 | 载体内部 import 全改相对 specifier；`clr/` 前缀纳入声明路径，使声明路径即项目路径 | `9715ec80`、`fba111da` |
 | B2 物化退役 | embedded carrier 按声明路径写入源码树；退役 `packages/` 投影、合成 `file:` 本地包与合成 `package-lock.json`；`LibraryPackageWriter` 收敛为根 `package.json` writer | `fba111da` |
+| D3 收尾 | carrier 逻辑键单列通道（`CarrierImportKeys`）：carrier 写出的 specifier 已是相对的，逻辑键无法从生成文本反推，供 `--library-manifest` 选择使用 | 待提交 |
 
 当前测试基线（失败项均为既有问题，与本次改动无关）：
 
@@ -168,9 +169,37 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | --- | --- |
 | `Jazor.CompilerTest` | 10713 / 10714（1 个 TDesign 上游包缺失） |
 | `Jazor.CLR.Test` | 4963 / 5089（126 个既有失败；改动前基线为 127） |
-| `Jazor.EmitTest` | 见下次门禁 |
+| `Jazor.RazorVue.Sg.Test` | 5005 / 5010（5 个既有失败：4 个 TDesign + 1 个 ElementReference 的 specifier 期望，见下节 D-2） |
+| `Jazor.EmitTest` | 低并发/串行运行通过；全并发下 9 个 `OutOfMemoryException`（Roslyn 编译 OOM，非断言失败） |
 
-仍未开始：B3（NetPack/Toolchain 单根收敛）、C（NetPack 与 SSR）、E（交付证据与 CHANGELOG）。
+仍未开始：D-2（绑定 specifier 收敛，见下）、B3（NetPack/Toolchain 单根收敛）、C（NetPack 与 SSR）、E（交付证据与 CHANGELOG）。
+
+### D-2 待办：绑定 specifier 尚未迁移到上游公开入口
+
+`D-1` 只统一了声明形态，`[ECMAScript]` 的 **specifier 取值**仍是 Jazor 自造的简写，尚未落到上游公开入口。契约已要求生成 import 与恢复后的公开入口一致（见「验收」表），因此这是 `D-1` 未完成的部分，不是新规则。
+
+**现状**：声明写简写，真值另存在 `manifest.json` 的 `imports.*.production` 里，两者靠绑定自有的别名通道连接。各绑定 `imports` 键与 `production` 值不一致的条目数：
+
+| 绑定 | `imports` 总数 | 键 ≠ `production` | 简写形态 | 上游真实入口 |
+| --- | --- | --- | --- | --- |
+| TDesign | 119 | 119 | `tdesign-vue-next/button/Button` | `tdesign-vue-next/es/button/index.mjs` |
+| ElementPlus | 112 | 112 | `element-plus/affix/ElAffix` | `element-plus/es/components/affix/index.mjs` |
+| Vuetify | 123 | 32 | `vuetify/components/VCardActions` | `vuetify/components/VCard` |
+| VuIcons | 1822 | 1822 | `vu-icons/VuAArrowDown` | `runtime/vu-icons/components/VuAArrowDown.mjs`（embedded，非 npm） |
+| Monaco | 6 | 1 | `monaco-editor` | `monaco-editor/editor/editor.api.js` |
+| 其余 14 个绑定 | 40 | 0 | — | 已一致 |
+
+**这些简写在上游不存在**，必须经 Jazor 自己的 `manifest.json` 别名解析才能成立。已按上游快照逐一验证的反例：
+
+- `tdesign-vue-next/button/Button`：`es/button/` 下只有 `index.mjs`、`button.mjs`、`props.mjs` 与 `style/`，没有 `Button` 这一项；`tdesign-vue-next@1.20.7` 无 `exports` 字段，路径按文件布局字面解析，因此该 specifier 在 Deno/NetPack 下直接失败。
+- `vuetify/components/VCardActions`：`vuetify@4.2.1` 的 `exports["./components/*"]` 映射到 `./lib/components/*/index.js`，而 `lib/components/` 下没有 `VCardActions` 目录（它在 `VCard/` 内），解析失败。这正是 manifest 把它别名到 `vuetify/components/VCard` 的原因——别名记录的是解析修正，不是重复信息。
+- `element-plus/affix/ElAffix`：真实入口是 `es/components/affix/index.mjs`；`element-plus@2.14.5` 的 `exports` 只提供 `"./es/*.mjs"` 通配与 `"./*"` 兜底，简写形态不对应任何真实文件。
+
+**Vuetify 子组件共享父目录**是系统性现象而非个例：`VCard` 目录导出 `VCard`/`VCardActions`/`VCardItem`/`VCardSubtitle`/`VCardText`/`VCardTitle`，`VGrid` 目录导出 `VContainer`/`VCol`/`VRow`/`VSpacer`。因此收敛规则需精确表述为：**同一「模块 × 导出名」对必须一致**；一个模块导出多个组件是上游正常形态，不构成冲突。其余 91 个 Vuetify 条目（`vuetify/components/VAlert` 一类）经通配可解析，无需改动。
+
+**迁移口径**：`[ECMAScript("<specifier>")]` 写入上表的「上游真实入口」，导出名继续由 `[ECMAScriptName]` / 符号名给出；`manifest.json` 的成对 `development*`/`production*` 字段按 `D-1` 计划整体退役，别名通道随之下线。完成后生成 import 即为上游公开入口，`deno install` 与 NetPack 直接解析。
+
+**当前 5 个 SG 失败正是这条待办的直接症状**：`RazorSgOfficialTDesignNaturalAuthoringRuntimeTests` 的 4 个用例与 `RazorSgOfficialElementReferenceFocusTests` 的 1 个用例钉住的是迁移前的 specifier 期望（`from "tdesign-vue-next"`、裸 `Microsoft/...`），已在基线 stash 复现，与本次改动无关。D-2 落地时这些期望应改为上游真实入口，而非回退实现。
 
 ## 实施顺序
 

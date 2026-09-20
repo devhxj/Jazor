@@ -891,7 +891,8 @@ internal sealed record MemberClosure(
         Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null,
         Compilation? compilation = null,
         VueInjectRegistry? injectRegistry = null,
-        VueRenderRuntimeFeatures? ordinaryRenderFeatures = null)
+        VueRenderRuntimeFeatures? ordinaryRenderFeatures = null,
+        string? currentModuleOutputPath = null)
     {
         SemanticWalkerHost? tableCellHost = compilation is not null &&
                                              injectRegistry is not null &&
@@ -917,7 +918,11 @@ internal sealed record MemberClosure(
                 propertyReferenceRewriter: propertyReferenceRewriter,
                 tableCellHost: tableCellHost),
             ModulePolicy: VueModulePolicy.Instance,
-            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties,
+            // 组件模块自身的输出路径：carrier 引用要相对它计算（载体是项目源码，不是包）。
+            // carrier 的声明路径已含 clr/ 前缀，因此不再需要额外的路径前缀。
+            CurrentModuleOutputPath: currentModuleOutputPath,
+            ModuleCatalogOutputPrefix: string.Empty);
     }
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)
