@@ -155,7 +155,9 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 - 将 `LibraryPackageWriter` 收敛为根 `package.json` writer。
 - 将源码 carrier 直接写入项目源码目录。
 - 让 Deno restore/check、NetPack 和 DenoHost 始终使用同一项目根。
-- 用 EmitTest 固定 identity 冲突、lock 更新、离线检查、构建失败和原子提交。
+- 退役 `LibraryMaterializer` 的资源物化路径：vendor 树、按 entry 复制的样式以及 license、worker、static 文件由 Deno restore 的 `node_modules` 与 NetPack 可达图提供。ECMAScript 自有 `clr/**`、其他生成模块和源码本地资源仍按项目相对路径写入。
+- 将绑定 `manifest.json` 降级为声明与诊断证据，不再作为 Emit 的物化输入；生成器与门禁继续使用 package identity、specifier、hash、inventory、许可证和上游快照做一致性检查。
+- 用 EmitTest 固定 `LibraryMaterializer` 退役、identity 冲突、lock 更新、离线检查、构建失败和原子提交；绑定门禁继续验证 hash/inventory，标准项目测试验证上游 exports、sideEffects 以及 JS、CSS、worker 和静态资源的可达性。
 
 ### C. 收敛 NetPack 与 SSR
 
@@ -165,7 +167,7 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 
 ### D. 迁移绑定库
 
-- 枚举所有 `src/ECMAScript.*/manifest.json`，把绑定运行时来源统一为 npm/JSR。
+- 枚举所有 `src/ECMAScript.*/manifest.json` 作为迁移清单，校验其 package identity 与入口声明，并把绑定运行时来源统一为 npm/JSR。
 - TDesign、Element Plus、Vuetify 验证公开组件入口、内部依赖、Vue peer 和组件 CSS。
 - VueUse、VueI18n、VeeValidate、DateFns、Pinia、VueRoute 和 VueQuery 验证 named export 与函数级裁剪。
 - VueDataUi、FilePond、Monaco、图标和编辑器类绑定验证全局样式、worker、字体、图片和 wasm。
