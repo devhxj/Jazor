@@ -441,14 +441,9 @@ public sealed class ESGenerator : IIncrementalGenerator
                 ECMAScriptModulePath.NormalizeImportSpecifier(source));
         }
 
-        // 相对 specifier 指向本图模块；catalog 集合记录逻辑路径，
-        // 而相对 specifier 解析出项目路径——CLR carrier 需去掉 clr/ 前缀才是逻辑路径。
+        // 相对 specifier 解析回完整项目路径；ModuleCatalog identity 使用同一个路径。
         var projectPath = ECMAScriptModulePath.ResolveRelativePath(relativePath, source);
-        if (moduleCatalogImportPaths.Contains(projectPath))
-            return true;
-
-        return projectPath.StartsWith(CarrierSourceRoot, StringComparison.Ordinal) &&
-               moduleCatalogImportPaths.Contains(projectPath.Substring(CarrierSourceRoot.Length));
+        return moduleCatalogImportPaths.Contains(projectPath);
     }
 
     private static IReadOnlyList<string> CollectModuleDependencies(
