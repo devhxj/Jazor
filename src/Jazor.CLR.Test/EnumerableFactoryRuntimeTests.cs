@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableFactoryRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task FactoryExports_PreserveRangeRepeatAndSourceIdentityOnDenoHost()
@@ -34,7 +34,7 @@ public sealed class EnumerableFactoryRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -43,7 +43,7 @@ public sealed class EnumerableFactoryRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{empty}}, {{range}}, {{repeat}}, {{asEnumerable}}, {{sequence}} } from "./System/Linq/EnumerableModule.js";
+                import { {{empty}}, {{range}}, {{repeat}}, {{asEnumerable}}, {{sequence}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 function assertArray(actual, expected, name) {
                   if (actual.length !== expected.length || actual.some((value, index) => value !== expected[index]))

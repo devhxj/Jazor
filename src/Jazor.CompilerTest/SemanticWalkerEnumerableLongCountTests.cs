@@ -51,7 +51,7 @@ public sealed class SemanticWalkerEnumerableLongCountTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEquivalent(new[] { "longCount", "longCountWhere" }, importNames);
         StringAssert.Contains(body, "longCount(releaseIds)", StringComparison.Ordinal);

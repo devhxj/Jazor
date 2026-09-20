@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableMinMaxByScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string MinByMember = "static System.Linq.Enumerable.MinBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)";
     private const string MaxByMember = "static System.Linq.Enumerable.MaxBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)";
 

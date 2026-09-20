@@ -6,15 +6,15 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableElementAtRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task ElementAtExports_PreserveFromStartAndFromEndTraversalOnDenoHost()
     {
         var elementAt = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
         var elementAtIndex = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)");
-        var fromStart = GetExportName("static System.Index.FromStart(int)", "System/IndexModule.js");
-        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "System/IndexModule.js");
+        var fromStart = GetExportName("static System.Index.FromStart(int)", "clr/System/IndexModule.js");
+        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "clr/System/IndexModule.js");
         var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-element-at-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -33,7 +33,7 @@ public sealed class EnumerableElementAtRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -42,8 +42,8 @@ public sealed class EnumerableElementAtRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{elementAt}}, {{elementAtIndex}} } from "./System/Linq/EnumerableModule.js";
-                import { {{fromStart}}, {{fromEnd}} } from "./System/IndexModule.js";
+                import { {{elementAt}}, {{elementAtIndex}} } from "./clr/System/Linq/EnumerableModule.js";
+                import { {{fromStart}}, {{fromEnd}} } from "./clr/System/IndexModule.js";
 
                 Deno.test("ElementAt stops enumeration at the target index", () => {
                   const trace = [];

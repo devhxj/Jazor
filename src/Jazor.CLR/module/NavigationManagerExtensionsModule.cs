@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 /// The declarations are produced from the ASP.NET Core symbols by
 /// <c>Jazor.CLR.Generator</c>; only the supported import contracts are retained here.
 /// </summary>
-[ECMAScriptModule("Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.NavigationManagerExtensions", "Object")]
 public static class NavigationManagerExtensionsModule
 {

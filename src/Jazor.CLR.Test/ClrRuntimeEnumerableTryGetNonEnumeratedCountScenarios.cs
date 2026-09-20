@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableTryGetNonEnumeratedCountScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string Member = "static System.Linq.Enumerable.TryGetNonEnumeratedCount<TSource>(System.Collections.Generic.IEnumerable<TSource>, out int)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

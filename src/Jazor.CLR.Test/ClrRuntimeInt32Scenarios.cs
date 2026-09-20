@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeInt32Scenarios
 {
-    private const string ModulePath = "System/Int32Module.js";
+    private const string ModulePath = "clr/System/Int32Module.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

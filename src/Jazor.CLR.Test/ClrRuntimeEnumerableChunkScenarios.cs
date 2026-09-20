@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableChunkScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string ChunkMember = "static System.Linq.Enumerable.Chunk<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

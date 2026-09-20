@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// TimeSpan 的基础单位是 100 纳秒 tick，JavaScript 普通 Number 无法可靠覆盖全部 Int64 范围。
 /// 因此核心 tick 值使用 BigInt；只有明确允许精度损失的边界才转换为 Number。
 /// </remarks>
-[ECMAScriptModule("System/TimeSpanModule.js")]
+[ECMAScriptModule("clr/System/TimeSpanModule.js")]
 [Jazor(Op.Alias, "System.TimeSpan", "Object")]
 public static class TimeSpanModule
 {

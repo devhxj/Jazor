@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("Microsoft/AspNetCore/Components/Web/DataTransferModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/DataTransferModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.DataTransfer", "DataTransfer")]
 public static class DataTransferModule
 {

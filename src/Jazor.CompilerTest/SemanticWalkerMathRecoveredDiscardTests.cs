@@ -59,8 +59,8 @@ public sealed class SemanticWalkerMathRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(2, imports, body);
-        Assert.HasCount(12, imports["System/MathModule.js"], body);
-        Assert.HasCount(1, imports["System/Numerics/BigIntegerModule.js"], body);
+        Assert.HasCount(12, imports["clr/System/MathModule.js"], body);
+        Assert.HasCount(1, imports["clr/System/Numerics/BigIntegerModule.js"], body);
         foreach (var exportName in new[]
         {
             "_e0661118fd9ce98d",
@@ -121,8 +121,8 @@ public sealed class SemanticWalkerMathRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(2, imports, body);
-        Assert.HasCount(5, imports["System/DoubleModule.js"], body);
-        Assert.HasCount(5, imports["System/MathModule.js"], body);
+        Assert.HasCount(5, imports["clr/System/DoubleModule.js"], body);
+        Assert.HasCount(5, imports["clr/System/MathModule.js"], body);
         foreach (var exportName in new[]
         {
             "_0bc6b7459346bc5f",
@@ -167,7 +167,7 @@ public sealed class SemanticWalkerMathRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(5, imports["System/SingleModule.js"], body);
+        Assert.HasCount(5, imports["clr/System/SingleModule.js"], body);
         foreach (var exportName in new[]
         {
             "_99c8e34b34aa762c",
@@ -206,7 +206,7 @@ public sealed class SemanticWalkerMathRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(2, imports["System/HalfModule.js"], body);
+        Assert.HasCount(2, imports["clr/System/HalfModule.js"], body);
         StringAssert.Contains(body, "_3bbda0fdee7bad1d(value)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_c976c1d81370babf(value)", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(value) " + body);
@@ -245,10 +245,10 @@ public sealed class SemanticWalkerMathRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(4, imports, body);
-        Assert.HasCount(3, imports["System/DoubleModule.js"], body);
-        Assert.HasCount(3, imports["System/SingleModule.js"], body);
-        Assert.HasCount(3, imports["System/HalfModule.js"], body);
-        Assert.HasCount(3, imports["System/MathModule.js"], body);
+        Assert.HasCount(3, imports["clr/System/DoubleModule.js"], body);
+        Assert.HasCount(3, imports["clr/System/SingleModule.js"], body);
+        Assert.HasCount(3, imports["clr/System/HalfModule.js"], body);
+        Assert.HasCount(3, imports["clr/System/MathModule.js"], body);
         foreach (var exportName in new[]
         {
             "_b439595e3752c6a9", "_7aeacc68b27f02f7", "_6e429701c9779ef6",
@@ -332,7 +332,7 @@ public sealed class SemanticWalkerMathRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(19, imports["System/Numerics/BigIntegerModule.js"], body);
+        Assert.HasCount(19, imports["clr/System/Numerics/BigIntegerModule.js"], body);
         foreach (var exportName in new[]
         {
             "_cfd2038efd505e1f",

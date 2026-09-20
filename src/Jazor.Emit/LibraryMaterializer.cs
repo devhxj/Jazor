@@ -134,6 +134,11 @@ internal sealed class LibraryMaterializer
             if (reference.Source is "npm" or "jsr")
                 continue;
 
+            // ECMAScript 自有源码 carrier 是项目源码，不是包：它没有 exports 需要合成，
+            // 模块之间用相对 specifier 互相引用。因此并入投影的只有非 embedded 的本地包。
+            if (owner.Manifest.IsEmbedded)
+                continue;
+
             var packageRoot = plan.GetPackageRootRelativePath(owner.Manifest, reference.Name);
             var packageTarget = plan.GetPackageExportPath(owner.Manifest, reference.Name, owner.PackageRelativePath);
             var exportName = GetPackageExportName(specifier, reference.Name, packageTarget);
@@ -962,16 +967,25 @@ internal sealed class LibraryMaterializer
 
         public string GetTargetRelativePath(LibraryManifest manifest, string packageRelativePath)
         {
+            // ECMAScript 自有源码 carrier 的声明路径**就是**项目源码路径
+            // （clr/**、runtime/vu-icons/**、dist/**），逐字写入，不再套 packages/ 合成包根。
+            // 载体内部的 import 已由编译器写成相对 specifier（D3），因此无需包投影来解析。
+            if (manifest.IsEmbedded)
+                return NormalizePath(packageRelativePath);
+
             var packageName = manifest.GetPackageNameForPath(packageRelativePath);
             return GetPackageFilePath(manifest, packageName, packageRelativePath);
         }
 
         public string GetPackageRootRelativePath(LibraryManifest manifest, string? packageName = null)
         {
-            return manifest.Source == "embedded-mjs" &&
-                   string.Equals(manifest.LibraryId, "ecmascript", StringComparison.Ordinal)
-                ? "packages/" + RequireCorePackageName(packageName)
-                : "packages/" + (packageName ?? manifest.LibraryId);
+            // 只服务非 embedded 的 package 投影；自有源码 carrier 不走包投影
+            // （见 GetTargetRelativePath），因此这里不再有 embedded 分支。
+            if (manifest.IsEmbedded)
+                throw new InvalidOperationException(
+                    $"Embedded carrier '{manifest.LibraryId}' is project source, not a package projection.");
+
+            return "packages/" + (packageName ?? manifest.LibraryId);
         }
 
         public string GetPackageExportPath(
@@ -993,17 +1007,8 @@ internal sealed class LibraryMaterializer
             string packageName,
             string packageRelativePath)
         {
+            // 前缀剥换只用于把逻辑路径映射进合成包根；embedded carrier 已不经此路径。
             var normalized = NormalizePath(packageRelativePath);
-            if (manifest.IsCoreSource)
-            {
-                if (normalized.StartsWith("clr/", StringComparison.OrdinalIgnoreCase))
-                    normalized = normalized[4..];
-
-                var packagePrefix = packageName + "/";
-                if (normalized.StartsWith(packagePrefix, StringComparison.Ordinal))
-                    normalized = normalized[packagePrefix.Length..];
-            }
-
             return GetPackageRootRelativePath(manifest, packageName) + "/" + normalized;
         }
 
@@ -1098,82 +1103,48 @@ internal sealed class LibraryMaterializer
                    path.EndsWith(".stylus", StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// 就地写入 carrier 文件。
+        ///
+        /// ECMAScript 自有源码按声明路径写入项目源码树（clr/**、runtime/**、dist/**），
+        /// 单文件先复制到同目录临时文件、校验 hash、再 rename，避免半写文件；
+        /// 不做 staging、备份或回滚。顺带清理已退役的载体目录。
+        /// </summary>
         public void Commit()
         {
-            var parent = Directory.GetParent(DestinationRoot)?.FullName
-                ?? throw new InvalidOperationException($"Could not determine parent directory for '{DestinationRoot}'.");
-            Directory.CreateDirectory(parent);
-            var staging = Path.Combine(parent, ".jazor-library-" + Guid.NewGuid().ToString("N"));
-            var stagedPayload = Path.Combine(staging, "payload");
-            // `packages/` is the only binding-owned carrier in the standard project layout.
-            // Legacy carriers are included in the same transaction solely so an incremental
-            // Emit cannot leave stale resources visible beside the package graph. They are
-            // backed up and removed; they are never recreated.
-            var materializedRoots = new[] { "packages" };
-            var legacyRoots = new[] { "vendor", "ecmascript", "embedded" };
-            var rootsToReplace = materializedRoots.Concat(legacyRoots).ToArray();
-            var backups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var movedRoots = new List<string>();
+            // DestinationRoot 是项目根，必须存在：external npm/JSR 绑定不物化任何文件，
+            // 但调用方仍会在该根上写 package.json、deno.lock 等（见 EmitPipeline）。
+            Directory.CreateDirectory(DestinationRoot);
 
-            try
+            // 退役载体：packages/ 曾是 binding-owned 包根，vendor/ecmascript/embedded 是更早的布局。
+            // 自有源码现在直接写在项目源码树里，残留目录必须移除，否则会被 Deno/NetPack
+            // 当作包图的一部分。
+            foreach (var retired in new[] { "packages", "vendor", "ecmascript", "embedded" })
+                DeleteDirectory(Path.Combine(DestinationRoot, retired));
+
+            foreach (var file in _files.Values.OrderBy(static item => item.TargetRelativePath, StringComparer.OrdinalIgnoreCase))
             {
-                Directory.CreateDirectory(stagedPayload);
-                foreach (var file in _files.Values.OrderBy(static item => item.TargetRelativePath, StringComparer.OrdinalIgnoreCase))
-                {
-                    var stagedPath = GetSafePath(stagedPayload, file.TargetRelativePath);
-                    var directory = Path.GetDirectoryName(stagedPath);
-                    if (!string.IsNullOrWhiteSpace(directory))
-                        Directory.CreateDirectory(directory);
-                    File.Copy(file.SourcePath, stagedPath, overwrite: false);
-                    if (!string.Equals(ComputeHash(stagedPath), file.Hash, StringComparison.OrdinalIgnoreCase))
-                        throw new LibraryException("JAZOR_LIBRARY_FILE_HASH_MISMATCH", $"Staged asset '{file.TargetRelativePath}' failed hash verification.");
-                }
+                var target = GetSafePath(DestinationRoot, file.TargetRelativePath);
+                var directory = Path.GetDirectoryName(target);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
 
-                if (!Directory.Exists(DestinationRoot))
-                    Directory.CreateDirectory(DestinationRoot);
-                foreach (var root in rootsToReplace)
+                var temporary = target + ".jazor-tmp-" + Guid.NewGuid().ToString("N");
+                try
                 {
-                    var stagedRoot = Path.Combine(stagedPayload, root);
-                    var destinationRoot = Path.Combine(DestinationRoot, root);
-                    var backupRoot = Path.Combine(parent, ".jazor-library-backup-" + Guid.NewGuid().ToString("N"));
-                    if (Directory.Exists(destinationRoot))
-                    {
-                        DirectoryTransaction.Move(destinationRoot, backupRoot);
-                        backups[destinationRoot] = backupRoot;
-                    }
+                    File.Copy(file.SourcePath, temporary, overwrite: true);
+                    if (!string.Equals(ComputeHash(temporary), file.Hash, StringComparison.OrdinalIgnoreCase))
+                        throw new LibraryException(
+                            "JAZOR_LIBRARY_FILE_HASH_MISMATCH",
+                            $"Materialized file '{file.TargetRelativePath}' failed hash verification.");
 
-                    if (materializedRoots.Contains(root, StringComparer.Ordinal))
-                    {
-                        // Do not create an empty packages directory when this closure has no
-                        // embedded files. A standard project can consist solely of restored
-                        // external packages under node_modules.
-                        if (Directory.Exists(stagedRoot))
-                        {
-                            DirectoryTransaction.Move(stagedRoot, destinationRoot);
-                            movedRoots.Add(destinationRoot);
-                        }
-                    }
+                    File.Move(temporary, target, overwrite: true);
                 }
-
-                foreach (var backup in backups.Values)
-                    DeleteDirectory(backup);
-            }
-            catch
-            {
-                foreach (var movedRoot in movedRoots)
-                    DeleteDirectory(movedRoot);
-                foreach (var backup in backups)
+                finally
                 {
-                    if (Directory.Exists(backup.Value) && !Directory.Exists(backup.Key))
-                        DirectoryTransaction.Move(backup.Value, backup.Key);
+                    if (File.Exists(temporary))
+                        File.Delete(temporary);
                 }
-                throw;
-            }
-            finally
-            {
-                DeleteDirectory(staging);
-                foreach (var backup in backups.Values)
-                    DeleteDirectory(backup);
             }
         }
 
@@ -1182,6 +1153,7 @@ internal sealed class LibraryMaterializer
             if (Directory.Exists(path))
                 Directory.Delete(path, recursive: true);
         }
+
 
         private sealed record PlannedFile(string SourcePath, string TargetRelativePath, string Hash, string Owner);
     }
@@ -1369,10 +1341,7 @@ internal sealed record LibraryManifest(
             return package;
 
         if (IsCoreSource)
-        {
-            var namespacePackage = GetCorePackageName(specifier);
-            return new LibraryPackageReference(namespacePackage, Version, "embedded-mjs");
-        }
+            return new LibraryPackageReference(specifier, Version, "embedded-mjs");
 
         // A package without an explicit package table uses its import's package name as the
         // identity. The source still comes from the manifest; there is no legacy dist fallback.
@@ -1387,43 +1356,26 @@ internal sealed record LibraryManifest(
 
     public string GetPackageNameForPath(string path)
     {
-        if (!IsCoreSource)
-        {
-            // An embedded package may use a scoped npm-compatible identity (for example
-            // @jazor/vue-runtime) that is intentionally different from the binding library id.
-            // Every materialized file must use the same identity as its package projection;
-            // infer it only from an explicit embedded package declaration.
-            var embeddedPackages = Packages.Values
-                .Where(static package => string.Equals(package.Source, "embedded-mjs", StringComparison.Ordinal))
-                .Select(static package => package.Name)
-                .Distinct(StringComparer.Ordinal)
-                .ToArray();
-            if (embeddedPackages.Length == 1)
-                return embeddedPackages[0];
+        // An embedded package may use a scoped npm-compatible identity (for example
+        // @jazor/vue-runtime) that is intentionally different from the binding library id.
+        // Every materialized file must use the same identity as its package projection;
+        // infer it only from an explicit embedded package declaration.
+        var embeddedPackages = Packages.Values
+            .Where(static package => string.Equals(package.Source, "embedded-mjs", StringComparison.Ordinal))
+            .Select(static package => package.Name)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (embeddedPackages.Length == 1)
+            return embeddedPackages[0];
 
-            var importPackages = Imports.Keys
-                .Select(GetPackageName)
-                .Distinct(StringComparer.Ordinal)
-                .ToArray();
-            if (importPackages.Length == 1)
-                return importPackages[0];
+        var importPackages = Imports.Keys
+            .Select(GetPackageName)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (importPackages.Length == 1)
+            return importPackages[0];
 
-            return LibraryId;
-        }
-
-        var normalized = NormalizeManifestPath(path);
-        if (normalized.StartsWith("clr/", StringComparison.OrdinalIgnoreCase))
-            normalized = normalized[4..];
-
-        var slash = normalized.IndexOf('/', StringComparison.Ordinal);
-        var packageName = slash < 0 ? normalized : normalized[..slash];
-        return packageName switch
-        {
-            "System" or "Microsoft" => packageName,
-            _ => throw new LibraryException(
-                "JAZOR_LIBRARY_PACKAGE_IDENTITY_INVALID",
-                $"Core ECMAScript module '{path}' must begin with the System or Microsoft package namespace.")
-        };
+        return LibraryId;
     }
 
     public ManifestFile? FindModule(string moduleId, BuildMode mode)
@@ -1802,20 +1754,6 @@ internal sealed record LibraryManifest(
         if (segments.Length < count || segments.Take(count).Any(static segment => string.IsNullOrWhiteSpace(segment)))
             throw new LibraryException("JAZOR_LIBRARY_IMPORT_INVALID", $"Library package '{specifier}' is invalid.");
         return string.Join('/', segments.Take(count));
-    }
-
-    private static string GetCorePackageName(string specifier)
-    {
-        var normalized = NormalizeManifestPath(specifier);
-        var slash = normalized.IndexOf('/', StringComparison.Ordinal);
-        var packageName = slash < 0 ? normalized : normalized[..slash];
-        return packageName switch
-        {
-            "System" or "Microsoft" => packageName,
-            _ => throw new LibraryException(
-                "JAZOR_LIBRARY_PACKAGE_IDENTITY_INVALID",
-                $"Core ECMAScript import '{specifier}' must begin with the System or Microsoft package namespace.")
-        };
     }
 
     private static IReadOnlyList<string> ReadPackageDependencies(JsonElement element, string name)

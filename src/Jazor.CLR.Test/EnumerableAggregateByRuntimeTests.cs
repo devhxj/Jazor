@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableAggregateByRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task AggregateByExports_PreserveComparerRepresentativeSeedProtocolAndEntryCarrierOnDenoHost()
@@ -36,7 +36,7 @@ public sealed class EnumerableAggregateByRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -45,7 +45,7 @@ public sealed class EnumerableAggregateByRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{countBy}}, {{aggregateBy}}, {{aggregateByWithSeedSelector}} } from "./System/Linq/EnumerableModule.js";
+                import { {{countBy}}, {{aggregateBy}}, {{aggregateByWithSeedSelector}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 function parityComparer() {
                   return {

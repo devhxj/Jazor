@@ -8,7 +8,7 @@ namespace Jazor.CLR;
 /// 的形式编译为 JavaScript。它不是完整 CLR runtime；只实现当前白名单 API 所需的最小语义闭环。
 /// 修改内部类型或字段时要注意它们可能被多个模块通过 Import 间接引用。
 /// </remarks>
-[ECMAScriptModule("System/RuntimeModule.js")]
+[ECMAScriptModule("clr/System/RuntimeModule.js")]
 public static class RuntimeModule
 {
 	/// <summary>

@@ -7,7 +7,7 @@ namespace Jazor.CLR.Test;
 /// </summary>
 internal static class ClrRuntimeEnumerableComparerScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string IdentityMember = "static System.Linq.Enumerable.OrderBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

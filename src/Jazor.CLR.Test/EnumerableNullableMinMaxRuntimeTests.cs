@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableNullableMinMaxRuntimeTests
 {
-    private const string ModulePath = "System/Linq/EnumerableModule.js";
+    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task NullableMinMaxExports_PreserveCarrierNaNAndAllNullContractsOnDenoHost()
@@ -37,12 +37,12 @@ public sealed class EnumerableNullableMinMaxRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "nullable-min-max.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{string.Join(", ", names)}} } from "./System/Linq/EnumerableModule.js";
+                import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable nullable Min/Max preserves CLR numeric contracts", () => {
                   const [minInt, maxInt, minInt64, maxInt64, minSingle, maxSingle, minDouble, maxDouble, minDecimal, maxDecimal] = [{{string.Join(", ", names)}}];

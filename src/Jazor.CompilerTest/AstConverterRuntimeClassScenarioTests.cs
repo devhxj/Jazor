@@ -2348,7 +2348,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "from \"System/StringModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/StringModule.js\"", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(
             script,
             "return _7894e0294f780eb5(_f269cd27a4bbd549(\"/\", labels).toUpperCase(), 10, \"*\");",
@@ -2720,12 +2720,12 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "from \"System/DateTimeModule.js\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "from \"System/DateTimeOffsetModule.js\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "from \"System/DateOnlyModule.js\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "from \"System/TimeOnlyModule.js\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "from \"System/TimeSpanModule.js\"", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "from \"System/GuidModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/DateTimeModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/DateTimeOffsetModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/DateOnlyModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/TimeOnlyModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/TimeSpanModule.js\"", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "from \"clr/System/GuidModule.js\"", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "CreatedAt = _bfa8ee5dd46e2005()", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "PublishedAt = _12b4f3f1dc14bea9()", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "DueDate = _5f8053a9657a0844()", StringComparison.Ordinal, scenarioId);

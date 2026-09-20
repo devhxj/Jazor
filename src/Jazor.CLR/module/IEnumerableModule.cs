@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// Op 类型选择原则：
 /// - Discard: 显式枚举器对象在当前运行时边界没有稳定的 CLR 等价物
 /// </summary>
-[ECMAScriptModule("System/Collections/IEnumerableModule.js")]
+[ECMAScriptModule("clr/System/Collections/IEnumerableModule.js")]
 [Jazor(Op.Alias, "System.Collections.IEnumerable", "Array")]
 public static class IEnumerableModule
 {

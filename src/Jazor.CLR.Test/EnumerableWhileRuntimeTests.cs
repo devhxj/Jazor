@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableWhileRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task SkipTakeWhileExports_PreservePredicateAndIteratorTerminationOnDenoHost()
@@ -33,7 +33,7 @@ public sealed class EnumerableWhileRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -42,7 +42,7 @@ public sealed class EnumerableWhileRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{skipWhile}}, {{skipWhileAt}}, {{takeWhile}}, {{takeWhileAt}} } from "./System/Linq/EnumerableModule.js";
+                import { {{skipWhile}}, {{skipWhileAt}}, {{takeWhile}}, {{takeWhileAt}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 function assertArray(actual, expected, name) {
                   if (actual.length !== expected.length || actual.some((value, index) => value !== expected[index]))

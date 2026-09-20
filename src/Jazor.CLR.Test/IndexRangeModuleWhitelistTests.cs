@@ -10,7 +10,7 @@ public sealed class IndexRangeModuleWhitelistTests
     public void IndexMappings_UseObjectCarrierAndIndexRuntimeModule()
     {
         AssertTypeAlias(typeof(Jazor.CLR.IndexModule), "System.Index", "Object");
-        AssertImports(typeof(Jazor.CLR.IndexModule), "System/IndexModule.js",
+        AssertImports(typeof(Jazor.CLR.IndexModule), "clr/System/IndexModule.js",
         [
             "System.Index.Index()",
             "System.Index.Index(int, bool)",
@@ -33,7 +33,7 @@ public sealed class IndexRangeModuleWhitelistTests
     public void RangeMappings_UseObjectCarrierAndRangeRuntimeModule()
     {
         AssertTypeAlias(typeof(Jazor.CLR.RangeModule), "System.Range", "Object");
-        AssertImports(typeof(Jazor.CLR.RangeModule), "System/RangeModule.js",
+        AssertImports(typeof(Jazor.CLR.RangeModule), "clr/System/RangeModule.js",
         [
             "System.Range.Range()",
             "System.Range.Start.get",

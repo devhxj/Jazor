@@ -20,7 +20,7 @@ namespace Jazor.CLR;
 /// - long/ulong → BigInt
 /// - object → object
 /// </summary>
-[ECMAScriptModule("System/ConsoleModule.js")]
+[ECMAScriptModule("clr/System/ConsoleModule.js")]
 [Jazor(Op.Alias, "System.Console", "console")]
 public static class ConsoleModule
 {

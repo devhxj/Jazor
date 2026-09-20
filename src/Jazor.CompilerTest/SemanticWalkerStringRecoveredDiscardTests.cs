@@ -31,7 +31,7 @@ public sealed class SemanticWalkerStringRecoveredDiscardTests
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(1, imports, body);
-		Assert.HasCount(1, imports["System/StringModule.js"], body);
+		Assert.HasCount(1, imports["clr/System/StringModule.js"], body);
 		StringAssert.Contains(body, "return _1234444e218b96c3(value);", StringComparison.Ordinal);
 
 		_ = new Parser().ParseScript("function verify(value) " + body);
@@ -59,7 +59,7 @@ public sealed class SemanticWalkerStringRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(2, imports["System/StringModule.js"], body);
+        Assert.HasCount(2, imports["clr/System/StringModule.js"], body);
         StringAssert.Contains(body, "_dc789454b6ef6bcb(left, 1, right, 2, 3)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_45bb6097c28a2f1e(left, 0, destination, 1, 2)", StringComparison.Ordinal);
 
@@ -88,7 +88,7 @@ public sealed class SemanticWalkerStringRecoveredDiscardTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(2, imports["System/StringModule.js"], body);
+        Assert.HasCount(2, imports["clr/System/StringModule.js"], body);
         StringAssert.Contains(body, "_04edfc3090710ca7(value, 4)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_d123047f69d911f5(characters, 4)", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(value, characters) " + body);
@@ -127,7 +127,7 @@ public sealed class SemanticWalkerStringRecoveredDiscardTests
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(1, imports, body);
-		Assert.HasCount(11, imports["System/StringModule.js"], body);
+		Assert.HasCount(11, imports["clr/System/StringModule.js"], body);
 		StringAssert.Contains(body, "_0dc0a16fd99401f8(value)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "_db938b9c2eb90d32(item)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "_e102498b82e5b869(items)", StringComparison.Ordinal);

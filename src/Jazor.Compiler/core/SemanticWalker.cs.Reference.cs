@@ -229,9 +229,21 @@ public partial class SemanticWalker
 			return context.BindImportSpecifier(modulePath, importedName);
 
 		return UsesModuleCatalogImport(symbol)
-			? context.BindModuleCatalogImportSpecifier(modulePath, importedName)
+			? context.BindModuleCatalogImportSpecifier(modulePath, importedName, IsCarrierModule(symbol))
 			: context.BindExternalImportSpecifier(modulePath, importedName);
 	}
+
+	/// <summary>
+	/// 判定符号是否声明在 CLR 源码 carrier 里。
+	///
+	/// carrier 模块统一声明在 <c>Jazor.CLR</c> 命名空间下（与 ClrRuntimeCatalogEmitter 的
+	/// 发现规则一致），它们的文件写在项目源码树的 clr/ 下；其他程序集的模块按声明路径写入。
+	/// </summary>
+	private static bool IsCarrierModule(ISymbol symbol)
+		=> string.Equals(
+			symbol.ContainingType?.ContainingNamespace?.ToDisplayString(),
+			"Jazor.CLR",
+			System.StringComparison.Ordinal);
 
 	private static bool ShouldFlattenRuntimeNestedType(ITypeSymbol symbol)
 	{
@@ -1162,8 +1174,10 @@ public partial class SemanticWalker
 		{
 			// ToList transfers a fresh Array into List<T> ownership. The runtime marker is the
 			// interface-mutation contract; ToArray deliberately remains an unmarked fixed array.
+			// 硬编码的 carrier 引用必须使用与声明一致的路径（含 clr/ 前缀），
+			// 否则产物图边的键与 manifest 的模块键不一致。
 			var markAsMutableListCarrier = context.BindCarrierImportSpecifier(
-				"System/RuntimeModule.js",
+				"clr/System/RuntimeModule.js",
 				"MarkAsMutableListCarrier");
 			intrinsicExpression = new CallExpression(
 				markAsMutableListCarrier,

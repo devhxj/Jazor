@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableElementAtScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string ElementAtMember = "static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)";
     private const string ElementAtIndexMember = "static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)";
 

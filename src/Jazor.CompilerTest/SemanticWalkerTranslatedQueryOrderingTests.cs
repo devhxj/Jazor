@@ -39,7 +39,7 @@ public sealed class SemanticWalkerTranslatedQueryOrderingTests
         var module = "function verify() " + body;
 
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value
             .Select(static specifier => specifier.ToECMAScript())
             .ToArray();

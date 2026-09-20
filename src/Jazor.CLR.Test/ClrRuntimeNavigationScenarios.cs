@@ -2,11 +2,11 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeNavigationScenarios
 {
-    private const string NavigationModule = "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
-    private const string LocationChangedModule = "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js";
-    private const string NotFoundModule = "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js";
-    private const string LocationChangingModule = "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
-    private const string ExtensionsModule = "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js";
+    private const string NavigationModule = "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js";
+    private const string LocationChangedModule = "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js";
+    private const string NotFoundModule = "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js";
+    private const string LocationChangingModule = "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
+    private const string ExtensionsModule = "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js";
 
     private const string BaseUri = "Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get";
     private const string HistoryEntryState = "Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get";

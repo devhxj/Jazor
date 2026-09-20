@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableAppendPrependRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task AppendAndPrependExports_PreserveEnumerationAndSourceOrderOnDenoHost()
@@ -31,7 +31,7 @@ public sealed class EnumerableAppendPrependRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -40,7 +40,7 @@ public sealed class EnumerableAppendPrependRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{append}}, {{prepend}} } from "./System/Linq/EnumerableModule.js";
+                import { {{append}}, {{prepend}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Append and Prepend preserve enumerable order without mutating sources", () => {
                   const trace = [];

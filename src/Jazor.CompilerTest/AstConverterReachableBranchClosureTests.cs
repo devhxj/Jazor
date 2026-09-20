@@ -469,7 +469,7 @@ public sealed class AstConverterReachableBranchClosureTests
 
         Assert.IsNotNull(module);
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, "System/ExceptionModule.js", StringComparison.Ordinal);
+        StringAssert.Contains(script, "clr/System/ExceptionModule.js", StringComparison.Ordinal);
         StringAssert.Contains(script, "new TypeError(\"value\")", StringComparison.Ordinal);
         StringAssert.Contains(script, "return", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);

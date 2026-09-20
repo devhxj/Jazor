@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("System/Text/StringBuilderModule.js")]
+[ECMAScriptModule("clr/System/Text/StringBuilderModule.js")]
 [Jazor(Op.Alias, "System.Text.StringBuilder","String")]
 public static class StringBuilderModule
 {

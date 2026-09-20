@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableSetByRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task SetByOperatorExports_PreserveKeyEqualityAndEnumerationOrderOnDenoHost()
@@ -32,7 +32,7 @@ public sealed class EnumerableSetByRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -41,7 +41,7 @@ public sealed class EnumerableSetByRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{unionBy}}, {{exceptBy}}, {{intersectBy}} } from "./System/Linq/EnumerableModule.js";
+                import { {{unionBy}}, {{exceptBy}}, {{intersectBy}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 function assertArray(actual, expected, name) {
                   if (actual.length !== expected.length || actual.some((value, index) => !Object.is(value, expected[index])))

@@ -12,7 +12,7 @@ namespace Jazor.CLR;
 /// - Import: 需要额外逻辑的方法
 /// - Discard: 不支持的方法（如某些重载）
 /// </summary>
-[ECMAScriptModule("System/MathModule.js")]
+[ECMAScriptModule("clr/System/MathModule.js")]
 [Jazor(Op.Alias, "System.Math", "Math")]
 public static class MathModule
 {

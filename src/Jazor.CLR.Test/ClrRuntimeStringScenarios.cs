@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeStringScenarios
 {
-    private const string ModulePath = "System/StringModule.js";
+    private const string ModulePath = "clr/System/StringModule.js";
     private const int Ordinal = 4;
     private const int OrdinalIgnoreCase = 5;
 

@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("Microsoft/AspNetCore/Components/Web/TouchEventArgsModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/TouchEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.TouchEventArgs", "TouchEvent")]
 public static class TouchEventArgsModule
 {

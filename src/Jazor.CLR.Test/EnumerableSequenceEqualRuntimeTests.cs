@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableSequenceEqualRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task SequenceEqualExport_PreservesSynchronousEqualityAndShortCircuitOrderOnDenoHost()
@@ -30,7 +30,7 @@ public sealed class EnumerableSequenceEqualRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -39,7 +39,7 @@ public sealed class EnumerableSequenceEqualRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{sequenceEqual}} } from "./System/Linq/EnumerableModule.js";
+                import { {{sequenceEqual}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("SequenceEqual compares aligned values and stops at the first mismatch", () => {
                   if (!{{sequenceEqual}}([Number.NaN, -0], [Number.NaN, 0]))

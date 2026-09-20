@@ -48,7 +48,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "elementAt" }, importNames);
         StringAssert.Contains(body, "return elementAt(releaseIds, index);", StringComparison.Ordinal);
@@ -101,7 +101,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "elementAtIndex" }, importNames);
         StringAssert.Contains(body, "let direct = elementAtIndex(releaseIds, stored);", StringComparison.Ordinal);
@@ -273,7 +273,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/IndexModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/IndexModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.Contains(importNames, "_b141712b3756cf57");
         CollectionAssert.Contains(importNames, "_71953783d6b61ae1");
@@ -311,6 +311,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                 """
                 {
                   "imports": {
+                    "clr/System/": "./System/",
                     "System/": "./System/"
                   }
                 }

@@ -12,7 +12,7 @@ namespace Jazor.CLR;
 /// Distinct、Union、Except、Intersect 与 Contains 复用同一套默认相等性集合，不依赖 JavaScript Set 的键协议；
 /// source/predicate 等参数的空值行为和遍历顺序仍需保持 C# 可观察语义。
 /// </remarks>
-[ECMAScriptModule("System/Linq/EnumerableModule.js")]
+[ECMAScriptModule("clr/System/Linq/EnumerableModule.js")]
 [Jazor(Op.Alias, "System.Linq.Enumerable", "Array")]
 public static class EnumerableModule<TSource>
 {

@@ -4,9 +4,9 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeNumericWidthScenarios
 {
-	private const string HalfModulePath = "System/HalfModule.js";
-	private const string Int128ModulePath = "System/Int128Module.js";
-	private const string UInt128ModulePath = "System/UInt128Module.js";
+	private const string HalfModulePath = "clr/System/HalfModule.js";
+	private const string Int128ModulePath = "clr/System/Int128Module.js";
+	private const string UInt128ModulePath = "clr/System/UInt128Module.js";
 
 	private static readonly BigInteger Int128Min = BigInteger.Parse("-170141183460469231731687303715884105728");
 	private static readonly BigInteger Int128Max = BigInteger.Parse("170141183460469231731687303715884105727");

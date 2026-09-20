@@ -44,7 +44,7 @@ public sealed class SemanticWalkerStringBuilderTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(12, imports["System/Text/StringBuilderModule.js"], body);
+        Assert.HasCount(12, imports["clr/System/Text/StringBuilderModule.js"], body);
         StringAssert.Contains(body, "_8ddc5378f62c27cc(text, 8)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_dded353c61620d12(builder, true)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_a2ce7c5adfc1553c(builder, \"|\")", StringComparison.Ordinal);
@@ -89,7 +89,7 @@ public sealed class SemanticWalkerStringBuilderTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(7, imports["System/Text/StringBuilderModule.js"], body);
+        Assert.HasCount(7, imports["clr/System/Text/StringBuilderModule.js"], body);
         StringAssert.Contains(body, "_f69cee28dea8bcdc(2, 8)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_2879b76db56f25fb(builder, text)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_35fe8bcf463e879b(builder)", StringComparison.Ordinal);
@@ -123,7 +123,7 @@ public sealed class SemanticWalkerStringBuilderTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(1, imports["System/Text/StringBuilderModule.js"], body);
+        Assert.HasCount(1, imports["clr/System/Text/StringBuilderModule.js"], body);
         StringAssert.Contains(body, "return _843038bb92e97c63(left, right);", StringComparison.Ordinal);
 
         _ = new Parser().ParseScript("function verify(left, right) " + body);
@@ -162,7 +162,7 @@ public sealed class SemanticWalkerStringBuilderTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(6, imports["System/Text/StringBuilderModule.js"], body);
+        Assert.HasCount(6, imports["clr/System/Text/StringBuilderModule.js"], body);
         StringAssert.Contains(body, "_6ceea7a4bfd233b6(builder, \",\", array)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_02a3ec9f0e91877f(builder, \"|\", array)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_035c615b56218700(builder, \"/\", span)", StringComparison.Ordinal);
@@ -197,7 +197,7 @@ public sealed class SemanticWalkerStringBuilderTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(2, imports["System/Text/StringBuilderModule.js"], body);
+        Assert.HasCount(2, imports["clr/System/Text/StringBuilderModule.js"], body);
         StringAssert.Contains(body, "_f07022820ca3881f(builder, appended)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_7244d40cd7bdaa7a(builder, 1, inserted)", StringComparison.Ordinal);
 
@@ -230,7 +230,7 @@ public sealed class SemanticWalkerStringBuilderTests
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(1, imports, body);
-		Assert.HasCount(4, imports["System/Text/StringBuilderModule.js"], body);
+		Assert.HasCount(4, imports["clr/System/Text/StringBuilderModule.js"], body);
 		StringAssert.Contains(body, "_ec1b541b6a274b24(builder, single)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "_817e46ee3d60bf66(builder, floating)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "_5fa422ae348735cc(builder, 1, single)", StringComparison.Ordinal);
@@ -272,7 +272,7 @@ public sealed class SemanticWalkerStringBuilderTests
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(1, imports, body);
-		Assert.HasCount(6, imports["System/Text/StringBuilderModule.js"], body);
+		Assert.HasCount(6, imports["clr/System/Text/StringBuilderModule.js"], body);
 		StringAssert.Contains(body, "_06379efa8addb10d(builder, value)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "_8bc8cc43c6d93195(builder, \"|\", values)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "_8d04089684a00c7b(builder, \"-\", numbers)", StringComparison.Ordinal);

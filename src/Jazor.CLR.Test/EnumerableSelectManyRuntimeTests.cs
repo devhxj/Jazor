@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableSelectManyRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task SelectManyExports_PreserveSelectorEvaluationOrderOnDenoHost()
@@ -35,7 +35,7 @@ public sealed class EnumerableSelectManyRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -44,7 +44,7 @@ public sealed class EnumerableSelectManyRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{collectionSelector}}, {{indexedCollectionSelector}}, {{resultSelector}} } from "./System/Linq/EnumerableModule.js";
+                import { {{collectionSelector}}, {{indexedCollectionSelector}}, {{resultSelector}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("SelectMany preserves outer/inner and selector evaluation order", () => {
                   const trace = [];

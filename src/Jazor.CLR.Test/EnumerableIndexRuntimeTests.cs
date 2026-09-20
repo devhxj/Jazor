@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableIndexRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task IndexExport_PreservesSourceOrderAndNamedTupleShapeOnDenoHost()
@@ -25,12 +25,12 @@ public sealed class EnumerableIndexRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "index.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{index}} } from "./System/Linq/EnumerableModule.js";
+                import { {{index}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable.Index preserves source order and tuple names", () => {
                   const trace = [];

@@ -75,16 +75,18 @@ public sealed class LibraryMaterializerTests
         var outputRoot = Path.Combine(workspace.Root, "out");
         var result = new LibraryMaterializer().Materialize([manifestPath], outputRoot, BuildMode.Production);
 
-        Assert.AreEqual("packages/vue/dist/prod.mjs", result.ImportPaths["vue"]);
-        Assert.AreEqual("packages/vue/dist/main.css", result.StylePaths.Single());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "vue", "dist", "prod.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "vue", "dist", "main.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "packages", "vue", "dist", "dev.mjs")));
+        Assert.AreEqual("dist/prod.mjs", result.ImportPaths["vue"]);
+        Assert.AreEqual("dist/main.css", result.StylePaths.Single());
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "prod.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "main.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "dist", "dev.mjs")));
     }
 
     [TestMethod]
-    public void Materialize_WritesStandardEmbeddedPackageProject()
+    public void Materialize_WritesSourceCarrierAsProjectSourceNotPackages()
     {
+        // ECMAScript 自有源码 carrier 的声明路径就是项目源码路径。它不是包：
+        // 根 package.json 不声明该 dependency、不合成 file: 本地包、也不合成 package-lock.json。
         using var workspace = new LibraryWorkspace();
         workspace.WriteFile("dist/index.mjs", "export const root = true;");
         workspace.WriteFile("dist/feature.mjs", "export const feature = true;");
@@ -108,39 +110,33 @@ public sealed class LibraryMaterializerTests
 
         LibraryPackageWriter.WritePackageProject(outputRoot, libraries);
 
+        // 源码按声明路径写入项目源码树。
+        Assert.AreEqual("dist/index.mjs", libraries.ImportPaths["widget"]);
+        Assert.AreEqual("dist/feature.mjs", libraries.ImportPaths["widget/feature"]);
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "index.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "feature.mjs")));
+
         using var rootPackage = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package.json")));
         Assert.AreEqual("@jazor/generated", rootPackage.RootElement.GetProperty("name").GetString());
-        Assert.AreEqual(
-            "file:./packages/widget",
-            rootPackage.RootElement.GetProperty("dependencies").GetProperty("widget").GetString());
+        Assert.IsFalse(
+            rootPackage.RootElement.GetProperty("dependencies").TryGetProperty("widget", out _),
+            "自有源码不是 dependency，不能在根 package.json 里合成 file: 本地包。");
+
+        // identity 记录保留为诊断证据（jazor.packages 命名空间）。
         Assert.AreEqual(
             "embedded-mjs",
-            rootPackage.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("widget").GetProperty("source").GetString());
+            rootPackage.RootElement.GetProperty("jazor").GetProperty("packages")
+                .GetProperty("widget").GetProperty("source").GetString());
 
-        var embeddedPackagePath = Path.Combine(outputRoot, "packages", "widget", "package.json");
-        using var embeddedPackage = JsonDocument.Parse(File.ReadAllText(embeddedPackagePath));
-        Assert.AreEqual("1.2.3", embeddedPackage.RootElement.GetProperty("version").GetString());
-        var exports = embeddedPackage.RootElement.GetProperty("exports");
-        Assert.AreEqual("./dist/index.mjs", exports.GetProperty(".").GetString());
-        Assert.AreEqual("./dist/feature.mjs", exports.GetProperty("./feature").GetString());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "widget", "dist", "feature.mjs")));
+        // Emit 不再合成 package-lock.json；deno.lock 由 Deno 生成。
+        Assert.IsFalse(
+            File.Exists(Path.Combine(outputRoot, "package-lock.json")),
+            "Emit 不再合成 npm lock。");
 
-        using var packageLock = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package-lock.json")));
-        Assert.AreEqual(3, packageLock.RootElement.GetProperty("lockfileVersion").GetInt32());
-        Assert.AreEqual(
-            "file:./packages/widget",
-            packageLock.RootElement.GetProperty("packages")
-                .GetProperty("")
-                .GetProperty("dependencies")
-                .GetProperty("widget")
-                .GetString());
-        Assert.AreEqual(
-            "file:./packages/widget",
-            packageLock.RootElement.GetProperty("packages")
-                .GetProperty("node_modules/widget")
-                .GetProperty("resolved")
-                .GetString());
+        // 退役载体目录不出现在项目里。
+        Assert.IsFalse(Directory.Exists(Path.Combine(outputRoot, "packages")));
     }
+
 
     [TestMethod]
     public void Materialize_ExternalPackageProjectLeavesPackageLockToDeno()
@@ -398,10 +394,10 @@ public sealed class LibraryMaterializerTests
             BuildMode.Development,
             requiredImports: ["profile-library/used"]);
 
-        Assert.AreEqual("packages/profile-library/dist/dev.css", result.StylePaths.Single());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "profile-library", "dist", "dev.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "packages", "profile-library", "dist", "prod.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "packages", "profile-library", "dist", "unused.css")));
+        Assert.AreEqual("dist/dev.css", result.StylePaths.Single());
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "dev.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "dist", "prod.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "dist", "unused.css")));
 
         var releaseRoot = Path.Combine(workspace.Root, "release");
         var release = new LibraryMaterializer().Materialize(
@@ -409,7 +405,7 @@ public sealed class LibraryMaterializerTests
             releaseRoot,
             BuildMode.Production,
             requiredImports: ["profile-library/used"]);
-        Assert.AreEqual("packages/profile-library/dist/prod.css", release.StylePaths.Single());
+        Assert.AreEqual("dist/prod.css", release.StylePaths.Single());
     }
 
     [TestMethod]
@@ -803,7 +799,7 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["component-library/widget"]);
 
-        var materializedRoot = Path.Combine(outputRoot, "packages", "component-library", "dist");
+        var materializedRoot = Path.Combine(outputRoot, "dist");
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "components", "widget.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "shared", "helper.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "shared", "reexport.mjs")));
@@ -843,12 +839,10 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["owner"]);
 
-        Assert.AreEqual("packages/owner/dist/app.mjs", result.ImportPaths["owner"]);
+        Assert.AreEqual("dist/app.mjs", result.ImportPaths["owner"]);
         Assert.IsFalse(result.ImportPaths.ContainsKey("shared"));
         Assert.IsTrue(File.Exists(Path.Combine(
             outputRoot,
-            "packages",
-            "owner",
             "dist",
             "shared.mjs")));
         Assert.IsFalse(Directory.Exists(Path.Combine(outputRoot, "vendor", "unrelated")));
@@ -867,20 +861,20 @@ public sealed class LibraryMaterializerTests
             [FindLibraryManifest("ECMAScript")],
             outputRoot,
             BuildMode.Production,
-            ["System/IndexModule.js"]);
+            ["clr/System/IndexModule.js"]);
 
         CollectionAssert.AreEquivalent(
             new[]
             {
-                "System/IndexModule.js",
-                "System/RuntimeModule.js",
-                "System/StringModule.js",
-                "System/Collections/Generic/EqualityComparerT1Module.js",
-                "System/Collections/Generic/HashSetT1Module.js",
-                "System/Collections/Generic/IEqualityComparerT1Module.js"
+                "clr/System/IndexModule.js",
+                "clr/System/RuntimeModule.js",
+                "clr/System/StringModule.js",
+                "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+                "clr/System/Collections/Generic/HashSetT1Module.js",
+                "clr/System/Collections/Generic/IEqualityComparerT1Module.js"
             },
             result.ImportPaths.Keys.ToArray());
-        Assert.IsFalse(result.ImportPaths.ContainsKey("System/ArrayModule.js"));
+        Assert.IsFalse(result.ImportPaths.ContainsKey("clr/System/ArrayModule.js"));
 
         await ImportMapWriter.WriteAsync(outputRoot, result);
         using var importMap = JsonDocument.Parse(
@@ -889,7 +883,7 @@ public sealed class LibraryMaterializerTests
         foreach (var specifier in result.ImportPaths.Keys)
         {
             var target = imports.GetProperty(specifier).GetString();
-            Assert.IsTrue(target?.StartsWith("/jazor/packages/", StringComparison.Ordinal));
+            Assert.IsTrue(target?.StartsWith("/jazor/clr/", StringComparison.Ordinal));
         }
     }
 
@@ -1035,13 +1029,13 @@ public sealed class LibraryMaterializerTests
         using var ssrMap = System.Text.Json.JsonDocument.Parse(
             await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
         Assert.AreEqual(
-            "/jazor/packages/vue/dist/index.mjs",
+            "/jazor/vue/dist/index.mjs",
             browserMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
         Assert.AreEqual(
-            "./packages/vue/dist/index.mjs",
+            "./vue/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
         Assert.AreEqual(
-            "./packages/@vue/server-renderer/dist/index.mjs",
+            "./renderer/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
         Assert.IsFalse(
             (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
@@ -1189,7 +1183,7 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["component"]);
 
-        Assert.AreEqual("packages/component/dist/index.mjs", result.ImportPaths["component"]);
+        Assert.AreEqual("component/dist/index.mjs", result.ImportPaths["component"]);
     }
 
     [TestMethod]
@@ -1218,8 +1212,8 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEqual(
             new[]
             {
-                "packages/z-core/dist/core.css",
-                "packages/a-ui/dist/ui.css"
+                "dist/core.css",
+                "dist/ui.css"
             },
             result.StylePaths.ToArray());
     }
@@ -1272,7 +1266,7 @@ public sealed class LibraryMaterializerTests
             ["pinia", "host/app.mjs", "stores/counter-store.mjs"],
             ["host/app.mjs", "stores/counter-store.mjs"]);
 
-        Assert.AreEqual("packages/pinia/dist/pinia.mjs", result.ImportPaths["pinia"]);
+        Assert.AreEqual("dist/pinia.mjs", result.ImportPaths["pinia"]);
     }
 
     [TestMethod]
@@ -1293,7 +1287,7 @@ public sealed class LibraryMaterializerTests
         // The unrelated package is present in the transitive locator set, but its bytes and
         // provider graph are intentionally broken. Since no selected root reaches it, this must
         // not prevent the selected package from being materialized.
-        File.Delete(Path.Combine(workspace.Root, "unrelated", "dist", "index.mjs"));
+        File.Delete(Path.Combine(workspace.Root, "unrelated", "unrelated", "dist", "index.mjs"));
         var unrelatedRoot = JsonNode.Parse(File.ReadAllText(unrelatedManifest))?.AsObject()
             ?? throw new InvalidOperationException("Unrelated manifest is not an object.");
         unrelatedRoot["requires"] = new JsonObject
@@ -1311,7 +1305,7 @@ public sealed class LibraryMaterializerTests
             BuildMode.Production,
             ["selected"]);
 
-        Assert.AreEqual("packages/selected/dist/index.mjs", result.ImportPaths["selected"]);
+        Assert.AreEqual("selected/dist/index.mjs", result.ImportPaths["selected"]);
         Assert.HasCount(1, result.ManifestPaths);
         Assert.AreEqual(
             Path.GetFullPath(selectedManifest),
@@ -1605,14 +1599,14 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue", "vu-icons/VuUser" },
             result.ImportPaths.Keys.ToArray());
-        CollectionAssert.Contains(result.StylePaths.ToArray(), "packages/vu-icons/runtime/vu-icons/vu-icons.css");
+        CollectionAssert.Contains(result.StylePaths.ToArray(), "runtime/vu-icons/vu-icons.css");
 
-        var iconsRoot = Path.Combine(outputRoot, "packages", "vu-icons", "runtime", "vu-icons");
+        var iconsRoot = Path.Combine(outputRoot, "runtime", "vu-icons");
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "components", "VuUser.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "runtime.mjs")));
         Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
         Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "components", "VuSearch.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "packages", "vu-icons", "licenses", "VU-ICONS-LICENSE")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "licenses", "VU-ICONS-LICENSE")));
     }
 
     [TestMethod]
@@ -1634,7 +1628,7 @@ public sealed class LibraryMaterializerTests
             new[] { "vue", "vu-icons" },
             result.ImportPaths.Keys.ToArray());
 
-        var iconsRoot = Path.Combine(outputRoot, "packages", "vu-icons", "runtime", "vu-icons");
+        var iconsRoot = Path.Combine(outputRoot, "runtime", "vu-icons");
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "index.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "runtime.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
@@ -1931,7 +1925,10 @@ public sealed class LibraryMaterializerTests
             string? style = null)
         {
             var root = Path.Combine(Root, folder);
-            var modulePath = Path.Combine(root, "dist", "index.mjs");
+            // 自有源码 carrier 的声明路径就是项目源码路径，因此每个 fixture 使用自己的命名空间。
+            // 这与真实载体布局一致，也避免同一测试的多个 fixture 争用同一个输出路径。
+            var declaredModule = folder + "/dist/index.mjs";
+            var modulePath = Path.Combine(root, declaredModule.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(modulePath)!);
             File.WriteAllText(modulePath, $"export const id = '{libraryId}';");
             if (style is not null)
@@ -1955,10 +1952,10 @@ public sealed class LibraryMaterializerTests
                         [import] = new
                         {
                             type = "module",
-                            development = "dist/index.mjs",
-                            production = "dist/index.mjs",
-                            developmentHash = HashFile(Path.Combine(root, "dist", "index.mjs")),
-                            productionHash = HashFile(Path.Combine(root, "dist", "index.mjs")),
+                            development = declaredModule,
+                            production = declaredModule,
+                            developmentHash = HashFile(modulePath),
+                            productionHash = HashFile(modulePath),
                             developmentDependencies = Array.Empty<string>(),
                             productionDependencies = Array.Empty<string>(),
                             developmentModuleDependencies = Array.Empty<string>(),

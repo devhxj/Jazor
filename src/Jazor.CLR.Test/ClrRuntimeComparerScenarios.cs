@@ -2,12 +2,12 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeComparerScenarios
 {
-    private const string EqualityComparerModulePath = "System/Collections/Generic/EqualityComparerT1Module.js";
-    private const string GenericEqualityComparerModulePath = "System/Collections/Generic/IEqualityComparerT1Module.js";
-    private const string NonGenericEqualityComparerModulePath = "System/Collections/IEqualityComparerModule.js";
-    private const string ComparerModulePath = "System/Collections/Generic/ComparerT1Module.js";
-    private const string GenericComparerModulePath = "System/Collections/Generic/IComparerT1Module.js";
-    private const string NonGenericComparerModulePath = "System/Collections/IComparerModule.js";
+    private const string EqualityComparerModulePath = "clr/System/Collections/Generic/EqualityComparerT1Module.js";
+    private const string GenericEqualityComparerModulePath = "clr/System/Collections/Generic/IEqualityComparerT1Module.js";
+    private const string NonGenericEqualityComparerModulePath = "clr/System/Collections/IEqualityComparerModule.js";
+    private const string ComparerModulePath = "clr/System/Collections/Generic/ComparerT1Module.js";
+    private const string GenericComparerModulePath = "clr/System/Collections/Generic/IComparerT1Module.js";
+    private const string NonGenericComparerModulePath = "clr/System/Collections/IComparerModule.js";
     private const string EqualityDefaultMember = "static System.Collections.Generic.EqualityComparer<T>.Default.get";
     private const string ComparerDefaultMember = "static System.Collections.Generic.Comparer<T>.Default.get";
 

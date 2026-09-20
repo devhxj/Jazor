@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 ///
 /// IReadOnlyCollection&lt;T&gt; 在当前运行时边界作为 JavaScript Array 的只读集合视图。
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/IReadOnlyCollectionT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/IReadOnlyCollectionT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.IReadOnlyCollection<T>", "Array")]
 public static class IReadOnlyCollectionT1Module<T>
 {

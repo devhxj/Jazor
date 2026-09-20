@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("System/NullableT1Module.js")]
+[ECMAScriptModule("clr/System/NullableT1Module.js")]
 [Jazor(Op.Allowed, "System.Nullable<T>")]
 public static class NullableT1Module<T> where T : struct
 {

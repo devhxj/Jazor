@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableMinMaxScenarios
 {
-    private const string ModulePath = "System/Linq/EnumerableModule.js";
+    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

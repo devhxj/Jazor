@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeUriScenarios
 {
-	private const string ModulePath = "System/UriModule.js";
+	private const string ModulePath = "clr/System/UriModule.js";
 	private const string PathAndQuery = "System.Uri.PathAndQuery.get";
 	private const string Port = "System.Uri.Port.get";
 

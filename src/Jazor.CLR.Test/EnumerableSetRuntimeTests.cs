@@ -6,8 +6,8 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableSetRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
-    private const string MemoryExtensionsModulePath = "System/MemoryExtensionsModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string MemoryExtensionsModulePath = "clr/System/MemoryExtensionsModule.js";
 
     [TestMethod]
     public async Task SetOperatorExports_PreserveClrEqualityAndMaterializedEnumerationOrderOnDenoHost()
@@ -36,7 +36,7 @@ public sealed class EnumerableSetRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -45,8 +45,8 @@ public sealed class EnumerableSetRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{distinct}}, {{union}}, {{except}}, {{intersect}}, {{contains}} } from "./System/Linq/EnumerableModule.js";
-                import { {{spanContains}} } from "./System/MemoryExtensionsModule.js";
+                import { {{distinct}}, {{union}}, {{except}}, {{intersect}}, {{contains}} } from "./clr/System/Linq/EnumerableModule.js";
+                import { {{spanContains}} } from "./clr/System/MemoryExtensionsModule.js";
 
                 function assertArray(actual, expected, name) {
                   if (actual.length !== expected.length || actual.some((value, index) => !Object.is(value, expected[index])))

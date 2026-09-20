@@ -839,15 +839,15 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(
             "import { _e2640560d207afce } from \"System/DateOnlyModule.js\";",
-            GetImportLine(module, "System/DateOnlyModule.js"));
+            GetImportLine(module, "clr/System/DateOnlyModule.js"));
         Assert.AreEqual(
             "import { _25187a24d190d864, _e856edbfd7db0646 } from \"System/DateTimeOffsetModule.js\";",
-            GetImportLine(module, "System/DateTimeOffsetModule.js"));
-        var decimalImport = GetImportLine(module, "System/DecimalModule.js");
+            GetImportLine(module, "clr/System/DateTimeOffsetModule.js"));
+        var decimalImport = GetImportLine(module, "clr/System/DecimalModule.js");
         StringAssert.Contains(decimalImport, "_01be2a34fe2cda4e");
         StringAssert.Contains(decimalImport, "_b1e6a06111674f0c");
 
-        var cultureInfoImport = GetImportLine(module, "System/Globalization/CultureInfoModule.js");
+        var cultureInfoImport = GetImportLine(module, "clr/System/Globalization/CultureInfoModule.js");
         StringAssert.Contains(cultureInfoImport, "_559b27327f84f1af");
         StringAssert.Contains(cultureInfoImport, "_b7486264ae338f27");
         StringAssert.Contains(cultureInfoImport, "_a536c354b66082b9");
@@ -860,8 +860,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "let culture = _b7486264ae338f27(\"en-US\");");
         StringAssert.Contains(module, "return culture + \"|\" + _559b27327f84f1af(culture);");
 
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/DecimalModule.js");
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Globalization/CultureInfoModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/DecimalModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Globalization/CultureInfoModule.js");
     }
 
     [TestMethod]
@@ -993,17 +993,17 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
 
-        var indexImport = GetImportLine(module, "System/IndexModule.js");
+        var indexImport = GetImportLine(module, "clr/System/IndexModule.js");
         StringAssert.Contains(indexImport, "_ce8b9229a41c8545");
         StringAssert.Contains(indexImport, "_9b817e75f3f8f58f");
 
-        var rangeImport = GetImportLine(module, "System/RangeModule.js");
+        var rangeImport = GetImportLine(module, "clr/System/RangeModule.js");
         StringAssert.Contains(rangeImport, "_fc3dfc5dbaa397eb");
         StringAssert.Contains(rangeImport, "_1c7a1e658ed790ff");
 
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/IndexModule.js");
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/RangeModule.js");
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/RuntimeModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/IndexModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/RangeModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/RuntimeModule.js");
 
         ConfigureDenoToUseMaterializedSsrImports(outputRoot);
         var testFile = Path.Combine(outputRoot, "materialized-index-range.test.mjs");
@@ -1283,7 +1283,7 @@ public sealed class SdkIntegrationTests
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(module, "return __src.filter(__callback);");
         StringAssert.Contains(module, "return Array.from(__src).map(__callback);");
-        StringAssert.Contains(module, "System/Linq/EnumerableModule.js");
+        StringAssert.Contains(module, "clr/System/Linq/EnumerableModule.js");
         StringAssert.Contains(module, "sequenceEqual");
         StringAssert.Contains(module, "concat");
         StringAssert.Contains(module, "append");
@@ -1296,9 +1296,9 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "maxBy");
         StringAssert.Contains(module, "chunk");
 
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Linq/EnumerableModule.js");
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Collections/Generic/ComparerT1Module.js");
-        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Collections/Generic/EqualityComparerT1Module.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Linq/EnumerableModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Collections/Generic/ComparerT1Module.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Collections/Generic/EqualityComparerT1Module.js");
 
         ConfigureDenoToUseMaterializedSsrImports(outputRoot);
 
@@ -6089,7 +6089,7 @@ public sealed class SdkIntegrationTests
             #pragma warning restore CS0626
             }
 
-            [ECMAScript("Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
+            [ECMAScript("clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
             internal static class NavigationManagerRuntimeModule
             {
                 [ECMAScriptName("CreateNavigationManager")]

@@ -11,11 +11,11 @@ public sealed class EnumerableTakeRangeRuntimeTests
     {
         var takeRange = GetExportName(
             "static System.Linq.Enumerable.Take<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Range)",
-            "System/Linq/EnumerableModule.js");
-        var fromStart = GetExportName("static System.Index.FromStart(int)", "System/IndexModule.js");
-        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "System/IndexModule.js");
-        var createRange = GetExportName("System.Range.Range(System.Index, System.Index)", "System/RangeModule.js");
-        var allRange = GetExportName("static System.Range.All.get", "System/RangeModule.js");
+            "clr/System/Linq/EnumerableModule.js");
+        var fromStart = GetExportName("static System.Index.FromStart(int)", "clr/System/IndexModule.js");
+        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "clr/System/IndexModule.js");
+        var createRange = GetExportName("System.Range.Range(System.Index, System.Index)", "clr/System/RangeModule.js");
+        var allRange = GetExportName("static System.Range.All.get", "clr/System/RangeModule.js");
         var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-take-range-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -29,14 +29,14 @@ public sealed class EnumerableTakeRangeRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "take-range.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{takeRange}} } from "./System/Linq/EnumerableModule.js";
-                import { {{fromStart}}, {{fromEnd}} } from "./System/IndexModule.js";
-                import { {{createRange}}, {{allRange}} } from "./System/RangeModule.js";
+                import { {{takeRange}} } from "./clr/System/Linq/EnumerableModule.js";
+                import { {{fromStart}}, {{fromEnd}} } from "./clr/System/IndexModule.js";
+                import { {{createRange}}, {{allRange}} } from "./clr/System/RangeModule.js";
 
                 Deno.test("Enumerable.Take(Range) preserves closed Range semantics", () => {
                   const source = [1, 2, 3, 4, 5];

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "libraryId": "ecmascript",
-  "version": "1.0.0-preview.3",
+  "version": "1.0.0-preview.1",
   "source": "embedded-mjs",
   "imports": {
-    "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js": {
+    "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
@@ -13,14 +13,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js": {
+    "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js",
@@ -32,7 +32,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js": {
+    "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
@@ -41,16 +41,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "Microsoft/AspNetCore/Components/NavigationManagerModule.js": {
+    "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
@@ -59,24 +59,24 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
-        "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
-        "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
-        "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
-        "System/ExceptionModule.js",
-        "System/StringModule.js"
+        "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
+        "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
+        "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
+        "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
+        "clr/System/ExceptionModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
-        "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
-        "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
-        "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
-        "System/ExceptionModule.js",
-        "System/StringModule.js"
+        "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
+        "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
+        "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
+        "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
+        "clr/System/ExceptionModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js": {
+    "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
@@ -88,7 +88,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js": {
+    "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
@@ -97,14 +97,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Threading/CancellationTokenModule.js"
+        "clr/System/Threading/CancellationTokenModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Threading/CancellationTokenModule.js"
+        "clr/System/Threading/CancellationTokenModule.js"
       ],
       "files": []
     },
-    "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js": {
+    "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js": {
       "type": "module",
       "development": "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
       "production": "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
@@ -116,7 +116,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/ArrayModule.js": {
+    "clr/System/ArrayModule.js": {
       "type": "module",
       "development": "clr/System/ArrayModule.js",
       "production": "clr/System/ArrayModule.js",
@@ -125,20 +125,20 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/IComparerT1Module.js",
-        "System/Collections/IComparerModule.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/IComparerT1Module.js",
+        "clr/System/Collections/IComparerModule.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/IComparerT1Module.js",
-        "System/Collections/IComparerModule.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/IComparerT1Module.js",
+        "clr/System/Collections/IComparerModule.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/BooleanModule.js": {
+    "clr/System/BooleanModule.js": {
       "type": "module",
       "development": "clr/System/BooleanModule.js",
       "production": "clr/System/BooleanModule.js",
@@ -150,7 +150,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/ByteModule.js": {
+    "clr/System/ByteModule.js": {
       "type": "module",
       "development": "clr/System/ByteModule.js",
       "production": "clr/System/ByteModule.js",
@@ -159,16 +159,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/CharModule.js": {
+    "clr/System/CharModule.js": {
       "type": "module",
       "development": "clr/System/CharModule.js",
       "production": "clr/System/CharModule.js",
@@ -177,14 +177,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/ComparerT1Module.js": {
+    "clr/System/Collections/Generic/ComparerT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/ComparerT1Module.js",
       "production": "clr/System/Collections/Generic/ComparerT1Module.js",
@@ -196,27 +196,27 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/Collections/Generic/DictionaryT2Module.js": {
+    "clr/System/Collections/Generic/DictionaryT2Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/DictionaryT2Module.js",
       "production": "clr/System/Collections/Generic/DictionaryT2Module.js",
-      "developmentHash": "9741f98e29b0d641b1ea537bc525767ecfbc50161895492b69e7c99b98b00195",
-      "productionHash": "9741f98e29b0d641b1ea537bc525767ecfbc50161895492b69e7c99b98b00195",
+      "developmentHash": "b7c7551728c05670c481f277f785ce4ed87f94ce08640b1ed3f798a455fef3ef",
+      "productionHash": "b7c7551728c05670c481f277f785ce4ed87f94ce08640b1ed3f798a455fef3ef",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/IEqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/IEqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/EqualityComparerT1Module.js": {
+    "clr/System/Collections/Generic/EqualityComparerT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/EqualityComparerT1Module.js",
       "production": "clr/System/Collections/Generic/EqualityComparerT1Module.js",
@@ -225,34 +225,34 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/HashSetT1Module.js": {
+    "clr/System/Collections/Generic/HashSetT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/HashSetT1Module.js",
       "production": "clr/System/Collections/Generic/HashSetT1Module.js",
-      "developmentHash": "c9018b8bf3caaa7d809ab2d33d9ec324914706aca83346afdb9f1c03d4f26a89",
-      "productionHash": "c9018b8bf3caaa7d809ab2d33d9ec324914706aca83346afdb9f1c03d4f26a89",
+      "developmentHash": "62b477a75364afd003d2aec252cfe4b9c9186a74eee1a1092eed923a2f157086",
+      "productionHash": "62b477a75364afd003d2aec252cfe4b9c9186a74eee1a1092eed923a2f157086",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/IEqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/IEqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/ICollectionT1Module.js": {
+    "clr/System/Collections/Generic/ICollectionT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/ICollectionT1Module.js",
       "production": "clr/System/Collections/Generic/ICollectionT1Module.js",
@@ -261,16 +261,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ListT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ListT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ListT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ListT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/IComparerT1Module.js": {
+    "clr/System/Collections/Generic/IComparerT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/IComparerT1Module.js",
       "production": "clr/System/Collections/Generic/IComparerT1Module.js",
@@ -279,14 +279,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/IDictionaryT2Module.js": {
+    "clr/System/Collections/Generic/IDictionaryT2Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/IDictionaryT2Module.js",
       "production": "clr/System/Collections/Generic/IDictionaryT2Module.js",
@@ -295,14 +295,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/IEqualityComparerT1Module.js": {
+    "clr/System/Collections/Generic/IEqualityComparerT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
       "production": "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
@@ -311,14 +311,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/IListT1Module.js": {
+    "clr/System/Collections/Generic/IListT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/IListT1Module.js",
       "production": "clr/System/Collections/Generic/IListT1Module.js",
@@ -327,16 +327,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ListT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ListT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ListT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ListT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/IReadOnlyListT1Module.js": {
+    "clr/System/Collections/Generic/IReadOnlyListT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/IReadOnlyListT1Module.js",
       "production": "clr/System/Collections/Generic/IReadOnlyListT1Module.js",
@@ -348,7 +348,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/Collections/Generic/ISetT1Module.js": {
+    "clr/System/Collections/Generic/ISetT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/ISetT1Module.js",
       "production": "clr/System/Collections/Generic/ISetT1Module.js",
@@ -357,16 +357,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/ListT1Module.js": {
+    "clr/System/Collections/Generic/ListT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/ListT1Module.js",
       "production": "clr/System/Collections/Generic/ListT1Module.js",
@@ -375,18 +375,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/IComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/IComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/IComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/IComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/QueueT1Module.js": {
+    "clr/System/Collections/Generic/QueueT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/QueueT1Module.js",
       "production": "clr/System/Collections/Generic/QueueT1Module.js",
@@ -395,16 +395,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/Generic/StackT1Module.js": {
+    "clr/System/Collections/Generic/StackT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/Generic/StackT1Module.js",
       "production": "clr/System/Collections/Generic/StackT1Module.js",
@@ -413,16 +413,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/ICollectionModule.js": {
+    "clr/System/Collections/ICollectionModule.js": {
       "type": "module",
       "development": "clr/System/Collections/ICollectionModule.js",
       "production": "clr/System/Collections/ICollectionModule.js",
@@ -434,7 +434,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/Collections/IComparerModule.js": {
+    "clr/System/Collections/IComparerModule.js": {
       "type": "module",
       "development": "clr/System/Collections/IComparerModule.js",
       "production": "clr/System/Collections/IComparerModule.js",
@@ -443,14 +443,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "files": []
     },
-    "System/Collections/IEqualityComparerModule.js": {
+    "clr/System/Collections/IEqualityComparerModule.js": {
       "type": "module",
       "development": "clr/System/Collections/IEqualityComparerModule.js",
       "production": "clr/System/Collections/IEqualityComparerModule.js",
@@ -459,14 +459,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
       ],
       "files": []
     },
-    "System/Collections/IListModule.js": {
+    "clr/System/Collections/IListModule.js": {
       "type": "module",
       "development": "clr/System/Collections/IListModule.js",
       "production": "clr/System/Collections/IListModule.js",
@@ -475,16 +475,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ListT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ListT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ListT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/ListT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js": {
+    "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
       "production": "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
@@ -493,16 +493,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js": {
+    "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js": {
       "type": "module",
       "development": "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
       "production": "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
@@ -511,16 +511,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/DictionaryT2Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/DictionaryT2Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/DictionaryT2Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/DictionaryT2Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Collections/ObjectModel/ReadOnlySetT1Module.js": {
+    "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js": {
       "type": "module",
       "development": "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js",
       "production": "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js",
@@ -529,16 +529,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/DateOnlyModule.js": {
+    "clr/System/DateOnlyModule.js": {
       "type": "module",
       "development": "clr/System/DateOnlyModule.js",
       "production": "clr/System/DateOnlyModule.js",
@@ -547,16 +547,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/DateTimeModule.js": {
+    "clr/System/DateTimeModule.js": {
       "type": "module",
       "development": "clr/System/DateTimeModule.js",
       "production": "clr/System/DateTimeModule.js",
@@ -565,20 +565,20 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js",
-        "System/TimeOnlyModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js",
+        "clr/System/TimeOnlyModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js",
-        "System/TimeOnlyModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js",
+        "clr/System/TimeOnlyModule.js"
       ],
       "files": []
     },
-    "System/DateTimeOffsetModule.js": {
+    "clr/System/DateTimeOffsetModule.js": {
       "type": "module",
       "development": "clr/System/DateTimeOffsetModule.js",
       "production": "clr/System/DateTimeOffsetModule.js",
@@ -587,18 +587,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/DecimalModule.js": {
+    "clr/System/DecimalModule.js": {
       "type": "module",
       "development": "clr/System/DecimalModule.js",
       "production": "clr/System/DecimalModule.js",
@@ -607,18 +607,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/DoubleModule.js": {
+    "clr/System/DoubleModule.js": {
       "type": "module",
       "development": "clr/System/DoubleModule.js",
       "production": "clr/System/DoubleModule.js",
@@ -627,16 +627,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/ExceptionModule.js": {
+    "clr/System/ExceptionModule.js": {
       "type": "module",
       "development": "clr/System/ExceptionModule.js",
       "production": "clr/System/ExceptionModule.js",
@@ -648,7 +648,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/Globalization/CalendarModule.js": {
+    "clr/System/Globalization/CalendarModule.js": {
       "type": "module",
       "development": "clr/System/Globalization/CalendarModule.js",
       "production": "clr/System/Globalization/CalendarModule.js",
@@ -657,14 +657,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Globalization/GregorianCalendarModule.js"
+        "clr/System/Globalization/GregorianCalendarModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Globalization/GregorianCalendarModule.js"
+        "clr/System/Globalization/GregorianCalendarModule.js"
       ],
       "files": []
     },
-    "System/Globalization/CultureInfoModule.js": {
+    "clr/System/Globalization/CultureInfoModule.js": {
       "type": "module",
       "development": "clr/System/Globalization/CultureInfoModule.js",
       "production": "clr/System/Globalization/CultureInfoModule.js",
@@ -673,16 +673,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Globalization/GregorianCalendarModule.js",
-        "System/StringModule.js"
+        "clr/System/Globalization/GregorianCalendarModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Globalization/GregorianCalendarModule.js",
-        "System/StringModule.js"
+        "clr/System/Globalization/GregorianCalendarModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/Globalization/GregorianCalendarModule.js": {
+    "clr/System/Globalization/GregorianCalendarModule.js": {
       "type": "module",
       "development": "clr/System/Globalization/GregorianCalendarModule.js",
       "production": "clr/System/Globalization/GregorianCalendarModule.js",
@@ -691,16 +691,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DateTimeModule.js",
-        "System/RuntimeModule.js"
+        "clr/System/DateTimeModule.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DateTimeModule.js",
-        "System/RuntimeModule.js"
+        "clr/System/DateTimeModule.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/GuidModule.js": {
+    "clr/System/GuidModule.js": {
       "type": "module",
       "development": "clr/System/GuidModule.js",
       "production": "clr/System/GuidModule.js",
@@ -709,14 +709,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/HalfModule.js": {
+    "clr/System/HalfModule.js": {
       "type": "module",
       "development": "clr/System/HalfModule.js",
       "production": "clr/System/HalfModule.js",
@@ -725,22 +725,22 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/DoubleModule.js",
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js",
-        "System/SingleModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/SingleModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/DoubleModule.js",
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js",
-        "System/SingleModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/SingleModule.js"
       ],
       "files": []
     },
-    "System/IAsyncDisposableModule.js": {
+    "clr/System/IAsyncDisposableModule.js": {
       "type": "module",
       "development": "clr/System/IAsyncDisposableModule.js",
       "production": "clr/System/IAsyncDisposableModule.js",
@@ -752,7 +752,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/IComparableModule.js": {
+    "clr/System/IComparableModule.js": {
       "type": "module",
       "development": "clr/System/IComparableModule.js",
       "production": "clr/System/IComparableModule.js",
@@ -761,14 +761,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "files": []
     },
-    "System/IComparableT1Module.js": {
+    "clr/System/IComparableT1Module.js": {
       "type": "module",
       "development": "clr/System/IComparableT1Module.js",
       "production": "clr/System/IComparableT1Module.js",
@@ -777,14 +777,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js"
       ],
       "files": []
     },
-    "System/IDisposableModule.js": {
+    "clr/System/IDisposableModule.js": {
       "type": "module",
       "development": "clr/System/IDisposableModule.js",
       "production": "clr/System/IDisposableModule.js",
@@ -796,7 +796,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/IndexModule.js": {
+    "clr/System/IndexModule.js": {
       "type": "module",
       "development": "clr/System/IndexModule.js",
       "production": "clr/System/IndexModule.js",
@@ -805,14 +805,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Int128Module.js": {
+    "clr/System/Int128Module.js": {
       "type": "module",
       "development": "clr/System/Int128Module.js",
       "production": "clr/System/Int128Module.js",
@@ -821,18 +821,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/HalfModule.js",
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/HalfModule.js",
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/HalfModule.js",
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/HalfModule.js",
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Int16Module.js": {
+    "clr/System/Int16Module.js": {
       "type": "module",
       "development": "clr/System/Int16Module.js",
       "production": "clr/System/Int16Module.js",
@@ -841,16 +841,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/Int32Module.js": {
+    "clr/System/Int32Module.js": {
       "type": "module",
       "development": "clr/System/Int32Module.js",
       "production": "clr/System/Int32Module.js",
@@ -859,16 +859,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/Int64Module.js": {
+    "clr/System/Int64Module.js": {
       "type": "module",
       "development": "clr/System/Int64Module.js",
       "production": "clr/System/Int64Module.js",
@@ -877,16 +877,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Linq/EnumerableModule.js": {
+    "clr/System/Linq/EnumerableModule.js": {
       "type": "module",
       "development": "clr/System/Linq/EnumerableModule.js",
       "production": "clr/System/Linq/EnumerableModule.js",
@@ -895,28 +895,28 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/DictionaryT2Module.js",
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/Collections/Generic/IComparerT1Module.js",
-        "System/Collections/Generic/IEqualityComparerT1Module.js",
-        "System/DecimalModule.js",
-        "System/Linq/GroupingT2Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/DictionaryT2Module.js",
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/Collections/Generic/IComparerT1Module.js",
+        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+        "clr/System/DecimalModule.js",
+        "clr/System/Linq/GroupingT2Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/DictionaryT2Module.js",
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/Collections/Generic/IComparerT1Module.js",
-        "System/Collections/Generic/IEqualityComparerT1Module.js",
-        "System/DecimalModule.js",
-        "System/Linq/GroupingT2Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/DictionaryT2Module.js",
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/Collections/Generic/IComparerT1Module.js",
+        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+        "clr/System/DecimalModule.js",
+        "clr/System/Linq/GroupingT2Module.js"
       ],
       "files": []
     },
-    "System/Linq/GroupingT2Module.js": {
+    "clr/System/Linq/GroupingT2Module.js": {
       "type": "module",
       "development": "clr/System/Linq/GroupingT2Module.js",
       "production": "clr/System/Linq/GroupingT2Module.js",
@@ -928,7 +928,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/MathModule.js": {
+    "clr/System/MathModule.js": {
       "type": "module",
       "development": "clr/System/MathModule.js",
       "production": "clr/System/MathModule.js",
@@ -937,34 +937,34 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/ByteModule.js",
-        "System/DecimalModule.js",
-        "System/DoubleModule.js",
-        "System/Int16Module.js",
-        "System/Int32Module.js",
-        "System/Int64Module.js",
-        "System/SByteModule.js",
-        "System/SingleModule.js",
-        "System/UInt16Module.js",
-        "System/UInt32Module.js",
-        "System/UInt64Module.js"
+        "clr/System/ByteModule.js",
+        "clr/System/DecimalModule.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/Int16Module.js",
+        "clr/System/Int32Module.js",
+        "clr/System/Int64Module.js",
+        "clr/System/SByteModule.js",
+        "clr/System/SingleModule.js",
+        "clr/System/UInt16Module.js",
+        "clr/System/UInt32Module.js",
+        "clr/System/UInt64Module.js"
       ],
       "productionModuleDependencies": [
-        "System/ByteModule.js",
-        "System/DecimalModule.js",
-        "System/DoubleModule.js",
-        "System/Int16Module.js",
-        "System/Int32Module.js",
-        "System/Int64Module.js",
-        "System/SByteModule.js",
-        "System/SingleModule.js",
-        "System/UInt16Module.js",
-        "System/UInt32Module.js",
-        "System/UInt64Module.js"
+        "clr/System/ByteModule.js",
+        "clr/System/DecimalModule.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/Int16Module.js",
+        "clr/System/Int32Module.js",
+        "clr/System/Int64Module.js",
+        "clr/System/SByteModule.js",
+        "clr/System/SingleModule.js",
+        "clr/System/UInt16Module.js",
+        "clr/System/UInt32Module.js",
+        "clr/System/UInt64Module.js"
       ],
       "files": []
     },
-    "System/MemoryExtensionsModule.js": {
+    "clr/System/MemoryExtensionsModule.js": {
       "type": "module",
       "development": "clr/System/MemoryExtensionsModule.js",
       "production": "clr/System/MemoryExtensionsModule.js",
@@ -973,18 +973,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/NullableT1Module.js": {
+    "clr/System/NullableT1Module.js": {
       "type": "module",
       "development": "clr/System/NullableT1Module.js",
       "production": "clr/System/NullableT1Module.js",
@@ -993,16 +993,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/EqualityComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/ComparerT1Module.js",
-        "System/Collections/Generic/EqualityComparerT1Module.js"
+        "clr/System/Collections/Generic/ComparerT1Module.js",
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
       ],
       "files": []
     },
-    "System/Numerics/BigIntIntegerRuntime.js": {
+    "clr/System/Numerics/BigIntIntegerRuntime.js": {
       "type": "module",
       "development": "clr/System/Numerics/BigIntIntegerRuntime.js",
       "production": "clr/System/Numerics/BigIntIntegerRuntime.js",
@@ -1011,16 +1011,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DecimalModule.js",
-        "System/DoubleModule.js"
+        "clr/System/DecimalModule.js",
+        "clr/System/DoubleModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DecimalModule.js",
-        "System/DoubleModule.js"
+        "clr/System/DecimalModule.js",
+        "clr/System/DoubleModule.js"
       ],
       "files": []
     },
-    "System/Numerics/BigIntegerModule.js": {
+    "clr/System/Numerics/BigIntegerModule.js": {
       "type": "module",
       "development": "clr/System/Numerics/BigIntegerModule.js",
       "production": "clr/System/Numerics/BigIntegerModule.js",
@@ -1029,22 +1029,22 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/DecimalModule.js",
-        "System/DoubleModule.js",
-        "System/HalfModule.js",
-        "System/StringModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/DecimalModule.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/HalfModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/DecimalModule.js",
-        "System/DoubleModule.js",
-        "System/HalfModule.js",
-        "System/StringModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/DecimalModule.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/HalfModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/ObjectModule.js": {
+    "clr/System/ObjectModule.js": {
       "type": "module",
       "development": "clr/System/ObjectModule.js",
       "production": "clr/System/ObjectModule.js",
@@ -1053,14 +1053,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/RangeModule.js": {
+    "clr/System/RangeModule.js": {
       "type": "module",
       "development": "clr/System/RangeModule.js",
       "production": "clr/System/RangeModule.js",
@@ -1069,14 +1069,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js": {
+    "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js": {
       "type": "module",
       "development": "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js",
       "production": "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js",
@@ -1088,7 +1088,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/RuntimeModule.js": {
+    "clr/System/RuntimeModule.js": {
       "type": "module",
       "development": "clr/System/RuntimeModule.js",
       "production": "clr/System/RuntimeModule.js",
@@ -1097,14 +1097,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/StringModule.js"
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/SByteModule.js": {
+    "clr/System/SByteModule.js": {
       "type": "module",
       "development": "clr/System/SByteModule.js",
       "production": "clr/System/SByteModule.js",
@@ -1113,16 +1113,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/SingleModule.js": {
+    "clr/System/SingleModule.js": {
       "type": "module",
       "development": "clr/System/SingleModule.js",
       "production": "clr/System/SingleModule.js",
@@ -1131,18 +1131,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/StringModule.js": {
+    "clr/System/StringModule.js": {
       "type": "module",
       "development": "clr/System/StringModule.js",
       "production": "clr/System/StringModule.js",
@@ -1151,18 +1151,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Collections/Generic/EqualityComparerT1Module.js",
-        "System/Collections/Generic/HashSetT1Module.js",
-        "System/RuntimeModule.js"
+        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+        "clr/System/Collections/Generic/HashSetT1Module.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Text/StringBuilderModule.js": {
+    "clr/System/Text/StringBuilderModule.js": {
       "type": "module",
       "development": "clr/System/Text/StringBuilderModule.js",
       "production": "clr/System/Text/StringBuilderModule.js",
@@ -1171,16 +1171,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/Threading/CancellationTokenModule.js": {
+    "clr/System/Threading/CancellationTokenModule.js": {
       "type": "module",
       "development": "clr/System/Threading/CancellationTokenModule.js",
       "production": "clr/System/Threading/CancellationTokenModule.js",
@@ -1189,14 +1189,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Threading/CancellationTokenRegistrationModule.js": {
+    "clr/System/Threading/CancellationTokenRegistrationModule.js": {
       "type": "module",
       "development": "clr/System/Threading/CancellationTokenRegistrationModule.js",
       "production": "clr/System/Threading/CancellationTokenRegistrationModule.js",
@@ -1205,14 +1205,14 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js"
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/Threading/CancellationTokenSourceModule.js": {
+    "clr/System/Threading/CancellationTokenSourceModule.js": {
       "type": "module",
       "development": "clr/System/Threading/CancellationTokenSourceModule.js",
       "production": "clr/System/Threading/CancellationTokenSourceModule.js",
@@ -1224,7 +1224,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/TimeOnlyModule.js": {
+    "clr/System/TimeOnlyModule.js": {
       "type": "module",
       "development": "clr/System/TimeOnlyModule.js",
       "production": "clr/System/TimeOnlyModule.js",
@@ -1233,18 +1233,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/TimeSpanModule.js": {
+    "clr/System/TimeSpanModule.js": {
       "type": "module",
       "development": "clr/System/TimeSpanModule.js",
       "production": "clr/System/TimeSpanModule.js",
@@ -1253,18 +1253,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/DoubleModule.js",
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/DoubleModule.js",
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/UInt128Module.js": {
+    "clr/System/UInt128Module.js": {
       "type": "module",
       "development": "clr/System/UInt128Module.js",
       "production": "clr/System/UInt128Module.js",
@@ -1273,18 +1273,18 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/HalfModule.js",
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/HalfModule.js",
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/HalfModule.js",
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/HalfModule.js",
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/UInt16Module.js": {
+    "clr/System/UInt16Module.js": {
       "type": "module",
       "development": "clr/System/UInt16Module.js",
       "production": "clr/System/UInt16Module.js",
@@ -1293,16 +1293,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/UInt32Module.js": {
+    "clr/System/UInt32Module.js": {
       "type": "module",
       "development": "clr/System/UInt32Module.js",
       "production": "clr/System/UInt32Module.js",
@@ -1311,16 +1311,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "productionModuleDependencies": [
-        "System/RuntimeModule.js",
-        "System/StringModule.js"
+        "clr/System/RuntimeModule.js",
+        "clr/System/StringModule.js"
       ],
       "files": []
     },
-    "System/UInt64Module.js": {
+    "clr/System/UInt64Module.js": {
       "type": "module",
       "development": "clr/System/UInt64Module.js",
       "production": "clr/System/UInt64Module.js",
@@ -1329,16 +1329,16 @@
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "productionModuleDependencies": [
-        "System/Numerics/BigIntIntegerRuntime.js",
-        "System/RuntimeModule.js"
+        "clr/System/Numerics/BigIntIntegerRuntime.js",
+        "clr/System/RuntimeModule.js"
       ],
       "files": []
     },
-    "System/UriModule.js": {
+    "clr/System/UriModule.js": {
       "type": "module",
       "development": "clr/System/UriModule.js",
       "production": "clr/System/UriModule.js",
@@ -1350,7 +1350,7 @@
       "productionModuleDependencies": [],
       "files": []
     },
-    "System/WeakReferenceModule.js": {
+    "clr/System/WeakReferenceModule.js": {
       "type": "module",
       "development": "clr/System/WeakReferenceModule.js",
       "production": "clr/System/WeakReferenceModule.js",

@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableTerminalRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task FirstLastAndSingleExports_PreserveTerminalEnumerationOrderOnDenoHost()
@@ -35,7 +35,7 @@ public sealed class EnumerableTerminalRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -44,7 +44,7 @@ public sealed class EnumerableTerminalRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{first}}, {{firstWhere}}, {{last}}, {{lastWhere}}, {{single}}, {{singleWhere}} } from "./System/Linq/EnumerableModule.js";
+                import { {{first}}, {{firstWhere}}, {{last}}, {{lastWhere}}, {{single}}, {{singleWhere}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("First, Last, and Single preserve terminal enumeration order", () => {
                   const source = [3, 1, 4, 2];

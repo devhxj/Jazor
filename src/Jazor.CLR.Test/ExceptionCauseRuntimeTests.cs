@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class ExceptionCauseRuntimeTests
 {
-    private const string ModulePath = "System/ExceptionModule.js";
+    private const string ModulePath = "clr/System/ExceptionModule.js";
 
     [TestMethod]
     public async Task CauseExports_PreserveInnerIdentityAndRootTraversalOnDenoHost()
@@ -37,7 +37,7 @@ public sealed class ExceptionCauseRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -46,7 +46,7 @@ public sealed class ExceptionCauseRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{create}}, {{getInner}}, {{getBase}}, {{getHelpLink}}, {{setHelpLink}} } from "./System/ExceptionModule.js";
+                import { {{create}}, {{getInner}}, {{getBase}}, {{getHelpLink}}, {{setHelpLink}} } from "./clr/System/ExceptionModule.js";
 
                 Deno.test("Exception cause chain preserves CLR-facing identity", () => {
                   const leaf = new Error("leaf");

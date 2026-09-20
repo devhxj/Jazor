@@ -21,9 +21,9 @@ namespace Jazor.CLR.Test;
 /// </remarks>
 internal static class ClrRuntimeCancellationScenarios
 {
-    private const string TokenModule = "System/Threading/CancellationTokenModule.js";
-    private const string SourceModule = "System/Threading/CancellationTokenSourceModule.js";
-    private const string RegistrationModule = "System/Threading/CancellationTokenRegistrationModule.js";
+    private const string TokenModule = "clr/System/Threading/CancellationTokenModule.js";
+    private const string SourceModule = "clr/System/Threading/CancellationTokenSourceModule.js";
+    private const string RegistrationModule = "clr/System/Threading/CancellationTokenRegistrationModule.js";
 
     private const string DefaultToken = "System.Threading.CancellationToken.CancellationToken()";
     private const string NoneToken = "static System.Threading.CancellationToken.None.get";

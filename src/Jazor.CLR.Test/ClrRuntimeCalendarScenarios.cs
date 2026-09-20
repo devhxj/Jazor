@@ -4,8 +4,8 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeCalendarScenarios
 {
-    private const string GregorianModulePath = "System/Globalization/GregorianCalendarModule.js";
-    private const string CalendarModulePath = "System/Globalization/CalendarModule.js";
+    private const string GregorianModulePath = "clr/System/Globalization/GregorianCalendarModule.js";
+    private const string CalendarModulePath = "clr/System/Globalization/CalendarModule.js";
     private static readonly DateTime SampleDate = new(2024, 2, 29, 3, 4, 5, 6, DateTimeKind.Unspecified);
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

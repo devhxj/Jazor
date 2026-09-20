@@ -13,7 +13,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule("System/UInt64Module.js")]
+[ECMAScriptModule("clr/System/UInt64Module.js")]
 [Jazor(Op.Alias, "ulong", "BigInt")]
 public static class UInt64Module
 {

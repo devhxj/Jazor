@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeNullableScenarios
 {
-    private const string ModulePath = "System/NullableT1Module.js";
+    private const string ModulePath = "clr/System/NullableT1Module.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// the positional projection here lets ordinary property access and C# deconstruction agree
 /// without introducing a wrapper object or changing Map enumeration.
 /// </remarks>
-[ECMAScriptModule("System/Collections/Generic/KeyValuePairT2Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/KeyValuePairT2Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.KeyValuePair<TKey, TValue>", "Array")]
 public static class KeyValuePairT2Module<TKey, TValue>
 {

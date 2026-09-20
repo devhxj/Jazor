@@ -5,7 +5,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class GuidRuntimeArtifactTests
 {
-    private const string GuidModulePath = "System/GuidModule.js";
+    private const string GuidModulePath = "clr/System/GuidModule.js";
 
     [TestMethod]
     public void ToStringExport_UsesExplicitCharCodeConversionsForLowercaseSpecifier()

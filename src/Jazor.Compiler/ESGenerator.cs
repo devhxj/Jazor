@@ -166,9 +166,9 @@ public sealed class ESGenerator : IIncrementalGenerator
                     new AstConverterOptions(
                         AstConverterProfile.ClrRuntime,
                         CurrentModuleOutputPath: plan.RelativePath,
-                        // 宿主生成时引用的 carrier 路径（Op.Import / 硬编码 carrier 引用）
-                        // 写在项目源码树的 clr/ 下。
-                        ModuleCatalogOutputPrefix: "clr/"));
+                        // CLR carrier declarations already contain their complete project path
+                        // (for example clr/System/BooleanModule.js); no implicit prefix is added.
+                        ModuleCatalogOutputPrefix: ""));
                 var module = converter.Convert().GetAwaiter().GetResult();
                 // 产物图边记录的是**逻辑路径**（stable identity），而模块体里写的是相对
                 // specifier（D3）。因此判定 catalog 导入时先把相对 specifier 按本模块位置
@@ -176,11 +176,14 @@ public sealed class ESGenerator : IIncrementalGenerator
                 var moduleCatalogImportPaths = new HashSet<string>(
                     converter.ModuleCatalogImportPaths.Select(ECMAScriptModulePath.NormalizeImportSpecifier),
                     StringComparer.Ordinal);
+                // 分类顺序很重要：本图内的 ModuleCatalog 模块必须先于 package 判定。
+                // 逻辑路径（如 features/greeter.mjs）在形式上与包说明符没有区别，
+                // 只有 catalog 集合能区分它们；否则本图模块会被当成库依赖泄漏进 packageImports。
                 var packageImports = module?.Body
-                    .OfType<ImportDeclaration>()
+                    .OfType<Acornima.Ast.ImportDeclaration>()
                     .Select(static declaration => declaration.Source.Value)
-                    .Where(source => ECMAScriptModulePath.IsPackageSpecifier(source))
                     .Where(source => !IsModuleCatalogImport(source, plan.RelativePath, moduleCatalogImportPaths))
+                    .Where(source => ECMAScriptModulePath.IsPackageSpecifier(source))
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(static specifier => specifier, StringComparer.Ordinal)
                     .ToArray() ?? [];
@@ -418,17 +421,15 @@ public sealed class ESGenerator : IIncrementalGenerator
     /// <summary>
     /// 判定一个 import specifier 是否指向本图内的 ModuleCatalog 模块。
     ///
-    /// 项目内引用写成相对 specifier，需要先用 <c>clr/</c> 前缀解析回项目路径，
-    /// 再映射回逻辑路径（CLR carrier 的逻辑路径不含前缀）。
+    /// 项目内引用写成相对 specifier，解析结果直接与完整 ModuleCatalog 路径比较。
     /// </summary>
     private static bool IsModuleCatalogImport(
         string source,
         string relativePath,
         ISet<string> moduleCatalogImportPaths)
     {
-        if (ECMAScriptModulePath.IsPackageSpecifier(source))
-            return false;
-
+        // 本图模块必须先于 package 判定：逻辑路径（features/greeter.mjs）在形式上
+        // 与包说明符无法区分，catalog 集合才是"是否属于本图"的权威依据。
         if (!source.StartsWith("./", StringComparison.Ordinal) &&
             !source.StartsWith("../", StringComparison.Ordinal))
         {
@@ -436,11 +437,12 @@ public sealed class ESGenerator : IIncrementalGenerator
                 ECMAScriptModulePath.NormalizeImportSpecifier(source));
         }
 
+        // 相对 specifier 指向本图模块；catalog 集合记录逻辑路径，
+        // 而相对 specifier 解析出项目路径——CLR carrier 需去掉 clr/ 前缀才是逻辑路径。
         var projectPath = ECMAScriptModulePath.ResolveRelativePath(relativePath, source);
         if (moduleCatalogImportPaths.Contains(projectPath))
             return true;
 
-        // CLR carrier 的逻辑路径省略 clr/ 前缀。
         const string carrierRoot = "clr/";
         return projectPath.StartsWith(carrierRoot, StringComparison.Ordinal) &&
                moduleCatalogImportPaths.Contains(projectPath.Substring(carrierRoot.Length));

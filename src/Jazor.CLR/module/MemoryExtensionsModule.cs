@@ -8,7 +8,7 @@ namespace Jazor.CLR;
 /// Razor SDK 的默认 imports 会优先将 array.Contains(value) 绑定到这个 BCL overload，因此它与
 /// Enumerable.Contains 使用同一默认 EqualityComparer 语义。
 /// </remarks>
-[ECMAScriptModule("System/MemoryExtensionsModule.js")]
+[ECMAScriptModule("clr/System/MemoryExtensionsModule.js")]
 [Jazor(Op.Alias, "System.MemoryExtensions", "Array")]
 public static class MemoryExtensionsModule<T>
 {

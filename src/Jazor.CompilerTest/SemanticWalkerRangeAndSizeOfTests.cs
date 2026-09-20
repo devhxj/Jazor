@@ -124,10 +124,10 @@ public sealed class SemanticWalkerRangeAndSizeOfTests
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         CollectionAssert.AreEquivalent(
             new[] { "_83db7aa629254762", "_1c7f7405a620c971", "_0fb768c390456f95" },
-            imports["System/IndexModule.js"].Select(static specifier => specifier.ToECMAScript()).ToArray());
+            imports["clr/System/IndexModule.js"].Select(static specifier => specifier.ToECMAScript()).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "_f858c453f3829489", "_7fc0f3cc7ec542d3", "_1c286146a6526629" },
-            imports["System/RangeModule.js"].Select(static specifier => specifier.ToECMAScript()).ToArray());
+            imports["clr/System/RangeModule.js"].Select(static specifier => specifier.ToECMAScript()).ToArray());
         StringAssert.Contains(script, "_0fb768c390456f95(left)");
         StringAssert.Contains(script, "_1c7f7405a620c971(left)");
         StringAssert.Contains(script, "_83db7aa629254762(left, right)");

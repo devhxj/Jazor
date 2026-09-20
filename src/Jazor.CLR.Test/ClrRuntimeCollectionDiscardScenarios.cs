@@ -2,14 +2,14 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeCollectionDiscardScenarios
 {
-    private const string DictionaryModulePath = "System/Collections/Generic/DictionaryT2Module.js";
-    private const string HashSetModulePath = "System/Collections/Generic/HashSetT1Module.js";
-    private const string DictionaryInterfaceModulePath = "System/Collections/Generic/IDictionaryT2Module.js";
-    private const string GenericCollectionModulePath = "System/Collections/Generic/ICollectionT1Module.js";
-    private const string GenericListModulePath = "System/Collections/Generic/IListT1Module.js";
-    private const string ListInterfaceModulePath = "System/Collections/IListModule.js";
-    private const string ReadOnlyCollectionModulePath = "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
-    private const string WeakTableModulePath = "System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js";
+    private const string DictionaryModulePath = "clr/System/Collections/Generic/DictionaryT2Module.js";
+    private const string HashSetModulePath = "clr/System/Collections/Generic/HashSetT1Module.js";
+    private const string DictionaryInterfaceModulePath = "clr/System/Collections/Generic/IDictionaryT2Module.js";
+    private const string GenericCollectionModulePath = "clr/System/Collections/Generic/ICollectionT1Module.js";
+    private const string GenericListModulePath = "clr/System/Collections/Generic/IListT1Module.js";
+    private const string ListInterfaceModulePath = "clr/System/Collections/IListModule.js";
+    private const string ReadOnlyCollectionModulePath = "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
+    private const string WeakTableModulePath = "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js";
     private const string EqualityDefaultMember = "static System.Collections.Generic.EqualityComparer<T>.Default.get";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
@@ -256,7 +256,7 @@ internal static class ClrRuntimeCollectionDiscardScenarios
         Success(
             "hash-set.create-set-comparer.uses-configured-element-equality",
             "System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)",
-            "System/Collections/Generic/IEqualityComparerT1Module.js",
+            "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
             [
                 Invoke("static System.Collections.Generic.HashSet<T>.CreateSetComparer()"),
                 Invoke("System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>)", Array(Number(1), Number(3), Number(2)), ParityEquality()),
@@ -266,13 +266,13 @@ internal static class ClrRuntimeCollectionDiscardScenarios
         Success(
             "hash-set.create-set-comparer.hashes-elements-order-independently",
             "System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)",
-            "System/Collections/Generic/IEqualityComparerT1Module.js",
+            "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
             [Invoke("static System.Collections.Generic.HashSet<T>.CreateSetComparer()"), Set(Number(1), Number(2))],
             Number(3)),
         Success(
             "hash-set.create-set-comparer.hashes-elements-with-default-hash",
             "System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)",
-            "System/Collections/Generic/IEqualityComparerT1Module.js",
+            "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
             [
                 Invoke("static System.Collections.Generic.HashSet<T>.CreateSetComparer()"),
                 Invoke("System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEqualityComparer<T>)", Array(Number(1), Number(2)), ParityEquality())

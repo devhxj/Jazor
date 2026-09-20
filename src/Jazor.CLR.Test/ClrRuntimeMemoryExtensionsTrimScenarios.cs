@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeMemoryExtensionsTrimScenarios
 {
-	private const string ModulePath = "System/MemoryExtensionsModule.js";
+	private const string ModulePath = "clr/System/MemoryExtensionsModule.js";
 
 	public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
 	[

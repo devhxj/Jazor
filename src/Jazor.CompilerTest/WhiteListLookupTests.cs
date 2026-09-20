@@ -99,7 +99,7 @@ public sealed class WhiteListLookupTests
 
 		Assert.IsNotNull(carrier);
 		Assert.AreEqual(expectedCarrier, GetPropertyValue<string>(carrier, "Name"));
-		Assert.AreEqual("System/RuntimeModule.js", GetPropertyValue<string>(carrier, "Path"));
+		Assert.AreEqual("clr/System/RuntimeModule.js", GetPropertyValue<string>(carrier, "Path"));
 	}
 
 	[TestMethod]

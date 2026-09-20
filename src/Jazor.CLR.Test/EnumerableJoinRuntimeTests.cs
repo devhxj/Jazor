@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableJoinRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task JoinExports_PreserveLookupAndSelectorEvaluationOrderOnDenoHost()
@@ -33,7 +33,7 @@ public sealed class EnumerableJoinRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -42,7 +42,7 @@ public sealed class EnumerableJoinRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{join}}, {{groupJoin}} } from "./System/Linq/EnumerableModule.js";
+                import { {{join}}, {{groupJoin}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Join and GroupJoin preserve lookup, result, and numeric comparer semantics", () => {
                   const trace = [];

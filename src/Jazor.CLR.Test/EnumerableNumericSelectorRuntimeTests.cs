@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableNumericSelectorRuntimeTests
 {
-    private const string ModulePath = "System/Linq/EnumerableModule.js";
+    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task NumericSelectorExports_PreserveCarrierOrderAndFailureContractsOnDenoHost()
@@ -47,12 +47,12 @@ public sealed class EnumerableNumericSelectorRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "numeric-selector.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{string.Join(", ", names)}} } from "./System/Linq/EnumerableModule.js";
+                import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable numeric selectors preserve carrier and source order", () => {
                   const [sumIntByOperation, sumInt64ByOperation, sumSingleByOperation, sumDoubleByOperation, sumDecimalByOperation, averageIntByOperation, averageInt64ByOperation, averageSingleByOperation, averageDoubleByOperation, averageDecimalByOperation, minIntByOperation, minInt64ByOperation, minSingleByOperation, minDoubleByOperation, minDecimalByOperation, maxIntByOperation, maxInt64ByOperation, maxSingleByOperation, maxDoubleByOperation, maxDecimalByOperation] = [{{string.Join(", ", names)}}];

@@ -11,7 +11,7 @@ namespace Jazor.CLR;
 /// the shaped value in a private weak map before invoking the user's callback. This preserves the
 /// value observed by an async handler even when the DOM target changes before its continuation.
 /// </remarks>
-[ECMAScriptModule("Microsoft/AspNetCore/Components/ChangeEventArgsModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.ChangeEventArgs", "EventRef")]
 public static class ChangeEventArgsModule
 {

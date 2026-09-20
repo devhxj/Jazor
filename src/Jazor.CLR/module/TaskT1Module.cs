@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// TResult 只是编译期结果类型，运行时载体仍是 Promise；Result 等同步阻塞 API 不应伪装成
 /// 普通属性访问，等待和异常传播必须遵循 JavaScript Promise 协议。
 /// </remarks>
-[ECMAScriptModule("System/Threading/Tasks/TaskT1Module.js")]
+[ECMAScriptModule("clr/System/Threading/Tasks/TaskT1Module.js")]
 [Jazor(Op.Alias, "System.Threading.Tasks.Task<TResult>", "Promise")]
 public static class TaskT1Module<TResult>
 {

@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// - Import: 使用 List carrier marker 保留可变列表、固定数组和只读视图之间的边界
 /// - Discard: 仅保留尚无完整运行时协议的成员
 /// </summary>
-[ECMAScriptModule("System/Collections/IListModule.js")]
+[ECMAScriptModule("clr/System/Collections/IListModule.js")]
 [Jazor(Op.Alias, "System.Collections.IList", "Array")]
 public static class IListModule
 {

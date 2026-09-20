@@ -3,7 +3,7 @@ namespace Jazor.CLR;
 /// <summary>
 /// CLR module for System.TimeOnly，映射成 JavaScript 中的 BigInt ticks（100ns）
 /// </summary>
-[ECMAScriptModule("System/TimeOnlyModule.js")]
+[ECMAScriptModule("clr/System/TimeOnlyModule.js")]
 [Jazor(Op.Alias, "System.TimeOnly", "Object")]
 public static class TimeOnlyModule
 {

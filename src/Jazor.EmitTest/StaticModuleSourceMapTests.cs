@@ -121,7 +121,7 @@ public sealed class StaticModuleSourceMapTests
                             assemblyName: "ECMAScript",
                             typeName: "Jazor.CLR.RuntimeModule",
                             id: "Jazor.CLR.RuntimeModule",
-                            relativePath: "System/RuntimeModule.js",
+                            relativePath: "clr/System/RuntimeModule.js",
                             content: "export const RuntimeModule = {};",
                             hash: "hash-runtime")
                     ];

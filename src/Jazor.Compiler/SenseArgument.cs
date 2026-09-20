@@ -74,6 +74,7 @@ public readonly record struct SenseArgument
         _reservedImportNames = [];
         _currentModuleImportPath = null;
         _currentModuleBindings = null;
+        _moduleCatalogOutputPrefix = string.Empty;
         _moduleCatalogImportPaths = null;
     }
 
@@ -98,6 +99,7 @@ public readonly record struct SenseArgument
         _reservedImportNames = [];
         _currentModuleImportPath = null;
         _currentModuleBindings = null;
+        _moduleCatalogOutputPrefix = string.Empty;
         _moduleCatalogImportPaths = null;
     }
 
@@ -300,18 +302,26 @@ public readonly record struct SenseArgument
     /// The JavaScript import keeps the stable logical path; only the artifact graph uses this
     /// separate channel to distinguish it from a resource-manifest import.
     /// </summary>
-    internal Identifier BindModuleCatalogImportSpecifier(string? modulePath, string importedName)
+    internal Identifier BindModuleCatalogImportSpecifier(string? modulePath, string importedName, bool isCarrierModule = false)
     {
         if (string.IsNullOrWhiteSpace(modulePath))
             return BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: true);
 
         // 逻辑路径是产物图的键，必须保持稳定；它同时用于自引用判定。
         var logicalPath = ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!);
+
+        // 产物图边始终按逻辑路径记录——catalog 集合是"本图模块"的唯一权威标识，
+        // 与写出什么形式的 specifier 无关。漏记会让本图模块被误判为库依赖。
         _moduleCatalogImportPaths?.Add(logicalPath);
 
-        // 项目内模块按最终文件位置写成相对 specifier：ModuleCatalog 模块按声明的模块路径
-        // 直接写入项目（无额外前缀），因此传空前缀。
-        return BindImportSpecifierCore(ResolveProjectImportSpecifier(logicalPath, string.Empty), importedName, normalizeForCurrentModule: false);
+        // carrier 之间的引用必须写成相对 specifier：carrier 文件直接写在项目源码树的 clr/ 下，
+        // 没有包上下文可供裸 specifier 解析。判据是"当前正在 lowering 的模块本身是不是 carrier"，
+        // 而不是目标是不是 carrier——用户模块引用本图模块时保留裸逻辑 specifier。
+        if (!IsCarrierModule(_currentModuleOutputPath))
+            return BindImportSpecifierCore(logicalPath, importedName, normalizeForCurrentModule: false);
+
+        return BindImportSpecifierCore(
+            ResolveProjectImportSpecifier(logicalPath, _moduleCatalogOutputPrefix), importedName, normalizeForCurrentModule: false);
     }
 
     /// <summary>
@@ -331,11 +341,21 @@ public readonly record struct SenseArgument
         if (IsCurrentModuleImport(logicalPath))
             return BindImportSpecifier(logicalPath, importedName);
 
-        _moduleCatalogImportPaths?.Add(logicalPath);
-        return BindImportSpecifierCore(
-            ResolveProjectImportSpecifier(logicalPath, _moduleCatalogOutputPrefix),
-            importedName,
-            normalizeForCurrentModule: false);
+        // carrier 之间的引用：文件同在 clr/ 下，写成相对 specifier；边由 carrier 自身的
+        // manifest 模块依赖表达，因此从 app 的 packageImports 里排除。
+        if (IsCarrierModule(_currentModuleOutputPath))
+        {
+            _moduleCatalogImportPaths?.Add(logicalPath);
+            return BindImportSpecifierCore(
+                ResolveProjectImportSpecifier(logicalPath, _moduleCatalogOutputPrefix),
+                importedName,
+                normalizeForCurrentModule: false);
+        }
+
+        // 用户模块引用 carrier：carrier 是资源库（--library-manifest 提供），不在本编译的
+        // ModuleCatalog 里。保留裸逻辑 specifier，并让它进入 packageImports，
+        // 从而选中对应的库清单、由 import map 定位到 clr/**。
+        return BindImportSpecifierCore(logicalPath, importedName, normalizeForCurrentModule: false);
     }
 
     /// <summary>
@@ -355,6 +375,16 @@ public readonly record struct SenseArgument
 
         return ECMAScriptModulePath.ResolveRelativeToImporter(_currentModuleOutputPath!, targetPath);
     }
+
+    /// <summary>
+    /// 判定一个项目相对输出路径是否位于 CLR 源码 carrier 根下。
+    /// </summary>
+    private static bool IsCarrierModule(string? outputPath)
+        => !string.IsNullOrWhiteSpace(outputPath) &&
+           outputPath!.StartsWith(CarrierSourceRoot, StringComparison.Ordinal);
+
+    /// <summary>CLR 源码 carrier 在项目源码树中的根目录。</summary>
+    private const string CarrierSourceRoot = "clr/";
 
     /// <summary>
     /// Returns whether an import specifier resolves to the module currently being lowered.

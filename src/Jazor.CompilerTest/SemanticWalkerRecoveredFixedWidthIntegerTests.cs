@@ -47,9 +47,9 @@ public sealed class SemanticWalkerRecoveredFixedWidthIntegerTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(3, imports, body);
-        Assert.HasCount(2, imports["System/Int64Module.js"], body);
-        Assert.HasCount(6, imports["System/UInt64Module.js"], body);
-        Assert.HasCount(1, imports["System/Int128Module.js"], body);
+        Assert.HasCount(2, imports["clr/System/Int64Module.js"], body);
+        Assert.HasCount(6, imports["clr/System/UInt64Module.js"], body);
+        Assert.HasCount(1, imports["clr/System/Int128Module.js"], body);
         StringAssert.Contains(body, "let defaultHalf = 0;", StringComparison.Ordinal);
         StringAssert.Contains(body, "let defaultInt = 0;", StringComparison.Ordinal);
         StringAssert.Contains(body, "let defaultLong = 0n;", StringComparison.Ordinal);
@@ -105,8 +105,8 @@ public sealed class SemanticWalkerRecoveredFixedWidthIntegerTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(2, imports, body);
-        Assert.HasCount(10, imports["System/Int128Module.js"], body);
-        Assert.HasCount(10, imports["System/UInt128Module.js"], body);
+        Assert.HasCount(10, imports["clr/System/Int128Module.js"], body);
+        Assert.HasCount(10, imports["clr/System/UInt128Module.js"], body);
         foreach (var exportName in new[]
         {
             "_b0e356aabfe72ec2", "_4d90655f04c3cb26", "_18dfb394fe14fa70",
@@ -223,8 +223,8 @@ public sealed class SemanticWalkerRecoveredFixedWidthIntegerTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(2, imports, body);
-        Assert.HasCount(11, imports["System/Int128Module.js"], body);
-        Assert.HasCount(15, imports["System/UInt128Module.js"], body);
+        Assert.HasCount(11, imports["clr/System/Int128Module.js"], body);
+        Assert.HasCount(15, imports["clr/System/UInt128Module.js"], body);
         foreach (var exportName in new[]
         {
             "_75b77707d8797fe4", "_9e21259a765be818", "_2f789a7c53d14d8c",
@@ -276,8 +276,8 @@ public sealed class SemanticWalkerRecoveredFixedWidthIntegerTests
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(2, imports, body);
-		Assert.HasCount(2, imports["System/Int128Module.js"], body);
-		Assert.HasCount(2, imports["System/UInt128Module.js"], body);
+		Assert.HasCount(2, imports["clr/System/Int128Module.js"], body);
+		Assert.HasCount(2, imports["clr/System/UInt128Module.js"], body);
 		foreach (var exportName in new[] { "_f729da8a5282b658", "_d32138c04ddcda2e", "_4ae42163ca5ab057", "_08f69578289009db" })
 			StringAssert.Contains(body, exportName + "(", StringComparison.Ordinal);
 		StringAssert.Contains(body, "signedLow = ", StringComparison.Ordinal);
@@ -317,14 +317,14 @@ public sealed class SemanticWalkerRecoveredFixedWidthIntegerTests
 		Assert.HasCount(8, imports, body);
 		foreach (var (module, exportName) in new[]
 		{
-			("System/ByteModule.js", "_413c6f7752002edf"),
-			("System/SByteModule.js", "_a3ccaa03549862bc"),
-			("System/Int16Module.js", "_f06bf367c8a26691"),
-			("System/UInt16Module.js", "_0103a8bec9e9dfd7"),
-			("System/Int32Module.js", "_f6a664534980b0f4"),
-			("System/UInt32Module.js", "_104b334d48c2aecd"),
-			("System/Int64Module.js", "_f65dcae3cb8d9ffc"),
-			("System/UInt64Module.js", "_6563986efd5413c0")
+			("clr/System/ByteModule.js", "_413c6f7752002edf"),
+			("clr/System/SByteModule.js", "_a3ccaa03549862bc"),
+			("clr/System/Int16Module.js", "_f06bf367c8a26691"),
+			("clr/System/UInt16Module.js", "_0103a8bec9e9dfd7"),
+			("clr/System/Int32Module.js", "_f6a664534980b0f4"),
+			("clr/System/UInt32Module.js", "_104b334d48c2aecd"),
+			("clr/System/Int64Module.js", "_f65dcae3cb8d9ffc"),
+			("clr/System/UInt64Module.js", "_6563986efd5413c0")
 		})
 		{
 			Assert.HasCount(1, imports[module], module);
@@ -361,10 +361,10 @@ public sealed class SemanticWalkerRecoveredFixedWidthIntegerTests
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		foreach (var (module, exportName) in new[]
 		{
-			("System/HalfModule.js", "_f5bea48e2d45cf92"),
-			("System/SingleModule.js", "_8f337f9f610204bb"),
-			("System/DoubleModule.js", "_059799e0a3b763c1"),
-			("System/Numerics/BigIntegerModule.js", "_ded03bf84977945f")
+			("clr/System/HalfModule.js", "_f5bea48e2d45cf92"),
+			("clr/System/SingleModule.js", "_8f337f9f610204bb"),
+			("clr/System/DoubleModule.js", "_059799e0a3b763c1"),
+			("clr/System/Numerics/BigIntegerModule.js", "_ded03bf84977945f")
 		})
 		{
 			Assert.HasCount(1, imports[module], module);

@@ -18,7 +18,7 @@ namespace Jazor.CLR;
 /// 常用路径是 <c>Register</c> 返回的真实注册，等有明确需求时再支持。
 /// </para>
 /// </remarks>
-[ECMAScriptModule("System/Threading/CancellationTokenRegistrationModule.js")]
+[ECMAScriptModule("clr/System/Threading/CancellationTokenRegistrationModule.js")]
 [Jazor(Op.Alias, "System.Threading.CancellationTokenRegistration", "Object")]
 public static class CancellationTokenRegistrationModule
 {

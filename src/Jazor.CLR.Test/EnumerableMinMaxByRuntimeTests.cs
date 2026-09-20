@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableMinMaxByRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task MinByAndMaxByExports_EvaluateEachSelectorOnceAndPreserveFirstTieOnDenoHost()
@@ -31,7 +31,7 @@ public sealed class EnumerableMinMaxByRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -40,7 +40,7 @@ public sealed class EnumerableMinMaxByRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{minBy}}, {{maxBy}} } from "./System/Linq/EnumerableModule.js";
+                import { {{minBy}}, {{maxBy}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("MinBy and MaxBy preserve selector order and first ties", () => {
                   const source = [22, 15, 35, 12];

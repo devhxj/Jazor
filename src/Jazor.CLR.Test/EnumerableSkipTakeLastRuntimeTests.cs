@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableSkipTakeLastRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task SkipLastAndTakeLastExports_PreserveTailBufferTraversalOnDenoHost()
@@ -31,7 +31,7 @@ public sealed class EnumerableSkipTakeLastRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -40,7 +40,7 @@ public sealed class EnumerableSkipTakeLastRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{skipLast}}, {{takeLast}} } from "./System/Linq/EnumerableModule.js";
+                import { {{skipLast}}, {{takeLast}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("SkipLast and TakeLast preserve bounded tail traversal", () => {
                   const trace = [];

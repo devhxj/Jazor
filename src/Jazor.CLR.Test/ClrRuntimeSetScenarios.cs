@@ -7,23 +7,23 @@ internal static class ClrRuntimeSetScenarios
         .. Create(
             "hash-set",
             "HashSet",
-            "System/Collections/Generic/HashSetT1Module.js"),
+            "clr/System/Collections/Generic/HashSetT1Module.js"),
         Success(
             "hash-set.capacity.default-constructor",
             "System.Collections.Generic.HashSet<T>.Capacity.get",
-            "System/Collections/Generic/HashSetT1Module.js",
+            "clr/System/Collections/Generic/HashSetT1Module.js",
             [Invoke("System.Collections.Generic.HashSet<T>.HashSet()")],
             Number(0)),
         Success(
             "hash-set.constructor.collection-removes-duplicates",
             "System.Collections.Generic.HashSet<T>.HashSet(System.Collections.Generic.IEnumerable<T>)",
-            "System/Collections/Generic/HashSetT1Module.js",
+            "clr/System/Collections/Generic/HashSetT1Module.js",
             [Array(Text("a"), Text("b"), Text("a"))],
             Set(Text("a"), Text("b"))),
         Success(
             "hash-set.capacity.add-grows-prime-storage",
             "System.Collections.Generic.HashSet<T>.Capacity.get",
-            "System/Collections/Generic/HashSetT1Module.js",
+            "clr/System/Collections/Generic/HashSetT1Module.js",
             [
                 Reference("growing-set", Invoke("System.Collections.Generic.HashSet<T>.HashSet()")),
                 Invoke(
@@ -35,20 +35,20 @@ internal static class ClrRuntimeSetScenarios
             Success(
                 "hash-set.ensure-capacity.rounds-to-clr-prime",
                 "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
-                "System/Collections/Generic/HashSetT1Module.js",
+                "clr/System/Collections/Generic/HashSetT1Module.js",
                 [Invoke("System.Collections.Generic.HashSet<T>.HashSet()"), Number(4)],
                 Number(7)),
         SuccessMutation(
             "hash-set.remove-where.materializes-before-delete",
             "System.Collections.Generic.HashSet<T>.RemoveWhere(System.Predicate<T>)",
-            "System/Collections/Generic/HashSetT1Module.js",
+            "clr/System/Collections/Generic/HashSetT1Module.js",
             [Set(Number(1), Number(2), Number(3), Number(4)), Callable(ClrRuntimeCallableKind.IsEven)],
             Number(2),
             [Set(Number(1), Number(3)), Callable(ClrRuntimeCallableKind.IsEven)]),
         Failure(
             "hash-set.ensure-capacity.rejects-negative-capacity",
             "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
-            "System/Collections/Generic/HashSetT1Module.js",
+            "clr/System/Collections/Generic/HashSetT1Module.js",
             [Set(), Number(-1)],
             "ArgumentOutOfRangeException")
     ];
@@ -56,7 +56,7 @@ internal static class ClrRuntimeSetScenarios
     public static IReadOnlyList<ClrRuntimeScenario> InterfaceSet { get; } = Create(
         "iset",
         "ISet",
-        "System/Collections/Generic/ISetT1Module.js");
+        "clr/System/Collections/Generic/ISetT1Module.js");
 
     private static IReadOnlyList<ClrRuntimeScenario> Create(string idPrefix, string typeName, string modulePath)
     {

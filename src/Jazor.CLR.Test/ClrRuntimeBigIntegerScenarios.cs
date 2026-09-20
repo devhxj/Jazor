@@ -4,7 +4,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeBigIntegerScenarios
 {
-    private const string ModulePath = "System/Numerics/BigIntegerModule.js";
+    private const string ModulePath = "clr/System/Numerics/BigIntegerModule.js";
     private static readonly BigInteger TwoPow100 = BigInteger.One << 100;
     private static readonly BigInteger TenPow20 = BigInteger.Pow(10, 20);
     private static readonly BigInteger DecimalMax = BigInteger.Parse("79228162514264337593543950335");

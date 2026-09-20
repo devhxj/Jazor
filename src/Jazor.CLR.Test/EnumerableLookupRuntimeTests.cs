@@ -28,13 +28,13 @@ public sealed class EnumerableLookupRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "lookup.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{toLookup}}, {{toLookupElement}}, {{lookupCount}}, {{lookupContains}}, {{lookupGet}} } from "./System/Linq/EnumerableModule.js";
-                import { {{groupingKey}} } from "./System/Linq/GroupingT2Module.js";
+                import { {{toLookup}}, {{toLookupElement}}, {{lookupCount}}, {{lookupContains}}, {{lookupGet}} } from "./clr/System/Linq/EnumerableModule.js";
+                import { {{groupingKey}} } from "./clr/System/Linq/GroupingT2Module.js";
 
                 Deno.test("Enumerable.ToLookup preserves CLR grouping and lookup behavior", () => {
                   const source = [1, 2, 3, 4];
@@ -90,7 +90,7 @@ public sealed class EnumerableLookupRuntimeTests
     private static string GetExportName(string member)
     {
         var mapping = ClrRuntimeMappingCatalog.GetImport(member);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", mapping.ModulePath, member);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", mapping.ModulePath, member);
         return mapping.ExportName;
     }
 }

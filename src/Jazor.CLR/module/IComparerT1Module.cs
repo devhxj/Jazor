@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 ///
 /// 当前仅开放与 Comparer&lt;T&gt;.Default 直接联动的 Compare 调用。
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/IComparerT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/IComparerT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.IComparer<T>", "Object")]
 public static class IComparerT1Module<T>
 {

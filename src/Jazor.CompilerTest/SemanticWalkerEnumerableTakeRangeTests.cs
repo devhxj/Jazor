@@ -48,9 +48,9 @@ public sealed class SemanticWalkerEnumerableTakeRangeTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         var importsByModule = imports.ToDictionary(static pair => pair.Key, static pair => pair.Value);
-        Assert.IsTrue(importsByModule.TryGetValue("System/Linq/EnumerableModule.js", out var enumerableImports), body);
+        Assert.IsTrue(importsByModule.TryGetValue("clr/System/Linq/EnumerableModule.js", out var enumerableImports), body);
         CollectionAssert.Contains(enumerableImports.Select(static specifier => specifier.ToECMAScript()).ToArray(), "takeRange");
-        Assert.IsTrue(importsByModule.ContainsKey("System/RangeModule.js"), body);
+        Assert.IsTrue(importsByModule.ContainsKey("clr/System/RangeModule.js"), body);
         StringAssert.Contains(body, "takeRange(values", StringComparison.Ordinal);
 
         var moduleImports = imports.Select(static pair =>

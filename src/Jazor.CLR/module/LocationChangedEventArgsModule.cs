@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs", "Object")]
 public static class LocationChangedEventArgsModule
 {

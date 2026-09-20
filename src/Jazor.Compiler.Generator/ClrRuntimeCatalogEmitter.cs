@@ -18,9 +18,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 /// </remarks>
 internal static class ClrRuntimeCatalogEmitter
 {
-    /// <summary>项目源码树中 CLR 源码 carrier 的根目录（相对项目根）。</summary>
-    internal const string ClrSourceRoot = "clr/";
-
     private const int ManifestSchemaVersion = 2;
     private const string LibraryId = "ecmascript";
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
@@ -59,13 +56,11 @@ internal static class ClrRuntimeCatalogEmitter
         {
             try
             {
-                // 该 carrier 的文件写在项目源码树的 clr/ 下（见下方 path = "clr/" + RelativePath）。
-                // 导入与目标使用同一前缀，因此 carrier 内部的相对 specifier 在两种视图下一致。
                 var options = new AstConverterOptions(
                     AstConverterProfile.ClrRuntime,
                     symbol => ClrRuntimeSelection.ShouldInclude(candidate.RootType, symbol),
-                    CurrentModuleOutputPath: ClrSourceRoot + NormalizeRelativePath(candidate.RelativePath),
-                    ModuleCatalogOutputPrefix: ClrSourceRoot);
+                    CurrentModuleOutputPath: NormalizeRelativePath(candidate.RelativePath),
+                    ModuleCatalogOutputPrefix: string.Empty);
                 var module = new AstConverter(candidate.RootType, candidate.SemanticModel, options)
                     .Convert()
                     .GetAwaiter()
@@ -121,6 +116,9 @@ internal static class ClrRuntimeCatalogEmitter
                     .ToArray();
                 return module with
                 {
+                    // 依赖边保持**逻辑路径**：它是 carrier 内部的稳定身份，
+                    // LibraryMaterializer 按 manifest.imports 的逻辑键遍历闭包。
+                    // 写出的 specifier 才是相对的（见 AstConverter），两者刻意不同。
                     ModuleDependencies = resolvedImports
                         .Where(modulePaths.Contains)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -199,7 +197,7 @@ internal static class ClrRuntimeCatalogEmitter
         var imports = new SortedDictionary<string, object>(StringComparer.Ordinal);
         foreach (var module in modules)
         {
-            var path = ClrSourceRoot + module.RelativePath;
+            var path = module.RelativePath;
             imports[module.RelativePath] = new
             {
                 type = "module",
@@ -238,7 +236,9 @@ internal static class ClrRuntimeCatalogEmitter
             ?? throw new InvalidOperationException($"Could not determine package parent for '{packageRoot}'.");
         Directory.CreateDirectory(parent);
         var staging = Path.Combine(parent, ".ecmascript-resource-" + Guid.NewGuid().ToString("N"));
-        var stagedClr = Path.Combine(staging, "clr");
+        // Module declarations carry their complete project path (for example clr/System/...).
+        // Stage at the package root so the declared path is written exactly once.
+        var stagedClr = staging;
         var stagedManifest = Path.Combine(staging, "manifest.json");
         var clrRoot = Path.Combine(packageRoot, "clr");
         var backupClr = Path.Combine(parent, ".ecmascript-resource-backup-" + Guid.NewGuid().ToString("N"));
@@ -269,7 +269,7 @@ internal static class ClrRuntimeCatalogEmitter
             if (Directory.Exists(clrRoot))
                 Directory.Move(clrRoot, backupClr);
             clrMoved = true;
-            Directory.Move(stagedClr, clrRoot);
+            Directory.Move(Path.Combine(staging, "clr"), clrRoot);
 
             if (File.Exists(manifestPath))
                 File.Move(manifestPath, backupManifest);
@@ -484,12 +484,10 @@ internal static class ClrRuntimeCatalogEmitter
 
         // 相对 specifier 需要用 ResolveRelativePath 按 importer 展开（而不是 ResolveRelativeToImporter，
         // 后者是反方向：由两个项目路径反算相对 specifier）。
-        var importerProjectPath = ClrSourceRoot + NormalizeRelativePath(importerRelativePath);
+        var importerProjectPath = NormalizeRelativePath(importerRelativePath);
         var targetProjectPath = ECMAScriptModulePath.ResolveRelativePath(importerProjectPath, importSpecifier);
         var normalized = NormalizeRelativePath(targetProjectPath);
-        return normalized.StartsWith(ClrSourceRoot, StringComparison.Ordinal)
-            ? normalized[ClrSourceRoot.Length..]
-            : normalized;
+        return normalized;
     }
 
     private sealed record GeneratedClrRuntimeModule(

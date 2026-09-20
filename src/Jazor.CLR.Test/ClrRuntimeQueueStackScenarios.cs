@@ -2,8 +2,8 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeQueueStackScenarios
 {
-    private const string QueueModulePath = "System/Collections/Generic/QueueT1Module.js";
-    private const string StackModulePath = "System/Collections/Generic/StackT1Module.js";
+    private const string QueueModulePath = "clr/System/Collections/Generic/QueueT1Module.js";
+    private const string StackModulePath = "clr/System/Collections/Generic/StackT1Module.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

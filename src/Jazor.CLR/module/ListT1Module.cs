@@ -13,7 +13,7 @@ namespace Jazor.CLR;
 /// - Import: 需要额外逻辑的方法
 /// - Discard: List 特有但 JS Array 不完全支持的功能
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/ListT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/ListT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.List<T>","Array")]
 public static class ListT1Module<T>
 {

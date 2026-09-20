@@ -6,8 +6,8 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableGroupByRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
-    private const string GroupingModulePath = "System/Linq/GroupingT2Module.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string GroupingModulePath = "clr/System/Linq/GroupingT2Module.js";
 
     [TestMethod]
     public async Task GroupByExports_PreserveGroupingCarrierAndComparerSemanticsOnDenoHost()
@@ -45,7 +45,7 @@ public sealed class EnumerableGroupByRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -54,8 +54,8 @@ public sealed class EnumerableGroupByRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{groupBy}}, {{groupByElement}}, {{groupByResult}}, {{groupByElementResult}} } from "./System/Linq/EnumerableModule.js";
-                import { {{groupingKey}} } from "./System/Linq/GroupingT2Module.js";
+                import { {{groupBy}}, {{groupByElement}}, {{groupByResult}}, {{groupByElementResult}} } from "./clr/System/Linq/EnumerableModule.js";
+                import { {{groupingKey}} } from "./clr/System/Linq/GroupingT2Module.js";
 
                 Deno.test("GroupBy preserves group order, carrier keys, and selector order", () => {
                   const trace = [];

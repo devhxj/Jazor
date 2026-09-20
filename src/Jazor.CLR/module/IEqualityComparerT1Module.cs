@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// - Equals(T, T)
 /// - GetHashCode(T)
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/IEqualityComparerT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/IEqualityComparerT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.IEqualityComparer<T>", "Object")]
 public static class IEqualityComparerT1Module<T>
 {

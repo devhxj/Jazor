@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string Member = "static System.Linq.Enumerable.TryGetNonEnumeratedCount<TSource>(System.Collections.Generic.IEnumerable<TSource>, out int)";
 
     [TestMethod]
@@ -31,7 +31,7 @@ public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -40,7 +40,7 @@ public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{exportName}} } from "./System/Linq/EnumerableModule.js";
+                import { {{exportName}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable.TryGetNonEnumeratedCount reads Array length without advancing its iterator", () => {
                   const source = [5, 8, 13];

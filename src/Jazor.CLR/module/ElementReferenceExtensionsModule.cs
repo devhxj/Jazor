@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js")]
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.ElementReferenceExtensions")]
 public static class ElementReferenceExtensionsModule
 {

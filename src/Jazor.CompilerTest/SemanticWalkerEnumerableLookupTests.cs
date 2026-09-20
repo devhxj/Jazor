@@ -52,7 +52,7 @@ public sealed class SemanticWalkerEnumerableLookupTests
 
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
-        var enumerableImports = imports.Single(static pair => pair.Key == "System/Linq/EnumerableModule.js").Value
+        var enumerableImports = imports.Single(static pair => pair.Key == "clr/System/Linq/EnumerableModule.js").Value
             .Select(static specifier => specifier.ToECMAScript())
             .ToArray();
         CollectionAssert.Contains(enumerableImports, "toLookup");

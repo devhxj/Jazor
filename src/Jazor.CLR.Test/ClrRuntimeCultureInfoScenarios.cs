@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeCultureInfoScenarios
 {
-    private const string ModulePath = "System/Globalization/CultureInfoModule.js";
+    private const string ModulePath = "clr/System/Globalization/CultureInfoModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

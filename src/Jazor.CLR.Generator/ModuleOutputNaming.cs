@@ -27,6 +27,12 @@ public static class ModuleOutputNaming
             : $"{simpleName}T{genericArity}Module";
     }
 
+    /// <summary>
+    /// 返回 carrier 在项目源码树中的模块路径。
+    ///
+    /// 自有源码 carrier 写在 <c>clr/</c> 下（与 [ECMAScriptModule] 声明和 ClrRuntimeCatalog 一致），
+    /// 因此这里带上同一前缀；逻辑路径（不含前缀）只用于产物图内部的稳定身份。
+    /// </summary>
     public static string GetModulePath(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -34,7 +40,10 @@ public static class ModuleOutputNaming
         var namespacePath = type.Namespace?.Replace('.', '/') ?? string.Empty;
         var moduleName = GetModuleName(type);
         return string.IsNullOrEmpty(namespacePath)
-            ? $"{moduleName}.js"
-            : $"{namespacePath}/{moduleName}.js";
+            ? $"{CarrierRoot}{moduleName}.js"
+            : $"{CarrierRoot}{namespacePath}/{moduleName}.js";
     }
+
+    /// <summary>carrier 在项目源码树中的根目录。</summary>
+    public const string CarrierRoot = "clr/";
 }

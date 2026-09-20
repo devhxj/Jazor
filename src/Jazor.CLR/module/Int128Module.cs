@@ -3,7 +3,7 @@ namespace Jazor.CLR;
 /// <summary>
 /// System.Int128 映射为 JavaScript BigInt，沿用 Int64Module 的整数 lowering 约定。
 /// </summary>
-[ECMAScriptModule("System/Int128Module.js")]
+[ECMAScriptModule("clr/System/Int128Module.js")]
 [Jazor(Op.Alias, "System.Int128", "BigInt")]
 public static class Int128Module
 {

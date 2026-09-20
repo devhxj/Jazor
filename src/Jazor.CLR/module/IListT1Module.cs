@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// - Import: 通过 RuntimeModule 的 List carrier marker 分辨可变 List、固定数组和只读视图
 /// - Discard: 仅保留尚无完整运行时协议的成员
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/IListT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/IListT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.IList<T>", "Array")]
 public static class IListT1Module<T>
 {

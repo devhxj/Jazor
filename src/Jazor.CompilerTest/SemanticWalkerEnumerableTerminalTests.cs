@@ -55,7 +55,7 @@ public sealed class SemanticWalkerEnumerableTerminalTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         Assert.HasCount(4, importNames, body);
         foreach (var importName in importNames)
@@ -106,7 +106,7 @@ public sealed class SemanticWalkerEnumerableTerminalTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         Assert.HasCount(2, importNames, body);
         foreach (var importName in importNames)

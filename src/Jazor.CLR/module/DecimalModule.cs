@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// Decimal 的精度和舍入规则不能直接交给 JavaScript Number；本模块保留 unscaled value 和
 /// scale，并在解析、格式化、转换和算术运算处显式处理范围。新增成员时不要直接 Alias 为 Number。
 /// </remarks>
-[ECMAScriptModule("System/DecimalModule.js")]
+[ECMAScriptModule("clr/System/DecimalModule.js")]
 [Jazor(Op.Alias, "decimal","String")]
 public static class DecimalModule
 {

@@ -15,7 +15,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule("System/Int32Module.js")]
+[ECMAScriptModule("clr/System/Int32Module.js")]
 [Jazor(Op.Alias, "int","Number")]
 public static class Int32Module
 {

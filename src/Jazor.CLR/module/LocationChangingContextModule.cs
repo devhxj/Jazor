@@ -11,7 +11,7 @@ namespace Jazor.CLR;
 /// 私有标记，由导航侧读取后决定是否放弃本次导航；CancellationToken 擦除为 AbortSignal，其生命周期
 /// （被后续导航取代时取消）由 NavigationManagerModule 拥有。
 /// </remarks>
-[ECMAScriptModule("Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Routing.LocationChangingContext", "Object")]
 public static class LocationChangingContextModule
 {

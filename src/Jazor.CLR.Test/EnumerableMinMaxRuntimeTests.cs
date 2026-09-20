@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableMinMaxRuntimeTests
 {
-    private const string ModulePath = "System/Linq/EnumerableModule.js";
+    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task MinMaxExports_PreserveNumericCarrierAndNaNContractsOnDenoHost()
@@ -37,12 +37,12 @@ public sealed class EnumerableMinMaxRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "min-max.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{string.Join(", ", names)}} } from "./System/Linq/EnumerableModule.js";
+                import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable.Min and Max preserve numeric carriers and NaN behavior", () => {
                   const [minIntOperation, maxIntOperation, minInt64Operation, maxInt64Operation, minSingleOperation, maxSingleOperation, minDoubleOperation, maxDoubleOperation, minDecimalOperation, maxDecimalOperation] = [{{string.Join(", ", names)}}];

@@ -11,7 +11,7 @@ namespace Jazor.CLR;
 /// - Import: 需要显式承载 CLR 语义检查的方法
 /// - Inline: CLR Array-backed ICollection 的同步属性具有稳定常量/identity 语义
 /// </summary>
-[ECMAScriptModule("System/Collections/ICollectionModule.js")]
+[ECMAScriptModule("clr/System/Collections/ICollectionModule.js")]
 [Jazor(Op.Alias, "System.Collections.ICollection", "Array")]
 public static class ICollectionModule
 {

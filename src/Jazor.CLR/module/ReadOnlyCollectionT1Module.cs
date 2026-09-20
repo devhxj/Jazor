@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Import: 需要只读语义或完整参数校验的成员
 /// - Discard: ReadOnlyCollection 特有的但 JS Array 不完全支持的功能
 /// </summary>
-[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>","Array")]
 public static class ReadOnlyCollectionT1Module<T>
 {

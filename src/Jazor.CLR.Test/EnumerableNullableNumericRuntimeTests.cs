@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableNullableNumericRuntimeTests
 {
-    private const string ModulePath = "System/Linq/EnumerableModule.js";
+    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task NullableNumericTerminalExports_PreserveCarrierAndEmptySequenceContractsOnDenoHost()
@@ -40,12 +40,12 @@ public sealed class EnumerableNullableNumericRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "nullable-numeric.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{string.Join(", ", sumNames.Concat(averageNames))}} } from "./System/Linq/EnumerableModule.js";
+                import { {{string.Join(", ", sumNames.Concat(averageNames))}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable nullable numeric terminals preserve CLR contracts", () => {
                   const [sumInt, sumInt64, sumSingle, sumDouble, sumDecimal] = [{{string.Join(", ", sumNames)}}];

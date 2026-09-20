@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeChangeEventArgsScenarios
 {
-    private const string ModulePath = "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
+    private const string ModulePath = "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
     private const string Capture = "Microsoft.AspNetCore.Components.ChangeEventArgs.captureChangeEvent";
     private const string GetValue = "Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get";
 

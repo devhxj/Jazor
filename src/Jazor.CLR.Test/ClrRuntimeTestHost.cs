@@ -67,10 +67,15 @@ internal static class ClrRuntimeTestHost
             await File.WriteAllTextAsync(
                 configPath,
                 JsonSerializer.Serialize(
+                    // carrier 模块按 ModuleCatalog 的 RelativePath 落盘（clr/System/**），
+                    // 因此 import map 必须暴露同一前缀；System/、Microsoft/ 保留给
+                    // 旧式逻辑路径引用（例如 Op.Import 记录的声明路径）。
                     new DenoImportMap(new Dictionary<string, string>(StringComparer.Ordinal)
                     {
-                        ["System/"] = "./System/",
-                        ["Microsoft/"] = "./Microsoft/"
+                        ["clr/System/"] = "./clr/System/",
+                        ["clr/Microsoft/"] = "./clr/Microsoft/",
+                        ["System/"] = "./clr/System/",
+                        ["Microsoft/"] = "./clr/Microsoft/"
                     }),
                     JsonOptions),
                 Utf8WithoutBom);

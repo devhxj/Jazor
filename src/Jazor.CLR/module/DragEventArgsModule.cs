@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("Microsoft/AspNetCore/Components/Web/DragEventArgsModule.js")]
+[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/DragEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.DragEventArgs", "DragEvent")]
 public static class DragEventArgsModule
 {

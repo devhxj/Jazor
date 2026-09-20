@@ -4,7 +4,7 @@ namespace Jazor.CLR;
 /// Stack&lt;T&gt; 走 CLR runtime wrapper，避免 raw JavaScript 宿主降级。
 /// carrier 直接以数组尾部表示栈顶；未实现的容量管理成员仍保持 unsupported。
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/StackT1Module.js")]
+[ECMAScriptModule("clr/System/Collections/Generic/StackT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.Stack<T>", "Object")]
 public static class StackT1Module<T>
 {

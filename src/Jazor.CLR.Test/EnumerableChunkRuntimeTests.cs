@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableChunkRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task ChunkExport_PreservesSourceOrderAndCreatesIndependentChunksOnDenoHost()
@@ -30,7 +30,7 @@ public sealed class EnumerableChunkRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -39,7 +39,7 @@ public sealed class EnumerableChunkRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{chunk}} } from "./System/Linq/EnumerableModule.js";
+                import { {{chunk}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Chunk preserves enumeration order and independent chunk carriers", () => {
                   const trace = [];

@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableNullableNumericSelectorRuntimeTests
 {
-    private const string ModulePath = "System/Linq/EnumerableModule.js";
+    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task NullableNumericSelectorExports_PreserveSingleEvaluationAndCarrierContractsOnDenoHost()
@@ -47,12 +47,12 @@ public sealed class EnumerableNullableNumericSelectorRuntimeTests
             }
 
             var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "nullable-numeric-selector.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{string.Join(", ", names)}} } from "./System/Linq/EnumerableModule.js";
+                import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Enumerable nullable numeric selector terminals preserve CLR contracts", () => {
                   const [sumInt, sumInt64, sumSingle, sumDouble, sumDecimal, averageInt, averageInt64, averageSingle, averageDouble, averageDecimal, minInt, minInt64, minSingle, minDouble, minDecimal, maxInt, maxInt64, maxSingle, maxDouble, maxDecimal] = [{{string.Join(", ", names)}}];

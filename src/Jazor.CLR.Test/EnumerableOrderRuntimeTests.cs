@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableOrderRuntimeTests
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task OrderExports_UseDefaultComparerWithoutMutatingSourceOnDenoHost()
@@ -31,7 +31,7 @@ public sealed class EnumerableOrderRuntimeTests
                 """
                 {
                   "imports": {
-                    "System/": "./System/"
+                    "clr/System/": "./System/", "System/": "./System/"
                   }
                 }
                 """,
@@ -40,7 +40,7 @@ public sealed class EnumerableOrderRuntimeTests
             await File.WriteAllTextAsync(
                 testPath,
                 $$"""
-                import { {{order}}, {{orderDescending}} } from "./System/Linq/EnumerableModule.js";
+                import { {{order}}, {{orderDescending}} } from "./clr/System/Linq/EnumerableModule.js";
 
                 Deno.test("Order and OrderDescending use the default comparer without source mutation", () => {
                   const source = [2, 7, 4, 1];

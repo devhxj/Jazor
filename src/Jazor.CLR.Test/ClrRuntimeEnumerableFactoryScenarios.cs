@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableFactoryScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string EmptyMember = "static System.Linq.Enumerable.Empty<TResult>()";
     private const string RangeMember = "static System.Linq.Enumerable.Range(int, int)";
     private const string RepeatMember = "static System.Linq.Enumerable.Repeat<TResult>(TResult, int)";

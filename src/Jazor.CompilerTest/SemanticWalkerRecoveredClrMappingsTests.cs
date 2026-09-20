@@ -100,7 +100,7 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(4, imports["System/WeakReferenceModule.js"], body);
+        Assert.HasCount(4, imports["clr/System/WeakReferenceModule.js"], body);
         StringAssert.Contains(body, "let reference = _9a41b3fc95053633(initial);", StringComparison.Ordinal);
         StringAssert.Contains(body, "let before = _ba77d80a1e80efa6(reference);", StringComparison.Ordinal);
         StringAssert.Contains(body, "let initiallyAlive = _c3d16f7de644412a(reference);", StringComparison.Ordinal);
@@ -132,7 +132,7 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(1, imports, body);
-		Assert.HasCount(2, imports["System/WeakReferenceModule.js"], body);
+		Assert.HasCount(2, imports["clr/System/WeakReferenceModule.js"], body);
 		StringAssert.Contains(body, "_bb3cf7219c9626be(initial, false)", StringComparison.Ordinal);
 		StringAssert.Contains(body, "return _ba77d80a1e80efa6(", StringComparison.Ordinal);
 		_ = new Parser().ParseScript("function verify(initial) " + body);
@@ -166,9 +166,9 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(3, imports, body);
-        Assert.HasCount(2, imports["System/Collections/Generic/ListT1Module.js"], body);
-        Assert.HasCount(1, imports["System/ArrayModule.js"], body);
-        Assert.HasCount(2, imports["System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js"], body);
+        Assert.HasCount(2, imports["clr/System/Collections/Generic/ListT1Module.js"], body);
+        Assert.HasCount(1, imports["clr/System/ArrayModule.js"], body);
+        Assert.HasCount(2, imports["clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js"], body);
         foreach (var exportName in new[]
         {
             "_f7981b5a4cd02bdb", "_abd52ebcdb6fefcb", "_d4e5f6a7b8c9d0e1", "_b8c9d0e1f2a3b4c5"
@@ -202,7 +202,7 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(1, imports["System/Collections/Generic/IListT1Module.js"], body);
+        Assert.HasCount(1, imports["clr/System/Collections/Generic/IListT1Module.js"], body);
         StringAssert.Contains(body, "_72c3ada14c4b312e(values, 1, replacement);", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(values, replacement) " + body);
     }
@@ -247,9 +247,9 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(3, imports, body);
-        Assert.HasCount(2, imports["System/Collections/Generic/IListT1Module.js"], body);
-        Assert.HasCount(4, imports["System/Collections/Generic/ICollectionT1Module.js"], body);
-        Assert.HasCount(8, imports["System/Collections/IListModule.js"], body);
+        Assert.HasCount(2, imports["clr/System/Collections/Generic/IListT1Module.js"], body);
+        Assert.HasCount(4, imports["clr/System/Collections/Generic/ICollectionT1Module.js"], body);
+        Assert.HasCount(8, imports["clr/System/Collections/IListModule.js"], body);
         foreach (var exportName in new[]
         {
             "_ad668b5fd142c4f4", "_d5f628d4cac6dafb", "_1257c5832793c86d", "_c0023f4a7a67220a",
@@ -287,7 +287,7 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(1, imports["System/RuntimeModule.js"], body);
+        Assert.HasCount(1, imports["clr/System/RuntimeModule.js"], body);
         StringAssert.Contains(body, "return MarkAsMutableListCarrier(Array.from(__src));", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(source) " + body);
     }
@@ -324,10 +324,10 @@ public sealed class SemanticWalkerRecoveredClrMappingsTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(4, imports, body);
-        Assert.HasCount(1, imports["System/Collections/Generic/DictionaryT2Module.js"], body);
-        Assert.HasCount(1, imports["System/Collections/Generic/HashSetT1Module.js"], body);
-        Assert.HasCount(4, imports["System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], body);
-        Assert.HasCount(1, imports["System/Collections/ObjectModel/ReadOnlySetT1Module.js"], body);
+        Assert.HasCount(1, imports["clr/System/Collections/Generic/DictionaryT2Module.js"], body);
+        Assert.HasCount(1, imports["clr/System/Collections/Generic/HashSetT1Module.js"], body);
+        Assert.HasCount(4, imports["clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], body);
+        Assert.HasCount(1, imports["clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js"], body);
         foreach (var exportName in new[]
         {
             "_b22e987e1be225aa", "_aede400efbd05842", "_4044dececdd2d744", "_b39da265738457a5", "_ed4a7913b74bfd87"

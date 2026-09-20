@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableReverseScenarios
 {
-    private const string EnumerableModulePath = "System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
     private const string ReverseEnumerableMember = "static System.Linq.Enumerable.Reverse<TSource>(System.Collections.Generic.IEnumerable<TSource>)";
     private const string ReverseArrayMember = "static System.Linq.Enumerable.Reverse<TSource>(TSource[])";
 

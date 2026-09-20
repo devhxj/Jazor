@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: 不支持或极少使用
 /// </summary>
-[ECMAScriptModule("System/DateTimeModule.js")]
+[ECMAScriptModule("clr/System/DateTimeModule.js")]
 [Jazor(Op.Alias, "System.DateTime","Object")]
 public static class DateTimeModule
 {
