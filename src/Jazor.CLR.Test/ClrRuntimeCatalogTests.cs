@@ -49,7 +49,12 @@ public sealed class ClrRuntimeCatalogTests
         var module = ClrRuntimeCatalog.Get(modulePath);
 
         foreach (var importedPath in module.GetImportedModulePaths())
-            Assert.AreEqual(importedPath, ClrRuntimeCatalog.Get(importedPath).RelativePath);
+        {
+            var target = ClrRuntimeCatalog.ResolveImport(modulePath, importedPath);
+            Assert.AreEqual(
+                target.RelativePath,
+                Jazor.Common.ECMAScriptModulePath.ResolveRelativePath(modulePath, importedPath));
+        }
     }
 
     [TestMethod]
@@ -58,7 +63,11 @@ public sealed class ClrRuntimeCatalogTests
     {
         var module = ClrRuntimeCatalog.Get(modulePath);
 
-        Assert.DoesNotContain(modulePath, module.GetImportedModulePaths());
+        Assert.IsFalse(module.GetImportedModulePaths().Any(importedPath =>
+            string.Equals(
+                modulePath,
+                Jazor.Common.ECMAScriptModulePath.ResolveRelativePath(modulePath, importedPath),
+                StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -69,7 +78,7 @@ public sealed class ClrRuntimeCatalogTests
 
         foreach (var import in module.GetNamedImports())
         {
-            var target = ClrRuntimeCatalog.Get(import.ModulePath);
+            var target = ClrRuntimeCatalog.ResolveImport(modulePath, import.ModulePath);
             Assert.Contains(
                 import.ImportedName,
                 target.GetExportedNames(),

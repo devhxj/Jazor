@@ -4,6 +4,7 @@ using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
 using ECMAScript;
+using Jazor.Common;
 
 namespace Jazor.CLR.Test;
 
@@ -115,6 +116,9 @@ internal static class ClrRuntimeCatalog
 
     public static ClrRuntimeModuleArtifact Get(string relativePath) => ArtifactsByPath[relativePath];
 
+    public static ClrRuntimeModuleArtifact ResolveImport(string importerPath, string importSpecifier)
+        => Get(ECMAScriptModulePath.ResolveRelativePath(importerPath, importSpecifier));
+
     private static IReadOnlyList<ClrRuntimeModuleArtifact> ReadArtifacts()
     {
         var manifestPath = FindEcmascriptManifest();
@@ -137,9 +141,9 @@ internal static class ClrRuntimeCatalog
 
             var relativeFile = entry.GetProperty("production").GetString()
                 ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production file.");
-            const string clrPrefix = "clr/";
-            if (!relativeFile.StartsWith(clrPrefix, StringComparison.Ordinal))
-                throw new InvalidOperationException($"ECMAScript import '{import.Name}' must resolve from clr: '{relativeFile}'.");
+            if (!string.Equals(import.Name, relativeFile, StringComparison.Ordinal))
+                throw new InvalidOperationException(
+                    $"ECMAScript import '{import.Name}' must use the same project path for its production file, but found '{relativeFile}'.");
 
             var sourcePath = Path.GetFullPath(Path.Combine(
                 packageRoot,
@@ -152,7 +156,7 @@ internal static class ClrRuntimeCatalog
                 "ECMAScript",
                 import.Name,
                 import.Name,
-                import.Name,
+                relativeFile,
                 File.ReadAllText(sourcePath).ReplaceLineEndings("\n"),
                 entry.GetProperty("productionHash").GetString()
                     ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production hash.")));

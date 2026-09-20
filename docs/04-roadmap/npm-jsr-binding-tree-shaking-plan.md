@@ -173,7 +173,7 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | `Jazor.CompilerTest` | 10714 / 10714（全绿；D-2 前为 10713 / 10714） |
 | `Jazor.RazorVue.Sg.Test` | 5010 / 5010（全绿；D-2 前为 5004 / 5010） |
 | `Jazor.EmitTest` | 224 / 224（全绿；D3/B2 切片开始时为 9 个失败） |
-| `Jazor.CLR.Test` | 4963 / 5089（126 个既有失败；改动前基线为 127） |
+| `Jazor.CLR.Test` | 5089 / 5089（全绿；完整 `clr/**` identity 与相对 ESM import 图已统一） |
 | 生成器门禁 | `vuetify --check`、`elementplus --check`、`tdesign components --check` 全部通过 |
 
 ### 剩余：阶段 C（NetPack 与 SSR 收敛）

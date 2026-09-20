@@ -59,8 +59,7 @@ internal static class ClrRuntimeCatalogEmitter
                 var options = new AstConverterOptions(
                     AstConverterProfile.ClrRuntime,
                     symbol => ClrRuntimeSelection.ShouldInclude(candidate.RootType, symbol),
-                    CurrentModuleOutputPath: NormalizeRelativePath(candidate.RelativePath),
-                    ModuleCatalogOutputPrefix: string.Empty);
+                    CurrentModuleOutputPath: NormalizeRelativePath(candidate.RelativePath));
                 var module = new AstConverter(candidate.RootType, candidate.SemanticModel, options)
                     .Convert()
                     .GetAwaiter()

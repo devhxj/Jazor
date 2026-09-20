@@ -401,7 +401,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 ModuleDeclaredBindings,
                 _moduleCatalogImportPaths,
                 _options.CurrentModuleOutputPath,
-                _options.ModuleCatalogOutputPrefix,
                 _carrierImportKeys);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)

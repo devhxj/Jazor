@@ -920,9 +920,7 @@ internal sealed record MemberClosure(
             ModulePolicy: VueModulePolicy.Instance,
             RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties,
             // 组件模块自身的输出路径：carrier 引用要相对它计算（载体是项目源码，不是包）。
-            // carrier 的声明路径已含 clr/ 前缀，因此不再需要额外的路径前缀。
-            CurrentModuleOutputPath: currentModuleOutputPath,
-            ModuleCatalogOutputPrefix: string.Empty);
+            CurrentModuleOutputPath: currentModuleOutputPath);
     }
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)

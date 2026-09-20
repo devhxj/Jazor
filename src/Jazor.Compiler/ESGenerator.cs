@@ -168,10 +168,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                     candidate.SemanticModel,
                     new AstConverterOptions(
                         AstConverterProfile.ClrRuntime,
-                        CurrentModuleOutputPath: plan.RelativePath,
-                        // CLR carrier declarations already contain their complete project path
-                        // (for example clr/System/BooleanModule.js); no implicit prefix is added.
-                        ModuleCatalogOutputPrefix: ""));
+                        CurrentModuleOutputPath: plan.RelativePath));
                 var module = converter.Convert().GetAwaiter().GetResult();
                 // 产物图边记录的是**逻辑路径**（stable identity），而模块体里写的是相对
                 // specifier（D3）。因此判定 catalog 导入时先把相对 specifier 按本模块位置

@@ -20,8 +20,7 @@ public sealed record AstConverterOptions(
     SemanticWalkerHost? Host = null,
     AstConverterModulePolicy? ModulePolicy = null,
     RuntimeClassPrivateStorage RuntimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields,
-    string? CurrentModuleOutputPath = null,
-    string ModuleCatalogOutputPrefix = "")
+    string? CurrentModuleOutputPath = null)
 {
     public static AstConverterOptions Default { get; } = new(AstConverterProfile.Standard);
 }
