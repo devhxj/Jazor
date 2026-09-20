@@ -298,7 +298,7 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | 补 `[ECMAScriptName]`（导出名 ≠ 类型名） | 214 处，例如 `ElVirtualizedSelect → ElSelectV2`、`TAffix → Affix`、`VueRouterLink → RouterLink`、`VueDraggableList → VueDraggable` |
 | 补 `[ECMAScriptName("default")]` | 1 处（`VueFilePond`） |
 | 免写（导出名 == 类型名） | 2046 处，靠符号名回退 |
-| manifest 字段退役 | `imports.*.developmentStyleImports` / `productionStyle*` / `developmentStylesheetImports` / `productionStylesheetImports` 四个样式字段整体退役，改由 `[Style]` 声明 |
+| 成对 profile 字段整体退役 | `imports.*` 的 `development*` / `production*` 成对字段全部退役（`development`/`production`、`developmentDependencies`/`productionDependencies`、`developmentStyleImports`、`developmentStylesheetImports` 及其 production 对应项）。声明面每个特性只写一个 specifier；profile 差异由上游 `exports` conditions 解析 |
 | 形态判别整体退役 | `IsStylesheetSpecifier` 的 `.css`/`.sass`/`.less`/`.styl` 判断退役；不再把样式边分为“JS 模块”与“样式表”两类，只保留一条 side-effect import 边 |
 
 其余迁移步骤：

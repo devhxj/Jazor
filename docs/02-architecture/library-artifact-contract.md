@@ -115,9 +115,17 @@ ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 
 `[ECMAScript("specifier")]` 与 `[ECMAScriptModule("path")]` 是**相反方向**的两件事：前者是"从哪个外部库导入"（消费），后者是"这个类型生成到哪个模块"（产出）。两者可以同时出现在一个类型上，互不冲突，各自解析。
 
+**声明面同项目（已定）**：`[Style]` 与 `[ECMAScript]` 位于同一个程序集 `ECMAScript.Contract`（`netstandard2.0`、零依赖），命名空间同为 `ECMAScript`。绑定库经 `ECMAScript` 的程序集引用传递可见两者。声明面特性集中在一处，不分散到实现程序集，避免绑定库为用一个特性而引入实现依赖。
+
+`[ECMAScriptName]` / `[Description("@#...")]` 的名字机制**位置不变**，仍位于 `ECMAScript` 程序集（`src/ECMAScript/attribute/`）。它是既有实现的一部分，本次规则不为它增加迁移工作量。
+
+注：`ECMAScript.Contract` 内现有特性命名空间并不统一——`ECMAScriptAttribute` 是 `ECMAScript`，`EmitsAttribute`/`JazorAttribute`/`PropsAttribute` 是 `ECMAScript.Contract`。`[Style]` 与 `[ECMAScript]` 同命名空间，以保证两个配对使用的声明面特性写法一致。
+
 `[ECMAScript]` 最多一个参数。**不存在 `Transform`，也不存在组件专用参数**：值绑定与组件绑定使用同一条声明。成员级声明优先于类型级声明。（已定）
 
 没有独立的 `[Export]` 特性：导出名由名字机制给出。（已定）
+
+**不区分开发/生产 profile（已定）**：声明面每个特性只写一个 specifier，不提供 dev/prod 成对字段。差异由上游 package 的 `exports` conditions 解析决定——`PackageExportsResolver` 已按 conditions 工作。这与交接边界一致：Jazor 不做 profile 判断，只写出标准 ESM 图，profile 选择属于消费侧。绑定 metadata 中成对的 `development*`/`production*` 字段随之整体退役。
 
 ### 名字与导出名
 
@@ -145,6 +153,8 @@ ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 - 物化：编译器在**使用点**把声明的 specifier 发射为生成模块里的普通 side-effect import。
 
 `[Style]` 与 `[ECMAScript]` 的区别是"要不要绑定名字"：`[ECMAScript]` 产生一个有名字的导入绑定，`[Style]` 只产生一条纯副作用边，不引入任何绑定的标识符。
+
+**依附于入口（已定）**：`[Style]` 挂在 `[ECMAScript("specifier")]` 声明的入口上，"入口"由 `[ECMAScript]` 唯一确定。只声明 `[Style]` 而没有对应 `[ECMAScript]` 入口时是**构建错误**，不允许样式边悬空。
 
 **处理边界（已定）**：Jazor 与 Emit 的职责到生成模块里的普通 side-effect import 为止。
 
