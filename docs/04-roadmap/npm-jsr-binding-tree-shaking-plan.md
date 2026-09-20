@@ -149,6 +149,29 @@ NetPack 使用上游 package 的 `exports`、conditions 和 `sideEffects`，并�
 
 DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` 和 `deno.lock`。依赖恢复属于 Emit 流程；SSR 只消费结果。Debug、Release、HMR 和 SSR 因而观察同一份源码与 package identity。
 
+## 实施进度
+
+已落地的切片（按提交顺序）：
+
+| 切片 | 内容 | 提交 |
+| --- | --- | --- |
+| D-0 声明面收口 | 删除 `Transform` 与三参数构造；组件身份改约定判定；导出名走名字机制；新增 `[Style]`（`ECMAScript.Contract`） | `d5777106` |
+| D-1 绑定迁移 | 2294 处组件声明改单参数形态，232 处补 `[ECMAScriptName]`，1 处 `default` 显式化 | `d5777106` |
+| B1 就地写入 | `ModuleWriter` 逐文件 temp+rename；退役 `OutputTransaction`、`EmitOptions.Clean`、`ImportMapWriter` 事务、`DirectoryTransaction`、`--clean true` | `3b8ea74b`、`3c2830bb` |
+| 样式边 | `[Style]` 在使用点发射为 side-effect import，顺序即层叠顺序 | `16babeb4` |
+| D3 载体相对化 | 载体内部 import 全改相对 specifier；`clr/` 前缀纳入声明路径，使声明路径即项目路径 | `9715ec80`、`fba111da` |
+| B2 物化退役 | embedded carrier 按声明路径写入源码树；退役 `packages/` 投影、合成 `file:` 本地包与合成 `package-lock.json`；`LibraryPackageWriter` 收敛为根 `package.json` writer | `fba111da` |
+
+当前测试基线（失败项均为既有问题，与本次改动无关）：
+
+| 套件 | 结果 |
+| --- | --- |
+| `Jazor.CompilerTest` | 10713 / 10714（1 个 TDesign 上游包缺失） |
+| `Jazor.CLR.Test` | 4963 / 5089（126 个既有失败；改动前基线为 127） |
+| `Jazor.EmitTest` | 见下次门禁 |
+
+仍未开始：B3（NetPack/Toolchain 单根收敛）、C（NetPack 与 SSR）、E（交付证据与 CHANGELOG）。
+
 ## 实施顺序
 
 ### A. 固定标准项目 fixture
