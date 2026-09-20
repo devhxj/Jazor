@@ -181,10 +181,12 @@ internal static class DenoPackageRestorer
                 // target; mapping an already-authored package specifier to a guessed file would
                 // bypass the package's own resolution contract.
                 if (IsExternalPackage(libraries, specifier) &&
-                    string.Equals(specifier, target, StringComparison.Ordinal))
+                    string.Equals(specifier, target, StringComparison.Ordinal) &&
+                    (!LibraryPackageIdentity.TryGetReference(libraries, specifier, out var externalReference) ||
+                     !string.Equals(externalReference.Source, "jsr", StringComparison.Ordinal)))
                     continue;
 
-                AddImport(imports, specifier, ResolveCheckTarget(libraries, specifier, target));
+                AddImport(imports, specifier, ResolveCheckTarget(workspaceRoot, libraries, specifier, target));
             }
         }
 
@@ -218,6 +220,7 @@ internal static class DenoPackageRestorer
     }
 
     private static string ResolveCheckTarget(
+        string workspaceRoot,
         LibraryAssets libraries,
         string specifier,
         string fallbackTarget)
@@ -225,52 +228,37 @@ internal static class DenoPackageRestorer
         // The materializer target for external packages is often an upstream file hint such as
         // `tdesign-vue-next/es/button/index.mjs` or `dist/index.js`. Package identity must come
         // from the authored specifier, otherwise `dist/index.js` is misread as package `dist`.
-        var packageName = GetPackageName(specifier);
-        if (libraries.PackageReferences.TryGetValue(specifier, out var exactReference) &&
+        var authoredPackageName = LibraryPackageIdentity.GetPackageName(specifier);
+        if (LibraryPackageIdentity.TryGetReference(libraries, specifier, out var exactReference) &&
             exactReference.Source is "npm" or "jsr")
         {
-            // Import-map targets are URLs, never bare package specifiers. The authored logical
-            // name is still used as the map key; point its fallback at the restored package
-            // tree so Deno can validate it offline even when the package exports map is absent.
-            // Conditional exports remain available for ordinary authored package imports.
-            return "./node_modules/" + packageName + GetPackageTargetSuffix(packageName, fallbackTarget);
-        }
-
-        if (libraries.PackageReferences.TryGetValue(packageName, out var packageReference) &&
-            packageReference.Source is "npm" or "jsr")
-        {
-            return "./node_modules/" + packageName + GetPackageTargetSuffix(packageName, fallbackTarget);
-        }
-
-        if (libraries.PackageProjections.TryGetValue(packageName, out var projection))
-        {
-            var exportName = string.Equals(specifier, packageName, StringComparison.Ordinal)
+            var canonicalName = exactReference.CanonicalName;
+            var subpath = string.Equals(specifier, authoredPackageName, StringComparison.Ordinal)
                 ? "."
-                : "./" + specifier[(packageName.Length + 1)..];
+                : "./" + specifier[(authoredPackageName.Length + 1)..];
+            var candidateRoot = Path.Combine(workspaceRoot, "node_modules", canonicalName.Replace('/', Path.DirectorySeparatorChar));
+            var resolved = PackageExportsResolver.Resolve(candidateRoot, subpath, browser: false);
+            if (resolved is not null)
+                return "./node_modules/" + canonicalName + "/" + resolved.TrimStart('.', '/');
+
+            var fallbackSubpath = string.Equals(specifier, authoredPackageName, StringComparison.Ordinal)
+                ? string.Empty
+                : "/" + specifier[(authoredPackageName.Length + 1)..];
+            return "./node_modules/" + canonicalName + fallbackSubpath;
+        }
+
+        if (libraries.PackageProjections.TryGetValue(authoredPackageName, out var projection))
+        {
+            var exportName = string.Equals(specifier, authoredPackageName, StringComparison.Ordinal)
+                ? "."
+                : "./" + specifier[(authoredPackageName.Length + 1)..];
             if (projection.Exports.TryGetValue(exportName, out var exportTarget))
             {
-                return "./node_modules/" + packageName + "/" + exportTarget.TrimStart('.', '/');
+                return "./node_modules/" + authoredPackageName + "/" + exportTarget.TrimStart('.', '/');
             }
         }
 
         return "./" + fallbackTarget.Replace('\\', '/').TrimStart('/');
-    }
-
-    private static string GetPackageTargetSuffix(string packageName, string target)
-    {
-        var normalized = target.Replace('\\', '/').TrimStart('.', '/');
-        if (string.Equals(normalized, packageName, StringComparison.Ordinal))
-            return string.Empty;
-        if (normalized.StartsWith(packageName + "/", StringComparison.Ordinal))
-            normalized = normalized[(packageName.Length + 1)..];
-        return string.IsNullOrWhiteSpace(normalized) ? string.Empty : "/" + normalized;
-    }
-
-    private static string GetPackageName(string specifier)
-    {
-        var segments = specifier.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var count = specifier.StartsWith('@', StringComparison.Ordinal) ? 2 : 1;
-        return segments.Length >= count ? string.Join('/', segments.Take(count)) : specifier;
     }
 
     private static bool IsExternalPackage(LibraryAssets libraries, string specifier)
@@ -278,7 +266,7 @@ internal static class DenoPackageRestorer
         if (libraries.PackageReferences.TryGetValue(specifier, out var exact))
             return exact.Source is "npm" or "jsr";
 
-        var packageName = GetPackageName(specifier);
+        var packageName = LibraryPackageIdentity.GetPackageName(specifier);
         return libraries.PackageReferences.TryGetValue(packageName, out var packageReference) &&
                packageReference.Source is "npm" or "jsr";
     }

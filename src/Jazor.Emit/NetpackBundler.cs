@@ -243,6 +243,7 @@ internal sealed class NetpackBundler
                     .Select(path => Path.Combine(netpackOutputDirectory, path))
                     .Concat(ResolveExternalStylesheetPaths(
                         options.PackageRoot ?? bundleWorkspace,
+                        libraries,
                         libraries.ExternalStyleModuleImports,
                         libraries.ExternalStylesheetPaths))
                     .Concat(libraries.StylePaths.Select(path => Path.Combine(bundleWorkspace, path)))
@@ -523,6 +524,17 @@ internal sealed class NetpackBundler
 
         foreach (var (source, target) in libraries.ImportPaths)
         {
+            if (LibraryPackageIdentity.TryGetReference(libraries, source, out var reference) &&
+                string.Equals(reference.Source, "jsr", StringComparison.Ordinal))
+            {
+                // Deno materializes JSR packages under the npm compatibility identity. Keep
+                // the package bare so NetPack still evaluates the restored package exports and
+                // sideEffects graph instead of flattening a binding-owned file hint.
+                rewrites[source] = LibraryPackageIdentity.GetCanonicalSpecifier(reference, source);
+                externalPackageRewrites.Add(source);
+                continue;
+            }
+
             if (!string.Equals(source, target, StringComparison.Ordinal))
                 rewrites[source] = target;
             if (IsExternalPackage(libraries, source))
@@ -590,10 +602,12 @@ internal sealed class NetpackBundler
     /// </summary>
     private static IReadOnlyList<string> ResolveExternalStylesheetPaths(
         string packageWorkspace,
+        LibraryAssets libraries,
         IReadOnlyList<string> styleModuleSpecifiers,
         IReadOnlyList<string> stylesheetSpecifiers)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageWorkspace);
+        ArgumentNullException.ThrowIfNull(libraries);
         ArgumentNullException.ThrowIfNull(styleModuleSpecifiers);
         ArgumentNullException.ThrowIfNull(stylesheetSpecifiers);
 
@@ -603,7 +617,7 @@ internal sealed class NetpackBundler
 
         void VisitSpecifier(string specifier)
         {
-            var file = ResolveExternalStyleFile(packageWorkspace, specifier, importer: null);
+            var file = ResolveExternalStyleFile(packageWorkspace, libraries, specifier, importer: null);
             VisitFile(file);
         }
 
@@ -624,7 +638,7 @@ internal sealed class NetpackBundler
                         cssFiles.Add(fullPath);
                     foreach (var import in ReadCssImports(fullPath))
                     {
-                        var imported = ResolveExternalStyleFile(packageWorkspace, import, fullPath);
+                        var imported = ResolveExternalStyleFile(packageWorkspace, libraries, import, fullPath);
                         if (IsCssFileExtension(Path.GetExtension(imported)))
                             VisitFile(imported);
                     }
@@ -638,7 +652,7 @@ internal sealed class NetpackBundler
                 var source = File.ReadAllText(fullPath);
                 foreach (var import in ReadModuleImports(source))
                 {
-                    var imported = ResolveExternalStyleFile(packageWorkspace, import, fullPath);
+                    var imported = ResolveExternalStyleFile(packageWorkspace, libraries, import, fullPath);
                     VisitFile(imported);
                 }
             }
@@ -698,6 +712,7 @@ internal sealed class NetpackBundler
 
     private static string ResolveExternalStyleFile(
         string packageWorkspace,
+        LibraryAssets libraries,
         string specifier,
         string? importer)
     {
@@ -720,30 +735,48 @@ internal sealed class NetpackBundler
         }
 
         var packageName = GetExternalPackageName(value);
-        var packageRoot = Path.Combine(
-            packageWorkspace,
-            "node_modules",
-            packageName.Replace('/', Path.DirectorySeparatorChar));
-        if (!Directory.Exists(packageRoot))
+        var packageRoot = ResolveRestoredPackageRoot(packageWorkspace, libraries, value, packageName);
+        if (packageRoot is null)
             throw new DirectoryNotFoundException(
                 $"Restored package '{packageName}' was not found below '{packageWorkspace}'.");
 
         var subpath = value.Length == packageName.Length
             ? "."
             : "./" + value[(packageName.Length + 1)..];
-        var target = ResolvePackageExport(packageRoot, subpath);
-        if (target is null)
+        var target = PackageExportsResolver.Resolve(packageRoot, subpath, browser: true, style: true);
+        var resolved = target is null
+            ? null
+            : Path.Combine(packageRoot, target.Replace('/', Path.DirectorySeparatorChar));
+
+        return resolved ?? throw new FileNotFoundException(
+            $"Package style entry '{specifier}' could not be resolved from '{packageRoot}'.");
+    }
+
+    private static string? ResolveRestoredPackageRoot(
+        string packageWorkspace,
+        LibraryAssets libraries,
+        string specifier,
+        string authoredPackageName)
+    {
+        var candidateNames = new List<string>();
+        if (LibraryPackageIdentity.TryGetReference(libraries, specifier, out var reference) &&
+            reference.Source is "npm" or "jsr")
         {
-            var direct = subpath == "." ? "index" : subpath[2..];
-            target = ResolveFileCandidate(
-                Path.Combine(packageRoot, direct.Replace('/', Path.DirectorySeparatorChar)),
-                packageWorkspace,
-                specifier,
-                allowMissing: true);
+            candidateNames.Add(reference.CanonicalName);
         }
 
-        return target ?? throw new FileNotFoundException(
-            $"Package style entry '{specifier}' could not be resolved from '{packageRoot}'.");
+        candidateNames.Add(authoredPackageName);
+        foreach (var candidateName in candidateNames.Distinct(StringComparer.Ordinal))
+        {
+            var root = Path.Combine(
+                packageWorkspace,
+                "node_modules",
+                candidateName.Replace('/', Path.DirectorySeparatorChar));
+            if (Directory.Exists(root))
+                return root;
+        }
+
+        return null;
     }
 
     private static string? ResolvePackageExport(string packageRoot, string subpath)

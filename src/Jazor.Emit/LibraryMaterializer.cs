@@ -1210,7 +1210,12 @@ internal sealed record LibraryPackageReference(
     string Name,
     string Version,
     string Source,
-    string? Integrity = null);
+    string? Integrity = null,
+    string? AuthoredName = null)
+{
+    /// <summary>Canonical package directory used by Deno's npm compatibility resolver.</summary>
+    public string CanonicalName => LibraryPackageIdentity.GetCanonicalName(this);
+}
 
 /// <summary>
 /// The selected package exports and their materialized package root. This is the package graph
@@ -1762,7 +1767,25 @@ internal sealed record LibraryManifest(
                     $"Library package '{name}' integrity must use a standard sha digest.");
             }
 
-            packages.Add(name, new LibraryPackageReference(name, version, source, integrity));
+            var authoredName = LibraryPackageIdentity.ResolveAuthoredName(
+                name,
+                source,
+                version,
+                TryGetString(property.Value, "specifier") ?? TryGetString(property.Value, "authoredName"));
+            if (!string.Equals(GetPackageName(authoredName), authoredName, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Library package '{name}' authored specifier '{authoredName}' must be a package name.");
+            }
+
+            packages.Add(
+                authoredName,
+                new LibraryPackageReference(
+                    authoredName,
+                    version,
+                    source,
+                    integrity,
+                    AuthoredName: authoredName));
         }
 
         return packages;

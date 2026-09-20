@@ -294,16 +294,21 @@ internal static class ImportMapWriter
         string targetSpecifier,
         bool browser)
     {
-        var packageName = GetPackageName(mappedSpecifier);
+        var authoredPackageName = GetPackageName(mappedSpecifier);
+        var hasReference = LibraryPackageIdentity.TryGetReference(
+            materialization,
+            mappedSpecifier,
+            out var packageReference);
+        var packageName = hasReference ? packageReference.CanonicalName : authoredPackageName;
         // Embedded packages can expose a generated projection, while npm/JSR packages are
         // resolved from their restored package.json. Keep both paths in one resolver so an
         // import map never invents a second package layout.
         string? target = null;
-        if (materialization.PackageProjections.TryGetValue(packageName, out var projection))
+        if (materialization.PackageProjections.TryGetValue(authoredPackageName, out var projection))
         {
-            var projectionSpecifier = string.Equals(targetSpecifier, packageName, StringComparison.Ordinal)
+            var projectionSpecifier = string.Equals(targetSpecifier, authoredPackageName, StringComparison.Ordinal)
                 ? "."
-                : "./" + targetSpecifier[(packageName.Length + 1)..];
+                : "./" + targetSpecifier[(authoredPackageName.Length + 1)..];
             var exportName = projectionSpecifier;
             projection.Exports.TryGetValue(exportName, out target);
             target = target?.TrimStart('.', '/');
@@ -316,13 +321,13 @@ internal static class ImportMapWriter
             var packageWorkspace = GetPackageWorkspace(outputRoot);
             var packageRoot = Path.Combine(packageWorkspace, "node_modules", packageName.Replace('/', Path.DirectorySeparatorChar));
             var subpaths = new List<string>();
-            if (targetSpecifier.StartsWith(packageName + "/", StringComparison.Ordinal))
-                subpaths.Add("./" + targetSpecifier[(packageName.Length + 1)..]);
-            else if (string.Equals(targetSpecifier, packageName, StringComparison.Ordinal))
+            if (targetSpecifier.StartsWith(authoredPackageName + "/", StringComparison.Ordinal))
+                subpaths.Add("./" + targetSpecifier[(authoredPackageName.Length + 1)..]);
+            else if (string.Equals(targetSpecifier, authoredPackageName, StringComparison.Ordinal))
                 subpaths.Add(".");
-            var authoredSubpath = string.Equals(mappedSpecifier, packageName, StringComparison.Ordinal)
+            var authoredSubpath = string.Equals(mappedSpecifier, authoredPackageName, StringComparison.Ordinal)
                 ? "."
-                : "./" + mappedSpecifier[(packageName.Length + 1)..];
+                : "./" + mappedSpecifier[(authoredPackageName.Length + 1)..];
             if (!subpaths.Contains(authoredSubpath, StringComparer.Ordinal))
                 subpaths.Add(authoredSubpath);
             foreach (var subpath in subpaths)
@@ -341,7 +346,11 @@ internal static class ImportMapWriter
             // Preserve the upstream package specifier as a deterministic URL fallback. This is
             // useful for packages whose export target is generated at install time; the package
             // graph still remains visible to the browser under the restored node_modules tree.
-            var unresolved = "node_modules/" + mappedSpecifier.TrimStart('.', '/');
+            var unresolvedSubpath = mappedSpecifier.StartsWith(authoredPackageName + "/", StringComparison.Ordinal)
+                ? mappedSpecifier[(authoredPackageName.Length + 1)..]
+                : string.Empty;
+            var unresolved = "node_modules/" + packageName +
+                (string.IsNullOrWhiteSpace(unresolvedSubpath) ? string.Empty : "/" + unresolvedSubpath);
             if (browser)
                 return "/jazor/" + unresolved;
 
@@ -361,154 +370,7 @@ internal static class ImportMapWriter
 
     private static string? ResolveRestoredPackageTarget(string packageRoot, string subpath, bool browser)
     {
-        var packageJsonPath = Path.Combine(packageRoot, "package.json");
-        if (!File.Exists(packageJsonPath))
-            return null;
-
-        try
-        {
-            using var document = JsonDocument.Parse(File.ReadAllText(packageJsonPath));
-            var root = document.RootElement;
-            var conditions = browser
-                ? new[] { "browser", "import", "module", "default" }
-                : new[] { "deno", "node", "import", "default" };
-
-            if (root.TryGetProperty("exports", out var exports))
-            {
-                var target = ResolveExportsValue(exports, subpath, conditions, wildcard: null);
-                if (target is not null)
-                    return ResolvePackageFile(packageRoot, target);
-            }
-
-            if (!string.Equals(subpath, ".", StringComparison.Ordinal))
-            {
-                var direct = subpath.TrimStart('.', '/');
-                return ResolvePackageFile(packageRoot, direct);
-            }
-
-            foreach (var field in new[] { "browser", "module", "main" })
-            {
-                if (root.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String)
-                {
-                    var target = ResolvePackageFile(packageRoot, value.GetString()!);
-                    if (target is not null)
-                        return target;
-                }
-            }
-
-            return ResolvePackageFile(packageRoot, "index.js");
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-    }
-
-    private static string? ResolveExportsValue(
-        JsonElement value,
-        string subpath,
-        IReadOnlyList<string> conditions,
-        string? wildcard)
-    {
-        switch (value.ValueKind)
-        {
-            case JsonValueKind.String:
-                return ApplyWildcard(value.GetString()!, wildcard);
-            case JsonValueKind.Array:
-                foreach (var candidate in value.EnumerateArray())
-                {
-                    var result = ResolveExportsValue(candidate, subpath, conditions, wildcard);
-                    if (result is not null)
-                        return result;
-                }
-
-                return null;
-            case JsonValueKind.Object:
-                var properties = value.EnumerateObject().ToArray();
-                var hasSubpathKeys = properties.Any(static property => property.Name.StartsWith('.', StringComparison.Ordinal));
-                if (hasSubpathKeys)
-                {
-                    foreach (var property in properties.Where(property =>
-                                 string.Equals(property.Name, subpath, StringComparison.Ordinal)))
-                    {
-                        var result = ResolveExportsValue(property.Value, subpath, conditions, wildcard);
-                        if (result is not null)
-                            return result;
-                    }
-
-                    foreach (var property in properties.Where(static property => property.Name.Contains('*', StringComparison.Ordinal)))
-                    {
-                        var prefix = property.Name[..property.Name.IndexOf('*')];
-                        var suffix = property.Name[(property.Name.IndexOf('*') + 1)..];
-                        if (!subpath.StartsWith(prefix, StringComparison.Ordinal) ||
-                            !subpath.EndsWith(suffix, StringComparison.Ordinal) ||
-                            subpath.Length < prefix.Length + suffix.Length)
-                            continue;
-
-                        var valueWildcard = subpath[prefix.Length..^suffix.Length];
-                        var result = ResolveExportsValue(property.Value, subpath, conditions, valueWildcard);
-                        if (result is not null)
-                            return result;
-                    }
-
-                    return null;
-                }
-
-                foreach (var condition in conditions)
-                {
-                    JsonProperty? matchingProperty = null;
-                    foreach (var candidate in properties)
-                    {
-                        if (string.Equals(candidate.Name, condition, StringComparison.Ordinal))
-                        {
-                            matchingProperty = candidate;
-                            break;
-                        }
-                    }
-
-                    if (matchingProperty is null)
-                        continue;
-
-                    var result = ResolveExportsValue(matchingProperty.Value.Value, subpath, conditions, wildcard);
-                    if (result is not null)
-                        return result;
-                }
-
-                return null;
-            default:
-                return null;
-        }
-    }
-
-    private static string ApplyWildcard(string value, string? wildcard)
-        => wildcard is null ? value : value.Replace("*", wildcard, StringComparison.Ordinal);
-
-    private static string? ResolvePackageFile(string packageRoot, string target)
-    {
-        var normalized = target.Replace('\\', '/').TrimStart('.', '/');
-        if (string.IsNullOrWhiteSpace(normalized) || normalized.Split('/').Any(static segment => segment is ".." or ""))
-            return null;
-
-        var candidate = Path.GetFullPath(Path.Combine(packageRoot, normalized.Replace('/', Path.DirectorySeparatorChar)));
-        var root = Path.GetFullPath(packageRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
-        if (!candidate.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-            return null;
-
-        foreach (var path in new[]
-                 {
-                     candidate,
-                     candidate + ".js",
-                     candidate + ".mjs",
-                     candidate + ".cjs",
-                     Path.Combine(candidate, "index.js"),
-                     Path.Combine(candidate, "index.mjs")
-                 })
-        {
-            if (File.Exists(path))
-                return Path.GetRelativePath(packageRoot, path).Replace('\\', '/');
-        }
-
-        return null;
+        return PackageExportsResolver.Resolve(packageRoot, subpath, browser);
     }
 
     private static bool IsExternalPackage(LibraryAssets materialization, string specifier)

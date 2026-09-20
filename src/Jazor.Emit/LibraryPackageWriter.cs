@@ -24,11 +24,12 @@ internal static class LibraryPackageWriter
         var embeddedProjections = new Dictionary<string, PackageProjection>(StringComparer.Ordinal);
         foreach (var projection in projections.Values)
         {
+            var dependencyName = projection.Reference.CanonicalName;
             if (string.Equals(projection.Reference.Source, "embedded-mjs", StringComparison.Ordinal))
             {
                 WriteEmbeddedPackage(workspaceRoot, projection);
                 var localPath = GetEmbeddedDependencyPath(projection);
-                AddDependency(dependencies, projection.Reference.Name, "file:./" + localPath);
+                AddDependency(dependencies, dependencyName, "file:./" + localPath);
                 embeddedProjections[projection.Reference.Name] = projection;
             }
             else
@@ -36,13 +37,15 @@ internal static class LibraryPackageWriter
                 // External packages are resolved by Deno/npm. Never copy a binding snapshot into
                 // node_modules: doing so hides upstream exports/sideEffects and defeats tree
                 // shaking.
-                AddDependency(dependencies, projection.Reference.Name, GetDependencySpecifier(projection.Reference));
+                AddDependency(dependencies, dependencyName, LibraryPackageIdentity.GetDependencySpecifier(projection.Reference));
             }
 
             managedPackages[projection.Reference.Name] = new JsonObject
             {
                 ["source"] = projection.Reference.Source,
-                ["version"] = projection.Reference.Version
+                ["version"] = projection.Reference.Version,
+                ["canonicalName"] = dependencyName,
+                ["specifier"] = projection.Reference.Name
             };
             if (!string.IsNullOrWhiteSpace(projection.Reference.Integrity))
                 managedPackages[projection.Reference.Name]! ["integrity"] = projection.Reference.Integrity;
@@ -54,13 +57,15 @@ internal static class LibraryPackageWriter
                      .Where(static reference => reference.Source is "npm" or "jsr")
                      .OrderBy(static reference => reference.Name, StringComparer.Ordinal))
         {
-            AddDependency(dependencies, reference.Name, GetDependencySpecifier(reference));
+            AddDependency(dependencies, reference.CanonicalName, LibraryPackageIdentity.GetDependencySpecifier(reference));
             if (managedPackages[reference.Name] is null)
             {
                 managedPackages[reference.Name] = new JsonObject
                 {
                     ["source"] = reference.Source,
-                    ["version"] = reference.Version
+                    ["version"] = reference.Version,
+                    ["canonicalName"] = reference.CanonicalName,
+                    ["specifier"] = reference.Name
                 };
                 if (!string.IsNullOrWhiteSpace(reference.Integrity))
                     managedPackages[reference.Name]! ["integrity"] = reference.Integrity;
@@ -237,7 +242,7 @@ internal static class LibraryPackageWriter
                      .Where(static reference => reference.Source == "npm")
                      .OrderBy(static reference => reference.Name, StringComparer.Ordinal))
         {
-            var key = "node_modules/" + reference.Name;
+            var key = "node_modules/" + reference.CanonicalName;
             if (packageEntries[key] is not null)
                 continue;
 
@@ -247,9 +252,9 @@ internal static class LibraryPackageWriter
             };
             if (LooksLikeConcreteVersion(reference.Version))
             {
-                var simpleName = reference.Name[(reference.Name.LastIndexOf('/') + 1)..];
+                var simpleName = reference.CanonicalName[(reference.CanonicalName.LastIndexOf('/') + 1)..];
                 packageEntry["resolved"] =
-                    $"https://registry.npmjs.org/{reference.Name}/-/{simpleName}-{reference.Version}.tgz";
+                    $"https://registry.npmjs.org/{reference.CanonicalName}/-/{simpleName}-{reference.Version}.tgz";
             }
 
             if (!string.IsNullOrWhiteSpace(reference.Integrity))
@@ -272,18 +277,6 @@ internal static class LibraryPackageWriter
         => value.Length > 0 &&
            char.IsDigit(value[0]) &&
            value.Split('.', StringSplitOptions.RemoveEmptyEntries).Length >= 2;
-
-    private static string GetDependencySpecifier(LibraryPackageReference reference)
-    {
-        if (reference.Source == "jsr")
-        {
-            if (reference.Version.StartsWith("jsr:", StringComparison.OrdinalIgnoreCase))
-                return reference.Version;
-            return "jsr:" + reference.Name + "@" + reference.Version;
-        }
-
-        return reference.Version;
-    }
 
     private static void AddDependency(JsonObject dependencies, string name, string value)
     {

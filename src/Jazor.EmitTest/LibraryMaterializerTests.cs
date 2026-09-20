@@ -175,6 +175,194 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public async Task Materialize_JsrPackageUsesCanonicalDenoIdentityAndAuthoredImportAliases()
+    {
+        using var workspace = new LibraryWorkspace();
+        var manifestPath = Path.Combine(workspace.Root, "jsr-manifest.json");
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = 2,
+            ["libraryId"] = "std-path",
+            ["version"] = "1.0.8",
+            ["source"] = "jsr",
+            ["packages"] = new JsonObject
+            {
+                ["@std/path"] = new JsonObject
+                {
+                    ["source"] = "jsr",
+                    ["version"] = "jsr:@std/path@1.0.8"
+                }
+            },
+            ["imports"] = new JsonObject
+            {
+                ["@std/path"] = new JsonObject
+                {
+                    ["type"] = "module",
+                    ["development"] = "@std/path",
+                    ["production"] = "@std/path"
+                },
+                ["@std/path/posix"] = new JsonObject
+                {
+                    ["type"] = "module",
+                    ["development"] = "@std/path/posix",
+                    ["production"] = "@std/path/posix"
+                }
+            },
+            ["requires"] = new JsonObject(),
+            ["styles"] = new JsonArray(),
+            ["files"] = new JsonArray()
+        };
+        File.WriteAllText(manifestPath, manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        var libraries = new LibraryMaterializer().Materialize(
+            [manifestPath],
+            outputRoot,
+            BuildMode.Production,
+            requiredImports: ["@std/path", "@std/path/posix"]);
+
+        var reference = libraries.PackageReferences["@std/path"];
+        Assert.AreEqual("jsr", reference.Source);
+        Assert.AreEqual("@jsr/std__path", reference.CanonicalName);
+        Assert.AreEqual("@jsr/std__path", LibraryPackageIdentity.GetCanonicalSpecifier(reference, "@std/path"));
+        Assert.AreEqual(
+            "@jsr/std__path/posix",
+            LibraryPackageIdentity.GetCanonicalSpecifier(reference, "@std/path/posix"));
+
+        LibraryPackageWriter.WritePackageProject(outputRoot, libraries);
+        using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package.json")));
+        var dependencies = package.RootElement.GetProperty("dependencies");
+        Assert.AreEqual(
+            "jsr:@std/path@1.0.8",
+            dependencies.GetProperty("@jsr/std__path").GetString());
+        var metadata = package.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("@std/path");
+        Assert.AreEqual("jsr", metadata.GetProperty("source").GetString());
+        Assert.AreEqual("@jsr/std__path", metadata.GetProperty("canonicalName").GetString());
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "package-lock.json")));
+
+        var packageRoot = Path.Combine(outputRoot, "node_modules", "@jsr", "std__path");
+        Directory.CreateDirectory(packageRoot);
+        File.WriteAllText(
+            Path.Combine(packageRoot, "package.json"),
+            """
+            {
+              "name": "@jsr/std__path",
+              "version": "1.0.8",
+              "type": "module",
+              "exports": {
+                ".": {
+                  "browser": "./browser.mjs",
+                  "import": "./index.mjs",
+                  "default": "./index.mjs"
+                },
+                "./posix": "./posix.mjs"
+              }
+            }
+            """.Replace("\r\n", "\n", StringComparison.Ordinal));
+        File.WriteAllText(Path.Combine(packageRoot, "browser.mjs"), "export const runtime = 'browser';\n");
+        File.WriteAllText(Path.Combine(packageRoot, "index.mjs"), "export const runtime = 'import';\n");
+        File.WriteAllText(Path.Combine(packageRoot, "posix.mjs"), "export const runtime = 'posix';\n");
+
+        await ImportMapWriter.WriteAsync(outputRoot, libraries);
+        using var browserMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
+        using var rootSsrMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
+        Assert.AreEqual(
+            "/jazor/node_modules/@jsr/std__path/browser.mjs",
+            browserMap.RootElement.GetProperty("imports").GetProperty("@std/path").GetString());
+        Assert.AreEqual(
+            "/jazor/node_modules/@jsr/std__path/posix.mjs",
+            browserMap.RootElement.GetProperty("imports").GetProperty("@std/path/posix").GetString());
+        Assert.AreEqual(
+            "./node_modules/@jsr/std__path/index.mjs",
+            rootSsrMap.RootElement.GetProperty("imports").GetProperty("@std/path").GetString());
+
+        var ssrRoot = Path.Combine(outputRoot, "ssr");
+        await ImportMapWriter.WriteSsrAsync(ssrRoot, libraries);
+        using var ssrMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(ssrRoot, ImportMapWriter.SsrImportMapFileName)));
+        Assert.AreEqual(
+            "../node_modules/@jsr/std__path/index.mjs",
+            ssrMap.RootElement.GetProperty("imports").GetProperty("@std/path").GetString());
+    }
+
+    [TestMethod]
+    public void Load_CanonicalJsrPackageKeyRecoversAuthoredSpecifier()
+    {
+        using var workspace = new LibraryWorkspace();
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = 2,
+            ["libraryId"] = "canonical-jsr",
+            ["version"] = "1.0.8",
+            ["source"] = "jsr",
+            ["packages"] = new JsonObject
+            {
+                ["@jsr/std__path"] = new JsonObject
+                {
+                    ["source"] = "jsr",
+                    ["version"] = "1.0.8"
+                }
+            },
+            ["imports"] = new JsonObject
+            {
+                ["@std/path"] = new JsonObject
+                {
+                    ["type"] = "module",
+                    ["development"] = "@std/path",
+                    ["production"] = "@std/path"
+                }
+            },
+            ["requires"] = new JsonObject(),
+            ["styles"] = new JsonArray(),
+            ["files"] = new JsonArray()
+        };
+        var manifestPath = Path.Combine(workspace.Root, "manifest.json");
+        File.WriteAllText(manifestPath, manifest.ToJsonString());
+
+        var libraries = new LibraryMaterializer().Materialize(
+            [manifestPath],
+            Path.Combine(workspace.Root, "out"),
+            BuildMode.Production,
+            requiredImports: ["@std/path"]);
+        var reference = libraries.PackageReferences["@std/path"];
+
+        Assert.AreEqual("@std/path", reference.Name);
+        Assert.AreEqual("@std/path", reference.AuthoredName);
+        Assert.AreEqual("@jsr/std__path", reference.CanonicalName);
+        Assert.AreEqual("jsr:@std/path@1.0.8", LibraryPackageIdentity.GetDependencySpecifier(reference));
+    }
+
+    [TestMethod]
+    public void PackageExportsResolver_RejectsTraversalAndBareExportTargets()
+    {
+        using var workspace = new LibraryWorkspace();
+        var packageRoot = Path.Combine(workspace.Root, "package");
+        Directory.CreateDirectory(packageRoot);
+        workspace.WriteFile("package/index.mjs", "export const value = 1;\n");
+        workspace.WriteFile("package/browser.mjs", "export const value = 2;\n");
+        File.WriteAllText(
+            Path.Combine(packageRoot, "package.json"),
+            """
+            {
+              "name": "fixture",
+              "exports": {
+                ".": { "browser": "./browser.mjs", "default": "./index.mjs" },
+                "./escape": "../outside.mjs",
+                "./bare": "index.mjs"
+              }
+            }
+            """.Replace("\r\n", "\n", StringComparison.Ordinal));
+
+        Assert.AreEqual("browser.mjs", PackageExportsResolver.Resolve(packageRoot, ".", browser: true));
+        Assert.AreEqual("index.mjs", PackageExportsResolver.Resolve(packageRoot, ".", browser: false));
+        Assert.IsNull(PackageExportsResolver.Resolve(packageRoot, "./escape", browser: false));
+        Assert.IsNull(PackageExportsResolver.Resolve(packageRoot, "./bare", browser: false));
+        Assert.IsNull(PackageExportsResolver.Resolve(packageRoot, "../escape", browser: false));
+    }
+
+    [TestMethod]
     public void Materialize_EntryStylesFollowSelectedProfileAndDoNotLeakOtherEntries()
     {
         using var workspace = new LibraryWorkspace();
