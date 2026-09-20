@@ -294,6 +294,71 @@ export function Method() { }
     }
 
     [TestMethod]
+    public async Task Convert_StyleDeclarations_EmitSideEffectImportsInDeclarationOrder()
+    {
+        // [Style] 是绑定 CSS 导入：只产生纯副作用边，不引入绑定标识符；
+        // 声明顺序即导入顺序，也是 CSS 层叠顺序。
+        var code = """
+            using ECMAScript;
+
+            [ECMAScript("vuetify/components/VAlert")]
+            [Style("vuetify/lib/components/VAlert/VAlert.css")]
+            [Style("vuetify/styles")]
+            public static class StyledEntry
+            {
+                public static int Field = 1;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "StyledEntry",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var script = (await converter.Convert())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(
+            script,
+            "import \"vuetify/lib/components/VAlert/VAlert.css\";",
+            StringComparison.Ordinal);
+        StringAssert.Contains(script, "import \"vuetify/styles\";", StringComparison.Ordinal);
+
+        // 顺序即层叠顺序：VAlert.css 在 vuetify/styles 之前。
+        var alertIndex = script!.IndexOf("VAlert.css", StringComparison.Ordinal);
+        var stylesIndex = script.IndexOf("vuetify/styles", StringComparison.Ordinal);
+        Assert.IsTrue(alertIndex >= 0 && stylesIndex > alertIndex,
+            "样式导入必须保持声明顺序。实际输出：" + Environment.NewLine + script);
+    }
+
+    [TestMethod]
+    public async Task Convert_DeclarationWithoutStyle_EmitsNoSideEffectImport()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScript("vuetify/components/VBtn")]
+            public static class PlainEntry
+            {
+                public static int Field = 1;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PlainEntry",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var script = (await converter.Convert())?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script!.Contains("import \"", StringComparison.Ordinal),
+            "未声明 [Style] 时不应产生纯副作用导入。实际输出：" + Environment.NewLine + script);
+    }
+
+    [TestMethod]
     public async Task Convert_NonPublicClass_ThrowsNotSupportedException()
     {
         // Arrange

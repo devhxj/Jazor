@@ -25,6 +25,7 @@ public static class Util
 {
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    public const string StyleAttributeMetadataName = "ECMAScript.StyleAttribute";
     public const string ECMAScriptInlineAttributeMetadataName = "ECMAScript.ECMAScriptInlineAttribute";
     public const string SystemUnionAttributeMetadataName = "System.Runtime.CompilerServices.UnionAttribute";
     public const string SystemIUnionMetadataName = "System.Runtime.CompilerServices.IUnion";
@@ -497,6 +498,31 @@ public static class Util
 
     internal static bool IsExternalECMAScriptImport(ITypeSymbol symbol)
         => IsExternalECMAScriptImport((ISymbol)symbol);
+
+    /// <summary>
+    /// Reads the style side-effect specifiers declared by <c>[Style("specifier")]</c>.
+    ///
+    /// 声明顺序即导入顺序（也是 CSS 层叠顺序），因此这里保留 attribute 的原始顺序，不去重排序。
+    /// 样式边依附于入口：调用方只在声明了 <c>[ECMAScript("specifier")]</c> 的入口上消费这些值。
+    /// </summary>
+    internal static IReadOnlyList<string> GetStyleSpecifiers(ISymbol symbol)
+    {
+        var specifiers = new List<string>();
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (attribute.AttributeClass?.ToDisplayString() != StyleAttributeMetadataName ||
+                attribute.ConstructorArguments.Length != 1 ||
+                attribute.ConstructorArguments[0].Value is not string specifier ||
+                string.IsNullOrWhiteSpace(specifier))
+            {
+                continue;
+            }
+
+            specifiers.Add(ECMAScriptModulePath.ValidateExternalImportSpecifier(specifier));
+        }
+
+        return specifiers;
+    }
 
     /// <summary>
     /// Determines whether a declaration carries an external ESM import marker.

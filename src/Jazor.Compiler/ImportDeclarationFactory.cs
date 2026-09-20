@@ -70,6 +70,25 @@ public static class ImportDeclarationFactory
         return declarations.ToImmutable();
     }
 
+    /// <summary>
+    /// 创建一个纯副作用导入（<c>import "specifier";</c>）。
+    ///
+    /// 用于 <c>[Style]</c> 声明的样式边：它不引入任何绑定标识符，因此不参与死导入过滤，
+    /// 也不应该被去重或重排——声明顺序就是 CSS 层叠顺序。
+    /// </summary>
+    public static ImportDeclaration CreateSideEffect(string modulePath)
+    {
+        if (modulePath is null)
+            throw new ArgumentNullException(nameof(modulePath));
+        if (string.IsNullOrWhiteSpace(modulePath))
+            throw new ArgumentException("A side-effect import requires a module specifier.", nameof(modulePath));
+
+        return new ImportDeclaration(
+            NodeList.From<ImportDeclarationSpecifier>(),
+            CreateModulePathLiteral(modulePath),
+            NodeList.From<ImportAttribute>());
+    }
+
     public static ImmutableArray<ImportDeclarationSpecifier> NormalizeSpecifiers(
         IEnumerable<ImportDeclarationSpecifier> specifiers)
     {

@@ -101,6 +101,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
     private readonly string? _currentModuleImportPath = Util.GetECMAScriptModuleImportPath(classSymbol);
+
+    /// <summary>
+    /// <c>[Style]</c> 声明的样式 side-effect specifier，按声明顺序保留（顺序即 CSS 层叠顺序）。
+    /// 这些边没有本地绑定，因此不参与 <see cref="_imports"/> 的死导入过滤。
+    /// </summary>
+    private readonly IReadOnlyList<string> _styleSpecifiers = classSymbol is null
+        ? []
+        : Util.GetStyleSpecifiers(classSymbol);
     private HashSet<string>? _moduleDeclaredBindings;
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
@@ -224,6 +232,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         // rewrites claim a mapping and later replace its original expression entirely.
         // 先收集、后提升能让 walker 保持表达式语义；这里依据最终 AST 再过滤死导入。
         var referencedIdentifiers = CollectReferencedIdentifiers(members);
+
+        // [Style] 是纯副作用边：没有本地绑定可过滤，按声明顺序原样发射。
+        // 顺序即导入顺序，也是 CSS 层叠顺序。
+        foreach (var styleSpecifier in _styleSpecifiers)
+            yield return ImportDeclarationFactory.CreateSideEffect(styleSpecifier);
+
         foreach (var pair in _imports.OrderBy(static pair => pair.Key, System.StringComparer.Ordinal))
         {
             var uniqueSpecifiers = pair.Value
