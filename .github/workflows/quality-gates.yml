@@ -74,6 +74,16 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Restore Vuetify generator runtime
+        shell: pwsh
+        run: npm ci --ignore-scripts
+        working-directory: src/ECMAScript.Vue.Generator/vuetify-runtime
+
       - name: Record toolchain matrix
         shell: pwsh
         run: dotnet run --file ./scripts/csharp/write-toolchain-matrix.cs -- artifacts/quality/toolchain-matrix.md

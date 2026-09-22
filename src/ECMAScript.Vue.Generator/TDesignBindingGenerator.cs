@@ -24,7 +24,11 @@ internal static class TDesignBindingGenerator
             throw new InvalidOperationException($"Missing TDesign component inventory: {inventoryPath}");
 
         using var typeScript = new Language("TypeScript");
+        // The upstream snapshot may contain ignored build leftovers under common/js/log.
+        // Keep the binding input to the tracked package surface so local and CI generation
+        // produce the same declaration set.
         var declarations = Directory.GetFiles(Path.Combine(snapshotRoot, "es"), "*.d.ts", SearchOption.AllDirectories)
+            .Where(static path => !path.Replace('\\', '/').Contains("/common/js/log/", StringComparison.Ordinal))
             .SelectMany(path => TypeScriptDeclarations.Read(path, snapshotRoot, typeScript))
             .OrderBy(static declaration => declaration.Module, StringComparer.Ordinal)
             .ThenBy(static declaration => declaration.Name, StringComparer.Ordinal)
