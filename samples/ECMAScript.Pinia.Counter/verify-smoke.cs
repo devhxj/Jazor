@@ -94,7 +94,7 @@ if (!options.FrontendOnly || options.BuildLocal)
 
 AssertPathExists(ResolveHostAssemblyPath(hostRoot, options), "sample host assembly for requested configuration");
 AssertGeneratedHostArtifacts(generatedOutputRoot);
-AssertNetpackBundleArtifacts(bundleOutputRoot);
+AssertStandardReleaseArtifacts(bundleOutputRoot);
 
 var denoExePath = ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo);
 var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -111,7 +111,7 @@ RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--fro
 RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--frozen", "--import-map", Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"), "src/pinia.generated.dom.test.js" });
 
 Console.WriteLine("ECMAScript.Pinia sample smoke verification passed.");
-Console.WriteLine("Verified: local Jazor package pack, isolated generated Pinia/testing modules, Netpack release bundle, and DenoHost runtime/DOM coverage.");
+Console.WriteLine("Verified: local Jazor package pack, isolated generated Pinia/testing modules, standard JavaScript release project, and DenoHost runtime/DOM coverage.");
 
 static string FindRepositoryRoot(string startDirectory)
 {
@@ -251,10 +251,10 @@ static void AddDenoRuntimeCandidates(ICollection<string> candidates, string base
     }
 }
 
-static void AssertNetpackBundleArtifacts(string bundleOutputRoot)
+static void AssertStandardReleaseArtifacts(string bundleOutputRoot)
 {
-    AssertPathExists(Path.Combine(bundleOutputRoot, "bundle.js"), "Netpack browser bundle");
-    AssertPathExists(Path.Combine(bundleOutputRoot, "bundle.js.map"), "Netpack browser bundle source map");
+    AssertPathExists(Path.Combine(bundleOutputRoot, "entry.js"), "standard JavaScript release entry");
+    AssertPathExists(Path.Combine(bundleOutputRoot, "package.json"), "standard JavaScript release package metadata");
 }
 
 static void AssertGeneratedHostArtifacts(string generatedOutputRoot)

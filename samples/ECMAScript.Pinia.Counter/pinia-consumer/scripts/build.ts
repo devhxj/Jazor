@@ -5,11 +5,11 @@ export async function runBuild(): Promise<void> {
   const workspace = await prepareWorkspace();
   await emptyDirectory(workspace.distRoot);
 
-  const entryFilePath = join(workspace.bundleRoot, "bundle.js");
+  const entryFilePath = join(workspace.generatedRoot, "host", "app.mjs");
   if (!(await fileExists(entryFilePath))) {
-    throw new Error(`Missing Netpack browser bundle: ${entryFilePath}`);
+    throw new Error(`Missing generated host entry: ${entryFilePath}`);
   }
-  await copyDirectoryContents(workspace.bundleRoot, workspace.assetsDirectory);
+  await copyDirectoryContents(workspace.generatedRoot, workspace.assetsDirectory);
 
   const templatePath = join(workspace.consumerRoot, "index.html");
   const template = await readText(templatePath);
@@ -20,14 +20,14 @@ export async function runBuild(): Promise<void> {
     )
     .replace(
       '  <script type="module" src="/src/main.js"></script>',
-      '  <script type="module" src="./assets/bundle.js"></script>'
+      '  <script type="module" src="./assets/host/app.mjs"></script>'
     );
 
   await Deno.copyFile(join(workspace.consumerRoot, "src", "style.css"), join(workspace.assetsDirectory, "style.css"));
   await writeText(join(workspace.distRoot, "index.html"), outputHtml);
 
-  const relativeEntryFilePath = `./${relative(workspace.distRoot, join(workspace.assetsDirectory, "bundle.js")).replaceAll("\\", "/")}`;
-  console.log(`Pinia Netpack bundle materialized at ${relativeEntryFilePath}.`);
+  const relativeEntryFilePath = `./${relative(workspace.distRoot, entryFilePath).replaceAll("\\", "/")}`;
+  console.log(`Pinia standard JavaScript entry materialized at ${relativeEntryFilePath}.`);
 }
 
 if (import.meta.main) {
