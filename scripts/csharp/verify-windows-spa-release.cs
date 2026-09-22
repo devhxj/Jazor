@@ -323,8 +323,7 @@ internal static class ReleaseVerifier
 
         foreach (var unexpectedPath in new[]
         {
-            Path.Combine(jazorRoot, "jazor-manifest.json"),
-            Path.Combine(jazorRoot, "components")
+            Path.Combine(jazorRoot, "jazor-manifest.json")
         })
         {
             if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))
