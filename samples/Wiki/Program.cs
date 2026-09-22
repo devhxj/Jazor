@@ -31,10 +31,12 @@ if (!string.IsNullOrWhiteSpace(configuredPathBase))
     app.UsePathBase(configuredPathBase);
 }
 
-app.UseJazorViteProxy();
+if (app.Environment.IsDevelopment())
+    app.UseJazorViteProxy();
 
 app.UseJazorHost(options =>
 {
+    options.Assets.ServeArtifacts = !app.Environment.IsDevelopment();
     options.SecurityHeaders.PermissionsPolicy =
         "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +
         "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";
