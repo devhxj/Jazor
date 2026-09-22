@@ -153,7 +153,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		Assert.IsFalse(nugetConfig.Contains("JazorLocal", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should keep only stable baseline sources.");
 		Assert.IsFalse(source.Contains("vite", StringComparison.OrdinalIgnoreCase), "Smoke verification script should not depend on Vite anymore.");
 		StringAssert.Contains(consumerBuild, "Missing generated host entry");
-		StringAssert.Contains(consumerBuild, "copyDirectoryContents(workspace.bundleRoot, workspace.assetsDirectory)");
+		StringAssert.Contains(consumerBuild, "copyDirectoryContents(workspace.generatedRoot, workspace.assetsDirectory)");
 		Assert.IsFalse(consumerBuild.Contains("deno bundle", StringComparison.OrdinalIgnoreCase), "The active sample must use Deno bundling commands.");
 		Assert.IsFalse(System.IO.File.Exists(packageJsonPath), $"Vite package manifest should not remain in the Deno consumer: {packageJsonPath}");
 		Assert.IsFalse(System.IO.File.Exists(viteConfigPath), $"Vite config should not remain in the Deno consumer: {viteConfigPath}");
