@@ -38,8 +38,7 @@ public sealed class LucideBindingTests
     [TestMethod]
     public void Manifest_UsesStandardNpmSpecifier()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "ECMAScript.Lucide", "manifest.json");
-        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(Path.GetFullPath(path)));
+        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(FindManifestPath()));
         var root = document.RootElement;
         Assert.AreEqual("npm", root.GetProperty("source").GetString());
         Assert.AreEqual("lucide-vue-next", root.GetProperty("libraryId").GetString());
@@ -49,8 +48,7 @@ public sealed class LucideBindingTests
     [TestMethod]
     public void Manifest_DeclaresLockstepPackageContract()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "ECMAScript.Lucide", "manifest.json");
-        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(Path.GetFullPath(path)));
+        using var document = JsonDocument.Parse(System.IO.File.ReadAllText(FindManifestPath()));
         var root = document.RootElement;
 
         Assert.AreEqual(2, root.GetProperty("schemaVersion").GetInt32());
@@ -59,6 +57,18 @@ public sealed class LucideBindingTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(package.GetProperty("version").GetString()));
         Assert.IsFalse(string.IsNullOrWhiteSpace(package.GetProperty("version").GetString()));
         Assert.AreEqual(0, root.GetProperty("styles").GetArrayLength());
+    }
+
+    private static string FindManifestPath()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "ECMAScript.Lucide", "manifest.json");
+            if (System.IO.File.Exists(candidate))
+                return candidate;
+        }
+
+        throw new FileNotFoundException("Could not locate ECMAScript.Lucide manifest from the test output directory.");
     }
 
     [TestMethod]
