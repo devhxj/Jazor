@@ -144,7 +144,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "sample host assembly for requested configuration");
 		StringAssert.Contains(source, "AssertGeneratedHostArtifacts");
 		StringAssert.Contains(source, "ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo)");
-		StringAssert.Contains(source, "AssertNetpackBundleArtifacts(bundleOutputRoot)");
+		StringAssert.Contains(source, "AssertStandardReleaseArtifacts(bundleOutputRoot)");
 		StringAssert.Contains(source, "[\"JAZOR_BUNDLE_ROOT\"] = bundleOutputRoot");
 		StringAssert.Contains(source, "RestoreAdditionalProjectSources={packageOutput}");
 		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment");
@@ -152,9 +152,9 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		Assert.IsFalse(nugetConfig.Contains(".tmp\\nupkg-sample", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should not depend on a transient local package output path.");
 		Assert.IsFalse(nugetConfig.Contains("JazorLocal", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should keep only stable baseline sources.");
 		Assert.IsFalse(source.Contains("vite", StringComparison.OrdinalIgnoreCase), "Smoke verification script should not depend on Vite anymore.");
-		StringAssert.Contains(consumerBuild, "Netpack browser bundle");
+		StringAssert.Contains(consumerBuild, "Missing generated host entry");
 		StringAssert.Contains(consumerBuild, "copyDirectoryContents(workspace.bundleRoot, workspace.assetsDirectory)");
-		Assert.IsFalse(consumerBuild.Contains("deno bundle", StringComparison.OrdinalIgnoreCase), "The active sample must use Netpack rather than Deno for browser bundling.");
+		Assert.IsFalse(consumerBuild.Contains("deno bundle", StringComparison.OrdinalIgnoreCase), "The active sample must use Deno bundling commands.");
 		Assert.IsFalse(System.IO.File.Exists(packageJsonPath), $"Vite package manifest should not remain in the Deno consumer: {packageJsonPath}");
 		Assert.IsFalse(System.IO.File.Exists(viteConfigPath), $"Vite config should not remain in the Deno consumer: {viteConfigPath}");
 	}
@@ -335,7 +335,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(sampleVerifyScript, "GetIsolationArguments(options)");
 		StringAssert.Contains(sampleVerifyScript, "ResolveHostAssemblyPath(hostRoot, options)");
 		StringAssert.Contains(sampleVerifyScript, "ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo)");
-		StringAssert.Contains(sampleVerifyScript, "AssertNetpackBundleArtifacts(bundleOutputRoot)");
+		StringAssert.Contains(sampleVerifyScript, "AssertStandardReleaseArtifacts(bundleOutputRoot)");
 		StringAssert.Contains(sampleVerifyScript, "RestoreAdditionalProjectSources={packageOutput}");
 		StringAssert.Contains(sampleVerifyScript, "PINIA_DENO_DIST_ROOT");
 		StringAssert.Contains(sampleVerifyScript, "consumerDistRoot");
