@@ -14,7 +14,7 @@ namespace ECMAScript;
 /// </para>
 /// <para>
 /// 只声明 specifier，不做形态判断，也不从扩展名推断是 JS 模块还是样式表。
-/// 后续处理不属于 Jazor：依赖恢复由 Deno 负责，打包与 CSS 抽取由 NetPack 负责，
+/// 后续处理不属于 Jazor：依赖恢复由 Deno 负责，打包与 CSS 抽取由所选标准构建工具负责，
 /// 开发期模块请求由 dev server 负责。
 /// </para>
 /// <para>

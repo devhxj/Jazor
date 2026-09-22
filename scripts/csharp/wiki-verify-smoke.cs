@@ -147,7 +147,7 @@ AssertContains(indexTemplateContent, "id=\"app\"", "Vue mount root in host HTML 
 AssertContains(indexTemplateContent, "__WIKI_SITE_CSS_URL__", "stylesheet token in host HTML template");
 AssertContains(indexTemplateContent, "__WIKI_FAVICON_URL__", "favicon token in host HTML template");
 AssertContains(indexTemplateContent, "__WIKI_MAIN_MODULE_URL__", "main module token in host HTML template");
-AssertContains(indexTemplateContent, "__WIKI_BROWSER_IMPORT_MAP__", "browser import-map token in host HTML template");
+AssertNotContains(indexTemplateContent, "__WIKI_BROWSER_IMPORT_MAP__", "retired browser import-map token in host HTML template");
 AssertContains(indexTemplateContent, "data-wiki-path-base=\"__WIKI_PATH_BASE__\"", "path-base token in host HTML template");
 AssertContains(indexTemplateContent, "__WIKI_SOBER_URL__", "vendored Sober UI library token in host HTML template");
 AssertNotContains(indexTemplateContent, "unpkg.com", "forbidden CDN URL in host HTML template");
@@ -172,7 +172,7 @@ foreach (var marker in new[]
     AssertContains(siteCssContent, marker, "Wiki shell CSS marker");
 }
 
-var browserEntryPath = options.Publish ? "/jazor/bundle.js" : "/jazor/main.mjs";
+var browserEntryPath = options.Publish ? "/jazor/dist/bundle.js" : "/jazor/entry.js";
 if (options.Publish)
 {
     AssertReleaseArtifacts(jazorRoot);
@@ -182,12 +182,8 @@ else
     AssertDebugArtifacts(jazorRoot);
 }
 
-var expectedBrowserImports = options.Publish
-    ? new Dictionary<string, string>(StringComparer.Ordinal)
-    : ReadBrowserImports(Path.Combine(jazorRoot, "importmap.json"));
-var stringModuleAssetPath = options.Publish
-    ? null
-    : GetRequiredImportTarget(expectedBrowserImports, "System/StringModule.js");
+var expectedBrowserImports = new Dictionary<string, string>(StringComparer.Ordinal);
+var stringModuleAssetPath = "/jazor/clr/System/StringModule.js";
 
 // 目录由同一次 Wiki 构建生成，docs 增删页面时无需手工同步验证路由表。
 // /search 是手写工具页，保留其带查询的专项断言，避免和 docs 页面循环重复。
@@ -196,8 +192,8 @@ var docsRoutes = ReadDocsRouteExpectations(Path.Combine(sampleRoot, "obj", "wiki
 var browserAssets = options.Publish
     ? new List<AssetExpectation>
     {
-        new("/jazor/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "WikiDocsContent", "RenderDocsPage" }),
-        new("/jazor/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "main.mjs", "components/wiki-home.mjs", "components/wiki-styles.mjs" }),
+        new("/jazor/dist/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "WikiDocsContent", "RenderDocsPage" }),
+        new("/jazor/dist/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "main.mjs", "components/wiki-home.mjs", "components/wiki-styles.mjs" }),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
         new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>()),
@@ -205,14 +201,14 @@ var browserAssets = options.Publish
     }
     : new List<AssetExpectation>
     {
-        new("/jazor/main.mjs", "createApp(", null, Array.Empty<string>()),
+        new("/jazor/entry.js", "./main.mjs", null, Array.Empty<string>()),
         new("/jazor/main.mjs.map", "\"file\":\"main.mjs\"", "application/json", new[] { "AppModule.cs", "\"sourcesContent\"" }),
         new("/jazor/components/wiki-home.mjs", "搜索文档页面", null, Array.Empty<string>()),
         new("/jazor/components/wiki-home.mjs.map", "\"file\":\"components/wiki-home.mjs\"", "application/json", new[] { "WikiHomeModule.cs", "WikiHomeModule.DocumentContract.cs", "\"sourcesContent\"" }),
-        // Debug 图中 style() 走 Import：组件模块引用 style.mjs 运行时，版本标记由运行时携带
-        new("/jazor/components/wiki-styles.mjs", "from \"style.mjs\"", null, new[] { "background-color" }),
-        new("/jazor/style.mjs", "ecmascript-style:v1", null, Array.Empty<string>()),
-        new(stringModuleAssetPath!, "export", null, Array.Empty<string>()),
+        // Debug 图中 style() 走 Import：组件模块引用 style.js 运行时，版本标记由运行时携带
+        new("/jazor/components/wiki-styles.mjs", "from \"style.js\"", null, new[] { "background-color" }),
+        new("/jazor/style.js", "ecmascript-style:v1", null, Array.Empty<string>()),
+        new(stringModuleAssetPath, "export", null, Array.Empty<string>()),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
         new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>()),
@@ -309,7 +305,7 @@ try
         var content = await response.Content.ReadAsStringAsync();
         AssertContains(content, "id=\"app\"", "Vue mount root in served route " + route.Path);
         AssertContains(content, WikiScriptHelpers.GetExternalPath(normalizedPathBase, browserEntryPath), "browser entry in served route " + route.Path);
-        AssertBrowserImportMap(content, expectedBrowserImports, normalizedPathBase, "served route " + route.Path);
+        AssertNotContains(content, "type=\"importmap\"", "retired import map in served route " + route.Path);
         AssertContains(content, "data-wiki-path-base=\"" + normalizedPathBase + "\"", "path-base marker in served route " + route.Path);
         AssertRouteMetadata(content, route, rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, route.Path), "served route " + route.Path);
 
@@ -323,7 +319,7 @@ try
         AssertHeaderEquals(response, "Permissions-Policy", "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)", "Permissions-Policy for served route " + route.Path);
         AssertHeaderMatches(response, "Content-Security-Policy", "script-src 'self' 'nonce-[^']+'", "Content-Security-Policy nonce for served route " + route.Path);
         AssertCspMetaUsesResponseNonce(response, content, "served route " + route.Path);
-        AssertContains(content, "script type=\"importmap\" nonce=\"", "importmap nonce marker in served route " + route.Path);
+        AssertNotContains(content, "script type=\"importmap\"", "retired importmap script in served route " + route.Path);
         if (route.Robots == "noindex, nofollow")
         {
             AssertHeaderEquals(response, "X-Robots-Tag", "noindex, nofollow", "X-Robots-Tag for served route " + route.Path);
@@ -591,7 +587,8 @@ void AssertDebugArtifacts(string artifactRoot)
 {
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs"), "emitted main module");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs.map"), "emitted main source map");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "jazor-manifest.json"), "emit manifest");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "entry.js"), "standard project entry");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "package.json"), "standard project package manifest");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs"), "emitted Wiki component module");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs.map"), "emitted Wiki component source map");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-styles.mjs"), "emitted Wiki CSS module");
@@ -599,8 +596,8 @@ void AssertDebugArtifacts(string artifactRoot)
 
 void AssertReleaseArtifacts(string artifactRoot)
 {
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js"), "production browser bundle");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js.map"), "production browser bundle source map");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js.map"), "production browser bundle source map");
 
     // A normal browser release must not accidentally publish the debug module graph. SSR has
     // a separate jazor/ssr/ root, so these root-level paths remain an unambiguous check.
@@ -608,11 +605,11 @@ void AssertReleaseArtifacts(string artifactRoot)
     foreach (var unexpectedPath in new[]
     {
         Path.Combine(artifactRoot, "main.mjs"),
-        Path.Combine(artifactRoot, "jazor-manifest.json"),
+        Path.Combine(artifactRoot, "obj", "jazor-manifest.json"),
         Path.Combine(artifactRoot, "importmap.json"),
         Path.Combine(artifactRoot, "ssr-importmap.json"),
         Path.Combine(artifactRoot, "manifest.json"),
-        Path.Combine(artifactRoot, "style.mjs"),
+        Path.Combine(artifactRoot, "style.js"),
         Path.Combine(artifactRoot, "components")
     })
     {

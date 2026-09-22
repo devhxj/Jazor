@@ -294,35 +294,19 @@ static void WriteManifestImport(
 {
     writer.WriteStartObject(importSpecifier);
     writer.WriteString("type", "module");
-    writer.WriteString("development", entryPath);
-    writer.WriteString("production", entryPath);
-    writer.WriteString("developmentHash", ComputeHash(outputRoot, entryPath));
-    writer.WriteString("productionHash", ComputeHash(outputRoot, entryPath));
-    writer.WritePropertyName("developmentDependencies");
+    writer.WriteString("path", entryPath);
+    writer.WriteString("hash", ComputeHash(outputRoot, entryPath));
+    writer.WritePropertyName("dependencies");
     writer.WriteStartArray();
     foreach (var dependency in packageDependencies)
         writer.WriteStringValue(dependency);
     writer.WriteEndArray();
-    writer.WritePropertyName("productionDependencies");
-    writer.WriteStartArray();
-    foreach (var dependency in packageDependencies)
-        writer.WriteStringValue(dependency);
-    writer.WriteEndArray();
-    writer.WritePropertyName("developmentModuleDependencies");
+    writer.WritePropertyName("moduleDependencies");
     writer.WriteStartArray();
     foreach (var dependency in moduleDependencies)
         writer.WriteStringValue(dependency);
     writer.WriteEndArray();
-    writer.WritePropertyName("productionModuleDependencies");
-    writer.WriteStartArray();
-    foreach (var dependency in moduleDependencies)
-        writer.WriteStringValue(dependency);
-    writer.WriteEndArray();
-    writer.WritePropertyName("developmentStyles");
-    writer.WriteStartArray();
-    WriteManifestFile(writer, outputRoot, stylePath, "style", null);
-    writer.WriteEndArray();
-    writer.WritePropertyName("productionStyles");
+    writer.WritePropertyName("styles");
     writer.WriteStartArray();
     WriteManifestFile(writer, outputRoot, stylePath, "style", null);
     writer.WriteEndArray();

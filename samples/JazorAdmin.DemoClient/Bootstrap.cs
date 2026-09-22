@@ -4,7 +4,7 @@ using static ECMAScript.Vue;
 
 namespace JazorAdmin.DemoClient;
 
-[ECMAScript("components/portal-page.mjs")]
+[ECMAScript("./components/portal-page.js")]
 [Description("@#")]
 internal static class PortalPageModule
 {
@@ -14,7 +14,7 @@ internal static class PortalPageModule
 #pragma warning restore CS0626
 }
 
-[ECMAScriptModule("app.mjs")]
+[ECMAScriptModule("./app.js")]
 public static class Bootstrap
 {
     private static readonly bool started = Start();

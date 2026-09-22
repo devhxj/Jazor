@@ -16,7 +16,7 @@ public enum AccessControlView
     Resources
 }
 
-[ECMAScriptModule("components/access-control.mjs")]
+[ECMAScriptModule("components/access-control.js")]
 public partial class AccessControlPage : AppComponentBase, IVueContainerComponent
 {
     private sealed record RoleDraft

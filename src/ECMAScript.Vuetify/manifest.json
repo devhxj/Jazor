@@ -7,7 +7,7 @@
     "vuetify": {
       "source": "npm",
       "version": "4.2.1",
-      "integrity": "sha512-K3ZIqu7YkorQFB6//dR5KEBpbfOo\u002By/LkcGtknsnneE3JN1pW3R7o/JB9QDkJuP1ELhENIdBZIkiSmXu0dQ9lQ=="
+      "integrity": "sha512-K3ZIqu7YkorQFB6//dR5KEBpbfOo+y/LkcGtknsnneE3JN1pW3R7o/JB9QDkJuP1ELhENIdBZIkiSmXu0dQ9lQ=="
     },
     "vue": {
       "source": "npm",
@@ -17,1722 +17,764 @@
   "imports": {
     "vuetify": {
       "type": "module",
-      "development": "vuetify",
-      "production": "vuetify",
-      "developmentDependencies": [
+      "path": "vuetify",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/styles"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/styles"
       ]
     },
     "vuetify/components/VAlert": {
       "type": "module",
-      "development": "vuetify/components/VAlert",
-      "production": "vuetify/components/VAlert",
-      "developmentDependencies": [
+      "path": "vuetify/components/VAlert",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VAlert/VAlert.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VAlert/VAlert.css"
       ]
     },
     "vuetify/components/VApp": {
       "type": "module",
-      "development": "vuetify/components/VApp",
-      "production": "vuetify/components/VApp",
-      "developmentDependencies": [
+      "path": "vuetify/components/VApp",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VApp/VApp.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VApp/VApp.css"
       ]
     },
     "vuetify/components/VAppBar": {
       "type": "module",
-      "development": "vuetify/components/VAppBar",
-      "production": "vuetify/components/VAppBar",
-      "developmentDependencies": [
+      "path": "vuetify/components/VAppBar",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VAppBar/VAppBar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VAppBar/VAppBar.css"
       ]
     },
     "vuetify/components/VAutocomplete": {
       "type": "module",
-      "development": "vuetify/components/VAutocomplete",
-      "production": "vuetify/components/VAutocomplete",
-      "developmentDependencies": [
+      "path": "vuetify/components/VAutocomplete",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VAutocomplete/VAutocomplete.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VAutocomplete/VAutocomplete.css"
       ]
     },
     "vuetify/components/VAvatar": {
       "type": "module",
-      "development": "vuetify/components/VAvatar",
-      "production": "vuetify/components/VAvatar",
-      "developmentDependencies": [
+      "path": "vuetify/components/VAvatar",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VAvatar/VAvatar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VAvatar/VAvatar.css"
       ]
     },
     "vuetify/components/VBadge": {
       "type": "module",
-      "development": "vuetify/components/VBadge",
-      "production": "vuetify/components/VBadge",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBadge",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBadge/VBadge.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBadge/VBadge.css"
       ]
     },
     "vuetify/components/VBanner": {
       "type": "module",
-      "development": "vuetify/components/VBanner",
-      "production": "vuetify/components/VBanner",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBanner",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBanner/VBanner.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBanner/VBanner.css"
       ]
     },
     "vuetify/components/VBottomNavigation": {
       "type": "module",
-      "development": "vuetify/components/VBottomNavigation",
-      "production": "vuetify/components/VBottomNavigation",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBottomNavigation",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBottomNavigation/VBottomNavigation.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBottomNavigation/VBottomNavigation.css"
       ]
     },
     "vuetify/components/VBottomSheet": {
       "type": "module",
-      "development": "vuetify/components/VBottomSheet",
-      "production": "vuetify/components/VBottomSheet",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBottomSheet",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBottomSheet/VBottomSheet.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBottomSheet/VBottomSheet.css"
       ]
     },
     "vuetify/components/VBreadcrumbs": {
       "type": "module",
-      "development": "vuetify/components/VBreadcrumbs",
-      "production": "vuetify/components/VBreadcrumbs",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBreadcrumbs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBreadcrumbs/VBreadcrumbs.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBreadcrumbs/VBreadcrumbs.css"
       ]
     },
     "vuetify/components/VBtn": {
       "type": "module",
-      "development": "vuetify/components/VBtn",
-      "production": "vuetify/components/VBtn",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBtn",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBtn/VBtn.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBtn/VBtn.css"
       ]
     },
     "vuetify/components/VBtnGroup": {
       "type": "module",
-      "development": "vuetify/components/VBtnGroup",
-      "production": "vuetify/components/VBtnGroup",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBtnGroup",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBtnGroup/VBtnGroup.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBtnGroup/VBtnGroup.css"
       ]
     },
     "vuetify/components/VBtnToggle": {
       "type": "module",
-      "development": "vuetify/components/VBtnToggle",
-      "production": "vuetify/components/VBtnToggle",
-      "developmentDependencies": [
+      "path": "vuetify/components/VBtnToggle",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VBtnToggle/VBtnToggle.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VBtnToggle/VBtnToggle.css"
       ]
     },
     "vuetify/components/VCard": {
       "type": "module",
-      "development": "vuetify/components/VCard",
-      "production": "vuetify/components/VCard",
-      "developmentDependencies": [
+      "path": "vuetify/components/VCard",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCard/VCard.css"
       ]
     },
     "vuetify/components/VCarousel": {
       "type": "module",
-      "development": "vuetify/components/VCarousel",
-      "production": "vuetify/components/VCarousel",
-      "developmentDependencies": [
+      "path": "vuetify/components/VCarousel",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCarousel/VCarousel.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCarousel/VCarousel.css"
       ]
     },
     "vuetify/components/VCheckbox": {
       "type": "module",
-      "development": "vuetify/components/VCheckbox",
-      "production": "vuetify/components/VCheckbox",
-      "developmentDependencies": [
+      "path": "vuetify/components/VCheckbox",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCheckbox/VCheckbox.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCheckbox/VCheckbox.css"
       ]
     },
     "vuetify/components/VChip": {
       "type": "module",
-      "development": "vuetify/components/VChip",
-      "production": "vuetify/components/VChip",
-      "developmentDependencies": [
+      "path": "vuetify/components/VChip",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VChip/VChip.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VChip/VChip.css"
       ]
     },
     "vuetify/components/VChipGroup": {
       "type": "module",
-      "development": "vuetify/components/VChipGroup",
-      "production": "vuetify/components/VChipGroup",
-      "developmentDependencies": [
+      "path": "vuetify/components/VChipGroup",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VChipGroup/VChipGroup.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VChipGroup/VChipGroup.css"
       ]
     },
     "vuetify/components/VCode": {
       "type": "module",
-      "development": "vuetify/components/VCode",
-      "production": "vuetify/components/VCode",
-      "developmentDependencies": [
+      "path": "vuetify/components/VCode",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCode/VCode.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCode/VCode.css"
       ]
     },
     "vuetify/components/VGrid": {
       "type": "module",
-      "development": "vuetify/components/VGrid",
-      "production": "vuetify/components/VGrid",
-      "developmentDependencies": [
+      "path": "vuetify/components/VGrid",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VGrid/VGrid.css"
       ]
     },
     "vuetify/components/VColorPicker": {
       "type": "module",
-      "development": "vuetify/components/VColorPicker",
-      "production": "vuetify/components/VColorPicker",
-      "developmentDependencies": [
+      "path": "vuetify/components/VColorPicker",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VColorPicker/VColorPicker.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VColorPicker/VColorPicker.css"
       ]
     },
     "vuetify/components/VCombobox": {
       "type": "module",
-      "development": "vuetify/components/VCombobox",
-      "production": "vuetify/components/VCombobox",
-      "developmentDependencies": [
+      "path": "vuetify/components/VCombobox",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCombobox/VCombobox.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCombobox/VCombobox.css"
       ]
     },
     "vuetify/components/VConfirmEdit": {
       "type": "module",
-      "development": "vuetify/components/VConfirmEdit",
-      "production": "vuetify/components/VConfirmEdit",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VConfirmEdit",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VCounter": {
       "type": "module",
-      "development": "vuetify/components/VCounter",
-      "production": "vuetify/components/VCounter",
-      "developmentDependencies": [
+      "path": "vuetify/components/VCounter",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VCounter/VCounter.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VCounter/VCounter.css"
       ]
     },
     "vuetify/components/VDataIterator": {
       "type": "module",
-      "development": "vuetify/components/VDataIterator",
-      "production": "vuetify/components/VDataIterator",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VDataIterator",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VDataTable": {
       "type": "module",
-      "development": "vuetify/components/VDataTable",
-      "production": "vuetify/components/VDataTable",
-      "developmentDependencies": [
+      "path": "vuetify/components/VDataTable",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VDataTable/VDataTable.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VDataTable/VDataTable.css"
       ]
     },
     "vuetify/components/VDatePicker": {
       "type": "module",
-      "development": "vuetify/components/VDatePicker",
-      "production": "vuetify/components/VDatePicker",
-      "developmentDependencies": [
+      "path": "vuetify/components/VDatePicker",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VDatePicker/VDatePicker.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VDatePicker/VDatePicker.css"
       ]
     },
     "vuetify/components/VDefaultsProvider": {
       "type": "module",
-      "development": "vuetify/components/VDefaultsProvider",
-      "production": "vuetify/components/VDefaultsProvider",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VDefaultsProvider",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VDialog": {
       "type": "module",
-      "development": "vuetify/components/VDialog",
-      "production": "vuetify/components/VDialog",
-      "developmentDependencies": [
+      "path": "vuetify/components/VDialog",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VDialog/VDialog.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VDialog/VDialog.css"
       ]
     },
     "vuetify/components/VDivider": {
       "type": "module",
-      "development": "vuetify/components/VDivider",
-      "production": "vuetify/components/VDivider",
-      "developmentDependencies": [
+      "path": "vuetify/components/VDivider",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VDivider/VDivider.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VDivider/VDivider.css"
       ]
     },
     "vuetify/components/VEmptyState": {
       "type": "module",
-      "development": "vuetify/components/VEmptyState",
-      "production": "vuetify/components/VEmptyState",
-      "developmentDependencies": [
+      "path": "vuetify/components/VEmptyState",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VEmptyState/VEmptyState.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VEmptyState/VEmptyState.css"
       ]
     },
     "vuetify/components/VExpansionPanel": {
       "type": "module",
-      "development": "vuetify/components/VExpansionPanel",
-      "production": "vuetify/components/VExpansionPanel",
-      "developmentDependencies": [
+      "path": "vuetify/components/VExpansionPanel",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VExpansionPanel/VExpansionPanel.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VExpansionPanel/VExpansionPanel.css"
       ]
     },
     "vuetify/components/VFab": {
       "type": "module",
-      "development": "vuetify/components/VFab",
-      "production": "vuetify/components/VFab",
-      "developmentDependencies": [
+      "path": "vuetify/components/VFab",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VFab/VFab.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VFab/VFab.css"
       ]
     },
     "vuetify/components/VField": {
       "type": "module",
-      "development": "vuetify/components/VField",
-      "production": "vuetify/components/VField",
-      "developmentDependencies": [
+      "path": "vuetify/components/VField",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VField/VField.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VField/VField.css"
       ]
     },
     "vuetify/components/VFileInput": {
       "type": "module",
-      "development": "vuetify/components/VFileInput",
-      "production": "vuetify/components/VFileInput",
-      "developmentDependencies": [
+      "path": "vuetify/components/VFileInput",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VFileInput/VFileInput.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VFileInput/VFileInput.css"
       ]
     },
     "vuetify/components/VFooter": {
       "type": "module",
-      "development": "vuetify/components/VFooter",
-      "production": "vuetify/components/VFooter",
-      "developmentDependencies": [
+      "path": "vuetify/components/VFooter",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VFooter/VFooter.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VFooter/VFooter.css"
       ]
     },
     "vuetify/components/VForm": {
       "type": "module",
-      "development": "vuetify/components/VForm",
-      "production": "vuetify/components/VForm",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VForm",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VHover": {
       "type": "module",
-      "development": "vuetify/components/VHover",
-      "production": "vuetify/components/VHover",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VHover",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VIcon": {
       "type": "module",
-      "development": "vuetify/components/VIcon",
-      "production": "vuetify/components/VIcon",
-      "developmentDependencies": [
+      "path": "vuetify/components/VIcon",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VIcon/VIcon.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VIcon/VIcon.css"
       ]
     },
     "vuetify/components/VImg": {
       "type": "module",
-      "development": "vuetify/components/VImg",
-      "production": "vuetify/components/VImg",
-      "developmentDependencies": [
+      "path": "vuetify/components/VImg",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VImg/VImg.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VImg/VImg.css"
       ]
     },
     "vuetify/components/VInfiniteScroll": {
       "type": "module",
-      "development": "vuetify/components/VInfiniteScroll",
-      "production": "vuetify/components/VInfiniteScroll",
-      "developmentDependencies": [
+      "path": "vuetify/components/VInfiniteScroll",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VInfiniteScroll/VInfiniteScroll.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VInfiniteScroll/VInfiniteScroll.css"
       ]
     },
     "vuetify/components/VInput": {
       "type": "module",
-      "development": "vuetify/components/VInput",
-      "production": "vuetify/components/VInput",
-      "developmentDependencies": [
+      "path": "vuetify/components/VInput",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VInput/VInput.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VInput/VInput.css"
       ]
     },
     "vuetify/components/VItemGroup": {
       "type": "module",
-      "development": "vuetify/components/VItemGroup",
-      "production": "vuetify/components/VItemGroup",
-      "developmentDependencies": [
+      "path": "vuetify/components/VItemGroup",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VItemGroup/VItemGroup.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VItemGroup/VItemGroup.css"
       ]
     },
     "vuetify/components/VKbd": {
       "type": "module",
-      "development": "vuetify/components/VKbd",
-      "production": "vuetify/components/VKbd",
-      "developmentDependencies": [
+      "path": "vuetify/components/VKbd",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VKbd/VKbd.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VKbd/VKbd.css"
       ]
     },
     "vuetify/components/VLabel": {
       "type": "module",
-      "development": "vuetify/components/VLabel",
-      "production": "vuetify/components/VLabel",
-      "developmentDependencies": [
+      "path": "vuetify/components/VLabel",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VLabel/VLabel.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VLabel/VLabel.css"
       ]
     },
     "vuetify/components/VLayout": {
       "type": "module",
-      "development": "vuetify/components/VLayout",
-      "production": "vuetify/components/VLayout",
-      "developmentDependencies": [
+      "path": "vuetify/components/VLayout",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VLayout/VLayout.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VLayout/VLayout.css"
       ]
     },
     "vuetify/components/VLazy": {
       "type": "module",
-      "development": "vuetify/components/VLazy",
-      "production": "vuetify/components/VLazy",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VLazy",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VList": {
       "type": "module",
-      "development": "vuetify/components/VList",
-      "production": "vuetify/components/VList",
-      "developmentDependencies": [
+      "path": "vuetify/components/VList",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VList/VList.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VList/VList.css"
       ]
     },
     "vuetify/components/VLocaleProvider": {
       "type": "module",
-      "development": "vuetify/components/VLocaleProvider",
-      "production": "vuetify/components/VLocaleProvider",
-      "developmentDependencies": [
+      "path": "vuetify/components/VLocaleProvider",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VLocaleProvider/VLocaleProvider.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VLocaleProvider/VLocaleProvider.css"
       ]
     },
     "vuetify/components/VMain": {
       "type": "module",
-      "development": "vuetify/components/VMain",
-      "production": "vuetify/components/VMain",
-      "developmentDependencies": [
+      "path": "vuetify/components/VMain",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VMain/VMain.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VMain/VMain.css"
       ]
     },
     "vuetify/components/VMenu": {
       "type": "module",
-      "development": "vuetify/components/VMenu",
-      "production": "vuetify/components/VMenu",
-      "developmentDependencies": [
+      "path": "vuetify/components/VMenu",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VMenu/VMenu.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VMenu/VMenu.css"
       ]
     },
     "vuetify/components/VMessages": {
       "type": "module",
-      "development": "vuetify/components/VMessages",
-      "production": "vuetify/components/VMessages",
-      "developmentDependencies": [
+      "path": "vuetify/components/VMessages",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VMessages/VMessages.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VMessages/VMessages.css"
       ]
     },
     "vuetify/components/VNavigationDrawer": {
       "type": "module",
-      "development": "vuetify/components/VNavigationDrawer",
-      "production": "vuetify/components/VNavigationDrawer",
-      "developmentDependencies": [
+      "path": "vuetify/components/VNavigationDrawer",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VNavigationDrawer/VNavigationDrawer.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VNavigationDrawer/VNavigationDrawer.css"
       ]
     },
     "vuetify/components/VNoSsr": {
       "type": "module",
-      "development": "vuetify/components/VNoSsr",
-      "production": "vuetify/components/VNoSsr",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VNoSsr",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VNumberInput": {
       "type": "module",
-      "development": "vuetify/components/VNumberInput",
-      "production": "vuetify/components/VNumberInput",
-      "developmentDependencies": [
+      "path": "vuetify/components/VNumberInput",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VNumberInput/VNumberInput.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VNumberInput/VNumberInput.css"
       ]
     },
     "vuetify/components/VOtpInput": {
       "type": "module",
-      "development": "vuetify/components/VOtpInput",
-      "production": "vuetify/components/VOtpInput",
-      "developmentDependencies": [
+      "path": "vuetify/components/VOtpInput",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VOtpInput/VOtpInput.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VOtpInput/VOtpInput.css"
       ]
     },
     "vuetify/components/VOverlay": {
       "type": "module",
-      "development": "vuetify/components/VOverlay",
-      "production": "vuetify/components/VOverlay",
-      "developmentDependencies": [
+      "path": "vuetify/components/VOverlay",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VOverlay/VOverlay.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VOverlay/VOverlay.css"
       ]
     },
     "vuetify/components/VPagination": {
       "type": "module",
-      "development": "vuetify/components/VPagination",
-      "production": "vuetify/components/VPagination",
-      "developmentDependencies": [
+      "path": "vuetify/components/VPagination",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VPagination/VPagination.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VPagination/VPagination.css"
       ]
     },
     "vuetify/components/VParallax": {
       "type": "module",
-      "development": "vuetify/components/VParallax",
-      "production": "vuetify/components/VParallax",
-      "developmentDependencies": [
+      "path": "vuetify/components/VParallax",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VParallax/VParallax.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VParallax/VParallax.css"
       ]
     },
     "vuetify/components/VProgressCircular": {
       "type": "module",
-      "development": "vuetify/components/VProgressCircular",
-      "production": "vuetify/components/VProgressCircular",
-      "developmentDependencies": [
+      "path": "vuetify/components/VProgressCircular",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VProgressCircular/VProgressCircular.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VProgressCircular/VProgressCircular.css"
       ]
     },
     "vuetify/components/VProgressLinear": {
       "type": "module",
-      "development": "vuetify/components/VProgressLinear",
-      "production": "vuetify/components/VProgressLinear",
-      "developmentDependencies": [
+      "path": "vuetify/components/VProgressLinear",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VProgressLinear/VProgressLinear.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VProgressLinear/VProgressLinear.css"
       ]
     },
     "vuetify/components/VRadio": {
       "type": "module",
-      "development": "vuetify/components/VRadio",
-      "production": "vuetify/components/VRadio",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VRadio",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VRadioGroup": {
       "type": "module",
-      "development": "vuetify/components/VRadioGroup",
-      "production": "vuetify/components/VRadioGroup",
-      "developmentDependencies": [
+      "path": "vuetify/components/VRadioGroup",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VRadioGroup/VRadioGroup.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VRadioGroup/VRadioGroup.css"
       ]
     },
     "vuetify/components/VRangeSlider": {
       "type": "module",
-      "development": "vuetify/components/VRangeSlider",
-      "production": "vuetify/components/VRangeSlider",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VRangeSlider",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VRating": {
       "type": "module",
-      "development": "vuetify/components/VRating",
-      "production": "vuetify/components/VRating",
-      "developmentDependencies": [
+      "path": "vuetify/components/VRating",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VRating/VRating.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VRating/VRating.css"
       ]
     },
     "vuetify/components/VResponsive": {
       "type": "module",
-      "development": "vuetify/components/VResponsive",
-      "production": "vuetify/components/VResponsive",
-      "developmentDependencies": [
+      "path": "vuetify/components/VResponsive",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VResponsive/VResponsive.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VResponsive/VResponsive.css"
       ]
     },
     "vuetify/components/VSelect": {
       "type": "module",
-      "development": "vuetify/components/VSelect",
-      "production": "vuetify/components/VSelect",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSelect",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSelect/VSelect.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSelect/VSelect.css"
       ]
     },
     "vuetify/components/VSelectionControl": {
       "type": "module",
-      "development": "vuetify/components/VSelectionControl",
-      "production": "vuetify/components/VSelectionControl",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSelectionControl",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSelectionControl/VSelectionControl.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSelectionControl/VSelectionControl.css"
       ]
     },
     "vuetify/components/VSelectionControlGroup": {
       "type": "module",
-      "development": "vuetify/components/VSelectionControlGroup",
-      "production": "vuetify/components/VSelectionControlGroup",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSelectionControlGroup",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSelectionControlGroup/VSelectionControlGroup.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSelectionControlGroup/VSelectionControlGroup.css"
       ]
     },
     "vuetify/components/VSheet": {
       "type": "module",
-      "development": "vuetify/components/VSheet",
-      "production": "vuetify/components/VSheet",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSheet",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSheet/VSheet.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSheet/VSheet.css"
       ]
     },
     "vuetify/components/VSkeletonLoader": {
       "type": "module",
-      "development": "vuetify/components/VSkeletonLoader",
-      "production": "vuetify/components/VSkeletonLoader",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSkeletonLoader",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSkeletonLoader/VSkeletonLoader.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSkeletonLoader/VSkeletonLoader.css"
       ]
     },
     "vuetify/components/VSlideGroup": {
       "type": "module",
-      "development": "vuetify/components/VSlideGroup",
-      "production": "vuetify/components/VSlideGroup",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSlideGroup",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSlideGroup/VSlideGroup.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSlideGroup/VSlideGroup.css"
       ]
     },
     "vuetify/components/VSlider": {
       "type": "module",
-      "development": "vuetify/components/VSlider",
-      "production": "vuetify/components/VSlider",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSlider",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSlider/VSlider.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSlider/VSlider.css"
       ]
     },
     "vuetify/components/VSnackbar": {
       "type": "module",
-      "development": "vuetify/components/VSnackbar",
-      "production": "vuetify/components/VSnackbar",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSnackbar",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSnackbar/VSnackbar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSnackbar/VSnackbar.css"
       ]
     },
     "vuetify/components/VSnackbarQueue": {
       "type": "module",
-      "development": "vuetify/components/VSnackbarQueue",
-      "production": "vuetify/components/VSnackbarQueue",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VSnackbarQueue",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VSparkline": {
       "type": "module",
-      "development": "vuetify/components/VSparkline",
-      "production": "vuetify/components/VSparkline",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VSparkline",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VSpeedDial": {
       "type": "module",
-      "development": "vuetify/components/VSpeedDial",
-      "production": "vuetify/components/VSpeedDial",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSpeedDial",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSpeedDial/VSpeedDial.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSpeedDial/VSpeedDial.css"
       ]
     },
     "vuetify/components/VStepper": {
       "type": "module",
-      "development": "vuetify/components/VStepper",
-      "production": "vuetify/components/VStepper",
-      "developmentDependencies": [
+      "path": "vuetify/components/VStepper",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VStepper/VStepper.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VStepper/VStepper.css"
       ]
     },
     "vuetify/components/VSwitch": {
       "type": "module",
-      "development": "vuetify/components/VSwitch",
-      "production": "vuetify/components/VSwitch",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSwitch",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSwitch/VSwitch.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSwitch/VSwitch.css"
       ]
     },
     "vuetify/components/VSystemBar": {
       "type": "module",
-      "development": "vuetify/components/VSystemBar",
-      "production": "vuetify/components/VSystemBar",
-      "developmentDependencies": [
+      "path": "vuetify/components/VSystemBar",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VSystemBar/VSystemBar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VSystemBar/VSystemBar.css"
       ]
     },
     "vuetify/components/VTabs": {
       "type": "module",
-      "development": "vuetify/components/VTabs",
-      "production": "vuetify/components/VTabs",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTabs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTabs/VTabs.css"
       ]
     },
     "vuetify/components/VTable": {
       "type": "module",
-      "development": "vuetify/components/VTable",
-      "production": "vuetify/components/VTable",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTable",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTable/VTable.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTable/VTable.css"
       ]
     },
     "vuetify/components/VTextField": {
       "type": "module",
-      "development": "vuetify/components/VTextField",
-      "production": "vuetify/components/VTextField",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTextField",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTextField/VTextField.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTextField/VTextField.css"
       ]
     },
     "vuetify/components/VTextarea": {
       "type": "module",
-      "development": "vuetify/components/VTextarea",
-      "production": "vuetify/components/VTextarea",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTextarea",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTextarea/VTextarea.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTextarea/VTextarea.css"
       ]
     },
     "vuetify/components/VThemeProvider": {
       "type": "module",
-      "development": "vuetify/components/VThemeProvider",
-      "production": "vuetify/components/VThemeProvider",
-      "developmentDependencies": [
+      "path": "vuetify/components/VThemeProvider",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VThemeProvider/VThemeProvider.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VThemeProvider/VThemeProvider.css"
       ]
     },
     "vuetify/components/VTimeline": {
       "type": "module",
-      "development": "vuetify/components/VTimeline",
-      "production": "vuetify/components/VTimeline",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTimeline",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTimeline/VTimeline.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTimeline/VTimeline.css"
       ]
     },
     "vuetify/components/VToolbar": {
       "type": "module",
-      "development": "vuetify/components/VToolbar",
-      "production": "vuetify/components/VToolbar",
-      "developmentDependencies": [
+      "path": "vuetify/components/VToolbar",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VToolbar/VToolbar.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VToolbar/VToolbar.css"
       ]
     },
     "vuetify/components/VTooltip": {
       "type": "module",
-      "development": "vuetify/components/VTooltip",
-      "production": "vuetify/components/VTooltip",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTooltip",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTooltip/VTooltip.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTooltip/VTooltip.css"
       ]
     },
     "vuetify/components/VValidation": {
       "type": "module",
-      "development": "vuetify/components/VValidation",
-      "production": "vuetify/components/VValidation",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VValidation",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VVirtualScroll": {
       "type": "module",
-      "development": "vuetify/components/VVirtualScroll",
-      "production": "vuetify/components/VVirtualScroll",
-      "developmentDependencies": [
+      "path": "vuetify/components/VVirtualScroll",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VVirtualScroll/VVirtualScroll.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VVirtualScroll/VVirtualScroll.css"
       ]
     },
     "vuetify/components/VWindow": {
       "type": "module",
-      "development": "vuetify/components/VWindow",
-      "production": "vuetify/components/VWindow",
-      "developmentDependencies": [
+      "path": "vuetify/components/VWindow",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VWindow/VWindow.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VWindow/VWindow.css"
       ]
     },
     "vuetify/directives/click-outside": {
       "type": "module",
-      "development": "vuetify/directives/click-outside",
-      "production": "vuetify/directives/click-outside",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/click-outside",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/directives/intersect": {
       "type": "module",
-      "development": "vuetify/directives/intersect",
-      "production": "vuetify/directives/intersect",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/intersect",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/directives/mutate": {
       "type": "module",
-      "development": "vuetify/directives/mutate",
-      "production": "vuetify/directives/mutate",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/mutate",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/directives/resize": {
       "type": "module",
-      "development": "vuetify/directives/resize",
-      "production": "vuetify/directives/resize",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/resize",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/directives/ripple": {
       "type": "module",
-      "development": "vuetify/directives/ripple",
-      "production": "vuetify/directives/ripple",
-      "developmentDependencies": [
+      "path": "vuetify/directives/ripple",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/directives/ripple/VRipple.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/directives/ripple/VRipple.css"
       ]
     },
     "vuetify/directives/scroll": {
       "type": "module",
-      "development": "vuetify/directives/scroll",
-      "production": "vuetify/directives/scroll",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/scroll",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/directives/tooltip": {
       "type": "module",
-      "development": "vuetify/directives/tooltip",
-      "production": "vuetify/directives/tooltip",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/tooltip",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/directives/touch": {
       "type": "module",
-      "development": "vuetify/directives/touch",
-      "production": "vuetify/directives/touch",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/directives/touch",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VCalendar": {
       "type": "module",
-      "development": "vuetify/components/VCalendar",
-      "production": "vuetify/components/VCalendar",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VCalendar",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VDateInput": {
       "type": "module",
-      "development": "vuetify/components/VDateInput",
-      "production": "vuetify/components/VDateInput",
-      "developmentDependencies": [
+      "path": "vuetify/components/VDateInput",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VDateInput/VDateInput.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VDateInput/VDateInput.css"
       ]
     },
     "vuetify/components/VFileUpload": {
       "type": "module",
-      "development": "vuetify/components/VFileUpload",
-      "production": "vuetify/components/VFileUpload",
-      "developmentDependencies": [
+      "path": "vuetify/components/VFileUpload",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VFileUpload/VFileUpload.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VFileUpload/VFileUpload.css"
       ]
     },
     "vuetify/components/VIconBtn": {
       "type": "module",
-      "development": "vuetify/components/VIconBtn",
-      "production": "vuetify/components/VIconBtn",
-      "developmentDependencies": [
+      "path": "vuetify/components/VIconBtn",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VIconBtn/VIconBtn.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VIconBtn/VIconBtn.css"
       ]
     },
     "vuetify/components/VPicker": {
       "type": "module",
-      "development": "vuetify/components/VPicker",
-      "production": "vuetify/components/VPicker",
-      "developmentDependencies": [
+      "path": "vuetify/components/VPicker",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VPicker/VPicker.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VPicker/VPicker.css"
       ]
     },
     "vuetify/components/VPullToRefresh": {
       "type": "module",
-      "development": "vuetify/components/VPullToRefresh",
-      "production": "vuetify/components/VPullToRefresh",
-      "developmentDependencies": [
+      "path": "vuetify/components/VPullToRefresh",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VPullToRefresh/VPullToRefresh.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VPullToRefresh/VPullToRefresh.css"
       ]
     },
     "vuetify/components/VStepperVertical": {
       "type": "module",
-      "development": "vuetify/components/VStepperVertical",
-      "production": "vuetify/components/VStepperVertical",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VStepperVertical",
+      "dependencies": [
         "vue"
       ]
     },
     "vuetify/components/VTimePicker": {
       "type": "module",
-      "development": "vuetify/components/VTimePicker",
-      "production": "vuetify/components/VTimePicker",
-      "developmentDependencies": [
+      "path": "vuetify/components/VTimePicker",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vuetify/lib/components/VTimePicker/VTimePicker.css"
-      ],
-      "productionStylesheetImports": [
-        "vuetify/lib/components/VTimePicker/VTimePicker.css"
       ]
     },
     "vuetify/components/VTreeview": {
       "type": "module",
-      "development": "vuetify/components/VTreeview",
-      "production": "vuetify/components/VTreeview",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vuetify/components/VTreeview",
+      "dependencies": [
         "vue"
       ]
     }

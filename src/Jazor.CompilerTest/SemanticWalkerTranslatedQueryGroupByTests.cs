@@ -35,8 +35,8 @@ public sealed class SemanticWalkerTranslatedQueryGroupByTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         var importsByModule = imports.ToDictionary(static pair => pair.Key, static pair => pair.Value);
-        Assert.IsTrue(importsByModule.TryGetValue("clr/System/Linq/EnumerableModule.js", out var enumerableImports), body);
-        Assert.IsTrue(importsByModule.TryGetValue("clr/System/Linq/GroupingT2Module.js", out var groupingImports), body);
+        Assert.IsTrue(importsByModule.TryGetValue("./clr/System/Linq/EnumerableModule.js", out var enumerableImports), body);
+        Assert.IsTrue(importsByModule.TryGetValue("./clr/System/Linq/GroupingT2Module.js", out var groupingImports), body);
 
         var enumerableNames = enumerableImports.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.Contains(enumerableNames, "_e62121525c074f74");

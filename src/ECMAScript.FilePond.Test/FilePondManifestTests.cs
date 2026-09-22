@@ -31,24 +31,22 @@ public sealed class FilePondManifestTests
             new[] { "filepond", "vue-filepond" },
             imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
 
-        Assert.AreEqual(0, imports.GetProperty("filepond").GetProperty("productionDependencies").EnumerateArray().Count());
+        Assert.AreEqual(0, imports.GetProperty("filepond").GetProperty("dependencies").EnumerateArray().Count());
         CollectionAssert.AreEquivalent(
             new[] { "filepond" },
-            imports.GetProperty("vue-filepond").GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
+            imports.GetProperty("vue-filepond").GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
         foreach (var entry in imports.EnumerateObject())
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
-            Assert.AreEqual(entry.Name, entry.Value.GetProperty("development").GetString());
-            Assert.AreEqual(entry.Name, entry.Value.GetProperty("production").GetString());
+            Assert.AreEqual(entry.Name, entry.Value.GetProperty("path").GetString());
+            Assert.AreEqual(entry.Name, entry.Value.GetProperty("path").GetString());
         }
 
-        CollectionAssert.AreEquivalent(
-            new[] { "filepond/dist/filepond.css" },
-            imports.GetProperty("filepond")
-                .GetProperty("productionStylesheetImports")
-                .EnumerateArray()
-                .Select(static value => value.GetString()!)
-                .ToArray());
+        foreach (var entry in imports.EnumerateObject())
+            Assert.IsFalse(entry.Value.TryGetProperty("stylesheetImports", out _));
+        Assert.AreEqual("filepond/dist/filepond.css",
+            typeof(ECMAScript.FilePond).GetCustomAttributes(typeof(StyleAttribute), false)
+                .Cast<StyleAttribute>().Single().Specifier);
         Assert.AreEqual(0, root.GetProperty("styles").GetArrayLength());
         Assert.IsFalse(root.TryGetProperty("dist", out _));
         Assert.IsFalse(root.TryGetProperty("vendor", out _));
@@ -71,8 +69,8 @@ public sealed class FilePondManifestTests
         using var manifest = JsonDocument.Parse(File.ReadAllText(GetProjectPath("manifest.json")));
         foreach (var entry in manifest.RootElement.GetProperty("imports").EnumerateObject())
         {
-            Assert.IsFalse(entry.Value.GetProperty("production").GetString()!.Contains("/", StringComparison.Ordinal) &&
-                           entry.Value.GetProperty("production").GetString()!.StartsWith(".", StringComparison.Ordinal),
+            Assert.IsFalse(entry.Value.GetProperty("path").GetString()!.Contains("/", StringComparison.Ordinal) &&
+                           entry.Value.GetProperty("path").GetString()!.StartsWith(".", StringComparison.Ordinal),
                 "Runtime entries must remain package specifiers.");
         }
     }

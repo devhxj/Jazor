@@ -61,7 +61,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.ShowHistory", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-panel-page-conditional-slot-runtime.mjs",
+            "components/release-panel-page-conditional-slot-runtime.js",
             observation.ModuleText,
             "official-release-panel-conditional-slot-runtime.test.mjs",
             """
@@ -69,8 +69,8 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
             import test from "node:test";
             import { Fragment } from "vue";
 
-            import component from "./components/release-panel-page-conditional-slot-runtime.mjs";
-            import releasePanel from "./components/release-panel-conditional-slot-runtime.mjs";
+            import component from "./components/release-panel-page-conditional-slot-runtime.js";
+            import releasePanel from "./components/release-panel-conditional-slot-runtime.js";
 
             test("official Razor conditional ChildContent keeps the active slot shape", () => {
                 const historyPanel = component.setup({
@@ -108,7 +108,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-panel-conditional-slot-runtime.mjs"] = "export default { name: \"release-panel-conditional-slot-runtime\" };"
+                ["components/release-panel-conditional-slot-runtime.js"] = "export default { name: \"release-panel-conditional-slot-runtime\" };"
             });
     }
 }

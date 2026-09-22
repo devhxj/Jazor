@@ -110,14 +110,14 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
             StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/reference-focus-runtime.mjs",
+            "components/reference-focus-runtime.js",
             observation.ModuleText,
             "official-reference-focus-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/reference-focus-runtime.mjs";
+            import component from "./components/reference-focus-runtime.js";
 
             function findNode(node, predicate) {
                 if (Array.isArray(node)) {
@@ -223,7 +223,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddComponentReferenceCapture", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "from \"./reference-child.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./reference-child.js\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "inputElement: null", StringComparison.Ordinal);
         StringAssert.Contains(script, "child: null", StringComparison.Ordinal);
         StringAssert.Contains(script, "ref:", StringComparison.Ordinal);
@@ -278,14 +278,14 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/reference-runtime.mjs",
+            "components/reference-runtime.js",
             observation.ModuleText,
             "official-reference-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/reference-runtime.mjs";
+            import component from "./components/reference-runtime.js";
 
             test("official Razor component references follow Vue mount and unmount callbacks", () => {
                 const render = component.setup({}, { slots: {} });
@@ -318,7 +318,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
             """,
             new Dictionary<string, string>
             {
-                ["components/reference-child.mjs"] = "export default { name: \"reference-child\" };"
+                ["components/reference-child.js"] = "export default { name: \"reference-child\" };"
             });
     }
 }

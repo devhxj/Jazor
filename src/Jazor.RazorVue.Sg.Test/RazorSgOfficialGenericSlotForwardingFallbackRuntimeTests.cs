@@ -71,15 +71,15 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Fallback: ", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-template-forwarder-runtime.mjs",
+            "components/release-template-forwarder-runtime.js",
             observation.ModuleText,
             "official-release-template-forwarder-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-template-forwarder-runtime.mjs";
-            import releaseList from "./components/release-list-generic-slot-forwarding-runtime.mjs";
+            import component from "./components/release-template-forwarder-runtime.js";
+            import releaseList from "./components/release-list-generic-slot-forwarding-runtime.js";
 
             test("official Razor generic slot forwarding preserves incoming and fallback contexts", () => {
                 const incoming = component.setup(
@@ -118,7 +118,7 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-list-generic-slot-forwarding-runtime.mjs"] = "export default { name: \"release-list-generic-slot-forwarding-runtime\" };"
+                ["components/release-list-generic-slot-forwarding-runtime.js"] = "export default { name: \"release-list-generic-slot-forwarding-runtime\" };"
             });
     }
 }

@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableCountScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

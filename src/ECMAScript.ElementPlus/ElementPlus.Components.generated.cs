@@ -15,6 +15,7 @@ namespace ECMAScript.ElementPlus;
 /// </summary>
 [ECMAScriptName("ElAffix")]
 [ECMAScript("element-plus/es/components/affix/index.mjs")]
+[Style("element-plus/es/components/affix/style/css.mjs")]
 public sealed class ElAffix : ElContentComponentBase
 {
     /// <summary>
@@ -80,6 +81,7 @@ public sealed class ElAffix : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAlert")]
 [ECMAScript("element-plus/es/components/alert/index.mjs")]
+[Style("element-plus/es/components/alert/style/css.mjs")]
 public sealed class ElAlert : ElContentComponentBase
 {
     /// <summary>
@@ -166,6 +168,7 @@ public sealed class ElAlert : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAnchor")]
 [ECMAScript("element-plus/es/components/anchor/index.mjs")]
+[Style("element-plus/es/components/anchor/style/css.mjs")]
 public sealed class ElAnchor : ElContentComponentBase
 {
     /// <summary>
@@ -189,6 +192,7 @@ public sealed class ElAnchor : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAnchorLink")]
 [ECMAScript("element-plus/es/components/anchor/index.mjs")]
+[Style("element-plus/es/components/anchor/style/css.mjs")]
 public sealed class ElAnchorLink : ElContentComponentBase
 {
     /// <summary>
@@ -205,6 +209,7 @@ public sealed class ElAnchorLink : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAside")]
 [ECMAScript("element-plus/es/components/container/index.mjs")]
+[Style("element-plus/es/components/container/style/css.mjs")]
 public sealed class ElAside : ElContentComponentBase
 {
     /// <summary>
@@ -221,6 +226,7 @@ public sealed class ElAside : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAutoResizer")]
 [ECMAScript("element-plus/es/components/table-v2/index.mjs")]
+[Style("element-plus/es/components/table-v2/style/css.mjs")]
 public sealed class ElAutoResizer : ElContentComponentBase
 {
     /// <summary>
@@ -251,6 +257,7 @@ public sealed class ElAutoResizer : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAutocomplete")]
 [ECMAScript("element-plus/es/components/autocomplete/index.mjs")]
+[Style("element-plus/es/components/autocomplete/style/css.mjs")]
 public sealed class ElAutocomplete : ElContentComponentBase
 {
     /// <summary>
@@ -519,6 +526,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAvatar")]
 [ECMAScript("element-plus/es/components/avatar/index.mjs")]
+[Style("element-plus/es/components/avatar/style/css.mjs")]
 public sealed class ElAvatar : ElContentComponentBase
 {
     /// <summary>
@@ -584,6 +592,7 @@ public sealed class ElAvatar : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElAvatarGroup")]
 [ECMAScript("element-plus/es/components/avatar/index.mjs")]
+[Style("element-plus/es/components/avatar/style/css.mjs")]
 public sealed class ElAvatarGroup : ElComponentBase
 {
     /// <summary>
@@ -670,6 +679,7 @@ public sealed class ElAvatarGroup : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElBacktop")]
 [ECMAScript("element-plus/es/components/backtop/index.mjs")]
+[Style("element-plus/es/components/backtop/style/css.mjs")]
 public sealed class ElBacktop : ElContentComponentBase
 {
     /// <summary>
@@ -714,6 +724,7 @@ public sealed class ElBacktop : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElBadge")]
 [ECMAScript("element-plus/es/components/badge/index.mjs")]
+[Style("element-plus/es/components/badge/style/css.mjs")]
 public sealed class ElBadge : ElContentComponentBase
 {
     /// <summary>
@@ -800,6 +811,7 @@ public sealed class ElBadge : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElBreadcrumb")]
 [ECMAScript("element-plus/es/components/breadcrumb/index.mjs")]
+[Style("element-plus/es/components/breadcrumb/style/css.mjs")]
 public sealed class ElBreadcrumb : ElContentComponentBase
 {
     /// <summary>
@@ -823,6 +835,7 @@ public sealed class ElBreadcrumb : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElBreadcrumbItem")]
 [ECMAScript("element-plus/es/components/breadcrumb/index.mjs")]
+[Style("element-plus/es/components/breadcrumb/style/css.mjs")]
 public sealed class ElBreadcrumbItem : ElContentComponentBase
 {
     /// <summary>
@@ -846,6 +859,7 @@ public sealed class ElBreadcrumbItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElButton")]
 [ECMAScript("element-plus/es/components/button/index.mjs")]
+[Style("element-plus/es/components/button/style/css.mjs")]
 public sealed class ElButton : ElContentComponentBase
 {
     /// <summary>
@@ -1009,6 +1023,7 @@ public sealed class ElButton : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElButtonGroup")]
 [ECMAScript("element-plus/es/components/button/index.mjs")]
+[Style("element-plus/es/components/button/style/css.mjs")]
 public sealed class ElButtonGroup : ElContentComponentBase
 {
     /// <summary>
@@ -1039,6 +1054,7 @@ public sealed class ElButtonGroup : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCalendar")]
 [ECMAScript("element-plus/es/components/calendar/index.mjs")]
+[Style("element-plus/es/components/calendar/style/css.mjs")]
 public sealed class ElCalendar : ElComponentBase
 {
     /// <summary>
@@ -1097,6 +1113,7 @@ public sealed class ElCalendar : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElCard")]
 [ECMAScript("element-plus/es/components/card/index.mjs")]
+[Style("element-plus/es/components/card/style/css.mjs")]
 public sealed class ElCard : ElContentComponentBase
 {
     /// <summary>
@@ -1169,6 +1186,7 @@ public sealed class ElCard : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCarousel")]
 [ECMAScript("element-plus/es/components/carousel/index.mjs")]
+[Style("element-plus/es/components/carousel/style/css.mjs")]
 public sealed class ElCarousel : ElContentComponentBase
 {
     /// <summary>
@@ -1276,6 +1294,7 @@ public sealed class ElCarousel : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCarouselItem")]
 [ECMAScript("element-plus/es/components/carousel/index.mjs")]
+[Style("element-plus/es/components/carousel/style/css.mjs")]
 public sealed class ElCarouselItem : ElContentComponentBase
 {
     /// <summary>
@@ -1299,6 +1318,7 @@ public sealed class ElCarouselItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCascader")]
 [ECMAScript("element-plus/es/components/cascader/index.mjs")]
+[Style("element-plus/es/components/cascader/style/css.mjs")]
 public sealed class ElCascader : ElContentComponentBase
 {
     /// <summary>
@@ -1658,6 +1678,7 @@ public sealed class ElCascader : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCascaderPanel")]
 [ECMAScript("element-plus/es/components/cascader-panel/index.mjs")]
+[Style("element-plus/es/components/cascader-panel/style/css.mjs")]
 public sealed class ElCascaderPanel : ElContentComponentBase
 {
     /// <summary>
@@ -1744,6 +1765,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCheckTag")]
 [ECMAScript("element-plus/es/components/check-tag/index.mjs")]
+[Style("element-plus/es/components/check-tag/style/css.mjs")]
 public sealed class ElCheckTag : ElContentComponentBase
 {
     /// <summary>
@@ -1781,6 +1803,7 @@ public sealed class ElCheckTag : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCheckbox")]
 [ECMAScript("element-plus/es/components/checkbox/index.mjs")]
+[Style("element-plus/es/components/checkbox/style/css.mjs")]
 public sealed class ElCheckbox : ElContentComponentBase
 {
     /// <summary>
@@ -1937,6 +1960,7 @@ public sealed class ElCheckbox : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCheckboxButton")]
 [ECMAScript("element-plus/es/components/checkbox/index.mjs")]
+[Style("element-plus/es/components/checkbox/style/css.mjs")]
 public sealed class ElCheckboxButton : ElContentComponentBase
 {
     /// <summary>
@@ -2009,6 +2033,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCheckboxGroup")]
 [ECMAScript("element-plus/es/components/checkbox/index.mjs")]
+[Style("element-plus/es/components/checkbox/style/css.mjs")]
 public sealed class ElCheckboxGroup : ElContentComponentBase
 {
     /// <summary>
@@ -2130,6 +2155,7 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCol")]
 [ECMAScript("element-plus/es/components/col/index.mjs")]
+[Style("element-plus/es/components/col/style/css.mjs")]
 public sealed class ElCol : ElContentComponentBase
 {
     /// <summary>
@@ -2209,6 +2235,7 @@ public sealed class ElCol : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCollapse")]
 [ECMAScript("element-plus/es/components/collapse/index.mjs")]
+[Style("element-plus/es/components/collapse/style/css.mjs")]
 public sealed class ElCollapse : ElContentComponentBase
 {
     /// <summary>
@@ -2260,6 +2287,7 @@ public sealed class ElCollapse : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCollapseItem")]
 [ECMAScript("element-plus/es/components/collapse/index.mjs")]
+[Style("element-plus/es/components/collapse/style/css.mjs")]
 public sealed class ElCollapseItem : ElComponentBase
 {
     /// <summary>
@@ -2297,6 +2325,7 @@ public sealed class ElCollapseItem : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElCollapseTransition")]
 [ECMAScript("element-plus/es/components/collapse-transition/index.mjs")]
+[Style("element-plus/es/components/collapse-transition/style/css.mjs")]
 public sealed class ElCollapseTransition : ElContentComponentBase
 {
 }
@@ -2306,6 +2335,7 @@ public sealed class ElCollapseTransition : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElColorPicker")]
 [ECMAScript("element-plus/es/components/color-picker/index.mjs")]
+[Style("element-plus/es/components/color-picker/style/css.mjs")]
 public sealed class ElColorPicker : ElComponentBase
 {
     /// <summary>
@@ -2490,6 +2520,7 @@ public sealed class ElColorPicker : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElColorPickerPanel")]
 [ECMAScript("element-plus/es/components/color-picker-panel/index.mjs")]
+[Style("element-plus/es/components/color-picker-panel/style/css.mjs")]
 public sealed class ElColorPickerPanel : ElComponentBase
 {
     /// <summary>
@@ -2576,6 +2607,7 @@ public sealed class ElColorPickerPanel : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElConfigProvider")]
 [ECMAScript("element-plus/es/components/config-provider/index.mjs")]
+[Style("element-plus/es/components/config-provider/style/css.mjs")]
 public sealed class ElConfigProvider : ElContentComponentBase
 {
     /// <summary>
@@ -2690,6 +2722,7 @@ public sealed class ElConfigProvider : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElContainer")]
 [ECMAScript("element-plus/es/components/container/index.mjs")]
+[Style("element-plus/es/components/container/style/css.mjs")]
 public sealed class ElContainer : ElContentComponentBase
 {
     /// <summary>
@@ -2706,6 +2739,7 @@ public sealed class ElContainer : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElCountdown")]
 [ECMAScript("element-plus/es/components/countdown/index.mjs")]
+[Style("element-plus/es/components/countdown/style/css.mjs")]
 public sealed class ElCountdown : ElComponentBase
 {
     /// <summary>
@@ -2750,6 +2784,7 @@ public sealed class ElCountdown : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElDatePicker")]
 [ECMAScript("element-plus/es/components/date-picker/index.mjs")]
+[Style("element-plus/es/components/date-picker/style/css.mjs")]
 public sealed class ElDatePicker : ElContentComponentBase
 {
     /// <summary>
@@ -3123,6 +3158,7 @@ public sealed class ElDatePicker : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDatePickerPanel")]
 [ECMAScript("element-plus/es/components/date-picker-panel/index.mjs")]
+[Style("element-plus/es/components/date-picker-panel/style/css.mjs")]
 public sealed class ElDatePickerPanel : ElContentComponentBase
 {
     /// <summary>
@@ -3321,6 +3357,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDescriptions")]
 [ECMAScript("element-plus/es/components/descriptions/index.mjs")]
+[Style("element-plus/es/components/descriptions/style/css.mjs")]
 public sealed class ElDescriptions : ElContentComponentBase
 {
     /// <summary>
@@ -3393,6 +3430,7 @@ public sealed class ElDescriptions : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDescriptionsItem")]
 [ECMAScript("element-plus/es/components/descriptions/index.mjs")]
+[Style("element-plus/es/components/descriptions/style/css.mjs")]
 public sealed class ElDescriptionsItem : ElContentComponentBase
 {
     /// <summary>
@@ -3479,6 +3517,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDialog")]
 [ECMAScript("element-plus/es/components/dialog/index.mjs")]
+[Style("element-plus/es/components/dialog/style/css.mjs")]
 public sealed class ElDialog : ElContentComponentBase
 {
     /// <summary>
@@ -3768,6 +3807,7 @@ public sealed class ElDialog : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDivider")]
 [ECMAScript("element-plus/es/components/divider/index.mjs")]
+[Style("element-plus/es/components/divider/style/css.mjs")]
 public sealed class ElDivider : ElContentComponentBase
 {
     /// <summary>
@@ -3798,6 +3838,7 @@ public sealed class ElDivider : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDrawer")]
 [ECMAScript("element-plus/es/components/drawer/index.mjs")]
+[Style("element-plus/es/components/drawer/style/css.mjs")]
 public sealed class ElDrawer : ElContentComponentBase
 {
     /// <summary>
@@ -4073,6 +4114,7 @@ public sealed class ElDrawer : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDropdown")]
 [ECMAScript("element-plus/es/components/dropdown/index.mjs")]
+[Style("element-plus/es/components/dropdown/style/css.mjs")]
 public sealed class ElDropdown : ElContentComponentBase
 {
     /// <summary>
@@ -4278,6 +4320,7 @@ public sealed class ElDropdown : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDropdownItem")]
 [ECMAScript("element-plus/es/components/dropdown/index.mjs")]
+[Style("element-plus/es/components/dropdown/style/css.mjs")]
 public sealed class ElDropdownItem : ElContentComponentBase
 {
     /// <summary>
@@ -4322,6 +4365,7 @@ public sealed class ElDropdownItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElDropdownMenu")]
 [ECMAScript("element-plus/es/components/dropdown/index.mjs")]
+[Style("element-plus/es/components/dropdown/style/css.mjs")]
 public sealed class ElDropdownMenu : ElContentComponentBase
 {
 }
@@ -4331,6 +4375,7 @@ public sealed class ElDropdownMenu : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElEmpty")]
 [ECMAScript("element-plus/es/components/empty/index.mjs")]
+[Style("element-plus/es/components/empty/style/css.mjs")]
 public sealed class ElEmpty : ElContentComponentBase
 {
     /// <summary>
@@ -4375,6 +4420,7 @@ public sealed class ElEmpty : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElFooter")]
 [ECMAScript("element-plus/es/components/container/index.mjs")]
+[Style("element-plus/es/components/container/style/css.mjs")]
 public sealed class ElFooter : ElContentComponentBase
 {
     /// <summary>
@@ -4391,6 +4437,7 @@ public sealed class ElFooter : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElForm")]
 [ECMAScript("element-plus/es/components/form/index.mjs")]
+[Style("element-plus/es/components/form/style/css.mjs")]
 public sealed class ElForm : ElContentComponentBase
 {
     /// <summary>
@@ -4519,6 +4566,7 @@ public sealed class ElForm : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElFormItem")]
 [ECMAScript("element-plus/es/components/form/index.mjs")]
+[Style("element-plus/es/components/form/style/css.mjs")]
 public sealed class ElFormItem : ElContentComponentBase
 {
     /// <summary>
@@ -4626,6 +4674,7 @@ public sealed class ElFormItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElHeader")]
 [ECMAScript("element-plus/es/components/container/index.mjs")]
+[Style("element-plus/es/components/container/style/css.mjs")]
 public sealed class ElHeader : ElContentComponentBase
 {
     /// <summary>
@@ -4642,6 +4691,7 @@ public sealed class ElHeader : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElIcon")]
 [ECMAScript("element-plus/es/components/icon/index.mjs")]
+[Style("element-plus/es/components/icon/style/css.mjs")]
 public sealed class ElIcon : ElContentComponentBase
 {
     /// <summary>
@@ -4665,6 +4715,7 @@ public sealed class ElIcon : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElImage")]
 [ECMAScript("element-plus/es/components/image/index.mjs")]
+[Style("element-plus/es/components/image/style/css.mjs")]
 public sealed class ElImage : ElComponentBase
 {
     /// <summary>
@@ -4863,6 +4914,7 @@ public sealed class ElImage : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElImageViewer")]
 [ECMAScript("element-plus/es/components/image-viewer/index.mjs")]
+[Style("element-plus/es/components/image-viewer/style/css.mjs")]
 public sealed class ElImageViewer : ElComponentBase
 {
     /// <summary>
@@ -5012,6 +5064,7 @@ public sealed class ElImageViewer : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElInput")]
 [ECMAScript("element-plus/es/components/input/index.mjs")]
+[Style("element-plus/es/components/input/style/css.mjs")]
 public sealed class ElInput : ElComponentBase
 {
     /// <summary>
@@ -5385,6 +5438,7 @@ public sealed class ElInput : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElInputNumber")]
 [ECMAScript("element-plus/es/components/input-number/index.mjs")]
+[Style("element-plus/es/components/input-number/style/css.mjs")]
 public sealed class ElInputNumber : ElComponentBase
 {
     /// <summary>
@@ -5618,6 +5672,7 @@ public sealed class ElInputNumber : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElInputOtp")]
 [ECMAScript("element-plus/es/components/input-otp/index.mjs")]
+[Style("element-plus/es/components/input-otp/style/css.mjs")]
 public sealed class ElInputOtp : ElComponentBase
 {
     /// <summary>
@@ -5760,6 +5815,7 @@ public sealed class ElInputOtp : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElInputTag")]
 [ECMAScript("element-plus/es/components/input-tag/index.mjs")]
+[Style("element-plus/es/components/input-tag/style/css.mjs")]
 public sealed class ElInputTag : ElComponentBase
 {
     /// <summary>
@@ -6035,6 +6091,7 @@ public sealed class ElInputTag : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElLink")]
 [ECMAScript("element-plus/es/components/link/index.mjs")]
+[Style("element-plus/es/components/link/style/css.mjs")]
 public sealed class ElLink : ElContentComponentBase
 {
     /// <summary>
@@ -6093,6 +6150,7 @@ public sealed class ElLink : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElMain")]
 [ECMAScript("element-plus/es/components/container/index.mjs")]
+[Style("element-plus/es/components/container/style/css.mjs")]
 public sealed class ElMain : ElContentComponentBase
 {
 }
@@ -6102,6 +6160,7 @@ public sealed class ElMain : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElMention")]
 [ECMAScript("element-plus/es/components/mention/index.mjs")]
+[Style("element-plus/es/components/mention/style/css.mjs")]
 public sealed class ElMention : ElComponentBase
 {
     /// <summary>
@@ -6272,6 +6331,7 @@ public sealed class ElMention : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElMenu")]
 [ECMAScript("element-plus/es/components/menu/index.mjs")]
+[Style("element-plus/es/components/menu/style/css.mjs")]
 public sealed class ElMenu : ElContentComponentBase
 {
     /// <summary>
@@ -6449,6 +6509,7 @@ public sealed class ElMenu : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElMenuItem")]
 [ECMAScript("element-plus/es/components/menu/index.mjs")]
+[Style("element-plus/es/components/menu/style/css.mjs")]
 public sealed class ElMenuItem : ElContentComponentBase
 {
     /// <summary>
@@ -6493,6 +6554,7 @@ public sealed class ElMenuItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElMenuItemGroup")]
 [ECMAScript("element-plus/es/components/menu/index.mjs")]
+[Style("element-plus/es/components/menu/style/css.mjs")]
 public sealed class ElMenuItemGroup : ElContentComponentBase
 {
     /// <summary>
@@ -6516,6 +6578,7 @@ public sealed class ElMenuItemGroup : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElOption")]
 [ECMAScript("element-plus/es/components/select/index.mjs")]
+[Style("element-plus/es/components/select/style/css.mjs")]
 public sealed class ElOption : ElContentComponentBase
 {
     /// <summary>
@@ -6546,6 +6609,7 @@ public sealed class ElOption : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElOptionGroup")]
 [ECMAScript("element-plus/es/components/select/index.mjs")]
+[Style("element-plus/es/components/select/style/css.mjs")]
 public sealed class ElOptionGroup : ElContentComponentBase
 {
     /// <summary>
@@ -6569,6 +6633,7 @@ public sealed class ElOptionGroup : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElPageHeader")]
 [ECMAScript("element-plus/es/components/page-header/index.mjs")]
+[Style("element-plus/es/components/page-header/style/css.mjs")]
 public sealed class ElPageHeader : ElContentComponentBase
 {
     /// <summary>
@@ -6641,6 +6706,7 @@ public sealed class ElPageHeader : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElPagination")]
 [ECMAScript("element-plus/es/components/pagination/index.mjs")]
+[Style("element-plus/es/components/pagination/style/css.mjs")]
 public sealed class ElPagination : ElContentComponentBase
 {
     /// <summary>
@@ -6839,6 +6905,7 @@ public sealed class ElPagination : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElPopconfirm")]
 [ECMAScript("element-plus/es/components/popconfirm/index.mjs")]
+[Style("element-plus/es/components/popconfirm/style/css.mjs")]
 public sealed class ElPopconfirm : ElComponentBase
 {
     /// <summary>
@@ -6967,6 +7034,7 @@ public sealed class ElPopconfirm : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElPopover")]
 [ECMAScript("element-plus/es/components/popover/index.mjs")]
+[Style("element-plus/es/components/popover/style/css.mjs")]
 public sealed class ElPopover : ElContentComponentBase
 {
     /// <summary>
@@ -7193,6 +7261,7 @@ public sealed class ElPopover : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElPopper")]
 [ECMAScript("element-plus/es/components/popper/index.mjs")]
+[Style("element-plus/es/components/popper/style/css.mjs")]
 public sealed class ElPopper : ElContentComponentBase
 {
     /// <summary>
@@ -7209,6 +7278,7 @@ public sealed class ElPopper : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElProgress")]
 [ECMAScript("element-plus/es/components/progress/index.mjs")]
+[Style("element-plus/es/components/progress/style/css.mjs")]
 public sealed class ElProgress : ElContentComponentBase
 {
     /// <summary>
@@ -7316,6 +7386,7 @@ public sealed class ElProgress : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElRadio")]
 [ECMAScript("element-plus/es/components/radio/index.mjs")]
+[Style("element-plus/es/components/radio/style/css.mjs")]
 public sealed class ElRadio : ElContentComponentBase
 {
     /// <summary>
@@ -7388,6 +7459,7 @@ public sealed class ElRadio : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElRadioButton")]
 [ECMAScript("element-plus/es/components/radio/index.mjs")]
+[Style("element-plus/es/components/radio/style/css.mjs")]
 public sealed class ElRadioButton : ElContentComponentBase
 {
     /// <summary>
@@ -7425,6 +7497,7 @@ public sealed class ElRadioButton : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElRadioGroup")]
 [ECMAScript("element-plus/es/components/radio/index.mjs")]
+[Style("element-plus/es/components/radio/style/css.mjs")]
 public sealed class ElRadioGroup : ElContentComponentBase
 {
     /// <summary>
@@ -7539,6 +7612,7 @@ public sealed class ElRadioGroup : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElRate")]
 [ECMAScript("element-plus/es/components/rate/index.mjs")]
+[Style("element-plus/es/components/rate/style/css.mjs")]
 public sealed class ElRate : ElComponentBase
 {
     /// <summary>
@@ -7716,6 +7790,7 @@ public sealed class ElRate : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElResult")]
 [ECMAScript("element-plus/es/components/result/index.mjs")]
+[Style("element-plus/es/components/result/style/css.mjs")]
 public sealed class ElResult : ElComponentBase
 {
     /// <summary>
@@ -7774,6 +7849,7 @@ public sealed class ElResult : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElRow")]
 [ECMAScript("element-plus/es/components/row/index.mjs")]
+[Style("element-plus/es/components/row/style/css.mjs")]
 public sealed class ElRow : ElContentComponentBase
 {
     /// <summary>
@@ -7811,6 +7887,7 @@ public sealed class ElRow : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElScrollbar")]
 [ECMAScript("element-plus/es/components/scrollbar/index.mjs")]
+[Style("element-plus/es/components/scrollbar/style/css.mjs")]
 public sealed class ElScrollbar : ElContentComponentBase
 {
     /// <summary>
@@ -7953,6 +8030,7 @@ public sealed class ElScrollbar : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSegmented")]
 [ECMAScript("element-plus/es/components/segmented/index.mjs")]
+[Style("element-plus/es/components/segmented/style/css.mjs")]
 public sealed class ElSegmented : ElContentComponentBase
 {
     /// <summary>
@@ -8053,6 +8131,7 @@ public sealed class ElSegmented : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSelect")]
 [ECMAScript("element-plus/es/components/select/index.mjs")]
+[Style("element-plus/es/components/select/style/css.mjs")]
 public sealed class ElSelect : ElContentComponentBase
 {
     /// <summary>
@@ -8545,6 +8624,7 @@ public sealed class ElSelect : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSkeleton")]
 [ECMAScript("element-plus/es/components/skeleton/index.mjs")]
+[Style("element-plus/es/components/skeleton/style/css.mjs")]
 public sealed class ElSkeleton : ElContentComponentBase
 {
     /// <summary>
@@ -8596,6 +8676,7 @@ public sealed class ElSkeleton : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSkeletonItem")]
 [ECMAScript("element-plus/es/components/skeleton/index.mjs")]
+[Style("element-plus/es/components/skeleton/style/css.mjs")]
 public sealed class ElSkeletonItem : ElComponentBase
 {
     /// <summary>
@@ -8612,6 +8693,7 @@ public sealed class ElSkeletonItem : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElSlider")]
 [ECMAScript("element-plus/es/components/slider/index.mjs")]
+[Style("element-plus/es/components/slider/style/css.mjs")]
 public sealed class ElSlider : ElComponentBase
 {
     /// <summary>
@@ -8817,6 +8899,7 @@ public sealed class ElSlider : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElSpace")]
 [ECMAScript("element-plus/es/components/space/index.mjs")]
+[Style("element-plus/es/components/space/style/css.mjs")]
 public sealed class ElSpace : ElComponentBase
 {
     /// <summary>
@@ -8882,6 +8965,7 @@ public sealed class ElSpace : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElSplitter")]
 [ECMAScript("element-plus/es/components/splitter/index.mjs")]
+[Style("element-plus/es/components/splitter/style/css.mjs")]
 public sealed class ElSplitter : ElComponentBase
 {
     /// <summary>
@@ -8933,6 +9017,7 @@ public sealed class ElSplitter : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElSplitterPanel")]
 [ECMAScript("element-plus/es/components/splitter/index.mjs")]
+[Style("element-plus/es/components/splitter/style/css.mjs")]
 public sealed class ElSplitterPanel : ElContentComponentBase
 {
     /// <summary>
@@ -8998,6 +9083,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElStatistic")]
 [ECMAScript("element-plus/es/components/statistic/index.mjs")]
+[Style("element-plus/es/components/statistic/style/css.mjs")]
 public sealed class ElStatistic : ElComponentBase
 {
     /// <summary>
@@ -9028,6 +9114,7 @@ public sealed class ElStatistic : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElStep")]
 [ECMAScript("element-plus/es/components/steps/index.mjs")]
+[Style("element-plus/es/components/steps/style/css.mjs")]
 public sealed class ElStep : ElComponentBase
 {
     /// <summary>
@@ -9086,6 +9173,7 @@ public sealed class ElStep : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElSteps")]
 [ECMAScript("element-plus/es/components/steps/index.mjs")]
+[Style("element-plus/es/components/steps/style/css.mjs")]
 public sealed class ElSteps : ElContentComponentBase
 {
     /// <summary>
@@ -9151,6 +9239,7 @@ public sealed class ElSteps : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSubMenu")]
 [ECMAScript("element-plus/es/components/menu/index.mjs")]
+[Style("element-plus/es/components/menu/style/css.mjs")]
 public sealed class ElSubMenu : ElContentComponentBase
 {
     /// <summary>
@@ -9251,6 +9340,7 @@ public sealed class ElSubMenu : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSwitch")]
 [ECMAScript("element-plus/es/components/switch/index.mjs")]
+[Style("element-plus/es/components/switch/style/css.mjs")]
 public sealed class ElSwitch : ElComponentBase
 {
     /// <summary>
@@ -9470,6 +9560,7 @@ public sealed class ElSwitch : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElTabPane")]
 [ECMAScript("element-plus/es/components/tabs/index.mjs")]
+[Style("element-plus/es/components/tabs/style/css.mjs")]
 public sealed class ElTabPane : ElContentComponentBase
 {
     /// <summary>
@@ -9521,6 +9612,7 @@ public sealed class ElTabPane : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTable")]
 [ECMAScript("element-plus/es/components/table/index.mjs")]
+[Style("element-plus/es/components/table/style/css.mjs")]
 public sealed class ElTable : ElContentComponentBase
 {
     /// <summary>
@@ -9992,6 +10084,7 @@ public sealed class ElTable : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTableColumn")]
 [ECMAScript("element-plus/es/components/table/index.mjs")]
+[Style("element-plus/es/components/table/style/css.mjs")]
 public sealed class ElTableColumn : ElContentComponentBase
 {
     /// <summary>
@@ -10225,6 +10318,7 @@ public sealed class ElTableColumn : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTableV2")]
 [ECMAScript("element-plus/es/components/table-v2/index.mjs")]
+[Style("element-plus/es/components/table-v2/style/css.mjs")]
 public sealed class ElTableV2 : ElComponentBase
 {
     /// <summary>
@@ -10535,6 +10629,7 @@ public sealed class ElTableV2 : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElTabs")]
 [ECMAScript("element-plus/es/components/tabs/index.mjs")]
+[Style("element-plus/es/components/tabs/style/css.mjs")]
 public sealed class ElTabs : ElContentComponentBase
 {
     /// <summary>
@@ -10663,6 +10758,7 @@ public sealed class ElTabs : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTag")]
 [ECMAScript("element-plus/es/components/tag/index.mjs")]
+[Style("element-plus/es/components/tag/style/css.mjs")]
 public sealed class ElTag : ElContentComponentBase
 {
     /// <summary>
@@ -10742,6 +10838,7 @@ public sealed class ElTag : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElText")]
 [ECMAScript("element-plus/es/components/text/index.mjs")]
+[Style("element-plus/es/components/text/style/css.mjs")]
 public sealed class ElText : ElContentComponentBase
 {
     /// <summary>
@@ -10786,6 +10883,7 @@ public sealed class ElText : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTimePicker")]
 [ECMAScript("element-plus/es/components/time-picker/index.mjs")]
+[Style("element-plus/es/components/time-picker/style/css.mjs")]
 public sealed class ElTimePicker : ElComponentBase
 {
     /// <summary>
@@ -11096,6 +11194,7 @@ public sealed class ElTimePicker : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElTimeSelect")]
 [ECMAScript("element-plus/es/components/time-select/index.mjs")]
+[Style("element-plus/es/components/time-select/style/css.mjs")]
 public sealed class ElTimeSelect : ElComponentBase
 {
     /// <summary>
@@ -11287,6 +11386,7 @@ public sealed class ElTimeSelect : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElTimeline")]
 [ECMAScript("element-plus/es/components/timeline/index.mjs")]
+[Style("element-plus/es/components/timeline/style/css.mjs")]
 public sealed class ElTimeline : ElContentComponentBase
 {
     /// <summary>
@@ -11310,6 +11410,7 @@ public sealed class ElTimeline : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTimelineItem")]
 [ECMAScript("element-plus/es/components/timeline/index.mjs")]
+[Style("element-plus/es/components/timeline/style/css.mjs")]
 public sealed class ElTimelineItem : ElContentComponentBase
 {
     /// <summary>
@@ -11389,6 +11490,7 @@ public sealed class ElTimelineItem : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTooltip")]
 [ECMAScript("element-plus/es/components/tooltip/index.mjs")]
+[Style("element-plus/es/components/tooltip/style/css.mjs")]
 public sealed class ElTooltip : ElContentComponentBase
 {
     /// <summary>
@@ -11622,6 +11724,7 @@ public sealed class ElTooltip : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTour")]
 [ECMAScript("element-plus/es/components/tour/index.mjs")]
+[Style("element-plus/es/components/tour/style/css.mjs")]
 public sealed class ElTour : ElComponentBase
 {
 }
@@ -11631,6 +11734,7 @@ public sealed class ElTour : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElTourStep")]
 [ECMAScript("element-plus/es/components/tour/index.mjs")]
+[Style("element-plus/es/components/tour/style/css.mjs")]
 public sealed class ElTourStep : ElComponentBase
 {
 }
@@ -11640,6 +11744,7 @@ public sealed class ElTourStep : ElComponentBase
 /// </summary>
 [ECMAScriptName("ElTransfer")]
 [ECMAScript("element-plus/es/components/transfer/index.mjs")]
+[Style("element-plus/es/components/transfer/style/css.mjs")]
 public sealed class ElTransfer : ElContentComponentBase
 {
     /// <summary>
@@ -11817,6 +11922,7 @@ public sealed class ElTransfer : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTree")]
 [ECMAScript("element-plus/es/components/tree/index.mjs")]
+[Style("element-plus/es/components/tree/style/css.mjs")]
 public sealed class ElTree : ElContentComponentBase
 {
     /// <summary>
@@ -12106,6 +12212,7 @@ public sealed class ElTree : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTreeSelect")]
 [ECMAScript("element-plus/es/components/tree-select/index.mjs")]
+[Style("element-plus/es/components/tree-select/style/css.mjs")]
 public sealed class ElTreeSelect : ElContentComponentBase
 {
     /// <summary>
@@ -12871,6 +12978,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElTreeV2")]
 [ECMAScript("element-plus/es/components/tree-v2/index.mjs")]
+[Style("element-plus/es/components/tree-v2/style/css.mjs")]
 public sealed class ElTreeV2 : ElContentComponentBase
 {
     /// <summary>
@@ -13069,6 +13177,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElUpload")]
 [ECMAScript("element-plus/es/components/upload/index.mjs")]
+[Style("element-plus/es/components/upload/style/css.mjs")]
 public sealed class ElUpload : ElContentComponentBase
 {
     /// <summary>
@@ -13288,6 +13397,7 @@ public sealed class ElUpload : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElSelectV2")]
 [ECMAScript("element-plus/es/components/select-v2/index.mjs")]
+[Style("element-plus/es/components/select-v2/style/css.mjs")]
 public sealed class ElVirtualizedSelect : ElContentComponentBase
 {
     /// <summary>
@@ -13801,6 +13911,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
 /// </summary>
 [ECMAScriptName("ElWatermark")]
 [ECMAScript("element-plus/es/components/watermark/index.mjs")]
+[Style("element-plus/es/components/watermark/style/css.mjs")]
 public sealed class ElWatermark : ElContentComponentBase
 {
     /// <summary>

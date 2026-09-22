@@ -587,7 +587,7 @@ public sealed class MemberClosureTests
                 }
                 """);
             WriteFile(
-                Path.Combine(tempRoot, "@jazor", "vue-runtime", "raw-markup.mjs"),
+                Path.Combine(tempRoot, "runtime", "vue", "raw-markup.js"),
                 """
                 import { createStaticVNode } from "vue";
                 export function createRawMarkup(markup) {
@@ -601,7 +601,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("markup and SetAttributeValue materialize through direct VNode lowering", () => {
                     const render = component.setup({}, { slots: {} });
@@ -693,7 +693,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/region-markup.mjs";
+                import component from "./components/region-markup.js";
 
                 test("region and markup lower directly to Fragment and static VNode", () => {
                     const render = component.setup({}, { slots: {} });
@@ -825,7 +825,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/structured.mjs";
+                import component from "./components/structured.js";
 
                 test("structured children lower directly to VNodes", () => {
                     const render = component.setup({ AdditionalAttributes: { id: "root" } }, { slots: {} });
@@ -923,7 +923,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -953,7 +953,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/conditional-props.mjs";
+                import component from "./components/conditional-props.js";
 
                 test("conditional attribute groups preserve branch and overwrite order", () => {
                     const renderTrue = component.setup({ Selected: true }, { slots: {} });
@@ -1049,8 +1049,8 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
-            WriteFile(Path.Combine(tempRoot, "components", "navigation.mjs"), "export default { name: \"Navigation\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "navigation.js"), "export default { name: \"Navigation\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -1077,7 +1077,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/computed-slot.mjs";
+                import component from "./components/computed-slot.js";
 
                 test("computed RenderFragment properties lower to direct Vue slots", () => {
                     let topReads = 0;
@@ -1215,7 +1215,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/recursive-fragment.mjs";
+                import component from "./components/recursive-fragment.js";
 
                 test("recursive RenderFragment helper is shared by sibling scopes", () => {
                     const render = component.setup({ ShowFirst: true, ShowSecond: true }, { slots: {} });
@@ -1281,7 +1281,7 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "from \"./child.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./child.js\";", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
         // HMR framing legitimately probes its optional browser bridge with `typeof`.
         // The authored typeof(Child) expressions themselves must still erase to imports.
@@ -1297,7 +1297,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -1349,7 +1349,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("OpenComponent(int, typeof(T)) and local typeof alias render imported child components", () => {
                     const render = component.setup({}, { slots: {} });
@@ -1430,7 +1430,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -1459,7 +1459,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { h } from "vue";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("inline RenderFragment parameter lowers to a Vue slot function", () => {
                     const render = component.setup({}, { slots: {} });
@@ -1646,7 +1646,7 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         var injectedImport = script.Split('\n').Single(static line =>
-            line.EndsWith("from \"./injected-shell.mjs\";", StringComparison.Ordinal));
+            line.EndsWith("from \"./injected-shell.js\";", StringComparison.Ordinal));
         Assert.IsTrue(injectedImport.StartsWith("import i$", StringComparison.Ordinal), injectedImport);
         Assert.IsFalse(injectedImport.StartsWith("import {", StringComparison.Ordinal), injectedImport);
         StringAssert.Contains(script, "injectedTitle: \"Injected title\"", StringComparison.Ordinal);
@@ -1725,7 +1725,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -1754,7 +1754,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { h } from "vue";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("conditional RenderFragment local projects slot presence", () => {
                     const child = component.setup({}, { slots: { Logo: () => h("span", null, ["brand"]) } })();
@@ -1831,7 +1831,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -1857,7 +1857,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { h } from "vue";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("missing forwarded RenderFragment omits the target Vue slot", () => {
                     const withLogo = component.setup({}, { slots: { Logo: () => h("span", null, ["brand"]) } })();
@@ -1961,7 +1961,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/helper-fragment.mjs";
+                import component from "./components/helper-fragment.js";
 
                 test("RenderFragment helper result lowers directly inside foreach", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2072,7 +2072,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/object-carried-fragment.mjs";
+                import component from "./components/object-carried-fragment.js";
 
                 test("object-carried RenderFragment property lowers to the original Vue slot", () => {
                     const render = component.setup({}, {
@@ -2182,7 +2182,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/sibling-helper-locals.mjs";
+                import component from "./components/sibling-helper-locals.js";
 
                 test("sibling RenderFragment helper local names stay scoped", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2291,7 +2291,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/output-return-branches.mjs";
+                import component from "./components/output-return-branches.js";
 
                 test("output branches ending in return guard later sibling output", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2347,12 +2347,12 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "from \"../widgets/LocalCard.vue.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"../widgets/LocalCard.vue.js\";", StringComparison.Ordinal);
         Assert.HasCount(1, artifact.Assets);
         Assert.AreEqual("components/widgets/LocalCard.vue", artifact.Assets[0].SourcePath);
         Assert.AreEqual("components/widgets/LocalCard.vue", artifact.Assets[0].ArtifactPath);
         Assert.AreEqual("module-source", artifact.Assets[0].Kind);
-        Assert.AreEqual("components/widgets/LocalCard.vue.mjs", artifact.Assets[0].ImportPath);
+        Assert.AreEqual("components/widgets/LocalCard.vue.js", artifact.Assets[0].ImportPath);
     }
 
     [TestMethod]
@@ -2483,7 +2483,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -2523,7 +2523,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("metadata and bulk attributes materialize through the direct render function", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2640,7 +2640,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/local-member-name-collision.mjs";
+                import component from "./components/local-member-name-collision.js";
 
                 test("direct render local names do not shadow current component helpers", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2746,7 +2746,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/const-field-condition.mjs";
+                import component from "./components/const-field-condition.js";
 
                 test("direct render folds current component const field conditions", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2839,7 +2839,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -2867,7 +2867,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/direct-bulk.mjs";
+                import component from "./components/direct-bulk.js";
 
                 test("bulk attributes lower directly", () => {
                     const render = component.setup({}, { slots: {} });
@@ -2977,7 +2977,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/direct-bind.mjs";
+                import component from "./components/direct-bind.js";
 
                 test("element metadata and DOM bind lower directly", () => {
                     const render = component.setup({}, { slots: {} });
@@ -3052,7 +3052,7 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "from \"style.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"../style.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "const className = style({", StringComparison.Ordinal);
         StringAssert.Contains(script, "display: inlineFlex", StringComparison.Ordinal);
         StringAssert.Contains(script, "color: color(\"white\")", StringComparison.Ordinal);
@@ -3211,7 +3211,7 @@ public sealed class MemberClosureTests
                   {
                     "imports": {
                       "vue": "/node_modules/vue/index.mjs",
-                      "@jazor/vue-runtime/": "/@jazor/vue-runtime/"
+                      "runtime/vue/": "/runtime/vue/"
                     }
                   }
                   </script>
@@ -3226,7 +3226,7 @@ public sealed class MemberClosureTests
                 Path.Combine(tempRoot, "browser-smoke.mjs"),
                 """
                 import { __runUnmounted } from "vue";
-                import component from "/components/counter.mjs";
+                import component from "/components/counter.js";
 
                 const app = document.querySelector("#app");
                 const render = component.setup({}, { slots: {} });
@@ -3379,7 +3379,7 @@ public sealed class MemberClosureTests
                 }
                 """);
             WriteFile(
-                Path.Combine(tempRoot, "@jazor", "vue-runtime", "raw-markup.mjs"),
+                Path.Combine(tempRoot, "runtime", "vue", "raw-markup.js"),
                 """
                 import { createStaticVNode } from "vue";
                 export function createRawMarkup(markup) {
@@ -3676,9 +3676,9 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         Assert.AreEqual("Demo.Pages.Counter", artifact.ComponentId);
-        Assert.AreEqual("components/counter.mjs", artifact.RelativePath);
-        Assert.AreEqual("components/counter.mjs.map", artifact.SourceMapRelativePath);
-        Assert.AreEqual("RazorSg.ComponentMemberClosure.Manual.Tests:components/counter.mjs", artifact.Hmr.ModuleId);
+        Assert.AreEqual("components/counter.js", artifact.RelativePath);
+        Assert.AreEqual("components/counter.js.map", artifact.SourceMapRelativePath);
+        Assert.AreEqual("RazorSg.ComponentMemberClosure.Manual.Tests:components/counter.js", artifact.Hmr.ModuleId);
         Assert.AreEqual(VueHmrBoundaryKind.TemplateOnly, artifact.Hmr.BoundaryKind);
         Assert.AreEqual(artifact.ModuleText, rebuilt.ModuleText);
         Assert.AreEqual(artifact.ContentHash, rebuilt.ContentHash);
@@ -3692,11 +3692,12 @@ public sealed class MemberClosureTests
         Assert.IsTrue(IsSha256Hash(artifact.Hmr.LogicHash), artifact.Hmr.LogicHash);
         Assert.IsFalse(artifact.ModuleText.Contains("\r", StringComparison.Ordinal), artifact.ModuleText);
         Assert.IsFalse(artifact.SourceMapContent.Contains("\r", StringComparison.Ordinal), artifact.SourceMapContent);
-        StringAssert.Contains(artifact.SourceMapContent, "\"file\": \"components/counter.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(artifact.SourceMapContent, "\"file\": \"components/counter.js\"", StringComparison.Ordinal);
         StringAssert.Contains(artifact.SourceMapContent, "\"sources\": [", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "function createCounterSetupScope(props) {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "const state = reactive({", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const __jazor$hmrData = import.meta.hot ? import.meta.hot.data : {};", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let state = __jazor$hmrReload && __jazor$hmrData[\"state\"] || reactive({", StringComparison.Ordinal);
         StringAssert.Contains(script, "count: Seed()", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("function buildRenderTree(builder)", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addAttribute(\"onclick\", increment);", StringComparison.Ordinal), script);
@@ -3783,14 +3784,14 @@ public sealed class MemberClosureTests
         StringAssert.Contains(artifact.ModuleText, "break;", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/handwritten-loop-branches.mjs",
+            "components/handwritten-loop-branches.js",
             artifact.ModuleText,
             "handwritten-loop-branches-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/handwritten-loop-branches.mjs";
+            import component from "./components/handwritten-loop-branches.js";
 
             function collectItems(node, values = []) {
                 if (Array.isArray(node)) {
@@ -4205,7 +4206,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { __runMounted, __runUpdated, __runUnmounted, __runWatchers } from "vue";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("lifecycle hooks run across mount, prop update, and unmount", async () => {
                     const props = { Title: "one" };
@@ -4372,7 +4373,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("ShouldRender false reuses the previous VNode until the gate allows rendering", () => {
                     const render = component.setup({}, { slots: {} });
@@ -4458,7 +4459,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -4498,7 +4499,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("element and component reference captures update component state through VNode ref callbacks", () => {
                     const render = component.setup({}, { slots: {} });
@@ -4674,7 +4675,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("invokeAsync dispatches the work item synchronously before any microtask", () => {
                     const render = component.setup({}, { slots: {} });
@@ -4804,7 +4805,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { __runUnmounted } from "vue";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("StateHasChanged and InvokeAsync reject event calls after component unmount", async () => {
                     const render = component.setup({}, { slots: {} });
@@ -4994,7 +4995,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { __runWatchers } from "vue";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -5199,7 +5200,7 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { __runMounted, __runUpdated, __runUnmounted } from "vue";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
 
                 test("async after-render and dispose hooks run through Vue lifecycle hooks", async () => {
                     const render = component.setup({}, { slots: {} });
@@ -5411,8 +5412,8 @@ public sealed class MemberClosureTests
                 import test from "node:test";
                 import { h } from "vue";
 
-                import child from "./components/child.mjs";
-                import parent from "./components/parent.mjs";
+                import child from "./components/child.js";
+                import parent from "./components/parent.js";
 
                 test("RenderFragment parameter bridge follows dynamic Vue slot presence", () => {
                     const slots = {};
@@ -5586,7 +5587,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import parent from "./components/parent.mjs";
+                import parent from "./components/parent.js";
 
                 test("typed RenderFragment parameter is transported as a Vue scoped slot", () => {
                     const parentRender = parent.setup({}, { slots: {} });
@@ -6036,7 +6037,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/counter.mjs";
+                import component from "./components/counter.js";
                 import { reactiveCalls } from "vue";
 
                 test("state initializer runs once per setup and handler identity is stable", () => {
@@ -6133,7 +6134,7 @@ public sealed class MemberClosureTests
             closure);
         StringAssert.Contains(
             artifact.ModuleText.ReplaceLineEndings("\n"),
-            "from \"./child.mjs\";",
+            "from \"./child.js\";",
             StringComparison.Ordinal);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
@@ -6144,7 +6145,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -6184,7 +6185,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("component parameters normalize to generated child runtime prop names", () => {
                     const render = component.setup({ Title: "Hello" }, { slots: {} });
@@ -6264,7 +6265,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -6304,7 +6305,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("child EventCallback updates parent state on next render", () => {
                     const render = component.setup({}, { slots: {} });
@@ -6390,7 +6391,7 @@ public sealed class MemberClosureTests
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
-            WriteFile(Path.Combine(tempRoot, "components", "child.mjs"), "export default { name: \"Child\" };\n");
+            WriteFile(Path.Combine(tempRoot, "components", "child.js"), "export default { name: \"Child\" };\n");
             WriteFile(
                 Path.Combine(tempRoot, "package.json"),
                 """{"type":"module"}""");
@@ -6430,7 +6431,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("component bind-X uses X and the conventional update:X event", () => {
                     const render = component.setup({}, { slots: {} });
@@ -6579,7 +6580,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import component from "./components/parent.mjs";
+                import component from "./components/parent.js";
 
                 test("component bind descriptor maps Razor pair to Vue model prop and update listener", () => {
                     const render = component.setup({}, { slots: {} });
@@ -6763,7 +6764,7 @@ public sealed class MemberClosureTests
                 import assert from "node:assert/strict";
                 import test from "node:test";
 
-                import parent from "./components/parent.mjs";
+                import parent from "./components/parent.js";
 
                 test("descriptor bind, typed slot, and EventCallback compose across parent and child modules", () => {
                     const renderParent = parent.setup({}, { slots: {} });
@@ -7014,7 +7015,7 @@ public sealed class MemberClosureTests
         System.IO.File.WriteAllText(
             configPath,
             """
-            {"imports":{"vue":"./node_modules/vue/index.mjs","@jazor/vue-runtime/":"./@jazor/vue-runtime/"}}
+            {"imports":{"vue":"./node_modules/vue/index.mjs","runtime/vue/":"./runtime/vue/"}}
             """);
 
         var startInfo = new ProcessStartInfo

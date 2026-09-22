@@ -26,9 +26,6 @@ public sealed class EnumerableLookupRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "lookup.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -78,7 +75,7 @@ public sealed class EnumerableLookupRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--config", configPath, "--quiet", "--allow-read", testPath], timeout.Token);
+            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
         }
         finally
         {
@@ -90,7 +87,7 @@ public sealed class EnumerableLookupRuntimeTests
     private static string GetExportName(string member)
     {
         var mapping = ClrRuntimeMappingCatalog.GetImport(member);
-        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", mapping.ModulePath, member);
+        Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", mapping.ModulePath, member);
         return mapping.ExportName;
     }
 }

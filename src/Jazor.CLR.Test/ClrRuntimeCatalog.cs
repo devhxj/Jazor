@@ -114,7 +114,8 @@ internal static class ClrRuntimeCatalog
 
     public static IReadOnlyList<ClrRuntimeModuleArtifact> All => Artifacts;
 
-    public static ClrRuntimeModuleArtifact Get(string relativePath) => ArtifactsByPath[relativePath];
+    public static ClrRuntimeModuleArtifact Get(string relativePath)
+        => ArtifactsByPath[ECMAScriptModulePath.NormalizeRelativePath(relativePath)];
 
     public static ClrRuntimeModuleArtifact ResolveImport(string importerPath, string importSpecifier)
         => Get(ECMAScriptModulePath.ResolveRelativePath(importerPath, importSpecifier));
@@ -139,7 +140,7 @@ internal static class ClrRuntimeCatalog
             if (!string.Equals(entry.GetProperty("type").GetString(), "module", StringComparison.Ordinal))
                 throw new InvalidOperationException($"ECMAScript import '{import.Name}' must be a module resource.");
 
-            var relativeFile = entry.GetProperty("production").GetString()
+            var relativeFile = entry.GetProperty("path").GetString()
                 ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production file.");
             if (!string.Equals(import.Name, relativeFile, StringComparison.Ordinal))
                 throw new InvalidOperationException(
@@ -158,7 +159,7 @@ internal static class ClrRuntimeCatalog
                 import.Name,
                 relativeFile,
                 File.ReadAllText(sourcePath).ReplaceLineEndings("\n"),
-                entry.GetProperty("productionHash").GetString()
+                entry.GetProperty("hash").GetString()
                     ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production hash.")));
         }
 

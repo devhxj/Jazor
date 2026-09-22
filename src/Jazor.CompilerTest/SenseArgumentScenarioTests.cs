@@ -91,6 +91,14 @@ public sealed class SenseArgumentScenarioTests
     }
 
     [TestMethod]
+    public void ProjectSourceImportKeys_DefaultsToEmptyCollection()
+    {
+        var argument = new SenseArgument();
+
+        Assert.IsEmpty(argument.ProjectSourceImportKeys);
+    }
+
+    [TestMethod]
     [DynamicData(nameof(ContextCases))]
     public void Context_MatchesCopyAndScopeContract(SenseArgumentContextScenario testCase)
     {
@@ -801,7 +809,7 @@ public sealed class SenseArgumentScenarioTests
     private static void AssertCurrentModuleBinding(string scenarioId)
     {
         var state = CreateImportBindingState(
-            currentModuleImportPath: "./current.mjs",
+            currentModuleImportPath: "./current.js",
             currentModuleBindings: ["localHelper"]);
 
         var identifier = state.Argument.BindImportSpecifier("./current", "localHelper");
@@ -815,7 +823,7 @@ public sealed class SenseArgumentScenarioTests
     private static void AssertCurrentModuleMissingBinding(string scenarioId)
     {
         var state = CreateImportBindingState(
-            currentModuleImportPath: "./current.mjs",
+            currentModuleImportPath: "./current.js",
             currentModuleBindings: []);
 
         var identifier = state.Argument.BindImportSpecifier("./current", "externalHelper");

@@ -785,7 +785,7 @@ internal static class RazorVueM5CapabilityLedger
         {
             TargetProfiles = "Compiler authoring, Deno runtime, real Chrome browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "Generated route catalog + application-owned Vue route host + browser NavigationManager",
-            ImplementationPath = "Official Razor SG -> generated route catalog -> @jazor/vue-runtime/blazor-routing.mjs -> application-owned Vue framing",
+            ImplementationPath = "Official Razor SG -> generated route catalog -> runtime/vue/blazor-routing.js -> application-owned Vue framing",
             Dependencies = "Jazor.RazorVue route catalog lowering; Jazor.CLR NavigationManager browser adapter; Jazor.Emit Release bundle/source-map materialization",
             ExcludedSurface = "Microsoft Router/RouteView/LayoutView/NavLink tags; LocationChanging cancellation; server circuit and SSR/prerender route identity"
         },
@@ -1226,7 +1226,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.GuidedAdaptation,
             RazorVueCapabilityStatus.Support,
-            "Jazor.AspNetCore typed state + @jazor/vue-runtime/authentication.mjs",
+            "Jazor.AspNetCore typed state + runtime/vue/authentication.js",
             null,
             "Jazor.EmitTest.JazorSsrHostingTests.JazorSsrRenderer_AddsTypedAuthenticationAsReservedProvider; Jazor.EmitTest.JazorSsrHostingTests.JazorAuthenticationEnvelope_CreateProducesVersionedEndpointContract; RazorVueAuthenticationRuntimeTests; scripts/csharp/verify-windows-ssr-release.cs",
             RazorVueCapabilityEvidence.AuthorSource |
@@ -1372,4 +1372,3 @@ internal static class RazorVueM5CapabilityLedger
             "Consumer delivery is proven with direct typed TDesign authoring; this row does not promote independent framework capabilities without their own semantic evidence.")
     ];
 }
-

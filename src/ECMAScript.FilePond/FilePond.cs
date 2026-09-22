@@ -18,6 +18,7 @@ namespace ECMAScript;
 /// the browser lifecycle.
 /// </remarks>
 [ECMAScript("filepond")]
+[Style("filepond/dist/filepond.css")]
 [Description("@#")]
 public static partial class FilePond
 {

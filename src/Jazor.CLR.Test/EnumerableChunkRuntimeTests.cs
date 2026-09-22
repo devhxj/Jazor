@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableChunkRuntimeTests
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task ChunkExport_PreservesSourceOrderAndCreatesIndependentChunksOnDenoHost()
@@ -23,18 +23,6 @@ public sealed class EnumerableChunkRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(
-                configPath,
-                """
-                {
-                  "imports": {
-                    "clr/System/": "./System/", "System/": "./System/"
-                  }
-                }
-                """,
-                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "chunk.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -71,7 +59,7 @@ public sealed class EnumerableChunkRuntimeTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--config", configPath, "--quiet", "--allow-read", testPath],
+                ["test", "--quiet", "--allow-read", testPath],
                 timeout.Token);
         }
         finally

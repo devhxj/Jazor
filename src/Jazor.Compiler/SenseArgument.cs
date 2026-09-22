@@ -53,9 +53,9 @@ public readonly record struct SenseArgument
     // Catalog edges are collected independently from resource-manifest imports. The emitted
     // JavaScript may use the same logical specifier text for both, so text alone is insufficient.
     private readonly HashSet<string>? _moduleCatalogImportPaths;
-    // carrier 引用的逻辑键。它们既是产物图边，也是 --library-manifest 的选择依据；
-    // 写出的 specifier 是相对的（载体是项目源码），因此必须单独记录这个键。
-    private readonly HashSet<string>? _carrierImportKeys;
+    // 项目源码引用的完整路径键。写出的 ESM specifier 是相对的，因此清单选择必须
+    // 显式保留目标项目路径，不能从 import 文本反推，也不能按目录前缀猜测。
+    private readonly HashSet<string>? _projectSourceImportKeys;
 
     /// <summary>默认参数</summary>
     public static SenseArgument Default => new();
@@ -76,7 +76,7 @@ public readonly record struct SenseArgument
         _currentModuleImportPath = null;
         _currentModuleBindings = null;
         _moduleCatalogImportPaths = null;
-        _carrierImportKeys = null;
+        _projectSourceImportKeys = null;
     }
 
     /// <summary>完整构造函数</summary>
@@ -101,7 +101,7 @@ public readonly record struct SenseArgument
         _currentModuleImportPath = null;
         _currentModuleBindings = null;
         _moduleCatalogImportPaths = null;
-        _carrierImportKeys = null;
+        _projectSourceImportKeys = null;
     }
 
     /// <summary>内部构造函数（用于 WithNewScope，共享 specifiers）</summary>
@@ -121,7 +121,7 @@ public readonly record struct SenseArgument
         HashSet<string>? currentModuleBindings,
         HashSet<string>? moduleCatalogImportPaths,
         string? currentModuleOutputPath = null,
-        HashSet<string>? carrierImportKeys = null)
+        HashSet<string>? projectSourceImportKeys = null)
     {
         Sense = sense;
         UseImportAliases = useImportAliases;
@@ -137,7 +137,7 @@ public readonly record struct SenseArgument
         _currentModuleImportPath = currentModuleImportPath;
         _currentModuleBindings = currentModuleBindings;
         _moduleCatalogImportPaths = moduleCatalogImportPaths;
-        _carrierImportKeys = carrierImportKeys;
+        _projectSourceImportKeys = projectSourceImportKeys;
         _currentModuleOutputPath = currentModuleOutputPath;
     }
 
@@ -148,10 +148,14 @@ public readonly record struct SenseArgument
     /// <summary>是否包含导入声明规范</summary>
     public bool HasVarImportDeclarationSpecifier => _specifiers?.Count > 0;
 
+    /// <summary>lowering 期间引用到的完整项目源码路径。</summary>
+    public IReadOnlyCollection<string> ProjectSourceImportKeys
+        => _projectSourceImportKeys ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+
     // ===== Sense 变更 =====
     /// <summary>创建新实例，设置 Sense</summary>
     public SenseArgument With(Sense sense)
-        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     // ===== 作用域隔离 =====
     /// <summary>
@@ -159,10 +163,10 @@ public readonly record struct SenseArgument
     /// 共享导入字典，创建新的变量声明字典。
     /// </summary>
     public SenseArgument WithNewScope()
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     internal SenseArgument WithScope(EmissionScopeContext scopeContext)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, scopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, scopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     internal SenseArgument EnterScope(IOperation anchor, ScopeSite site)
     {
@@ -186,7 +190,7 @@ public readonly record struct SenseArgument
             ScopeContext.Enter(anchor, site),
             _currentModuleImportPath,
             _currentModuleBindings,
-            _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+            _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
     }
 
     internal SenseArgument EnterEmissionScope(IOperation anchor, ScopeSite site)
@@ -211,7 +215,7 @@ public readonly record struct SenseArgument
             ScopeContext.Enter(anchor, site),
             _currentModuleImportPath,
             _currentModuleBindings,
-            _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+            _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
     }
 
     internal string AllocateName(LoweringNameOwner owner, LoweringSite site)
@@ -225,25 +229,25 @@ public readonly record struct SenseArgument
     // ===== 模式匹配上下文 =====
     /// <summary>设置模式匹配输入表达式</summary>
     public SenseArgument WithPatternInput(Expression? input)
-        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     // ===== 异常处理上下文 =====
     /// <summary>设置 Catch 异常参数名</summary>
     public SenseArgument WithCatchVar(string? varName)
-        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     // ===== Switch 表达式上下文 =====
     /// <summary>设置 Switch 表达式变量名</summary>
     public SenseArgument WithSwitchVar(string? varName)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     // ===== 组合设置 =====
     /// <summary>设置 Sense 和 PatternInput</summary>
     public SenseArgument With(Sense sense, Expression patternInput)
-        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     public SenseArgument WithImportAliases(bool useImportAliases = true)
-        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _carrierImportKeys);
+        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext, _currentModuleImportPath, _currentModuleBindings, _moduleCatalogImportPaths, _currentModuleOutputPath, _projectSourceImportKeys);
 
     public SenseArgument WithImportContext(
         Dictionary<string, string> importBindings,
@@ -253,8 +257,8 @@ public readonly record struct SenseArgument
         HashSet<string> currentModuleBindings,
         HashSet<string>? moduleCatalogImportPaths = null,
         string? currentModuleOutputPath = null,
-        HashSet<string>? carrierImportKeys = null)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames, ScopeContext, currentModuleImportPath, currentModuleBindings, moduleCatalogImportPaths, currentModuleOutputPath, carrierImportKeys);
+        HashSet<string>? projectSourceImportKeys = null)
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames, ScopeContext, currentModuleImportPath, currentModuleBindings, moduleCatalogImportPaths, currentModuleOutputPath, projectSourceImportKeys);
 
     // ===== 依赖项操作 =====
     /// <summary>
@@ -300,95 +304,68 @@ public readonly record struct SenseArgument
 
     /// <summary>
     /// Binds a module supplied by a pure Jazor <c>ModuleCatalog</c> and records its catalog edge.
-    /// The JavaScript import keeps the stable logical path; only the artifact graph uses this
-    /// separate channel to distinguish it from a resource-manifest import.
+    /// The declared project path remains the catalog identity. The JavaScript import is the
+    /// ordinary relative URL from the current module to that project file.
     /// </summary>
-    internal Identifier BindModuleCatalogImportSpecifier(string? modulePath, string importedName, bool isCarrierModule = false)
+    internal Identifier BindModuleCatalogImportSpecifier(string? modulePath, string importedName)
     {
         if (string.IsNullOrWhiteSpace(modulePath))
             return BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: true);
 
-        // 逻辑路径是产物图的键，必须保持稳定；它同时用于自引用判定。
-        var logicalPath = ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!);
+        var projectPath = ECMAScriptModulePath.NormalizeRelativePath(modulePath!);
 
-        // 产物图边始终按逻辑路径记录：catalog 集合是"本图模块"的权威标识，
+        // 产物图边始终按声明的项目路径记录：catalog 集合是"本图模块"的权威标识，
         // 用于把这些边从 packageImports 中排除（它们属于 dependencies）。
-        _moduleCatalogImportPaths?.Add(logicalPath);
-
-        // carrier 额外记录一次逻辑键：它需要被资源库清单选中，因此要进入 packageImports。
-        if (isCarrierModule)
-            _carrierImportKeys?.Add(logicalPath);
+        _moduleCatalogImportPaths?.Add(projectPath);
 
         // 项目内模块一律按完整声明路径计算相对 specifier。
         return BindImportSpecifierCore(
-            ResolveProjectImportSpecifier(logicalPath),
+            ResolveProjectImportSpecifier(projectPath),
             importedName,
             normalizeForCurrentModule: false);
     }
 
     /// <summary>
-    /// Binds a CLR runtime carrier import (a module emitted into the ECMAScript source carrier).
+    /// Binds a module materialized as ordinary source in the generated JavaScript project.
     ///
     /// 这些路径是载体里的真实文件，不是包，因此与 catalog 导入走同一条路径规则：
     /// 记录边、并写成<b>相对</b> specifier。裸 <c>clr/**</c> 形态会让消费侧必须依赖
     /// import map 前缀映射才能解析，与"自有源码按普通项目源码交付"的契约不符。
     /// </summary>
-    public Identifier BindCarrierImportSpecifier(string? modulePath, string importedName)
+    public Identifier BindProjectSourceImportSpecifier(string? modulePath, string importedName)
     {
         if (string.IsNullOrWhiteSpace(modulePath))
             return BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: false);
 
-        var logicalPath = ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!);
+        var projectPath = ECMAScriptModulePath.NormalizeRelativePath(modulePath!);
 
         // 自引用（符号声明在目标模块自身）是本地绑定，不是产物图边。
-        if (IsCurrentModuleImport(logicalPath))
-            return BindImportSpecifier(logicalPath, importedName);
+        if (IsCurrentModuleImport(projectPath))
+            return BindImportSpecifier(projectPath, importedName);
 
-        if (IsCarrierModule(_currentModuleOutputPath))
-        {
-            // carrier 内部互引：边由 carrier 自身的 manifest 模块依赖表达，
-            // 因此从 app 的 packageImports 里排除。
-            _moduleCatalogImportPaths?.Add(logicalPath);
-        }
-        else
-        {
-            // 用户模块引用 carrier：写出的 specifier 是相对的，无法从生成文本反推逻辑键，
-            // 必须单独记录，供 --library-manifest 选中对应的资源库。
-            _carrierImportKeys?.Add(logicalPath);
-        }
+        _projectSourceImportKeys?.Add(projectPath);
 
         return BindImportSpecifierCore(
-            ResolveProjectImportSpecifier(logicalPath),
+            ResolveProjectImportSpecifier(projectPath),
             importedName,
             normalizeForCurrentModule: false);
     }
 
     /// <summary>
-    /// 把 catalog 逻辑路径解析为相对当前模块输出位置的 import specifier。
+    /// 把项目模块路径解析为相对当前模块输出位置的 import specifier。
     ///
-    /// 输出路径未知时保持逻辑路径不变：那种情况只出现在没有模块输出上下文的转换里
-    /// （例如单独的 runtime class 转换），此时不会产出可交付的模块头。
+    /// 输出路径未知时按项目根 importer 生成 <c>./</c> URL；这用于独立转换场景。
     /// </summary>
-    private string ResolveProjectImportSpecifier(string logicalPath)
+    private string ResolveProjectImportSpecifier(string projectPath)
     {
         if (string.IsNullOrWhiteSpace(_currentModuleOutputPath))
-            return logicalPath;
+            return ECMAScriptModulePath.NormalizeRootRelativeImportSpecifier(projectPath);
 
-        if (string.Equals(logicalPath, _currentModuleOutputPath, StringComparison.Ordinal))
-            return logicalPath;
+        if (string.Equals(projectPath, _currentModuleOutputPath, StringComparison.Ordinal))
+            return projectPath;
 
-        return ECMAScriptModulePath.ResolveRelativeToImporter(_currentModuleOutputPath!, logicalPath);
+        return ECMAScriptModulePath.ResolveRelativeToImporter(_currentModuleOutputPath!, projectPath);
     }
-
-    /// <summary>
-    /// 判定一个项目相对输出路径是否位于 CLR 源码 carrier 根下。
-    /// </summary>
-    private static bool IsCarrierModule(string? outputPath)
-        => !string.IsNullOrWhiteSpace(outputPath) &&
-           outputPath!.StartsWith(CarrierSourceRoot, StringComparison.Ordinal);
-
-    /// <summary>CLR 源码 carrier 在项目源码树中的根目录。</summary>
-    private const string CarrierSourceRoot = "clr/";
 
     /// <summary>
     /// Returns whether an import specifier resolves to the module currently being lowered.
@@ -396,19 +373,25 @@ public readonly record struct SenseArgument
     /// the referenced CLR helper symbol was originally declared.
     /// </summary>
     internal bool IsCurrentModuleImport(string? modulePath)
-        => !string.IsNullOrWhiteSpace(modulePath) &&
-           !string.IsNullOrWhiteSpace(_currentModuleImportPath) &&
-           string.Equals(
-               ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!),
-               _currentModuleImportPath,
-               System.StringComparison.Ordinal);
+        => IsCurrentModulePath(modulePath);
 
     /// <summary>
     /// Binds an external ESM specifier without applying generated-module path normalization.
     /// 外部 ESM specifier 必须按原文保留，不能套用生成模块的 `.mjs`/目录逃逸规则。
     /// </summary>
     public Identifier BindExternalImportSpecifier(string? modulePath, string importedName)
-        => BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: false);
+    {
+        if (_projectSourceImportKeys is not null && _currentModuleOutputPath is not null &&
+            (modulePath?.StartsWith("./", System.StringComparison.Ordinal) == true ||
+             modulePath?.StartsWith("../", System.StringComparison.Ordinal) == true))
+        {
+            // An external declaration is an authored ESM specifier: preserve its text and
+            // importer-relative meaning. Only dependency bookkeeping needs the resolved file.
+            _projectSourceImportKeys.Add(
+                ECMAScriptModulePath.ResolveRelativePath(_currentModuleOutputPath, modulePath!));
+        }
+        return BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: false);
+    }
 
     private Identifier BindImportSpecifierCore(
         string? modulePath,
@@ -421,11 +404,7 @@ public readonly record struct SenseArgument
         if (string.IsNullOrWhiteSpace(modulePath))
             return new Identifier(importedName);
 
-        if (normalizeForCurrentModule &&
-            string.Equals(
-                ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!),
-                _currentModuleImportPath,
-                System.StringComparison.Ordinal))
+        if (normalizeForCurrentModule && IsCurrentModulePath(modulePath))
         {
             if (_currentModuleBindings?.Contains(importedName) == true)
                 return new Identifier(importedName);
@@ -470,6 +449,28 @@ public readonly record struct SenseArgument
 
         _importBindings.Add(key, localName);
         return new Identifier(localName);
+    }
+
+    private bool IsCurrentModulePath(string? modulePath)
+    {
+        if (string.IsNullOrWhiteSpace(modulePath))
+            return false;
+
+        // ECMAScriptModule 的作者声明可带标准 ./ 前缀，而 CurrentModuleOutputPath 是
+        // 项目根下的文件名。二者是同一个项目文件身份，比较前只做项目路径归一化。
+        if (!string.IsNullOrWhiteSpace(_currentModuleOutputPath))
+        {
+            return string.Equals(
+                ECMAScriptModulePath.NormalizeRelativePath(modulePath!),
+                ECMAScriptModulePath.NormalizeRelativePath(_currentModuleOutputPath!),
+                System.StringComparison.Ordinal);
+        }
+
+        return !string.IsNullOrWhiteSpace(_currentModuleImportPath) &&
+               string.Equals(
+                   ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!),
+                   _currentModuleImportPath,
+                   System.StringComparison.Ordinal);
     }
 
     private string AllocateImportAlias(string key)

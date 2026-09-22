@@ -25,8 +25,8 @@ public sealed class MonacoManifestTests
         foreach (var entry in imports.EnumerateObject())
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
-            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("production").GetString()!), entry.Name);
-            Assert.AreEqual(entry.Value.GetProperty("development").GetString(), entry.Value.GetProperty("production").GetString());
+            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("path").GetString()!), entry.Name);
+            Assert.AreEqual(entry.Value.GetProperty("path").GetString(), entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _));
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _));
         }

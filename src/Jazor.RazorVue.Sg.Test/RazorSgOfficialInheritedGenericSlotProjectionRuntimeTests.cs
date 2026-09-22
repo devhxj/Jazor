@@ -63,14 +63,14 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "slots[\"release-item\"](state.Current)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/inherited-release-template-runtime.mjs",
+            "components/inherited-release-template-runtime.js",
             observation.ModuleText,
             "official-inherited-release-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/inherited-release-template-runtime.mjs";
+            import component from "./components/inherited-release-template-runtime.js";
 
             test("official Razor inherited generic slots use the derived member name and retain context", () => {
                 const withoutSlot = component.setup({}, { slots: {} })();

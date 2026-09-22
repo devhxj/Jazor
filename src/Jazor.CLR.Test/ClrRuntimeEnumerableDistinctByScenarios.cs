@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableDistinctByScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
     private const string DistinctByMember = "static System.Linq.Enumerable.DistinctBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

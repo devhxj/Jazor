@@ -67,7 +67,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.ReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-footer-composition-runtime.mjs",
+            "components/release-footer-composition-runtime.js",
             observation.ModuleText,
             "official-release-footer-composition-runtime.test.mjs",
             """
@@ -75,8 +75,8 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
             import test from "node:test";
             import { Fragment } from "vue";
 
-            import component from "./components/release-footer-composition-runtime.mjs";
-            import slotPanel from "./components/release-footer-slot-panel-runtime.mjs";
+            import component from "./components/release-footer-composition-runtime.js";
+            import slotPanel from "./components/release-footer-slot-panel-runtime.js";
 
             test("official Razor local RenderFragment composition produces the footer slot", () => {
                 const panel = component.setup({ ReleaseName: "Accounts API" }, { slots: {} })();
@@ -95,7 +95,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-footer-slot-panel-runtime.mjs"] = "export default { name: \"release-footer-slot-panel-runtime\" };"
+                ["components/release-footer-slot-panel-runtime.js"] = "export default { name: \"release-footer-slot-panel-runtime\" };"
             });
     }
 }

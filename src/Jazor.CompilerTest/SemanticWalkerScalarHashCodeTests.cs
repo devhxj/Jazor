@@ -66,14 +66,14 @@ public sealed class SemanticWalkerScalarHashCodeTests
 
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
-        AssertImport(imports, "clr/System/Int64Module.js", "_a6f06b90e3618c16");
-        AssertImport(imports, "clr/System/UInt64Module.js", "_19d2adbbe01a8cf8");
-        AssertImport(imports, "clr/System/Int128Module.js", "_2de13ea6377940aa");
-        AssertImport(imports, "clr/System/UInt128Module.js", "_bd5a3a9523f573e7");
-        AssertImport(imports, "clr/System/HalfModule.js", "_f9dc2d5b5c5cdf31");
-        AssertImport(imports, "clr/System/SingleModule.js", "_96e065ea302b67da");
-        AssertImport(imports, "clr/System/DoubleModule.js", "_73dea7106d8085a6");
-        AssertImport(imports, "clr/System/StringModule.js", "_bccdd3f386a6fbbc");
+        AssertImport(imports, "./clr/System/Int64Module.js", "_a6f06b90e3618c16");
+        AssertImport(imports, "./clr/System/UInt64Module.js", "_19d2adbbe01a8cf8");
+        AssertImport(imports, "./clr/System/Int128Module.js", "_2de13ea6377940aa");
+        AssertImport(imports, "./clr/System/UInt128Module.js", "_bd5a3a9523f573e7");
+        AssertImport(imports, "./clr/System/HalfModule.js", "_f9dc2d5b5c5cdf31");
+        AssertImport(imports, "./clr/System/SingleModule.js", "_96e065ea302b67da");
+        AssertImport(imports, "./clr/System/DoubleModule.js", "_73dea7106d8085a6");
+        AssertImport(imports, "./clr/System/StringModule.js", "_bccdd3f386a6fbbc");
         Assert.HasCount(8, imports);
         StringAssert.Contains(body, "flag ? 1 : 0", StringComparison.Ordinal);
         StringAssert.Contains(body, "uintValue | 0", StringComparison.Ordinal);
@@ -107,7 +107,7 @@ public sealed class SemanticWalkerScalarHashCodeTests
 
 		Assert.IsNotNull(body);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
-		AssertImport(imports, "clr/System/ObjectModule.js", "_97891de43f43ceb4");
+		AssertImport(imports, "./clr/System/ObjectModule.js", "_97891de43f43ceb4");
 		Assert.HasCount(1, imports);
 		StringAssert.Contains(body, "return _97891de43f43ceb4(value);", StringComparison.Ordinal);
 		_ = new Parser().ParseScript("function verify(value) " + body);

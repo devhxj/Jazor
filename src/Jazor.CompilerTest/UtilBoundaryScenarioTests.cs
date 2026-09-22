@@ -713,7 +713,7 @@ internal static class UtilBoundaryScenarioCatalog
     public static IReadOnlyList<UtilModulePathScenario> ModulePaths { get; } =
     [
         ModulePath("runtime-import", "runtime-import-preserves-external-specifier", UtilModulePathKind.RuntimeImport, "../runtime/bridge.js"),
-        ModulePath("module-export", "module-marker-normalizes-extension", UtilModulePathKind.ModuleExport, "./components/widget.mjs"),
+        ModulePath("module-export", "module-marker-normalizes-extension", UtilModulePathKind.ModuleExport, "./components/widget.js"),
         ModulePath("marker-without-argument", "parameterless-marker-has-no-import-path", UtilModulePathKind.MarkerWithoutArgument, null),
         ModulePath("blank-import", "blank-import-path-is-ignored", UtilModulePathKind.BlankImport, null),
         ModulePath("unrelated-attribute", "non-runtime-attribute-is-ignored", UtilModulePathKind.UnrelatedAttribute, null)

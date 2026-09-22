@@ -11,6 +11,7 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScriptName("Editor")]
 [ECMAScript("@wangeditor/editor-for-vue")]
+[Style("@wangeditor/editor/dist/css/style.css")]
 public sealed class WangEditorComponent : ComponentBase, IVueComponent
 {
     /// <summary>
@@ -61,6 +62,7 @@ public sealed class WangEditorComponent : ComponentBase, IVueComponent
 /// </summary>
 [ECMAScriptName("Toolbar")]
 [ECMAScript("@wangeditor/editor-for-vue")]
+[Style("@wangeditor/editor/dist/css/style.css")]
 public sealed class WangEditorToolbar : ComponentBase, IVueComponent
 {
     /// <summary>

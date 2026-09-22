@@ -31,9 +31,9 @@ public sealed class VeeValidateManifestTests
         var entry = imports.GetProperty("vee-validate");
         CollectionAssert.AreEquivalent(
             new[] { "@vue/devtools-api", "vue" },
-            entry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
-        Assert.AreEqual("vee-validate", entry.GetProperty("development").GetString());
-        Assert.AreEqual("vee-validate", entry.GetProperty("production").GetString());
+            entry.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
+        Assert.AreEqual("vee-validate", entry.GetProperty("path").GetString());
+        Assert.AreEqual("vee-validate", entry.GetProperty("path").GetString());
         Assert.IsFalse(entry.TryGetProperty("developmentHash", out _));
         Assert.IsFalse(entry.TryGetProperty("productionHash", out _));
         Assert.IsFalse(entry.TryGetProperty("files", out _));

@@ -21,6 +21,6 @@
     <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
     <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.VuIcons" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Lucide" Version="$(JazorPackageVersion)" />
   </ItemGroup>
 </Project>

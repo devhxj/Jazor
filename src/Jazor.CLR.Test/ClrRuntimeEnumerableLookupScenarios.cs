@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableLookupScenarios
 {
-    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
     private const string ToLookupMember = "static System.Linq.Enumerable.ToLookup<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

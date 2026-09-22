@@ -19,15 +19,15 @@
 | `ECMAScript.Pinia.Testing` | `@pinia/testing` 绑定：测试期 Pinia root、spy 与 initial-state 的 authoring contract |
 | `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
 | `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 binding：完整 71 个公开 `Vd*` 组件、强类型 dataset/config 与按组件 ESM entry |
-| `ECMAScript.VuIcons` | `vu-icons` 1.5.4 binding：完整 1,821 个 `Vu*` 图标组件与闭合动态 icon enum |
+| `ECMAScript.Lucide` | `lucide-vue-next` 的完整生成式 RazorVue/Blazor 图标 binding；按 named export 保持 tree shaking |
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 
-这些包按需显式引用。绑定库声明 npm/JSR package identity 与标准 ESM specifier；最终宿主的 Emit 将依赖写入根 `package.json`，Deno 恢复 `node_modules`，NetPack 从同一 `jazor/` 项目解析模块、样式和其他资源。
+这些包按需显式引用。绑定库声明 npm/JSR package identity 与标准 ESM specifier；最终宿主的 Emit 将依赖写入根 `package.json`，Deno 恢复 `node_modules`，项目配置的 JavaScript 构建工具从同一 `jazor/` 项目解析模块、样式和其他资源。
 
-`ECMAScript.VueDataUi` 以 71 个组件 binding 对应上游 `vue-data-ui/vue-ui-*` entry，并为需要全局样式的入口声明标准 stylesheet import。图表模块、样式和 PDF export 的 `jspdf` 依赖由恢复后的 package 与 NetPack ESM 图解析。
+`ECMAScript.VueDataUi` 以 71 个组件 binding 对应上游 `vue-data-ui/vue-ui-*` entry，并为需要全局样式的入口声明标准 stylesheet import。图表模块、样式和 PDF export 的 `jspdf` 依赖由恢复后的 package 与项目构建工具按标准 ESM 图解析。
 
-`ECMAScript.VuIcons` 同时提供静态与动态路径。已知图标直接使用生成的 `VuUser` 等 component，其 binding 指向独立 `vu-icons/VuUser` entry；运行时名称选择使用 `VuIcon` 与 `VuIconName`，并由正式动态入口引入完整 `icons-data.js` catalog。
+`ECMAScript.Lucide` 的每个图标类型直接对应 `lucide-vue-next` 的 named export，生成器同时保留 XML 文档、官方图标链接和 Razor 参数类型。应用只导入实际使用的图标，Deno/Vite 可按正常 ESM 图执行 tree shaking。
 
 ## Blazor framework 绑定
 

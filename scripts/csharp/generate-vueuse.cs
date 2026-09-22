@@ -223,11 +223,9 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = specifier,
-            ["production"] = specifier,
+            ["path"] = specifier,
             // 兄弟条目和 peer 都通过 package 通道解析；requires 只负责 provider 版本约束。
-            ["developmentDependencies"] = (JsonArray)packageDependencies.DeepClone(),
-            ["productionDependencies"] = packageDependencies,
+            ["dependencies"] = packageDependencies,
         };
     }
 

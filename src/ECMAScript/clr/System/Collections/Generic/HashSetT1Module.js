@@ -57,10 +57,10 @@ function NativeAdd(instance, item) {
   Reflect.apply(add, instance, [item]);
 }
 function NativeDelete(instance, item) {
-  let __binding$b52b0b9c02c7a8df = Reflect.get(Set.prototype, "delete");
-  if (__binding$b52b0b9c02c7a8df === null)
+  let __binding$5de0a6d2c49a6998 = Reflect.get(Set.prototype, "delete");
+  if (__binding$5de0a6d2c49a6998 === null)
     throw new Error("MissingMethodException: Set.prototype.delete is unavailable.");
-  return Reflect.apply(__binding$b52b0b9c02c7a8df, instance, [item]);
+  return Reflect.apply(__binding$5de0a6d2c49a6998, instance, [item]);
 }
 function NativeClear(instance) {
   let clear = Reflect.get(Set.prototype, "clear");

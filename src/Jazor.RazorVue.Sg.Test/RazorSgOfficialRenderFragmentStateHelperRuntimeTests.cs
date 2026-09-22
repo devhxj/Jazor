@@ -72,21 +72,21 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "CreateTemplateState(Prefix).ItemTemplate", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-render-state-runtime.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-render-state-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("CreateTemplateState", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "get ItemTemplate()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/template-state-helper-runtime.mjs",
+            "components/template-state-helper-runtime.js",
             observation.ModuleText,
             "official-template-state-helper-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/template-state-helper-runtime.mjs";
-            import templatePanel from "./components/template-panel-render-state-runtime.mjs";
+            import component from "./components/template-state-helper-runtime.js";
+            import templatePanel from "./components/template-panel-render-state-runtime.js";
 
             test("official Razor render-state helper expands the constructed generic template", () => {
                 const panel = component.setup({ Prefix: "Queue" }, { slots: {} })();
@@ -102,7 +102,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/template-panel-render-state-runtime.mjs"] = "export default { name: \"template-panel-render-state-runtime\" };"
+                ["components/template-panel-render-state-runtime.js"] = "export default { name: \"template-panel-render-state-runtime\" };"
             });
     }
 
@@ -169,21 +169,21 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "CreateTemplateState().ItemTemplate", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-render-state-initializer-runtime.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-render-state-initializer-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("CreateTemplateState", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "get ItemTemplate()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/template-state-initializer-runtime.mjs",
+            "components/template-state-initializer-runtime.js",
             observation.ModuleText,
             "official-template-state-initializer-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/template-state-initializer-runtime.mjs";
-            import templatePanel from "./components/template-panel-render-state-initializer-runtime.mjs";
+            import component from "./components/template-state-initializer-runtime.js";
+            import templatePanel from "./components/template-panel-render-state-initializer-runtime.js";
 
             test("official Razor render-state initializer expands the generic template", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -199,7 +199,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/template-panel-render-state-initializer-runtime.mjs"] = "export default { name: \"template-panel-render-state-initializer-runtime\" };"
+                ["components/template-panel-render-state-initializer-runtime.js"] = "export default { name: \"template-panel-render-state-initializer-runtime\" };"
             });
     }
 }

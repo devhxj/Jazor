@@ -13,7 +13,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule("clr/System/UInt32Module.js")]
+[ECMAScriptModule("./clr/System/UInt32Module.js")]
 [Jazor(Op.Alias, "uint", "Number")]
 public static class UInt32Module
 {

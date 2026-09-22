@@ -15,6 +15,7 @@ namespace ECMAScript;
 /// </summary>
 [ECMAScriptName("default")]
 [ECMAScript("vue-filepond")]
+[Style("filepond/dist/filepond.css")]
 public sealed class VueFilePond : ComponentBase, IVueComponent
 {
     /// <summary>

@@ -221,7 +221,7 @@ public sealed class BootstrapPatchTests
             outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.Contains("RazorSourceTextCatalog", StringComparison.Ordinal)),
             "Host output source text must not enter the consumer compilation.");
         var catalogText = catalog!.GetText().ToString();
-        StringAssert.Contains(catalogText, "components/counter.mjs");
+        StringAssert.Contains(catalogText, "components/counter.js");
         // The production driver path must carry AdditionalText into the final map. The
         // lowerer still consumes Razor SG's final C# compilation rather than this text.
         StringAssert.Contains(catalogText, "sourcesContent");

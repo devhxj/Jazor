@@ -50,7 +50,7 @@ Razor 已负责校验未知参数、必需参数和参数类型不匹配；Razor
 - 每个组件生成确定性的 Vue render-function `.mjs` 模块。
 - 组件模块、导入、组件标识、相对路径、内容哈希和 source map 锚点必须稳定。
 - `.mjs`、`.mjs.map`、manifest 与 bundle 的写入属于 `Jazor.Emit`，RazorVue 只负责生成内容。
-- `debug` 模式提供可调试模块和源映射；`release` 模式由 Netpack 产出浏览器包。
+- `debug` 模式提供可调试模块和源映射；`release` 模式把标准项目交给项目配置的 JavaScript 构建工具产出浏览器包；默认配置使用 Vite，但构建器可替换。
 - 组件的开发期 HMR 与 SSR 是上层交付能力，官方 Razor SG 输入边界因此保持稳定。
 
 实现级说明与聚焦测试位于 [Jazor.RazorVue README](../../src/Jazor.RazorVue/README.md)。

@@ -475,23 +475,21 @@ static void AssertDirectory(string path, string description)
 
 static void AssertDemoArtifacts(string generatedOutputRoot)
 {
-    var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
-    AssertFile(manifestPath, "DemoClient generated manifest");
-    var manifest = File.ReadAllText(manifestPath);
-    foreach (var expected in new[]
-             {
-                 "JazorAdmin.DemoClient.PortalPage",
-                 "components/portal-page",
-                 "components/portal-api-client"
-             })
+    AssertFile(Path.Combine(generatedOutputRoot, "entry.js"), "DemoClient standard browser entry");
+    AssertFile(Path.Combine(generatedOutputRoot, "package.json"), "DemoClient standard package declaration");
+    AssertFile(Path.Combine(generatedOutputRoot, "deno.lock"), "DemoClient Deno dependency lock");
+    AssertDirectory(Path.Combine(generatedOutputRoot, "node_modules"), "DemoClient restored dependencies");
+    AssertFile(Path.Combine(generatedOutputRoot, "app.js"), "DemoClient explicit application module");
+    var portalModule = Path.Combine(generatedOutputRoot, "components", "portal-page.js");
+    AssertFile(portalModule, "DemoClient portal render-function module");
+    AssertFile(Path.Combine(generatedOutputRoot, "components", "portal-api-client.js"), "DemoClient API module");
+    if (File.Exists(Path.Combine(generatedOutputRoot, "jazor-manifest.json")) ||
+        File.Exists(Path.Combine(generatedOutputRoot, "importmap.json")))
     {
-        if (!manifest.Contains(expected, StringComparison.Ordinal))
-            throw new InvalidOperationException("DemoClient generated manifest did not contain '" + expected + "'.");
+        throw new InvalidOperationException("DemoClient standard project must not contain runtime manifests or import maps.");
     }
 
-    var portalModule = Directory.EnumerateFiles(generatedOutputRoot, "portal-page.mjs", SearchOption.AllDirectories).FirstOrDefault();
-    AssertFile(portalModule ?? string.Empty, "DemoClient portal render-function module");
-    var source = File.ReadAllText(portalModule!);
+    var source = File.ReadAllText(portalModule);
     foreach (var expected in new[] { "defineComponent", "data-demo-workbench", "data-demo-command", "Protected API" })
     {
         if (!source.Contains(expected, StringComparison.Ordinal))

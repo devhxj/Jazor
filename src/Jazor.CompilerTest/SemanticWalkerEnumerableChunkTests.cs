@@ -49,7 +49,7 @@ public sealed class SemanticWalkerEnumerableChunkTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "chunk" }, importNames);
         StringAssert.Contains(body, "chunk(releaseIds, size)", StringComparison.Ordinal);

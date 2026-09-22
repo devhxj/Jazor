@@ -24,14 +24,8 @@
   "imports": {
     "@pinia/testing": {
       "type": "module",
-      "development": "@pinia/testing",
-      "production": "@pinia/testing",
-      "developmentDependencies": [
-        "nostics",
-        "pinia",
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "@pinia/testing",
+      "dependencies": [
         "nostics",
         "pinia",
         "vue"

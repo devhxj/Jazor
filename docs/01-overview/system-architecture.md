@@ -38,7 +38,7 @@ flowchart LR
 | Roslyn 与 Razor SG | 提供已绑定的语义、诊断和最终组件生成结果 | 生成 JavaScript 或浏览器资源 |
 | `Jazor.Compiler` | Jazor 核心：降低 `IOperation`，产出 ESTree；维护导入、临时名、源位置和宿主映射边界 | 读取 Razor 文本、写入文件或运行开发服务器 |
 | `Jazor.RazorVue` | 基于 Jazor 核心的应用层：绑定生成的 `BuildRenderTree`，处理 Vue 特有的组件 framing | 重新实现 C# 表达式和成员语义 |
-| `Jazor.Emit` | 读取 `ModuleCatalog` 与 JS resource manifest，解析显式依赖闭包、物化模块/源映射/资源并调用 Netpack | 决定 C# lowering 规则 |
+| `Jazor.Emit` | 读取 `ModuleCatalog` 与 JS resource manifest，解析显式依赖闭包、物化标准项目模块/源映射/资源并调用项目配置的 JavaScript 构建工具 | 决定 C# lowering 规则 |
 | ASP.NET Core 集成 | 承载静态资源、SSR 与 hydration | 替代浏览器打包器或编译器 |
 
 ## 核心约束

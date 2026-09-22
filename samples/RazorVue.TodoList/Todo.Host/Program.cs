@@ -8,14 +8,16 @@ internal static class Program
     private static void Main(string[] args)
     {
         var builder = JazorWebApplication.CreateBuilder(args);
-        builder.Services.AddJazorReload();
+        builder.Services.AddJazorViteProxy(options =>
+            options.ServerOrigin = new Uri(builder.Configuration["Todo:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
 
         // SSR is an explicit deployment mode. The release publish must be built with
-        // JazorSSR=true so the jazor/ssr graph exists; Todo:Ssr only switches the fallback
+        // JazorSSR=true so the standard project contains ssr-entry.js; Todo:Ssr switches the fallback
         // from the CSR shell to server rendering plus browser hydration.
         var useSsr = string.Equals(builder.Configuration["Todo:Ssr"], "true", StringComparison.OrdinalIgnoreCase);
         if (useSsr)
-            builder.Services.AddJazorSsr();
+            builder.Services.AddJazorSsr(options =>
+                options.TaskName = builder.Environment.IsDevelopment() ? "ssr:dev" : "ssr");
 
         var app = builder.Build();
         var pathBase = builder.Configuration["Todo:PathBase"];
@@ -29,8 +31,8 @@ internal static class Program
                 : pathBase);
         }
 
+        app.UseJazorViteProxy();
         app.UseJazorHost();
-        app.UseJazorReload();
         if (useSsr)
         {
             // The module path mirrors TodoApp's [ECMAScriptModule("./components/todo-app")].

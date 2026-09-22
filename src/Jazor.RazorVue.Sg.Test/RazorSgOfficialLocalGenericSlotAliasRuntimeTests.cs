@@ -50,14 +50,14 @@ public sealed class RazorSgOfficialLocalGenericSlotAliasRuntimeTests
         StringAssert.Contains(observation.ModuleText, "slots.item", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-template-alias-runtime.mjs",
+            "components/release-template-alias-runtime.js",
             observation.ModuleText,
             "official-release-template-alias-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-template-alias-runtime.mjs";
+            import component from "./components/release-template-alias-runtime.js";
 
             test("official Razor local RenderFragment<T> aliases retain every scoped slot result", () => {
                 const list = component.setup({}, {

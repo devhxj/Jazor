@@ -2,19 +2,19 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeTailScenarios
 {
-    private const string BigIntegerModulePath = "clr/System/Numerics/BigIntegerModule.js";
-    private const string ListModulePath = "clr/System/Collections/Generic/ListT1Module.js";
-    private const string BooleanModulePath = "clr/System/BooleanModule.js";
-    private const string GenericCollectionModulePath = "clr/System/Collections/Generic/ICollectionT1Module.js";
-    private const string GenericListModulePath = "clr/System/Collections/Generic/IListT1Module.js";
-    private const string ReadOnlyListModulePath = "clr/System/Collections/Generic/IReadOnlyListT1Module.js";
-    private const string CollectionModulePath = "clr/System/Collections/ICollectionModule.js";
-    private const string ListInterfaceModulePath = "clr/System/Collections/IListModule.js";
-    private const string ExceptionModulePath = "clr/System/ExceptionModule.js";
-    private const string DisposableModulePath = "clr/System/IDisposableModule.js";
-    private const string AsyncDisposableModulePath = "clr/System/IAsyncDisposableModule.js";
-    private const string ComparableModulePath = "clr/System/IComparableModule.js";
-    private const string GenericComparableModulePath = "clr/System/IComparableT1Module.js";
+    private const string BigIntegerModulePath = "./clr/System/Numerics/BigIntegerModule.js";
+    private const string ListModulePath = "./clr/System/Collections/Generic/ListT1Module.js";
+    private const string BooleanModulePath = "./clr/System/BooleanModule.js";
+    private const string GenericCollectionModulePath = "./clr/System/Collections/Generic/ICollectionT1Module.js";
+    private const string GenericListModulePath = "./clr/System/Collections/Generic/IListT1Module.js";
+    private const string ReadOnlyListModulePath = "./clr/System/Collections/Generic/IReadOnlyListT1Module.js";
+    private const string CollectionModulePath = "./clr/System/Collections/ICollectionModule.js";
+    private const string ListInterfaceModulePath = "./clr/System/Collections/IListModule.js";
+    private const string ExceptionModulePath = "./clr/System/ExceptionModule.js";
+    private const string DisposableModulePath = "./clr/System/IDisposableModule.js";
+    private const string AsyncDisposableModulePath = "./clr/System/IAsyncDisposableModule.js";
+    private const string ComparableModulePath = "./clr/System/IComparableModule.js";
+    private const string GenericComparableModulePath = "./clr/System/IComparableT1Module.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

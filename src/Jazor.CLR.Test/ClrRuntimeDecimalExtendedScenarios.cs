@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDecimalExtendedScenarios
 {
-    private const string ModulePath = "clr/System/DecimalModule.js";
+    private const string ModulePath = "./clr/System/DecimalModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

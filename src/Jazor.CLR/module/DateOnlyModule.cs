@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// DateOnly 不能直接等同于 JavaScript Date，因为后者包含时间和时区解释。
 /// 模块内部以稳定的 day number/年月日结构执行运算，再按白名单约定发射到 runtime carrier。
 /// </remarks>
-[ECMAScriptModule("clr/System/DateOnlyModule.js")]
+[ECMAScriptModule("./clr/System/DateOnlyModule.js")]
 [Jazor(Op.Alias, "System.DateOnly","Object")]
 public static class DateOnlyModule
 {

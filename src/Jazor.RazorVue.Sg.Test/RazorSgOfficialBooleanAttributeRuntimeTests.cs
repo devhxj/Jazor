@@ -30,14 +30,14 @@ public sealed class RazorSgOfficialBooleanAttributeRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.IsDeploying", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-deploy-button.mjs",
+            "components/release-deploy-button.js",
             observation.ModuleText,
             "official-boolean-attribute-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-deploy-button.mjs";
+            import component from "./components/release-deploy-button.js";
 
             test("Razor boolean attributes follow the deployment parameter", () => {
                 const idle = component.setup({ IsDeploying: false }, { slots: {} })();

@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// JavaScript 没有 CLR Calendar 类型层次；接口/抽象类路径必须与具体 GregorianCalendar
 /// 使用同一套 helper，避免通过接口调用时日期范围和 era 语义发生漂移。
 /// </remarks>
-[ECMAScriptModule("clr/System/Globalization/CalendarModule.js")]
+[ECMAScriptModule("./clr/System/Globalization/CalendarModule.js")]
 [Jazor(Op.Alias, "System.Globalization.Calendar","Object")]
 public static class CalendarModule
 {

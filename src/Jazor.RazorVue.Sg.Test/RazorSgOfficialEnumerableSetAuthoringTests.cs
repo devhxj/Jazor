@@ -54,14 +54,14 @@ public sealed class RazorSgOfficialEnumerableSetAuthoringTests
         StringAssert.Contains(script, "data-primary", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-set-summary.mjs",
+            "components/release-set-summary.js",
             observation.ModuleText,
             "official-release-set-summary.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-set-summary.mjs";
+            import component from "./components/release-set-summary.js";
 
             function collect(node, name) {
                 if (node == null) return [];

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$packageId$</id><version>$version$</version><authors>$packageAuthors$</authors>
+    <description>$packageDescription$</description><readme>$packageReadmeFile$</readme>
+    <dependencies><group targetFramework="net11.0">
+      <dependency id="Jazor" version="$dependencyVersion$" exclude="Build,Analyzers" />
+      <dependency id="Jazor.Vue" version="$dependencyVersion$" exclude="Build,Analyzers" />
+    </group></dependencies>
+  </metadata>
+  <files>
+    <file src="$buildOutputDir$ECMAScript.Lucide.dll" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Lucide.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Lucide.xml" target="lib/net11.0" />
+    <file src="$projectDir$buildTransitive\ECMAScript.Lucide.targets" target="buildTransitive\ECMAScript.Lucide.targets" />
+    <file src="$projectDir$manifest.json" target="jazor\lucide-vue-next" />
+    <file src="$projectDir$licenses\**\*" target="jazor\lucide-vue-next\licenses" />
+    <file src="$projectDir$$packageReadmeFile$" target="" />
+  </files>
+</package>
+

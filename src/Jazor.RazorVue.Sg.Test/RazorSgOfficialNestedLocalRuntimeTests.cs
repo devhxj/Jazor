@@ -34,14 +34,14 @@ public sealed class RazorSgOfficialNestedLocalRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("const label", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-details-label-nested-local-runtime.mjs",
+            "components/release-details-label-nested-local-runtime.js",
             observation.ModuleText,
             "official-release-details-label-nested-local-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-details-label-nested-local-runtime.mjs";
+            import component from "./components/release-details-label-nested-local-runtime.js";
 
             test("official Razor nested compile-time locals preserve their markup position", () => {
                 const root = component.setup({}, { slots: {} })();

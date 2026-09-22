@@ -5428,8 +5428,8 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.IsNotNull(script);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(2, imports, script);
-		Assert.HasCount(2, imports["clr/System/Collections/Generic/DictionaryT2Module.js"], script);
-		Assert.HasCount(2, imports["clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/Generic/DictionaryT2Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], script);
 		StringAssert.Contains(script, "let dict = _b22e987e1be225aa(source);", StringComparison.Ordinal);
 		StringAssert.Contains(script, "let value = _ed4a7913b74bfd87(dict, \"key\");", StringComparison.Ordinal);
 		_ = new Acornima.Parser().ParseScript("function verify() " + script);
@@ -5461,9 +5461,9 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.IsNotNull(script);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(3, imports, script);
-		Assert.HasCount(2, imports["clr/System/Collections/Generic/DictionaryT2Module.js"], script);
-		Assert.HasCount(1, imports["clr/System/Collections/Generic/IDictionaryT2Module.js"], script);
-		Assert.HasCount(1, imports["clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/Generic/DictionaryT2Module.js"], script);
+		Assert.HasCount(1, imports["./clr/System/Collections/Generic/IDictionaryT2Module.js"], script);
+		Assert.HasCount(1, imports["./clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js"], script);
 		StringAssert.Contains(script, "let readOnly = _b22e987e1be225aa(source);", StringComparison.Ordinal);
 		StringAssert.Contains(script, "_f3b177bfce76ed5c(dict, \"key\", 2);", StringComparison.Ordinal);
 		_ = new Acornima.Parser().ParseScript("function verify() " + script);
@@ -5491,8 +5491,8 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.IsNotNull(script);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(2, imports, script);
-		Assert.HasCount(2, imports["clr/System/Collections/Generic/HashSetT1Module.js"], script);
-		Assert.HasCount(2, imports["clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/Generic/HashSetT1Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js"], script);
 		StringAssert.Contains(script, "let readOnly = _aede400efbd05842(source);", StringComparison.Ordinal);
 		StringAssert.Contains(script, "let empty = _843cd8664672a9f8();", StringComparison.Ordinal);
 		_ = new Acornima.Parser().ParseScript("function verify() " + script);
@@ -5541,9 +5541,9 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.IsNotNull(script);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(3, imports, script);
-		Assert.HasCount(2, imports["clr/System/Collections/Generic/HashSetT1Module.js"], script);
-		Assert.HasCount(1, imports["clr/System/Collections/Generic/ISetT1Module.js"], script);
-		Assert.HasCount(1, imports["clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/Generic/HashSetT1Module.js"], script);
+		Assert.HasCount(1, imports["./clr/System/Collections/Generic/ISetT1Module.js"], script);
+		Assert.HasCount(1, imports["./clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js"], script);
 		StringAssert.Contains(script, "let readOnly = _aede400efbd05842(source);", StringComparison.Ordinal);
 		StringAssert.Contains(script, "let added = _fa512a510bd763de(set, 2);", StringComparison.Ordinal);
 		_ = new Acornima.Parser().ParseScript("function verify() " + script);
@@ -5570,8 +5570,8 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.IsNotNull(script);
 		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(2, imports, script);
-		Assert.HasCount(2, imports["clr/System/Collections/Generic/ListT1Module.js"], script);
-		Assert.HasCount(2, imports["clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/Generic/ListT1Module.js"], script);
+		Assert.HasCount(2, imports["./clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js"], script);
 		StringAssert.Contains(script, "let list = _d4e5f6a7b8c9d0e1(source);", StringComparison.Ordinal);
 		StringAssert.Contains(script, "let value = _b8c9d0e1f2a3b4c5(list, 1);", StringComparison.Ordinal);
 		_ = new Acornima.Parser().ParseScript("function verify() " + script);
@@ -8519,7 +8519,7 @@ public sealed class SemanticWalkerReferenceTest
 		var equalsPath = (string?)equalsValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
 		Assert.AreEqual("Import", equalsOp);
 		Assert.AreEqual("_4614e5ce6b42a7ad", equalsMethod);
-		Assert.AreEqual("clr/System/Collections/Generic/EqualityComparerT1Module.js", equalsPath);
+		Assert.AreEqual("./clr/System/Collections/Generic/EqualityComparerT1Module.js", equalsPath);
 
 		var getHashCodeValue = members["virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)"];
 		Assert.IsNotNull(getHashCodeValue);
@@ -8529,7 +8529,7 @@ public sealed class SemanticWalkerReferenceTest
 		var getHashCodePath = (string?)getHashCodeValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
 		Assert.AreEqual("Import", getHashCodeOp);
 		Assert.AreEqual("_2c3736bd7d205921", getHashCodeMethod);
-		Assert.AreEqual("clr/System/Collections/Generic/EqualityComparerT1Module.js", getHashCodePath);
+		Assert.AreEqual("./clr/System/Collections/Generic/EqualityComparerT1Module.js", getHashCodePath);
 	}
 
 	[TestMethod]
@@ -8549,7 +8549,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual("Import", equalsOp);
 		Assert.AreEqual("_dae184550b995be1", equalsMethod);
-		Assert.AreEqual("clr/System/Collections/Generic/IEqualityComparerT1Module.js", equalsPath);
+		Assert.AreEqual("./clr/System/Collections/Generic/IEqualityComparerT1Module.js", equalsPath);
 	}
 
 	[TestMethod]
@@ -8569,7 +8569,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual("Import", getHashCodeOp);
 		Assert.AreEqual("_f53ff8f6435182d7", getHashCodeMethod);
-		Assert.AreEqual("clr/System/Collections/Generic/IEqualityComparerT1Module.js", getHashCodePath);
+		Assert.AreEqual("./clr/System/Collections/Generic/IEqualityComparerT1Module.js", getHashCodePath);
 	}
 
 	[TestMethod]
@@ -8589,7 +8589,7 @@ public sealed class SemanticWalkerReferenceTest
 		var equalsPath = (string?)equalsValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
 		Assert.AreEqual("Import", equalsOp);
 		Assert.AreEqual("_eb0a1792ad8b44b7", equalsMethod);
-		Assert.AreEqual("clr/System/Collections/IEqualityComparerModule.js", equalsPath);
+		Assert.AreEqual("./clr/System/Collections/IEqualityComparerModule.js", equalsPath);
 
 		var getHashCodeValue = members["System.Collections.IEqualityComparer.GetHashCode(object)"];
 		Assert.IsNotNull(getHashCodeValue);
@@ -8599,7 +8599,7 @@ public sealed class SemanticWalkerReferenceTest
 		var getHashCodePath = (string?)getHashCodeValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
 		Assert.AreEqual("Import", getHashCodeOp);
 		Assert.AreEqual("_8f16da840d40722e", getHashCodeMethod);
-		Assert.AreEqual("clr/System/Collections/IEqualityComparerModule.js", getHashCodePath);
+		Assert.AreEqual("./clr/System/Collections/IEqualityComparerModule.js", getHashCodePath);
 	}
 
 	[TestMethod]
@@ -8627,7 +8627,7 @@ public sealed class SemanticWalkerReferenceTest
 		var comparePath = (string?)compareValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
 		Assert.AreEqual("Import", compareOp);
 		Assert.AreEqual("_a4222c99b516b861", compareMethod);
-		Assert.AreEqual("clr/System/Collections/Generic/ComparerT1Module.js", comparePath);
+		Assert.AreEqual("./clr/System/Collections/Generic/ComparerT1Module.js", comparePath);
 	}
 
 	[TestMethod]
@@ -8647,7 +8647,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual("Import", compareOp);
 		Assert.AreEqual("_0289dcf579b8a65e", compareMethod);
-		Assert.AreEqual("clr/System/Collections/Generic/IComparerT1Module.js", comparePath);
+		Assert.AreEqual("./clr/System/Collections/Generic/IComparerT1Module.js", comparePath);
 	}
 
 	[TestMethod]
@@ -8667,7 +8667,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual("Import", compareOp);
 		Assert.AreEqual("_7dffdd7244581cc5", compareMethod);
-		Assert.AreEqual("clr/System/Collections/IComparerModule.js", comparePath);
+		Assert.AreEqual("./clr/System/Collections/IComparerModule.js", comparePath);
 	}
 
 	[TestMethod]
@@ -8687,7 +8687,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual("Import", disposeOp);
 		Assert.AreEqual("_6f97d94b6f2e4bc1", disposeMethod);
-		Assert.AreEqual("clr/System/IDisposableModule.js", disposePath);
+		Assert.AreEqual("./clr/System/IDisposableModule.js", disposePath);
 	}
 
 	[TestMethod]
@@ -8707,7 +8707,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual("Import", disposeAsyncOp);
 		Assert.AreEqual("_d17f7fbf9eb14eef", disposeAsyncMethod);
-		Assert.AreEqual("clr/System/IAsyncDisposableModule.js", disposeAsyncPath);
+		Assert.AreEqual("./clr/System/IAsyncDisposableModule.js", disposeAsyncPath);
 	}
 
 	[TestMethod]
@@ -8727,7 +8727,7 @@ public sealed class SemanticWalkerReferenceTest
 		var compareObjectPath = (string?)compareObjectValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareObjectValue);
 		Assert.AreEqual("Import", compareObjectOp);
 		Assert.AreEqual("_629b0613344d82e7", compareObjectMethod);
-		Assert.AreEqual("clr/System/StringModule.js", compareObjectPath);
+		Assert.AreEqual("./clr/System/StringModule.js", compareObjectPath);
 
 		var compareStringValue = members["string.CompareTo(string)"];
 		Assert.IsNotNull(compareStringValue);
@@ -8737,7 +8737,7 @@ public sealed class SemanticWalkerReferenceTest
 		var compareStringPath = (string?)compareStringValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareStringValue);
 		Assert.AreEqual("Import", compareStringOp);
 		Assert.AreEqual("_380e7c7649d703f0", compareStringMethod);
-		Assert.AreEqual("clr/System/StringModule.js", compareStringPath);
+		Assert.AreEqual("./clr/System/StringModule.js", compareStringPath);
 	}
 
 	[TestMethod]

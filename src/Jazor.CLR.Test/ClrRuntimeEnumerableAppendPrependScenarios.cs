@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableAppendPrependScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
     private const string AppendMember = "static System.Linq.Enumerable.Append<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)";
     private const string PrependMember = "static System.Linq.Enumerable.Prepend<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)";
 

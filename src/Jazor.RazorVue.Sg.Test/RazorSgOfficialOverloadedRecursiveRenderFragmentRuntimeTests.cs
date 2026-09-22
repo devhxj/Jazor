@@ -79,15 +79,15 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "_: 1", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-overload-template-runtime.mjs",
+            "components/release-overload-template-runtime.js",
             observation.ModuleText,
             "official-release-overload-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-overload-template-runtime.mjs";
-            import panel from "./components/dual-slot-panel-overloaded-template-runtime.mjs";
+            import component from "./components/release-overload-template-runtime.js";
+            import panel from "./components/dual-slot-panel-overloaded-template-runtime.js";
 
             test("official Razor overloads bind recursive RenderFragment helpers by symbol", () => {
                 const result = component.setup(
@@ -116,7 +116,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/dual-slot-panel-overloaded-template-runtime.mjs"] = "export default { name: \"dual-slot-panel-overloaded-template-runtime\" };"
+                ["components/dual-slot-panel-overloaded-template-runtime.js"] = "export default { name: \"dual-slot-panel-overloaded-template-runtime\" };"
             });
     }
 
@@ -192,15 +192,15 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-header-variant-runtime.mjs",
+            "components/release-header-variant-runtime.js",
             observation.ModuleText,
             "official-release-header-variant-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-header-variant-runtime.mjs";
-            import panel from "./components/slot-panel-header-variant-runtime.mjs";
+            import component from "./components/release-header-variant-runtime.js";
+            import panel from "./components/slot-panel-header-variant-runtime.js";
 
             test("official Razor conditional RenderFragment members select the active slot", () => {
                 const compact = component.setup({
@@ -229,7 +229,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-header-variant-runtime.mjs"] = "export default { name: \"slot-panel-header-variant-runtime\" };"
+                ["components/slot-panel-header-variant-runtime.js"] = "export default { name: \"slot-panel-header-variant-runtime\" };"
             });
     }
 }

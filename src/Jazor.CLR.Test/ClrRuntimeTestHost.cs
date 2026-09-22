@@ -19,8 +19,6 @@ internal sealed record ClrRuntimeExecutionResult(
     IReadOnlyList<ClrRuntimeValue>? Arguments,
     string? Error);
 
-internal sealed record DenoImportMap(IReadOnlyDictionary<string, string> Imports);
-
 internal static class ClrRuntimeTestHost
 {
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
@@ -61,32 +59,14 @@ internal static class ClrRuntimeTestHost
             var invocationPath = Path.Combine(root, "scenarios.json");
             var resultPath = Path.Combine(root, "results.json");
             var runnerPath = Path.Combine(root, "runner.mjs");
-            var configPath = Path.Combine(root, "deno.json");
             await File.WriteAllTextAsync(invocationPath, JsonSerializer.Serialize(invocations, JsonOptions), Utf8WithoutBom);
             await File.WriteAllTextAsync(runnerPath, RunnerSource, Utf8WithoutBom);
-            await File.WriteAllTextAsync(
-                configPath,
-                JsonSerializer.Serialize(
-                    // carrier 模块按 ModuleCatalog 的 RelativePath 落盘（clr/System/**），
-                    // 因此 import map 必须暴露同一前缀；System/、Microsoft/ 保留给
-                    // 旧式逻辑路径引用（例如 Op.Import 记录的声明路径）。
-                    new DenoImportMap(new Dictionary<string, string>(StringComparer.Ordinal)
-                    {
-                        ["clr/System/"] = "./clr/System/",
-                        ["clr/Microsoft/"] = "./clr/Microsoft/",
-                        ["System/"] = "./clr/System/",
-                        ["Microsoft/"] = "./clr/Microsoft/"
-                    }),
-                    JsonOptions),
-                Utf8WithoutBom);
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
                 [
                     "run",
-                    "--config",
-                    configPath,
                     "--quiet",
                     "--allow-read",
                     "--allow-write",
@@ -314,7 +294,7 @@ internal static class ClrRuntimeTestHost
             }
             case "runtimeInvocation": {
               const invocation = value.invocation;
-              const runtimeModule = await import(`./${invocation.modulePath}`);
+              const runtimeModule = await import(invocation.modulePath);
               const runtimeFunction = runtimeModule[invocation.exportName];
               if (typeof runtimeFunction !== "function")
                 throw new Error(
@@ -410,7 +390,7 @@ internal static class ClrRuntimeTestHost
         for (const scenario of scenarios) {
           try {
             resetBrowser();
-            const runtimeModule = await import(`./${scenario.modulePath}`);
+            const runtimeModule = await import(scenario.modulePath);
             const runtimeFunction = runtimeModule[scenario.exportName];
             if (typeof runtimeFunction !== "function")
               throw new Error(`Missing runtime export ${scenario.exportName} in ${scenario.modulePath}`);

@@ -1,6 +1,6 @@
 // Program.cs - ASP.NET Core 入口 / ASP.NET Core entry point
-// 配置 Jazor 开发时重载、静态资源服务、路由回退和安全头
-// Configures Jazor dev-time reload, static assets, route fallback, and security headers
+// 配置标准项目 Vite 代理、静态资源服务、路由回退和安全头
+// Configures the standard project's Vite proxy, static assets, route fallback, and security headers
 
 using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
@@ -8,9 +8,9 @@ using Wiki;
 
 // 构建应用 / Build the application
 var builder = JazorWebApplication.CreateBuilder(args);
-// 默认监听项目根 jazor/ 和 wwwroot/；前者由 Jazor 构建写入，后者仍承载站点资源。
-// Observe the default jazor/ and wwwroot/ paths for generated modules and authored assets.
-builder.Services.AddJazorReload();
+// Deno serves the standard project; the public prefix is also the project's Vite base.
+builder.Services.AddJazorViteProxy(options =>
+    options.ServerOrigin = new Uri(builder.Configuration["Wiki:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
 
 // 启动前验证路由目录完整性 / Validate route catalog integrity before startup
 Wiki.WikiCatalogGuard.ValidateOrThrow();
@@ -31,6 +31,8 @@ if (!string.IsNullOrWhiteSpace(configuredPathBase))
     app.UsePathBase(configuredPathBase);
 }
 
+app.UseJazorViteProxy();
+
 app.UseJazorHost(options =>
 {
     options.SecurityHeaders.PermissionsPolicy =
@@ -38,8 +40,6 @@ app.UseJazorHost(options =>
         "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";
     options.Assets.ImmutableCachePathPrefixes.Add("/vendor/");
 });
-
-app.UseJazorReload();
 
 // HTML 外壳回退 / HTML shell fallback
 app.UseJazorSpaFallback(

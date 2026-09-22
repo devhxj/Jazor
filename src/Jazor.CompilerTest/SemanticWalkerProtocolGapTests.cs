@@ -599,7 +599,7 @@ public sealed class SemanticWalkerProtocolGapTests
     }
 
     [TestMethod]
-    public void VisitStringEnum_NullExplicitNameUsesTheEmptyWireValue()
+    public void VisitStringEnum_NullExplicitNameFallsBackToMemberName()
     {
         var block = GetBlock(
             """
@@ -624,7 +624,7 @@ public sealed class SemanticWalkerProtocolGapTests
         var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "return \"\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return \"Empty\"", StringComparison.Ordinal);
     }
 
     private static IBlockOperation GetBlock(string source)

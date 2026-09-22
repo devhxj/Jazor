@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// Exp2M1/Exp10M1 和 Log2P1/Log10P1 通过稳定的 expm1/log1p 换底；LN2/LN10 的一次舍入
 /// 在回到 Half 精度后不会重新引入旧的零点消减问题。
 /// </remarks>
-[ECMAScriptModule("clr/System/HalfModule.js")]
+[ECMAScriptModule("./clr/System/HalfModule.js")]
 [Jazor(Op.Alias, "System.Half", "Number")]
 public static class HalfModule
 {

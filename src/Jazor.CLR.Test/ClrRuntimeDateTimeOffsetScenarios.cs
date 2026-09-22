@@ -5,7 +5,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDateTimeOffsetScenarios
 {
-    private const string ModulePath = "clr/System/DateTimeOffsetModule.js";
+    private const string ModulePath = "./clr/System/DateTimeOffsetModule.js";
     private static readonly DateTimeOffset SampleValue =
         new DateTimeOffset(2024, 1, 2, 3, 4, 5, 6, 7, TimeSpan.FromHours(5.5)).AddTicks(9);
     private static readonly DateTimeOffset SameInstantValue = SampleValue.ToOffset(TimeSpan.FromHours(-3));

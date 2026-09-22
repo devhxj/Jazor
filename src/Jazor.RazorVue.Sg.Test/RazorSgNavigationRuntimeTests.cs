@@ -58,13 +58,13 @@ public sealed class RazorSgNavigationRuntimeTests
         StringAssert.Contains(observation.ModuleText, "navigateToForceLoadReplace(", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/navigation-runtime.mjs",
+            "components/navigation-runtime.js",
             observation.ModuleText,
             "navigation-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import component from "./components/navigation-runtime.mjs";
+            import component from "./components/navigation-runtime.js";
             import { __serviceProvider } from "vue";
 
             test("NavigationManager maps to the browser service", () => {
@@ -115,7 +115,7 @@ public sealed class RazorSgNavigationRuntimeTests
             """,
             supportingModules: new Dictionary<string, string>
             {
-                ["@jazor/vue-runtime/routes.mjs"] = "export const routes = [];\n"
+                ["runtime/vue/routes.js"] = "export const routes = [];\n"
             },
             vueRuntimeSource: """
             const providers = new Map();
@@ -170,13 +170,13 @@ public sealed class RazorSgNavigationRuntimeTests
             componentMetadataName: "Demo.Pages.NavigationHost");
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/navigation-host.mjs",
+            "components/navigation-host.js",
             observation.ModuleText,
             "navigation-host.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import component from "./components/navigation-host.mjs";
+            import component from "./components/navigation-host.js";
             import { CreateNavigationManager, navigateToForceLoadReplace } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
             import { __getProvider, __setProvider, reactive } from "vue";
 
@@ -264,7 +264,7 @@ public sealed class RazorSgNavigationRuntimeTests
             """,
             supportingModules: new Dictionary<string, string>
             {
-                ["@jazor/vue-runtime/routes.mjs"] = "export const routes = [];\n"
+                ["runtime/vue/routes.js"] = "export const routes = [];\n"
             },
             vueRuntimeSource: """
             const providers = new Map();
@@ -408,13 +408,13 @@ public sealed class RazorSgNavigationRuntimeTests
         StringAssert.Contains(observation.ModuleText, "getPort", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/not-found-runtime.mjs",
+            "components/not-found-runtime.js",
             observation.ModuleText,
             "not-found-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import component from "./components/not-found-runtime.mjs";
+            import component from "./components/not-found-runtime.js";
             import { __serviceProvider } from "vue";
             import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
 
@@ -459,7 +459,7 @@ public sealed class RazorSgNavigationRuntimeTests
             """,
             supportingModules: new Dictionary<string, string>
             {
-                ["@jazor/vue-runtime/routes.mjs"] = "export const routes = [];\n"
+                ["runtime/vue/routes.js"] = "export const routes = [];\n"
             },
             vueRuntimeSource: """
             const providers = new Map();
@@ -539,13 +539,13 @@ public sealed class RazorSgNavigationRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Promise.resolve()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/location-changing-runtime.mjs",
+            "components/location-changing-runtime.js",
             observation.ModuleText,
             "location-changing-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import component from "./components/location-changing-runtime.mjs";
+            import component from "./components/location-changing-runtime.js";
             import { __serviceProvider, __unmount } from "vue";
             import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
 
@@ -624,7 +624,7 @@ public sealed class RazorSgNavigationRuntimeTests
             """,
             supportingModules: new Dictionary<string, string>
             {
-                ["@jazor/vue-runtime/routes.mjs"] = "export const routes = [];\n"
+                ["runtime/vue/routes.js"] = "export const routes = [];\n"
             },
             vueRuntimeSource: """
             const providers = new Map();
@@ -704,13 +704,13 @@ public sealed class RazorSgNavigationRuntimeTests
             "System/Threading/CancellationTokenModule.js",
             StringComparison.Ordinal);
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/location-changing-supersede.mjs",
+            "components/location-changing-supersede.js",
             observation.ModuleText,
             "location-changing-supersede.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import component from "./components/location-changing-supersede.mjs";
+            import component from "./components/location-changing-supersede.js";
             import { __serviceProvider } from "vue";
             import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
 
@@ -790,7 +790,7 @@ public sealed class RazorSgNavigationRuntimeTests
             """,
             supportingModules: new Dictionary<string, string>
             {
-                ["@jazor/vue-runtime/routes.mjs"] = "export const routes = [];\n"
+                ["runtime/vue/routes.js"] = "export const routes = [];\n"
             },
             vueRuntimeSource: """
             const providers = new Map();

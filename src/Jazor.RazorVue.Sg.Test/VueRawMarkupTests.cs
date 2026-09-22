@@ -47,36 +47,36 @@ public sealed class VueRawMarkupTests
         Assert.HasCount(4, imports.EnumerateObject());
         foreach (var name in new[]
                  {
-                     "@jazor/vue-runtime/raw-markup.mjs",
-                     "@jazor/vue-runtime/cascading.mjs",
-                     "@jazor/vue-runtime/blazor-routing.mjs",
-                     "@jazor/vue-runtime/authentication.mjs"
+                     "runtime/vue/raw-markup.js",
+                     "runtime/vue/cascading.js",
+                     "runtime/vue/blazor-routing.js",
+                     "runtime/vue/authentication.js"
                  })
         {
             var entry = imports.GetProperty(name);
             Assert.AreEqual("module", entry.GetProperty("type").GetString());
-            var production = entry.GetProperty("production").GetString()!;
+            var production = entry.GetProperty("path").GetString()!;
             var sourcePath = Path.Combine(packageRoot, production.Replace('/', Path.DirectorySeparatorChar));
             Assert.IsTrue(File.Exists(sourcePath), sourcePath);
             var actualHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(sourcePath))).ToLowerInvariant();
-            Assert.AreEqual(entry.GetProperty("productionHash").GetString(), actualHash);
+            Assert.AreEqual(entry.GetProperty("hash").GetString(), actualHash);
         }
 
         var routingPath = Path.Combine(
             packageRoot,
-            imports.GetProperty("@jazor/vue-runtime/blazor-routing.mjs")
-                .GetProperty("production").GetString()!
+            imports.GetProperty("runtime/vue/blazor-routing.js")
+                .GetProperty("path").GetString()!
                 .Replace('/', Path.DirectorySeparatorChar));
         var routing = File.ReadAllText(routingPath);
-        StringAssert.Contains(routing, "@jazor/vue-runtime/routes.mjs");
+        StringAssert.Contains(routing, "./routes.js");
         StringAssert.Contains(routing, "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
         CollectionAssert.DoesNotContain(
-            imports.GetProperty("@jazor/vue-runtime/blazor-routing.mjs")
-                .GetProperty("productionDependencies")
+            imports.GetProperty("runtime/vue/blazor-routing.js")
+                .GetProperty("dependencies")
                 .EnumerateArray()
                 .Select(static value => value.GetString())
                 .ToArray(),
-            "@jazor/vue-runtime/routes.mjs");
+            "runtime/vue/routes.js");
 
         CollectionAssert.Contains(
             root.GetProperty("requires").EnumerateObject().Select(static property => property.Name).ToArray(),

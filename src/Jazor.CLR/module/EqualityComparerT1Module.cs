@@ -8,7 +8,7 @@ namespace Jazor.CLR;
 /// - EqualityComparer&lt;T&gt;.Equals(T, T)
 /// - EqualityComparer&lt;T&gt;.GetHashCode(T)
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/EqualityComparerT1Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/EqualityComparerT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.EqualityComparer<T>", "Object")]
 public static class EqualityComparerT1Module<T>
 {

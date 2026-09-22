@@ -95,22 +95,22 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddComponentReferenceCapture", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "SetKey", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./release-panel-workflow.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./release-panel-workflow.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "modelValue: state.SelectedId", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onInput", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-workflow.mjs",
+            "components/release-workflow.js",
             observation.ModuleText,
             "official-release-workflow-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-workflow.mjs";
-            import releasePanel from "./components/release-panel-workflow.mjs";
+            import component from "./components/release-workflow.js";
+            import releasePanel from "./components/release-panel-workflow.js";
 
             const findPanel = form => form.children.find(child => child?.name === releasePanel);
             const findQueuedOutput = form => form.children.find(child => child?.props && "data-queued-release" in child.props);
@@ -162,7 +162,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-panel-workflow.mjs"] = "export default { name: \"release-panel-workflow\" };"
+                ["components/release-panel-workflow.js"] = "export default { name: \"release-panel-workflow\" };"
             });
     }
 }

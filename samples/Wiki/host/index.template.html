@@ -19,11 +19,9 @@
 </head>
 <body>
   <div id="app"></div>
-  <script type="importmap" nonce="__WIKI_SCRIPT_NONCE__">
-    __WIKI_BROWSER_IMPORT_MAP__
-  </script>
+  __WIKI_VITE_CLIENT__
   <!-- Sober 先于主模块加载：custom elements 先定义，Vue 才能把组件属性设为 DOM property -->
-  <script src="__WIKI_SOBER_URL__" defer></script>
+  <script src="__WIKI_SOBER_URL__" nonce="__WIKI_SCRIPT_NONCE__" defer></script>
   <script type="module" src="__WIKI_MAIN_MODULE_URL__"></script>
 </body>
 </html>

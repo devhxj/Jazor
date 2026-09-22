@@ -16,12 +16,8 @@
   "imports": {
     "vue-i18n": {
       "type": "module",
-      "development": "vue-i18n",
-      "production": "vue-i18n",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vue-i18n",
+      "dependencies": [
         "vue"
       ]
     }

@@ -28,17 +28,17 @@ public sealed class VueUseManifestTests
         CollectionAssert.AreEquivalent(new[] { "@vueuse/core", "@vueuse/shared" }, imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "@vueuse/shared", "vue" },
-            imports.GetProperty("@vueuse/core").GetProperty("productionDependencies")
+            imports.GetProperty("@vueuse/core").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "vue" },
-            imports.GetProperty("@vueuse/shared").GetProperty("productionDependencies")
+            imports.GetProperty("@vueuse/shared").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
 
         foreach (var entry in imports.EnumerateObject())
         {
-            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("production").GetString()!), entry.Name);
-            Assert.AreEqual(entry.Value.GetProperty("development").GetString(), entry.Value.GetProperty("production").GetString());
+            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("path").GetString()!), entry.Name);
+            Assert.AreEqual(entry.Value.GetProperty("path").GetString(), entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _));
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _));
         }

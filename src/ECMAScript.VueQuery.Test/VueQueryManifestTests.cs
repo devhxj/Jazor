@@ -39,18 +39,18 @@ public sealed class VueQueryManifestTests
 
         CollectionAssert.AreEquivalent(
             new[] { "@tanstack/match-sorter-utils", "@tanstack/query-core", "@vue/devtools-api", "vue-demi" },
-            imports.GetProperty("@tanstack/vue-query").GetProperty("productionDependencies")
+            imports.GetProperty("@tanstack/vue-query").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "vue" },
-            imports.GetProperty("vue-demi").GetProperty("productionDependencies")
+            imports.GetProperty("vue-demi").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
 
         foreach (var entry in imports.EnumerateObject())
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
-            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("development").GetString()!), entry.Name);
-            Assert.AreEqual(entry.Value.GetProperty("development").GetString(), entry.Value.GetProperty("production").GetString());
+            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("path").GetString()!), entry.Name);
+            Assert.AreEqual(entry.Value.GetProperty("path").GetString(), entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _), entry.Name);
             Assert.IsFalse(entry.Value.TryGetProperty("productionHash", out _), entry.Name);
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _), entry.Name);

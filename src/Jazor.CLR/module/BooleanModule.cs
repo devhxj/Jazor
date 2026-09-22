@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// TrueString/FalseString 等 .NET 文本约定与 JavaScript 的小写布尔文本不同，因此不能把
 /// 所有成员直接 Alias；涉及字符串格式的成员必须显式保留 .NET 结果。
 /// </remarks>
-[ECMAScriptModule("clr/System/BooleanModule.js")]
+[ECMAScriptModule("./clr/System/BooleanModule.js")]
 [Jazor(Op.Alias, "bool", "Boolean")]
 public static class BooleanModule
 {

@@ -145,15 +145,15 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/core-dom-events.mjs",
+            "components/core-dom-events.js",
             script,
             "official-core-dom-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/core-dom-events.mjs";
-            import forwarder from "./components/native-event-forwarder.mjs";
+            import component from "./components/core-dom-events.js";
+            import forwarder from "./components/native-event-forwarder.js";
 
             function findNode(node, predicate) {
               if (Array.isArray(node)) {
@@ -197,7 +197,7 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/native-event-forwarder.mjs"] = "export default { name: \"native-event-forwarder\" };"
+                ["components/native-event-forwarder.js"] = "export default { name: \"native-event-forwarder\" };"
             });
     }
 
@@ -278,7 +278,7 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/core-dom-change-events.mjs",
+            "components/core-dom-change-events.js",
             script,
             "official-core-dom-change-events-runtime.test.mjs",
             """
@@ -317,7 +317,7 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
               }
             };
 
-            import component from "./components/core-dom-change-events.mjs";
+            import component from "./components/core-dom-change-events.js";
 
             function findNode(node, predicate) {
               if (Array.isArray(node)) {

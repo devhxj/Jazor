@@ -179,7 +179,7 @@ public sealed class SemanticWalkerEnumerableDefaultIfEmptyTests
     {
         var imports = module.Body
             .OfType<ImportDeclaration>()
-            .Where(static declaration => declaration.Source.Value == "clr/System/Linq/EnumerableModule.js")
+            .Where(static declaration => declaration.Source.Value == "./clr/System/Linq/EnumerableModule.js")
             .SelectMany(static declaration => declaration.Specifiers)
             .OfType<ImportSpecifier>()
             .ToArray();

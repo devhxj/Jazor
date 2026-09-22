@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDecimalScenarios
 {
-    private const string ModulePath = "clr/System/DecimalModule.js";
+    private const string ModulePath = "./clr/System/DecimalModule.js";
     private const string MaxValue = "79228162514264337593543950335";
     private const string MinValue = "-79228162514264337593543950335";
     private const int NumberStyle = 111;

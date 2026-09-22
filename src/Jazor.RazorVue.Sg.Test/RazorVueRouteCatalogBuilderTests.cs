@@ -71,8 +71,8 @@ public sealed class RazorVueRouteCatalogBuilderTests
         StringAssert.Contains(missingLayout.Message, "layout", StringComparison.Ordinal);
         StringAssert.Contains(missingLayout.Message, "has no generated component artifact", StringComparison.Ordinal);
 
-        Assert.AreEqual("./same.mjs", Invoke<string>("GetRelativeImport", "@jazor/vue-runtime/routes.mjs", "@jazor/vue-runtime/same.mjs"));
-        Assert.AreEqual("../../Pages/Orders.mjs", Invoke<string>("GetRelativeImport", "@jazor/vue-runtime/routes.mjs", "Pages/Orders.mjs"));
+        Assert.AreEqual("./same.mjs", Invoke<string>("GetRelativeImport", "runtime/vue/routes.mjs", "runtime/vue/same.mjs"));
+        Assert.AreEqual("../../Pages/Orders.mjs", Invoke<string>("GetRelativeImport", "runtime/vue/routes.mjs", "Pages/Orders.mjs"));
         Assert.AreEqual("\"quote\\\" slash\\\\ newline\\n tab\\t control\\u001f\"", Invoke<string>("JavaScriptString", "quote\" slash\\ newline\n tab\t control\u001f"));
         Assert.IsTrue(Invoke<string>("ComputeContentHash", "route-content").All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
 

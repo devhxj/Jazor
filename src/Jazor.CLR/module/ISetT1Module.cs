@@ -6,7 +6,7 @@ namespace Jazor.CLR;
 /// ISet&lt;T&gt; 运行时统一投影到 JavaScript Set。
 /// 这里仅开放与 Set carrier 可稳定对齐的成员。
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/ISetT1Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/ISetT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.ISet<T>", "Set")]
 public static class ISetT1Module<T>
 {

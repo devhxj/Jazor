@@ -24,9 +24,9 @@ public sealed class CancellationModuleWhitelistTests
         AssertAlias(typeof(CancellationTokenSourceModule), "System.Threading.CancellationTokenSource", "AbortController");
         AssertAlias(typeof(CancellationTokenRegistrationModule), "System.Threading.CancellationTokenRegistration", "Object");
 
-        AssertModulePath(typeof(CancellationTokenModule), "clr/System/Threading/CancellationTokenModule.js");
-        AssertModulePath(typeof(CancellationTokenSourceModule), "clr/System/Threading/CancellationTokenSourceModule.js");
-        AssertModulePath(typeof(CancellationTokenRegistrationModule), "clr/System/Threading/CancellationTokenRegistrationModule.js");
+        AssertModulePath(typeof(CancellationTokenModule), "./clr/System/Threading/CancellationTokenModule.js");
+        AssertModulePath(typeof(CancellationTokenSourceModule), "./clr/System/Threading/CancellationTokenSourceModule.js");
+        AssertModulePath(typeof(CancellationTokenRegistrationModule), "./clr/System/Threading/CancellationTokenRegistrationModule.js");
     }
 
     [TestMethod]

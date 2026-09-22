@@ -111,7 +111,7 @@
                            data-portal-app="@application.ClientId">
                         <ContentSlot>
                             <div class="ja-portal__body">
-                                <VuAppWindow Size="24px" />
+                                <AppWindow Size="24px" />
                                 <span>@L("Single sign-on with authorization code + PKCE", "通过授权码 + PKCE 单点登录")</span>
                                 <a class="ja-portal__launch"
                                    data-portal-launch="@application.ClientId"
@@ -119,7 +119,7 @@
                                    target="_blank"
                                    rel="noreferrer">
                                     <span>@L("Open application", "打开应用")</span>
-                                    <VuArrowUpRight Size="16px" />
+                                    <ArrowUpRight Size="16px" />
                                 </a>
                             </div>
                         </ContentSlot>
@@ -158,10 +158,10 @@
     <section class="ja-panel">
         <header class="ja-panel__header"><div><h2>@L("Service overview", "服务概览")</h2><p>@L("Production paths exercised by JazorAdmin", "JazorAdmin 已接入的生产链路")</p></div></header>
         <div class="ja-dash__output">
-            <article><VuUser Size="22px" /><div><strong>@L("Identity", "身份")</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@(overview is null ? "--" : (overview.EnabledAccounts + "/" + overview.Accounts))</em></article>
-            <article><VuAppWindow Size="22px" /><div><strong>@L("Applications", "应用")</strong><span>@L("Registered OpenID clients", "已注册 OpenID 客户端")</span></div><em>@(overview is null ? "--" : overview.Applications.ToString())</em></article>
-            <article><VuChartLine Size="22px" /><div><strong>@L("Audit", "审计")</strong><span>@L("Protocol and management activity", "协议与管理操作")</span></div><em>@(overview is null ? "--" : overview.AuditEvents.ToString())</em></article>
-            <article><VuServer Size="22px" /><div><strong>RazorVue</strong><span>@L("Package-contained frontend", "包内自包含前端")</span></div><em>@L("Online", "在线")</em></article>
+            <article><User Size="22px" /><div><strong>@L("Identity", "身份")</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@(overview is null ? "--" : (overview.EnabledAccounts + "/" + overview.Accounts))</em></article>
+            <article><AppWindow Size="22px" /><div><strong>@L("Applications", "应用")</strong><span>@L("Registered OpenID clients", "已注册 OpenID 客户端")</span></div><em>@(overview is null ? "--" : overview.Applications.ToString())</em></article>
+            <article><ChartLine Size="22px" /><div><strong>@L("Audit", "审计")</strong><span>@L("Protocol and management activity", "协议与管理操作")</span></div><em>@(overview is null ? "--" : overview.AuditEvents.ToString())</em></article>
+            <article><Server Size="22px" /><div><strong>RazorVue</strong><span>@L("Package-contained frontend", "包内自包含前端")</span></div><em>@L("Online", "在线")</em></article>
         </div>
     </section>
 </section>

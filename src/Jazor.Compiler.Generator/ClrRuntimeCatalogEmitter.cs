@@ -109,7 +109,7 @@ internal static class ClrRuntimeCatalogEmitter
                 // 每个 specifier 解析回逻辑路径，再按 modulePaths 分类。否则所有相对 specifier
                 // 都会被当成"非本图导入"，模块依赖会被误记为缺失。
                 var resolvedImports = module.Imports
-                    .Select(import => ResolveLogicalImport(module.RelativePath, import, modulePaths))
+                    .Select(import => ResolveLogicalImport(module.RelativePath, import))
                     .Where(static value => value is not null)
                     .Select(static value => value!)
                     .ToArray();
@@ -125,7 +125,6 @@ internal static class ClrRuntimeCatalogEmitter
                         .ToArray(),
                     PackageDependencies = resolvedImports
                         .Where(import => !modulePaths.Contains(import))
-                        .Where(ECMAScriptModulePath.IsPackageSpecifier)
                         .Select(static import => import.Trim())
                         .Distinct(StringComparer.Ordinal)
                         .OrderBy(static value => value, StringComparer.Ordinal)
@@ -467,19 +466,18 @@ internal static class ClrRuntimeCatalogEmitter
     /// <summary>
     /// 把载体模块写出的 import specifier 解析回逻辑 carrier 路径。
     ///
-    /// 相对 specifier 以调用方的项目输出位置为起点；解析出的项目路径去掉 carrier 前缀就是
-    /// 逻辑路径。裸 specifier 原样返回（真实包引用，如 "vue"）。
+    /// 相对 specifier 以调用方的项目输出位置为起点；解析结果保留完整项目路径身份。
+    /// 裸 specifier 原样返回（真实包引用，如 "vue"）。
     /// </summary>
     private static string? ResolveLogicalImport(
         string importerRelativePath,
-        string importSpecifier,
-        IReadOnlySet<string> knownModulePaths)
+        string importSpecifier)
     {
         if (string.IsNullOrWhiteSpace(importSpecifier))
             return null;
 
         if (!importSpecifier.StartsWith(".", StringComparison.Ordinal))
-            return knownModulePaths.Contains(importSpecifier) ? importSpecifier : importSpecifier;
+            return importSpecifier;
 
         // 相对 specifier 需要用 ResolveRelativePath 按 importer 展开（而不是 ResolveRelativeToImporter，
         // 后者是反方向：由两个项目路径反算相对 specifier）。

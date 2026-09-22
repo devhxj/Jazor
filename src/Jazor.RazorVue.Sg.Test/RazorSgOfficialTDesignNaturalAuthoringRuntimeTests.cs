@@ -109,14 +109,14 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("builder.OpenComponent", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/tdesign-natural-authoring-runtime.mjs",
+            "components/tdesign-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/tdesign-natural-authoring-runtime.mjs";
+            import component from "./components/tdesign-natural-authoring-runtime.js";
             import { Button } from "tdesign-vue-next/es/button/index.mjs";
             import { Input } from "tdesign-vue-next/es/input/index.mjs";
             import { PrimaryTable } from "tdesign-vue-next/es/table/index.mjs";
@@ -152,7 +152,10 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                 ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
                 ["node_modules/tdesign-vue-next/es/button/index.mjs"] = "export const Button = { name: \"button\" };",
                 ["node_modules/tdesign-vue-next/es/input/index.mjs"] = "export const Input = { name: \"input\" };",
-                ["node_modules/tdesign-vue-next/es/table/index.mjs"] = "export const PrimaryTable = { name: \"primary-table\" };"
+                ["node_modules/tdesign-vue-next/es/table/index.mjs"] = "export const PrimaryTable = { name: \"primary-table\" };",
+                ["node_modules/tdesign-vue-next/es/button/style/index.css"] = "",
+                ["node_modules/tdesign-vue-next/es/input/style/index.css"] = "",
+                ["node_modules/tdesign-vue-next/es/table/style/index.css"] = ""
             });
     }
 
@@ -225,14 +228,14 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("AdminToggle", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/tdesign-form-control-natural-authoring-runtime.mjs",
+            "components/tdesign-form-control-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-form-control-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/tdesign-form-control-natural-authoring-runtime.mjs";
+            import component from "./components/tdesign-form-control-natural-authoring-runtime.js";
             import { Form, FormItem } from "tdesign-vue-next/es/form/index.mjs";
             import { Input } from "tdesign-vue-next/es/input/index.mjs";
             import { RadioButton, RadioGroup } from "tdesign-vue-next/es/radio/index.mjs";
@@ -305,7 +308,11 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                 ["node_modules/tdesign-vue-next/es/form/index.mjs"] = "export const Form = { name: \"form\" }; export const FormItem = { name: \"form-item\" };",
                 ["node_modules/tdesign-vue-next/es/input/index.mjs"] = "export const Input = { name: \"input\" };",
                 ["node_modules/tdesign-vue-next/es/radio/index.mjs"] = "export const RadioButton = { name: \"radio-button\" }; export const RadioGroup = { name: \"radio-group\" };",
-                ["node_modules/tdesign-vue-next/es/switch/index.mjs"] = "export const Switch = { name: \"switch\" };"
+                ["node_modules/tdesign-vue-next/es/switch/index.mjs"] = "export const Switch = { name: \"switch\" };",
+                ["node_modules/tdesign-vue-next/es/form/style/index.css"] = "",
+                ["node_modules/tdesign-vue-next/es/input/style/index.css"] = "",
+                ["node_modules/tdesign-vue-next/es/radio/style/index.css"] = "",
+                ["node_modules/tdesign-vue-next/es/switch/style/index.css"] = ""
             });
     }
 
@@ -359,14 +366,14 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("AdminTextarea", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/tdesign-textarea-natural-authoring-runtime.mjs",
+            "components/tdesign-textarea-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-textarea-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/tdesign-textarea-natural-authoring-runtime.mjs";
+            import component from "./components/tdesign-textarea-natural-authoring-runtime.js";
             import { Textarea } from "tdesign-vue-next/es/textarea/index.mjs";
 
             test("natural TDesign textarea binds its native union value", () => {
@@ -389,7 +396,8 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             new Dictionary<string, string>
             {
                 ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
-                ["node_modules/tdesign-vue-next/es/textarea/index.mjs"] = "export const Textarea = { name: \"textarea\" };"
+                ["node_modules/tdesign-vue-next/es/textarea/index.mjs"] = "export const Textarea = { name: \"textarea\" };",
+                ["node_modules/tdesign-vue-next/es/textarea/style/index.css"] = ""
             });
     }
 
@@ -470,14 +478,14 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("AdminTable", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/tdesign-dialog-table-natural-authoring-runtime.mjs",
+            "components/tdesign-dialog-table-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-dialog-table-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/tdesign-dialog-table-natural-authoring-runtime.mjs";
+            import component from "./components/tdesign-dialog-table-natural-authoring-runtime.js";
             import { Dialog } from "tdesign-vue-next/es/dialog/index.mjs";
             import { PrimaryTable, Table } from "tdesign-vue-next/es/table/index.mjs";
 
@@ -549,7 +557,9 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             {
                 ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module"}""",
                 ["node_modules/tdesign-vue-next/es/dialog/index.mjs"] = "export const Dialog = { name: \"dialog\" };",
-                ["node_modules/tdesign-vue-next/es/table/index.mjs"] = "export const PrimaryTable = { name: \"primary-table\" }; export const Table = { name: \"table\" };"
+                ["node_modules/tdesign-vue-next/es/table/index.mjs"] = "export const PrimaryTable = { name: \"primary-table\" }; export const Table = { name: \"table\" };",
+                ["node_modules/tdesign-vue-next/es/dialog/style/index.css"] = "",
+                ["node_modules/tdesign-vue-next/es/table/style/index.css"] = ""
             });
     }
 

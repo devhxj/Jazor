@@ -1,6 +1,6 @@
 using ECMAScript;
 using ECMAScript.TDesign;
-using ECMAScript.VuIcons;
+using ECMAScript.Lucide;
 using Microsoft.AspNetCore.Components;
 using static ECMAScript.Vue;
 

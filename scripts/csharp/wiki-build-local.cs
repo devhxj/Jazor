@@ -8,10 +8,10 @@ var repoRoot = WikiScriptHelpers.RequireRepoRoot();
 var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
 var jazorRoot = Path.Combine(sampleRoot, "jazor");
-var mainModulePath = Path.Combine(jazorRoot, "main.mjs");
+var entryPath = Path.Combine(jazorRoot, "entry.js");
 var componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
-var bundlePath = Path.Combine(jazorRoot, "bundle.js");
-var bundleMapPath = Path.Combine(jazorRoot, "bundle.js.map");
+var bundlePath = Path.Combine(jazorRoot, "dist", "bundle.js");
+var bundleMapPath = Path.Combine(jazorRoot, "dist", "bundle.js.map");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 
 var arguments = new List<string>
@@ -53,7 +53,7 @@ if (options.Bundle)
 }
 else
 {
-    WikiScriptHelpers.EnsureFileExists(mainModulePath, "emitted main module");
+    WikiScriptHelpers.EnsureFileExists(entryPath, "standard browser entry");
     WikiScriptHelpers.EnsureFileExists(componentModulePath, "emitted wiki component module");
 }
 

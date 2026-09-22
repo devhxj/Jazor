@@ -122,7 +122,7 @@ public sealed class AstConverterReachableBranchClosureTests
     [TestMethod]
     public async Task Convert_ImportAliasCollidingWithConfiguredModuleBindings_AllocatesTheFirstAvailableStableSuffix()
     {
-        var aliasBase = $"i${Format.HashName("runtime\0Make").TrimStart('_')}";
+        var aliasBase = $"i${Format.HashName("./runtime.js\0Make").TrimStart('_')}";
         var fixture = CompileModule(
             $$"""
             using ECMAScript;
@@ -162,7 +162,7 @@ public sealed class AstConverterReachableBranchClosureTests
         Assert.AreEqual(aliasBase + "2", specifier.Local.Name);
 
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, $"import {{ Make as {aliasBase}2 }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"import {{ Make as {aliasBase}2 }} from \"./runtime.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, $"return Make() + {aliasBase}2();", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
@@ -201,7 +201,7 @@ public sealed class AstConverterReachableBranchClosureTests
         Assert.AreNotEqual("class", specifier.Local.Name);
 
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, $"import {{ class as {specifier.Local.Name} }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"import {{ class as {specifier.Local.Name} }} from \"./runtime.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, $"return {specifier.Local.Name}();", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
@@ -209,7 +209,7 @@ public sealed class AstConverterReachableBranchClosureTests
     [TestMethod]
     public async Task Convert_ImportAliasOccupiedByAnotherExternalBinding_AllocatesAStableSuffix()
     {
-        var aliasBase = $"i${Format.HashName("runtime\0Make").TrimStart('_')}";
+        var aliasBase = $"i${Format.HashName("./runtime.js\0Make").TrimStart('_')}";
         var fixture = CompileModule(
             $$"""
             using ECMAScript;
@@ -254,7 +254,7 @@ public sealed class AstConverterReachableBranchClosureTests
             .SelectMany(static import => import.Specifiers.OfType<ImportSpecifier>())
             .Single(specifier => specifier.Imported is Identifier identifier && identifier.Name == aliasBase);
         var runtimeMake = imports
-            .Single(import => ((StringLiteral)import.Source).Value == "runtime")
+            .Single(import => ((StringLiteral)import.Source).Value == "./runtime.js")
             .Specifiers
             .OfType<ImportSpecifier>()
             .Single();
@@ -262,7 +262,7 @@ public sealed class AstConverterReachableBranchClosureTests
         Assert.AreEqual(aliasBase + "1", runtimeMake.Local.Name);
 
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, $"import {{ Make as {aliasBase}1 }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"import {{ Make as {aliasBase}1 }} from \"./runtime.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, $"return {aliasBase}() + Make() + {aliasBase}1();", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
@@ -270,7 +270,7 @@ public sealed class AstConverterReachableBranchClosureTests
     [TestMethod]
     public async Task Convert_StringExportImportAliasCollidingWithConfiguredBindings_UsesTheFirstFreeStableSuffix()
     {
-        var aliasBase = $"i${Format.HashName("runtime\0release-work").TrimStart('_')}";
+        var aliasBase = $"i${Format.HashName("./runtime.js\0release-work").TrimStart('_')}";
         var fixture = CompileModule(
             $$"""
             using ECMAScript;
@@ -313,7 +313,7 @@ public sealed class AstConverterReachableBranchClosureTests
         Assert.AreEqual(aliasBase + "2", specifier.Local.Name);
 
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, $"import {{ \"release-work\" as {aliasBase}2 }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"import {{ \"release-work\" as {aliasBase}2 }} from \"./runtime.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, $"return {aliasBase}2();", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
@@ -321,7 +321,7 @@ public sealed class AstConverterReachableBranchClosureTests
     [TestMethod]
     public async Task Convert_ImportedMemberShadowedByLocalAndParameterBindings_UsesOneStableAliasAcrossMethods()
     {
-        var alias = $"i${Format.HashName("runtime\0ReleaseWork").TrimStart('_')}";
+        var alias = $"i${Format.HashName("./runtime.js\0ReleaseWork").TrimStart('_')}";
         var fixture = CompileModule(
             """
             using ECMAScript;
@@ -363,7 +363,7 @@ public sealed class AstConverterReachableBranchClosureTests
         Assert.AreEqual(alias, specifier.Local.Name);
 
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, $"import {{ ReleaseWork as {alias} }} from \"runtime\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"import {{ ReleaseWork as {alias} }} from \"./runtime.js\";", StringComparison.Ordinal);
         Assert.AreEqual(2, CountOccurrences(script, $"+ {alias}()"), script);
         _ = new Parser().ParseModule(script);
     }
@@ -407,7 +407,7 @@ public sealed class AstConverterReachableBranchClosureTests
         Assert.AreEqual("NamedExport", namedSpecifier.Local.Name);
         StringAssert.Contains(
             script,
-            "import " + specifier.Local.Name + ", { NamedExport } from \"runtime\";",
+            "import " + specifier.Local.Name + ", { NamedExport } from \"./runtime.js\";",
             StringComparison.Ordinal);
         Assert.AreEqual(2, CountOccurrences(script, specifier.Local.Name + "()"), script);
         Assert.AreEqual(1, CountOccurrences(script, "NamedExport()"), script);
@@ -469,7 +469,7 @@ public sealed class AstConverterReachableBranchClosureTests
 
         Assert.IsNotNull(module);
         var script = module.ToKnRECMAScript();
-        StringAssert.Contains(script, "clr/System/ExceptionModule.js", StringComparison.Ordinal);
+        StringAssert.Contains(script, "./clr/System/ExceptionModule.js", StringComparison.Ordinal);
         StringAssert.Contains(script, "new TypeError(\"value\")", StringComparison.Ordinal);
         StringAssert.Contains(script, "return", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);

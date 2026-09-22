@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 ///
 /// 当前仅开放接口释放调度入口；await using lowering 由 compiler 侧单独决定是否启用。
 /// </summary>
-[ECMAScriptModule("clr/System/IAsyncDisposableModule.js")]
+[ECMAScriptModule("./clr/System/IAsyncDisposableModule.js")]
 [Jazor(Op.Alias, "System.IAsyncDisposable", "Object")]
 public static class IAsyncDisposableModule
 {

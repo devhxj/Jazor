@@ -3,11 +3,15 @@ namespace Jazor.AspNetCore;
 /// <summary>Configures Jazor SSR artifacts.</summary>
 public sealed class JazorSsrOptions
 {
+    /// <summary>Standard project task used to start each Deno SSR worker.</summary>
+    /// <remarks>默认 ssr；开发时可选择 ssr:dev，由 Deno watch 更新模块。命令由项目 package.json 或 deno.json 配置。</remarks>
+    public string TaskName { get; set; } = "ssr";
+
     /// <summary>
     /// Overrides the generated Jazor artifact root. Relative paths are resolved from the
     /// ASP.NET Core content root. Leave empty to discover the current debug or SSR release output.
     /// </summary>
-    /// <remarks>默认自动发现；SSR 目录必须包含 jazor-manifest.json、importmap.json、ssr-importmap.json 和 manifest.json，仅有 dist/bundle.js 不够。</remarks>
+    /// <remarks>默认自动发现；标准项目根必须包含 ssr-entry.js、package.json 和 deno.lock。</remarks>
     public string? ArtifactRootPath { get; set; }
 
     /// <summary>
@@ -16,6 +20,10 @@ public sealed class JazorSsrOptions
     /// </summary>
     /// <remarks>默认由发现的目录推导。必须与资源中间件 URL 前缀一致；浏览器 URL 自动加上 Request.PathBase，请勿重复填写。</remarks>
     public string? RequestPath { get; set; }
+
+    /// <summary>Project-relative browser hydration entry served by the JavaScript web service.</summary>
+    /// <remarks>开发源码入口为 hydration.js；生产环境可配置所选标准构建工具输出的 dist/hydration.js。</remarks>
+    public string HydrationEntryPath { get; set; } = "hydration.js";
 
     /// <summary>Identifies the element that receives both the server HTML and client hydration.</summary>
     /// <remarks>默认 app；不得为空或包含空白字符。服务端 HTML 与浏览器 hydration 使用同一元素。</remarks>

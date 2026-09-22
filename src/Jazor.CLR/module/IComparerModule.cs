@@ -6,7 +6,7 @@ namespace Jazor.CLR;
 /// 当前开放与 Comparer&lt;T&gt;.Default 可直接联动的：
 /// - Compare(object, object)
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/IComparerModule.js")]
+[ECMAScriptModule("./clr/System/Collections/IComparerModule.js")]
 [Jazor(Op.Alias, "System.Collections.IComparer", "Object")]
 public static class IComparerModule
 {

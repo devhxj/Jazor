@@ -76,15 +76,15 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
         StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-summary-members.mjs",
+            "components/release-summary-members.js",
             observation.ModuleText,
             "official-release-summary-members-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-summary-members.mjs";
-            import slotPanel from "./components/slot-panel-render-fragment-members.mjs";
+            import component from "./components/release-summary-members.js";
+            import slotPanel from "./components/slot-panel-render-fragment-members.js";
 
             test("official Razor RenderFragment members provide both named slot callbacks", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -105,7 +105,7 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-render-fragment-members.mjs"] = "export default { name: \"slot-panel-render-fragment-members\" };"
+                ["components/slot-panel-render-fragment-members.js"] = "export default { name: \"slot-panel-render-fragment-members\" };"
             });
     }
 }

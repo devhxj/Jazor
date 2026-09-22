@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Discard: 不常用或平台特定的方法
 /// </summary>
 /// <remarks>Exp2M1/Exp10M1 与 Log2P1/Log10P1 先用 double 稳定函数换底，再以 fround 回到 float 精度；换底乘除的单次舍入是已知且可接受的边界。</remarks>
-[ECMAScriptModule("clr/System/SingleModule.js")]
+[ECMAScriptModule("./clr/System/SingleModule.js")]
 [Jazor(Op.Alias, "float","Number")]
 public static class SingleModule
 {

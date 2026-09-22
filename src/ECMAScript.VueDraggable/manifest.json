@@ -16,12 +16,8 @@
   "imports": {
     "vue-draggable-plus": {
       "type": "module",
-      "development": "vue-draggable-plus",
-      "production": "vue-draggable-plus",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vue-draggable-plus",
+      "dependencies": [
         "vue"
       ]
     }

@@ -3,7 +3,7 @@ using static ECMAScript.Global;
 
 namespace JazorAdmin.DemoClient;
 
-[ECMAScriptModule("components/portal-api-client.mjs")]
+[ECMAScriptModule("components/portal-api-client.js")]
 public static class PortalApiClient
 {
     public static IPromise<PortalApiOutcome> GetSession()

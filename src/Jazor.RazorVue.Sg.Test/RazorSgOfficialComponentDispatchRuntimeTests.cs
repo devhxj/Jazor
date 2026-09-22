@@ -47,14 +47,14 @@ public sealed class RazorSgOfficialComponentDispatchRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("this.", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/component-dispatch-runtime.mjs",
+            "components/component-dispatch-runtime.js",
             observation.ModuleText,
             "official-component-dispatch-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/component-dispatch-runtime.mjs";
+            import component from "./components/component-dispatch-runtime.js";
 
             test("official Razor ComponentBase dispatch awaits work and exposes updated component state", async () => {
                 const render = component.setup({}, { slots: {} });

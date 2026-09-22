@@ -102,14 +102,14 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/extended-dom-events.mjs",
+            "components/extended-dom-events.js",
             script,
             "official-extended-dom-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/extended-dom-events.mjs";
+            import component from "./components/extended-dom-events.js";
 
             test("native pointer and wheel event objects reach typed Blazor handlers", async () => {
                 const render = component.setup({}, { slots: {} });
@@ -209,14 +209,14 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/drag-clipboard-events.mjs",
+            "components/drag-clipboard-events.js",
             script,
             "official-drag-clipboard-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/drag-clipboard-events.mjs";
+            import component from "./components/drag-clipboard-events.js";
 
             test("native drag and clipboard event objects reach typed Blazor handlers", async () => {
                 const render = component.setup({}, { slots: {} });
@@ -353,14 +353,14 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/touch-error-progress-events.mjs",
+            "components/touch-error-progress-events.js",
             script,
             "official-touch-error-progress-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/touch-error-progress-events.mjs";
+            import component from "./components/touch-error-progress-events.js";
 
             test("native touch, error, and progress events reach typed Blazor handlers", async () => {
                 const render = component.setup({}, { slots: {} });

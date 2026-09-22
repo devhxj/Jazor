@@ -24,6 +24,7 @@
   <ItemGroup Condition="'$(TodoUsePackages)' != 'true'">
     <!-- Source builds do not import ECMAScript.Vue's packaged buildTransitive target. -->
     <JazorLibraryManifest Include="..\..\..\src\ECMAScript.Vue\manifest.json" />
+    <JazorLibraryManifest Include="..\..\..\src\Jazor.Vue\manifest.json" />
     <ProjectReference Include="..\Todo.Library\Todo.Library.csproj" />
     <ProjectReference Include="..\..\..\src\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
@@ -41,6 +42,12 @@
     <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
     <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <!-- Todo.Library owns the relative component modules consumed by TodoApp. Keep its
+       managed assembly in Emit's explicit input list in package-consumer publishes. -->
+  <ItemGroup>
+    <JazorAdditionalAssembly Include="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\Todo.Library\bin\$(Configuration)\net11.0\Todo.Library.dll'))" />
   </ItemGroup>
 
   <Target Name="AddLocalJazorAnalyzerDependencies"

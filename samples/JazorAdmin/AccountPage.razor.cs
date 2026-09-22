@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace JazorAdmin;
 
-[ECMAScriptModule("components/accounts.mjs")]
+[ECMAScriptModule("components/accounts.js")]
 public partial class AccountPage : AppComponentBase, IVueContainerComponent
 {
     private sealed record AccountDraft

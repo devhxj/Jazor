@@ -42,7 +42,7 @@ public sealed class SemanticWalkerEnumerableSequenceEqualTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importName = Assert.IsInstanceOfType<string>(imports[0].Value.Single().ToECMAScript());
         StringAssert.Contains(importName, "sequenceEqual", StringComparison.Ordinal);
         StringAssert.Contains(body, importName + "(expectedReleaseIds, actualReleaseIds)", StringComparison.Ordinal);
@@ -78,7 +78,7 @@ public sealed class SemanticWalkerEnumerableSequenceEqualTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/MemoryExtensionsModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/MemoryExtensionsModule.js", imports[0].Key);
         var importName = Assert.IsInstanceOfType<string>(imports[0].Value.Single().ToECMAScript());
         StringAssert.Contains(importName, "sequenceEqual", StringComparison.Ordinal);
         StringAssert.Contains(body, importName + "(expectedReleaseIds, actualReleaseIds)", StringComparison.Ordinal);

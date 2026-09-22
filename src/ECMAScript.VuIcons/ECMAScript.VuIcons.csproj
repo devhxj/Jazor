@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <IsPackable>true</IsPackable>
+    <!-- Retired binding: keep the source only for historical reference; do not publish a package. -->
+    <IsPackable>false</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>ECMAScript.VuIcons</PackageId>
     <RootNamespace>ECMAScript.VuIcons</RootNamespace>

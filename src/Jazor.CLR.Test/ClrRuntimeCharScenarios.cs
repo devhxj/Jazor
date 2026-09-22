@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeCharScenarios
 {
-    private const string ModulePath = "clr/System/CharModule.js";
+    private const string ModulePath = "./clr/System/CharModule.js";
     private const string GrinningFace = "\uD83D\uDE00";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

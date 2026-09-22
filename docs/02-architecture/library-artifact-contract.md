@@ -4,11 +4,11 @@
 
 ## 核心模型
 
-最终宿主拥有一个标准前端项目根 `jazor/`。Emit 只把 Jazor 的编译结果和绑定声明接入这个项目，Deno、NetPack 与 DenoHost 直接使用项目文件。
+最终宿主拥有一个标准前端项目根 `jazor/`。Emit 只把 Jazor 的编译结果和绑定声明接入这个项目，Deno、选定的标准前端工具与 DenoHost 直接使用项目文件；当前默认工具是 Vite；NetPack 不再是必需依赖。
 
-**交接边界（已定）**：Jazor 生成 `jazor/` 项目根，然后交棒。HMR、debug、SSR 与 bundle 由 Deno 与 NetPack 负责，不是 Jazor 的职责。
+**交接边界（已定）**：Jazor 生成 `jazor/` 项目根，然后交棒。HMR、debug、SSR 与 bundle 由 Deno 与可替换的标准前端工具（当前默认 Vite）负责，不是 Jazor 的运行时职责。
 
-| Jazor 负责 | 交棒后由 Deno / NetPack 负责 |
+| Jazor 负责 | 交棒后由 Deno / 标准前端工具负责 |
 | --- | --- |
 | 写出源码、入口与 `package.json` | 依赖恢复、`node_modules`、`deno.lock` |
 | 写出标准 ESM 图（bare specifier、side-effect import） | 解析 bare specifier、CSS 转换与抽取、资源投递 |
@@ -28,7 +28,7 @@ ECMAScript 源码 + ModuleCatalog + npm/JSR 绑定声明
              +-----------+-----------+
              |                       |
              v                       v
-          NetPack                 DenoHost
+      标准构建工具                DenoHost
 ```
 
 ## 两类类库
@@ -60,7 +60,7 @@ jazor/
 
 根 `package.json` 使用标准的 `name`、`private`、`type`、`main`、`exports` 和 `dependencies` 字段。`exports["."]` 指向浏览器入口；存在 SSR 入口时增加 `exports["./ssr"]`。
 
-`package-lock.json` 接入 npm 产生且根依赖与当前项目一致的完整 lock。`deno.lock` 由 Deno 2.9.7 生成，作为 Deno restore、check 与 SSR 的冻结依据。`node_modules` 由 Deno 恢复，NetPack 与 DenoHost 共用。
+`package-lock.json` 仅在消费者已有且与根依赖一致时保留。`deno.lock` 由 Deno 2.9.7 生成，作为 Deno restore、check 与 SSR 的冻结依据。`node_modules` 由 Deno 恢复，标准前端工具与 DenoHost 共用。
 
 ## 源码契约
 
@@ -90,6 +90,8 @@ ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 | npm | dependency key 对应精确 npm 版本 | 保持公开 bare specifier |
 | JSR | dependency key 对应精确 `jsr:` value | 保持该 key 下的公开 specifier |
 | 项目源码 | 无 dependency | 写出相对 specifier |
+
+Deno 2.9.7 使用 hoisted `node_modules` 恢复 JSR 包时，安装名是 npm 兼容名。因此绑定应直接声明可解析的 key，例如 `"@jsr/std__path": "jsr:@std/path@1.0.8"`，导入直接写 `@jsr/std__path/posix`。Emit 原样写入声明 key，不把 `@std/path` 自动改名，也不生成 import map 补别名。JSR 的注册源 identity 仍是 `jsr:@std/path@1.0.8`，冻结恢复比较完整版本。
 
 绑定选择上游公开的细粒度 ESM 入口。例如 TDesign Button 使用 `tdesign-vue-next/es/button/index.mjs`，该入口继续引用组件实现、共享 helper、Vue 和样式。上游正式 API 只有根入口时，绑定使用根入口及其完整运行时闭包。
 
@@ -162,7 +164,7 @@ ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 import "element-plus/es/components/affix/style/css.mjs";
 ```
 
-此后就是标准 ESM 图：依赖恢复由 Deno 负责，打包与 CSS 抽取由 NetPack 负责，开发期模块请求由 dev server 负责。**Jazor 不产出样式清单、不注入 `<link>`、不拼接 CSS，也不解释样式内容**——与任何标准 JS 项目一致。上游模块内部继续 import CSS（如 `css.mjs` 内再 import `theme-chalk/el-affix.css`）属于上游自己的模块图，由标准工具链沿边处理，不需要 Jazor 参与。
+此后就是标准 ESM 图：依赖恢复由 Deno 负责，开发服务与打包由标准前端工具负责，开发期模块请求由 dev server 负责。**Jazor 不产出样式清单、不注入 `<link>`、不拼接 CSS，也不解释样式内容**——与任何标准 JS 项目一致。上游模块内部继续 import CSS（如 `css.mjs` 内再 import `theme-chalk/el-affix.css`）属于上游自己的模块图，由标准工具链沿边处理，不需要 Jazor 参与。
 
 ### specifier 形态规则
 
@@ -259,7 +261,7 @@ B：通过 ProjectReference/PackageReference 使用 A
 | `ECMAScript.*` binding | 提供强类型 API、标准 specifier 和精确 npm/JSR identity |
 | `Jazor.Emit` | 生成 `jazor/` 项目、写出源码与入口、生成 `package.json`、调用 Deno install 恢复绑定依赖 |
 | Deno 2.9.7 | restore、`node_modules`、`deno.lock` 与入口检查 |
-| NetPack | package resolution、conditions、`sideEffects`、ESM/CSS/asset tree shaking |
+| 标准前端工具（当前 Vite） | package resolution、conditions、`sideEffects`、ESM/CSS/asset tree shaking |
 | DenoHost | 从已恢复项目执行 SSR |
 
 Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑定 declaration 变成 `dependencies` 与 bare import。随后使用标准项目语义完成恢复、构建和运行。
@@ -270,7 +272,7 @@ Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑
 2. 在最终 `jazor/` 按最终路径写出源码、source map 与本地资源；单文件使用临时文件加 rename。
 3. 生成 `entry.js`、可选 `ssr-entry.js` 和根 `package.json`。
 4. 调用 Deno 2.9.7 恢复依赖、生成或验证 `deno.lock`，并 frozen check 所有入口。
-5. Release 模式让 NetPack 从同一项目根生成 `dist/`。
+5. Release 模式让选定的标准前端工具从同一项目根生成 `dist/`。
 6. 各步骤就地生效；失败显式返回，由下一次构建收敛。
 
 首次生成或 dependency identity 变化时使用 `deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=false`；lock 一致时使用 `deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=true`；入口检查使用 `deno check --node-modules-dir=manual --no-remote --no-config --frozen-lockfile`。
@@ -284,6 +286,6 @@ Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑
 - Debug、Release、HMR 和 SSR 使用同一项目根、源码树、dependency identity 与恢复结果。
 - 项目生成、恢复、检查或构建失败时显式返回错误，不做整目录回滚；下一次构建按同一规则收敛。
 - Deno 2.9.7 能在 `jazor/` 直接 restore、check 和 run。
-- NetPack 能从 `jazor/entry.js` 解析 `node_modules` 并输出 `jazor/dist/`。
+- 选定的标准前端工具能从 `jazor/entry.js` 解析 `node_modules` 并输出 `jazor/dist/`；NetPack 不是验收前提。
 - DenoHost 能从同一项目根加载 `ssr-entry.js`。
 - 单组件或单函数 consumer 只保留入口可达的 ESM 与资源，同时保留组件内部依赖和必要副作用。

@@ -20,25 +20,16 @@
   "imports": {
     "@vueuse/core": {
       "type": "module",
-      "development": "@vueuse/core",
-      "production": "@vueuse/core",
-      "developmentDependencies": [
-        "@vueuse/shared",
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "@vueuse/core",
+      "dependencies": [
         "@vueuse/shared",
         "vue"
       ]
     },
     "@vueuse/shared": {
       "type": "module",
-      "development": "@vueuse/shared",
-      "production": "@vueuse/shared",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "@vueuse/shared",
+      "dependencies": [
         "vue"
       ]
     }

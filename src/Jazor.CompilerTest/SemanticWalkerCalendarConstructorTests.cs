@@ -42,8 +42,8 @@ public sealed class SemanticWalkerCalendarConstructorTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(2, imports, body);
-        Assert.HasCount(6, imports["clr/System/DateTimeModule.js"], body);
-        Assert.HasCount(2, imports["clr/System/DateTimeOffsetModule.js"], body);
+        Assert.HasCount(6, imports["./clr/System/DateTimeModule.js"], body);
+        Assert.HasCount(2, imports["./clr/System/DateTimeOffsetModule.js"], body);
         StringAssert.Contains(body, "_a515b8bb82ad96b7(2024, 2, 29, calendar)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_29bb943b21806bd9(2024, 2, 29, 3, 4, 5, calendar)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_8a4d2d51b716bb36(2024, 2, 29, 3, 4, 5, 6, calendar)", StringComparison.Ordinal);

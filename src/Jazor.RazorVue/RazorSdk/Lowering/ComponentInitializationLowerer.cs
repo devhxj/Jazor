@@ -22,6 +22,7 @@ internal static class ComponentInitializationLowerer
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         IEnumerable<ImportDeclaration> existingImports,
         IEnumerable<string> reservedImportNames,
+        string? currentModuleOutputPath,
         CancellationToken cancellationToken)
     {
         if (!closure.InitializationPlan.HasExplicitConstructors)
@@ -41,7 +42,9 @@ internal static class ComponentInitializationLowerer
                 importLocalBindings,
                 reservedNames,
                 currentModuleImportPath: null,
-                currentModuleBindings: new HashSet<string>(StringComparer.Ordinal));
+                currentModuleBindings: new HashSet<string>(StringComparer.Ordinal),
+                currentModuleOutputPath: currentModuleOutputPath,
+                projectSourceImportKeys: new HashSet<string>(StringComparer.Ordinal));
         var phases = ImmutableArray.CreateBuilder<ComponentInitializationPhaseBuild>(
             closure.InitializationPlan.Phases.Length);
 
@@ -67,7 +70,10 @@ internal static class ComponentInitializationLowerer
 
         return new ComponentInitializationBuildResult(
             imports.ToImmutable(),
-            phases.ToImmutable());
+            phases.ToImmutable(),
+            importContext.ProjectSourceImportKeys
+                .OrderBy(static path => path, StringComparer.Ordinal)
+                .ToImmutableArray());
     }
 
     private static Statement LowerConstructorBody(
@@ -257,11 +263,13 @@ internal static class ComponentInitializationLowerer
 /// <summary>Constructor imports and per-type setup statements awaiting Vue framing.</summary>
 internal sealed record ComponentInitializationBuildResult(
     ImmutableArray<ImportDeclaration> ImportDeclarations,
-    ImmutableArray<ComponentInitializationPhaseBuild> Phases)
+    ImmutableArray<ComponentInitializationPhaseBuild> Phases,
+    ImmutableArray<string> ProjectSourceImportKeys)
 {
     public static ComponentInitializationBuildResult Empty { get; } = new(
         ImmutableArray<ImportDeclaration>.Empty,
-        ImmutableArray<ComponentInitializationPhaseBuild>.Empty);
+        ImmutableArray<ComponentInitializationPhaseBuild>.Empty,
+        ImmutableArray<string>.Empty);
 
     public bool HasExplicitConstructors
         => Phases.Any(static phase => phase.ConstructorStatement is not null);

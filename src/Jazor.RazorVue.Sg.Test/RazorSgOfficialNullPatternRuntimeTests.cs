@@ -39,14 +39,14 @@ public sealed class RazorSgOfficialNullPatternRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.Label == null", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/optional-label-runtime.mjs",
+            "components/optional-label-runtime.js",
             observation.ModuleText,
             "official-optional-label-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/optional-label-runtime.mjs";
+            import component from "./components/optional-label-runtime.js";
 
             test("official Razor optional parameters take the null branch when the host omits the prop", () => {
                 const missing = component.setup({}, { slots: {} })();

@@ -3,7 +3,7 @@ namespace Jazor.CLR;
 /// <summary>
 /// System.SByte (sbyte) 类型模块映射规则
 /// </summary>
-[ECMAScriptModule("clr/System/SByteModule.js")]
+[ECMAScriptModule("./clr/System/SByteModule.js")]
 [Jazor(Op.Alias, "sbyte", "Number")]
 public static class SByteModule
 {

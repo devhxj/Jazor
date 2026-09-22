@@ -17,7 +17,7 @@
     <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\ECMAScript.VueDataUi\ECMAScript.VueDataUi.csproj" />
-    <ProjectReference Include="..\ECMAScript.VuIcons\ECMAScript.VuIcons.csproj" />
+    <ProjectReference Include="..\ECMAScript.Lucide\ECMAScript.Lucide.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
     <ProjectReference Include="..\ECMAScript.ElementPlus\ECMAScript.ElementPlus.csproj" />

@@ -81,15 +81,15 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-summary-local-descriptor-runtime.mjs",
+            "components/release-summary-local-descriptor-runtime.js",
             observation.ModuleText,
             "official-render-fragment-local-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-summary-local-descriptor-runtime.mjs";
-            import panel from "./components/slot-panel-local-descriptor-runtime.mjs";
+            import component from "./components/release-summary-local-descriptor-runtime.js";
+            import panel from "./components/slot-panel-local-descriptor-runtime.js";
 
             test("official Razor local template descriptors retain their fragment provenance", () => {
                 const rendered = component.setup(
@@ -107,7 +107,7 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-local-descriptor-runtime.mjs"] = "export default { name: \"slot-panel-local-descriptor-runtime\" };"
+                ["components/slot-panel-local-descriptor-runtime.js"] = "export default { name: \"slot-panel-local-descriptor-runtime\" };"
             });
     }
 }

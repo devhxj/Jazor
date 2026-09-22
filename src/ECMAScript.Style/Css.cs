@@ -12,7 +12,7 @@ namespace ECMAScript.Style;
 /// 该入口确定性地序列化强类型值，在同一 context 内去重相等规则，并且每个非分离 context 最多拥有一个
 /// 受管理 style 元素。SSR、Shadow DOM 和隔离测试应调用带 context 的重载。
 /// </remarks>
-[ECMAScriptModule("style.mjs")]
+[ECMAScriptModule("style.js")]
 public static partial class css
 {
     private const string VersionPrefix = "ecmascript-style:v1\0";

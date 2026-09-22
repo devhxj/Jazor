@@ -83,7 +83,7 @@ public enum JazorAuthenticationStatus
 }
 
 /// <summary>Describes one server-rendered Vue root component and its serialized props.</summary>
-/// <param name="ModulePath">相对产物根目录的组件 .mjs 路径，不接受外部 URL 或越出根目录的路径。</param>
+/// <param name="ModulePath">相对产物根目录的组件 .js 路径，不接受外部 URL 或越出根目录的路径。</param>
 /// <param name="Props">序列化到 SSR 和浏览器的 props，null 表示未提供；默认遵循 System.Text.Json 属性命名。</param>
 /// <param name="Providers">Vue provide 快照；键必须非空且唯一。请求可用 null 表示无 provider。</param>
 /// <param name="Authentication">可选认证快照；存在时自动提供 jazor:auth-state，不能在 Providers 重复占用该键。</param>
@@ -149,7 +149,7 @@ public sealed record JazorSsrStateEnvelope(
 }
 
 /// <summary>Contains the HTML and serialized state produced by one SSR application instance.</summary>
-/// <param name="ModulePath">相对产物根目录的组件 .mjs 路径，不接受外部 URL 或越出根目录的路径。</param>
+/// <param name="ModulePath">相对产物根目录的组件 .js 路径，不接受外部 URL 或越出根目录的路径。</param>
 /// <param name="Html">Vue 根组件 HTML 片段，不是完整 HTTP 文档。</param>
 /// <param name="SerializedProps">渲染使用的 props JSON。</param>
 /// <param name="SerializedProviders">渲染使用的 provider 数组 JSON，默认 []。</param>

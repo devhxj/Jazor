@@ -18,9 +18,4 @@
     <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Runtime\*.mjs">
-      <LogicalName>Jazor.AspNetCore.Runtime.%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
 </Project>

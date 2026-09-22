@@ -9,8 +9,8 @@
 | 纯 Jazor library | 程序集内 `Jazor.Generated.ModuleCatalog`（ECMAScriptCode） | `Jazor.Compiler`/RazorVue 从 C# 生成的模块 |
 
 这两种 carrier 是并列的一等输入。Emit 可以在内存中把它们归一化为资源记录和 package graph
-来做去重、依赖闭包和冲突校验，并为本次 profile 生成标准 `jazor/package.json`、`package-lock.json`
-以及 embedded package 投影；Emit 在 MSBuild staging 中调用 Deno 生成 `deno.lock` 并恢复 `node_modules`。
+来做去重、依赖闭包和冲突校验，并生成标准 `jazor/package.json`。源码 carrier 按声明路径写入项目；
+Emit 经 DenoHost（`DenoProcess`）调用 Deno 生成 `deno.lock` 并恢复 `node_modules`，已有且匹配的 npm lock 保留。
 
 ## 唯一调用边界
 
@@ -20,17 +20,16 @@ MSBuild 只收集：
 - JS resource 包传递下来的 package metadata locator；
 - `JazorMode`、`JazorDir`、source root 和 SSR 选项。
 
-随后每个构建 profile 只调用一次默认 Emit 入口。Emit 在目标目录同卷 staging 中完成：
+随后每个构建 profile 只调用一次默认 Emit 入口。Emit 在最终项目目录就地完成：
 
 1. 读取所有 `Jazor.Generated.ModuleCatalog`；
 2. 读取并校验显式 package metadata，收集 npm/JSR identity 与 embedded carrier；
 3. 按模块/package/resource 声明解析依赖闭包、版本、路径和 hash；
-4. 生成模块、source map、资源、package project、import map 和应用 manifest；
-5. Release 时在同一请求中运行 Netpack bundle，SSR 时生成 `ssr/` profile；
-6. 所有检查成功后整体提交到 `JazorDir`。
+4. 生成模块、source map、资源、标准入口与 package project；增量/诊断状态单独写入 `obj`；
+5. Release 时运行项目自己的 `build` script，SSR 时生成同一项目的 SSR 入口；
+6. 工具失败时返回原始错误，由下一次构建继续收敛。
 
-任何步骤失败、取消或冲突，都不会替换上一份完整输出。staging 目录是 Emit 的私有实现
-细节，不是类库格式、MSBuild item 或可被下一次构建消费的产物。
+单文件使用原子替换；不做整目录 staging 或回滚。项目文件变动可直接被标准开发服务器观察。
 
 ## CLI
 
@@ -41,7 +40,7 @@ dotnet Jazor.Emit.dll \
   --root <root.dll> \
   --assembly <reference.dll> \
   --out <jazor-dir> \
-  --write-manifest <jazor-dir>/jazor-manifest.json \
+  --write-manifest <obj>/jazor-manifest.json \
   --mode debug|release \
   --source-root <project-root> \
   --ssr true|false \
@@ -51,18 +50,18 @@ dotnet Jazor.Emit.dll \
 `--assembly` 和 `--library-manifest` 可以重复。路径、版本、资源类型和依赖由 package metadata
 显式声明；Emit 使用 metadata 指向的 carrier 和 package identity 建立 graph，并保持
 相对模块、CSS、worker、static 和 license 资源的 owner 关系。第三方运行时代码保持在恢复的
-`node_modules`，只有 embedded carrier 的选中文件进入本地 package projection。
+`node_modules`，embedded carrier 的选中文件进入项目源码目录。
 
-`toolchain` 和 `manifest materialize` 不再是构建入口。Netpack、资源 materializer 和
-import-map writer 仍作为 Emit 内部实现参与同一事务，不能被 MSBuild 分段调用，也不能产生
-公开 intermediate carrier。
+`toolchain` 和 `manifest materialize` 不再是构建入口。新项目初始化 Vite 配置；已有项目的
+scripts、devDependencies 和构建配置保留。构建只调用 `deno task build`，工具和输出布局由项目配置决定。
+NetPack 已从默认实现移除。Emit 不生成运行时 import map 或私有包投影。
 
 ## 输出
 
-Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules`、`deno.lock`、
-`jazor-manifest.json`、`importmap.json`、`ssr-importmap.json` 和资源 `manifest.json`；显式
-`embedded-mjs` carrier 进入 `packages/` 并通过本地 package 依赖连接。Release 在同一目录增加
-bundle 及其 source map；启用 `--ssr` 时在 `ssr/` 下生成独立的 SSR 模块图和资源闭包。输出
+Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules` 与 `deno.lock`；Emit
+增量/诊断 manifest 写入 `obj`，不属于运行项目；显式
+`embedded-mjs` carrier 按声明写入 `clr/` 等源码目录。Release 在同一项目运行生产构建，默认 Vite 输出
+`dist/`；启用 `--ssr` 时增加 `ssr-entry.js` 和 `hydration.js`。输出
 文件属于宿主 profile，上游 npm/JSR package 的 exports、sideEffects 和依赖关系保持在共享图中。
 
 ## 验证

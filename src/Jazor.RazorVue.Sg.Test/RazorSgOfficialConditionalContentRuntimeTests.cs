@@ -42,14 +42,14 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "_1cb3ec9a7fb8aaab", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/conditional-count.mjs",
+            "components/conditional-count.js",
             observation.ModuleText,
             "official-conditional-count-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/conditional-count.mjs";
+            import component from "./components/conditional-count.js";
 
             test("conditional imported expressions retain every helper from a shared module", () => {
                 const vnode = component.setup({}, { slots: {} })();
@@ -110,14 +110,14 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "__jazor$if_", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/conditional-profiles.mjs",
+            "components/conditional-profiles.js",
             observation.ModuleText,
             "official-conditional-profiles-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/conditional-profiles.mjs";
+            import component from "./components/conditional-profiles.js";
 
             const findNode = (node, predicate) => {
                 if (node && predicate(node)) return node;
@@ -196,7 +196,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "ToggleDetails", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-details-toggle-runtime.mjs",
+            "components/release-details-toggle-runtime.js",
             observation.ModuleText,
             "official-release-details-toggle-runtime.test.mjs",
             """
@@ -204,7 +204,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
             import test from "node:test";
             import { Fragment } from "vue";
 
-            import component from "./components/release-details-toggle-runtime.mjs";
+            import component from "./components/release-details-toggle-runtime.js";
 
             test("official Razor conditional content creates a fragment only for multiple active nodes", () => {
                 const render = component.setup({}, { slots: {} });

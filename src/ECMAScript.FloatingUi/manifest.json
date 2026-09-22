@@ -28,25 +28,15 @@
   "imports": {
     "@floating-ui/core": {
       "type": "module",
-      "development": "@floating-ui/core",
-      "production": "@floating-ui/core",
-      "developmentDependencies": [
-        "@floating-ui/utils"
-      ],
-      "productionDependencies": [
+      "path": "@floating-ui/core",
+      "dependencies": [
         "@floating-ui/utils"
       ]
     },
     "@floating-ui/dom": {
       "type": "module",
-      "development": "@floating-ui/dom",
-      "production": "@floating-ui/dom",
-      "developmentDependencies": [
-        "@floating-ui/core",
-        "@floating-ui/utils",
-        "@floating-ui/utils/dom"
-      ],
-      "productionDependencies": [
+      "path": "@floating-ui/dom",
+      "dependencies": [
         "@floating-ui/core",
         "@floating-ui/utils",
         "@floating-ui/utils/dom"
@@ -54,27 +44,18 @@
     },
     "@floating-ui/utils": {
       "type": "module",
-      "development": "@floating-ui/utils",
-      "production": "@floating-ui/utils",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "@floating-ui/utils",
+      "dependencies": []
     },
     "@floating-ui/utils/dom": {
       "type": "module",
-      "development": "@floating-ui/utils/dom",
-      "production": "@floating-ui/utils/dom",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "@floating-ui/utils/dom",
+      "dependencies": []
     },
     "@floating-ui/vue": {
       "type": "module",
-      "development": "@floating-ui/vue",
-      "production": "@floating-ui/vue",
-      "developmentDependencies": [
-        "@floating-ui/dom",
-        "@floating-ui/utils/dom"
-      ],
-      "productionDependencies": [
+      "path": "@floating-ui/vue",
+      "dependencies": [
         "@floating-ui/dom",
         "@floating-ui/utils/dom"
       ]

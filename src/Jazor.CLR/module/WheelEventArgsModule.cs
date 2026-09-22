@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/WheelEventArgsModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/Web/WheelEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.WheelEventArgs", "WheelEvent")]
 public static class WheelEventArgsModule
 {

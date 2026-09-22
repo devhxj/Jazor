@@ -6,895 +6,503 @@
   "imports": {
     "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
-      "developmentHash": "e55e6bd77c319f77b4b99373880a5f77bdc6dac39ccabb712975174b55d4e6d8",
-      "productionHash": "e55e6bd77c319f77b4b99373880a5f77bdc6dac39ccabb712975174b55d4e6d8",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
+      "hash": "e55e6bd77c319f77b4b99373880a5f77bdc6dac39ccabb712975174b55d4e6d8",
+      "moduleDependencies": [
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js",
-      "developmentHash": "fd4479333e40544e1b8acbb1c468675a8add900334daf5da91ed2b35cc3fea10",
-      "productionHash": "fd4479333e40544e1b8acbb1c468675a8add900334daf5da91ed2b35cc3fea10",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js",
+      "hash": "fd4479333e40544e1b8acbb1c468675a8add900334daf5da91ed2b35cc3fea10",
+      "moduleDependencies": []
     },
     "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
-      "developmentHash": "57532799f162ea0dcec308b9acbcf2511989bbb91d125e9f6ffa8e55da4717e5",
-      "productionHash": "57532799f162ea0dcec308b9acbcf2511989bbb91d125e9f6ffa8e55da4717e5",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
+      "hash": "57532799f162ea0dcec308b9acbcf2511989bbb91d125e9f6ffa8e55da4717e5",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
-      "developmentHash": "6f188ed617965b45ffcc8287780e7bcd7d5735b665e5a74e6b67771d7b5c91c8",
-      "productionHash": "6f188ed617965b45ffcc8287780e7bcd7d5735b665e5a74e6b67771d7b5c91c8",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
+      "hash": "6f188ed617965b45ffcc8287780e7bcd7d5735b665e5a74e6b67771d7b5c91c8",
+      "moduleDependencies": [
         "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
         "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
         "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
         "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
         "clr/System/ExceptionModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js",
-        "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
-        "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
-        "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
-        "clr/System/ExceptionModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
-      "developmentHash": "a8621ad2c0744d035d8b8c04d8e8cc98eff37796d0871dc5028ccd47092ed8de",
-      "productionHash": "a8621ad2c0744d035d8b8c04d8e8cc98eff37796d0871dc5028ccd47092ed8de",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
+      "hash": "a8621ad2c0744d035d8b8c04d8e8cc98eff37796d0871dc5028ccd47092ed8de",
+      "moduleDependencies": []
     },
     "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
-      "developmentHash": "1bd546bd90238dd11845e53ce220641a90c8c67ed0c101400cfaef0bbf983b31",
-      "productionHash": "1bd546bd90238dd11845e53ce220641a90c8c67ed0c101400cfaef0bbf983b31",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
+      "hash": "1bd546bd90238dd11845e53ce220641a90c8c67ed0c101400cfaef0bbf983b31",
+      "moduleDependencies": [
         "clr/System/Threading/CancellationTokenModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Threading/CancellationTokenModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js": {
       "type": "module",
-      "development": "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
-      "production": "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
-      "developmentHash": "959bbff2e0d5eccf72f414ef1c2e6e881a7544de296226ae6ef6eea9769ed2a2",
-      "productionHash": "959bbff2e0d5eccf72f414ef1c2e6e881a7544de296226ae6ef6eea9769ed2a2",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
+      "hash": "959bbff2e0d5eccf72f414ef1c2e6e881a7544de296226ae6ef6eea9769ed2a2",
+      "moduleDependencies": []
     },
     "clr/System/ArrayModule.js": {
       "type": "module",
-      "development": "clr/System/ArrayModule.js",
-      "production": "clr/System/ArrayModule.js",
-      "developmentHash": "dc29ad1e775ff2964df39ff808a942889fd4548f9ca3c7cc9d134fd1e2e1e287",
-      "productionHash": "dc29ad1e775ff2964df39ff808a942889fd4548f9ca3c7cc9d134fd1e2e1e287",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/ArrayModule.js",
+      "hash": "dc29ad1e775ff2964df39ff808a942889fd4548f9ca3c7cc9d134fd1e2e1e287",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js",
         "clr/System/Collections/Generic/IComparerT1Module.js",
         "clr/System/Collections/IComparerModule.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js",
-        "clr/System/Collections/Generic/IComparerT1Module.js",
-        "clr/System/Collections/IComparerModule.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/BooleanModule.js": {
       "type": "module",
-      "development": "clr/System/BooleanModule.js",
-      "production": "clr/System/BooleanModule.js",
-      "developmentHash": "6619bdcefbbf6f913a0b09e76d45fc904b85b9733ca03d58df501f664735c868",
-      "productionHash": "6619bdcefbbf6f913a0b09e76d45fc904b85b9733ca03d58df501f664735c868",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/BooleanModule.js",
+      "hash": "6619bdcefbbf6f913a0b09e76d45fc904b85b9733ca03d58df501f664735c868",
+      "moduleDependencies": []
     },
     "clr/System/ByteModule.js": {
       "type": "module",
-      "development": "clr/System/ByteModule.js",
-      "production": "clr/System/ByteModule.js",
-      "developmentHash": "a15061e5e7db9a859176bbd2baa1d8c80e76d281485df58075038d0d2b375110",
-      "productionHash": "a15061e5e7db9a859176bbd2baa1d8c80e76d281485df58075038d0d2b375110",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/ByteModule.js",
+      "hash": "a15061e5e7db9a859176bbd2baa1d8c80e76d281485df58075038d0d2b375110",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/CharModule.js": {
       "type": "module",
-      "development": "clr/System/CharModule.js",
-      "production": "clr/System/CharModule.js",
-      "developmentHash": "1a70920515dc66e610755246323abea5e9362d2fa6f6fff416f7051a99df4923",
-      "productionHash": "1a70920515dc66e610755246323abea5e9362d2fa6f6fff416f7051a99df4923",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/CharModule.js",
+      "hash": "1a70920515dc66e610755246323abea5e9362d2fa6f6fff416f7051a99df4923",
+      "moduleDependencies": [
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/ComparerT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/ComparerT1Module.js",
-      "production": "clr/System/Collections/Generic/ComparerT1Module.js",
-      "developmentHash": "1b8e22a5af527643b264462da82aa326cee430b77d5d3d2dea41f40392a20aa1",
-      "productionHash": "1b8e22a5af527643b264462da82aa326cee430b77d5d3d2dea41f40392a20aa1",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/Collections/Generic/ComparerT1Module.js",
+      "hash": "1b8e22a5af527643b264462da82aa326cee430b77d5d3d2dea41f40392a20aa1",
+      "moduleDependencies": []
     },
     "clr/System/Collections/Generic/DictionaryT2Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/DictionaryT2Module.js",
-      "production": "clr/System/Collections/Generic/DictionaryT2Module.js",
-      "developmentHash": "b7c7551728c05670c481f277f785ce4ed87f94ce08640b1ed3f798a455fef3ef",
-      "productionHash": "b7c7551728c05670c481f277f785ce4ed87f94ce08640b1ed3f798a455fef3ef",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/DictionaryT2Module.js",
+      "hash": "af60803a027a51c841e0bceba08b82a47c2f7c28ecfd4e790f61648cc3e3fb91",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/EqualityComparerT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-      "production": "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-      "developmentHash": "7c08a86e6c4291d91744b07d7da555fc1506ec51663945851f40b6e275731556",
-      "productionHash": "7c08a86e6c4291d91744b07d7da555fc1506ec51663945851f40b6e275731556",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/EqualityComparerT1Module.js",
+      "hash": "7c08a86e6c4291d91744b07d7da555fc1506ec51663945851f40b6e275731556",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/HashSetT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/HashSetT1Module.js",
-      "production": "clr/System/Collections/Generic/HashSetT1Module.js",
-      "developmentHash": "62b477a75364afd003d2aec252cfe4b9c9186a74eee1a1092eed923a2f157086",
-      "productionHash": "62b477a75364afd003d2aec252cfe4b9c9186a74eee1a1092eed923a2f157086",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/HashSetT1Module.js",
+      "hash": "3b799b949f686d478a9caf870b6e0a100b46fa669de77183179d1e4aa510ecfe",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/ICollectionT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/ICollectionT1Module.js",
-      "production": "clr/System/Collections/Generic/ICollectionT1Module.js",
-      "developmentHash": "a74b9ec899685ef93fdc5da37ff8e4828ba72649e6ea37fafeb876afb12464f4",
-      "productionHash": "a74b9ec899685ef93fdc5da37ff8e4828ba72649e6ea37fafeb876afb12464f4",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/ICollectionT1Module.js",
+      "hash": "a74b9ec899685ef93fdc5da37ff8e4828ba72649e6ea37fafeb876afb12464f4",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ListT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ListT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/IComparerT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/IComparerT1Module.js",
-      "production": "clr/System/Collections/Generic/IComparerT1Module.js",
-      "developmentHash": "8975adfa88087bcce64b624e6825e98cc9f96097aea2ff9ea72082651878e680",
-      "productionHash": "8975adfa88087bcce64b624e6825e98cc9f96097aea2ff9ea72082651878e680",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/IComparerT1Module.js",
+      "hash": "8975adfa88087bcce64b624e6825e98cc9f96097aea2ff9ea72082651878e680",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/IDictionaryT2Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/IDictionaryT2Module.js",
-      "production": "clr/System/Collections/Generic/IDictionaryT2Module.js",
-      "developmentHash": "b8ae85615276b42455cc76eaf750f7d362f7d303c8f710c4b39afb133ee1c7f3",
-      "productionHash": "b8ae85615276b42455cc76eaf750f7d362f7d303c8f710c4b39afb133ee1c7f3",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/IDictionaryT2Module.js",
+      "hash": "b8ae85615276b42455cc76eaf750f7d362f7d303c8f710c4b39afb133ee1c7f3",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/IEqualityComparerT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
-      "production": "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
-      "developmentHash": "d66d64674869817e5c277ede2a585023fc05c67fa64fdc72c31348b688229bc6",
-      "productionHash": "d66d64674869817e5c277ede2a585023fc05c67fa64fdc72c31348b688229bc6",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
+      "hash": "d66d64674869817e5c277ede2a585023fc05c67fa64fdc72c31348b688229bc6",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/IListT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/IListT1Module.js",
-      "production": "clr/System/Collections/Generic/IListT1Module.js",
-      "developmentHash": "160c8ca0f1b819f261d38da4281f2c718b9fc7be9fe8ac5a2eaebf5f7b91967b",
-      "productionHash": "160c8ca0f1b819f261d38da4281f2c718b9fc7be9fe8ac5a2eaebf5f7b91967b",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/IListT1Module.js",
+      "hash": "160c8ca0f1b819f261d38da4281f2c718b9fc7be9fe8ac5a2eaebf5f7b91967b",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ListT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ListT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/IReadOnlyListT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/IReadOnlyListT1Module.js",
-      "production": "clr/System/Collections/Generic/IReadOnlyListT1Module.js",
-      "developmentHash": "ada54e06348eccfd9ad5af8346592f6fa2d2ea0ca3e356a02adaf0a0265a9d09",
-      "productionHash": "ada54e06348eccfd9ad5af8346592f6fa2d2ea0ca3e356a02adaf0a0265a9d09",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/Collections/Generic/IReadOnlyListT1Module.js",
+      "hash": "ada54e06348eccfd9ad5af8346592f6fa2d2ea0ca3e356a02adaf0a0265a9d09",
+      "moduleDependencies": []
     },
     "clr/System/Collections/Generic/ISetT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/ISetT1Module.js",
-      "production": "clr/System/Collections/Generic/ISetT1Module.js",
-      "developmentHash": "f7d06bcf2569e4c395d9b3a303920d07777246d8d970d1bb86dbb26263eae4b1",
-      "productionHash": "f7d06bcf2569e4c395d9b3a303920d07777246d8d970d1bb86dbb26263eae4b1",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/ISetT1Module.js",
+      "hash": "f7d06bcf2569e4c395d9b3a303920d07777246d8d970d1bb86dbb26263eae4b1",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/HashSetT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/HashSetT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/ListT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/ListT1Module.js",
-      "production": "clr/System/Collections/Generic/ListT1Module.js",
-      "developmentHash": "ab14ffa2b481bcdb9649a78dc692a72bf33cc1578ddca3f17a0b87de5b9f15ed",
-      "productionHash": "ab14ffa2b481bcdb9649a78dc692a72bf33cc1578ddca3f17a0b87de5b9f15ed",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/ListT1Module.js",
+      "hash": "ab14ffa2b481bcdb9649a78dc692a72bf33cc1578ddca3f17a0b87de5b9f15ed",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js",
         "clr/System/Collections/Generic/IComparerT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js",
-        "clr/System/Collections/Generic/IComparerT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/QueueT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/QueueT1Module.js",
-      "production": "clr/System/Collections/Generic/QueueT1Module.js",
-      "developmentHash": "6c9a95f5b6a0c98a0e225837b2856d21bd888dc77103de38c3f8b232357f7d3b",
-      "productionHash": "6c9a95f5b6a0c98a0e225837b2856d21bd888dc77103de38c3f8b232357f7d3b",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/QueueT1Module.js",
+      "hash": "6c9a95f5b6a0c98a0e225837b2856d21bd888dc77103de38c3f8b232357f7d3b",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/Generic/StackT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/Generic/StackT1Module.js",
-      "production": "clr/System/Collections/Generic/StackT1Module.js",
-      "developmentHash": "52c0e8b2104eebe8249308b9da6aaf33b3922e6b66b5485d96138ae887374b4f",
-      "productionHash": "52c0e8b2104eebe8249308b9da6aaf33b3922e6b66b5485d96138ae887374b4f",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/Generic/StackT1Module.js",
+      "hash": "52c0e8b2104eebe8249308b9da6aaf33b3922e6b66b5485d96138ae887374b4f",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/ICollectionModule.js": {
       "type": "module",
-      "development": "clr/System/Collections/ICollectionModule.js",
-      "production": "clr/System/Collections/ICollectionModule.js",
-      "developmentHash": "c01fd1a44b2673fc07b98e31fed38c9389e224633103af01d3ddbaff0d23ffb2",
-      "productionHash": "c01fd1a44b2673fc07b98e31fed38c9389e224633103af01d3ddbaff0d23ffb2",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/Collections/ICollectionModule.js",
+      "hash": "c01fd1a44b2673fc07b98e31fed38c9389e224633103af01d3ddbaff0d23ffb2",
+      "moduleDependencies": []
     },
     "clr/System/Collections/IComparerModule.js": {
       "type": "module",
-      "development": "clr/System/Collections/IComparerModule.js",
-      "production": "clr/System/Collections/IComparerModule.js",
-      "developmentHash": "074c66c8ba97d026c6e7372ffc8b4bf1f12f6c9ca05a096490529870a2a860da",
-      "productionHash": "074c66c8ba97d026c6e7372ffc8b4bf1f12f6c9ca05a096490529870a2a860da",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/IComparerModule.js",
+      "hash": "074c66c8ba97d026c6e7372ffc8b4bf1f12f6c9ca05a096490529870a2a860da",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/IEqualityComparerModule.js": {
       "type": "module",
-      "development": "clr/System/Collections/IEqualityComparerModule.js",
-      "production": "clr/System/Collections/IEqualityComparerModule.js",
-      "developmentHash": "62a00959af01d73955dccdd5e53f4147188c028463c0f7387e96ef6c211bf1e9",
-      "productionHash": "62a00959af01d73955dccdd5e53f4147188c028463c0f7387e96ef6c211bf1e9",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/IEqualityComparerModule.js",
+      "hash": "62a00959af01d73955dccdd5e53f4147188c028463c0f7387e96ef6c211bf1e9",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/IListModule.js": {
       "type": "module",
-      "development": "clr/System/Collections/IListModule.js",
-      "production": "clr/System/Collections/IListModule.js",
-      "developmentHash": "a91c3f0faa8ebf56c1652c605512fb23a59670904f766df22284ff570d063980",
-      "productionHash": "a91c3f0faa8ebf56c1652c605512fb23a59670904f766df22284ff570d063980",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/IListModule.js",
+      "hash": "a91c3f0faa8ebf56c1652c605512fb23a59670904f766df22284ff570d063980",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ListT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ListT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
-      "production": "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
-      "developmentHash": "adb05fbca8e1a5d4f6f1fb415e31aaca7f74fe233748a839446e1f196ccf8e64",
-      "productionHash": "adb05fbca8e1a5d4f6f1fb415e31aaca7f74fe233748a839446e1f196ccf8e64",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
+      "hash": "adb05fbca8e1a5d4f6f1fb415e31aaca7f74fe233748a839446e1f196ccf8e64",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/HashSetT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/HashSetT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
-      "production": "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
-      "developmentHash": "6b366387515e8beb3cbdc1edc7b6f77f4910f2618009ecce19e38de0078a147e",
-      "productionHash": "6b366387515e8beb3cbdc1edc7b6f77f4910f2618009ecce19e38de0078a147e",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
+      "hash": "6b366387515e8beb3cbdc1edc7b6f77f4910f2618009ecce19e38de0078a147e",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/DictionaryT2Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/DictionaryT2Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js": {
       "type": "module",
-      "development": "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js",
-      "production": "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js",
-      "developmentHash": "d429be14dfdb87de6e7aa233bca7ac943de6c723c20b498b8b0e7e4915feff35",
-      "productionHash": "d429be14dfdb87de6e7aa233bca7ac943de6c723c20b498b8b0e7e4915feff35",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js",
+      "hash": "d429be14dfdb87de6e7aa233bca7ac943de6c723c20b498b8b0e7e4915feff35",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/HashSetT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/HashSetT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/DateOnlyModule.js": {
       "type": "module",
-      "development": "clr/System/DateOnlyModule.js",
-      "production": "clr/System/DateOnlyModule.js",
-      "developmentHash": "9fc79388411134b21968191c892ba938a684587016450cf35d6a6e4c247bdcc3",
-      "productionHash": "9fc79388411134b21968191c892ba938a684587016450cf35d6a6e4c247bdcc3",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/DateOnlyModule.js",
+      "hash": "9fc79388411134b21968191c892ba938a684587016450cf35d6a6e4c247bdcc3",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/DateTimeModule.js": {
       "type": "module",
-      "development": "clr/System/DateTimeModule.js",
-      "production": "clr/System/DateTimeModule.js",
-      "developmentHash": "5186ffccde90d5e0e0c123ec6974f425a4fc2ea7d1501d343921b7139ebb299d",
-      "productionHash": "5186ffccde90d5e0e0c123ec6974f425a4fc2ea7d1501d343921b7139ebb299d",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/DateTimeModule.js",
+      "hash": "5186ffccde90d5e0e0c123ec6974f425a4fc2ea7d1501d343921b7139ebb299d",
+      "moduleDependencies": [
         "clr/System/DoubleModule.js",
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js",
         "clr/System/TimeOnlyModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DoubleModule.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js",
-        "clr/System/TimeOnlyModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/DateTimeOffsetModule.js": {
       "type": "module",
-      "development": "clr/System/DateTimeOffsetModule.js",
-      "production": "clr/System/DateTimeOffsetModule.js",
-      "developmentHash": "d3f0610bc21ad30da93bca037a94570b6f6a18ba10cab1b75071d5a9b69f17cd",
-      "productionHash": "d3f0610bc21ad30da93bca037a94570b6f6a18ba10cab1b75071d5a9b69f17cd",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/DateTimeOffsetModule.js",
+      "hash": "d3f0610bc21ad30da93bca037a94570b6f6a18ba10cab1b75071d5a9b69f17cd",
+      "moduleDependencies": [
         "clr/System/DoubleModule.js",
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DoubleModule.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/DecimalModule.js": {
       "type": "module",
-      "development": "clr/System/DecimalModule.js",
-      "production": "clr/System/DecimalModule.js",
-      "developmentHash": "67e4d7d1c05aaf089a2aef9f346e586e1975c1917fd94ecc550a2b647f966d18",
-      "productionHash": "67e4d7d1c05aaf089a2aef9f346e586e1975c1917fd94ecc550a2b647f966d18",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/DecimalModule.js",
+      "hash": "67e4d7d1c05aaf089a2aef9f346e586e1975c1917fd94ecc550a2b647f966d18",
+      "moduleDependencies": [
         "clr/System/DoubleModule.js",
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DoubleModule.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/DoubleModule.js": {
       "type": "module",
-      "development": "clr/System/DoubleModule.js",
-      "production": "clr/System/DoubleModule.js",
-      "developmentHash": "709620d0c2c74bf910d8a42177eaea7de3c180192c6d6103801e0f73b61a6d95",
-      "productionHash": "709620d0c2c74bf910d8a42177eaea7de3c180192c6d6103801e0f73b61a6d95",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/DoubleModule.js",
+      "hash": "709620d0c2c74bf910d8a42177eaea7de3c180192c6d6103801e0f73b61a6d95",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/ExceptionModule.js": {
       "type": "module",
-      "development": "clr/System/ExceptionModule.js",
-      "production": "clr/System/ExceptionModule.js",
-      "developmentHash": "7edf43e91ccf2de01158b1cbeacaca6a5358ebdf424bc980770674d4c48629e0",
-      "productionHash": "7edf43e91ccf2de01158b1cbeacaca6a5358ebdf424bc980770674d4c48629e0",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/ExceptionModule.js",
+      "hash": "7edf43e91ccf2de01158b1cbeacaca6a5358ebdf424bc980770674d4c48629e0",
+      "moduleDependencies": []
     },
     "clr/System/Globalization/CalendarModule.js": {
       "type": "module",
-      "development": "clr/System/Globalization/CalendarModule.js",
-      "production": "clr/System/Globalization/CalendarModule.js",
-      "developmentHash": "176920996bc04cfcbf30a11a5f09f8f3f4cd14bddc02c7490570f3ba6d0649ca",
-      "productionHash": "176920996bc04cfcbf30a11a5f09f8f3f4cd14bddc02c7490570f3ba6d0649ca",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Globalization/CalendarModule.js",
+      "hash": "176920996bc04cfcbf30a11a5f09f8f3f4cd14bddc02c7490570f3ba6d0649ca",
+      "moduleDependencies": [
         "clr/System/Globalization/GregorianCalendarModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Globalization/GregorianCalendarModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Globalization/CultureInfoModule.js": {
       "type": "module",
-      "development": "clr/System/Globalization/CultureInfoModule.js",
-      "production": "clr/System/Globalization/CultureInfoModule.js",
-      "developmentHash": "6b96f9fbb66bfe12a488db76939aae0a3201d8fe7df5c53533458eef663813df",
-      "productionHash": "6b96f9fbb66bfe12a488db76939aae0a3201d8fe7df5c53533458eef663813df",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Globalization/CultureInfoModule.js",
+      "hash": "6b96f9fbb66bfe12a488db76939aae0a3201d8fe7df5c53533458eef663813df",
+      "moduleDependencies": [
         "clr/System/Globalization/GregorianCalendarModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Globalization/GregorianCalendarModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Globalization/GregorianCalendarModule.js": {
       "type": "module",
-      "development": "clr/System/Globalization/GregorianCalendarModule.js",
-      "production": "clr/System/Globalization/GregorianCalendarModule.js",
-      "developmentHash": "9bbbe012800edbb5116f7d4a1bd8d7c38dcb2164c4dce8f908d912626a5bc811",
-      "productionHash": "9bbbe012800edbb5116f7d4a1bd8d7c38dcb2164c4dce8f908d912626a5bc811",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Globalization/GregorianCalendarModule.js",
+      "hash": "9bbbe012800edbb5116f7d4a1bd8d7c38dcb2164c4dce8f908d912626a5bc811",
+      "moduleDependencies": [
         "clr/System/DateTimeModule.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DateTimeModule.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/GuidModule.js": {
       "type": "module",
-      "development": "clr/System/GuidModule.js",
-      "production": "clr/System/GuidModule.js",
-      "developmentHash": "0891526800208c5ef9ac5951cf5811bde0b3d18debebac047cd7ad4320b87769",
-      "productionHash": "0891526800208c5ef9ac5951cf5811bde0b3d18debebac047cd7ad4320b87769",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/GuidModule.js",
+      "hash": "0891526800208c5ef9ac5951cf5811bde0b3d18debebac047cd7ad4320b87769",
+      "moduleDependencies": [
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/HalfModule.js": {
       "type": "module",
-      "development": "clr/System/HalfModule.js",
-      "production": "clr/System/HalfModule.js",
-      "developmentHash": "e3ab49a1da979df0b083e4a4fe6e6922a69f263b4a349ca28e3a9f0cdfc5e96b",
-      "productionHash": "e3ab49a1da979df0b083e4a4fe6e6922a69f263b4a349ca28e3a9f0cdfc5e96b",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/HalfModule.js",
+      "hash": "e3ab49a1da979df0b083e4a4fe6e6922a69f263b4a349ca28e3a9f0cdfc5e96b",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/DoubleModule.js",
         "clr/System/Numerics/BigIntIntegerRuntime.js",
         "clr/System/RuntimeModule.js",
         "clr/System/SingleModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/DoubleModule.js",
-        "clr/System/Numerics/BigIntIntegerRuntime.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/SingleModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/IAsyncDisposableModule.js": {
       "type": "module",
-      "development": "clr/System/IAsyncDisposableModule.js",
-      "production": "clr/System/IAsyncDisposableModule.js",
-      "developmentHash": "85113211d4827b702e6b6f23aec500b46bef8c5f6c77ee377cf8b2570ae910c5",
-      "productionHash": "85113211d4827b702e6b6f23aec500b46bef8c5f6c77ee377cf8b2570ae910c5",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/IAsyncDisposableModule.js",
+      "hash": "85113211d4827b702e6b6f23aec500b46bef8c5f6c77ee377cf8b2570ae910c5",
+      "moduleDependencies": []
     },
     "clr/System/IComparableModule.js": {
       "type": "module",
-      "development": "clr/System/IComparableModule.js",
-      "production": "clr/System/IComparableModule.js",
-      "developmentHash": "f161da4ed26d0b598c44b917a710b24402aa54d5541e8f415fe3de42c19b7eb2",
-      "productionHash": "f161da4ed26d0b598c44b917a710b24402aa54d5541e8f415fe3de42c19b7eb2",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/IComparableModule.js",
+      "hash": "f161da4ed26d0b598c44b917a710b24402aa54d5541e8f415fe3de42c19b7eb2",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/IComparableT1Module.js": {
       "type": "module",
-      "development": "clr/System/IComparableT1Module.js",
-      "production": "clr/System/IComparableT1Module.js",
-      "developmentHash": "2ed1fa57ef4448a8f3f90ed05a54a8fca3b9c8ea8ad465fcb1e499645897eddc",
-      "productionHash": "2ed1fa57ef4448a8f3f90ed05a54a8fca3b9c8ea8ad465fcb1e499645897eddc",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/IComparableT1Module.js",
+      "hash": "2ed1fa57ef4448a8f3f90ed05a54a8fca3b9c8ea8ad465fcb1e499645897eddc",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/IDisposableModule.js": {
       "type": "module",
-      "development": "clr/System/IDisposableModule.js",
-      "production": "clr/System/IDisposableModule.js",
-      "developmentHash": "e06e53d261488766806b3f6141962f3d38522d03d4a8c984cc1ff0da7660a7c4",
-      "productionHash": "e06e53d261488766806b3f6141962f3d38522d03d4a8c984cc1ff0da7660a7c4",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/IDisposableModule.js",
+      "hash": "e06e53d261488766806b3f6141962f3d38522d03d4a8c984cc1ff0da7660a7c4",
+      "moduleDependencies": []
     },
     "clr/System/IndexModule.js": {
       "type": "module",
-      "development": "clr/System/IndexModule.js",
-      "production": "clr/System/IndexModule.js",
-      "developmentHash": "aaae71c148558af1c346d60653feb540163f954e9b4eb8135db33b640d49f2b4",
-      "productionHash": "aaae71c148558af1c346d60653feb540163f954e9b4eb8135db33b640d49f2b4",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/IndexModule.js",
+      "hash": "aaae71c148558af1c346d60653feb540163f954e9b4eb8135db33b640d49f2b4",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Int128Module.js": {
       "type": "module",
-      "development": "clr/System/Int128Module.js",
-      "production": "clr/System/Int128Module.js",
-      "developmentHash": "cb1921976e0c668956566a2426067de2f04b3ef5a2d09416b16975ac03dcc801",
-      "productionHash": "cb1921976e0c668956566a2426067de2f04b3ef5a2d09416b16975ac03dcc801",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Int128Module.js",
+      "hash": "cb1921976e0c668956566a2426067de2f04b3ef5a2d09416b16975ac03dcc801",
+      "moduleDependencies": [
         "clr/System/HalfModule.js",
         "clr/System/Numerics/BigIntIntegerRuntime.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/HalfModule.js",
-        "clr/System/Numerics/BigIntIntegerRuntime.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Int16Module.js": {
       "type": "module",
-      "development": "clr/System/Int16Module.js",
-      "production": "clr/System/Int16Module.js",
-      "developmentHash": "3aadbb046e64e0e1cbba3220c8af5124f9ff1acbfae5168d57ace59d46c03cda",
-      "productionHash": "3aadbb046e64e0e1cbba3220c8af5124f9ff1acbfae5168d57ace59d46c03cda",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Int16Module.js",
+      "hash": "3aadbb046e64e0e1cbba3220c8af5124f9ff1acbfae5168d57ace59d46c03cda",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Int32Module.js": {
       "type": "module",
-      "development": "clr/System/Int32Module.js",
-      "production": "clr/System/Int32Module.js",
-      "developmentHash": "68b4307a750edde247255a41926cd124f0282ead871f1844555a51416991c245",
-      "productionHash": "68b4307a750edde247255a41926cd124f0282ead871f1844555a51416991c245",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Int32Module.js",
+      "hash": "68b4307a750edde247255a41926cd124f0282ead871f1844555a51416991c245",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Int64Module.js": {
       "type": "module",
-      "development": "clr/System/Int64Module.js",
-      "production": "clr/System/Int64Module.js",
-      "developmentHash": "a9bdc1fdb7f7dc0268ec34621c34989bdc147aae33179b48ef7acb24a61e08ea",
-      "productionHash": "a9bdc1fdb7f7dc0268ec34621c34989bdc147aae33179b48ef7acb24a61e08ea",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Int64Module.js",
+      "hash": "a9bdc1fdb7f7dc0268ec34621c34989bdc147aae33179b48ef7acb24a61e08ea",
+      "moduleDependencies": [
         "clr/System/Numerics/BigIntIntegerRuntime.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Numerics/BigIntIntegerRuntime.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Linq/EnumerableModule.js": {
       "type": "module",
-      "development": "clr/System/Linq/EnumerableModule.js",
-      "production": "clr/System/Linq/EnumerableModule.js",
-      "developmentHash": "72504caf32c57d03ca37373ce213382498e70753d385863c36b1863346c36655",
-      "productionHash": "72504caf32c57d03ca37373ce213382498e70753d385863c36b1863346c36655",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Linq/EnumerableModule.js",
+      "hash": "72504caf32c57d03ca37373ce213382498e70753d385863c36b1863346c36655",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js",
         "clr/System/Collections/Generic/DictionaryT2Module.js",
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
@@ -903,40 +511,21 @@
         "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
         "clr/System/DecimalModule.js",
         "clr/System/Linq/GroupingT2Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js",
-        "clr/System/Collections/Generic/DictionaryT2Module.js",
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/Collections/Generic/HashSetT1Module.js",
-        "clr/System/Collections/Generic/IComparerT1Module.js",
-        "clr/System/Collections/Generic/IEqualityComparerT1Module.js",
-        "clr/System/DecimalModule.js",
-        "clr/System/Linq/GroupingT2Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Linq/GroupingT2Module.js": {
       "type": "module",
-      "development": "clr/System/Linq/GroupingT2Module.js",
-      "production": "clr/System/Linq/GroupingT2Module.js",
-      "developmentHash": "2265b73156f4492409d27b9dcbedcf86508b5b34b134640a119113c378289b19",
-      "productionHash": "2265b73156f4492409d27b9dcbedcf86508b5b34b134640a119113c378289b19",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/Linq/GroupingT2Module.js",
+      "hash": "2265b73156f4492409d27b9dcbedcf86508b5b34b134640a119113c378289b19",
+      "moduleDependencies": []
     },
     "clr/System/MathModule.js": {
       "type": "module",
-      "development": "clr/System/MathModule.js",
-      "production": "clr/System/MathModule.js",
-      "developmentHash": "01f49c467b907931eae5d87fdc3cb5bf2ca1799a613c5649baf989e514facc6e",
-      "productionHash": "01f49c467b907931eae5d87fdc3cb5bf2ca1799a613c5649baf989e514facc6e",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/MathModule.js",
+      "hash": "01f49c467b907931eae5d87fdc3cb5bf2ca1799a613c5649baf989e514facc6e",
+      "moduleDependencies": [
         "clr/System/ByteModule.js",
         "clr/System/DecimalModule.js",
         "clr/System/DoubleModule.js",
@@ -948,419 +537,229 @@
         "clr/System/UInt16Module.js",
         "clr/System/UInt32Module.js",
         "clr/System/UInt64Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/ByteModule.js",
-        "clr/System/DecimalModule.js",
-        "clr/System/DoubleModule.js",
-        "clr/System/Int16Module.js",
-        "clr/System/Int32Module.js",
-        "clr/System/Int64Module.js",
-        "clr/System/SByteModule.js",
-        "clr/System/SingleModule.js",
-        "clr/System/UInt16Module.js",
-        "clr/System/UInt32Module.js",
-        "clr/System/UInt64Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/MemoryExtensionsModule.js": {
       "type": "module",
-      "development": "clr/System/MemoryExtensionsModule.js",
-      "production": "clr/System/MemoryExtensionsModule.js",
-      "developmentHash": "e30bcfd761a6ab37e2426323645045943763b5331e3b37fc64263bcd70a2e1de",
-      "productionHash": "e30bcfd761a6ab37e2426323645045943763b5331e3b37fc64263bcd70a2e1de",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/MemoryExtensionsModule.js",
+      "hash": "e30bcfd761a6ab37e2426323645045943763b5331e3b37fc64263bcd70a2e1de",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/NullableT1Module.js": {
       "type": "module",
-      "development": "clr/System/NullableT1Module.js",
-      "production": "clr/System/NullableT1Module.js",
-      "developmentHash": "7a01beb85e20bddeedbfc085eb8a46cb7a7f5e23a74e9b7434ea181a21c1b5ce",
-      "productionHash": "7a01beb85e20bddeedbfc085eb8a46cb7a7f5e23a74e9b7434ea181a21c1b5ce",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/NullableT1Module.js",
+      "hash": "7a01beb85e20bddeedbfc085eb8a46cb7a7f5e23a74e9b7434ea181a21c1b5ce",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/ComparerT1Module.js",
         "clr/System/Collections/Generic/EqualityComparerT1Module.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/ComparerT1Module.js",
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Numerics/BigIntIntegerRuntime.js": {
       "type": "module",
-      "development": "clr/System/Numerics/BigIntIntegerRuntime.js",
-      "production": "clr/System/Numerics/BigIntIntegerRuntime.js",
-      "developmentHash": "74e50fbd1e9edf5c401c670260fa71e5b4309f2d345490e3d24910a4686a40cc",
-      "productionHash": "74e50fbd1e9edf5c401c670260fa71e5b4309f2d345490e3d24910a4686a40cc",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Numerics/BigIntIntegerRuntime.js",
+      "hash": "74e50fbd1e9edf5c401c670260fa71e5b4309f2d345490e3d24910a4686a40cc",
+      "moduleDependencies": [
         "clr/System/DecimalModule.js",
         "clr/System/DoubleModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DecimalModule.js",
-        "clr/System/DoubleModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Numerics/BigIntegerModule.js": {
       "type": "module",
-      "development": "clr/System/Numerics/BigIntegerModule.js",
-      "production": "clr/System/Numerics/BigIntegerModule.js",
-      "developmentHash": "0344f65b6a7a1c5730f542b2c8e4420cf758df4f1103f57df02d76cdb368f205",
-      "productionHash": "0344f65b6a7a1c5730f542b2c8e4420cf758df4f1103f57df02d76cdb368f205",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Numerics/BigIntegerModule.js",
+      "hash": "0344f65b6a7a1c5730f542b2c8e4420cf758df4f1103f57df02d76cdb368f205",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/DecimalModule.js",
         "clr/System/DoubleModule.js",
         "clr/System/HalfModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/DecimalModule.js",
-        "clr/System/DoubleModule.js",
-        "clr/System/HalfModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/ObjectModule.js": {
       "type": "module",
-      "development": "clr/System/ObjectModule.js",
-      "production": "clr/System/ObjectModule.js",
-      "developmentHash": "71aabbbb02ce7eb8e4179401384d2e1138fb5ea618788bf0f8839a8d9172da8c",
-      "productionHash": "71aabbbb02ce7eb8e4179401384d2e1138fb5ea618788bf0f8839a8d9172da8c",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/ObjectModule.js",
+      "hash": "71aabbbb02ce7eb8e4179401384d2e1138fb5ea618788bf0f8839a8d9172da8c",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/RangeModule.js": {
       "type": "module",
-      "development": "clr/System/RangeModule.js",
-      "production": "clr/System/RangeModule.js",
-      "developmentHash": "b467ae35b2a98822de1800ad791830bc5975527ee88e6966c27b1df6cdb126f7",
-      "productionHash": "b467ae35b2a98822de1800ad791830bc5975527ee88e6966c27b1df6cdb126f7",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/RangeModule.js",
+      "hash": "b467ae35b2a98822de1800ad791830bc5975527ee88e6966c27b1df6cdb126f7",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js": {
       "type": "module",
-      "development": "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js",
-      "production": "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js",
-      "developmentHash": "5072ef92e1a2bbcb6b412cf851dfb38e4ce8ac1b78e0eed3afcce0f93d756657",
-      "productionHash": "5072ef92e1a2bbcb6b412cf851dfb38e4ce8ac1b78e0eed3afcce0f93d756657",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js",
+      "hash": "5072ef92e1a2bbcb6b412cf851dfb38e4ce8ac1b78e0eed3afcce0f93d756657",
+      "moduleDependencies": []
     },
     "clr/System/RuntimeModule.js": {
       "type": "module",
-      "development": "clr/System/RuntimeModule.js",
-      "production": "clr/System/RuntimeModule.js",
-      "developmentHash": "649515187dd70bde8240270e79049a21d1fd485558c72837bdbe780a85f49aa5",
-      "productionHash": "649515187dd70bde8240270e79049a21d1fd485558c72837bdbe780a85f49aa5",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/RuntimeModule.js",
+      "hash": "649515187dd70bde8240270e79049a21d1fd485558c72837bdbe780a85f49aa5",
+      "moduleDependencies": [
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/SByteModule.js": {
       "type": "module",
-      "development": "clr/System/SByteModule.js",
-      "production": "clr/System/SByteModule.js",
-      "developmentHash": "939ee90c7db65a8683211c0b0199e125ac25f78b3241ced52043a00bc609723b",
-      "productionHash": "939ee90c7db65a8683211c0b0199e125ac25f78b3241ced52043a00bc609723b",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/SByteModule.js",
+      "hash": "939ee90c7db65a8683211c0b0199e125ac25f78b3241ced52043a00bc609723b",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/SingleModule.js": {
       "type": "module",
-      "development": "clr/System/SingleModule.js",
-      "production": "clr/System/SingleModule.js",
-      "developmentHash": "1d85825284c63f6ae0d9c4f6b4fe0d8a381b875835a11e6ddb7ff176793640bc",
-      "productionHash": "1d85825284c63f6ae0d9c4f6b4fe0d8a381b875835a11e6ddb7ff176793640bc",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/SingleModule.js",
+      "hash": "1d85825284c63f6ae0d9c4f6b4fe0d8a381b875835a11e6ddb7ff176793640bc",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/DoubleModule.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/DoubleModule.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/StringModule.js": {
       "type": "module",
-      "development": "clr/System/StringModule.js",
-      "production": "clr/System/StringModule.js",
-      "developmentHash": "d9704eddc94ce5303e8c16110aeeb87bbc6a7c586888ff690dbf4d5a81a51b57",
-      "productionHash": "d9704eddc94ce5303e8c16110aeeb87bbc6a7c586888ff690dbf4d5a81a51b57",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/StringModule.js",
+      "hash": "d9704eddc94ce5303e8c16110aeeb87bbc6a7c586888ff690dbf4d5a81a51b57",
+      "moduleDependencies": [
         "clr/System/Collections/Generic/EqualityComparerT1Module.js",
         "clr/System/Collections/Generic/HashSetT1Module.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-        "clr/System/Collections/Generic/HashSetT1Module.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Text/StringBuilderModule.js": {
       "type": "module",
-      "development": "clr/System/Text/StringBuilderModule.js",
-      "production": "clr/System/Text/StringBuilderModule.js",
-      "developmentHash": "d5efc0a0fdf49e25938a00baedfee105de201208221ede1bc1c187333b742601",
-      "productionHash": "d5efc0a0fdf49e25938a00baedfee105de201208221ede1bc1c187333b742601",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Text/StringBuilderModule.js",
+      "hash": "d5efc0a0fdf49e25938a00baedfee105de201208221ede1bc1c187333b742601",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Threading/CancellationTokenModule.js": {
       "type": "module",
-      "development": "clr/System/Threading/CancellationTokenModule.js",
-      "production": "clr/System/Threading/CancellationTokenModule.js",
-      "developmentHash": "4c0a221012355c2413cd400cdbf5c8f57ff784fa9833d9c1cbd8decdfc2e2d0e",
-      "productionHash": "4c0a221012355c2413cd400cdbf5c8f57ff784fa9833d9c1cbd8decdfc2e2d0e",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Threading/CancellationTokenModule.js",
+      "hash": "4c0a221012355c2413cd400cdbf5c8f57ff784fa9833d9c1cbd8decdfc2e2d0e",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Threading/CancellationTokenRegistrationModule.js": {
       "type": "module",
-      "development": "clr/System/Threading/CancellationTokenRegistrationModule.js",
-      "production": "clr/System/Threading/CancellationTokenRegistrationModule.js",
-      "developmentHash": "ff2d8a2ec7610beb49d6773c229f0904394fa0235a5a8d582f3852004ccc39bc",
-      "productionHash": "ff2d8a2ec7610beb49d6773c229f0904394fa0235a5a8d582f3852004ccc39bc",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/Threading/CancellationTokenRegistrationModule.js",
+      "hash": "ff2d8a2ec7610beb49d6773c229f0904394fa0235a5a8d582f3852004ccc39bc",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/Threading/CancellationTokenSourceModule.js": {
       "type": "module",
-      "development": "clr/System/Threading/CancellationTokenSourceModule.js",
-      "production": "clr/System/Threading/CancellationTokenSourceModule.js",
-      "developmentHash": "b92b8b68719daa0f5c323e4140bee6ea14661363253e850d8607d7e869b6b908",
-      "productionHash": "b92b8b68719daa0f5c323e4140bee6ea14661363253e850d8607d7e869b6b908",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/Threading/CancellationTokenSourceModule.js",
+      "hash": "b92b8b68719daa0f5c323e4140bee6ea14661363253e850d8607d7e869b6b908",
+      "moduleDependencies": []
     },
     "clr/System/TimeOnlyModule.js": {
       "type": "module",
-      "development": "clr/System/TimeOnlyModule.js",
-      "production": "clr/System/TimeOnlyModule.js",
-      "developmentHash": "618756fa0f4320522d4b43c231786a66c3ecca3225a4da215c90f401621f2ffe",
-      "productionHash": "618756fa0f4320522d4b43c231786a66c3ecca3225a4da215c90f401621f2ffe",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/TimeOnlyModule.js",
+      "hash": "618756fa0f4320522d4b43c231786a66c3ecca3225a4da215c90f401621f2ffe",
+      "moduleDependencies": [
         "clr/System/DoubleModule.js",
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DoubleModule.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/TimeSpanModule.js": {
       "type": "module",
-      "development": "clr/System/TimeSpanModule.js",
-      "production": "clr/System/TimeSpanModule.js",
-      "developmentHash": "df63c2c734164686e414cf8139f63743745a19eade6abd7dd085641fac62d73c",
-      "productionHash": "df63c2c734164686e414cf8139f63743745a19eade6abd7dd085641fac62d73c",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/TimeSpanModule.js",
+      "hash": "df63c2c734164686e414cf8139f63743745a19eade6abd7dd085641fac62d73c",
+      "moduleDependencies": [
         "clr/System/DoubleModule.js",
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/DoubleModule.js",
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/UInt128Module.js": {
       "type": "module",
-      "development": "clr/System/UInt128Module.js",
-      "production": "clr/System/UInt128Module.js",
-      "developmentHash": "4ff4fa2ba1c8315e13357ae7a7b80b8d2123389613c0b8e1fe14629310998ad9",
-      "productionHash": "4ff4fa2ba1c8315e13357ae7a7b80b8d2123389613c0b8e1fe14629310998ad9",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/UInt128Module.js",
+      "hash": "4ff4fa2ba1c8315e13357ae7a7b80b8d2123389613c0b8e1fe14629310998ad9",
+      "moduleDependencies": [
         "clr/System/HalfModule.js",
         "clr/System/Numerics/BigIntIntegerRuntime.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/HalfModule.js",
-        "clr/System/Numerics/BigIntIntegerRuntime.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/UInt16Module.js": {
       "type": "module",
-      "development": "clr/System/UInt16Module.js",
-      "production": "clr/System/UInt16Module.js",
-      "developmentHash": "d0f3863660b9f438246bfc207a594b7828839d6cf6f2e842080db187db3f2b2a",
-      "productionHash": "d0f3863660b9f438246bfc207a594b7828839d6cf6f2e842080db187db3f2b2a",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/UInt16Module.js",
+      "hash": "d0f3863660b9f438246bfc207a594b7828839d6cf6f2e842080db187db3f2b2a",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/UInt32Module.js": {
       "type": "module",
-      "development": "clr/System/UInt32Module.js",
-      "production": "clr/System/UInt32Module.js",
-      "developmentHash": "6e0bd13b1c8cf2103ec0e3fd79af985e4565389d2775b70b03ee89572becf212",
-      "productionHash": "6e0bd13b1c8cf2103ec0e3fd79af985e4565389d2775b70b03ee89572becf212",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/UInt32Module.js",
+      "hash": "6e0bd13b1c8cf2103ec0e3fd79af985e4565389d2775b70b03ee89572becf212",
+      "moduleDependencies": [
         "clr/System/RuntimeModule.js",
         "clr/System/StringModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/RuntimeModule.js",
-        "clr/System/StringModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/UInt64Module.js": {
       "type": "module",
-      "development": "clr/System/UInt64Module.js",
-      "production": "clr/System/UInt64Module.js",
-      "developmentHash": "5063bae464feb43703dbd2f98d25d1a351c01f270bd1cf819b10116cbdd9803e",
-      "productionHash": "5063bae464feb43703dbd2f98d25d1a351c01f270bd1cf819b10116cbdd9803e",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [
+      "files": [],
+      "path": "clr/System/UInt64Module.js",
+      "hash": "5063bae464feb43703dbd2f98d25d1a351c01f270bd1cf819b10116cbdd9803e",
+      "moduleDependencies": [
         "clr/System/Numerics/BigIntIntegerRuntime.js",
         "clr/System/RuntimeModule.js"
-      ],
-      "productionModuleDependencies": [
-        "clr/System/Numerics/BigIntIntegerRuntime.js",
-        "clr/System/RuntimeModule.js"
-      ],
-      "files": []
+      ]
     },
     "clr/System/UriModule.js": {
       "type": "module",
-      "development": "clr/System/UriModule.js",
-      "production": "clr/System/UriModule.js",
-      "developmentHash": "16638ecfa3f13dc24df2fae579a830cddd49deaac0b47adbbef9da59abccc642",
-      "productionHash": "16638ecfa3f13dc24df2fae579a830cddd49deaac0b47adbbef9da59abccc642",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/UriModule.js",
+      "hash": "16638ecfa3f13dc24df2fae579a830cddd49deaac0b47adbbef9da59abccc642",
+      "moduleDependencies": []
     },
     "clr/System/WeakReferenceModule.js": {
       "type": "module",
-      "development": "clr/System/WeakReferenceModule.js",
-      "production": "clr/System/WeakReferenceModule.js",
-      "developmentHash": "195d95e0e0c5aa67f1b3f9ddbe12afded3a10e6f6f14346f658ebd27a807698f",
-      "productionHash": "195d95e0e0c5aa67f1b3f9ddbe12afded3a10e6f6f14346f658ebd27a807698f",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentModuleDependencies": [],
-      "productionModuleDependencies": [],
-      "files": []
+      "files": [],
+      "path": "clr/System/WeakReferenceModule.js",
+      "hash": "195d95e0e0c5aa67f1b3f9ddbe12afded3a10e6f6f14346f658ebd27a807698f",
+      "moduleDependencies": []
     }
   },
   "requires": {},

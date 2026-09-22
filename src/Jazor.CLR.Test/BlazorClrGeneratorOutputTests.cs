@@ -36,10 +36,10 @@ public sealed class BlazorClrGeneratorOutputTests
         CollectionAssert.AreEqual(
             new[]
             {
-                "clr/Microsoft/AspNetCore/Components/EventCallbackModule.js",
-                "clr/Microsoft/AspNetCore/Components/EventCallbackT1Module.js",
-                "clr/Microsoft/AspNetCore/Components/RenderFragmentModule.js",
-                "clr/Microsoft/AspNetCore/Components/RenderFragmentT1Module.js"
+                "./clr/Microsoft/AspNetCore/Components/EventCallbackModule.js",
+                "./clr/Microsoft/AspNetCore/Components/EventCallbackT1Module.js",
+                "./clr/Microsoft/AspNetCore/Components/RenderFragmentModule.js",
+                "./clr/Microsoft/AspNetCore/Components/RenderFragmentT1Module.js"
             },
             types.Select(ModuleOutputNaming.GetModulePath).ToArray());
     }

@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
@@ -56,8 +55,8 @@ if (!options.SkipBrowser)
 
 Console.WriteLine("JazorAdmin sample smoke verification passed.");
 Console.WriteLine(options.SkipBrowser
-    ? "Verified: local package consumption, native and VueInject JazorAdmin rebuilds, generated render-function .mjs artifacts, and manifests. Browser verification was skipped."
-    : "Verified: local package consumption, native and VueInject JazorAdmin rebuilds, generated render-function .mjs artifacts, manifests, and browser mount smoke.");
+    ? "Verified: local package consumption, native and VueInject JazorAdmin rebuilds, generated render-function .js artifacts, and standard project files. Browser verification was skipped."
+    : "Verified: local package consumption, native and VueInject JazorAdmin rebuilds, generated render-function .js artifacts, standard project files, and browser mount smoke.");
 
 static void AssertConciseTypeNames(string repoRoot)
 {
@@ -96,9 +95,43 @@ static void AssertConciseTypeNames(string repoRoot)
 
 static void AssertGeneratedArtifacts(string generatedOutputRoot)
 {
-    var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
-    AssertPathExists(manifestPath, "generated manifest");
-    var modulePaths = ReadModulePaths(manifestPath);
+    foreach (var projectFile in new[] { "entry.js", "package.json", "deno.lock", "vite.config.js" })
+        AssertPathExists(Path.Combine(generatedOutputRoot, projectFile), "generated standard project file " + projectFile);
+    AssertPathExists(Path.Combine(generatedOutputRoot, "node_modules"), "restored JazorAdmin dependencies");
+    if (File.Exists(Path.Combine(generatedOutputRoot, "jazor-manifest.json")) ||
+        File.Exists(Path.Combine(generatedOutputRoot, "importmap.json")))
+    {
+        throw new InvalidOperationException("The JazorAdmin standard project must not contain runtime manifests or import maps.");
+    }
+
+    var modulePaths = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["JazorAdmin.App"] = "components/app.js",
+        ["JazorAdmin.Bootstrap"] = "app.js",
+        ["JazorAdmin.Routes"] = "components/routes.js",
+        ["Jazor.Admin.AdminRouteCatalog"] = "components/admin/routes.js",
+        ["Jazor.Admin.JFrame"] = "components/admin/frame.js",
+        ["JazorAdmin.TDesignLayout"] = "components/tdesign/layout.js",
+        ["JazorAdmin.TDesignSidebarMenu"] = "components/tdesign/sidebar.js",
+        ["JazorAdmin.TDesignPageContainer"] = "components/tdesign/page.js",
+        ["JazorAdmin.TDesignHeaderBar"] = "components/tdesign/header.js",
+        ["JazorAdmin.Localization"] = "components/i18n.js",
+        ["JazorAdmin.ErrorPage"] = "components/error.js",
+        ["JazorAdmin.ApiClient"] = "components/api-client.js",
+        ["JazorAdmin.OrganizationPage"] = "components/organization.js",
+        ["JazorAdmin.AccessControlPage"] = "components/access-control.js",
+        ["JazorAdmin.AccountPage"] = "components/accounts.js",
+        ["JazorAdmin.SsoAppPage"] = "components/sso-app.js",
+        ["JazorAdmin.SsoScopePage"] = "components/sso-scope.js",
+        ["JazorAdmin.SsoGrantPage"] = "components/sso-grant.js",
+        ["JazorAdmin.SettingsPage"] = "components/settings.js",
+        ["JazorAdmin.SchedulePage"] = "components/schedules.js",
+        ["JazorAdmin.DashboardPage"] = "components/dashboard.js",
+        ["JazorAdmin.AuditPage"] = "components/audit.js",
+        ["JazorAdmin.IconBar"] = "components/iconbar.js",
+        ["JazorAdmin.RouteTabs"] = "components/route-tabs.js",
+        ["JazorAdmin.RouteBreadcrumb"] = "components/route-breadcrumb.js"
+    };
     var appModulePath = RequireModulePath(modulePaths, "JazorAdmin.App");
     var bootstrapModulePath = RequireModulePath(modulePaths, "JazorAdmin.Bootstrap");
     var routesModulePath = RequireModulePath(modulePaths, "JazorAdmin.Routes");
@@ -181,7 +214,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     foreach (var (relativePath, description) in nativeTDesignModules)
     {
         var module = File.ReadAllText(Path.Combine(generatedOutputRoot, relativePath));
-        AssertContains(module, "from \"tdesign-vue-next\"", "direct TDesign binding import in " + description);
+        AssertContains(module, "from \"tdesign-vue-next/", "direct TDesign binding import in " + description);
         AssertDoesNotContain(module, "AdminControls", "sample-local controls bridge in " + description);
         AssertDoesNotContain(module, "AdminInput", "sample-local input bridge in " + description);
         AssertDoesNotContain(module, "AdminForm", "sample-local form bridge in " + description);
@@ -219,7 +252,6 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var iconBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, iconBarModulePath));
     var routeTabsModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeTabsModulePath));
     var routeBreadcrumbModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeBreadcrumbModulePath));
-    var manifest = File.ReadAllText(manifestPath);
 
     AssertContains(appModule, "defineComponent", "Vue component wrapper in JazorAdmin app module");
     AssertContains(appModule, "function $renderDirect()", "direct VNode render function in JazorAdmin app module");
@@ -254,7 +286,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(pageContainerModule, "align: \"center\"", "TDesign centered action layout in page container module");
     AssertContains(iconBarModule, "data-iconbar", "IconBar root marker in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "data-iconbar-key", "IconBar item marker in JazorAdmin IconBar module");
-    AssertContains(iconBarModule, "Button, HeadMenu, Icon, Menu, MenuItem, Popup", "TDesign IconBar control imports in JazorAdmin IconBar module");
+    foreach (var control in new[] { "Button", "HeadMenu", "Icon", "Menu", "MenuItem", "Popup" })
+        AssertContains(iconBarModule, control, "TDesign " + control + " import in JazorAdmin IconBar module");
     // Direct render lowering now emits Vue block calls (openBlock + createBlock) for proven
     // child shapes instead of plain h(...) calls; assert the current block emission contract.
     AssertContains(iconBarModule, "createBlock(Menu,", "TDesign collapsed menu in JazorAdmin IconBar module");
@@ -341,25 +374,24 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(auditModule, "data-audit-filter", "audit filter markers");
     AssertContains(auditModule, "data-audit-command", "audit filter commands");
     AssertContains(auditModule, "data-audit-event", "audit row marker");
-    foreach (var (relativePath, description) in componentModules)
-        AssertContains(manifest, "\"" + relativePath + "\"", description + " manifest entry");
-    // The manifest legitimately carries the "jazor.vue" runtime provider id; the retired-SFC
-    // contract is about generated module paths, so exclude the provider id before checking.
-    AssertDoesNotContain(
-        manifest.Replace("\"jazor.vue\"", string.Empty, StringComparison.Ordinal),
-        ".vue",
-        "legacy SFC artifact in JazorAdmin manifest");
-    AssertDoesNotContain(manifest, "release-table", "retired release table artifact in JazorAdmin manifest");
-    AssertDoesNotContain(manifest, "settings-form", "retired settings form artifact in JazorAdmin manifest");
+    AssertDoesNotContain(string.Join('\n', modulePaths.Values), ".vue", "legacy SFC artifact path");
+    AssertDoesNotContain(string.Join('\n', modulePaths.Values), "release-table", "retired release table artifact");
+    AssertDoesNotContain(string.Join('\n', modulePaths.Values), "settings-form", "retired settings form artifact");
 }
 
 static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
 {
-    var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
-    AssertPathExists(manifestPath, "generated JazorAdmin VueInject manifest");
-    var modulePaths = ReadModulePaths(manifestPath);
-    var appModulePath = RequireModulePath(modulePaths, "JazorAdmin.InjectSmoke.InjectApp");
-    var containerModulePath = RequireModulePath(modulePaths, "JazorAdmin.InjectSmoke.InjectJPage");
+    foreach (var projectFile in new[] { "entry.js", "package.json", "deno.lock", "vite.config.js" })
+        AssertPathExists(Path.Combine(generatedOutputRoot, projectFile), "generated VueInject standard project file " + projectFile);
+    AssertPathExists(Path.Combine(generatedOutputRoot, "node_modules"), "restored VueInject dependencies");
+    if (File.Exists(Path.Combine(generatedOutputRoot, "jazor-manifest.json")) ||
+        File.Exists(Path.Combine(generatedOutputRoot, "importmap.json")))
+    {
+        throw new InvalidOperationException("The VueInject standard project must not contain runtime manifests or import maps.");
+    }
+
+    const string appModulePath = "components/inject/app.js";
+    const string containerModulePath = "components/inject/page.js";
     var appPath = Path.Combine(generatedOutputRoot, appModulePath);
     var containerPath = Path.Combine(generatedOutputRoot, containerModulePath);
     AssertPathExists(appPath, "generated JazorAdmin VueInject app module");
@@ -367,7 +399,7 @@ static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
 
     foreach (var modulePath in Directory.EnumerateFiles(
                  Path.Combine(generatedOutputRoot, "components"),
-                 "*.mjs",
+                 "*.*js",
                  SearchOption.AllDirectories))
     {
         var module = File.ReadAllText(modulePath);
@@ -380,26 +412,12 @@ static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
 
     var app = File.ReadAllText(appPath);
     var container = File.ReadAllText(containerPath);
-    var manifest = File.ReadAllText(manifestPath);
-    AssertContains(app, "from \"./page.mjs\"", "VueInject implementation import");
+    AssertContains(app, "from \"./page.js\"", "VueInject implementation import");
     AssertDoesNotContain(app, "from \"../admin/page.mjs\"", "stale VueInject contract import");
     AssertContains(app, "injectedTitle", "VueInject runtime prop name");
     AssertContains(app, "\"injected-extra\"", "VueInject runtime slot name");
     AssertContains(container, "slots[\"injected-extra\"]", "VueInject bracket slot access");
     AssertContains(container, "href;", "RenderFragment helper pattern declaration");
-    AssertContains(manifest, "\"" + appModulePath + "\"", "VueInject app manifest entry");
-    AssertContains(manifest, "\"" + containerModulePath + "\"", "VueInject container manifest entry");
-}
-
-static IReadOnlyDictionary<string, string> ReadModulePaths(string manifestPath)
-{
-    using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
-    return document.RootElement.GetProperty("modules")
-        .EnumerateArray()
-        .ToDictionary(
-            static module => module.GetProperty("typeName").GetString()!,
-            static module => module.GetProperty("path").GetString()!,
-            StringComparer.Ordinal);
 }
 
 static string RequireModulePath(IReadOnlyDictionary<string, string> paths, string typeName)
@@ -407,67 +425,14 @@ static string RequireModulePath(IReadOnlyDictionary<string, string> paths, strin
         ? path
         : throw new InvalidOperationException($"Generated manifest did not contain module type '{typeName}'.");
 
-static string ReadHarnessImportMap(string generatedOutputRoot)
-{
-    var path = Path.Combine(generatedOutputRoot, "importmap.json");
-    AssertPathExists(path, "generated JazorAdmin browser import map");
-
-    var importMap = JsonNode.Parse(File.ReadAllText(path))?.AsObject()
-        ?? throw new InvalidOperationException("Generated JazorAdmin browser import map is not a JSON object.");
-    var imports = importMap["imports"]?.AsObject()
-        ?? throw new InvalidOperationException("Generated JazorAdmin browser import map has no imports object.");
-
-    // The sample host serves artifacts under /jazor, while this isolated harness serves the same
-    // copied tree at its document root. Rewrite only URL targets, preserving every emitted specifier.
-    // 示例宿主从 /jazor 提供产物；隔离 harness 将同一份复制产物放在文档根目录，只改 URL
-    // 目标，完整保留 Emit 生成的 specifier 集合和按需依赖闭包。
-    foreach (var import in imports.ToArray())
-    {
-        var target = import.Value?.GetValue<string>()
-            ?? throw new InvalidOperationException("Generated JazorAdmin browser import map contains an empty target for '" + import.Key + "'.");
-        imports[import.Key] = RewriteHarnessArtifactPath(target);
-    }
-
-    return importMap.ToJsonString();
-}
-
-static string ReadHarnessStyleLinks(string generatedOutputRoot)
-{
-    var path = Path.Combine(generatedOutputRoot, "manifest.json");
-    AssertPathExists(path, "generated JazorAdmin browser manifest");
-
-    using var document = JsonDocument.Parse(File.ReadAllText(path));
-    if (!document.RootElement.TryGetProperty("styles", out var styles) || styles.ValueKind != JsonValueKind.Array)
-        return string.Empty;
-
-    return string.Join(
-        Environment.NewLine,
-        styles.EnumerateArray().Select(style =>
-        {
-            var href = style.GetString()
-                ?? throw new InvalidOperationException("Generated JazorAdmin browser manifest contains an empty stylesheet path.");
-            return "<link rel=\"stylesheet\" href=\"" + RewriteHarnessArtifactPath(href) + "\">";
-        }));
-}
-
-static string RewriteHarnessArtifactPath(string path)
-{
-    const string hostedArtifactRoot = "/jazor/";
-    return path.StartsWith(hostedArtifactRoot, StringComparison.Ordinal)
-        ? "/" + path[hostedArtifactRoot.Length..]
-        : path;
-}
-
 static async Task VerifyBrowserSmokeAsync(
     string repoRoot,
     string adminRoot,
     string generatedOutputRoot,
     string injectGeneratedOutputRoot)
 {
-    var adminModules = ReadModulePaths(Path.Combine(generatedOutputRoot, "jazor-manifest.json"));
-    var injectModules = ReadModulePaths(Path.Combine(injectGeneratedOutputRoot, "jazor-manifest.json"));
-    var bootstrapModulePath = RequireModulePath(adminModules, "JazorAdmin.Bootstrap");
-    var injectAppModulePath = RequireModulePath(injectModules, "JazorAdmin.InjectSmoke.InjectApp");
+    const string bootstrapModulePath = "app.js";
+    const string injectAppModulePath = "components/inject/app.js";
     var browserPath = ResolveBrowserExecutable();
     if (browserPath is null)
     {
@@ -476,14 +441,6 @@ static async Task VerifyBrowserSmokeAsync(
     }
 
     var denoPath = ResolveDenoHostRuntime(repoRoot);
-
-    // Keep the browser harness on the exact materialized dependency closure. A hand-written map
-    // only covered Vue and TDesign, so newly used on-demand libraries such as VuIcons were never
-    // resolvable here even though the production artifact was complete.
-    // 浏览器 harness 必须消费物化产物本身的依赖闭包；手写 map 只覆盖 Vue/TDesign，会遗漏
-    // VuIcons 这类新加入的按需库，导致 harness 与真实产物脱节。
-    var browserImportMap = ReadHarnessImportMap(generatedOutputRoot);
-    var browserStyleLinks = ReadHarnessStyleLinks(generatedOutputRoot);
 
     var harnessRoot = Path.Combine(repoRoot, ".tmp", "sample-smoke", "JazorAdmin", "browser-" + Environment.ProcessId);
     SweepStaleBrowserHarnessRoots(Path.GetDirectoryName(harnessRoot)!, repoRoot);
@@ -509,10 +466,6 @@ static async Task VerifyBrowserSmokeAsync(
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>JazorAdmin browser smoke</title>
-                {{browserStyleLinks}}
-                <script type="importmap">
-                {{browserImportMap}}
-                </script>
               </head>
               <body>
                 <div id="app"></div>
@@ -2146,69 +2099,48 @@ static string BuildBrowserSmokeTestScript(string browserPath)
 
         async function startServer(root) {
           const diagnostics = [];
-          let resolvePort;
-          const listening = new Promise((resolvePromise) => resolvePort = resolvePromise);
-          const server = Deno.serve({
-            hostname: "127.0.0.1",
-            port: 0,
-            onListen: ({ port }) => resolvePort(port)
-          }, async (request) => {
-            const url = new URL(request.url);
-            const relativePath = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
-            const fileUrl = new URL(relativePath, root);
-            if (!fileUrl.href.startsWith(root.href)) {
-              diagnostics.push(`403 ${url.pathname}`);
-              return new Response("Forbidden", { status: 403 });
+          const port = await reservePort();
+          const process = new Deno.Command(Deno.execPath(), {
+            cwd: Deno.cwd(),
+            args: ["task", "dev", "--", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
+            env: { ...Deno.env.toObject(), JAZOR_VITE_BASE: "/" },
+            stdin: "null",
+            stdout: "piped",
+            stderr: "piped"
+          }).spawn();
+          const drain = async (stream, kind) => {
+            for await (const chunk of stream) {
+              const message = new TextDecoder().decode(chunk).trim();
+              if (message) diagnostics.push(`${kind}: ${message}`);
             }
-
+          };
+          const stdout = drain(process.stdout, "stdout");
+          const stderr = drain(process.stderr, "stderr");
+          const deadline = Date.now() + 30000;
+          while (Date.now() < deadline) {
             try {
-              const contents = await Deno.readFile(fileUrl);
-              diagnostics.push(`200 ${url.pathname}`);
-              return new Response(contents, { headers: responseHeaders(contentType(fileUrl.pathname)) });
+              const response = await fetch(`http://127.0.0.1:${port}/`, { cache: "no-store" });
+              if (response.ok) break;
             } catch {
-              if (extension(fileUrl.pathname) === "") {
-                const contents = await Deno.readFile(new URL("index.html", root));
-                diagnostics.push(`200 fallback ${url.pathname}`);
-                return new Response(contents, { headers: responseHeaders("text/html; charset=utf-8") });
-              }
-              diagnostics.push(`404 ${url.pathname} -> ${fileUrl.pathname}`);
-              return new Response("Not Found", { status: 404 });
             }
-          });
-
-          const port = await listening;
+            await delay(100);
+          }
+          try {
+            const response = await fetch(`http://127.0.0.1:${port}/`, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          } catch (error) {
+            try { process.kill("SIGKILL"); } catch { }
+            await Promise.allSettled([process.status, stdout, stderr]);
+            throw new Error(`Vite dev server did not start: ${error}. ${diagnostics.join("\n")}`);
+          }
           return {
             port,
             diagnostics,
-            dispose: () => server.shutdown()
+            dispose: async () => {
+              try { process.kill("SIGKILL"); } catch { }
+              await Promise.allSettled([process.status, stdout, stderr]);
+            }
           };
-        }
-
-        function responseHeaders(contentType) {
-          // Each route remains a fresh HTML request, while immutable generated modules use the
-          // normal browser cache. Forcing 22 full cold starts exhausts Chromium's local sockets
-          // and tests the harness limit instead of route behavior.
-          return {
-            "content-type": contentType,
-            "cache-control": contentType.startsWith("text/html") ? "no-store" : "public, max-age=300"
-          };
-        }
-
-        function contentType(path) {
-          switch (extension(path)) {
-            case ".html": return "text/html; charset=utf-8";
-            case ".mjs":
-            case ".js": return "text/javascript; charset=utf-8";
-            case ".css": return "text/css; charset=utf-8";
-            case ".json": return "application/json; charset=utf-8";
-            default: return "application/octet-stream";
-          }
-        }
-
-        function extension(path) {
-          const fileName = path.slice(path.lastIndexOf("/") + 1);
-          const dot = fileName.lastIndexOf(".");
-          return dot <= 0 ? "" : fileName.slice(dot);
         }
 
         async function killBrowserProcessTree(process) {

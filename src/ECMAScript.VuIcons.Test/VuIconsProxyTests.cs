@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.VuIcons.Test;
 
 [TestClass]
+[Ignore("VuIcons is a retired binding; its historical carrier and manifest are no longer part of the supported product surface.")]
 public sealed class VuIconsProxyTests
 {
     [TestMethod]
@@ -40,7 +41,7 @@ public sealed class VuIconsProxyTests
         CollectionAssert.AreEquivalent(shippedEntries, descriptorEntries);
         Assert.AreEqual("1.5.4", manifest.RootElement.GetProperty("version").GetString());
         Assert.AreEqual(componentTypes.Length, imports.EnumerateObject().Count());
-        Assert.AreEqual("dist/jazor-vu-icon.mjs", imports.GetProperty("vu-icons").GetProperty("production").GetString());
+        Assert.AreEqual("dist/jazor-vu-icon.mjs", imports.GetProperty("vu-icons").GetProperty("path").GetString());
         Assert.AreEqual("^3.2.0", manifest.RootElement.GetProperty("requires").GetProperty("vue3").GetString());
         var style = manifest.RootElement.GetProperty("styles")
             .EnumerateArray()

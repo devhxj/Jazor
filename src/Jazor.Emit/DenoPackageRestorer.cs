@@ -1,7 +1,6 @@
-using System.ComponentModel;
-using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using DenoHost.Core;
 using Jazor.Common;
 
 namespace Jazor.Emit;
@@ -24,7 +23,7 @@ internal static class DenoPackageRestorer
 
         var packagePath = Path.Combine(workspaceRoot, "package.json");
         if (!File.Exists(packagePath))
-            throw new InvalidOperationException("Jazor package restore requires package.json in the staging root.");
+            throw new InvalidOperationException("Jazor package restore requires package.json in the project root.");
 
         var dependencyCount = ReadDependencyCount(packagePath);
         var lockPath = Path.Combine(workspaceRoot, "deno.lock");
@@ -71,7 +70,7 @@ internal static class DenoPackageRestorer
         {
             // Deno install updates a stale lock in most cases, but a graph that changes from an
             // external package to a local-only package can otherwise leave obsolete identities
-            // behind. The staging transaction makes removing it safe before resolution.
+            // behind. Remove the stale lock before resolving the new dependency graph.
             DeleteFile(lockPath);
             restoreResult = await RunAsync(
                 deno,
@@ -139,160 +138,25 @@ internal static class DenoPackageRestorer
         // a nonexistent lock would reject valid embedded-only package projects.
         if (File.Exists(Path.Combine(workspaceRoot, "deno.lock")))
             arguments.Add("--frozen-lockfile");
-        var checkImportMapPath = WriteCheckImportMap(workspaceRoot, entryPaths, libraries);
-        if (checkImportMapPath is not null)
-        {
-            arguments.Add("--import-map");
-            arguments.Add(checkImportMapPath);
-        }
         arguments.AddRange(relativeEntries);
-
-        try
+        var result = await RunAsync(deno, workspaceRoot, arguments, cancellationToken).ConfigureAwait(false);
+        if (!result.Succeeded)
         {
-            var result = await RunAsync(deno, workspaceRoot, arguments, cancellationToken).ConfigureAwait(false);
-            if (!result.Succeeded)
-            {
-                throw new InvalidOperationException(
-                    "Deno package graph validation failed.\n" + FormatFailure("deno check", result));
-            }
+            throw new InvalidOperationException(
+                "Deno package graph validation failed.\n" + FormatFailure("deno check", result));
         }
-        finally
-        {
-            if (checkImportMapPath is not null && File.Exists(checkImportMapPath))
-                File.Delete(checkImportMapPath);
-        }
-    }
-
-    private static string? WriteCheckImportMap(
-        string workspaceRoot,
-        IReadOnlyList<string> entryPaths,
-        LibraryAssets? libraries)
-    {
-        var imports = new JsonObject();
-        if (libraries is not null)
-        {
-            foreach (var (specifier, target) in libraries.ImportPaths.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-            {
-                if (string.IsNullOrWhiteSpace(specifier) || string.IsNullOrWhiteSpace(target))
-                    continue;
-
-                // Let Deno resolve an upstream bare package through its restored package.json
-                // and conditional exports. Only logical binding aliases need an import-map
-                // target; mapping an already-authored package specifier to a guessed file would
-                // bypass the package's own resolution contract.
-                if (IsExternalPackage(libraries, specifier) &&
-                    string.Equals(specifier, target, StringComparison.Ordinal) &&
-                    (!LibraryPackageIdentity.TryGetReference(libraries, specifier, out var externalReference) ||
-                     !string.Equals(externalReference.Source, "jsr", StringComparison.Ordinal)))
-                    continue;
-
-                AddImport(imports, specifier, ResolveCheckTarget(workspaceRoot, libraries, specifier, target));
-            }
-        }
-
-        foreach (var entryPath in entryPaths)
-        {
-            var relative = Path.GetRelativePath(workspaceRoot, entryPath).Replace('\\', '/');
-            if (!string.IsNullOrWhiteSpace(relative) && !relative.StartsWith("../", StringComparison.Ordinal))
-                AddImport(imports, relative, "./" + relative);
-        }
-
-        if (imports.Count == 0)
-            return null;
-
-        var path = Path.Combine(workspaceRoot, ".jazor-deno-check-importmap.json");
-        var payload = new JsonObject { ["imports"] = imports };
-        File.WriteAllText(path, payload.ToJsonString() + "\n");
-        return path;
-    }
-
-    private static void AddImport(JsonObject imports, string specifier, string target)
-    {
-        if (imports[specifier] is { } existing)
-        {
-            if (!string.Equals(existing.GetValue<string>(), target, StringComparison.Ordinal))
-                throw new InvalidOperationException(
-                    $"Deno check import '{specifier}' resolves to conflicting targets.");
-            return;
-        }
-
-        imports[specifier] = target;
-    }
-
-    private static string ResolveCheckTarget(
-        string workspaceRoot,
-        LibraryAssets libraries,
-        string specifier,
-        string fallbackTarget)
-    {
-        // The materializer target for external packages is often an upstream file hint such as
-        // `tdesign-vue-next/es/button/index.mjs` or `dist/index.js`. Package identity must come
-        // from the authored specifier, otherwise `dist/index.js` is misread as package `dist`.
-        var authoredPackageName = LibraryPackageIdentity.GetPackageName(specifier);
-        if (LibraryPackageIdentity.TryGetReference(libraries, specifier, out var exactReference) &&
-            exactReference.Source is "npm" or "jsr")
-        {
-            var canonicalName = exactReference.CanonicalName;
-            var subpath = string.Equals(specifier, authoredPackageName, StringComparison.Ordinal)
-                ? "."
-                : "./" + specifier[(authoredPackageName.Length + 1)..];
-            var candidateRoot = Path.Combine(workspaceRoot, "node_modules", canonicalName.Replace('/', Path.DirectorySeparatorChar));
-            var resolved = PackageExportsResolver.Resolve(candidateRoot, subpath, browser: false);
-            if (resolved is not null)
-                return "./node_modules/" + canonicalName + "/" + resolved.TrimStart('.', '/');
-
-            var fallbackSubpath = string.Equals(specifier, authoredPackageName, StringComparison.Ordinal)
-                ? string.Empty
-                : "/" + specifier[(authoredPackageName.Length + 1)..];
-            return "./node_modules/" + canonicalName + fallbackSubpath;
-        }
-
-        if (libraries.PackageProjections.TryGetValue(authoredPackageName, out var projection))
-        {
-            var exportName = string.Equals(specifier, authoredPackageName, StringComparison.Ordinal)
-                ? "."
-                : "./" + specifier[(authoredPackageName.Length + 1)..];
-            if (projection.Exports.TryGetValue(exportName, out var exportTarget))
-            {
-                return "./node_modules/" + authoredPackageName + "/" + exportTarget.TrimStart('.', '/');
-            }
-        }
-
-        return "./" + fallbackTarget.Replace('\\', '/').TrimStart('/');
-    }
-
-    private static bool IsExternalPackage(LibraryAssets libraries, string specifier)
-    {
-        if (libraries.PackageReferences.TryGetValue(specifier, out var exact))
-            return exact.Source is "npm" or "jsr";
-
-        var packageName = LibraryPackageIdentity.GetPackageName(specifier);
-        return libraries.PackageReferences.TryGetValue(packageName, out var packageReference) &&
-               packageReference.Source is "npm" or "jsr";
     }
 
     private static int ReadDependencyCount(string packagePath)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(packagePath));
-        if (!document.RootElement.TryGetProperty("dependencies", out var dependencies) ||
-            dependencies.ValueKind != JsonValueKind.Object)
-        {
-            return 0;
-        }
-
-        return dependencies.EnumerateObject().Count();
+        return ReadDependencies(document.RootElement).Count();
     }
 
     private static bool RequiresRootLock(string packagePath)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(packagePath));
-        if (!document.RootElement.TryGetProperty("dependencies", out var dependencies) ||
-            dependencies.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        return dependencies.EnumerateObject().Any(static dependency =>
+        return ReadDependencies(document.RootElement).Any(static dependency =>
             dependency.Value.ValueKind != JsonValueKind.String ||
             !dependency.Value.GetString()!.StartsWith("file:", StringComparison.OrdinalIgnoreCase));
     }
@@ -303,9 +167,7 @@ internal static class DenoPackageRestorer
         {
             using var packageDocument = JsonDocument.Parse(File.ReadAllText(packagePath));
             using var lockDocument = JsonDocument.Parse(File.ReadAllText(lockPath));
-            if (!packageDocument.RootElement.TryGetProperty("dependencies", out var dependencies) ||
-                dependencies.ValueKind != JsonValueKind.Object ||
-                !lockDocument.RootElement.TryGetProperty("workspace", out var workspace) ||
+            if (!lockDocument.RootElement.TryGetProperty("workspace", out var workspace) ||
                 !workspace.TryGetProperty("packageJson", out var packageJson) ||
                 !packageJson.TryGetProperty("dependencies", out var lockDependencies) ||
                 lockDependencies.ValueKind != JsonValueKind.Array)
@@ -313,11 +175,12 @@ internal static class DenoPackageRestorer
                 return false;
             }
 
-            var expected = dependencies.EnumerateObject()
+            var expected = ReadDependencies(packageDocument.RootElement)
                 .Where(static property => property.Value.ValueKind == JsonValueKind.String)
                 .Select(static property => CreateDependencyIdentity(property.Name, property.Value.GetString()!))
                 .Where(static value => value is not null)
                 .Select(static value => value!)
+                .Distinct()
                 .ToArray();
             var actual = lockDependencies.EnumerateArray()
                 .Where(static value => value.ValueKind == JsonValueKind.String)
@@ -327,8 +190,8 @@ internal static class DenoPackageRestorer
             // Deno records canonical package specifiers rather than package.json keys. A lock is
             // reusable only when the complete root identity set is represented; local file
             // packages intentionally have no root-lock entry. JSR dependencies are represented
-            // by Deno's npm compatibility name (`@jsr/<scope>__<name>`), so their source range is
-            // checked through the canonical package prefix and requested major version.
+            // by Deno's npm compatibility name (`@jsr/<scope>__<name>`). Compare the complete
+            // requested version: a patch upgrade must update the lock rather than freeze the old graph.
             return actual.Length == expected.Length &&
                    expected.All(identity => actual.Any(value => identity.Matches(value)));
         }
@@ -337,6 +200,11 @@ internal static class DenoPackageRestorer
             return false;
         }
     }
+
+    private static IEnumerable<JsonProperty> ReadDependencies(JsonElement package)
+        => new[] { "dependencies", "devDependencies" }
+            .Where(name => package.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Object)
+            .SelectMany(name => package.GetProperty(name).EnumerateObject());
 
     private static DependencyIdentity? CreateDependencyIdentity(string name, string value)
     {
@@ -364,7 +232,7 @@ internal static class DenoPackageRestorer
             Directory.Delete(path, recursive: true);
     }
 
-    private static string ResolveExecutable(string? explicitPath)
+    internal static string ResolveExecutable(string? explicitPath)
     {
         var candidate = string.IsNullOrWhiteSpace(explicitPath)
             ? Environment.GetEnvironmentVariable("JAZOR_DENO_PATH")
@@ -392,65 +260,72 @@ internal static class DenoPackageRestorer
         if (File.Exists(bundled))
             return bundled;
 
-        // Let Process resolve the executable through PATH. This keeps source builds usable when
-        // Deno is installed globally while packaged builds pass the NuGet-carried runtime path.
+        // DenoHost 固定从 AppContext.BaseDirectory 解析 bundled runtime；这里的裸名称只作为
+        // 兼容入口的诊断占位返回，不再交给 PATH 解析。
         return OperatingSystem.IsWindows() ? "deno.exe" : "deno";
     }
 
-    private static async Task<ProcessResult> RunAsync(
+    internal static async Task<ProcessResult> RunAsync(
         string executable,
         string workingDirectory,
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = executable,
-            WorkingDirectory = workingDirectory,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-        foreach (var argument in arguments)
-            startInfo.ArgumentList.Add(argument);
+        // DenoHost 拥有进程生命周期：它只解析 AppContext.BaseDirectory 下带签名校验的 bundled
+        // runtime。`executable` 保留为兼容入口——显式路径（--deno / JAZOR_DENO_PATH）仍由调用方的
+        // ResolveExecutable 做存在性校验，并用于诊断消息，但实际启动固定走 DenoProcess。
+        var standardOutput = new StringBuilder();
+        var standardError = new StringBuilder();
+        using var process = new DenoProcess([.. arguments], workingDirectory);
+        // DataReceived 事件在读取线程上触发，追加必须串行化；null 表示流关闭哨兵。
+        process.OutputDataReceived += (_, eventArgs) => AppendLine(standardOutput, eventArgs.Data);
+        process.ErrorDataReceived += (_, eventArgs) => AppendLine(standardError, eventArgs.Data);
 
-        using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         try
         {
-            if (!process.Start())
-                throw new InvalidOperationException($"Could not start Deno executable '{executable}'.");
+            await process.StartAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             throw new InvalidOperationException(
                 $"Could not start Deno executable '{executable}'. Install DenoHost 2.9.7 or set JAZOR_DENO_PATH.",
                 exception);
         }
 
-        var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        int exitCode;
         try
         {
-            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            exitCode = await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
             try
             {
-                if (!process.HasExited)
-                    process.Kill(entireProcessTree: true);
+                // 取消必须立即终止整棵进程树；零宽超时即强制 kill。
+                if (process.IsRunning)
+                    await process.StopAsync(TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
             }
-            catch
+            catch (InvalidOperationException)
             {
+                // The process may exit between the cancellation observation and the stop request.
             }
 
             throw;
         }
 
-        var stdout = await stdoutTask.ConfigureAwait(false);
-        var stderr = await stderrTask.ConfigureAwait(false);
-        return new ProcessResult(process.ExitCode == 0, process.ExitCode, stdout, stderr);
+        return new ProcessResult(
+            exitCode == 0,
+            exitCode,
+            standardOutput.ToString(),
+            standardError.ToString());
+
+        static void AppendLine(StringBuilder builder, string? line)
+        {
+            if (line is null)
+                return;
+            lock (builder)
+                builder.AppendLine(line);
+        }
     }
 
     private static string FormatFailure(string command, ProcessResult result)
@@ -460,14 +335,11 @@ internal static class DenoPackageRestorer
             (output.Length == 0 ? string.Empty : Environment.NewLine + output);
     }
 
-    private sealed record ProcessResult(bool Succeeded, int ExitCode, string StandardOutput, string StandardError);
+    internal sealed record ProcessResult(bool Succeeded, int ExitCode, string StandardOutput, string StandardError);
 
-    private sealed record DependencyIdentity(
-        string? Exact,
-        string? JsrPrefix,
-        int? JsrMajor)
+    private sealed record DependencyIdentity(string Exact)
     {
-        public static DependencyIdentity ForExact(string value) => new(value, null, null);
+        public static DependencyIdentity ForExact(string value) => new(value);
 
         public static DependencyIdentity ForJsr(string value)
         {
@@ -475,18 +347,11 @@ internal static class DenoPackageRestorer
             var packageName = at < 0 ? value : value[..at];
             var version = at < 0 ? string.Empty : value[(at + 1)..];
             var encoded = packageName.TrimStart('@').Replace("/", "__", StringComparison.Ordinal);
-            var major = TryReadMajor(version);
-            return new(null, "npm:@jsr/" + encoded + "@", major);
+            return new("npm:@jsr/" + encoded + "@" + version);
         }
 
         public bool Matches(string actual)
-        {
-            if (Exact is not null)
-                return string.Equals(Exact, actual, StringComparison.Ordinal);
-            if (JsrPrefix is null || !actual.StartsWith(JsrPrefix, StringComparison.Ordinal))
-                return false;
-            return JsrMajor is null || TryReadMajor(actual[JsrPrefix.Length..]) == JsrMajor;
-        }
+            => string.Equals(Exact, actual, StringComparison.Ordinal);
 
         private static int FindVersionSeparator(string value)
         {
@@ -496,11 +361,5 @@ internal static class DenoPackageRestorer
             return slash < 0 ? value.IndexOf('@', StringComparison.Ordinal) : value.IndexOf('@', slash);
         }
 
-        private static int? TryReadMajor(string value)
-        {
-            var digits = value.TrimStart('^', '~', '>', '=', '<', ' ')
-                .Split(new[] { '.', '-', '+', ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
-            return int.TryParse(digits, out var major) ? major : null;
-        }
     }
 }

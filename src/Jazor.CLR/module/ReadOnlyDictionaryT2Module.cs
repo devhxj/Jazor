@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// Map 只负责承载键值，ReadOnlyDictionary 的不可写语义由 carrier/helper 协议表达。
 /// TryGetValue 等带 out 参数的成员保留 Import 形式，以便显式表达返回值和回写值协议。
 /// </remarks>
-[ECMAScriptModule("clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js")]
+[ECMAScriptModule("./clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js")]
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","Map")]
 public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnull
 {

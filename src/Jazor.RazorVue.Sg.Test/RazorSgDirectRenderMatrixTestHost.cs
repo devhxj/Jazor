@@ -711,7 +711,7 @@ internal static partial class DirectRenderCaseCatalog
             usesStaticVNode: false,
             group: DirectRenderCaseGroup.Component,
             importCount: 1,
-            expectedImportFragment: "./matrix/module-preferred.mjs",
+            expectedImportFragment: "./matrix/module-preferred.js",
             unexpectedImportFragment: "discarded-library");
     }
 

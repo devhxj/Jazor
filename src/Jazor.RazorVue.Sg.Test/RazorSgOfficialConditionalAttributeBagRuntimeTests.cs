@@ -39,14 +39,14 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.IsDeploying", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-deploy-action.mjs",
+            "components/release-deploy-action.js",
             observation.ModuleText,
             "official-conditional-attribute-bag-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-deploy-action.mjs";
+            import component from "./components/release-deploy-action.js";
 
             test("official Razor conditional attribute bags retain the active value set", () => {
                 const deploying = component.setup({

@@ -68,7 +68,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
         StringAssert.Contains(moduleCatalog, "SourceMapContent");
         StringAssert.Contains(moduleCatalog, "MapHash");
         StringAssert.Contains(moduleCatalog, "sourceMapRelativePath:");
-        StringAssert.Contains(moduleCatalog, "modules/math.mjs.map");
+        StringAssert.Contains(moduleCatalog, "modules/math.js.map");
         StringAssert.Contains(moduleCatalog, "Demo/MathModule.cs");
     }
 
@@ -194,7 +194,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
         Assert.HasCount(0, diagnostics, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
-        StringAssert.Contains(moduleCatalog, "modules/uri.mjs");
+        StringAssert.Contains(moduleCatalog, "modules/uri.js");
         StringAssert.Contains(moduleCatalog, "sourcesContent");
         StringAssert.Contains(moduleCatalog, "public static int Read() => 73;");
     }
@@ -260,7 +260,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
             hintNames);
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
-        StringAssert.Contains(moduleCatalog, "modules/math.mjs");
+        StringAssert.Contains(moduleCatalog, "modules/math.js");
     }
 
     [TestMethod]
@@ -304,7 +304,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static item => item.ToString())));
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
-        StringAssert.Contains(moduleCatalog, "modules/text-helper.mjs");
+        StringAssert.Contains(moduleCatalog, "modules/text-helper.js");
         StringAssert.Contains(moduleCatalog, "function Normalize(value)");
     }
 

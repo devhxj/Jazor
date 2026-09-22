@@ -2,10 +2,10 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDictionaryScenarios
 {
-    private const string DictionaryModulePath = "clr/System/Collections/Generic/DictionaryT2Module.js";
-    private const string InterfaceModulePath = "clr/System/Collections/Generic/IDictionaryT2Module.js";
-    private const string ReadOnlyModulePath = "clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js";
-    private const string WeakTableModulePath = "clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js";
+    private const string DictionaryModulePath = "./clr/System/Collections/Generic/DictionaryT2Module.js";
+    private const string InterfaceModulePath = "./clr/System/Collections/Generic/IDictionaryT2Module.js";
+    private const string ReadOnlyModulePath = "./clr/System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js";
+    private const string WeakTableModulePath = "./clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

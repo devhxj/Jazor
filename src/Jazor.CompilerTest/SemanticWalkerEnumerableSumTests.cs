@@ -52,7 +52,7 @@ public sealed class SemanticWalkerEnumerableSumTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEquivalent(new[] { "sumInt", "sumInt64", "sumSingle", "sumDouble", "sumDecimal" }, importNames);
         StringAssert.Contains(body, "sumInt(integers)", StringComparison.Ordinal);
@@ -61,7 +61,7 @@ public sealed class SemanticWalkerEnumerableSumTests
         StringAssert.Contains(body, "sumDouble(doubles)", StringComparison.Ordinal);
         StringAssert.Contains(body, "sumDecimal(decimals)", StringComparison.Ordinal);
 
-        _ = new Parser().ParseModule("import { " + string.Join(", ", importNames) + " } from \"clr/System/Linq/EnumerableModule.js\";\nfunction verify() " + body);
+        _ = new Parser().ParseModule("import { " + string.Join(", ", importNames) + " } from \"./clr/System/Linq/EnumerableModule.js\";\nfunction verify() " + body);
     }
 
     private static IBlockOperation GetBlockOperation(string source)

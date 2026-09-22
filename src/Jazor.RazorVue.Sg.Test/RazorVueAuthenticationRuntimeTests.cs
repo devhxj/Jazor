@@ -6,15 +6,15 @@ public sealed class RazorVueAuthenticationRuntimeTests
     [TestMethod]
     public async Task AuthenticationProvider_TransitionsAndNotifiesSubscribers()
     {
-        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "dist", "authentication.mjs"));
+        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "runtime", "vue", "authentication.js"));
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "authentication.mjs",
+            "authentication.js",
             module,
             "authentication-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import { createAuthenticationProvider } from "./authentication.mjs";
+            import { createAuthenticationProvider } from "./authentication.js";
 
             test("closed authentication states transition through the provider", async () => {
                 const provider = createAuthenticationProvider({ status: "Anonymous" });
@@ -42,15 +42,15 @@ public sealed class RazorVueAuthenticationRuntimeTests
     [TestMethod]
     public async Task AuthenticationProvider_RefreshIgnoresStaleEndpointCompletion()
     {
-        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "dist", "authentication.mjs"));
+        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "runtime", "vue", "authentication.js"));
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "authentication.mjs",
+            "authentication.js",
             module,
             "authentication-refresh-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import { createAuthenticationProvider } from "./authentication.mjs";
+            import { createAuthenticationProvider } from "./authentication.js";
 
             test("a newer refresh supersedes an older endpoint response", async () => {
                 let releaseFirst;
@@ -75,15 +75,15 @@ public sealed class RazorVueAuthenticationRuntimeTests
     [TestMethod]
     public async Task AuthenticationProvider_UsesExplicitSignInAndPreservesStateWhenEndpointFails()
     {
-        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "dist", "authentication.mjs"));
+        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "runtime", "vue", "authentication.js"));
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "authentication.mjs",
+            "authentication.js",
             module,
             "authentication-sign-in-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import { createAuthenticationProvider, validateAuthenticationSnapshot } from "./authentication.mjs";
+            import { createAuthenticationProvider, validateAuthenticationSnapshot } from "./authentication.js";
 
             test("application endpoint owns sign-in and endpoint failure remains observable", async () => {
                 const provider = createAuthenticationProvider({
@@ -123,15 +123,15 @@ public sealed class RazorVueAuthenticationRuntimeTests
     [TestMethod]
     public async Task AuthenticationProvider_ConsumesSsrSnapshotThroughSetupInjection()
     {
-        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "dist", "authentication.mjs"));
+        var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "runtime", "vue", "authentication.js"));
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "authentication.mjs",
+            "authentication.js",
             module,
             "authentication-ssr-hydration-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import { useAuthenticationProvider } from "./authentication.mjs";
+            import { useAuthenticationProvider } from "./authentication.js";
 
             test("setup helper turns the SSR-provided snapshot into a browser provider", () => {
                 globalThis.__providers = new Map([["jazor:auth-state", {

@@ -35,14 +35,14 @@ public sealed class RazorSgOfficialCollectionInitializerAttributeBagRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("new Dictionary", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-collection-attributes.mjs",
+            "components/release-collection-attributes.js",
             observation.ModuleText,
             "official-release-collection-attributes-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-collection-attributes.mjs";
+            import component from "./components/release-collection-attributes.js";
 
             test("official Razor collection initializer attributes retain every dictionary entry", () => {
                 const button = component.setup({ Release: "2026.08", Label: "Deploy" }, { slots: {} })();

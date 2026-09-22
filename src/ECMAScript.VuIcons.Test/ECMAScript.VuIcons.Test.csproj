@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ECMAScript.VuIcons\ECMAScript.VuIcons.csproj" />
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
 
@@ -15,7 +16,6 @@
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
-    <ProjectReference Include="..\ECMAScript.VuIcons\ECMAScript.VuIcons.csproj" />
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
   </ItemGroup>

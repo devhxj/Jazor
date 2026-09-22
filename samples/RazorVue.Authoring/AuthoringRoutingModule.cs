@@ -34,7 +34,7 @@ internal sealed record AuthoringRoute : VueProps
     public extern string Template { get; }
 }
 
-[ECMAScript("@jazor/vue-runtime/blazor-routing.mjs", Transform.Import)]
+[ECMAScript("./runtime/vue/blazor-routing.js")]
 internal static class AuthoringRoutingModule
 {
     [ECMAScriptName("createNavigationHost")]

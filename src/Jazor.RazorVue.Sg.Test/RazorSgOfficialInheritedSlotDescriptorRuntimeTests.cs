@@ -48,14 +48,14 @@ public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("slots.header", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-layout-inherited-slot-runtime.mjs",
+            "components/release-layout-inherited-slot-runtime.js",
             observation.ModuleText,
             "official-inherited-slot-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-layout-inherited-slot-runtime.mjs";
+            import component from "./components/release-layout-inherited-slot-runtime.js";
 
             test("official Razor derived layout resolves the new slot member name", () => {
                 const render = component.setup({}, {
@@ -114,14 +114,14 @@ public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("slots.header", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/audit-layout-inherited-slot-runtime.mjs",
+            "components/audit-layout-inherited-slot-runtime.js",
             observation.ModuleText,
             "official-inherited-base-slot-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/audit-layout-inherited-slot-runtime.mjs";
+            import component from "./components/audit-layout-inherited-slot-runtime.js";
 
             test("official Razor derived layout inherits its base slot member name", () => {
                 const render = component.setup({}, {

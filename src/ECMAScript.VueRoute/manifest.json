@@ -24,21 +24,13 @@
   "imports": {
     "nostics": {
       "type": "module",
-      "development": "nostics",
-      "production": "nostics",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "nostics",
+      "dependencies": []
     },
     "vue-router": {
       "type": "module",
-      "development": "vue-router",
-      "production": "vue-router",
-      "developmentDependencies": [
-        "@vue/devtools-api",
-        "nostics",
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vue-router",
+      "dependencies": [
         "vue"
       ]
     }

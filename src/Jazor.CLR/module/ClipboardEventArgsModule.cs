@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/ClipboardEventArgsModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/Web/ClipboardEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.ClipboardEventArgs", "ClipboardEvent")]
 public static class ClipboardEventArgsModule
 {

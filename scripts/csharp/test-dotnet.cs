@@ -11,7 +11,7 @@ var clrTestProject = Path.Combine(repoRoot, "src", "Jazor.CLR.Test", "Jazor.CLR.
 var styleTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Style.Test", "ECMAScript.Style.Test.csproj");
 var devtoolsTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Vue.Devtools.Test", "ECMAScript.Vue.Devtools.Test.csproj");
 var dataUiTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueDataUi.Test", "ECMAScript.VueDataUi.Test.csproj");
-var vuIconsTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VuIcons.Test", "ECMAScript.VuIcons.Test.csproj");
+var lucideTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Lucide.Test", "ECMAScript.Lucide.Test.csproj");
 var piniaTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Test", "ECMAScript.Pinia.Test.csproj");
 var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing.Test", "ECMAScript.Pinia.Testing.Test.csproj");
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
@@ -87,7 +87,7 @@ var testTargets = options.Project switch
     "style" => new[] { styleTestProject },
     "devtools" => new[] { devtoolsTestProject },
     "dataui" => new[] { dataUiTestProject },
-    "vu-icons" => new[] { vuIconsTestProject },
+    "lucide" => new[] { lucideTestProject },
     "pinia" => new[] { piniaTestProject },
     "pinia-testing" => new[] { piniaTestingTestProject },
     "vueroute" => new[] { vueRouteTestProject },
@@ -110,7 +110,6 @@ var testTargets = options.Project switch
         styleTestProject,
         devtoolsTestProject,
         dataUiTestProject,
-        vuIconsTestProject,
         piniaTestProject,
         piniaTestingTestProject,
         vueRouteTestProject,
@@ -236,7 +235,7 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "style", "devtools", "dataui", "vu-icons", "pinia", "pinia-testing", "vueroute", "date-fns", "vueuse", "floating-ui", "vee-validate", "vue-i18n", "vue-query", "vue-draggable", "file-pond", "wang-editor", "razor-sg",
+            "all", "compiler", "clr", "style", "devtools", "dataui", "lucide", "pinia", "pinia-testing", "vueroute", "date-fns", "vueuse", "floating-ui", "vee-validate", "vue-i18n", "vue-query", "vue-draggable", "file-pond", "wang-editor", "razor-sg",
             "emit", "emit-consumer", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
@@ -263,7 +262,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|vue-draggable|file-pond|wang-editor|razor-sg|emit|emit-consumer|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|vue-draggable|file-pond|wang-editor|razor-sg|emit|emit-consumer|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

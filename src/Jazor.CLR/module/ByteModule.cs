@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule("clr/System/ByteModule.js")]
+[ECMAScriptModule("./clr/System/ByteModule.js")]
 [Jazor(Op.Alias, "byte","Number")]
 public static class ByteModule
 {

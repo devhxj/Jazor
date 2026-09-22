@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableTakeRangeScenarios
 {
-    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
     private const string Member = "static System.Linq.Enumerable.Take<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Range)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

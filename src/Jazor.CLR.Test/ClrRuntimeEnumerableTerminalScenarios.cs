@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableTerminalScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
     private const string FirstMember = "static System.Linq.Enumerable.First<TSource>(System.Collections.Generic.IEnumerable<TSource>)";
     private const string FirstPredicateMember = "static System.Linq.Enumerable.First<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)";
     private const string LastMember = "static System.Linq.Enumerable.Last<TSource>(System.Collections.Generic.IEnumerable<TSource>)";

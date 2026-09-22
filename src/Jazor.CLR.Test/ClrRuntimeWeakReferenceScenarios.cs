@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeWeakReferenceScenarios
 {
-    private const string ModulePath = "clr/System/WeakReferenceModule.js";
+    private const string ModulePath = "./clr/System/WeakReferenceModule.js";
     private const string ConstructorMember = "System.WeakReference.WeakReference(object)";
 	private const string TrackingConstructorMember = "System.WeakReference.WeakReference(object, bool)";
 

@@ -39,7 +39,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     WriteFile(Path.Combine(root, module.Key), module.Value);
             }
             MaterializeCatalogDependencies(root, moduleRelativePath, moduleText, supportingModules);
-            MaterializeRazorVueRuntimeModules(root, moduleText, supportingModules);
+            MaterializeRazorVueRuntimeModules(root, supportingModules);
             WriteFile(
                 Path.Combine(root, "package.json"),
                 """{"type":"module"}""");
@@ -249,7 +249,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             ["System/"] = "./clr/System/",
             ["Microsoft/"] = "./clr/Microsoft/",
             ["clr/"] = "./clr/",
-            ["@jazor/vue-runtime/"] = "./@jazor/vue-runtime/",
+            ["runtime/vue/"] = "runtime/vue/",
             ["vue"] = "./node_modules/vue/index.mjs",
         };
 
@@ -348,24 +348,15 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
     /// </summary>
     private static void MaterializeRazorVueRuntimeModules(
         string root,
-        string moduleText,
         IReadOnlyDictionary<string, string>? supportingModules)
     {
-        var imports = GetJavaScriptModules(moduleText, supportingModules)
-            .SelectMany(static text => new Parser().ParseModule(text).Body.OfType<ImportDeclaration>())
-            .Select(static declaration => declaration.Source.Value)
-            .Where(static path => path.StartsWith("@jazor/vue-runtime/", StringComparison.Ordinal))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static path => path, StringComparer.Ordinal);
-
-        foreach (var importPath in imports)
+        // Install the fixture runtime source tree at its authored paths. Relative imports
+        // resolve normally; dependency selection and tree shaking are tested by Emit.
+        foreach (var (importPath, content) in VueRuntimeResourceModules)
         {
-            if (!VueRuntimeResourceModules.TryGetValue(importPath, out var content))
-            {
-                throw new InvalidOperationException(
-                    $"Jazor.Vue JS-resource package does not contain runtime import '{importPath}'.");
-            }
-
+            // A test can supply an edited runtime module as its subject.
+            if (File.Exists(Path.Combine(root, importPath)))
+                continue;
             WriteFile(
                 Path.Combine(root, importPath.Replace('/', Path.DirectorySeparatorChar)),
                 content);
@@ -428,20 +419,9 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             return true;
         }
 
-        // 非相对形态：Jazor.Vue 的 dist 载体仍按旧的无前缀写法引用 CLR 载体
-        // （Microsoft/**、System/**），import map 也按同样规则映射到 clr/。
         if (!specifier.StartsWith("./", StringComparison.Ordinal) &&
             !specifier.StartsWith("../", StringComparison.Ordinal))
-        {
-            var prefixed = "clr/" + specifier;
-            if (EcmascriptResourceModules.ContainsKey(prefixed))
-            {
-                manifestKey = prefixed;
-                return true;
-            }
-
             return false;
-        }
 
         if (importerPath is null)
             return false;
@@ -498,7 +478,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         foreach (var entry in document.RootElement.GetProperty("imports").EnumerateObject())
         {
             // 清单键就是 carrier 的项目相对路径（含 clr/ 前缀），与开发/生产字段一致。
-            var production = entry.Value.GetProperty("production").GetString();
+            var production = entry.Value.GetProperty("path").GetString();
             if (string.IsNullOrWhiteSpace(production) ||
                 !production.StartsWith("clr/", StringComparison.Ordinal))
                 continue;
@@ -534,17 +514,17 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         var resourceModules = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var entry in root.GetProperty("imports").EnumerateObject())
         {
-            if (!entry.Name.StartsWith("@jazor/vue-runtime/", StringComparison.Ordinal))
+            if (!entry.Name.StartsWith("runtime/vue/", StringComparison.Ordinal))
                 continue;
 
             var value = entry.Value;
             if (!string.Equals(value.GetProperty("type").GetString(), "module", StringComparison.Ordinal))
                 throw new InvalidOperationException($"Jazor.Vue runtime import '{entry.Name}' is not a module.");
 
-            var production = value.GetProperty("production").GetString();
-            var hash = value.GetProperty("productionHash").GetString();
+            var production = value.GetProperty("path").GetString();
+            var hash = value.GetProperty("hash").GetString();
             if (string.IsNullOrWhiteSpace(production) ||
-                !production.StartsWith("dist/", StringComparison.Ordinal) ||
+                !production.StartsWith("runtime/vue/", StringComparison.Ordinal) ||
                 string.IsNullOrWhiteSpace(hash))
             {
                 throw new InvalidOperationException($"Jazor.Vue runtime import '{entry.Name}' has an invalid production entry.");
@@ -561,7 +541,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     $"Jazor.Vue runtime module '{production}' hash does not match its manifest.");
             }
 
-            if (!resourceModules.TryAdd(entry.Name, File.ReadAllText(sourcePath)))
+            if (!resourceModules.TryAdd(production, File.ReadAllText(sourcePath)))
                 throw new InvalidOperationException($"Jazor.Vue runtime manifest contains duplicate import '{entry.Name}'.");
         }
 

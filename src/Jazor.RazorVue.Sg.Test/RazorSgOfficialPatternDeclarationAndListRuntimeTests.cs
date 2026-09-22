@@ -41,7 +41,7 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.ReleaseIds", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-queue-summary.mjs",
+            "components/release-queue-summary.js",
             observation.ModuleText,
             "official-pattern-declaration-and-list-runtime.test.mjs",
             """
@@ -49,7 +49,7 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
             import test from "node:test";
             import { Fragment } from "vue";
 
-            import component from "./components/release-queue-summary.mjs";
+            import component from "./components/release-queue-summary.js";
 
             test("Razor pattern locals render only when queue values match", () => {
                 const empty = component.setup({}, { slots: {} })();

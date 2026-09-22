@@ -9,7 +9,7 @@ namespace Jazor.CLR;
 /// - Alias/Inline/Import: 只开放不依赖具体可变 carrier 的查询语义
 /// - Discard: 可变成员与 ReadOnlyDictionary 共享同一 runtime alias，接口层不能静默假设可写
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/IDictionaryT2Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/IDictionaryT2Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.IDictionary<TKey, TValue>", "Map")]
 public static class IDictionaryT2Module<TKey, TValue>
 {

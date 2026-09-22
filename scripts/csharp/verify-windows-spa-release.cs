@@ -315,14 +315,15 @@ internal static class ReleaseVerifier
     {
         RequireFile(Path.Combine(publishRoot, "Wiki.dll"), "published Wiki host");
         var jazorRoot = Path.Combine(publishRoot, "jazor");
-        RequireFile(Path.Combine(jazorRoot, "bundle.js"), "release browser bundle");
-        RequireFile(Path.Combine(jazorRoot, "bundle.js.map"), "release browser bundle source map");
+        RequireFile(Path.Combine(jazorRoot, "entry.js"), "standard browser entry");
+        RequireFile(Path.Combine(jazorRoot, "package.json"), "standard package declaration");
+        RequireFile(Path.Combine(jazorRoot, "deno.lock"), "Deno dependency lock");
+        RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js"), "release browser bundle");
+        RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js.map"), "release browser bundle source map");
 
         foreach (var unexpectedPath in new[]
         {
-            Path.Combine(jazorRoot, "main.mjs"),
             Path.Combine(jazorRoot, "jazor-manifest.json"),
-            Path.Combine(jazorRoot, "style.mjs"),
             Path.Combine(jazorRoot, "components")
         })
         {
@@ -332,17 +333,14 @@ internal static class ReleaseVerifier
             }
         }
 
-        var bundle = File.ReadAllText(Path.Combine(jazorRoot, "bundle.js"));
+        var bundle = File.ReadAllText(Path.Combine(jazorRoot, "dist", "bundle.js"));
         RequireContains(bundle, "ecmascript-style:v1", "ECMAScript.Style runtime marker in release bundle");
-        // NetPack minifies the imported render helper from `H` to `h`, so the authored
-        // function spelling is not a release contract. The component name is retained in
-        // the Vue descriptor and proves the Wiki page entry survived bundling.
-        // NetPack 会把 `H` 渲染辅助函数压缩为 `h`，函数拼写不是发布契约；Vue 描述符保留
-        // 组件名，用它确认 Wiki 首页入口确实进入生产 bundle。
+        // Local names may be rewritten by the project's selected standard build tool. The
+        // Vue descriptor name is observable metadata and proves the page entry stayed reachable.
         RequireContains(bundle, "WikiHome", "Wiki home component marker in release bundle");
 
-        var bundleMap = File.ReadAllText(Path.Combine(jazorRoot, "bundle.js.map"));
-        RequireContains(bundleMap, "components/wiki-styles.mjs", "Wiki style module source in release source map");
+        var bundleMap = File.ReadAllText(Path.Combine(jazorRoot, "dist", "bundle.js.map"));
+        RequireContains(bundleMap, "components/wiki-styles.js", "Wiki style module source in release source map");
         RequireContains(bundleMap, "main.mjs", "Wiki entry source in release source map");
     }
 

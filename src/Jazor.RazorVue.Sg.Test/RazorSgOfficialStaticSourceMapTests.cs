@@ -32,7 +32,7 @@ public sealed class RazorSgOfficialStaticSourceMapTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "Release notes", StringComparison.Ordinal);
-        StringAssert.Contains(observation.SourceMapContent, "\"file\": \"components/release-notes.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.SourceMapContent, "\"file\": \"components/release-notes.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.SourceMapContent, "Pages/ReleaseNotes.razor", StringComparison.Ordinal);
         Assert.IsFalse(observation.SourceMapContent.Contains(".razor.g.cs", StringComparison.Ordinal), observation.SourceMapContent);
 

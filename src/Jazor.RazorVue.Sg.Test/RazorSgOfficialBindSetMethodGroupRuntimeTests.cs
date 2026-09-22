@@ -46,14 +46,14 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.SavedReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-name-editor-runtime.mjs",
+            "components/release-name-editor-runtime.js",
             observation.ModuleText,
             "official-release-name-editor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-name-editor-runtime.mjs";
+            import component from "./components/release-name-editor-runtime.js";
 
             test("official Razor bind:set method group receives the DOM value and updates state", async () => {
                 const render = component.setup({}, { slots: {} });
@@ -112,14 +112,14 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.SavedReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-name-sync-editor-runtime.mjs",
+            "components/release-name-sync-editor-runtime.js",
             observation.ModuleText,
             "official-release-name-sync-editor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-name-sync-editor-runtime.mjs";
+            import component from "./components/release-name-sync-editor-runtime.js";
 
             test("official Razor bind:set synchronous method group updates state before the handler returns", () => {
                 const render = component.setup({}, { slots: {} });

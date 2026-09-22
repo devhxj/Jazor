@@ -4,7 +4,7 @@ using static ECMAScript.Vue;
 namespace BindingsShowcase.Host;
 
 /// <summary>Vue framing owned by the showcase host; page behavior stays ordinary Razor.</summary>
-[ECMAScriptModule("app.mjs")]
+[ECMAScriptModule("app.js")]
 public static class Bootstrap
 {
     private static readonly IVueComponent Root = DefineComponent(new VueComponentOptions

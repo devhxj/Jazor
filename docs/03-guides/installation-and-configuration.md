@@ -19,12 +19,12 @@
 | C# -> ECMAScript 模块 | `Jazor` | 对应的 `ECMAScript.*` 绑定 |
 | 普通 C# -> ECMAScript 类库 | `Jazor` | 不需要 Vue 依赖 |
 | 当前 Razor-to-Vue 集成 | `Jazor`、`Jazor.Vue` | Vue authoring、Razor hook、Vue runtime 与基础 Vue bindings |
-| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；核心运行时由 `ECMAScript` manifest 与 `src/ECMAScript/clr/**` 提供，Vue bridge 由 `Jazor.Vue/dist/**` 提供 |
+| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；核心运行时由 `ECMAScript` manifest 与 `src/ECMAScript/clr/**` 提供，Vue bridge 由 `Jazor.Vue/runtime/vue/**` 提供 |
 | Vue Router | `Jazor`、`Jazor.Vue`、`ECMAScript.VueRoute` | `ECMAScript.VueRoute` 显式提供 Router bindings |
 | Pinia | `Jazor`、`Jazor.Vue`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
 | Vue Devtools 自定义插件 | `Jazor`、`Jazor.Vue`、`ECMAScript.Vue.Devtools` | `Jazor.Vue` 提供 Vue runtime 闭包 |
 | Vue Data UI 图表 | `Jazor`、`Jazor.Vue`、`ECMAScript.VueDataUi` | 无 |
-| Vu Icons 图标 | `Jazor`、`Jazor.Vue`、`ECMAScript.VuIcons` | 无 |
+| Lucide 图标 | `Jazor`、`Jazor.Vue`、`ECMAScript.Lucide` | 无 |
 | UI 组件库 | `Jazor`、`Jazor.Vue`、对应 `ECMAScript.*` 包 | `ECMAScript.Style` |
 | 管理壳 | `Jazor`、`Jazor.Vue`、`Jazor.Admin` | 路由、样式和应用选择的 UI 绑定 |
 
@@ -58,7 +58,7 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.3" />
   <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.3" />
   <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.3" />
   <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
   <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.3" />
   <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.3" />
@@ -82,11 +82,11 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
-| `JazorMode` | `none` | `none` 不输出；`debug` 直接物化模块、source map、manifest 与 import map；`release` 生成生产 bundle 和所需资源 |
+| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另执行项目构建脚本；Emit 增量状态写入 `obj` |
 | `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；Emit 就地写入并按清单差异清理过期文件 |
 | `JazorSSR` | `false` | 启用受支持 SSR 时生成 SSR 入口，并从同一项目根使用已恢复的依赖 |
 
-`debug` 与 `release` 是互斥输出模式。`release` 通过内置 NetPack 路径从 `jazor/` 项目入口完成浏览器打包。
+`debug` 与 `release` 是互斥输出模式。`release` 从 `jazor/` 项目入口执行 `package.json` 中的标准构建脚本。默认脚本使用 Vite；应用可以保留或替换自己的 JavaScript 构建工具和配置。
 
 ## 一次性切换边界
 
@@ -94,7 +94,7 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成目录位于 MSBuild 输入项范围之外；更新缺少安全热替换证据时，服务执行整页刷新。
 
-`ECMAScript.Style` 的 DSL 使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`，并生成 CSS `background-color`。WebIDL 生成的 DOM 对象按规范使用 `backgroundColor`。两套 C# 表面分别维持既定命名：`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型采用 PascalCase，生成 CSS、`style.mjs` 与浏览器 HMR 协议。
+`ECMAScript.Style` 的 DSL 使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`，并生成 CSS `background-color`。WebIDL 生成的 DOM 对象按规范使用 `backgroundColor`。两套 C# 表面分别维持既定命名：`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型采用 PascalCase，生成 CSS、`style.js` 与浏览器 HMR 协议。
 
 ## 启用 SSR
 
@@ -165,7 +165,7 @@ app.MapPost("/api/editor/commit", async (EditorCommand command, EditorService se
 
 浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider 以 endpoint 响应作为授权结果来源。endpoint 异常通过 `provider.error` 暴露，当前状态保持可观察；并发请求按最新请求生效。该 provider 定义 Jazor 的 browser contract。
 
-ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。`WorkerCount` 定义单应用实例的 Deno worker 数和 SSR 并发数，取正整数，默认值为 `min(Environment.ProcessorCount, 4)`。Emit 提交后的 runner 保持字节稳定；SSR state 通过 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value，共享业务状态通过 props 或应用自有 payload 传递。
+ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块，Deno 执行这些模块，项目配置的 JavaScript 构建工具负责浏览器产物。`WorkerCount` 定义单应用实例的 Deno worker 数和 SSR 并发数，取正整数，默认值为 `min(Environment.ProcessorCount, 4)`。Emit 提交后的 runner 保持字节稳定；SSR state 通过 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value，共享业务状态通过 props 或应用自有 payload 传递。
 
 ## 后续阅读
 

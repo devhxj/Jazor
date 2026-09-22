@@ -6,7 +6,7 @@ namespace BindingsShowcase.Host;
 /// Imports the generated root page module so the host can mount it without a handwritten JS
 /// boot wrapper. 导入生成的根页面模块，使宿主无需手写 JS 启动层即可挂载。
 /// </summary>
-[ECMAScript("components/showcase-landing.mjs")]
+[ECMAScript("./components/showcase-landing.js")]
 [Description("@#")]
 internal static class ShowcasePageModule
 {

@@ -81,7 +81,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         var module = await new AstConverter(symbol, semanticModel).Convert();
         var script = module?.ToKnRECMAScript() ?? string.Empty;
 
-        StringAssert.Contains(script, "from \"style.mjs\"");
+        StringAssert.Contains(script, "from \"./style.js\"");
         StringAssert.Contains(script, "keyframes([{ selector: \"from\", declarations: { opacity: 0 } }, { selector: \"to\", declarations: { opacity: 1 } }])");
         StringAssert.Contains(script, "style(");
         StringAssert.Contains(script, "display: inlineFlex");
@@ -442,7 +442,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         Assert.IsNotNull(module);
         // Execute actual consumer lowering against the generated runtime, not a handwritten
         // imitation of the pipe operators. 捕获值域擦除、Inline 拼接和导出名之间的集成回归。
-        var runner = module.ToKnRECMAScript().Replace("\"style.mjs\"", "\"./runtime.mjs\"", StringComparison.Ordinal)
+        var runner = module.ToKnRECMAScript().Replace("\"./style.js\"", "\"./runtime.mjs\"", StringComparison.Ordinal)
             + "\nconsole.log(Build());";
         var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(runner);
         Assert.AreEqual(0, result.ExitCode, result.StandardError);

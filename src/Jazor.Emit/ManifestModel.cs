@@ -165,7 +165,7 @@ internal sealed record ManifestModel
                 .ToList(),
             fileAssets);
 
-        File.WriteAllText(manifestPath, JsonSerializer.Serialize(fileModel, JsonOptions));
+        ProjectFileWriter.Write(manifestPath, JsonSerializer.Serialize(fileModel, JsonOptions));
     }
 
     private static List<ModuleEntry> ReadModules(JsonElement root)

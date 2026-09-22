@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// JavaScript BigInt 本身没有位宽。调用方必须显式传入边界、mask 和 sign bit，
 /// 才能保持 Int64/Int128 等 CLR 类型在解析和位运算处的固定宽度语义。
 /// </remarks>
-[ECMAScriptModule("clr/System/Numerics/BigIntIntegerRuntime.js")]
+[ECMAScriptModule("./clr/System/Numerics/BigIntIntegerRuntime.js")]
 internal static class BigIntIntegerRuntime
 {
 	private static readonly RegExp DecimalIntegerPattern = new(@"^[+-]?\d+$");

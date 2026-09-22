@@ -47,7 +47,7 @@ public sealed class RazorSgOfficialExplicitLifecycleRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("system.IAsyncDisposable", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/explicit-lifecycle-runtime.mjs",
+            "components/explicit-lifecycle-runtime.js",
             observation.ModuleText,
             "official-explicit-lifecycle-runtime.test.mjs",
             """
@@ -55,7 +55,7 @@ public sealed class RazorSgOfficialExplicitLifecycleRuntimeTests
             import test from "node:test";
             import { __runUnmounted } from "vue";
 
-            import component from "./components/explicit-lifecycle-runtime.mjs";
+            import component from "./components/explicit-lifecycle-runtime.js";
 
             test("official Razor explicit disposal lifecycles run during unmount", async () => {
                 const render = component.setup({}, { slots: {} });

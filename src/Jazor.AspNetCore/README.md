@@ -11,11 +11,11 @@ using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.Services.AddJazorReload();
+builder.Services.AddJazorViteProxy();
 var app = builder.Build();
 
 // 部署到子路径时在此调用 app.UsePathBase("/portal")。
-app.UseJazorReload(); // Development 才生效；需位于 HTML 响应产生之前。
+app.UseJazorViteProxy(); // 先在 jazor/ 运行 deno task dev。
 app.UseJazorHost();
 app.MapGet("/api/health", () => new { status = "ok" });
 app.UseJazorSpaFallback("index.html");
@@ -31,26 +31,27 @@ app.Run();
 | 入口 | 职责 |
 | --- | --- |
 | `UseJazorHost` | 依次注册响应头和 `UseJazorAssets` |
-| `UseJazorAssets` | 先挂载产物，再解析默认文件并托管 web root |
+| `UseJazorAssets` | 默认仅解析默认文件并托管 web root；产物挂载需显式启用 |
 | `UseJazorArtifacts` | 只挂载生成产物，默认 `/jazor` |
 | `UseJazorStaticFiles` | 托管静态文件，仅补充 `.map` 的 `application/json` 类型 |
 | `UseJazorSecurityHeaders` | 响应开始前补充尚未设置的配置头 |
 | `UseJazorSpaFallback` | 下游未处理的 HTML 导航使用静态页或自定义 writer |
 | `AddJazorSsr` / `UseJazorSsr` | 分别注册 SSR 服务 / 将导航 fallback 改为 SSR |
 
-`UsePathBase` 应先于上述入口；开发 reload 位于静态文件、SPA、SSR 之前。`UseJazorHost` 不自动添加 reload、SPA 或 SSR。常规 ASP.NET Core 路由、异常处理等仍由宿主配置。
+Vite 的 `base` 必须包含完整公开路径，如 `/portal/jazor/`；代理保持该路径不变。生产部署使用项目选择的 Web 服务或标准构建输出。`UsePathBase` 应先于上述入口；开发 reload 位于静态文件、SPA、SSR 之前。`UseJazorHost` 不自动添加 reload、SPA 或 SSR。常规 ASP.NET Core 路由、异常处理等仍由宿主配置。
 
 SPA fallback 只在下游返回 **404**、响应尚未开始、没有选中 endpoint 时执行，并且只处理 GET/HEAD。默认排除 `/api`、`/assets`、`/health`、`/jazor` 路径段及带扩展名的路径。无 `Accept` 头允许通过；有该头时须包含可接受的 `text/html` 或 `application/xhtml+xml`，仅 `*/*` 不够。已匹配 API endpoint 返回的 404 不会被改成 HTML。
 
 ## 目录、缓存与自定义挂载
 
-默认物理目录是 `ContentRootPath/jazor`。**注册中间件时**至少存在 `jazor-manifest.json` 或 `dist/bundle.js` 才挂载；不会在首个请求重新探测。如果先启动空宿主、后首次生成产物，需要重启。探测通过仅代表允许挂载，不保证 SSR 文件完整。
+`ServeArtifacts` 默认 false，标准项目由 Deno 运行的 Web 服务提供。只有显式调用 `UseJazorArtifacts` 或设置 `ServeArtifacts = true` 时才静态挂载，默认物理目录是 `ContentRootPath/jazor`。**注册中间件时**至少存在 `entry.js` 或 `dist/bundle.js` 才挂载；不会在首个请求重新探测。如果先启动空宿主、后首次生成产物，需要重启。探测通过仅代表允许挂载，不保证 SSR 文件完整。
 
 已挂载目录的缺失文件默认直接返回 404。资源默认补充 `nosniff` 和 `Cache-Control: no-cache, must-revalidate`，保留已有头；配置 `ImmutableCachePathPrefixes` 才采用一年 immutable 缓存，应仅用于内容版本化 URL。前缀匹配 `Request.Path`，不含 `PathBase`。`OnPrepareResponse` 最后执行，可覆盖默认头。
 
 ```csharp
 app.UseJazorHost(options =>
 {
+    options.Assets.ServeArtifacts = true; // 显式选择静态部署
     options.Assets.ConfigureArtifacts = artifacts =>
     {
         artifacts.RootPath = "generated"; // 相对 ContentRootPath
@@ -65,22 +66,26 @@ app.UseJazorSpaFallback("index.html", options =>
 
 ## SSR 接入
 
-以下是替代 SPA 示例的 `Program.cs`。将 `components/app.mjs` 替换为实际生成的根组件模块路径；props 的名称与类型应匹配组件契约。
+以下是替代 SPA 示例的 `Program.cs`。将 `components/app.js` 替换为实际生成的根组件模块路径；props 的名称与类型应匹配组件契约。
 
 ```csharp
 using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.Services.AddJazorReload();
-builder.Services.AddJazorSsr(options => options.WorkerCount = 2);
+builder.Services.AddJazorViteProxy();
+builder.Services.AddJazorSsr(options =>
+{
+    options.WorkerCount = 2;
+    options.TaskName = builder.Environment.IsDevelopment() ? "ssr:dev" : "ssr";
+});
 var app = builder.Build();
 
-app.UseJazorReload();
+app.UseJazorViteProxy();
 app.UseJazorHost();
 app.UseJazorSsr((context, cancellationToken) =>
     Task.FromResult(new JazorSsrRequest(
-        "components/app.mjs",
+        "components/app.js",
         Providers: [new JazorSsrProvider("request-path", context.Request.Path.Value)])));
 app.Run();
 ```
@@ -91,13 +96,15 @@ Debug 使用物化模块图；Release 构建应配置 `JazorMode=release` 和 `J
 dotnet publish YourHost.csproj -c Release -p:JazorMode=release -p:JazorSSR=true
 ```
 
-默认依次查找 `ContentRootPath/jazor/ssr`、`ContentRootPath/jazor`。SSR 根目录必须同时包含 `jazor-manifest.json`、`importmap.json`、`ssr-importmap.json`、`manifest.json` 及其引用的模块/资源；仅浏览器 bundle 不够。默认浏览器前缀分别为 `/jazor/ssr`、`/jazor`，由 `UseJazorHost` 的 `/jazor` 挂载覆盖。
+默认查找 `ContentRootPath/jazor`。SSR 根目录必须同时包含 `ssr-entry.js`、`package.json`、`deno.lock` 及其引用的模块/资源；仅浏览器 bundle 不够。默认浏览器前缀为 `/jazor`，由项目 Web 服务提供，ASP.NET Core 通过代理转发。
 
 自定义 SSR 根目录时通过 `AddJazorSsr` 配置 `ArtifactRootPath` 与 `RequestPath`，确保浏览器前缀能访问同一套资源；URL 会自动加上请求 `PathBase`。`MountElementId` 默认 `app`，不得为空或含空白。
 
-SSR 复用 SPA 的导航筛选规则。GET 创建请求并渲染，HEAD 只设置 HTML 响应类型，不运行工厂或 renderer。`IJazorSsrRenderer.RenderAsync` 只返回组件 HTML 和 JSON；`UseJazorSsr` 再包装完整文档、import map、样式和 hydration 引导。
+SSR 复用 SPA 的导航筛选规则。GET 创建请求并渲染，HEAD 只设置 HTML 响应类型，不运行工厂或 renderer。`IJazorSsrRenderer.RenderAsync` 只返回组件 HTML 和 JSON；`UseJazorSsr` 再包装完整文档和 hydration 引导，浏览器通过项目服务加载 `hydration.js`。
 
 `WorkerCount` 默认 CPU 数限制在 1–4，必须大于零；Deno workers 按需创建、持久复用，由 DI 释放。每次渲染创建新 Vue app，但模块环境可跨请求复用。传递 `RequestAborted` 取消排队/渲染；异常通过正常 ASP.NET Core 异常管线处理。
+
+`TaskName` 默认 `ssr`，宿主在项目根执行 `deno task ssr`。启用 SSR 时 Emit 为缺失的 `ssr` 与 `ssr:dev` 脚本提供初始配置，保留用户已有命令。开发任务使用 Deno 原生 `--watch=.`（排除 `node_modules`、`dist`），子模块改动会更新运行时；ASP.NET Core 不扫描或监听项目目录。runner 通过 loopback HTTP 接收渲染请求，Deno 重启后发布新监听地址。重启时正在执行的请求可能失败，宿主显式传播错误，不重放可能已经产生副作用的渲染。
 
 固定 request/props 重载会跨请求共享对象；请求相关数据应由工厂创建。Props/providers 使用 `System.Text.Json` 序列化，同一快照交给浏览器 hydration，默认保留 CLR 属性名。Provider 键必须非空且唯一（区分大小写）。`Authentication` 自动占用 `jazor:auth-state`；不要同时手动提供该键。`FromPrincipal` 会复制全部 claims；它是快照转换，不执行认证或授权。
 

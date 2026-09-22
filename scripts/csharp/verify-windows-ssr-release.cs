@@ -7,9 +7,8 @@ using System.Xml.Linq;
 
 // Windows SSR release consumer gate: packages Jazor locally, publishes the RazorVue TodoList
 // sample as an isolated NuGet consumer with JazorSSR=true, and verifies the published app
-// end to end. Unlike the SPA lane, the browser never consumes the Netpack bundle: SSR serves
-// server-rendered HTML from the packaged DenoHost runtime and hydrates from the jazor/ssr
-// ESM graph, so this gate proves deployment-root resolution and hydration interaction recovery.
+// end to end. Deno renders from the standard project and runs Vite preview for its browser
+// output. ASP.NET Core proxies that service, including a configured public PathBase.
 var options = VerificationOptions.Parse(args);
 var repoRoot = RequireRepoRoot();
 var sourceSampleRoot = Path.Combine(repoRoot, "samples", "RazorVue.TodoList");
@@ -35,6 +34,7 @@ Console.WriteLine("Starting Windows SSR release consumer verification.");
 
 Process? hostProcess = null;
 Process? chromeProcess = null;
+Process? projectServer = null;
 try
 {
     DeleteDirectoryWithinRepo(repoRoot, workRoot);
@@ -104,6 +104,34 @@ try
 
     SsrReleaseVerifier.VerifyPublishLayout(publishRoot);
 
+    var projectRoot = Path.Combine(publishRoot, "jazor");
+    var deno = Path.Combine(publishRoot, "runtimes", System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier,
+        "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
+    using var packageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectRoot, "package.json")));
+    var viteVersion = packageJson.RootElement.GetProperty("devDependencies").GetProperty("vite").GetString();
+    var projectPort = options.Port + 1;
+    projectServer = StartProcess(deno,
+        ["run", "-A", "npm:vite@" + viteVersion, "preview", "--host", "127.0.0.1", "--port", projectPort.ToString(),
+         "--strictPort", "--base", options.PathBase + "/jazor/"],
+        projectRoot, [], Path.Combine(workRoot, "project-server.stdout.log"), Path.Combine(workRoot, "project-server.stderr.log"));
+    using (var projectClient = new HttpClient())
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(options.StartupTimeoutSeconds);
+        var ready = false;
+        while (DateTime.UtcNow < deadline && !projectServer.HasExited)
+        {
+            try
+            {
+                using var response = await projectClient.GetAsync($"http://127.0.0.1:{projectPort}{options.PathBase}/jazor/hydration.js");
+                if (response.IsSuccessStatusCode) { ready = true; break; }
+            }
+            catch (HttpRequestException) { }
+            await Task.Delay(100);
+        }
+        if (!ready)
+            throw new InvalidOperationException("The Deno project web service did not become ready. See project-server logs under " + workRoot);
+    }
+
     var rootUrl = "http://127.0.0.1:" + options.Port;
     hostProcess = StartProcess(
         "dotnet",
@@ -115,6 +143,7 @@ try
             new KeyValuePair<string, string?>("ASPNETCORE_ENVIRONMENT", "Production"),
             new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", "Production"),
             new KeyValuePair<string, string?>("Todo__PathBase", options.PathBase),
+            new KeyValuePair<string, string?>("Todo__JavaScriptServer", "http://127.0.0.1:" + projectPort),
             new KeyValuePair<string, string?>("Todo__Ssr", "true")
         ],
         hostStdoutLog,
@@ -178,6 +207,12 @@ finally
         await hostProcess.WaitForExitAsync();
     }
 
+    if (projectServer is not null && !projectServer.HasExited)
+    {
+        projectServer.Kill(entireProcessTree: true);
+        await projectServer.WaitForExitAsync();
+    }
+
     if (!options.KeepWorkRoot && Directory.Exists(workRoot))
     {
         await DeleteDirectoryWithRetryAsync(workRoot);
@@ -235,28 +270,14 @@ async Task<string> WaitForSsrHtmlAsync(
 
 async Task VerifyDeploymentAssetsAsync(HttpClient httpClient, string rootUrl, string pathBase, string html)
 {
-    // The import map inside the SSR document is the deployment contract for hydration; resolve
-    // the actual "vue" target it advertises and fetch it to prove the artifact graph is served
-    // from the publish root through the request path base.
-    var importMapStart = html.IndexOf("<script type=\"importmap\">", StringComparison.Ordinal);
-    var importMapEnd = html.IndexOf("</script>", importMapStart, StringComparison.Ordinal);
-    if (importMapStart < 0 || importMapEnd < 0)
-    {
-        throw new InvalidOperationException("SSR document did not contain an import map script.");
-    }
-
-    var importMapJson = html[(importMapStart + "<script type=\"importmap\">".Length)..importMapEnd];
-    using var importMap = JsonDocument.Parse(importMapJson);
-    var vueTarget = importMap.RootElement.GetProperty("imports").GetProperty("vue").GetString()
-        ?? throw new InvalidOperationException("SSR import map did not map the 'vue' entry.");
-
-    await RequireAssetAsync(httpClient, rootUrl, vueTarget, "hydration Vue runtime from import map");
-    await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/ssr/components/todo-app.mjs", "hydration root component module");
-    await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/bundle.js", "release browser bundle");
+    if (html.Contains("type=\"importmap\"", StringComparison.Ordinal))
+        throw new InvalidOperationException("The standard project must hydrate without a generated import map.");
+    await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/hydration.js", "production hydration entry through Deno web proxy");
+    await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/dist/bundle.js", "release browser bundle");
 
     // A missing SSR module must stay a real 404; letting the SPA fallback answer with HTML
     // would hide broken hydration imports as a silent client-only page.
-    using var missing = await httpClient.GetAsync(rootUrl + pathBase + "/jazor/ssr/missing-ssr-module.mjs");
+    using var missing = await httpClient.GetAsync(rootUrl + pathBase + "/jazor/missing-ssr-module.mjs");
     if (missing.StatusCode != System.Net.HttpStatusCode.NotFound)
     {
         throw new InvalidOperationException("Missing SSR module returned HTTP " + (int)missing.StatusCode + " instead of 404.");
@@ -838,48 +859,44 @@ internal static class SsrReleaseVerifier
         RequireFile(Path.Combine(publishRoot, "Todo.Host.dll"), "published Todo.Host");
 
         var jazorRoot = Path.Combine(publishRoot, "jazor");
-        RequireFile(Path.Combine(jazorRoot, "bundle.js"), "release browser bundle");
-        RequireFile(Path.Combine(jazorRoot, "bundle.js.map"), "release browser bundle source map");
+        RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js"), "release browser bundle");
+        RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js.map"), "release browser bundle source map");
+        RequireFile(Path.Combine(jazorRoot, "dist", "hydration.js"), "release hydration entry");
 
-        // The inspectable debug graph must not leak into an SSR release publish root; the SSR
-        // graph lives under jazor/ssr and the browser bundle under the jazor root.
+        // Build state belongs in obj; runtime source and browser output share this project.
         foreach (var unexpectedPath in new[]
         {
-            Path.Combine(jazorRoot, "main.mjs"),
             Path.Combine(jazorRoot, "jazor-manifest.json"),
-            Path.Combine(jazorRoot, "style.mjs"),
-            Path.Combine(jazorRoot, "components")
+            Path.Combine(jazorRoot, "importmap.json"),
+            Path.Combine(jazorRoot, "ssr-importmap.json")
         })
         {
             if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))
             {
-                throw new InvalidOperationException("SSR release publish retained a debug artifact: " + unexpectedPath);
+                throw new InvalidOperationException("SSR release publish retained a retired runtime manifest: " + unexpectedPath);
             }
         }
 
-        var bundle = File.ReadAllText(Path.Combine(jazorRoot, "bundle.js"));
-        RequireContains(bundle, "todo-template-v1", "TodoApp template marker in release bundle");
+        var browserSources = string.Join("\n", Directory.EnumerateFiles(Path.Combine(jazorRoot, "dist"), "*.js", SearchOption.AllDirectories).Select(File.ReadAllText));
+        RequireContains(browserSources, "todo-template-v1", "TodoApp template marker in release browser output");
 
         // Browser and SSR consume one standard project graph. The restored packages remain
-        // available to both profiles while NetPack decides which browser exports enter bundle.js.
+        // available to both profiles while the configured build tool selects browser exports.
         RequireFile(Path.Combine(jazorRoot, "package.json"), "Jazor package project");
         RequireFile(Path.Combine(jazorRoot, "deno.lock"), "frozen Deno package graph");
         RequireFile(Path.Combine(jazorRoot, "node_modules", "vue", "package.json"), "restored Vue package");
         RequireFile(Path.Combine(jazorRoot, "node_modules", "@vue", "server-renderer", "package.json"), "restored Vue server-renderer package");
-        if (bundle.Contains("server-renderer", StringComparison.OrdinalIgnoreCase))
+        if (browserSources.Contains("server-renderer", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("Browser release bundle must not contain the SSR server-renderer entry.");
         }
 
-        var ssrRoot = Path.Combine(jazorRoot, "ssr");
-        RequireFile(Path.Combine(ssrRoot, "app.mjs"), "SSR browser bootstrap entry");
+        var ssrRoot = jazorRoot;
+        RequireFile(Path.Combine(ssrRoot, "entry.js"), "browser project entry");
+        RequireFile(Path.Combine(ssrRoot, "ssr-entry.js"), "SSR project entry");
         RequireFile(Path.Combine(ssrRoot, "components", "todo-app.mjs"), "SSR root component module");
         RequireFile(Path.Combine(ssrRoot, "components", "todo-summary-card.mjs"), "SSR cascading child module");
         RequireFile(Path.Combine(ssrRoot, "components", "todo-styles.mjs"), "SSR style module");
-        RequireFile(Path.Combine(ssrRoot, "jazor-manifest.json"), "SSR artifact manifest");
-        RequireFile(Path.Combine(ssrRoot, "importmap.json"), "SSR browser import map");
-        RequireFile(Path.Combine(ssrRoot, "ssr-importmap.json"), "SSR server import map");
-        RequireFile(Path.Combine(ssrRoot, "manifest.json"), "SSR asset manifest");
 
         var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.mjs"));
         RequireContains(rootComponent, "runSetParametersAsync", "ParameterView queue in SSR component module");
@@ -913,10 +930,8 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "\"props\":{\"SsrTitle\":\"SSR ParameterView title\"}", "serialized SSR props");
         RequireContains(html, "\"providers\":[{\"key\":\"jazor:service:Todo.Library.TodoBrowserService\"", "serialized SSR providers");
         RequireContains(html, "jazor:service:Todo.Library.TodoBrowserService", "serialized browser service provider key");
-        RequireContains(html, "<script type=\"importmap\">", "browser import map");
-        RequireContains(html, "createSSRApp", "hydration bootstrap");
-        RequireContains(html, "\"" + pathBase + "/jazor/ssr/components/todo-app.mjs\"", "hydration component URL under the request path base");
-        RequireContains(html, "\"" + pathBase + "/jazor/node_modules/", "rewritten restored package URLs under the request path base");
+        RequireContains(html, pathBase + "/jazor/hydration.js", "hydration entry under the request path base");
+        RequireContains(html, "components/todo-app.mjs", "hydration root component identity");
     }
 
     private static void RequireFile(string path, string description)

@@ -46,15 +46,14 @@ AssertAuthoringSource(sampleRoot);
 AssertDebugArtifacts(packageJazorRoot);
 AssertReleaseArtifacts(releaseJazorRoot);
 AssertLocalPackages(packageOutput);
-AssertNoNodeModules(workRoot);
 
 if (!options.SkipBrowser)
     await VerifyReleaseHostInBrowserAsync(repoRoot, workRoot, releaseJazorRoot, options.Configuration, options.BrowserPath);
 
 Console.WriteLine("RazorVue.Authoring smoke verification passed.");
 Console.WriteLine(options.SkipBrowser
-    ? "Verified: source authoring boundary, isolated local package consumer, debug modules, manifests, source maps, and Release bundle closure. Browser mount was skipped."
-    : "Verified: source authoring boundary, isolated local package consumer, debug modules, manifests, source maps, Release bundle closure, PathBase browser mount, and the interactive route/query/history/not-found journey.");
+    ? "Verified: source authoring boundary, isolated local package consumer, standard JavaScript project, source maps, and Vite Release closure. Browser mount was skipped."
+    : "Verified: source authoring boundary, isolated local package consumer, standard JavaScript project, source maps, Vite Release closure, PathBase browser mount, and the interactive route/query/history/not-found journey.");
 
 static void AssertAuthoringSource(string sampleRoot)
 {
@@ -101,41 +100,39 @@ static void AssertAuthoringSource(string sampleRoot)
 
 static void AssertDebugArtifacts(string root)
 {
-    RequireFile(root, "jazor-manifest.json", "debug Jazor manifest");
-    RequireFile(root, "importmap.json", "debug import map");
-    RequireFile(root, "manifest.json", "debug asset manifest");
-    RequireFile(root, "app.mjs", "debug application entry");
-    RequireFile(root, "app.mjs.map", "debug application source map");
-    RequireFile(root, "components/task-board.mjs", "generated task-board module");
-    RequireFile(root, "components/task-board.mjs.map", "task-board source map");
-    RequireFile(root, "components/task-table.mjs", "generated task-table module");
-    RequireFile(root, "components/task-table.mjs.map", "task-table source map");
-    RequireFile(root, "components/authoring-layout.mjs", "generated authoring layout module");
-    RequireFile(root, "components/authoring-layout.mjs.map", "authoring layout source map");
-    RequireFile(root, "components/task-details.mjs", "generated task-details module");
-    RequireFile(root, "components/task-details.mjs.map", "task-details source map");
-    RequireFile(root, "@jazor/vue-runtime/routes.mjs", "generated route catalog");
+    RequireFile(root, "entry.js", "standard browser entry");
+    RequireFile(root, "package.json", "standard package declaration");
+    RequireFile(root, "deno.lock", "Deno dependency lock");
+    RequireFile(root, "vite.config.js", "Vite project configuration");
+    RequireDirectory(root, "node_modules", "restored project dependencies");
+    RequireFile(root, "app.js", "debug application entry");
+    RequireFile(root, "app.js.map", "debug application source map");
+    RequireFile(root, "components/task-board.js", "generated task-board module");
+    RequireFile(root, "components/task-board.js.map", "task-board source map");
+    RequireFile(root, "components/task-table.js", "generated task-table module");
+    RequireFile(root, "components/task-table.js.map", "task-table source map");
+    RequireFile(root, "components/authoring-layout.js", "generated authoring layout module");
+    RequireFile(root, "components/authoring-layout.js.map", "authoring layout source map");
+    RequireFile(root, "components/task-details.js", "generated task-details module");
+    RequireFile(root, "components/task-details.js.map", "task-details source map");
+    RequireFile(root, "runtime/vue/routes.js", "generated route catalog");
+    if (File.Exists(Path.Combine(root, "importmap.json")) || File.Exists(Path.Combine(root, "jazor-manifest.json")))
+        throw new InvalidOperationException("The JavaScript project root must not contain Jazor runtime manifests or import maps.");
 
-    using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "jazor-manifest.json")));
-    var modules = manifest.RootElement.GetProperty("modules").EnumerateArray().ToArray();
-    RequireModule(modules, "RazorVue.Authoring.Bootstrap", "app.mjs");
-    RequireModule(modules, "RazorVue.Authoring.AuthoringLayout", "components/authoring-layout.mjs");
-    RequireModule(modules, "RazorVue.Authoring.TaskBoard", "components/task-board.mjs");
-    RequireModule(modules, "RazorVue.Authoring.TaskDetails", "components/task-details.mjs");
-    RequireModule(modules, "RazorVue.Authoring.TaskTable", "components/task-table.mjs");
-    RequireModule(modules, "Jazor.Generated.RazorVue.RouteCatalog", "@jazor/vue-runtime/routes.mjs");
-
-    var app = File.ReadAllText(Path.Combine(root, "app.mjs"));
-    var board = File.ReadAllText(Path.Combine(root, "components", "task-board.mjs"));
-    var table = File.ReadAllText(Path.Combine(root, "components", "task-table.mjs"));
-    var layout = File.ReadAllText(Path.Combine(root, "components", "authoring-layout.mjs"));
-    var details = File.ReadAllText(Path.Combine(root, "components", "task-details.mjs"));
-    var routes = File.ReadAllText(Path.Combine(root, "@jazor", "vue-runtime", "routes.mjs"));
+    var app = File.ReadAllText(Path.Combine(root, "app.js"));
+    var board = File.ReadAllText(Path.Combine(root, "components", "task-board.js"));
+    var table = File.ReadAllText(Path.Combine(root, "components", "task-table.js"));
+    var layout = File.ReadAllText(Path.Combine(root, "components", "authoring-layout.js"));
+    var details = File.ReadAllText(Path.Combine(root, "components", "task-details.js"));
+    var routes = File.ReadAllText(Path.Combine(root, "runtime", "vue", "routes.js"));
     RequireContains(app, "createNavigationHost", "route-host import in application entry");
     RequireContains(app, "h(layout, null, { Body:", "route layout Body-slot activation");
     RequireContains(app, "h(component, parameters)", "route component activation");
     RequireContains(board, "CascadingValue", "cascading provider lowering");
-    RequireContains(board, "Button, Dialog, Form, FormItem, Input", "TDesign form/dialog imports");
+    RequireContains(board, "import { Button } from \"tdesign-vue-next/es/button/index.mjs\";", "TDesign button import");
+    RequireContains(board, "import { Dialog } from \"tdesign-vue-next/es/dialog/index.mjs\";", "TDesign dialog import");
+    RequireContains(board, "import { Form, FormItem } from \"tdesign-vue-next/es/form/index.mjs\";", "TDesign form imports");
+    RequireContains(board, "import { Input } from \"tdesign-vue-next/es/input/index.mjs\";", "TDesign input import");
     RequireContains(board, "onChange", "TInput bind lowering");
     RequireContains(board, "onValidate", "TForm validation callback lowering");
     RequireContains(board, "onReset", "TForm reset callback lowering");
@@ -153,26 +150,26 @@ static void AssertDebugArtifacts(string root)
     RequireContains(routes, "{ name: \"TaskId\", prop: \"TaskId\", kind: \"number\" }", "typed route-parameter catalog metadata");
     RequireContains(routes, "{ name: \"highlight\", prop: \"Highlight\", kind: \"boolean\" }", "typed query-parameter catalog metadata");
 
-    AssertSourceMap(Path.Combine(root, "app.mjs.map"), "Bootstrap.cs");
-    AssertSourceMap(Path.Combine(root, "components", "authoring-layout.mjs.map"), "AuthoringLayout.razor");
-    AssertSourceMap(Path.Combine(root, "components", "task-board.mjs.map"), "TaskBoard.razor");
-    AssertSourceMap(Path.Combine(root, "components", "task-details.mjs.map"), "TaskDetails.razor");
-    AssertSourceMap(Path.Combine(root, "components", "task-table.mjs.map"), "TaskTable.razor");
+    AssertSourceMap(Path.Combine(root, "app.js.map"), "Bootstrap.cs");
+    AssertSourceMap(Path.Combine(root, "components", "authoring-layout.js.map"), "AuthoringLayout.razor");
+    AssertSourceMap(Path.Combine(root, "components", "task-board.js.map"), "TaskBoard.razor");
+    AssertSourceMap(Path.Combine(root, "components", "task-details.js.map"), "TaskDetails.razor");
+    AssertSourceMap(Path.Combine(root, "components", "task-table.js.map"), "TaskTable.razor");
 }
 
 static void AssertReleaseArtifacts(string root)
 {
-    RequireFile(root, "bundle.js", "Release browser bundle");
-    RequireFile(root, "bundle.js.map", "Release browser source map");
-    RequireFile(root, "bundle.css", "Release TDesign stylesheet bundle");
-    RequireDirectory(root, "vendor", "Release vendor closure");
-    if (File.Exists(Path.Combine(root, "jazor-manifest.json")))
-        throw new InvalidOperationException("Release artifacts must not retain the debug Jazor manifest.");
-    if (File.Exists(Path.Combine(root, "app.mjs")))
-        throw new InvalidOperationException("Release artifacts must not retain the debug application entry.");
+    RequireFile(root, "entry.js", "standard browser entry");
+    RequireFile(root, "package.json", "standard package declaration");
+    RequireFile(root, "deno.lock", "Deno dependency lock");
+    RequireDirectory(root, "node_modules", "restored project dependencies");
+    RequireFile(root, "dist/bundle.js", "Release browser bundle");
+    RequireFile(root, "dist/bundle.js.map", "Release browser source map");
+    if (File.Exists(Path.Combine(root, "jazor-manifest.json")) || File.Exists(Path.Combine(root, "importmap.json")))
+        throw new InvalidOperationException("Release project root must not contain Jazor runtime manifests or import maps.");
 
-    var bundle = File.ReadAllText(Path.Combine(root, "bundle.js"));
-    RequireContains(bundle, "createNavigationHost", "route host in Release bundle");
+    var bundle = File.ReadAllText(Path.Combine(root, "dist", "bundle.js"));
+    RequireContains(bundle, "Page not found", "route host fallback in Release bundle");
     RequireContains(bundle, "RazorVueAuthoringRoot", "sample root in Release bundle");
     RequireContains(bundle, "cellEmptyContent", "typed table slot in Release bundle");
     RequireContains(bundle, "Task created from the typed form.", "async form result in Release bundle");
@@ -181,24 +178,19 @@ static void AssertReleaseArtifacts(string root)
     RequireContains(bundle, "authoring-replace", "replace-history state in Release bundle");
     RequireContains(bundle, "Route catalog layout", "layout content in Release bundle");
     RequireContains(bundle, "data-route-highlight", "query-parameter rendering in Release bundle");
-    RequireDoesNotContain(bundle, "@jazor/vue-runtime/routes.mjs", "bare generated route-catalog import in Release bundle");
+    RequireDoesNotContain(bundle, "runtime/vue/routes.js", "unbundled generated route-catalog import in Release bundle");
     RequireDoesNotContain(bundle, "BuildRenderTree", "render-tree implementation in Release bundle");
     RequireDoesNotContain(bundle, "AdminInput", "retired bridge in Release bundle");
     RequireDoesNotContain(bundle, "node_modules", "node_modules path in Release bundle");
 
-    RequireAnyFile(root, "tdesign.mjs", "TDesign runtime module");
-    RequireAnyFile(root, "blazor-routing.mjs", "routing runtime module");
-    RequireAnyFile(root, "vue.runtime.esm-browser.prod.js", "production Vue runtime module");
-    RequireAnyFile(root, "NavigationManagerModule.js", "NavigationManager runtime module");
-
-    using var sourceMap = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "bundle.js.map")));
+    using var sourceMap = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "dist", "bundle.js.map")));
     var mappedSources = sourceMap.RootElement.GetProperty("sources")
         .EnumerateArray()
         .Select(static value => value.GetString() ?? string.Empty)
         .ToArray();
-    foreach (var expected in new[] { "app.mjs", "components/authoring-layout.mjs", "components/task-board.mjs", "components/task-details.mjs", "components/task-table.mjs", "@jazor/vue-runtime/routes.mjs", "__jazor_runtime/blazor-routing.mjs" })
+    foreach (var expected in new[] { "app.js", "components/authoring-layout.js", "components/task-board.js", "components/task-details.js", "components/task-table.js", "runtime/vue/routes.js", "runtime/vue/blazor-routing.js" })
     {
-        if (!mappedSources.Contains(expected, StringComparer.Ordinal))
+        if (!mappedSources.Any(source => source.Replace('\\', '/').EndsWith(expected, StringComparison.Ordinal)))
             throw new InvalidOperationException("Release source map is missing " + expected + ".");
     }
 }
@@ -245,15 +237,6 @@ static string? ReadPackageId(string packagePath)
     }
 }
 
-static void AssertNoNodeModules(string root)
-{
-    var nodeModules = Directory.Exists(root)
-        ? Directory.EnumerateDirectories(root, "node_modules", SearchOption.AllDirectories).ToArray()
-        : [];
-    if (nodeModules.Length > 0)
-        throw new InvalidOperationException("Sample verification must not materialize node_modules:" + Environment.NewLine + string.Join(Environment.NewLine, nodeModules));
-}
-
 static async Task VerifyReleaseHostInBrowserAsync(
     string repoRoot,
     string workRoot,
@@ -279,7 +262,7 @@ static async Task VerifyReleaseHostInBrowserAsync(
         await ScriptHelpers.WaitForPageAsync(baseUri, TimeSpan.FromSeconds(45));
         var html = await new HttpClient().GetStringAsync(baseUri);
         RequireContains(html, "bundle.js", "Release entry selected by host shell");
-        RequireContains(html, "/authoring/jazor/bundle.css", "PathBase-aware Release stylesheet");
+        RequireContains(html, "/authoring/jazor/dist/bundle.js", "PathBase-aware Vite Release entry");
 
         // A dump-dom invocation starts a new document every time, which cannot prove that
         // NavigationManager updates the live route host or preserves browser history. Keep one
@@ -422,14 +405,6 @@ static void AssertSourceMap(string path, string expectedSource)
         throw new InvalidOperationException("Source map is missing " + expectedSource + ": " + path);
 }
 
-static void RequireModule(JsonElement[] modules, string id, string path)
-{
-    if (!modules.Any(module =>
-            string.Equals(module.GetProperty("id").GetString(), id, StringComparison.Ordinal) &&
-            string.Equals(module.GetProperty("path").GetString(), path, StringComparison.Ordinal)))
-        throw new InvalidOperationException("Debug manifest is missing module '" + id + "' at '" + path + "'.");
-}
-
 static void RequireFile(string root, string relativePath, string description)
 {
     var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -442,12 +417,6 @@ static void RequireDirectory(string root, string relativePath, string descriptio
     var path = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
     if (!Directory.Exists(path))
         throw new DirectoryNotFoundException("Missing " + description + ": " + path);
-}
-
-static void RequireAnyFile(string root, string fileName, string description)
-{
-    if (!Directory.EnumerateFiles(root, fileName, SearchOption.AllDirectories).Any())
-        throw new FileNotFoundException("Missing " + description + " beneath " + root);
 }
 
 static void RequireContains(string text, string expected, string description)

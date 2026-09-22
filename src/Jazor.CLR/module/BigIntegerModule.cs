@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// BigInteger 的整数精度与 JavaScript BigInt 对齐，因此可复用 BigInt 运算；但构造、转换和
 /// 格式化仍需遵守 C# 的溢出与类型边界，不能把所有 Number 输入无条件提升为 BigInt。
 /// </remarks>
-[ECMAScriptModule("clr/System/Numerics/BigIntegerModule.js")]
+[ECMAScriptModule("./clr/System/Numerics/BigIntegerModule.js")]
 [Jazor(Op.Alias, "System.Numerics.BigInteger", "BigInt")]
 public static class BigIntegerModule
 {

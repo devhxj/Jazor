@@ -44,14 +44,14 @@ public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
         StringAssert.Contains(observation.ModuleText, "activeTemplate(state.Current)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-row-template.mjs",
+            "components/release-row-template.js",
             observation.ModuleText,
             "official-release-row-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-row-template.mjs";
+            import component from "./components/release-row-template.js";
 
             test("official Razor typed slot aliases retain the nullable component parameter contract", () => {
                 const absent = component.setup({}, { slots: {} })();

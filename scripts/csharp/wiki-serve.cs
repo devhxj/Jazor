@@ -13,7 +13,7 @@ var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-preview", options
 var hostRoot = sampleRoot;
 var webRoot = Path.Combine(sampleRoot, "wwwroot");
 var jazorRoot = Path.Combine(sampleRoot, "jazor");
-var browserEntryPath = Path.Combine(jazorRoot, "main.mjs");
+var browserEntryPath = Path.Combine(jazorRoot, "entry.js");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Release" : options.Configuration;
 var normalizedPathBase = WikiScriptHelpers.NormalizePathBase(options.PathBase);
@@ -63,7 +63,7 @@ if (options.Publish)
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
     jazorRoot = Path.Combine(hostRoot, "jazor");
-    browserEntryPath = Path.Combine(jazorRoot, "bundle.js");
+    browserEntryPath = Path.Combine(jazorRoot, "dist", "bundle.js");
 
     if (!Directory.Exists(jazorRoot))
     {
@@ -129,7 +129,7 @@ else if (options.Build)
         dotnetCliHome: dotnetCliHome);
 }
 
-WikiScriptHelpers.EnsureFileExists(browserEntryPath, options.Publish ? "release browser bundle" : "emitted main module");
+WikiScriptHelpers.EnsureFileExists(browserEntryPath, options.Publish ? "release browser bundle" : "standard project entry");
 
 // 与网站本身共用 docs 生成目录，预览输出不会再保留已删除的手写页面链接。
 var routeUrls = ReadRegisteredRoutes(generatedCatalog)
@@ -146,6 +146,7 @@ else
 {
     Console.WriteLine("Serving jazor.wiki from: " + webRoot);
     Console.WriteLine("Serving emitted Jazor modules from: " + jazorRoot);
+    Console.WriteLine("Start `deno task dev` in the jazor directory for Vite HMR; ASP.NET Core proxies /jazor to that server.");
 }
 
 Console.WriteLine("Open routes:");

@@ -4,7 +4,7 @@ namespace Jazor.CLR;
 /// Browser implementation of Blazor's NavigationManager contract.
 /// The generated CLR signatures stay unchanged; this module owns the runtime behavior.
 /// </summary>
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.NavigationManager", "Object")]
 public static class NavigationManagerModule
 {

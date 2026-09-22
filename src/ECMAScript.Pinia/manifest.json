@@ -24,21 +24,13 @@
   "imports": {
     "nostics": {
       "type": "module",
-      "development": "nostics",
-      "production": "nostics",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "nostics",
+      "dependencies": []
     },
     "pinia": {
       "type": "module",
-      "development": "pinia",
-      "production": "pinia",
-      "developmentDependencies": [
-        "@vue/devtools-api",
-        "nostics",
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "pinia",
+      "dependencies": [
         "vue"
       ]
     }

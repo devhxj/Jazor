@@ -16,7 +16,7 @@ public enum OrganizationView
     Members
 }
 
-[ECMAScriptModule("components/organization.mjs")]
+[ECMAScriptModule("components/organization.js")]
 public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
 {
     private sealed record ChildOrganizationDraft

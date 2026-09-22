@@ -229,12 +229,9 @@ static JsonObject ExternalImport(string specifier)
     return new JsonObject
     {
         ["type"] = "module",
-        ["development"] = specifier,
-        ["production"] = specifier,
-        ["developmentDependencies"] = new JsonArray(),
-        ["productionDependencies"] = new JsonArray(),
-        ["developmentModuleDependencies"] = new JsonArray(),
-        ["productionModuleDependencies"] = new JsonArray(),
+        ["path"] = specifier,
+        ["dependencies"] = new JsonArray(),
+        ["moduleDependencies"] = new JsonArray(),
     };
 }
 

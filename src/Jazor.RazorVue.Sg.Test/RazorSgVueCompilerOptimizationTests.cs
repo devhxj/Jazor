@@ -44,14 +44,14 @@ public sealed class RazorSgVueCompilerOptimizationTests
             observation.ModuleText.IndexOf("const __jazor$hoistedProps0", StringComparison.Ordinal));
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/static-hoists.mjs",
+            "components/static-hoists.js",
             observation.ModuleText,
             "static-hoists-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/static-hoists.mjs";
+            import component from "./components/static-hoists.js";
 
             function findSection(vnode) {
                 return vnode.children.find(child => child?.name === "section");
@@ -109,7 +109,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
 
         Assert.AreEqual(
             1,
-            CountOccurrences(observation.ModuleText, "from \"@jazor/vue-runtime/raw-markup.mjs\""),
+            CountOccurrences(observation.ModuleText, "from \"../runtime/vue/raw-markup.js\""),
             observation.ModuleText);
         Assert.AreEqual(
             0,
@@ -173,14 +173,14 @@ public sealed class RazorSgVueCompilerOptimizationTests
             StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/child-plans.mjs",
+            "components/child-plans.js",
             observation.ModuleText,
             "child-plans-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/child-plans.mjs";
+            import component from "./components/child-plans.js";
 
             function findById(vnode, id) {
                 if (vnode == null || typeof vnode !== "object") return null;
@@ -326,15 +326,15 @@ public sealed class RazorSgVueCompilerOptimizationTests
             slotObservation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/slot-scope.mjs",
+            "components/slot-scope.js",
             slotObservation.ModuleText,
             "slot-scope-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/slot-scope.mjs";
-            import slotHost from "./components/slot-host.mjs";
+            import component from "./components/slot-scope.js";
+            import slotHost from "./components/slot-host.js";
 
             test("stable slots retain the Vue stable-object marker and render body", () => {
                 const vnode = component.setup({}, { slots: {} })();
@@ -351,7 +351,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-host.mjs"] = "export default { name: \"slot-host\" };"
+                ["components/slot-host.js"] = "export default { name: \"slot-host\" };"
             });
 
         var loopObservation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
@@ -451,15 +451,15 @@ public sealed class RazorSgVueCompilerOptimizationTests
         StringAssert.Contains(observation.ModuleText, ", 1024)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/conditional-slot-scope.mjs",
+            "components/conditional-slot-scope.js",
             observation.ModuleText,
             "conditional-slot-scope-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/conditional-slot-scope.mjs";
-            import slotHost from "./components/conditional-slot-host.mjs";
+            import component from "./components/conditional-slot-scope.js";
+            import slotHost from "./components/conditional-slot-host.js";
 
             test("conditional slots replace their descriptor body for each parent render", () => {
                 const props = { ShowPrimary: true, Label: "first" };
@@ -481,7 +481,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
             """,
             new Dictionary<string, string>
             {
-                ["components/conditional-slot-host.mjs"] = "export default { name: \"conditional-slot-host\" };"
+                ["components/conditional-slot-host.js"] = "export default { name: \"conditional-slot-host\" };"
             });
     }
 
@@ -524,14 +524,14 @@ public sealed class RazorSgVueCompilerOptimizationTests
         Assert.IsFalse(observation.ModuleText.Contains("eventOrValue", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/stable-handler.mjs",
+            "components/stable-handler.js",
             observation.ModuleText,
             "stable-handler-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/stable-handler.mjs";
+            import component from "./components/stable-handler.js";
 
             test("cached bind handlers keep identity inside one setup and not across instances", () => {
                 const firstRender = component.setup({}, { slots: {} });

@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeBooleanScenarios
 {
-    private const string ModulePath = "clr/System/BooleanModule.js";
+    private const string ModulePath = "./clr/System/BooleanModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

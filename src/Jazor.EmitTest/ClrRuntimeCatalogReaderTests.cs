@@ -440,7 +440,7 @@ public sealed class ClrRuntimeCatalogReaderTests
         foreach (var import in imports.EnumerateObject())
         {
             var entry = import.Value;
-            var relativeFile = entry.GetProperty("production").GetString()!;
+            var relativeFile = entry.GetProperty("path").GetString()!;
             var relativePath = relativeFile;
             var sourcePath = Path.Combine(packageRoot, relativeFile.Replace('/', Path.DirectorySeparatorChar));
             var content = File.ReadAllText(sourcePath).ReplaceLineEndings("\n");
@@ -451,9 +451,9 @@ public sealed class ClrRuntimeCatalogReaderTests
                 import.Name,
                 relativePath,
                 content,
-                entry.GetProperty("productionHash").GetString()!,
-                PackageImports: ReadStringArray(entry, "productionDependencies"),
-                Dependencies: ReadStringArray(entry, "productionModuleDependencies")));
+                entry.GetProperty("hash").GetString()!,
+                PackageImports: ReadStringArray(entry, "dependencies"),
+                Dependencies: ReadStringArray(entry, "moduleDependencies")));
         }
 
         return modules;

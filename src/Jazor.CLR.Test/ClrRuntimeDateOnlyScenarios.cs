@@ -4,7 +4,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDateOnlyScenarios
 {
-    private const string ModulePath = "clr/System/DateOnlyModule.js";
+    private const string ModulePath = "./clr/System/DateOnlyModule.js";
     private static readonly DateOnly SampleValue = new(2024, 2, 29);
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

@@ -92,7 +92,7 @@ public enum TextKey
     Copyright
 }
 
-[ECMAScriptModule("components/i18n.mjs")]
+[ECMAScriptModule("components/i18n.js")]
 public static class Localization
 {
     public static string Get(AdminLanguage language, TextKey key)

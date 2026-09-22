@@ -42,7 +42,7 @@ public sealed class SemanticWalkerUriMemberTests
         // template, so the module contributes exactly two import specifiers.
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(1, imports, body);
-        Assert.HasCount(2, imports["clr/System/UriModule.js"], body);
+        Assert.HasCount(2, imports["./clr/System/UriModule.js"], body);
 
         StringAssert.Contains(body, "new URL(baseUri)", StringComparison.Ordinal);
         StringAssert.Contains(body, "new URL(relative, root.href)", StringComparison.Ordinal);

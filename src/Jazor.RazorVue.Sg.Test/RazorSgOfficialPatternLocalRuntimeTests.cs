@@ -34,14 +34,14 @@ public sealed class RazorSgOfficialPatternLocalRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.ReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/pattern-local-runtime.mjs",
+            "components/pattern-local-runtime.js",
             observation.ModuleText,
             "official-pattern-local-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/pattern-local-runtime.mjs";
+            import component from "./components/pattern-local-runtime.js";
 
             test("Razor property patterns bind locals only for matching values", () => {
                 const missing = component.setup({}, { slots: {} })();

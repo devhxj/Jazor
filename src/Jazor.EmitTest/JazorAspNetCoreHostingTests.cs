@@ -45,7 +45,7 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
-    public void JazorWebApplication_ResolveContentRootPath_PrefersSourceArtifactsOverCopiedDebugWebRoot()
+    public void JazorWebApplication_ResolveContentRootPath_IgnoresLegacyManifestOnlySourceGraph()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var appBaseDirectory = Path.Combine(workspace.RootPath, "bin", "Debug", "net11.0");
@@ -59,7 +59,7 @@ public sealed class JazorAspNetCoreHostingTests
 
         var resolved = JazorWebApplication.ResolveContentRootPath(appBaseDirectory, sourceFilePath);
 
-        Assert.AreEqual(Path.GetFullPath(sourceDirectory), resolved);
+        Assert.AreEqual(Path.GetFullPath(appBaseDirectory), resolved);
     }
 
     [TestMethod]
@@ -89,6 +89,7 @@ public sealed class JazorAspNetCoreHostingTests
         var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
         Directory.CreateDirectory(jazorRoot);
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "jazor-manifest.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "entry.js"), "export {};");
         await File.WriteAllTextAsync(
             Path.Combine(jazorRoot, "main.mjs"),
             "export const ready = true;\n//# sourceMappingURL=main.mjs.map\n");
@@ -210,11 +211,12 @@ public sealed class JazorAspNetCoreHostingTests
         Directory.CreateDirectory(artifactRoot);
         await File.WriteAllTextAsync(Path.Combine(webRootJazor, "client-entry.js"), "export const stale = true;\n");
         await File.WriteAllTextAsync(Path.Combine(artifactRoot, "jazor-manifest.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "entry.js"), "export {};");
         await File.WriteAllTextAsync(Path.Combine(artifactRoot, "client-entry.js"), "export const browser = true;\n");
 
         using var host = await CreateHostAsync(workspace.RootPath, app =>
         {
-            app.UseJazorAssets();
+            app.UseJazorAssets(options => options.ServeArtifacts = true);
             app.MapGet("/", () => "ready");
         });
 
@@ -297,6 +299,7 @@ public sealed class JazorAspNetCoreHostingTests
         {
             app.UseJazorHost(options =>
             {
+                options.Assets.ServeArtifacts = true;
                 options.Assets.ArtifactProbeRelativePath = "custom.probe.json";
             });
 
@@ -604,7 +607,7 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
-    public async Task UseJazorHost_AndStaticSpaFallback_FormTheDefaultSingleHostContract()
+    public async Task UseJazorHost_AndStaticSpaFallback_DoNotServeGeneratedProjectByDefault()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -615,6 +618,7 @@ public sealed class JazorAspNetCoreHostingTests
             Path.Combine(webRoot, "index.html"),
             "<!doctype html><html><body><div id=\"app\">default host shell</div></body></html>");
         await File.WriteAllTextAsync(Path.Combine(artifactRoot, "jazor-manifest.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "entry.js"), "export {};");
         await File.WriteAllTextAsync(Path.Combine(artifactRoot, "client-entry.js"), "export const browser = true;\n");
 
         using var host = await CreateHostAsync(workspace.RootPath, app =>
@@ -635,12 +639,10 @@ public sealed class JazorAspNetCoreHostingTests
         StringAssert.Contains(navigationHtml, "default host shell");
 
         var browserBundleResponse = await client.GetAsync("/jazor/client-entry.js");
-        Assert.AreEqual(System.Net.HttpStatusCode.OK, browserBundleResponse.StatusCode);
-        Assert.AreEqual("export const browser = true;\n", await browserBundleResponse.Content.ReadAsStringAsync());
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, browserBundleResponse.StatusCode);
 
         var manifestResponse = await client.GetAsync("/jazor/jazor-manifest.json");
-        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifestResponse.StatusCode);
-        Assert.AreEqual("{}", await manifestResponse.Content.ReadAsStringAsync());
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, manifestResponse.StatusCode);
 
         using var apiRequest = new HttpRequestMessage(HttpMethod.Get, "/api/status");
         apiRequest.Headers.Accept.ParseAdd("text/html");

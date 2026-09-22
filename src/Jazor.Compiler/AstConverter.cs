@@ -95,10 +95,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly HashSet<string> _moduleCatalogImportPaths = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// carrier 引用的逻辑键（含 clr/ 前缀）。写出的 specifier 是相对的，
-    /// 因此这个键无法从生成文本反推，必须显式记录，供 --library-manifest 选择与图比对。
+    /// 项目源码引用的完整项目路径。写出的 specifier 是相对的，
+    /// 因此这个身份无法从生成文本直接取得，必须在 lowering 时显式记录。
     /// </summary>
-    private readonly HashSet<string> _carrierImportKeys = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _projectSourceImportKeys = new(StringComparer.Ordinal);
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
         options?.MemberFilter,
@@ -112,9 +112,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <c>[Style]</c> 声明的样式 side-effect specifier，按声明顺序保留（顺序即 CSS 层叠顺序）。
     /// 这些边没有本地绑定，因此不参与 <see cref="_imports"/> 的死导入过滤。
     /// </summary>
-    private readonly IReadOnlyList<string> _styleSpecifiers = classSymbol is null
+    private readonly List<string> _styleSpecifiers = classSymbol is null
         ? []
-        : Util.GetStyleSpecifiers(classSymbol);
+        : [.. Util.GetStyleSpecifiers(classSymbol)];
     private HashSet<string>? _moduleDeclaredBindings;
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
@@ -132,8 +132,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// </summary>
     internal IReadOnlyCollection<string> ModuleCatalogImportPaths => _moduleCatalogImportPaths;
 
-    /// <summary>本模块引用到的 carrier 逻辑键，用于选择资源库清单。</summary>
-    internal IReadOnlyCollection<string> CarrierImportKeys => _carrierImportKeys;
+    /// <summary>本模块引用到的项目源码完整路径键，用于选择资源库清单。</summary>
+    public IReadOnlyCollection<string> ProjectSourceImportKeys => _projectSourceImportKeys;
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -337,10 +337,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             _classSymbol,
             ModuleDeclaredNames,
             cancellationToken,
-            _options.RuntimeClassPrivateStorage)
+            _options.RuntimeClassPrivateStorage,
+            RegisterStyleSpecifier)
         {
             Host = effectiveHost
         };
+    }
+
+    private void RegisterStyleSpecifier(string specifier)
+    {
+        if (!_styleSpecifiers.Contains(specifier, StringComparer.Ordinal))
+            _styleSpecifiers.Add(specifier);
     }
 
     private static SemanticWalkerHost? CombineSemanticWalkerHosts(params SemanticWalkerHost?[] hosts)
@@ -401,7 +408,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 ModuleDeclaredBindings,
                 _moduleCatalogImportPaths,
                 _options.CurrentModuleOutputPath,
-                _carrierImportKeys);
+                _projectSourceImportKeys);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
         => syntax.SyntaxTree == _classModel.SyntaxTree

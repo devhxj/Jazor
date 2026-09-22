@@ -44,18 +44,18 @@ public sealed class RazorSgOfficialRepeatedComponentImportRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         Assert.AreEqual(
             1,
-            CountOccurrences(observation.ModuleText, "./release-badge.mjs"),
+            CountOccurrences(observation.ModuleText, "./release-badge.js"),
             observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-dashboard.mjs",
+            "components/release-dashboard.js",
             observation.ModuleText,
             "official-repeated-component-import-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-dashboard.mjs";
+            import component from "./components/release-dashboard.js";
 
             test("repeated Razor component use resolves one external module for both VNodes", () => {
                 const dashboard = component.setup({}, { slots: {} })();
@@ -68,7 +68,7 @@ public sealed class RazorSgOfficialRepeatedComponentImportRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-badge.mjs"] = "export default \"release-badge\";"
+                ["components/release-badge.js"] = "export default \"release-badge\";"
             });
     }
 

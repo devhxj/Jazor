@@ -64,7 +64,7 @@ public partial class IconBar : JComponentBase
         }
     }
 
-    // routes.mjs 只导出成员函数；渲染 lambda 内直接限定 TDesignRouteMapper 会触发 phantom
+    // routes.js 只导出成员函数；渲染 lambda 内直接限定 TDesignRouteMapper 会触发 phantom
     // 类名导入（浏览器模块链接失败），因此经成员位置间接映射。
     private static TMenuItemToValue? MapItemMenuRoute(RouteLocationRaw? route)
         => TDesignRouteMapper.MapMenuRoute(route);

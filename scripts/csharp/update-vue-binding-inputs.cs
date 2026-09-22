@@ -472,13 +472,10 @@ static JsonObject UpdateExternalManifest(
             // Convert its old binding-owned path to the package specifier as well.
             if (logicalSpecifier == "jspdf")
             {
-                entry["development"] = logicalSpecifier;
-                entry["production"] = logicalSpecifier;
+                entry["path"] = logicalSpecifier;
             }
             RemoveEmbeddedEntryFields(entry);
-            RemoveExternalStyleFields(entry);
-            NormalizeDependencyArray(entry, "developmentDependencies");
-            NormalizeDependencyArray(entry, "productionDependencies");
+            NormalizeDependencyArray(entry, "dependencies");
             resolved[logicalSpecifier] = entry;
             continue;
         }
@@ -488,37 +485,9 @@ static JsonObject UpdateExternalManifest(
         ValidateExternalTarget(externalSpecifier, packageName, archive);
 
         entry["type"] = "module";
-        entry["development"] = externalSpecifier;
-        entry["production"] = externalSpecifier;
+        entry["path"] = externalSpecifier;
         RemoveEmbeddedEntryFields(entry);
-        NormalizeDependencyArray(entry, "developmentDependencies");
-        NormalizeDependencyArray(entry, "productionDependencies");
-
-        var styles = GetStyleEdges(logicalSpecifier, externalSpecifier, packageName, archive);
-        ValidateStyleEdges(packageName, styles, archive);
-        foreach (var field in new[]
-                 {
-                     "developmentStyleImports",
-                     "productionStyleImports",
-                     "developmentStylesheetImports",
-                     "productionStylesheetImports"
-                 })
-        {
-            entry.Remove(field);
-        }
-
-        var moduleStyles = styles.Where(static edge => edge.Module).Select(static edge => edge.Specifier).ToArray();
-        var stylesheetStyles = styles.Where(static edge => !edge.Module).Select(static edge => edge.Specifier).ToArray();
-        if (moduleStyles.Length > 0)
-        {
-            entry["developmentStyleImports"] = ToJsonArray(moduleStyles);
-            entry["productionStyleImports"] = ToJsonArray(moduleStyles);
-        }
-        if (stylesheetStyles.Length > 0)
-        {
-            entry["developmentStylesheetImports"] = ToJsonArray(stylesheetStyles);
-            entry["productionStylesheetImports"] = ToJsonArray(stylesheetStyles);
-        }
+        NormalizeDependencyArray(entry, "dependencies");
 
         if (resolved[externalSpecifier] is JsonObject existing)
         {
@@ -540,12 +509,12 @@ static JsonObject UpdateExternalManifest(
 /// <summary>
 /// 把共享同一上游模块的第二条组件声明并入既有模块记录。
 ///
-/// 归并只针对"同模块多处声明"这一正常形态：模块级事实（type）必须一致，依赖与样式边取并集。
+/// 归并只针对"同模块多处声明"这一正常形态：模块级事实（type）必须一致，依赖取并集。
 /// 若两条记录的模块身份不同，说明映射把两个上游模块混为一谈，属于错误，必须显式失败。
 /// </summary>
 static void MergeModuleEntry(JsonObject target, JsonObject incoming, string externalSpecifier, string logicalSpecifier)
 {
-    foreach (var field in new[] { "type", "development", "production" })
+    foreach (var field in new[] { "type", "path" })
     {
         if (!string.Equals(target[field]?.GetValue<string>(), incoming[field]?.GetValue<string>(), StringComparison.Ordinal))
         {
@@ -556,12 +525,7 @@ static void MergeModuleEntry(JsonObject target, JsonObject incoming, string exte
 
     foreach (var field in new[]
              {
-                 "developmentDependencies",
-                 "productionDependencies",
-                 "developmentStyleImports",
-                 "productionStyleImports",
-                 "developmentStylesheetImports",
-                 "productionStylesheetImports"
+                 "dependencies"
              })
     {
         var values = new SortedSet<string>(StringComparer.Ordinal);
@@ -589,27 +553,10 @@ static void RemoveEmbeddedEntryFields(JsonObject entry)
 {
     foreach (var field in new[]
              {
-                 "developmentHash",
-                 "productionHash",
-                 "developmentModuleDependencies",
-                 "productionModuleDependencies",
-                 "developmentStyles",
-                 "productionStyles",
+                 "hash",
+                 "moduleDependencies",
+                 "styles",
                  "files"
-             })
-    {
-        entry.Remove(field);
-    }
-}
-
-static void RemoveExternalStyleFields(JsonObject entry)
-{
-    foreach (var field in new[]
-             {
-                 "developmentStyleImports",
-                 "productionStyleImports",
-                 "developmentStylesheetImports",
-                 "productionStylesheetImports"
              })
     {
         entry.Remove(field);
@@ -908,114 +855,6 @@ static bool ExportKeyMatches(string key, string subpath)
            subpath.Length >= prefix.Length + suffix.Length;
 }
 
-static IReadOnlyList<StyleEdge> GetStyleEdges(
-    string logicalSpecifier,
-    string externalSpecifier,
-    string packageName,
-    NpmArchive archive)
-{
-    if (packageName == "vue-data-ui")
-        return [new StyleEdge(false, packageName + "/style.css")];
-
-    if (packageName == "tdesign-vue-next")
-    {
-        var relative = logicalSpecifier == packageName
-            ? "es/style/index"
-            : "es/" + logicalSpecifier[(packageName + "/").Length..][..logicalSpecifier[(packageName + "/").Length..].LastIndexOf('/')] + "/style/index";
-        if (archive.Files.Contains(relative + ".css"))
-            return [new StyleEdge(false, packageName + "/" + relative + ".css")];
-        if (archive.Files.Contains(relative + ".mjs"))
-            return [new StyleEdge(true, packageName + "/" + relative + ".mjs")];
-        return [];
-    }
-
-    if (packageName == "element-plus")
-    {
-        if (logicalSpecifier == packageName)
-            return [new StyleEdge(false, packageName + "/dist/index.css")];
-
-        var module = logicalSpecifier[(packageName + "/").Length..];
-        module = module[..module.LastIndexOf('/')];
-        var styleSpecifier = packageName + "/es/components/" + module + "/style/css.mjs";
-        return archive.Files.Contains("es/components/" + module + "/style/css.mjs")
-            ? [new StyleEdge(true, styleSpecifier)]
-            : [];
-    }
-
-    if (packageName == "vuetify")
-    {
-        if (logicalSpecifier == packageName)
-            return [new StyleEdge(false, "vuetify/styles")];
-
-        if (externalSpecifier.StartsWith("vuetify/components/", StringComparison.Ordinal))
-        {
-            var group = externalSpecifier["vuetify/components/".Length..];
-            var path = "lib/components/" + group + "/" + group + ".css";
-            return archive.Files.Contains(path)
-                ? [new StyleEdge(false, "vuetify/" + path)]
-                : [];
-        }
-
-        if (externalSpecifier.StartsWith("vuetify/labs/", StringComparison.Ordinal))
-        {
-            var group = externalSpecifier["vuetify/labs/".Length..];
-            var path = "lib/labs/" + group + "/" + group + ".css";
-            return archive.Files.Contains(path)
-                ? [new StyleEdge(false, "vuetify/" + path)]
-                : [];
-        }
-
-        if (externalSpecifier.StartsWith("vuetify/directives/", StringComparison.Ordinal))
-        {
-            var group = externalSpecifier["vuetify/directives/".Length..];
-            var prefix = "lib/directives/" + group + "/";
-            var css = archive.Files
-                .Where(path => path.StartsWith(prefix, StringComparison.Ordinal) &&
-                               path.EndsWith(".css", StringComparison.Ordinal))
-                .OrderBy(static path => path, StringComparer.Ordinal)
-                .FirstOrDefault();
-            return css is null ? [] : [new StyleEdge(false, "vuetify/" + css)];
-        }
-
-        return [];
-    }
-
-    return [];
-}
-
-static void ValidateStyleEdges(
-    string packageName,
-    IReadOnlyList<StyleEdge> styles,
-    NpmArchive archive)
-{
-    foreach (var style in styles)
-    {
-        ValidateSpecifier(style.Specifier);
-        var remainder = style.Specifier[(packageName + "/").Length..];
-        if (packageName == "vuetify" && style.Specifier == "vuetify/styles")
-        {
-            if (!HasPackageExport(archive.PackageJson, "./styles") ||
-                !archive.Files.Contains("lib/styles/main.css"))
-            {
-                throw new InvalidOperationException("Vuetify does not publish its styles export.");
-            }
-        }
-        else if (packageName == "vue-data-ui" && style.Specifier == "vue-data-ui/style.css")
-        {
-            if (!HasPackageExport(archive.PackageJson, "./style.css") ||
-                !archive.Files.Contains("dist/style.css"))
-            {
-                throw new InvalidOperationException("vue-data-ui does not publish its style.css export.");
-            }
-        }
-        else if (!archive.Files.Contains(remainder))
-        {
-            throw new InvalidOperationException(
-                $"npm package '{packageName}' does not publish stylesheet/module '{style.Specifier}'.");
-        }
-    }
-}
-
 sealed class NpmArchive(
     JsonObject packageJson,
     HashSet<string> files,
@@ -1025,5 +864,3 @@ sealed class NpmArchive(
     public HashSet<string> Files { get; } = files;
     public Dictionary<string, string> TextFiles { get; } = textFiles;
 }
-
-readonly record struct StyleEdge(bool Module, string Specifier);

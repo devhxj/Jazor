@@ -60,14 +60,14 @@ public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("function queueRelease(", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/direct-import-name-collision.mjs",
+            "components/direct-import-name-collision.js",
             observation.ModuleText,
             "official-direct-import-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/direct-import-name-collision.mjs";
+            import component from "./components/direct-import-name-collision.js";
 
             test("official Razor members do not shadow direct-render imports", () => {
                 const render = component.setup({}, { slots: {} });

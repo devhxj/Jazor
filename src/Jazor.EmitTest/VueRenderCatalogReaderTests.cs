@@ -202,7 +202,9 @@ public sealed class ModuleCatalogReaderTests
     }
 
     [TestMethod]
-    public void ModuleCollector_Collect_SelectsOnlyConsoleRootModuleClosureAndOwnedAssets()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ModuleCollector_Collect_SelectsOnlyConsoleRootModuleClosureAndOwnedAssets(bool declaredSourceImport)
     {
         const string hostContent = "export { bridge } from '../b/bridge.mjs';";
         const string bridgeContent = "export { used } from '../a/used.mjs';";
@@ -236,7 +238,8 @@ public sealed class ModuleCatalogReaderTests
                         }
                     }
                 }
-                """.Replace("{{content}}", EscapeCSharp(hostContent))
+                """.Replace("Dependencies", declaredSourceImport ? "PackageImports" : "Dependencies", StringComparison.Ordinal)
+                    .Replace("{{content}}", EscapeCSharp(hostContent))
                     .Replace("{{hash}}", EscapeCSharp(Sha256(hostContent))));
             var bridgeAssemblyPath = CompileCatalogAssemblyToPath(
                 root,

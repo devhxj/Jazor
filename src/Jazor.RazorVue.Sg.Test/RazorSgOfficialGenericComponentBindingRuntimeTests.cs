@@ -57,21 +57,21 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "TypeInference.CreateGenericValue_0", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "nested-generic-slot-host-runtime.mjs", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "nested-generic-value-runtime.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "nested-generic-slot-host-runtime.js", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "nested-generic-value-runtime.js", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("__builder", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nested-generic-inference-runtime.mjs",
+            "components/nested-generic-inference-runtime.js",
             observation.ModuleText,
             "official-nested-generic-inference-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nested-generic-inference-runtime.mjs";
-            import slotHost from "./components/nested-generic-slot-host-runtime.mjs";
-            import genericValue from "./components/nested-generic-value-runtime.mjs";
+            import component from "./components/nested-generic-inference-runtime.js";
+            import slotHost from "./components/nested-generic-slot-host-runtime.js";
+            import genericValue from "./components/nested-generic-value-runtime.js";
 
             test("official Razor generic TypeInference is evaluated in the active slot builder scope", () => {
                 const host = component.setup({}, { slots: {} })();
@@ -86,8 +86,8 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/nested-generic-slot-host-runtime.mjs"] = "export default { name: \"nested-generic-slot-host-runtime\" };",
-                ["components/nested-generic-value-runtime.mjs"] = "export default { name: \"nested-generic-value-runtime\" };"
+                ["components/nested-generic-slot-host-runtime.js"] = "export default { name: \"nested-generic-slot-host-runtime\" };",
+                ["components/nested-generic-value-runtime.js"] = "export default { name: \"nested-generic-value-runtime\" };"
             });
     }
 
@@ -146,15 +146,15 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
         StringAssert.Contains(observation.ModuleText, "onUpdate:modelValue", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-editor-host-generic-runtime.mjs",
+            "components/release-editor-host-generic-runtime.js",
             observation.ModuleText,
             "official-release-editor-host-generic-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-editor-host-generic-runtime.mjs";
-            import releaseEditor from "./components/release-editor-generic-runtime.mjs";
+            import component from "./components/release-editor-host-generic-runtime.js";
+            import releaseEditor from "./components/release-editor-generic-runtime.js";
 
             test("official Razor generic component bindings preserve the constructed model contract", () => {
                 const render = component.setup({}, { slots: {} });
@@ -172,7 +172,7 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-editor-generic-runtime.mjs"] = "export default { name: \"release-editor-generic-runtime\" };"
+                ["components/release-editor-generic-runtime.js"] = "export default { name: \"release-editor-generic-runtime\" };"
             });
     }
 }

@@ -37,14 +37,14 @@ Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core re
 | `JazorMode` | 结果 |
 | --- | --- |
 | `none` | 默认值，不输出产物 |
-| `debug` | 直接物化模块、source map、manifest 与 import map |
+| `debug` | 标准 JS 项目中的模块与 source map；Emit 增量状态写入 `obj` |
 | `release` | 生产浏览器 bundle、source map 与所需资源 |
 
 `JazorDir` 默认是 `$(MSBuildProjectDirectory)\jazor\` 的最终输出目录。MSBuild 只在最终
 `Exe`/`WinExe` 构建后调用 Emit；它读取程序集 ModuleCatalog 与资源 manifest，完成校验后直接
 物化到该目录，发布时再由 SDK 复制到 `<publish>\jazor\`。该集成不需要
 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或二次解析生成 C#；
-`release` 使用 Netpack 进行浏览器打包。
+`release` 执行标准项目 `package.json` 中的构建脚本；默认脚本使用 Vite，也可以由应用替换。
 
 ## 相关文档
 

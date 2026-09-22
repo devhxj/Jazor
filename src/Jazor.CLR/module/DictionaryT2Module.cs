@@ -15,7 +15,7 @@ namespace Jazor.CLR;
 /// - Import: 需要额外逻辑的方法
 /// - Discard: Dictionary 特有但 JS Map 不完全支持的功能
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/DictionaryT2Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/DictionaryT2Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>","Map")]
 public static class DictionaryT2Module<TKey, TValue>
 {

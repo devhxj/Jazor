@@ -258,6 +258,7 @@ public sealed class ComponentInitializationLowererContractTests
             declaredNames ?? new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default),
             existingImports ?? Enumerable.Empty<ImportDeclaration>(),
             ["state", "props"],
+            currentModuleOutputPath: "components/test.js",
             cancellationToken);
 
     private static ImmutableArray<ImportDeclaration> CreateExistingImports()

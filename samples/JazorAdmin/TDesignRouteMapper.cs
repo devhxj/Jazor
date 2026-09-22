@@ -2,7 +2,7 @@ using static ECMAScript.VueRoute;
 
 namespace JazorAdmin;
 
-[ECMAScriptModule("components/tdesign/routes.mjs")]
+[ECMAScriptModule("components/tdesign/routes.js")]
 internal static class TDesignRouteMapper
 {
     public static string? MapHref(string? href, RouteLocationRaw? routeTarget)

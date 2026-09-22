@@ -20,26 +20,13 @@
   "imports": {
     "@wangeditor/editor": {
       "type": "module",
-      "development": "@wangeditor/editor",
-      "production": "@wangeditor/editor",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentStylesheetImports": [
-        "@wangeditor/editor/dist/css/style.css"
-      ],
-      "productionStylesheetImports": [
-        "@wangeditor/editor/dist/css/style.css"
-      ]
+      "path": "@wangeditor/editor",
+      "dependencies": []
     },
     "@wangeditor/editor-for-vue": {
       "type": "module",
-      "development": "@wangeditor/editor-for-vue",
-      "production": "@wangeditor/editor-for-vue",
-      "developmentDependencies": [
-        "@wangeditor/editor",
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "@wangeditor/editor-for-vue",
+      "dependencies": [
         "@wangeditor/editor",
         "vue"
       ]

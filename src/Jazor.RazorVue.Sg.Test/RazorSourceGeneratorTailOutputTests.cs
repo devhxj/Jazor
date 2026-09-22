@@ -76,12 +76,12 @@ public sealed class RazorTailOutputTests
             DescribeDiagnostics(diagnostics));
         Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
-        StringAssert.Contains(catalogSource, "@jazor/vue-runtime/routes.mjs");
+        StringAssert.Contains(catalogSource, "runtime/vue/routes.js");
         StringAssert.Contains(catalogSource, "export const routes");
         StringAssert.Contains(catalogSource, "orders/{id:int}");
         StringAssert.Contains(catalogSource, "queries");
-        StringAssert.Contains(catalogSource, "components/shell.mjs");
-        StringAssert.Contains(catalogSource, "components/orders.mjs");
+        StringAssert.Contains(catalogSource, "components/shell.js");
+        StringAssert.Contains(catalogSource, "components/orders.js");
     }
 
     [TestMethod]
@@ -145,8 +145,8 @@ public sealed class RazorTailOutputTests
         Assert.IsTrue(result, DescribeDiagnostics(diagnostics));
         Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
-        StringAssert.Contains(catalogSource, "components/razor-counter.mjs");
-        StringAssert.Contains(catalogSource, "components/handwritten-status.mjs");
+        StringAssert.Contains(catalogSource, "components/razor-counter.js");
+        StringAssert.Contains(catalogSource, "components/handwritten-status.js");
         StringAssert.Contains(catalogSource, "internal static partial class ModuleCatalog");
         StringAssert.Contains(catalogSource, "hmrProviderId: \"jazor.vue\"");
         StringAssert.Contains(catalogSource, "hmrModuleId:");

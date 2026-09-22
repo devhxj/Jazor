@@ -49,22 +49,20 @@ public sealed class VueDataUiProxyTests
         }
 
         Assert.AreEqual("3.23.4", manifest.RootElement.GetProperty("version").GetString());
-        Assert.AreEqual("jspdf", imports.GetProperty("jspdf").GetProperty("production").GetString());
+        Assert.AreEqual("jspdf", imports.GetProperty("jspdf").GetProperty("path").GetString());
         CollectionAssert.Contains(
             imports.GetProperty("vue-data-ui/vue-ui-table")
-                .GetProperty("productionDependencies")
+                .GetProperty("dependencies")
                 .EnumerateArray()
                 .Select(static value => value.GetString())
                 .ToArray(),
             "jspdf");
         Assert.AreEqual(0, manifest.RootElement.GetProperty("styles").GetArrayLength());
-        CollectionAssert.Contains(
-            imports.GetProperty("vue-data-ui/vue-ui-table")
-                .GetProperty("productionStylesheetImports")
-                .EnumerateArray()
-                .Select(static value => value.GetString())
-                .ToArray(),
-            "vue-data-ui/style.css");
+        foreach (var (type, _) in componentTypes)
+            Assert.AreEqual("vue-data-ui/style.css",
+                type.GetCustomAttributes(typeof(StyleAttribute), false)
+                    .Cast<StyleAttribute>().Single().Specifier,
+                type.Name);
     }
 
     [TestMethod]

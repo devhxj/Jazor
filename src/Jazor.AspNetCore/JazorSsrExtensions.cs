@@ -13,7 +13,7 @@ public static class JazorSsrExtensions
     /// <summary>Renders a fixed generated root component for eligible SPA navigation requests.</summary>
     /// <remarks>先调用 services.AddJazorSsr，并在此中间件之前托管同一套产物。复用 SPA fallback 的导航/404 规则；HEAD 不创建渲染请求。每次渲染创建 Vue app，Deno worker 持久复用。固定 request/props 被各请求共享；请求相关数据应使用 requestFactory。异常沿 ASP.NET Core 管线传播。</remarks>
     /// <param name="app">要注册中间件的应用管线。</param>
-    /// <param name="modulePath">相对 SSR 产物根目录的生成模块路径，例如 components/app.mjs；不是浏览器 URL。</param>
+    /// <param name="modulePath">相对 SSR 产物根目录的生成模块路径，例如 components/app.js；不是浏览器 URL。</param>
     /// <param name="props">可由 System.Text.Json 序列化的组件 props；同样发送给浏览器 hydration。</param>
     /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorSsr(
@@ -140,50 +140,24 @@ internal static class SsrDocumentWriter
     {
         var mountElementId = NormalizeMountElementId(options.MountElementId);
         var mountElementIdJson = JsonSerializer.Serialize(mountElementId, JsonOptions);
-        var componentUrl = SsrArtifactLocator.CreateBrowserArtifactUrl(
+        var hydrationUrl = SsrArtifactLocator.CreateBrowserArtifactUrl(
             artifactGraph,
             context.Request.PathBase,
-            result.ModulePath);
-        var componentUrlJson = JsonSerializer.Serialize(componentUrl, JsonOptions);
-        var importMap = SsrArtifactLocator.ReadBrowserImportMap(artifactGraph, context.Request.PathBase);
-        var styles = SsrArtifactLocator.ReadStylePaths(artifactGraph);
+            options.HydrationEntryPath);
+        var hydrationUrlJson = JsonSerializer.Serialize(hydrationUrl, JsonOptions);
+        var modulePathJson = JsonSerializer.Serialize(result.ModulePath, JsonOptions);
         var response = context.Response;
 
         await response.WriteAsync("<!doctype html>\n<html><head><meta charset=\"utf-8\">\n", cancellationToken);
-        foreach (var stylePath in styles)
-        {
-            var styleUrl = SsrArtifactLocator.CreateBrowserArtifactUrl(artifactGraph, context.Request.PathBase, stylePath);
-            await response.WriteAsync(
-                "<link rel=\"stylesheet\" href=\"" + HtmlEncoder.Default.Encode(styleUrl) + "\">\n",
-                cancellationToken);
-        }
-
-        await response.WriteAsync("<script type=\"importmap\">", cancellationToken);
-        await response.WriteAsync(importMap, cancellationToken);
-        await response.WriteAsync("</script>\n</head><body>\n<div id=\"", cancellationToken);
+        await response.WriteAsync("</head><body>\n<div id=\"", cancellationToken);
         await response.WriteAsync(HtmlEncoder.Default.Encode(mountElementId), cancellationToken);
         await response.WriteAsync("\">", cancellationToken);
         await response.WriteAsync(result.Html, cancellationToken);
         await response.WriteAsync("</div>\n<script id=\"" + StateElementId + "\" type=\"application/json\">", cancellationToken);
         await response.WriteAsync(result.SerializedState, cancellationToken);
         await response.WriteAsync("</script>\n<script type=\"module\">\n", cancellationToken);
-        await response.WriteAsync("import { createSSRApp } from \"vue\";\n", cancellationToken);
-        await response.WriteAsync("const mountElement = document.getElementById(" + mountElementIdJson + ");\n", cancellationToken);
-        await response.WriteAsync("if (!mountElement) throw new Error(\"Jazor SSR mount element was not found.\");\n", cancellationToken);
-        await response.WriteAsync("const stateElement = document.getElementById(\"" + StateElementId + "\");\n", cancellationToken);
-        await response.WriteAsync("if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");\n", cancellationToken);
-        await response.WriteAsync("const state = JSON.parse(stateElement.textContent);\n", cancellationToken);
-        await response.WriteAsync("if (!state || state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !(\"props\" in state) || !Array.isArray(state.providers) || state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0) || new Set(state.providers.map(provider => provider.key)).size !== state.providers.length) throw new Error(\"Jazor SSR state envelope version or provider shape is not supported.\");\n", cancellationToken);
-        await response.WriteAsync("if (mountElement.dataset.jazorSsrHydrated === \"1\" || mountElement.dataset.jazorSsrHydrating === \"1\" || mountElement.dataset.jazorSsrHydrating === \"failed\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");\n", cancellationToken);
-        // Claim the mount before the first await. This closes the concurrent bootstrap race while
-        // keeping malformed state validation before component code is imported.
-        await response.WriteAsync("mountElement.dataset.jazorSsrHydrating = \"1\";\n", cancellationToken);
-        await response.WriteAsync("let component; try { ({ default: component } = await import(" + componentUrlJson + ")); } catch (error) { mountElement.dataset.jazorSsrHydrating = \"failed\"; throw error; }\n", cancellationToken);
-        await response.WriteAsync("const props = state.props;\n", cancellationToken);
-        await response.WriteAsync("const providers = state.providers;\n", cancellationToken);
-        await response.WriteAsync("const app = createSSRApp(component, props); let mountError; app.config.errorHandler = error => { mountError = error; };\n", cancellationToken);
-        await response.WriteAsync("for (const provider of providers) app.provide(provider.key, provider.value);\n", cancellationToken);
-        await response.WriteAsync("try { app.mount(mountElement); await Promise.resolve(); if (mountError) throw mountError; mountElement.dataset.jazorSsrHydrated = \"1\"; delete mountElement.dataset.jazorSsrHydrating; } catch (error) { mountElement.dataset.jazorSsrHydrating = \"failed\"; throw error; }\n", cancellationToken);
+        await response.WriteAsync("import { hydrate } from " + hydrationUrlJson + ";\n", cancellationToken);
+        await response.WriteAsync("await hydrate(" + modulePathJson + ", " + mountElementIdJson + ");\n", cancellationToken);
         await response.WriteAsync("</script>\n</body></html>", cancellationToken);
     }
 

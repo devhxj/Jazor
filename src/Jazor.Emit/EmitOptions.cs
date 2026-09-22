@@ -10,7 +10,8 @@ internal sealed record EmitOptions(
     string? SourceRoot,
     IReadOnlyList<string> LibraryManifests,
     bool EnableSsr,
-    string? DenoExecutablePath = null)
+    string? DenoExecutablePath = null,
+    IReadOnlyList<string>? ModuleAssemblyPaths = null)
 {
     public static bool TryParse(string[] args, out EmitOptions? options, out string? error)
     {
@@ -21,6 +22,7 @@ internal sealed record EmitOptions(
         var outputDirectory = string.Empty;
         var manifestPath = string.Empty;
         var assemblyPaths = new List<string>();
+        var moduleAssemblyPaths = new List<string>();
         var mode = BuildMode.Development;
         var sourceRoot = string.Empty;
         var libraryManifests = new List<string>();
@@ -45,6 +47,17 @@ internal sealed record EmitOptions(
                 case "--assembly":
                     assemblyPaths.Add(value);
                     break;
+                case "--assembly-list":
+                    if (!TryReadPathList(value, assemblyPaths, out error))
+                        return false;
+                    break;
+                case "--module-assembly":
+                    moduleAssemblyPaths.Add(value);
+                    break;
+                case "--module-assembly-list":
+                    if (!TryReadPathList(value, moduleAssemblyPaths, out error))
+                        return false;
+                    break;
                 case "--out":
                     outputDirectory = value;
                     break;
@@ -64,6 +77,10 @@ internal sealed record EmitOptions(
                     break;
                 case "--library-manifest":
                     libraryManifests.Add(value);
+                    break;
+                case "--library-manifest-list":
+                    if (!TryReadPathList(value, libraryManifests, out error))
+                        return false;
                     break;
                 case "--ssr":
                     if (!bool.TryParse(value, out enableSsr))
@@ -113,8 +130,26 @@ internal sealed record EmitOptions(
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)],
             enableSsr,
-            string.IsNullOrWhiteSpace(denoExecutablePath) ? null : Path.GetFullPath(denoExecutablePath));
+            string.IsNullOrWhiteSpace(denoExecutablePath) ? null : Path.GetFullPath(denoExecutablePath),
+            [.. moduleAssemblyPaths.Select(Path.GetFullPath)]);
         return true;
+    }
+
+    private static bool TryReadPathList(string path, List<string> paths, out string? error)
+    {
+        try
+        {
+            paths.AddRange(File.ReadLines(Path.GetFullPath(path))
+                .Where(static line => !string.IsNullOrWhiteSpace(line))
+                .Select(static line => line.Trim()));
+            error = null;
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            error = $"Could not read Emit path list '{path}': {exception.Message}";
+            return false;
+        }
     }
 
     private static bool TryParseMode(string value, out BuildMode mode)

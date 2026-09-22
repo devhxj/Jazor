@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/System/RangeModule.js")]
+[ECMAScriptModule("./clr/System/RangeModule.js")]
 [Jazor(Op.Alias, "System.Range", "Object")]
 public static class RangeModule
 {

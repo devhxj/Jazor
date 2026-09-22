@@ -1,0 +1,6 @@
+<Project>
+ <ItemGroup>
+ <!-- The manifest is the package contract: Emit consumes the authored ESM paths directly. -->
+ <JazorLibraryManifest Include='$(MSBuildThisFileDirectory)..\jazor\lucide-vue-next\manifest.json' />
+ </ItemGroup>
+</Project>

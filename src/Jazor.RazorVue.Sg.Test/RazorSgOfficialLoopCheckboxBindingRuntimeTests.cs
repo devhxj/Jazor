@@ -51,14 +51,14 @@ public sealed class RazorSgOfficialLoopCheckboxBindingRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("    IsDone: false", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/todo-board-runtime.mjs",
+            "components/todo-board-runtime.js",
             observation.ModuleText,
             "official-todo-board-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/todo-board-runtime.mjs";
+            import component from "./components/todo-board-runtime.js";
 
             function collect(node, name) {
                 if (node == null) return [];

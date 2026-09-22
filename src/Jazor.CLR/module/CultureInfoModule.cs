@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// 这不是完整 ICU/.NET globalization 实现；当前模块优先提供确定的不变文化和名称规范化。
 /// 不应假设浏览器运行时的 locale 数据与 .NET 完全一致。
 /// </remarks>
-[ECMAScriptModule("clr/System/Globalization/CultureInfoModule.js")]
+[ECMAScriptModule("./clr/System/Globalization/CultureInfoModule.js")]
 [Jazor(Op.Alias, "System.Globalization.CultureInfo","String")]
 public static class CultureInfoModule
 {

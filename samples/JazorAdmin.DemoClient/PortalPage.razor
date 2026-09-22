@@ -10,7 +10,7 @@
         @if (authenticated)
         {
             <a class="@(DemoStyles.Action)" data-demo-command="sign-out" href="/auth/signout">
-                <VuLogOut Size="18px" />
+                <LogOut Size="18px" />
                 <span>Single logout</span>
             </a>
         }
@@ -25,13 +25,13 @@
             else if (!authenticated)
             {
                 <section class="@(DemoStyles.Anonymous)" data-demo-state="anonymous">
-                    <VuLockKeyhole Size="30px" />
+                    <LockKeyhole Size="30px" />
                     <div>
                         <h2>Sign in with JazorAdmin</h2>
                         <p>The client will redirect to the identity center, complete authorization-code + PKCE, then return here.</p>
                     </div>
                     <a class="@(DemoStyles.Action) @(DemoStyles.PrimaryAction)" data-demo-command="sign-in" href="/auth/signin">
-                        <VuLogIn Size="18px" />
+                        <LogIn Size="18px" />
                         <span>Start sign-in</span>
                     </a>
                 </section>
@@ -39,7 +39,7 @@
             else
             {
                 <section class="@(DemoStyles.IdentityStrip)" data-demo-state="authenticated">
-                    <div class="@(DemoStyles.IdentityIcon)"><VuUserRoundCheck Size="24px" /></div>
+                    <div class="@(DemoStyles.IdentityIcon)"><UserRoundCheck Size="24px" /></div>
                     <div>
                         <strong>@(session?.Name ?? session?.Email ?? "Signed-in user")</strong>
                         <span>@(session?.Email ?? session?.Subject)</span>
@@ -51,7 +51,7 @@
                     <TCard TitleValue="Protected API" SubtitleValue="Bearer token exchange" Bordered="@true" HoverShadow="@true" data-demo-card="protected-api">
                         <ContentSlot>
                             <div class="@(DemoStyles.CardBody)">
-                                <VuShieldCheck Size="26px" />
+                                <ShieldCheck Size="26px" />
                                 <strong>@(protectedOverview is null ? "Waiting" : "Connected")</strong>
                                 <span>JazorAdmin Overview API</span>
                             </div>
@@ -69,7 +69,7 @@
                     <TCard TitleValue="Audit signal" SubtitleValue="Platform operations" Bordered="@true" HoverShadow="@true" data-demo-card="audit-signal">
                         <ContentSlot>
                             <div class="@(DemoStyles.CardBody)">
-                                <VuChartLine Size="26px" />
+                                <ChartLine Size="26px" />
                                 <strong>@(protectedOverview?.TokenIssuances.ToString() ?? "--") issued</strong>
                                 <span>@(protectedOverview?.AuditEvents.ToString() ?? "--") events in the current window</span>
                             </div>

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Jazor.AspNetCore;
+using Jazor.AspNetCore.Dev;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace Jazor.EmitTest;
 
@@ -20,7 +22,7 @@ public sealed partial class JazorSsrHostingTests
 
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
-        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "components", "bootstrap-probe.mjs"), """
+        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "components", "bootstrap-probe.js"), """
             import { h } from "vue";
             if (typeof window !== "undefined") {
               window.probeImports++;
@@ -39,12 +41,16 @@ public sealed partial class JazorSsrHostingTests
               }
             };
             """);
+        var serverOrigin = await workspace.StartDevServerAsync("components/bootstrap-probe.js");
+        var bootstrapSource = string.Empty;
         await using var host = await CreateNetworkHostAsync(workspace.RootPath, artifactRoot, app =>
         {
             app.UsePathBase("/docs");
-            app.UseJazorArtifacts();
-            app.UseJazorSsr(new JazorSsrRequest("components/bootstrap-probe.mjs", new { Title = "snapshot" }));
-        });
+            app.UseJazorViteProxy();
+            app.UseJazorSsr(new JazorSsrRequest("components/bootstrap-probe.js", new { Title = "snapshot" }));
+            // The bootstrap is host-authored HTML script, not project source for Vite to transform.
+            app.MapGet("/bootstrap-entry.js", () => Results.Text(bootstrapSource, "text/javascript"));
+        }, serverOrigin);
         var address = new Uri(host.Urls.Single());
         using var client = new HttpClient { BaseAddress = address };
         using var request = new HttpRequestMessage(HttpMethod.Get, "/docs/features/probe");
@@ -57,7 +63,7 @@ public sealed partial class JazorSsrHostingTests
         html = html.Replace("<script type=\"module\">", "<script id=\"bootstrap\" type=\"text/plain\">", StringComparison.Ordinal);
         var scriptStart = html.IndexOf("<script id=\"bootstrap\" type=\"text/plain\">", StringComparison.Ordinal) + "<script id=\"bootstrap\" type=\"text/plain\">".Length;
         var scriptEnd = html.IndexOf("</script>", scriptStart, StringComparison.Ordinal);
-        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "bootstrap-entry.mjs"), html[scriptStart..scriptEnd]);
+        bootstrapSource = html[scriptStart..scriptEnd];
         html = html.Replace("</body>", "<script type=\"module\">\nwindow.scenario = " + JsonSerializer.Serialize(scenario) + ";\n" + BootstrapProbe + "\n</script></body>", StringComparison.Ordinal);
         await File.WriteAllTextAsync(Path.Combine(artifactRoot, "bootstrap-test.html"), html);
         var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath,
@@ -78,7 +84,11 @@ public sealed partial class JazorSsrHostingTests
         window.importGate = new Promise(resolve => releaseImport = resolve);
         const started = new Promise(resolve => window.importStarted = resolve);
         let entry = 0;
-        const execute = () => import(`./bootstrap-entry.mjs?run=${entry++}`);
+        const execute = () => {
+          const url = new URL('../bootstrap-entry.js', document.baseURI);
+          url.searchParams.set('run', String(entry++));
+          return import(url.href);
+        };
         const rejected = async (task, message) => {
           try { await task; } catch (error) {
             check(String(error).includes(message), `Expected '${message}', got ${error}`);

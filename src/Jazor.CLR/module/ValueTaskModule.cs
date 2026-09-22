@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// 而不是发射假阳性的 <c>instanceof Promise</c>（与共用 Error carrier 的异常家族同一规则）。
 /// </para>
 /// </remarks>
-[ECMAScriptModule("clr/System/Threading/Tasks/ValueTaskModule.js")]
+[ECMAScriptModule("./clr/System/Threading/Tasks/ValueTaskModule.js")]
 [Jazor(Op.Alias, "System.Threading.Tasks.ValueTask", "Promise")]
 public static class ValueTaskModule
 {

@@ -13,7 +13,7 @@
 | 能力 | 当前范围 | 详细入口 |
 | --- | --- | --- |
 | C# 到 ECMAScript | 受支持的 Roslyn `IOperation` 经 `Jazor.Compiler` 降低为 ESTree 和确定性 ECMAScript 模块；导入、临时名、source origin、source map 与宿主映射由编译主线统一负责。 | [编译器](../02-architecture/compiler.md) |
-| 模块与资源交付 | 当前主线消费 `Jazor.Generated.ModuleCatalog` 与 schema 2 binding metadata，并生成 Debug、Release、SSR 或 HMR 产物。npm/JSR 标准项目与细粒度 JS/CSS tree shaking按 P0-5 验收矩阵推进，完成后再扩大本页的支持声明。 | [类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)、[P0-5 计划](./npm-jsr-binding-tree-shaking-plan.md) |
+| 模块与资源交付 | 当前主线消费 `Jazor.Generated.ModuleCatalog` 与 schema 2 binding metadata，并生成 Debug、Release、SSR 或 HMR 产物。npm/JSR 标准项目与细粒度 JS/CSS tree shaking 已按 P0-5 验收矩阵完成。 | [类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)、[P0-5 计划](./npm-jsr-binding-tree-shaking-plan.md) |
 | Razor-to-Vue | 官方 Razor Source Generator 生成的最终 `Compilation` 经 `Jazor.RazorVue` 绑定为 Vue render-function `.mjs`；C# 表达式、成员和调用语义仍通过核心编译器 lowering。 | [Razor-to-Vue 架构](../02-architecture/razor-to-vue.md) |
 | CLR 与外部 API | CLR/ECMAScript 映射、白名单和 runtime helper 共同定义受支持的运行时语义。映射缺失的类型或成员在使用点提供明确诊断，原始 JavaScript 通过显式 host mapping 进入模块。 | [编译器](../02-architecture/compiler.md) |
 
@@ -31,7 +31,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 生态绑定与参考应用服务于同一目标：让已声明的能力能够在真实项目中被自然地组合和验证。
 
-- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；它们以强类型 binding 或资源库形式交付。
+- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；它们以强类型 binding 或资源库形式交付。VuIcons 已停止维护，不属于当前受支持的生态层。
 - `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 
@@ -61,7 +61,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | 核心编译器 | 至少 10,000 个通过场景、98% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | Razor-to-Vue | 至少 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 绑定 | 每个目标至少 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Vu Icons、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
+| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 

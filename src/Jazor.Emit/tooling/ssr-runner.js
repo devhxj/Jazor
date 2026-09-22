@@ -2,7 +2,7 @@ import { createSSRApp } from "vue";
 import { renderToString } from "@vue/server-renderer";
 
 const protocolPrefix = "__JAZOR_SSR__:";
-const artifactRootUrl = new URL("../", import.meta.url);
+const artifactRootUrl = new URL("./", import.meta.url);
 
 function writeResponse(response) {
   console.log(protocolPrefix + JSON.stringify(response));
@@ -61,39 +61,18 @@ async function render(request) {
   return html;
 }
 
-async function handleLine(line) {
-  if (line.trim().length === 0) {
-    return;
-  }
-
-  let request;
+// A loopback HTTP endpoint survives Deno watch restarts without reusing an old stdin reader.
+// The host owns worker concurrency; Deno owns module loading and development file watching.
+Deno.serve({
+  hostname: "127.0.0.1",
+  port: 0,
+  onListen: ({ port }) => writeResponse({ kind: "ready", url: `http://127.0.0.1:${port}/` })
+}, async (request) => {
   try {
-    request = JSON.parse(line);
-    const html = await render(request);
-    writeResponse({ id: request.id, html });
+    const html = await render(await request.json());
+    return Response.json({ html });
   } catch (error) {
     const message = error instanceof Error ? error.stack ?? error.message : String(error);
-    writeResponse({ id: request?.id ?? null, error: message });
+    return Response.json({ error: message }, { status: 500 });
   }
-}
-
-// One worker processes one request at a time. The .NET pool owns concurrency, which keeps
-// response correlation deterministic and lets cancellation terminate only the leased worker.
-// 单 worker 串行消费 stdin；generation 变化由宿主整体轮换进程，避免 ESM cache 读取旧产物。
-writeResponse({ kind: "ready" });
-const decoder = new TextDecoder();
-let buffered = "";
-for await (const chunk of Deno.stdin.readable) {
-  buffered += decoder.decode(chunk, { stream: true });
-  let newlineIndex;
-  while ((newlineIndex = buffered.indexOf("\n")) >= 0) {
-    const line = buffered.slice(0, newlineIndex).replace(/\r$/, "");
-    buffered = buffered.slice(newlineIndex + 1);
-    await handleLine(line);
-  }
-}
-
-buffered += decoder.decode();
-if (buffered.length > 0) {
-  await handleLine(buffered);
-}
+});

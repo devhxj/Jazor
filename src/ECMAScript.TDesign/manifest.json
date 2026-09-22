@@ -7,7 +7,7 @@
     "tdesign-vue-next": {
       "source": "npm",
       "version": "1.20.7",
-      "integrity": "sha512-7/ulTYKbkPZf9QnwHFf0TiQXrCZDQwj2Kwn734AsJ4nHnuCMCjLy\u002BUwN7/oMLZOjfKIg1\u002Be9VPwg3yzXBoouhg=="
+      "integrity": "sha512-7/ulTYKbkPZf9QnwHFf0TiQXrCZDQwj2Kwn734AsJ4nHnuCMCjLy+UwN7/oMLZOjfKIg1+e9VPwg3yzXBoouhg=="
     },
     "vue": {
       "source": "npm",
@@ -17,1230 +17,518 @@
   "imports": {
     "tdesign-vue-next/es/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/index.mjs",
-      "production": "tdesign-vue-next/es/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/style/index.css"
       ]
     },
     "tdesign-vue-next/es/affix/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/affix/index.mjs",
-      "production": "tdesign-vue-next/es/affix/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/affix/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/affix/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/affix/style/index.css"
       ]
     },
     "tdesign-vue-next/es/alert/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/alert/index.mjs",
-      "production": "tdesign-vue-next/es/alert/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/alert/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/alert/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/alert/style/index.css"
       ]
     },
     "tdesign-vue-next/es/anchor/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/anchor/index.mjs",
-      "production": "tdesign-vue-next/es/anchor/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/anchor/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/anchor/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/anchor/style/index.css"
       ]
     },
     "tdesign-vue-next/es/auto-complete/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/auto-complete/index.mjs",
-      "production": "tdesign-vue-next/es/auto-complete/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/auto-complete/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/auto-complete/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/auto-complete/style/index.css"
       ]
     },
     "tdesign-vue-next/es/avatar/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/avatar/index.mjs",
-      "production": "tdesign-vue-next/es/avatar/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/avatar/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/avatar/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/avatar/style/index.css"
       ]
     },
     "tdesign-vue-next/es/back-top/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/back-top/index.mjs",
-      "production": "tdesign-vue-next/es/back-top/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/back-top/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/back-top/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/back-top/style/index.css"
       ]
     },
     "tdesign-vue-next/es/badge/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/badge/index.mjs",
-      "production": "tdesign-vue-next/es/badge/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/badge/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/badge/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/badge/style/index.css"
       ]
     },
     "tdesign-vue-next/es/breadcrumb/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/breadcrumb/index.mjs",
-      "production": "tdesign-vue-next/es/breadcrumb/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/breadcrumb/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/breadcrumb/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/breadcrumb/style/index.css"
       ]
     },
     "tdesign-vue-next/es/button/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/button/index.mjs",
-      "production": "tdesign-vue-next/es/button/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/button/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/button/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/button/style/index.css"
       ]
     },
     "tdesign-vue-next/es/calendar/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/calendar/index.mjs",
-      "production": "tdesign-vue-next/es/calendar/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/calendar/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/calendar/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/calendar/style/index.css"
       ]
     },
     "tdesign-vue-next/es/card/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/card/index.mjs",
-      "production": "tdesign-vue-next/es/card/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/card/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/card/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/card/style/index.css"
       ]
     },
     "tdesign-vue-next/es/cascader/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/cascader/index.mjs",
-      "production": "tdesign-vue-next/es/cascader/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/cascader/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/cascader/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/cascader/style/index.css"
       ]
     },
     "tdesign-vue-next/es/checkbox/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/checkbox/index.mjs",
-      "production": "tdesign-vue-next/es/checkbox/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/checkbox/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/checkbox/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/checkbox/style/index.css"
       ]
     },
     "tdesign-vue-next/es/collapse/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/collapse/index.mjs",
-      "production": "tdesign-vue-next/es/collapse/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/collapse/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/collapse/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/collapse/style/index.css"
       ]
     },
     "tdesign-vue-next/es/color-picker/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/color-picker/index.mjs",
-      "production": "tdesign-vue-next/es/color-picker/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/color-picker/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/color-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/color-picker/style/index.css"
       ]
     },
     "tdesign-vue-next/es/comment/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/comment/index.mjs",
-      "production": "tdesign-vue-next/es/comment/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/comment/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/comment/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/comment/style/index.css"
       ]
     },
     "tdesign-vue-next/es/config-provider/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/config-provider/index.mjs",
-      "production": "tdesign-vue-next/es/config-provider/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "tdesign-vue-next/es/config-provider/index.mjs",
+      "dependencies": [
         "vue"
       ]
     },
     "tdesign-vue-next/es/date-picker/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/date-picker/index.mjs",
-      "production": "tdesign-vue-next/es/date-picker/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/date-picker/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/date-picker/style/index.css"
       ]
     },
     "tdesign-vue-next/es/descriptions/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/descriptions/index.mjs",
-      "production": "tdesign-vue-next/es/descriptions/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/descriptions/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/descriptions/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/descriptions/style/index.css"
       ]
     },
     "tdesign-vue-next/es/dialog/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/dialog/index.mjs",
-      "production": "tdesign-vue-next/es/dialog/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/dialog/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/dialog/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/dialog/style/index.css"
       ]
     },
     "tdesign-vue-next/es/divider/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/divider/index.mjs",
-      "production": "tdesign-vue-next/es/divider/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/divider/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/divider/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/divider/style/index.css"
       ]
     },
     "tdesign-vue-next/es/drawer/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/drawer/index.mjs",
-      "production": "tdesign-vue-next/es/drawer/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/drawer/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/drawer/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/drawer/style/index.css"
       ]
     },
     "tdesign-vue-next/es/dropdown/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/dropdown/index.mjs",
-      "production": "tdesign-vue-next/es/dropdown/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/dropdown/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/dropdown/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/dropdown/style/index.css"
       ]
     },
     "tdesign-vue-next/es/empty/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/empty/index.mjs",
-      "production": "tdesign-vue-next/es/empty/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/empty/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/empty/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/empty/style/index.css"
       ]
     },
     "tdesign-vue-next/es/form/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/form/index.mjs",
-      "production": "tdesign-vue-next/es/form/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/form/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/form/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/form/style/index.css"
       ]
     },
     "tdesign-vue-next/es/grid/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/grid/index.mjs",
-      "production": "tdesign-vue-next/es/grid/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/grid/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/grid/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/grid/style/index.css"
       ]
     },
     "tdesign-vue-next/es/guide/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/guide/index.mjs",
-      "production": "tdesign-vue-next/es/guide/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/guide/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/guide/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/guide/style/index.css"
       ]
     },
     "tdesign-vue-next/es/icon/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/icon/index.mjs",
-      "production": "tdesign-vue-next/es/icon/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "tdesign-vue-next/es/icon/index.mjs",
+      "dependencies": [
         "vue"
       ]
     },
     "tdesign-vue-next/es/image/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/image/index.mjs",
-      "production": "tdesign-vue-next/es/image/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/image/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/image/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/image/style/index.css"
       ]
     },
     "tdesign-vue-next/es/image-viewer/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/image-viewer/index.mjs",
-      "production": "tdesign-vue-next/es/image-viewer/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/image-viewer/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/image-viewer/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/image-viewer/style/index.css"
       ]
     },
     "tdesign-vue-next/es/input/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/input/index.mjs",
-      "production": "tdesign-vue-next/es/input/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/input/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/input/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/input/style/index.css"
       ]
     },
     "tdesign-vue-next/es/input-adornment/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/input-adornment/index.mjs",
-      "production": "tdesign-vue-next/es/input-adornment/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/input-adornment/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/input-adornment/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/input-adornment/style/index.css"
       ]
     },
     "tdesign-vue-next/es/input-number/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/input-number/index.mjs",
-      "production": "tdesign-vue-next/es/input-number/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/input-number/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/input-number/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/input-number/style/index.css"
       ]
     },
     "tdesign-vue-next/es/layout/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/layout/index.mjs",
-      "production": "tdesign-vue-next/es/layout/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/layout/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/layout/style/index.css"
       ]
     },
     "tdesign-vue-next/es/link/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/link/index.mjs",
-      "production": "tdesign-vue-next/es/link/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/link/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/link/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/link/style/index.css"
       ]
     },
     "tdesign-vue-next/es/list/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/list/index.mjs",
-      "production": "tdesign-vue-next/es/list/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/list/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/list/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/list/style/index.css"
       ]
     },
     "tdesign-vue-next/es/loading/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/loading/index.mjs",
-      "production": "tdesign-vue-next/es/loading/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/loading/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/loading/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/loading/style/index.css"
       ]
     },
     "tdesign-vue-next/es/menu/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/menu/index.mjs",
-      "production": "tdesign-vue-next/es/menu/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/menu/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/menu/style/index.css"
       ]
     },
     "tdesign-vue-next/es/message/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/message/index.mjs",
-      "production": "tdesign-vue-next/es/message/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/message/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/message/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/message/style/index.css"
       ]
     },
     "tdesign-vue-next/es/notification/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/notification/index.mjs",
-      "production": "tdesign-vue-next/es/notification/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/notification/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/notification/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/notification/style/index.css"
       ]
     },
     "tdesign-vue-next/es/pagination/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/pagination/index.mjs",
-      "production": "tdesign-vue-next/es/pagination/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/pagination/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/pagination/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/pagination/style/index.css"
       ]
     },
     "tdesign-vue-next/es/popconfirm/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/popconfirm/index.mjs",
-      "production": "tdesign-vue-next/es/popconfirm/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/popconfirm/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/popconfirm/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/popconfirm/style/index.css"
       ]
     },
     "tdesign-vue-next/es/popup/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/popup/index.mjs",
-      "production": "tdesign-vue-next/es/popup/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/popup/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/popup/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/popup/style/index.css"
       ]
     },
     "tdesign-vue-next/es/progress/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/progress/index.mjs",
-      "production": "tdesign-vue-next/es/progress/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/progress/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/progress/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/progress/style/index.css"
       ]
     },
     "tdesign-vue-next/es/qrcode/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/qrcode/index.mjs",
-      "production": "tdesign-vue-next/es/qrcode/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/qrcode/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/qrcode/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/qrcode/style/index.css"
       ]
     },
     "tdesign-vue-next/es/radio/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/radio/index.mjs",
-      "production": "tdesign-vue-next/es/radio/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/radio/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/radio/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/radio/style/index.css"
       ]
     },
     "tdesign-vue-next/es/range-input/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/range-input/index.mjs",
-      "production": "tdesign-vue-next/es/range-input/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/range-input/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/range-input/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/range-input/style/index.css"
       ]
     },
     "tdesign-vue-next/es/rate/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/rate/index.mjs",
-      "production": "tdesign-vue-next/es/rate/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/rate/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/rate/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/rate/style/index.css"
       ]
     },
     "tdesign-vue-next/es/select/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/select/index.mjs",
-      "production": "tdesign-vue-next/es/select/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/select/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/select/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/select/style/index.css"
       ]
     },
     "tdesign-vue-next/es/select-input/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/select-input/index.mjs",
-      "production": "tdesign-vue-next/es/select-input/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/select-input/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/select-input/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/select-input/style/index.css"
       ]
     },
     "tdesign-vue-next/es/skeleton/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/skeleton/index.mjs",
-      "production": "tdesign-vue-next/es/skeleton/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/skeleton/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/skeleton/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/skeleton/style/index.css"
       ]
     },
     "tdesign-vue-next/es/slider/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/slider/index.mjs",
-      "production": "tdesign-vue-next/es/slider/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/slider/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/slider/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/slider/style/index.css"
       ]
     },
     "tdesign-vue-next/es/space/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/space/index.mjs",
-      "production": "tdesign-vue-next/es/space/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/space/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/space/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/space/style/index.css"
       ]
     },
     "tdesign-vue-next/es/statistic/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/statistic/index.mjs",
-      "production": "tdesign-vue-next/es/statistic/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/statistic/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/statistic/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/statistic/style/index.css"
       ]
     },
     "tdesign-vue-next/es/steps/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/steps/index.mjs",
-      "production": "tdesign-vue-next/es/steps/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/steps/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/steps/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/steps/style/index.css"
       ]
     },
     "tdesign-vue-next/es/sticky-tool/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/sticky-tool/index.mjs",
-      "production": "tdesign-vue-next/es/sticky-tool/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/sticky-tool/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/sticky-tool/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/sticky-tool/style/index.css"
       ]
     },
     "tdesign-vue-next/es/swiper/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/swiper/index.mjs",
-      "production": "tdesign-vue-next/es/swiper/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/swiper/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/swiper/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/swiper/style/index.css"
       ]
     },
     "tdesign-vue-next/es/switch/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/switch/index.mjs",
-      "production": "tdesign-vue-next/es/switch/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/switch/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/switch/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/switch/style/index.css"
       ]
     },
     "tdesign-vue-next/es/table/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/table/index.mjs",
-      "production": "tdesign-vue-next/es/table/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/table/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/table/style/index.css"
       ]
     },
     "tdesign-vue-next/es/tabs/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/tabs/index.mjs",
-      "production": "tdesign-vue-next/es/tabs/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/tabs/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tabs/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tabs/style/index.css"
       ]
     },
     "tdesign-vue-next/es/tag/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/tag/index.mjs",
-      "production": "tdesign-vue-next/es/tag/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/tag/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tag/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tag/style/index.css"
       ]
     },
     "tdesign-vue-next/es/tag-input/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/tag-input/index.mjs",
-      "production": "tdesign-vue-next/es/tag-input/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/tag-input/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tag-input/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tag-input/style/index.css"
       ]
     },
     "tdesign-vue-next/es/textarea/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/textarea/index.mjs",
-      "production": "tdesign-vue-next/es/textarea/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/textarea/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/textarea/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/textarea/style/index.css"
       ]
     },
     "tdesign-vue-next/es/time-picker/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/time-picker/index.mjs",
-      "production": "tdesign-vue-next/es/time-picker/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/time-picker/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/time-picker/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/time-picker/style/index.css"
       ]
     },
     "tdesign-vue-next/es/timeline/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/timeline/index.mjs",
-      "production": "tdesign-vue-next/es/timeline/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/timeline/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/timeline/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/timeline/style/index.css"
       ]
     },
     "tdesign-vue-next/es/tooltip/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/tooltip/index.mjs",
-      "production": "tdesign-vue-next/es/tooltip/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/tooltip/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tooltip/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tooltip/style/index.css"
       ]
     },
     "tdesign-vue-next/es/transfer/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/transfer/index.mjs",
-      "production": "tdesign-vue-next/es/transfer/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/transfer/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/transfer/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/transfer/style/index.css"
       ]
     },
     "tdesign-vue-next/es/tree/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/tree/index.mjs",
-      "production": "tdesign-vue-next/es/tree/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/tree/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tree/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tree/style/index.css"
       ]
     },
     "tdesign-vue-next/es/tree-select/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/tree-select/index.mjs",
-      "production": "tdesign-vue-next/es/tree-select/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/tree-select/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/tree-select/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/tree-select/style/index.css"
       ]
     },
     "tdesign-vue-next/es/typography/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/typography/index.mjs",
-      "production": "tdesign-vue-next/es/typography/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/typography/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/typography/style/index.css"
       ]
     },
     "tdesign-vue-next/es/upload/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/upload/index.mjs",
-      "production": "tdesign-vue-next/es/upload/index.mjs",
-      "developmentDependencies": [
+      "path": "tdesign-vue-next/es/upload/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "tdesign-vue-next/es/upload/style/index.css"
-      ],
-      "productionStylesheetImports": [
-        "tdesign-vue-next/es/upload/style/index.css"
       ]
     },
     "tdesign-vue-next/es/watermark/index.mjs": {
       "type": "module",
-      "development": "tdesign-vue-next/es/watermark/index.mjs",
-      "production": "tdesign-vue-next/es/watermark/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "tdesign-vue-next/es/watermark/index.mjs",
+      "dependencies": [
         "vue"
       ]
     }
   },
   "requires": {
-    "vue3": "\u003E=3.1.0"
+    "vue3": ">=3.1.0"
   },
   "styles": [],
   "files": []

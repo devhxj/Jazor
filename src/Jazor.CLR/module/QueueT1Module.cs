@@ -4,7 +4,7 @@ namespace Jazor.CLR;
 /// Queue&lt;T&gt; 走 CLR runtime wrapper，避免 raw JavaScript 宿主降级。
 /// carrier 以 items + head 游标保留 FIFO 顺序；未实现的容量管理成员仍保持 unsupported。
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/QueueT1Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/QueueT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.Queue<T>", "Object")]
 public static class QueueT1Module<T>
 {

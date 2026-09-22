@@ -66,15 +66,15 @@ public sealed class RazorSgOfficialRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "content:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/recursive-template-runtime.mjs",
+            "components/recursive-template-runtime.js",
             observation.ModuleText,
             "official-recursive-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/recursive-template-runtime.mjs";
-            import treePanel from "./components/tree-panel-recursive-template-runtime.mjs";
+            import component from "./components/recursive-template-runtime.js";
+            import treePanel from "./components/tree-panel-recursive-template-runtime.js";
 
             test("official Razor recursive RenderFragment factory preserves nested vnode order", () => {
                 const panel = component.setup({ Label: "Deploy", Depth: 2 }, { slots: {} })();
@@ -101,7 +101,7 @@ public sealed class RazorSgOfficialRecursiveRenderFragmentRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/tree-panel-recursive-template-runtime.mjs"] = "export default { name: \"tree-panel-recursive-template-runtime\" };"
+                ["components/tree-panel-recursive-template-runtime.js"] = "export default { name: \"tree-panel-recursive-template-runtime\" };"
             });
     }
 }

@@ -497,8 +497,8 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.VuIcons, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|lucide|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -531,7 +531,7 @@ internal static class PackageCatalog
         "Jazor.Admin",
         "ECMAScript.Vue.Devtools",
         "ECMAScript.VueDataUi",
-        "ECMAScript.VuIcons",
+        "ECMAScript.Lucide",
         "ECMAScript.Pinia",
         "ECMAScript.Pinia.Testing",
         "ECMAScript.VueRoute",
@@ -566,9 +566,9 @@ internal static class PackageCatalog
         ["vue-data-ui"] = "ECMAScript.VueDataUi",
         ["ecmascript.vuedataui"] = "ECMAScript.VueDataUi",
         ["ECMAScript.VueDataUi"] = "ECMAScript.VueDataUi",
-        ["vu-icons"] = "ECMAScript.VuIcons",
-        ["ecmascript.vuicons"] = "ECMAScript.VuIcons",
-        ["ECMAScript.VuIcons"] = "ECMAScript.VuIcons",
+        ["lucide"] = "ECMAScript.Lucide",
+        ["ecmascript.lucide"] = "ECMAScript.Lucide",
+        ["ECMAScript.Lucide"] = "ECMAScript.Lucide",
         ["pinia"] = "ECMAScript.Pinia",
         ["ECMAScript.Pinia"] = "ECMAScript.Pinia",
         ["pinia-testing"] = "ECMAScript.Pinia.Testing",
@@ -648,7 +648,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, jazor-vue, style, admin, devtools, dataui, vu-icons, pinia, pinia-testing, vueroute, date-fns, vuetify, elementplus, tdesign.");
+            "jazor, jazor-vue, style, admin, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -680,9 +680,9 @@ internal static class PackageCatalog
                 Path.Combine(repoRoot, "src", "ECMAScript.VueDataUi", "ECMAScript.VueDataUi.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.VuIcons"] = new(
-                "ECMAScript.VuIcons",
-                Path.Combine(repoRoot, "src", "ECMAScript.VuIcons", "ECMAScript.VuIcons.csproj"),
+            ["ECMAScript.Lucide"] = new(
+                "ECMAScript.Lucide",
+                Path.Combine(repoRoot, "src", "ECMAScript.Lucide", "ECMAScript.Lucide.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Pinia"] = new(

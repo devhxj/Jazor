@@ -71,15 +71,15 @@ public sealed class RazorSgOfficialRenderFragmentObjectInitializerRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-summary-descriptor-runtime.mjs",
+            "components/release-summary-descriptor-runtime.js",
             observation.ModuleText,
             "official-render-fragment-object-initializer-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-summary-descriptor-runtime.mjs";
-            import slotPanel from "./components/slot-panel-object-initializer-runtime.mjs";
+            import component from "./components/release-summary-descriptor-runtime.js";
+            import slotPanel from "./components/slot-panel-object-initializer-runtime.js";
 
             test("official Razor object-initialized descriptors project their local slot fragment", () => {
                 const panel = component.setup({ ReleaseName: "Gateway rollout" }, { slots: {} })();
@@ -95,7 +95,7 @@ public sealed class RazorSgOfficialRenderFragmentObjectInitializerRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-object-initializer-runtime.mjs"] = "export default { name: \"slot-panel-object-initializer-runtime\" };"
+                ["components/slot-panel-object-initializer-runtime.js"] = "export default { name: \"slot-panel-object-initializer-runtime\" };"
             });
     }
 }

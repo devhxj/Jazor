@@ -4,7 +4,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeBigIntegerBinaryScenarios
 {
-    private const string ModulePath = "clr/System/Numerics/BigIntegerModule.js";
+    private const string ModulePath = "./clr/System/Numerics/BigIntegerModule.js";
     private static readonly BigInteger TwoPow64 = BigInteger.One << 64;
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

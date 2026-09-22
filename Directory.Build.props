@@ -5,7 +5,6 @@
     <DenoHostVersion>2.9.7</DenoHostVersion>
     <!-- DenoHost 2.9.6 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
-    <NetPackVersion>0.8.2</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>
     <CodeAnalysisVersion>5.11.0-1.26425.128</CodeAnalysisVersion>
     <Net110AssembliesVersion>1.8.11</Net110AssembliesVersion>

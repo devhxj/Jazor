@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js")]
+[ECMAScriptModule("./clr/System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js")]
 [Jazor(Op.Alias, "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>","WeakMap")]
 public static class ConditionalWeakTableT2Module<TKey, TValue> where TKey : class
 {

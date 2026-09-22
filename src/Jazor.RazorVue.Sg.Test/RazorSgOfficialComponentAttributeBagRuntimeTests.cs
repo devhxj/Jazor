@@ -55,15 +55,15 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
         StringAssert.Contains(observation.ModuleText, "panel-heading", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-panel-host.mjs",
+            "components/release-panel-host.js",
             observation.ModuleText,
             "official-release-panel-attribute-bag-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-panel-host.mjs";
-            import releasePanel from "./components/release-panel-attribute-bag.mjs";
+            import component from "./components/release-panel-host.js";
+            import releasePanel from "./components/release-panel-attribute-bag.js";
 
             test("official Razor component attribute bags normalize known props without rewriting foreign attributes", () => {
                 const panel = component.setup({
@@ -81,7 +81,7 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-panel-attribute-bag.mjs"] = "export default { name: \"release-panel-attribute-bag\" };"
+                ["components/release-panel-attribute-bag.js"] = "export default { name: \"release-panel-attribute-bag\" };"
             });
     }
 }

@@ -20,7 +20,7 @@ namespace Jazor.CLR;
 /// - T[] → Array<T>
 /// - out 参数 → 返回数组（第一个元素是返回值，后续是 out 参数值）
 /// </summary>
-[ECMAScriptModule("clr/System/ArrayModule.js")]
+[ECMAScriptModule("./clr/System/ArrayModule.js")]
 [Jazor(Op.Alias, "System.Array", "Array")]
 public static class ArrayModule<T>
 {

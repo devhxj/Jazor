@@ -49,14 +49,14 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "import { Normalize", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/declared-direct-import-name-collision.mjs",
+            "components/declared-direct-import-name-collision.js",
             observation.ModuleText,
             "official-declared-direct-import-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/declared-direct-import-name-collision.mjs";
+            import component from "./components/declared-direct-import-name-collision.js";
 
             test("declared members and direct imports retain separate bindings", () => {
                 const vnode = component.setup({}, { slots: {} })();
@@ -123,14 +123,14 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
             "Static module calls must import their export, not materialize the C# containing type.");
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/static-module-text.mjs",
+            "components/static-module-text.js",
             observation.ModuleText,
             "official-static-module-member-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/static-module-text.mjs";
+            import component from "./components/static-module-text.js";
 
             test("static module member calls link without a containing-type export", () => {
                 const vnode = component.setup({}, { slots: {} })();
@@ -141,7 +141,7 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["helpers/static-message.mjs"] =
+                ["helpers/static-message.js"] =
                     "export function Get(value) { return `module:${value}`; }"
             });
     }
@@ -207,14 +207,14 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "as i$", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/cross-pass-import-name-collision.mjs",
+            "components/cross-pass-import-name-collision.js",
             observation.ModuleText,
             "official-cross-pass-import-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/cross-pass-import-name-collision.mjs";
+            import component from "./components/cross-pass-import-name-collision.js";
 
             test("compiler and direct render imports retain independent same-name exports", () => {
                 const vnode = component.setup({}, { slots: {} })();
@@ -241,7 +241,7 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["helpers/compiler-normalize.mjs"] =
+                ["helpers/compiler-normalize.js"] =
                     "export function Normalize(value) { return `compiler:${value.trim()}`; }",
                 ["node_modules/direct-normalize-library/package.json"] =
                     """{"type":"module","exports":"./index.mjs"}""",

@@ -4,7 +4,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeTimeOnlyScenarios
 {
-    private const string ModulePath = "clr/System/TimeOnlyModule.js";
+    private const string ModulePath = "./clr/System/TimeOnlyModule.js";
     private static readonly TimeOnly SampleValue = new TimeOnly(3, 4, 5, 6, 7).Add(TimeSpan.FromTicks(9));
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

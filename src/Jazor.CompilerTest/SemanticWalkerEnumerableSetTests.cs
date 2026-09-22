@@ -41,7 +41,7 @@ public sealed class SemanticWalkerEnumerableSetTests
 
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
-        var enumerableImports = imports.Single(static pair => pair.Key == "clr/System/Linq/EnumerableModule.js").Value
+        var enumerableImports = imports.Single(static pair => pair.Key == "./clr/System/Linq/EnumerableModule.js").Value
             .Select(static specifier => specifier.ToECMAScript())
             .ToArray();
         CollectionAssert.AreEquivalent(
@@ -65,7 +65,7 @@ public sealed class SemanticWalkerEnumerableSetTests
         var spanBody = new SemanticWalker(true).Visit(spanBlock, spanArgument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
         Assert.IsNotNull(spanBody);
         var spanImports = spanArgument.FlushImportSpecifiers().ToArray();
-        var memoryExtensionsImport = spanImports.Single(static pair => pair.Key == "clr/System/MemoryExtensionsModule.js").Value
+        var memoryExtensionsImport = spanImports.Single(static pair => pair.Key == "./clr/System/MemoryExtensionsModule.js").Value
             .Single()
             .ToECMAScript();
         Assert.AreEqual("_a4ed2b50c69946de", memoryExtensionsImport);

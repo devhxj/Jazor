@@ -1,4 +1,5 @@
 using Jazor.AspNetCore;
+using Jazor.AspNetCore.Dev;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -11,6 +12,7 @@ public partial class Program
     public static async Task Main(string[] args)
     {
         var builder = JazorWebApplication.CreateBuilder(args);
+        builder.Services.AddJazorViteProxy(options => options.ServerOrigin = new Uri(builder.Configuration["JazorAdminDemo:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
         builder.Services.Configure<DemoClientOptions>(
             builder.Configuration.GetSection(DemoClientOptions.SectionName));
         var options = builder.Configuration
@@ -91,6 +93,7 @@ public partial class Program
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapDemoEndpoints();
+        app.UseJazorViteProxy();
         app.UseJazorHost();
         app.UseJazorSpaFallback(DemoShell.WriteAsync);
 

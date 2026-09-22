@@ -71,18 +71,18 @@ public sealed class RazorSgOfficialLoopBoundSelectRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Array.from(state.releases ?? [], release =>", StringComparison.Ordinal);
         Assert.IsTrue(
             observation.ModuleText.IndexOf("class ReleaseTarget", StringComparison.Ordinal) <
-            observation.ModuleText.IndexOf("const state = reactive", StringComparison.Ordinal),
+            observation.ModuleText.IndexOf("let state =", StringComparison.Ordinal),
             observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-environment-editor-runtime.mjs",
+            "components/release-environment-editor-runtime.js",
             observation.ModuleText,
             "official-release-environment-editor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-environment-editor-runtime.mjs";
+            import component from "./components/release-environment-editor-runtime.js";
 
             function collect(node, name) {
                 if (node == null) return [];

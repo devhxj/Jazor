@@ -20,6 +20,7 @@ namespace ECMAScript;
 /// components already cover mount/destroy and two-way value binding).
 /// </remarks>
 [ECMAScript("@wangeditor/editor-for-vue")]
+[Style("@wangeditor/editor/dist/css/style.css")]
 [Description("@#")]
 public static partial class WangEditor
 {

@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeElementReferenceScenarios
 {
-    private const string ExtensionsModule = "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js";
+    private const string ExtensionsModule = "./clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js";
     private const string FocusAsync = "static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)";
     private const string FocusAsyncWithOptions = "static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)";
 

@@ -28,13 +28,13 @@ dotnet run --file samples/Jazor.MultiProject/build-local.cs
 
 ## 输出模式
 
-`JazorMode=debug` 输出可检查的模块；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。构建 release bundle：
+`JazorMode=debug` 输出标准项目入口；`JazorMode=release` 执行项目自己的标准构建脚本。构建 release bundle：
 
 ```bash
 dotnet run --file samples/Jazor.MultiProject/build-local.cs -- --bundle
 ```
 
-本示例的 bundle 位于 `Sample.Host/jazor/bundle.js`，并导出 host 的 `boot` 入口。
+本示例的 bundle 位于 `Sample.Host/jazor/dist/bundle.js`，标准入口是 `Sample.Host/jazor/entry.js`。
 
 ## 相关文档
 

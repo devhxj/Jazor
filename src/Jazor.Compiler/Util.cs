@@ -104,7 +104,7 @@ public static class Util
     /// <param name="readSourceContent">可选源码读取回调；未提供时不会内嵌 sourcesContent。</param>
     public static GeneratedJavaScriptArtifact ToKnRECMAScriptWithSourceMap(
         this Node node,
-        string generatedFileName = "module.mjs",
+        string generatedFileName = "module.js",
         bool includeSourcesContent = true,
         string? sourceRootPath = null,
         Func<string, string?>? readSourceContent = null)
@@ -123,7 +123,7 @@ public static class Util
     /// </summary>
     public static GeneratedJavaScriptLayout ToKnRECMAScriptWithSourceMapAndNodePositions(
         this Node node,
-        string generatedFileName = "module.mjs",
+        string generatedFileName = "module.js",
         bool includeSourcesContent = true,
         string? sourceRootPath = null,
         Func<string, string?>? readSourceContent = null)
@@ -335,8 +335,8 @@ public static class Util
         var metadata = GetJavaScriptNameMetadata(symbol);
         if (metadata.HasECMAScriptNameAttribute)
         {
-            // 空声明名是 stop 标记，与 Description("@#") 同义：表示该符号不参与命名，
-            // 也不参与外层宿主的名称拼接；它不是"没有配置"，因此不能回退到 Description 或符号名。
+            // A blank ECMAScriptName is a stop marker for ordinary symbol-name resolution.
+            // String-enum wire values intentionally inspect the raw metadata separately.
             return string.IsNullOrEmpty(metadata.ECMAScriptName)
                 ? JsNameConfig.Stop
                 : JsNameConfig.Explicit(metadata.ECMAScriptName!);

@@ -12,45 +12,33 @@
   "imports": {
     "monaco-editor/editor/editor.api.js": {
       "type": "module",
-      "development": "monaco-editor/editor/editor.api.js",
-      "production": "monaco-editor/editor/editor.api.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "monaco-editor/editor/editor.api.js",
+      "dependencies": []
     },
     "monaco-editor/editor/editor.worker.start.js": {
       "type": "module",
-      "development": "monaco-editor/editor/editor.worker.start.js",
-      "production": "monaco-editor/editor/editor.worker.start.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "monaco-editor/editor/editor.worker.start.js",
+      "dependencies": []
     },
     "monaco-editor/languages/features/css/css.worker.js": {
       "type": "module",
-      "development": "monaco-editor/languages/features/css/css.worker.js",
-      "production": "monaco-editor/languages/features/css/css.worker.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "monaco-editor/languages/features/css/css.worker.js",
+      "dependencies": []
     },
     "monaco-editor/languages/features/html/html.worker.js": {
       "type": "module",
-      "development": "monaco-editor/languages/features/html/html.worker.js",
-      "production": "monaco-editor/languages/features/html/html.worker.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "monaco-editor/languages/features/html/html.worker.js",
+      "dependencies": []
     },
     "monaco-editor/languages/features/json/json.worker.js": {
       "type": "module",
-      "development": "monaco-editor/languages/features/json/json.worker.js",
-      "production": "monaco-editor/languages/features/json/json.worker.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "monaco-editor/languages/features/json/json.worker.js",
+      "dependencies": []
     },
     "monaco-editor/languages/features/typescript/ts.worker.js": {
       "type": "module",
-      "development": "monaco-editor/languages/features/typescript/ts.worker.js",
-      "production": "monaco-editor/languages/features/typescript/ts.worker.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "monaco-editor/languages/features/typescript/ts.worker.js",
+      "dependencies": []
     }
   },
   "requires": {},

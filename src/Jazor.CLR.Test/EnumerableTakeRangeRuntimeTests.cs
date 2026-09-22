@@ -11,11 +11,11 @@ public sealed class EnumerableTakeRangeRuntimeTests
     {
         var takeRange = GetExportName(
             "static System.Linq.Enumerable.Take<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Range)",
-            "clr/System/Linq/EnumerableModule.js");
-        var fromStart = GetExportName("static System.Index.FromStart(int)", "clr/System/IndexModule.js");
-        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "clr/System/IndexModule.js");
-        var createRange = GetExportName("System.Range.Range(System.Index, System.Index)", "clr/System/RangeModule.js");
-        var allRange = GetExportName("static System.Range.All.get", "clr/System/RangeModule.js");
+            "./clr/System/Linq/EnumerableModule.js");
+        var fromStart = GetExportName("static System.Index.FromStart(int)", "./clr/System/IndexModule.js");
+        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "./clr/System/IndexModule.js");
+        var createRange = GetExportName("System.Range.Range(System.Index, System.Index)", "./clr/System/RangeModule.js");
+        var allRange = GetExportName("static System.Range.All.get", "./clr/System/RangeModule.js");
         var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-take-range-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -27,9 +27,6 @@ public sealed class EnumerableTakeRangeRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "take-range.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -64,7 +61,7 @@ public sealed class EnumerableTakeRangeRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--config", configPath, "--quiet", "--allow-read", testPath], timeout.Token);
+            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
         }
         finally
         {

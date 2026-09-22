@@ -58,7 +58,15 @@ public sealed class EmitPipelineAssetContractTests
     }
 
     [TestMethod]
-    public async Task ExecuteAsync_RejectsAssetPathThatConflictsWithGeneratedModule()
+    [DataRow("components/app.mjs", false)]
+    [DataRow("entry.js", false)]
+    [DataRow("ssr-entry.js", false)]
+    [DataRow("package.json", false)]
+    [DataRow("package-lock.json", false)]
+    [DataRow("deno.lock", false)]
+    [DataRow("entry.js", true)]
+    [DataRow("ssr-entry.js", true)]
+    public async Task ExecuteAsync_RejectsModuleOrAssetPathThatConflictsWithProjectOutput(string artifactPath, bool moduleCollision)
     {
         const string moduleContent = "export const app = true;";
         const string assetContent = "asset";
@@ -72,14 +80,14 @@ public sealed class EmitPipelineAssetContractTests
             Directory.CreateDirectory(Path.GetDirectoryName(assetSource)!);
             await File.WriteAllTextAsync(assetSource, assetContent);
 
-            var assemblyPath = CompileCatalogAssemblyToPath(
-                root,
-                "Asset.Path.Host",
-                CreateCatalogSource(
+            var source = CreateCatalogSource(
                     moduleContent,
                     sourcePath: "assets/source.txt",
-                    artifactPath: "components/app.mjs",
-                    assetHash: Sha256(assetContent)));
+                    artifactPath: moduleCollision ? "assets/output.txt" : artifactPath,
+                    assetHash: Sha256(assetContent));
+            if (moduleCollision)
+                source = source.Replace("components/app.mjs", artifactPath, StringComparison.Ordinal);
+            var assemblyPath = CompileCatalogAssemblyToPath(root, "Asset.Path.Host", source);
 
             var result = await ExecuteAsync(
                 assemblyPath,

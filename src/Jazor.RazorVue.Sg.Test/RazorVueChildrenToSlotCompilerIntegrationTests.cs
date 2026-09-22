@@ -18,7 +18,7 @@ public sealed class RazorVueChildrenToSlotCompilerIntegrationTests
 
             namespace Demo
             {
-                [ECMAScriptModule("components/builtins.mjs")]
+                [ECMAScriptModule("components/builtins.js")]
                 public static class BuiltInsModule
                 {
                     public static IVNode Render()
@@ -124,7 +124,7 @@ function OnFallback() { }
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -189,7 +189,7 @@ export function Render(child) {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
@@ -254,7 +254,7 @@ export function Render(child) {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVNode Render()
@@ -331,7 +331,7 @@ function RenderChild() {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -390,7 +390,7 @@ export function Render(child) {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -449,7 +449,7 @@ export function Render() {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -508,7 +508,7 @@ export function Render() {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -567,7 +567,7 @@ export function Render(child) {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -632,7 +632,7 @@ export function Render(child) {
                     public VueSlotCallback Default { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
@@ -695,7 +695,7 @@ export function Render() {
                     public VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -777,7 +777,7 @@ export function Render(child) {
                     public VueLikeHost.VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static VueLikeHost.IVNode Render(VueLikeHost.IVueSlotComponent<ChildSlots> component, VueLikeHost.IVNode child)
@@ -865,7 +865,7 @@ export function Render(component, child) {
                     public VueLikeHost.VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static VueLikeHost.IVNode Render(
@@ -943,7 +943,7 @@ export function Render(component, child) {
                     public VueLikeHost.RenderSlot ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static VueLikeHost.IVNode Render(VueLikeHost.IVueSlotComponent<ChildSlots> component, VueLikeHost.IVNode child)
@@ -996,7 +996,7 @@ export function Render(component, child) {
                     public VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -1061,7 +1061,7 @@ export function Render(child) {
                     public VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
@@ -1126,7 +1126,7 @@ export function Render(child) {
                     public VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
@@ -1183,7 +1183,7 @@ export function Render(child) {
                     public VueSlotCallback Header { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -1235,7 +1235,7 @@ export function Render(child) {
                     public VueSlotCallback<string> ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -1290,7 +1290,7 @@ export function Render(child) {
                     public VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -1343,7 +1343,7 @@ export function Render(child) {
                     public Func<string> ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
@@ -1401,7 +1401,7 @@ export function Render(child) {
                     public VueSlotCallback ChildContent { get; init; } = default!;
                 }
 
-                [ECMAScriptModule("components/panel.mjs")]
+                [ECMAScriptModule("components/panel.js")]
                 public static class PanelModule
                 {
                     public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>

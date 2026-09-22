@@ -8,7 +8,7 @@
 
 - `AstConverter` 负责模块、类型、导入、导出和运行时成员类的结构转换。
 - `SemanticWalker` 负责表达式和语句 lowering，以及运行时敏感使用点的最终验证。
-- `ESGenerator` 负责 JavaScript 文本、source map 和 `ModuleCatalog` carrier；`.mjs`、import map 和 bundle 由 `Jazor.Emit` 物化。
+- `ESGenerator` 负责 JavaScript 文本、source map 和 `ModuleCatalog` carrier；Jazor 自有 `.js`、项目入口和 bundle 由 `Jazor.Emit` 物化。
 - WhiteList 与 `Alias`、`Inline`、`Import`、`Compile` 映射连接 CLR/host API 和 compiler lowering。
 
 ## 稳定边界

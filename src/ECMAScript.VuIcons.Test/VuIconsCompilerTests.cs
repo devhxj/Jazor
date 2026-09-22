@@ -1,6 +1,7 @@
 namespace ECMAScript.VuIcons.Test;
 
 [TestClass]
+[Ignore("VuIcons is a retired binding; its historical carrier is no longer emitted.")]
 public sealed class VuIconsCompilerTests
 {
     [TestMethod]

@@ -61,14 +61,14 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/component-splat-runtime.mjs",
+            "components/component-splat-runtime.js",
             observation.ModuleText,
             "official-component-splat-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/component-splat-runtime.mjs";
+            import component from "./components/component-splat-runtime.js";
 
             test("official Razor component splats map C# names before explicit bind precedence", async () => {
                 let splatUpdates = 0;
@@ -140,7 +140,7 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/splat-bind-child-runtime.mjs"] = "export default { name: \"splat-bind-child-runtime\" };"
+                ["components/splat-bind-child-runtime.js"] = "export default { name: \"splat-bind-child-runtime\" };"
             });
     }
 }

@@ -5,7 +5,7 @@ using Jazor.Admin;
 
 namespace JazorAdmin;
 
-[ECMAScriptModule("components/routes.mjs")]
+[ECMAScriptModule("components/routes.js")]
 public static class Routes
 {
     public const string DashboardKey = "dashboard";

@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/ProgressEventArgsModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/Web/ProgressEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs", "ProgressEvent")]
 public static class ProgressEventArgsModule
 {

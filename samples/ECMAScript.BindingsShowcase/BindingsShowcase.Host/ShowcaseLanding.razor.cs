@@ -45,6 +45,8 @@ public partial class ShowcaseLanding : ComponentBase, IVueComponent
 
     private bool VueQueryLoaded => VueQueryProbe is not null;
 
+    private int HmrCounter { get; set; }
+
     private static bool VeeValidateLive
     {
         get
@@ -58,4 +60,7 @@ public partial class ShowcaseLanding : ComponentBase, IVueComponent
 
     private void SwitchLocale()
         => composer.Locale.Value = CurrentLocale == "en-US" ? "zh-CN" : "en-US";
+
+    private void IncrementHmrCounter()
+        => HmrCounter++;
 }

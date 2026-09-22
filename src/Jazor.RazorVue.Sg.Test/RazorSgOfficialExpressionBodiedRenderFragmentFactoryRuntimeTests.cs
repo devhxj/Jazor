@@ -55,15 +55,15 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/expression-bodied-release-header-runtime.mjs",
+            "components/expression-bodied-release-header-runtime.js",
             observation.ModuleText,
             "official-expression-bodied-release-header-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/expression-bodied-release-header-runtime.mjs";
-            import releaseHeaderPanel from "./components/expression-bodied-release-header-panel-runtime.mjs";
+            import component from "./components/expression-bodied-release-header-runtime.js";
+            import releaseHeaderPanel from "./components/expression-bodied-release-header-panel-runtime.js";
 
             test("official Razor expression-bodied RenderFragment factory provides a slot", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -79,7 +79,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
             """,
             new Dictionary<string, string>
             {
-                ["components/expression-bodied-release-header-panel-runtime.mjs"] = "export default { name: \"expression-bodied-release-header-panel-runtime\" };"
+                ["components/expression-bodied-release-header-panel-runtime.js"] = "export default { name: \"expression-bodied-release-header-panel-runtime\" };"
             });
     }
 
@@ -138,15 +138,15 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/expression-bodied-release-template-runtime.mjs",
+            "components/expression-bodied-release-template-runtime.js",
             observation.ModuleText,
             "official-expression-bodied-release-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/expression-bodied-release-template-runtime.mjs";
-            import releaseTemplatePanel from "./components/expression-bodied-release-template-panel-runtime.mjs";
+            import component from "./components/expression-bodied-release-template-runtime.js";
+            import releaseTemplatePanel from "./components/expression-bodied-release-template-panel-runtime.js";
 
             test("official Razor expression-bodied RenderFragment<T> property provides a scoped slot", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -162,7 +162,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
             """,
             new Dictionary<string, string>
             {
-                ["components/expression-bodied-release-template-panel-runtime.mjs"] = "export default { name: \"expression-bodied-release-template-panel-runtime\" };"
+                ["components/expression-bodied-release-template-panel-runtime.js"] = "export default { name: \"expression-bodied-release-template-panel-runtime\" };"
             });
     }
 }

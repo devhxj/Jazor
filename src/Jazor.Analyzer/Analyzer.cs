@@ -694,8 +694,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.Invocation:
 				{
 					var invocation = (IInvocationOperation)ctx.Operation;
-                    CheckType(ctx.ReportDiagnostic, invocation.TargetMethod.ContainingType, invocation.Syntax.GetLocation());
-                    CheckType(ctx.ReportDiagnostic, invocation.Type, invocation.Syntax.GetLocation());
+					CheckType(ctx.ReportDiagnostic, invocation.TargetMethod.ContainingType, invocation.Syntax.GetLocation());
+					// A mapped invocation owns its JavaScript result shape. Its C# return type may only
+					// carry compiler protocol metadata (for example Task.Yield's YieldAwaitable), so it
+					// must not be diagnosed as an independently materialized runtime type.
+					if (!IsWhiteListedMember(invocation.TargetMethod))
+						CheckType(ctx.ReportDiagnostic, invocation.Type, invocation.Syntax.GetLocation());
 					// 检查 Instance 是否是委托类型（适用于 myDelegate() 或 event?.Invoke()）
 					if (invocation.Instance?.Type?.TypeKind == TypeKind.Delegate)
 						return;

@@ -37,7 +37,7 @@
     <file src="$projectDir$..\ECMAScript.Vue\manifest.json" target="jazor/vue3/manifest.json" />
     <file src="$projectDir$..\ECMAScript.Vue\licenses\**\*" target="jazor/vue3/licenses" />
     <file src="$projectDir$manifest.json" target="jazor/vue-runtime/manifest.json" />
-    <file src="$projectDir$dist\**\*" target="jazor/vue-runtime/dist" />
+    <file src="$projectDir$runtime\**\*" target="jazor/vue-runtime/runtime" />
     <file src="$projectDir$..\Jazor.Emit\tooling\vue\compiler-sfc.esm-browser.js"
           target="tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js" />
     <file src="$projectDir$..\Jazor.Emit\tooling\vue\licenses\LICENSE"

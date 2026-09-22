@@ -48,7 +48,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "elementAt" }, importNames);
         StringAssert.Contains(body, "return elementAt(releaseIds, index);", StringComparison.Ordinal);
@@ -101,7 +101,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/Linq/EnumerableModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "elementAtIndex" }, importNames);
         StringAssert.Contains(body, "let direct = elementAtIndex(releaseIds, stored);", StringComparison.Ordinal);
@@ -273,7 +273,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
         Assert.HasCount(1, imports, body);
-        Assert.AreEqual("clr/System/IndexModule.js", imports[0].Key);
+        Assert.AreEqual("./clr/System/IndexModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.Contains(importNames, "_b141712b3756cf57");
         CollectionAssert.Contains(importNames, "_71953783d6b61ae1");
@@ -301,21 +301,9 @@ public sealed class SemanticWalkerEnumerableElementAtTests
             await MaterializeRuntimeCatalogAsync(root);
             var modulePath = Path.Combine(root, "element-at-or-default-index.mjs");
             var testPath = Path.Combine(root, "element-at-or-default-index.test.mjs");
-            var configPath = Path.Combine(root, "deno.json");
             await System.IO.File.WriteAllTextAsync(
                 modulePath,
                 module,
-                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-            await System.IO.File.WriteAllTextAsync(
-                configPath,
-                """
-                {
-                  "imports": {
-                    "clr/System/": "./System/",
-                    "System/": "./System/"
-                  }
-                }
-                """,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             await System.IO.File.WriteAllTextAsync(
                 testPath,
@@ -324,7 +312,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                 import {
                   _1b0e1c2ab6c4cd39 as fromStart,
                   _ce8b9229a41c8545 as fromEnd
-                } from "./System/IndexModule.js";
+                } from "./clr/System/IndexModule.js";
 
                 function tracked(values, trace) {
                   return {
@@ -402,7 +390,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--config", configPath, "--quiet", "--allow-read", testPath],
+                ["test", "--quiet", "--allow-read", testPath],
                 timeout.Token);
         }
         finally
@@ -421,14 +409,13 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         using var document = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
         foreach (var entry in document.RootElement.GetProperty("imports").EnumerateObject())
         {
-            var relativeFile = entry.Value.GetProperty("production").GetString()!;
+            var relativeFile = entry.Value.GetProperty("path").GetString()!;
             if (!relativeFile.StartsWith("clr/", StringComparison.Ordinal))
                 continue;
 
-            var relativePath = relativeFile["clr/".Length..];
             var sourcePath = Path.Combine(repositoryRoot, "src", "ECMAScript", relativeFile.Replace('/', Path.DirectorySeparatorChar));
             var content = await File.ReadAllTextAsync(sourcePath);
-            var outputPath = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            var outputPath = Path.Combine(root, relativeFile.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
             await System.IO.File.WriteAllTextAsync(
                 outputPath,

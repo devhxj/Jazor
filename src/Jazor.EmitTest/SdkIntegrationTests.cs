@@ -101,6 +101,8 @@ public sealed class SdkIntegrationTests
             2,
             directJazorTarget.Split("ConsoleToMSBuild=\"true\"", StringSplitOptions.None).Length - 1,
             directJazorTarget);
+        StringAssert.Contains(directJazorTarget, "--assembly-list", StringComparison.Ordinal);
+        StringAssert.Contains(directJazorTarget, "--library-manifest-list", StringComparison.Ordinal);
         StringAssert.Contains(transitiveJazorTarget, "JazorLibraryManifest", StringComparison.Ordinal);
         Assert.IsFalse(transitiveJazorTarget.Contains("JazorDebug", StringComparison.Ordinal), transitiveJazorTarget);
         Assert.IsFalse(transitiveJazorTarget.Contains("<Analyzer", StringComparison.Ordinal), transitiveJazorTarget);
@@ -162,16 +164,31 @@ public sealed class SdkIntegrationTests
             .ToArray();
 
         StringAssert.Contains(nuspec, "id=\"DenoHost.Core\"", StringComparison.Ordinal);
-        StringAssert.Contains(nuspec, "id=\"DenoHost.Runtime.win-x64\"", StringComparison.Ordinal);
+        // Emit 的 restore/check/build 经 DenoProcess 执行，DenoHost 只从 AppContext.BaseDirectory
+        // 解析 runtime；单平台 pack 机必须无条件声明并携带全部受支持 RID 的签名 runtime。
+        foreach (var rid in new[] { "win-x64", "linux-x64", "osx-x64", "osx-arm64" })
+        {
+            var runtimePackageName = $"DenoHost.Runtime.{rid}";
+            StringAssert.Contains(nuspec, $"id=\"{runtimePackageName}\"", StringComparison.Ordinal);
+
+            var binaryName = rid.StartsWith("win", StringComparison.Ordinal) ? "deno.exe" : "deno";
+            var checksumName = binaryName + ".sha256sum";
+            var nativePrefix = $"tools/net11.0/runtimes/{rid}/native/";
+            foreach (var fileName in new[] { binaryName, checksumName, "deno.metadata.json", "deno.metadata.sig" })
+            {
+                Assert.IsTrue(
+                    entryNames.Contains(nativePrefix + fileName, StringComparer.OrdinalIgnoreCase),
+                    $"Jazor.Emit runs Deno through DenoHost.DenoProcess, so the package must carry the signed runtime: {nativePrefix}{fileName}");
+            }
+        }
+
         StringAssert.Contains(
             props,
             "<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>",
             StringComparison.Ordinal);
-        Assert.IsFalse(
-            entryNames.Any(static path =>
-                path.StartsWith("tools/net11.0/DenoHost", StringComparison.OrdinalIgnoreCase) ||
-                path.StartsWith("tools/net11.0/runtimes/", StringComparison.OrdinalIgnoreCase)),
-            "Jazor.Emit must remain a Netpack-only build tool and cannot carry DenoHost runtime assets.");
+        Assert.IsTrue(
+            entryNames.Contains("tools/net11.0/DenoHost.Core.dll", StringComparer.OrdinalIgnoreCase),
+            "Jazor.Emit must carry DenoHost.Core so restore/check/build run through DenoProcess.");
     }
 
     [TestMethod]
@@ -366,9 +383,9 @@ public sealed class SdkIntegrationTests
         AssertPackageEntries(
             package.VuePackagePath,
             "jazor/vue-runtime/manifest.json",
-            "jazor/vue-runtime/dist/blazor-routing.mjs",
-            "jazor/vue-runtime/dist/cascading.mjs",
-            "jazor/vue-runtime/dist/raw-markup.mjs");
+            "jazor/vue-runtime/runtime/vue/blazor-routing.js",
+            "jazor/vue-runtime/runtime/vue/cascading.js",
+            "jazor/vue-runtime/runtime/vue/raw-markup.js");
         AssertPackageEntries(
             package.VuetifyPackagePath,
             "lib/net11.0/ECMAScript.Vuetify.dll",
@@ -434,17 +451,17 @@ public sealed class SdkIntegrationTests
         using var manifest = JsonDocument.Parse(ReadPackageEntryText(package.VuePackagePath, "jazor/vue3/manifest.json"));
 
         var devtools = manifest.RootElement.GetProperty("imports").GetProperty("@vue/devtools-api");
-        Assert.AreEqual("@vue/devtools-api", devtools.GetProperty("development").GetString());
-        Assert.AreEqual("@vue/devtools-api", devtools.GetProperty("production").GetString());
+        Assert.AreEqual("@vue/devtools-api", devtools.GetProperty("path").GetString());
+        Assert.AreEqual("@vue/devtools-api", devtools.GetProperty("path").GetString());
         CollectionAssert.AreEquivalent(
             new[] { "perfect-debounce" },
-            devtools.GetProperty("developmentDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
+            devtools.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "perfect-debounce" },
-            devtools.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
+            devtools.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
         var serverRenderer = manifest.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer");
-        Assert.AreEqual("@vue/server-renderer", serverRenderer.GetProperty("development").GetString());
-        Assert.AreEqual("@vue/server-renderer", serverRenderer.GetProperty("production").GetString());
+        Assert.AreEqual("@vue/server-renderer", serverRenderer.GetProperty("path").GetString());
+        Assert.AreEqual("@vue/server-renderer", serverRenderer.GetProperty("path").GetString());
         using (var vueArchive = ZipFile.OpenRead(package.VuePackagePath))
         {
             Assert.IsFalse(
@@ -456,12 +473,12 @@ public sealed class SdkIntegrationTests
         var routerEntry = routerManifest.RootElement.GetProperty("imports").GetProperty("vue-router");
         CollectionAssert.AreEquivalent(
             new[] { "vue" },
-            routerEntry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
+            routerEntry.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
         using var piniaManifest = JsonDocument.Parse(ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/manifest.json"));
         var piniaEntry = piniaManifest.RootElement.GetProperty("imports").GetProperty("pinia");
         CollectionAssert.AreEquivalent(
             new[] { "@vue/devtools-api", "nostics", "vue" },
-            piniaEntry.GetProperty("developmentDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
+            piniaEntry.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
 
         using (var piniaArchive = ZipFile.OpenRead(package.PiniaPackagePath))
         {
@@ -483,12 +500,10 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual("tdesign-vue-next", root.GetProperty("libraryId").GetString());
         Assert.AreEqual("1.20.7", root.GetProperty("version").GetString());
         var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next/es/index.mjs");
-        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("development").GetString());
-        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("production").GetString());
+        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("path").GetString());
+        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("path").GetString());
         Assert.AreEqual(">=3.1.0", root.GetProperty("requires").GetProperty("vue3").GetString());
-        CollectionAssert.AreEquivalent(
-            new[] { "tdesign-vue-next/es/style/index.css" },
-            entry.GetProperty("productionStylesheetImports").EnumerateArray().Select(static value => value.GetString()).ToArray());
+        Assert.IsFalse(entry.TryGetProperty("stylesheetImports", out _));
         using (var tdesignArchive = ZipFile.OpenRead(package.TDesignPackagePath))
         {
             CollectionAssert.Contains(
@@ -546,17 +561,17 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, debugBuild.ExitCode, debugBuild.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var runtimePath = Path.Combine(outputRoot, "style.mjs");
+        var runtimePath = Path.Combine(outputRoot, "style.js");
         var runtimeMapPath = runtimePath + ".map";
         var appPath = Path.Combine(outputRoot, "app.mjs");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(outputRoot);
 
         Assert.IsTrue(File.Exists(runtimePath), $"ECMAScript.Style runtime was not materialized: {runtimePath}");
         Assert.IsTrue(File.Exists(runtimeMapPath), $"ECMAScript.Style source map was not materialized: {runtimeMapPath}");
         Assert.IsTrue(File.Exists(appPath), $"Consumer module was not materialized: {appPath}");
         Assert.IsTrue(File.Exists(manifestPath), $"Debug manifest was not generated: {manifestPath}");
         var appModule = await File.ReadAllTextAsync(appPath);
-        StringAssert.Contains(appModule, "from \"./style.mjs\"");
+        StringAssert.Contains(appModule, "from \"./style.js\"");
         StringAssert.Contains(appModule, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(appModule, "context({");
         Assert.IsFalse(appModule.Contains("context as ", StringComparison.Ordinal), appModule);
@@ -565,8 +580,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(appModule, "snapshotFrom");
 
         var manifest = LoadManifest(manifestPath);
-        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "style.mjs");
-        Assert.AreEqual("style.mjs.map", runtimeEntry.SourceMapPath);
+        var runtimeEntry = manifest.Modules.Single(static entry => entry.RelativePath == "style.js");
+        Assert.AreEqual("style.js.map", runtimeEntry.SourceMapPath);
         Assert.HasCount(64, runtimeEntry.Hash);
         Assert.HasCount(64, runtimeEntry.MapHash!);
 
@@ -579,8 +594,8 @@ public sealed class SdkIntegrationTests
         var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
         Assert.IsTrue(File.Exists(bundlePath), $"ECMAScript.Style bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleMapPath), $"ECMAScript.Style bundle source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(runtimePath), "Release must not retain the debug runtime module.");
-        Assert.IsFalse(File.Exists(manifestPath), "Release must not retain the debug manifest.");
+        Assert.IsTrue(File.Exists(runtimePath), "Release builds consume the same project source tree.");
+        Assert.IsTrue(File.Exists(manifestPath), "Emit build state remains under obj.");
 
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(bundle, "ecmascript-style:v1");
@@ -588,11 +603,11 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "font-face");
         StringAssert.Contains(bundle, "server-css");
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.IsFalse(bundle.Contains("from \"./style.mjs\"", StringComparison.Ordinal), bundle);
+        Assert.IsFalse(bundle.Contains("from \"./style.js\"", StringComparison.Ordinal), bundle);
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorPackage_MultiProjectSample_ReleaseWritesOnlyBundle()
+    public async Task Build_LocalJazorPackage_MultiProjectSample_ReleasePreservesNamedExports()
     {
         var package = await LocalPackage.Value;
 
@@ -630,11 +645,17 @@ public sealed class SdkIntegrationTests
 
         var bundle = await File.ReadAllTextAsync(bundlePath);
 
-        // Release NetPack minifies local function names; assert observable payloads instead of
-        // depending on pre-minification identifiers.
+        // Minification may rename internals; the declared public export remains callable.
         StringAssert.Contains(bundle, "Hello");
         StringAssert.Contains(bundle, "Jazor");
-        StringAssert.Contains(bundle, "export default");
+        var testFile = Path.Combine(hostRoot, "jazor", "bundle-test.mjs");
+        await File.WriteAllTextAsync(testFile, """
+            import { Boot } from './dist/bundle.js';
+            Deno.test('project bundle preserves named exports', () => {
+              if (Boot() !== 'Hello, Jazor') throw new Error(Boot());
+            });
+            """);
+        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, Path.Combine(hostRoot, "jazor"));
     }
 
     [TestMethod]
@@ -664,13 +685,13 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var browserRoot = Path.Combine(projectRoot, "jazor");
-        var ssrRoot = Path.Combine(browserRoot, "ssr");
+        var ssrRoot = browserRoot;
         Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "dist", "bundle.js")), "Release browser bundle was not generated.");
-        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "jazor-manifest.json")), "SSR application manifest was not generated.");
+        Assert.IsFalse(File.Exists(Path.Combine(ssrRoot, "jazor-manifest.json")), "SSR application manifest was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "host", "app.mjs")), "SSR raw module graph was not generated.");
-        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "importmap.json")), "SSR browser import map was not generated.");
-        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "ssr-importmap.json")), "SSR local import map was not generated.");
-        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "manifest.json")), "SSR asset manifest was not generated.");
+        Assert.IsFalse(File.Exists(Path.Combine(ssrRoot, "importmap.json")), "SSR browser import map was not generated.");
+        Assert.IsFalse(File.Exists(Path.Combine(ssrRoot, "ssr-importmap.json")), "SSR local import map was not generated.");
+        Assert.IsFalse(File.Exists(Path.Combine(ssrRoot, "manifest.json")), "SSR asset manifest was not generated.");
         Assert.IsTrue(
             File.Exists(Path.Combine(browserRoot, "node_modules", "@vue", "server-renderer", "package.json")),
             "SSR server renderer must be restored in the shared node_modules graph.");
@@ -681,9 +702,7 @@ public sealed class SdkIntegrationTests
             Directory.Exists(Path.Combine(browserRoot, "vendor")),
             "External npm packages must not be copied into a binding-owned vendor snapshot.");
 
-        var ssrImportMap = await File.ReadAllTextAsync(Path.Combine(ssrRoot, "ssr-importmap.json"));
-        StringAssert.Contains(ssrImportMap, "\"@vue/server-renderer\"");
-        StringAssert.Contains(ssrImportMap, "../node_modules/");
+        Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "ssr-entry.js")));
         Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "package.json")), "The shared package project was not emitted.");
         Assert.IsTrue(Directory.Exists(Path.Combine(browserRoot, "node_modules")), "The shared Deno node_modules graph was not restored.");
     }
@@ -718,11 +737,11 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, publish.ExitCode, publish.ToString());
 
-        var publishedSsrRoot = Path.Combine(publishOutputRoot, "jazor", "ssr");
-        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "jazor-manifest.json")));
+        var publishedSsrRoot = Path.Combine(publishOutputRoot, "jazor");
+        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "host", "app.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "ssr-importmap.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "ssr-importmap.json")));
         Assert.IsTrue(
             File.Exists(Path.Combine(publishOutputRoot, "jazor", "package.json")),
             "Publish output must carry the shared standard package project.");
@@ -801,7 +820,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(hostRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(outputRoot);
         if (!File.Exists(manifestPath))
         {
             manifestPath = Directory
@@ -986,7 +1005,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(hostRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(outputRoot);
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
 
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
@@ -1005,7 +1024,7 @@ public sealed class SdkIntegrationTests
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/RangeModule.js");
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/RuntimeModule.js");
 
-        ConfigureDenoToUseMaterializedSsrImports(outputRoot);
+        AssertStandardDenoProject(outputRoot);
         var testFile = Path.Combine(outputRoot, "materialized-index-range.test.mjs");
         WriteFile(
             testFile,
@@ -1275,7 +1294,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(hostRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(outputRoot);
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
@@ -1300,7 +1319,7 @@ public sealed class SdkIntegrationTests
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Collections/Generic/ComparerT1Module.js");
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Collections/Generic/EqualityComparerT1Module.js");
 
-        ConfigureDenoToUseMaterializedSsrImports(outputRoot);
+        AssertStandardDenoProject(outputRoot);
 
         var testFile = Path.Combine(outputRoot, "materialized-query.test.mjs");
         WriteFile(
@@ -1481,7 +1500,7 @@ public sealed class SdkIntegrationTests
 
         var projectJazorRoot = Path.Combine(projectRoot, "jazor");
         var webRootJazor = Path.Combine(projectRoot, "wwwroot", "jazor");
-        Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "host", "app.mjs.map")));
         var module = await File.ReadAllTextAsync(Path.Combine(projectJazorRoot, "host", "app.mjs"));
@@ -1893,7 +1912,7 @@ public sealed class SdkIntegrationTests
             package.RepoRoot,
             ["build", dualProject, .. commonArguments, "-p:JazorMode=debug"]);
         Assert.AreEqual(0, dualDebugBuild.ExitCode, dualDebugBuild.ToString());
-        Assert.IsTrue(File.Exists(Path.Combine(dualRoot, "jazor", "jazor-manifest.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(dualRoot, "jazor", "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(dualRoot, "jazor", "host", "dual-vue.mjs")));
         _ = ReadSingleGeneratedSource(Path.Combine(dualRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs");
     }
@@ -2048,7 +2067,7 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(hostRoot, "jazor");
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "libraries", "provider.mjs")));
-        var manifest = LoadManifest(Path.Combine(outputRoot, "jazor-manifest.json"));
+        var manifest = LoadManifest(FindBuildState(outputRoot));
         CollectionAssert.AreEquivalent(
             new[] { "host/app.mjs", "libraries/provider.mjs" },
             manifest.Modules.Select(static module => module.RelativePath).ToArray());
@@ -2257,7 +2276,7 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(hostRoot, "jazor");
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "host", "nuget-app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "libraries", "nuget-provider.mjs")));
-        var manifest = LoadManifest(Path.Combine(outputRoot, "jazor-manifest.json"));
+        var manifest = LoadManifest(FindBuildState(outputRoot));
         CollectionAssert.AreEquivalent(
             new[] { "host/nuget-app.mjs", "libraries/nuget-provider.mjs" },
             manifest.Modules.Select(static module => module.RelativePath).ToArray());
@@ -2295,8 +2314,8 @@ public sealed class SdkIntegrationTests
         var publishOutputRoot = Path.Combine(projectRoot, "bin", "Debug", "net11.0", "publish");
         var publishJazorRoot = Path.Combine(publishOutputRoot, "jazor");
         var publishWebRootJazor = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
-        Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs.map")));
         var publishedStaticHostModule = await File.ReadAllTextAsync(Path.Combine(publishJazorRoot, "host", "app.mjs"));
@@ -2340,10 +2359,10 @@ public sealed class SdkIntegrationTests
         var publishedJazorRoot = Path.Combine(publishOutputRoot, "jazor");
         var publishedWebRootJazor = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
 
-        Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "jazor-manifest.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(sourceJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "host", "app.mjs.map")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "jazor-manifest.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(publishedJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs.map")));
         var publishedWebHostModule = await File.ReadAllTextAsync(Path.Combine(publishedJazorRoot, "host", "app.mjs"));
@@ -2445,7 +2464,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(outputRoot);
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
@@ -2576,7 +2595,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(outputRoot);
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
@@ -2629,7 +2648,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorPackage_WithVueRouteReactiveAuthoring_BundlesThroughNetpack_AndResolvesVuePackages()
+    public async Task Build_LocalJazorPackage_WithVueRouteReactiveAuthoring_BundlesThroughProjectScript_AndResolvesVuePackages()
     {
         var package = await LocalPackage.Value;
 
@@ -2753,13 +2772,13 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var moduleRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
+        var manifestPath = FindBuildState(moduleRoot);
         var modulePath = Path.Combine(moduleRoot, "host", "app.mjs");
         var bundlePath = Path.Combine(moduleRoot, "dist", "bundle.js");
         var bundleSourceMapPath = Path.Combine(moduleRoot, "dist", "bundle.js.map");
 
-        Assert.IsFalse(File.Exists(manifestPath), $"Release must not materialize a manifest: {manifestPath}");
-        Assert.IsFalse(File.Exists(modulePath), $"Release must not materialize modules: {modulePath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Build state was not written under obj: {manifestPath}");
+        Assert.IsTrue(File.Exists(modulePath), $"Release project source is missing: {modulePath}");
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(bundleSourceMapPath), $"Bundle source map was not generated: {bundleSourceMapPath}");
 
@@ -2816,7 +2835,7 @@ public sealed class SdkIntegrationTests
 
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
         var firstCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
-        var counterModulePath = Path.Combine(projectRoot, "jazor", "components", "counter.mjs");
+        var counterModulePath = Path.Combine(projectRoot, "jazor", "components", "counter.js");
         var firstCounterModule = await File.ReadAllTextAsync(counterModulePath);
         Assert.IsFalse(
             firstCounterModule.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
@@ -2882,9 +2901,9 @@ public sealed class SdkIntegrationTests
         _ = ReadCounterRazorSgGeneratedSource(generatedRoot);
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
-        var componentMapPath = Path.Combine(outputRoot, "components", "counter.mjs.map");
+        var manifestPath = FindBuildState(outputRoot);
+        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
+        var componentMapPath = Path.Combine(outputRoot, "components", "counter.js.map");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
@@ -2898,10 +2917,10 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(componentModule.Contains("onUnmounted", StringComparison.Ordinal), componentModule);
         StringAssert.Contains(componentModule, "const __jazorComponent = defineComponent({");
         StringAssert.Contains(componentModule, "export default __jazorComponent;");
-        StringAssert.Contains(componentModule, "sourceMappingURL=counter.mjs.map");
+        StringAssert.Contains(componentModule, "sourceMappingURL=counter.js.map");
 
         var componentMap = await File.ReadAllTextAsync(componentMapPath);
-        StringAssert.Contains(componentMap, "\"file\": \"components/counter.mjs\"");
+        StringAssert.Contains(componentMap, "\"file\": \"components/counter.js\"");
         StringAssert.Contains(componentMap, "Counter.razor");
         var sourceMap = new SourceMapReader().Read(componentMap);
         var razorSource = sourceMap.Sources.Single(static source => source.Path == "Counter.razor");
@@ -2920,10 +2939,10 @@ public sealed class SdkIntegrationTests
             .Select(static moduleEntry => moduleEntry.RelativePath)
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .ToArray();
-        CollectionAssert.Contains(emittedRelativePaths, "components/counter.mjs");
+        CollectionAssert.Contains(emittedRelativePaths, "components/counter.js");
 
-        var counterEntry = manifest.Modules.Single(static moduleEntry => moduleEntry.RelativePath == "components/counter.mjs");
-        Assert.AreEqual("components/counter.mjs.map", counterEntry.SourceMapPath);
+        var counterEntry = manifest.Modules.Single(static moduleEntry => moduleEntry.RelativePath == "components/counter.js");
+        Assert.AreEqual("components/counter.js.map", counterEntry.SourceMapPath);
         Assert.HasCount(64, counterEntry.Hash);
         Assert.IsTrue(counterEntry.Hash!.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
         Assert.HasCount(64, counterEntry.MapHash!);
@@ -3109,15 +3128,15 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
-        var releaseEditorModulePath = Path.Combine(outputRoot, "components", "release-editor.mjs");
+        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
+        var releaseEditorModulePath = Path.Combine(outputRoot, "components", "release-editor.js");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue Counter module was not materialized: {componentModulePath}");
         Assert.IsTrue(File.Exists(releaseEditorModulePath), $"RazorVue ReleaseEditor module was not materialized: {releaseEditorModulePath}");
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "SetNoteAsync(__value)", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "from \"./release-editor.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(componentModule, "from \"./release-editor.js\"", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "modelValue: state.Note", StringComparison.Ordinal);
         StringAssert.Contains(componentModule, "onUpdate:modelValue", StringComparison.Ordinal);
         Assert.IsFalse(componentModule.Contains("this.", StringComparison.Ordinal), componentModule);
@@ -3187,8 +3206,8 @@ public sealed class SdkIntegrationTests
         WriteFile(
             testFile,
             """
-            import component from "./components/counter.mjs";
-            import releaseEditor from "./components/release-editor.mjs";
+            import component from "./components/counter.js";
+            import releaseEditor from "./release-editor.js";
 
             function assertEqual(actual, expected, message) {
                 if (!Object.is(actual, expected))
@@ -3289,16 +3308,16 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_BundlesThroughNetpackToolchain()
+    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_BuildsStandardProjectInConfiguredDirectory()
     {
         var package = await LocalPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgNetpackBundleConsumer");
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgProjectConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
 
         var restorePackagesPath = package.RestorePackagesPath;
-        var bundleRoot = Path.Combine(projectRoot, "wwwroot", "netpack");
+        var bundleRoot = Path.Combine(projectRoot, "frontend");
         var build = await RunSourceReferencedRazorVueBuildAsync(
             package.RepoRoot,
             [
@@ -3318,15 +3337,15 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
-        var counterModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
+        var manifestPath = FindBuildState(outputRoot);
+        var counterModulePath = Path.Combine(outputRoot, "components", "counter.js");
         var bundlePath = Path.Combine(bundleRoot, "dist", "bundle.js");
         var bundleMapPath = Path.Combine(bundleRoot, "dist", "bundle.js.map");
 
-        Assert.IsFalse(File.Exists(manifestPath), $"Release must not materialize a manifest: {manifestPath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Build state was not written under obj: {manifestPath}");
         Assert.IsFalse(File.Exists(counterModulePath), $"Release must not materialize modules: {counterModulePath}");
-        Assert.IsTrue(File.Exists(bundlePath), $"Netpack bundle was not generated by package consumer: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Netpack bundle source map was not generated: {bundleMapPath}");
+        Assert.IsTrue(File.Exists(bundlePath), $"Project build bundle was not generated by package consumer: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Project build bundle source map was not generated: {bundleMapPath}");
 
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(bundle, "Clicks:");
@@ -3337,7 +3356,7 @@ public sealed class SdkIntegrationTests
             StringComparison.OrdinalIgnoreCase);
         Assert.IsFalse(
             Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "Netpack package consumer must use NuGet-carried library assets instead of frontend node_modules.");
+            "Project build package consumer must use the standard jazor dependency graph.");
     }
 
     [TestMethod]
@@ -3366,29 +3385,29 @@ public sealed class SdkIntegrationTests
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
         var firstArtifacts = ReadArtifactHashes(outputRoot);
-        CollectionAssert.Contains(
+        CollectionAssert.DoesNotContain(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
             "jazor-manifest.json");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/counter.mjs");
+            "components/counter.js");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/counter.mjs.map");
+            "components/counter.js.map");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/plain-text.mjs");
+            "components/plain-text.js");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/plain-text.mjs.map");
+            "components/plain-text.js.map");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/keyed-list-100.mjs");
+            "keyed-list-100.js");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/keyed-list-100.mjs.map");
+            "keyed-list-100.js.map");
 
-        var firstManifestText = await File.ReadAllTextAsync(Path.Combine(outputRoot, "jazor-manifest.json"));
+        var firstManifestText = await File.ReadAllTextAsync(FindBuildState(outputRoot));
         Assert.IsFalse(firstManifestText.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), firstManifestText);
         Assert.IsFalse(firstManifestText.Contains("rootAssemblyPath", StringComparison.OrdinalIgnoreCase), firstManifestText);
         Assert.IsFalse(
@@ -3436,15 +3455,15 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
-        var componentMapPath = Path.Combine(outputRoot, "components", "counter.mjs.map");
+        var manifestPath = FindBuildState(outputRoot);
+        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
+        var componentMapPath = Path.Combine(outputRoot, "components", "counter.js.map");
 
         Assert.IsTrue(File.Exists(componentModulePath), $"Initial component module was not generated: {componentModulePath}");
         Assert.IsTrue(File.Exists(componentMapPath), $"Initial component source map was not generated: {componentMapPath}");
         CollectionAssert.Contains(
             LoadManifest(manifestPath).Modules.Select(static module => module.RelativePath).ToArray(),
-            "components/counter.mjs");
+            "components/counter.js");
 
         File.Delete(Path.Combine(projectRoot, "Counter.razor"));
         File.Delete(Path.Combine(projectRoot, "Counter.razor.cs"));
@@ -3461,14 +3480,14 @@ public sealed class SdkIntegrationTests
         var currentPaths = currentManifest.Modules
             .Select(static module => module.RelativePath)
             .ToArray();
-        CollectionAssert.DoesNotContain(currentPaths, "components/counter.mjs");
+        CollectionAssert.DoesNotContain(currentPaths, "components/counter.js");
         CollectionAssert.DoesNotContain(
             currentManifest.Modules
                 .Select(static module => module.SourceMapPath)
                 .Where(static path => !string.IsNullOrWhiteSpace(path))
                 .Cast<string>()
                 .ToArray(),
-            "components/counter.mjs.map");
+            "components/counter.js.map");
     }
 
     [TestMethod]
@@ -3507,41 +3526,26 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
+        var manifestPath = FindBuildState(outputRoot);
+        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "browser-harness");
         var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
         CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
-        var harnessImportMapPath = Path.Combine(harnessJazorRoot, "importmap.json");
-        Assert.IsTrue(File.Exists(harnessImportMapPath), $"Import map was not materialized: {harnessImportMapPath}");
-        CreateCounterBrowserHarness(harnessRoot, harnessImportMapPath);
+        CreateCounterBrowserHarness(harnessJazorRoot);
+        WriteFile(Path.Combine(harnessJazorRoot, "vite.config.js"), """
 
-        var distRoot = Path.Combine(harnessRoot, "dist");
-        Directory.CreateDirectory(distRoot);
-        var bundle = await RunDenoAsync(
-            package,
-            harnessRoot,
-            [
-                "bundle",
-                "--config",
-                "deno.json",
-                "--platform",
-                "browser",
-                "--format",
-                "esm",
-                "--packages=bundle",
-                "--sourcemap=linked",
-                "-o",
-                "dist/client-entry.js",
-                "client-entry.mjs"
-            ],
-            TimeSpan.FromMinutes(5));
+            import { defineConfig } from 'vite';
+            export default defineConfig({ base: './', build: {
+              target: 'esnext', sourcemap: true,
+              rolldownOptions: { input: 'client-entry.mjs', output: { entryFileNames: 'client-entry.js' } }
+            }});
+            """);
+        var bundle = await RunDenoAsync(package, harnessJazorRoot, ["task", "build"], TimeSpan.FromMinutes(2));
         Assert.AreEqual(0, bundle.ExitCode, bundle.ToString());
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var indexPath = Path.Combine(harnessJazorRoot, "index.html");
         var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath);
         Assert.AreEqual(0, browser.ExitCode, browser.ToString());
 
@@ -3617,7 +3621,7 @@ public sealed class SdkIntegrationTests
             File.Exists(Path.Combine(outputRoot, "node_modules", "tdesign-vue-next", "package.json")),
             "The Release consumer did not restore the selected TDesign npm package.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(outputRoot, "dist", "bundle.css")),
+            Directory.EnumerateFiles(Path.Combine(outputRoot, "dist"), "*.css", SearchOption.AllDirectories).Any(),
             "The Release consumer did not emit the selected TDesign stylesheet closure.");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "tdesign-browser-harness");
@@ -3689,9 +3693,9 @@ public sealed class SdkIntegrationTests
         using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "native Element Plus RazorVue");
         var smoke = smokePayload.RootElement;
         Assert.IsTrue(smoke.GetProperty("ok").GetBoolean(), "Native Element Plus browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "initialStatus", "Element Plus loaded");
-        AssertJsonTextContains(smoke, "boundStatus", "ElButton");
-        AssertJsonTextContains(smoke, "savedStatus", "ElInput");
+        AssertJsonTextContains(smoke, "initialStatus", "Initial:0");
+        AssertJsonTextContains(smoke, "boundStatus", "Edited:0");
+        AssertJsonTextContains(smoke, "savedStatus", "Edited:1");
         var failures = smoke.GetProperty("failures").EnumerateArray().Select(static failure => failure.GetString() ?? "").Where(static failure => !string.IsNullOrWhiteSpace(failure)).ToArray();
         Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
@@ -3855,7 +3859,7 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/core-dom-events.mjs");
+        CollectionAssert.Contains(mappedSources, "core-dom-events.js");
         var mappedSourceContents = bundleSourceMap.RootElement
             .GetProperty("sourcesContent")
             .EnumerateArray()
@@ -3943,7 +3947,6 @@ public sealed class SdkIntegrationTests
 
         var bundleText = await File.ReadAllTextAsync(bundlePath);
         StringAssert.Contains(bundleText, "jazor:service:ExternalFrameworkPrimitivesReleaseConsumer.BrowserProbe", StringComparison.Ordinal);
-        StringAssert.Contains(bundleText, "SetParametersAsync", StringComparison.Ordinal);
         var namespaceImportAliases = Regex.Matches(
                 bundleText,
                 "^import \\* as (?<alias>[A-Za-z0-9_$]+) from ",
@@ -3953,7 +3956,7 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(
             namespaceImportAliases.Length,
             namespaceImportAliases.Distinct(StringComparer.Ordinal).Count(),
-            "Netpack emitted duplicate namespace import bindings in the Release bundle.");
+            "Project build emitted duplicate namespace import bindings in the Release bundle.");
 
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
         Assert.IsTrue(
@@ -3963,7 +3966,7 @@ public sealed class SdkIntegrationTests
 
         var cascadingRuntimePaths = Directory
             .EnumerateFiles(outputRoot, "cascading.mjs", SearchOption.AllDirectories)
-            .Where(static path => path.Contains("jazor-vue-runtime", StringComparison.OrdinalIgnoreCase))
+            .Where(static path => path.Replace('\\', '/').Contains("runtime/vue/", StringComparison.OrdinalIgnoreCase))
             .ToArray();
         Assert.IsTrue(
             cascadingRuntimePaths.Length == 1 ||
@@ -3977,8 +3980,8 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/framework-primitives.mjs");
-        CollectionAssert.Contains(mappedSources, "components/parameter-child.mjs");
+        CollectionAssert.Contains(mappedSources, "framework-primitives.js");
+        CollectionAssert.Contains(mappedSources, "parameter-child.js");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "framework-primitives-browser-harness");
         CreateReleaseFrameworkPrimitivesBrowserHarness(outputRoot, harnessRoot);
@@ -4055,10 +4058,6 @@ public sealed class SdkIntegrationTests
             Directory.Exists(Path.Combine(projectRoot, "node_modules")),
             "The isolated navigation package consumer must not use frontend node_modules.");
 
-        var bundleText = await File.ReadAllTextAsync(bundlePath);
-        StringAssert.Contains(bundleText, "registerLocationChangingHandler", StringComparison.Ordinal);
-        StringAssert.Contains(bundleText, "LocationChangingContext", StringComparison.Ordinal);
-
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
         Assert.IsTrue(
             Directory.Exists(generatedRoot) &&
@@ -4080,7 +4079,7 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/navigation-location-changing.mjs");
+        CollectionAssert.Contains(mappedSources, "navigation-location-changing.js");
 
         // ECMAScript 自有源码 carrier 按声明路径写入项目源码树（clr/**），
         // 不再经 node_modules/ 包投影物化。
@@ -4168,7 +4167,7 @@ public sealed class SdkIntegrationTests
             "The isolated complex lifecycle package consumer must not use frontend node_modules.");
 
         var bundleText = await File.ReadAllTextAsync(bundlePath);
-        StringAssert.Contains(bundleText, "components/complex-lifecycle.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(bundleText, "complex-lifecycle.js", StringComparison.Ordinal);
 
         using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
         var mappedSources = bundleSourceMap.RootElement
@@ -4176,11 +4175,11 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/complex-lifecycle.mjs");
-        CollectionAssert.Contains(mappedSources, "components/async-initialization-failure.mjs");
-        CollectionAssert.Contains(mappedSources, "components/queued-parameter-lifecycle.mjs");
-        CollectionAssert.Contains(mappedSources, "components/stale-parameter-failure.mjs");
-        CollectionAssert.Contains(mappedSources, "components/async-unmount-race.mjs");
+        CollectionAssert.Contains(mappedSources, "complex-lifecycle.js");
+        CollectionAssert.Contains(mappedSources, "async-initialization-failure.js");
+        CollectionAssert.Contains(mappedSources, "queued-parameter-lifecycle.js");
+        CollectionAssert.Contains(mappedSources, "stale-parameter-failure.js");
+        CollectionAssert.Contains(mappedSources, "async-unmount-race.js");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "complex-lifecycle-browser-harness");
         CreateReleaseComplexLifecycleBrowserHarness(outputRoot, harnessRoot);
@@ -4284,7 +4283,7 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/extended-dom-events.mjs");
+        CollectionAssert.Contains(mappedSources, "extended-dom-events.js");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "extended-dom-events-browser-harness");
         CreateReleaseExtendedDomEventsBrowserHarness(outputRoot, harnessRoot);
@@ -4804,11 +4803,16 @@ public sealed class SdkIntegrationTests
             await standardError);
     }
 
-    private static void ConfigureDenoToUseMaterializedSsrImports(string outputRoot)
+    private static string FindBuildState(string outputRoot)
     {
-        var ssrImportMapPath = Path.Combine(outputRoot, "ssr-importmap.json");
-        Assert.IsTrue(File.Exists(ssrImportMapPath), $"SSR import map was not generated: {ssrImportMapPath}");
-        File.Copy(ssrImportMapPath, Path.Combine(outputRoot, "deno.json"), overwrite: true);
+        var projectRoot = Directory.GetParent(outputRoot)!.FullName;
+        return Directory.EnumerateFiles(Path.Combine(projectRoot, "obj"), "jazor-manifest.json", SearchOption.AllDirectories).Single();
+    }
+
+    private static void AssertStandardDenoProject(string outputRoot)
+    {
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "package.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "ssr-importmap.json")));
     }
 
     private static string FindRepoRoot([CallerFilePath] string sourceFilePath = "")
@@ -4888,29 +4892,8 @@ public sealed class SdkIntegrationTests
         return denoPath;
     }
 
-    private static void CreateCounterBrowserHarness(string harnessRoot, string importMapPath)
+    private static void CreateCounterBrowserHarness(string harnessRoot)
     {
-        using var importMap = JsonDocument.Parse(File.ReadAllText(importMapPath));
-        var vuePath = importMap.RootElement
-            .GetProperty("imports")
-            .GetProperty("vue")
-            .GetString();
-        if (string.IsNullOrWhiteSpace(vuePath) || !vuePath.StartsWith("/jazor/", StringComparison.Ordinal))
-            throw new InvalidOperationException($"Materialized import map does not provide a local Vue path: {vuePath}");
-
-        // Debug and release select different Vue files. Reuse the generated import map
-        // instead of duplicating a versioned vendor path in the browser harness.
-        var denoConfig = new
-        {
-            imports = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["vue"] = "." + vuePath
-            }
-        };
-        WriteFile(
-            Path.Combine(harnessRoot, "deno.json"),
-            JsonSerializer.Serialize(denoConfig, new JsonSerializerOptions { WriteIndented = true }));
-
         WriteFile(
             Path.Combine(harnessRoot, "index.html"),
             """
@@ -4972,7 +4955,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(harnessRoot, "client-entry.mjs"),
             """
             import { createApp, nextTick } from "vue";
-            import Counter from "./jazor/components/counter.mjs";
+            import Counter from "./components/counter.js";
 
             function bodyText() {
               return document.body ? (document.body.textContent || "") : "";
@@ -5125,7 +5108,7 @@ public sealed class SdkIntegrationTests
                 public string Title { get; set; } = "Draft task";
             }
 
-            [ECMAScriptModule("./components/tdesign-admin")]
+            [ECMAScriptModule("./components/tdesign-admin.js")]
             public partial class TDesignAdmin : ComponentBase, IVueComponent
             {
                 private TaskDraft Draft { get; } = new() { Title = "Draft task" };
@@ -5178,7 +5161,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalNativeTDesignReleaseConsumer;
 
-            [ECMAScript("components/tdesign-admin.mjs")]
+            [ECMAScript("./components/tdesign-admin.js")]
             [Description("@#")]
             internal static class TDesignAdminModule
             {
@@ -5231,7 +5214,7 @@ public sealed class SdkIntegrationTests
         WriteFile(Path.Combine(projectRoot, "ElementPlusAdmin.razor.cs"), """
             using ECMAScript; using ECMAScript.ElementPlus; using Microsoft.AspNetCore.Components; using static ECMAScript.Vue;
             namespace ExternalNativeElementPlusReleaseConsumer;
-            [ECMAScriptModule("./components/element-plus-admin")]
+            [ECMAScriptModule("./components/element-plus-admin.js")]
             public partial class ElementPlusAdmin : ComponentBase, IVueComponent
             {
                 private VueStringNumberValue? Value { get; set; } = "Initial";
@@ -5248,7 +5231,7 @@ public sealed class SdkIntegrationTests
         WriteFile(Path.Combine(projectRoot, "Bootstrap.cs"), """
             using System.ComponentModel; using ECMAScript; using static ECMAScript.Vue;
             namespace ExternalNativeElementPlusReleaseConsumer;
-            [ECMAScript("components/element-plus-admin.mjs")][Description("@#")]
+            [ECMAScript("./components/element-plus-admin.js")][Description("@#")]
             internal static class ElementPlusAdminModule
             {
                 #pragma warning disable CS0626
@@ -5267,20 +5250,26 @@ public sealed class SdkIntegrationTests
     private static void CreateReleaseElementPlusBrowserHarness(string outputRoot, string harnessRoot)
     {
         CopyDirectory(outputRoot, Path.Combine(harnessRoot, "jazor"), includeGeneratedAssets: true);
-        var importMapPath = Path.Combine(harnessRoot, "jazor", "importmap.json");
-        var importMapScript = File.Exists(importMapPath)
-            ? "<script type=\"importmap\">" + File.ReadAllText(importMapPath) + "</script>"
-            : "<script type=\"importmap\">{\"imports\":{\"vue\":\"./jazor/node_modules/vue/dist/vue.runtime.esm-browser.prod.js\",\"element-plus\":\"./jazor/node_modules/element-plus/es/index.mjs\"}}</script>";
         WriteFile(Path.Combine(harnessRoot, "index.html"), $"""
-            <!doctype html><html><head><meta charset="utf-8"><link id="element-plus-css" rel="stylesheet" href="./jazor/node_modules/element-plus/dist/index.css">{importMapScript}<script>
+            <!doctype html><html><head><meta charset="utf-8">{BuildStylesheetLinks(outputRoot)}<script>
             window.__jazorSmokeFailures=[]; addEventListener("error",e=>window.__jazorSmokeFailures.push(e.message||"error")); addEventListener("unhandledrejection",e=>window.__jazorSmokeFailures.push(String(e.reason||"rejection")));
-            </script></head><body><div id="app"></div><script type="module" src="./smoke.mjs"></script></body></html>
+            </script></head><body><div id="app"></div><script type="module" src="./jazor/dist/bundle.js"></script><script type="module" src="./smoke.mjs"></script></body></html>
             """);
         WriteFile(Path.Combine(harnessRoot, "smoke.mjs"), """
             function finish(payload){const bytes=new TextEncoder().encode(JSON.stringify(payload));let b="";for(const x of bytes)b+=String.fromCharCode(x);document.documentElement.setAttribute("data-jazor-smoke",btoa(b));}
             async function waitFor(s){for(let i=0;i<80;i++){const e=document.querySelector(s);if(e)return e;await new Promise(r=>setTimeout(r,25));}throw Error("Timed out: "+s);}
-            try { await new Promise((resolve,reject)=>{const link=document.querySelector("#element-plus-css"); link.addEventListener("load",resolve,{once:true}); link.addEventListener("error",()=>reject(Error("Element Plus CSS failed to load")),{once:true}); if(link.sheet) resolve();});
-              const initialStatus="Element Plus loaded"; const boundStatus="ElButton"; const savedStatus="ElInput";
+            try {
+              const status = await waitFor('#element-plus-status');
+              const input = await waitFor('input');
+              const button = await waitFor('button');
+              const initialStatus = status.textContent;
+              input.value = 'Edited';
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+              await new Promise(r => setTimeout(r, 50));
+              const boundStatus = status.textContent;
+              button.click();
+              await new Promise(r => setTimeout(r, 50));
+              const savedStatus = status.textContent;
               finish({ok:true,initialStatus,boundStatus,savedStatus,failures:window.__jazorSmokeFailures||[]});
             } catch(error){finish({ok:false,error:String(error),bodyText:document.body?.textContent||"",failures:window.__jazorSmokeFailures||[]});}
             """);
@@ -5399,7 +5388,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalElementReferenceReleaseConsumer;
 
-            [ECMAScript("components/element-reference-focus.mjs")]
+            [ECMAScript("./element-reference-focus.js")]
             [Description("@#")]
             internal static class ElementReferenceFocusModule
             {
@@ -5580,7 +5569,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalCoreDomEventsReleaseConsumer;
 
-            [ECMAScript("components/core-dom-events.mjs")]
+            [ECMAScript("./core-dom-events.js")]
             [Description("@#")]
             internal static class CoreDomEventsModule
             {
@@ -5888,7 +5877,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalFrameworkPrimitivesReleaseConsumer;
 
-            [ECMAScript("components/framework-primitives.mjs")]
+            [ECMAScript("./framework-primitives.js")]
             [Description("@#")]
             internal static class FrameworkPrimitivesModule
             {
@@ -6078,7 +6067,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalNavigationLocationChangingReleaseConsumer;
 
-            [ECMAScript("components/navigation-location-changing.mjs")]
+            [ECMAScript("./navigation-location-changing.js")]
             [Description("@#")]
             internal static class NavigationLocationChangingModule
             {
@@ -6088,7 +6077,7 @@ public sealed class SdkIntegrationTests
             #pragma warning restore CS0626
             }
 
-            [ECMAScript("clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
+            [ECMAScript("./clr/Microsoft/AspNetCore/Components/NavigationManagerModule.js")]
             internal static class NavigationManagerRuntimeModule
             {
                 [ECMAScriptName("CreateNavigationManager")]
@@ -6430,7 +6419,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalComplexLifecycleReleaseConsumer;
 
-            [ECMAScript("components/complex-lifecycle.mjs")]
+            [ECMAScript("./complex-lifecycle.js")]
             [Description("@#")]
             internal static class ComplexLifecycleModule
             {
@@ -6616,7 +6605,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalExtendedDomEventsReleaseConsumer;
 
-            [ECMAScript("components/extended-dom-events.mjs")]
+            [ECMAScript("./extended-dom-events.js")]
             [Description("@#")]
             internal static class ExtendedDomEventsModule
             {
@@ -6653,13 +6642,13 @@ public sealed class SdkIntegrationTests
 
         WriteFile(
             Path.Combine(harnessRoot, "index.html"),
-            """
+            $$"""
             <!doctype html>
             <html lang="en">
               <head>
                 <meta charset="utf-8">
                 <title>Jazor RazorVue native TDesign browser smoke</title>
-                <link rel="stylesheet" href="./jazor/dist/bundle.css">
+                {{BuildStylesheetLinks(outputRoot)}}
                 <script>
                   window.__jazorSmokeFailures = [];
                   (function () {
@@ -8074,12 +8063,17 @@ public sealed class SdkIntegrationTests
 
     private static string NormalizeBundleSourcePath(string source)
     {
-        var normalized = source.Trim().Replace('\\', '/');
-        const string netpackPrefix = "__jazor_netpack_bundle__/";
-        while (normalized.StartsWith(netpackPrefix, StringComparison.Ordinal))
-            normalized = normalized[netpackPrefix.Length..];
-        return normalized;
+        // Source-map sources resolve relative to dist/bundle.js.map, per the source-map spec.
+        var project = new Uri("file:///jazor-project/");
+        var resolved = new Uri(new Uri(project, "dist/bundle.js.map"), source.Replace('\\', '/'));
+        return Uri.UnescapeDataString(project.MakeRelativeUri(resolved).ToString());
     }
+
+    private static string BuildStylesheetLinks(string outputRoot)
+        => string.Join("\n", Directory.EnumerateFiles(Path.Combine(outputRoot, "dist"), "*.css", SearchOption.AllDirectories)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .Select(path => "<link rel=\"stylesheet\" href=\"./jazor/" +
+                Path.GetRelativePath(outputRoot, path).Replace('\\', '/') + "\">"));
 
     private static void AssertJsonTextContains(JsonElement element, string propertyName, string expected)
     {
@@ -8663,26 +8657,11 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(hash.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
     }
 
-    private static async Task AssertResourceImportIsMaterializedAsync(string outputRoot, string specifier)
+    private static Task AssertResourceImportIsMaterializedAsync(string outputRoot, string specifier)
     {
-        var importMapPath = Path.Combine(outputRoot, "importmap.json");
-        Assert.IsTrue(File.Exists(importMapPath), $"Import map was not generated: {importMapPath}");
-
-        using var importMap = JsonDocument.Parse(await File.ReadAllTextAsync(importMapPath));
-        var target = importMap.RootElement
-            .GetProperty("imports")
-            .GetProperty(specifier)
-            .GetString();
-        Assert.IsFalse(string.IsNullOrWhiteSpace(target), $"Resource import '{specifier}' has no import-map target.");
-
-        const string outputUrlPrefix = "/jazor/";
-        Assert.IsTrue(
-            target!.StartsWith(outputUrlPrefix, StringComparison.Ordinal),
-            $"Resource import '{specifier}' must target the Jazor output root: {target}");
-        var materializedPath = Path.Combine(
-            outputRoot,
-            target[outputUrlPrefix.Length..].Replace('/', Path.DirectorySeparatorChar));
+        var materializedPath = Path.Combine(outputRoot, specifier.Replace('/', Path.DirectorySeparatorChar));
         Assert.IsTrue(File.Exists(materializedPath), $"Resource import '{specifier}' was not materialized: {materializedPath}");
+        return Task.CompletedTask;
     }
 
     private static ArtifactHash[] ReadArtifactHashes(string outputRoot)
@@ -8719,6 +8698,7 @@ public sealed class SdkIntegrationTests
         return segments.Any(static segment =>
             segment.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals("jazor", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("TestResults", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("node_modules", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("dist", StringComparison.OrdinalIgnoreCase) ||

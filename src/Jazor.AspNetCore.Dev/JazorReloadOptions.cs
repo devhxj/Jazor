@@ -5,19 +5,15 @@ namespace Jazor.AspNetCore.Dev;
 /// <summary>Configures the development-only Jazor reload transport and file observation.</summary>
 public sealed class JazorReloadOptions
 {
-    /// <summary>Initializes development reload with project-root artifacts and web-root assets observed.</summary>
+    /// <summary>Initializes optional host reload for web-root assets; the JS server owns jazor/.</summary>
     public JazorReloadOptions()
     {
         WatchPaths =
         [
-            "jazor",
             "wwwroot"
         ];
 
-        HmrMappings =
-        [
-            new JazorHmrMapping()
-        ];
+        HmrMappings = [];
     }
 
     /// <summary>Browser endpoint that serves the reload client module.</summary>
@@ -29,14 +25,14 @@ public sealed class JazorReloadOptions
     public PathString WebSocketPath { get; set; } = new("/@jazor/reload");
 
     /// <summary>Content-root paths observed for generated artifacts and authored static files.</summary>
-    /// <remarks>默认 jazor 与 wwwroot。相对路径基于 ContentRootPath，也可使用绝对目录；文件监听与周期轮询共同观察变化。</remarks>
+    /// <remarks>默认仅 wwwroot。相对路径基于 ContentRootPath，也可使用绝对目录；标准 JS 项目由开发服务器观察。</remarks>
     public IList<string> WatchPaths { get; }
 
     /// <summary>
     /// Maps generated artifact roots to browser URLs. A module update is emitted only
     /// when the manifest proves the change stays inside a Vue template-only boundary.
     /// </summary>
-    /// <remarks>默认将 jazor 目录映射到 /jazor。映射目录自动加入观察范围，无需重复添加到 WatchPaths。仅 manifest 确认的 template-only 变化使用 Vue HMR，其余变化整页刷新。</remarks>
+    /// <remarks>默认空；仅供显式使用旧宿主 HMR 协议的应用配置。标准 JS 项目不需要此映射或 manifest。</remarks>
     public IList<JazorHmrMapping> HmrMappings { get; }
 
     /// <summary>Quiet period used to coalesce a single build's file writes.</summary>

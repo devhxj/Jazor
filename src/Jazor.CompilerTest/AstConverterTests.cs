@@ -2374,7 +2374,7 @@ $@"export class NestedClass {{
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-$@"import {{ _4cb33a818161a3e1 }} from ""clr/System/DateTimeModule.js"";
+$@"import {{ _4cb33a818161a3e1 }} from ""./clr/System/DateTimeModule.js"";
 export class NestedClass {{
   static #{backingFieldName} = _4cb33a818161a3e1(2024, 1, 2);
   static get Value() {{
@@ -3273,7 +3273,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"import { createDefault } from ""clr/System/Collections/Generic/ListT1Module.js"";
+@"import { createDefault } from ""./clr/System/Collections/Generic/ListT1Module.js"";
 export let Numbers = createDefault();
 ", script);
 
@@ -3438,7 +3438,7 @@ export let Numbers = createDefault();
 
         // Assert
         Assert.AreEqual(
-@"import { createDefault } from ""clr/System/Collections/Generic/ListT1Module.js"";
+@"import { createDefault } from ""./clr/System/Collections/Generic/ListT1Module.js"";
 export let ListField = createDefault();
 ", script);
 
@@ -3464,7 +3464,7 @@ export let ListField = createDefault();
 
         // Assert
         Assert.AreEqual(
-@"import { createDefault } from ""clr/System/Collections/Generic/DictionaryT2Module.js"";
+@"import { createDefault } from ""./clr/System/Collections/Generic/DictionaryT2Module.js"";
 export let DictField = createDefault();
 ", script);
 
@@ -3497,7 +3497,7 @@ export let DictField = createDefault();
 
         // Assert
         Assert.AreEqual(
-@"import { _797b5246c9b12c8d } from ""clr/System/IComparableT1Module.js"";
+@"import { _797b5246c9b12c8d } from ""./clr/System/IComparableT1Module.js"";
 export function Max(a, b) {
   return _797b5246c9b12c8d(a, b) > 0 ? a : b;
 }
@@ -3996,7 +3996,7 @@ export function get_Doubled() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { _bfa8ee5dd46e2005 } from ""clr/System/DateTimeModule.js"";
+@"import { _bfa8ee5dd46e2005 } from ""./clr/System/DateTimeModule.js"";
 export let Value = _bfa8ee5dd46e2005();
 ", script);
     }
@@ -4020,7 +4020,7 @@ export let Value = _bfa8ee5dd46e2005();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { _12b4f3f1dc14bea9 } from ""clr/System/DateTimeOffsetModule.js"";
+@"import { _12b4f3f1dc14bea9 } from ""./clr/System/DateTimeOffsetModule.js"";
 export let Value = _12b4f3f1dc14bea9();
 ", script);
     }
@@ -4044,7 +4044,7 @@ export let Value = _12b4f3f1dc14bea9();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { _5af0f6ad850e6702 } from ""clr/System/TimeSpanModule.js"";
+@"import { _5af0f6ad850e6702 } from ""./clr/System/TimeSpanModule.js"";
 export let Value = _5af0f6ad850e6702();
 ", script);
     }
@@ -4068,7 +4068,7 @@ export let Value = _5af0f6ad850e6702();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { _5f8053a9657a0844 } from ""clr/System/DateOnlyModule.js"";
+@"import { _5f8053a9657a0844 } from ""./clr/System/DateOnlyModule.js"";
 export let Value = _5f8053a9657a0844();
 ", script);
     }
@@ -4092,7 +4092,7 @@ export let Value = _5f8053a9657a0844();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { _9f78f92d0753f4cf } from ""clr/System/TimeOnlyModule.js"";
+@"import { _9f78f92d0753f4cf } from ""./clr/System/TimeOnlyModule.js"";
 export let Value = _9f78f92d0753f4cf();
 ", script);
     }
@@ -4416,7 +4416,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"import { _c698784c1b652292 } from ""clr/System/HalfModule.js"";
+@"import { _c698784c1b652292 } from ""./clr/System/HalfModule.js"";
 export function Check(value = _c698784c1b652292(1.5)) {
   return 0;
 }
@@ -4645,7 +4645,7 @@ export function Increment() {
 
         // Assert
         Assert.AreEqual(
-@"import { createDefault } from ""clr/System/Collections/Generic/DictionaryT2Module.js"";
+@"import { createDefault } from ""./clr/System/Collections/Generic/DictionaryT2Module.js"";
 export let NestedGenerics = createDefault();
 ", script);
 
@@ -4741,7 +4741,7 @@ export let NestedGenerics = createDefault();
 
         // Assert
     Assert.AreEqual(
-@"import { _155212572c9a3297, _fb5a811e7a32a324 } from ""clr/System/Numerics/BigIntegerModule.js"";
+@"import { _155212572c9a3297, _fb5a811e7a32a324 } from ""./clr/System/Numerics/BigIntegerModule.js"";
 export let Value = _155212572c9a3297(""33"");
 export function LogValue() {
   return _fb5a811e7a32a324(_155212572c9a3297(""44""));
@@ -4771,7 +4771,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "import { _c80ae10aa1d0d795 } from \"clr/System/ExceptionModule.js\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "import { _c80ae10aa1d0d795 } from \"./clr/System/ExceptionModule.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "_c80ae10aa1d0d795(value, \"value\");", StringComparison.Ordinal);
     }
 
@@ -4795,7 +4795,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
@@ -4824,7 +4824,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
         StringAssert.Contains(script, "item > threshold");
@@ -4903,7 +4903,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "clr/System/Linq/EnumerableModule.js");
+        StringAssert.Contains(script, "./clr/System/Linq/EnumerableModule.js");
         StringAssert.Contains(script, "_c8e0de6cfb4d0b1e");
         StringAssert.Contains(script, "_c955435630a10962");
         StringAssert.Contains(script, "_c08a571c42e14ee7");
@@ -4942,7 +4942,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"selector\");");
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
@@ -4968,7 +4968,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return __src.filter(__callback);");
@@ -4994,7 +4994,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"selector\");");
         StringAssert.Contains(script, "return __src.map(__callback);");
@@ -5020,7 +5020,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"predicate\");");
         StringAssert.Contains(script, "return __src.filter(__callback);");
@@ -5046,7 +5046,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        Assert.IsFalse(script.Contains("clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        Assert.IsFalse(script.Contains("./clr/System/Linq/EnumerableModule.js", StringComparison.Ordinal));
         StringAssert.Contains(script, "throw new TypeError(\"source\");");
         StringAssert.Contains(script, "throw new TypeError(\"selector\");");
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
@@ -5071,7 +5071,7 @@ export function LogValue() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _e2640560d207afce } from ""clr/System/DateOnlyModule.js"";
+@"import { _e2640560d207afce } from ""./clr/System/DateOnlyModule.js"";
 export function Format() {
   return _e2640560d207afce(""2024-01-02"").toString();
 }
@@ -5097,7 +5097,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _25187a24d190d864, _e856edbfd7db0646 } from ""clr/System/DateTimeOffsetModule.js"";
+@"import { _25187a24d190d864, _e856edbfd7db0646 } from ""./clr/System/DateTimeOffsetModule.js"";
 export function Format() {
   return _e856edbfd7db0646(_25187a24d190d864(""2024-01-02T03:04:05+08:00""), ""O"", null);
 }
@@ -5127,7 +5127,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _559b27327f84f1af, _b7486264ae338f27 } from ""clr/System/Globalization/CultureInfoModule.js"";
+@"import { _559b27327f84f1af, _b7486264ae338f27 } from ""./clr/System/Globalization/CultureInfoModule.js"";
 export function Format() {
   let culture = _b7486264ae338f27(""en-US"");
   return culture + ""|"" + _559b27327f84f1af(culture);
@@ -5154,7 +5154,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _e2640560d207afce } from ""clr/System/DateOnlyModule.js"";
+@"import { _e2640560d207afce } from ""./clr/System/DateOnlyModule.js"";
 export function Format() {
   return ""date="" + _e2640560d207afce(""2024-01-02"");
 }
@@ -5180,7 +5180,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _25187a24d190d864 } from ""clr/System/DateTimeOffsetModule.js"";
+@"import { _25187a24d190d864 } from ""./clr/System/DateTimeOffsetModule.js"";
 export function Format() {
   return ""dto="" + _25187a24d190d864(""2024-01-02T03:04:05+08:00"");
 }
@@ -5206,7 +5206,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _4cb33a818161a3e1 } from ""clr/System/DateTimeModule.js"";
+@"import { _4cb33a818161a3e1 } from ""./clr/System/DateTimeModule.js"";
 export function Format() {
   return ""dt="" + _4cb33a818161a3e1(2024, 1, 2);
 }
@@ -5232,7 +5232,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _e9a3481b3456aad4 } from ""clr/System/TimeOnlyModule.js"";
+@"import { _e9a3481b3456aad4 } from ""./clr/System/TimeOnlyModule.js"";
 export function Format() {
   return ""time="" + _e9a3481b3456aad4(12, 30, 0);
 }
@@ -5258,7 +5258,7 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _6f22e268aec62fe7 } from ""clr/System/TimeSpanModule.js"";
+@"import { _6f22e268aec62fe7 } from ""./clr/System/TimeSpanModule.js"";
 export function Format() {
   return ""span="" + _6f22e268aec62fe7(1, 2, 3);
 }
@@ -5335,7 +5335,7 @@ export function LongCopy(value, sign) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _49bf8261f5cf3a4b } from ""clr/System/Int32Module.js"";
+@"import { _49bf8261f5cf3a4b } from ""./clr/System/Int32Module.js"";
 export function SignedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
@@ -5429,7 +5429,7 @@ export function SignedBounds(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _8ce36b36c4abd947 } from ""clr/System/Int16Module.js"";
+@"import { _8ce36b36c4abd947 } from ""./clr/System/Int16Module.js"";
 export function SignedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
@@ -5529,8 +5529,8 @@ export function UnsignedBounds(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _80e78c0aa0b98fef } from ""clr/System/UInt16Module.js"";
-import { _8a073d758132b5bb } from ""clr/System/UInt32Module.js"";
+@"import { _80e78c0aa0b98fef } from ""./clr/System/UInt16Module.js"";
+import { _8a073d758132b5bb } from ""./clr/System/UInt32Module.js"";
 export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
   let ushortPair = _80e78c0aa0b98fef(ushortLeft, ushortRight);
   let uintPair = _8a073d758132b5bb(uintLeft, uintRight);
@@ -5562,7 +5562,7 @@ export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _1636c956519f95fa, _b2c1f15fae072110 } from ""clr/System/Int16Module.js"";
+@"import { _1636c956519f95fa, _b2c1f15fae072110 } from ""./clr/System/Int16Module.js"";
 export function Sum(left, right, value) {
   let pair = _b2c1f15fae072110(left, right);
   return pair.Quotient + pair.Remainder + _1636c956519f95fa(value);
@@ -5590,8 +5590,8 @@ export function Sum(left, right, value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _2ea0cab4f3f489d9 } from ""clr/System/UInt16Module.js"";
-import { _96cd49e102b39e5b } from ""clr/System/UInt32Module.js"";
+@"import { _2ea0cab4f3f489d9 } from ""./clr/System/UInt16Module.js"";
+import { _96cd49e102b39e5b } from ""./clr/System/UInt32Module.js"";
 export function Sum(ushortValue, uintValue) {
   return BigInt(_2ea0cab4f3f489d9(ushortValue)) + BigInt(_96cd49e102b39e5b(uintValue));
 }
@@ -5662,7 +5662,7 @@ export function Sum(ushortValue, uintValue) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _f0d5d38874458f27 } from ""clr/System/SByteModule.js"";
+@"import { _f0d5d38874458f27 } from ""./clr/System/SByteModule.js"";
 export function SignedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
@@ -5902,7 +5902,7 @@ export function Multiply(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _d305de2c64e85995, _fef56ccd17b22e88 } from ""clr/System/Numerics/BigIntegerModule.js"";
+@"import { _d305de2c64e85995, _fef56ccd17b22e88 } from ""./clr/System/Numerics/BigIntegerModule.js"";
 export function Max(left, right) {
   return _d305de2c64e85995(left, right);
 }
@@ -5931,7 +5931,7 @@ export function Min(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _9618dc0d855ee729, _bfad1ee52075b36e } from ""clr/System/Int64Module.js"";
+@"import { _9618dc0d855ee729, _bfad1ee52075b36e } from ""./clr/System/Int64Module.js"";
 export function Max(left, right) {
   return _9618dc0d855ee729(left, right);
 }
@@ -5964,7 +5964,7 @@ export function Min(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _4a2ec5d010e27cb1, _7c146ff0a50e958f, _b7b1d7781578b7e0, _e5a7b14f707c69f7 } from ""clr/System/SingleModule.js"";
+@"import { _4a2ec5d010e27cb1, _7c146ff0a50e958f, _b7b1d7781578b7e0, _e5a7b14f707c69f7 } from ""./clr/System/SingleModule.js"";
 export function Max(left, right) {
   return _7c146ff0a50e958f(left, right);
 }
@@ -6030,7 +6030,7 @@ export function MinNumber(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _99c8e34b34aa762c, _e54bb5d6b1fb386d } from ""clr/System/SingleModule.js"";
+@"import { _99c8e34b34aa762c, _e54bb5d6b1fb386d } from ""./clr/System/SingleModule.js"";
 export function Run(value, left, right, third) {
   let log2 = Math.log2(value);
   let expM1 = Math.fround(Math.expm1(value));
@@ -6167,9 +6167,9 @@ export function Run(value, left, right, third) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _0f9f49a802919a8f, _eee146c74a9bc322 } from ""clr/System/DoubleModule.js"";
-import { _9a554cfca79bdc59, _c0668680ba7ef96e } from ""clr/System/MathModule.js"";
-import { _0dcf89ab5d6bd60c, _323a6b94e62b2729 } from ""clr/System/SingleModule.js"";
+@"import { _0f9f49a802919a8f, _eee146c74a9bc322 } from ""./clr/System/DoubleModule.js"";
+import { _9a554cfca79bdc59, _c0668680ba7ef96e } from ""./clr/System/MathModule.js"";
+import { _0dcf89ab5d6bd60c, _323a6b94e62b2729 } from ""./clr/System/SingleModule.js"";
 export function FloatSign(value) {
   return _323a6b94e62b2729(value);
 }
@@ -6248,7 +6248,7 @@ export function DoubleSubnormal(value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _2c792a5d6ef88cd1, _9905e3952bca67bc } from ""clr/System/SingleModule.js"";
+@"import { _2c792a5d6ef88cd1, _9905e3952bca67bc } from ""./clr/System/SingleModule.js"";
 export function Pair(value) {
   return _9905e3952bca67bc(value);
 }
@@ -6281,7 +6281,7 @@ export function PairPi(value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _315c6cdfa11efcf2, _7f7b38b043f3f42f, _b6202851542d164c, _bb1daa880a2ad14e } from ""clr/System/DoubleModule.js"";
+@"import { _315c6cdfa11efcf2, _7f7b38b043f3f42f, _b6202851542d164c, _bb1daa880a2ad14e } from ""./clr/System/DoubleModule.js"";
 export function Max(left, right) {
   return _b6202851542d164c(left, right);
 }
@@ -6316,7 +6316,7 @@ export function MinNumber(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { _63d3d54252a49e29, _ea75510d32bc8099 } from ""clr/System/Int16Module.js"";
+@"import { _63d3d54252a49e29, _ea75510d32bc8099 } from ""./clr/System/Int16Module.js"";
 export function Max(left, right) {
   return _ea75510d32bc8099(left, right);
 }
@@ -6375,7 +6375,7 @@ export function Min(left, right) {
 
         // Assert
         Assert.AreEqual(
-@"import { Make } from ""clr/System/RuntimeModule.js"";
+@"import { Make } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   return Make();
 }
@@ -12278,7 +12278,8 @@ function SetupChild(props, context) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""vue"";
+@"import ""vuetify/lib/components/VBtn/VBtn.css"";
+import { createApp } from ""vue"";
 import { createVuetify } from ""vuetify"";
 import { VBtn } from ""vuetify/components/VBtn"";
 import { Ripple } from ""vuetify/directives/ripple"";
@@ -14232,7 +14233,7 @@ export function Boot() {{
 
         AssertScriptEqual(
             """
-            import { Value } from "clr/System/RuntimeModule.js";
+            import { Value } from "./clr/System/RuntimeModule.js";
             export function Read() {
               return Value;
             }
@@ -14289,7 +14290,7 @@ export function Boot() {{
 
         // Assert
         Assert.AreEqual(
-@"import { get_Value } from ""clr/System/RuntimeModule.js"";
+@"import { get_Value } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   return get_Value();
 }
@@ -14469,7 +14470,7 @@ export function Write() {
 
         // Assert
         Assert.AreEqual(
-@"import { Make } from ""clr/System/RuntimeModule.js"";
+@"import { Make } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   return Make();
 }
@@ -14530,7 +14531,7 @@ export function Create() {
 
         // Assert
         Assert.AreEqual(
-@"import { Make } from ""clr/System/RuntimeModule.js"";
+@"import { Make } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   let factory = Make;
   return factory();
@@ -14588,7 +14589,7 @@ export function Create() {
 
         // Assert
         Assert.AreEqual(
-@"import { get_Value } from ""clr/System/RuntimeModule.js"";
+@"import { get_Value } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   return get_Value();
 }
@@ -14644,7 +14645,7 @@ export function Create() {
 
         // Assert
         Assert.AreEqual(
-@"import { get_Value } from ""clr/System/RuntimeModule.js"";
+@"import { get_Value } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   return get_Value();
 }
@@ -14697,7 +14698,7 @@ export function Create() {
         var script = module?.ToKnRECMAScript();
 
 Assert.AreEqual(
-@"import { set_Value } from ""clr/System/RuntimeModule.js"";
+@"import { set_Value } from ""./clr/System/RuntimeModule.js"";
 export function Set() {
   set_Value(7);
 }
@@ -14839,7 +14840,7 @@ export function Set() {
 
         // Assert
 Assert.AreEqual(
-@"import { Helpers } from ""clr/System/RuntimeModule.js"";
+@"import { Helpers } from ""./clr/System/RuntimeModule.js"";
 export function Create() {
   return Helpers.Make();
 }
@@ -14896,9 +14897,9 @@ export function Create() {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        var makeId = ImportBindingName("clr/System/RuntimeModule.js", "Make");
+        var makeId = ImportBindingName("./clr/System/RuntimeModule.js", "Make");
         Assert.AreEqual(
-$@"import {{ Make as {makeId} }} from ""clr/System/RuntimeModule.js"";
+$@"import {{ Make as {makeId} }} from ""./clr/System/RuntimeModule.js"";
 export function Create() {{
   let Make = 1;
   return {makeId}() + Make;
@@ -14959,10 +14960,10 @@ export function Create() {{
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        var rightMakeId = ImportBindingName("clr/System/RightModule.js", "Make");
+        var rightMakeId = ImportBindingName("./clr/System/RightModule.js", "Make");
         Assert.AreEqual(
-$@"import {{ Make }} from ""clr/System/LeftModule.js"";
-import {{ Make as {rightMakeId} }} from ""clr/System/RightModule.js"";
+$@"import {{ Make }} from ""./clr/System/LeftModule.js"";
+import {{ Make as {rightMakeId} }} from ""./clr/System/RightModule.js"";
 export function Create() {{
   return Make() + {rightMakeId}();
 }}
@@ -15028,8 +15029,8 @@ export function Create() {{
             .Where(static line => line.StartsWith("import ", StringComparison.Ordinal))
             .ToArray();
         Assert.AreEqual(2, importLines.Length);
-        StringAssert.Contains(importLines[0], "from \"clr/System/LeftModule.js\";");
-        StringAssert.Contains(importLines[1], "from \"clr/System/RightModule.js\";");
+        StringAssert.Contains(importLines[0], "from \"./clr/System/LeftModule.js\";");
+        StringAssert.Contains(importLines[1], "from \"./clr/System/RightModule.js\";");
 
         static string ParseLocalBinding(string importLine)
         {
@@ -15219,7 +15220,7 @@ export function Create() {{
 
         Assert.AreEqual(
             ("""
-            import { createDefault } from "clr/System/RuntimeModule.js";
+            import { createDefault } from "./clr/System/RuntimeModule.js";
             export function Create() {
               return createDefault();
             }
@@ -15273,7 +15274,7 @@ export function Create() {{
 
         Assert.AreEqual(
             ("""
-            import { readRuntimeValue } from "clr/System/RuntimeModule.js";
+            import { readRuntimeValue } from "./clr/System/RuntimeModule.js";
             export function Read() {
               return readRuntimeValue();
             }
@@ -15351,9 +15352,9 @@ export function Create() {{
         Assert.IsNotNull(script);
         StringAssert.Contains(
             script,
-            "import { add, createDefault } from \"clr/System/Collections/Generic/ListT1Module.js\";");
+            "import { add, createDefault } from \"./clr/System/Collections/Generic/ListT1Module.js\";");
         Assert.IsFalse(
-            script.Contains("from \"clr/System/RuntimeModule.js\"", StringComparison.Ordinal),
+            script.Contains("from \"./clr/System/RuntimeModule.js\"", StringComparison.Ordinal),
             script);
         Assert.IsFalse(script.Contains("export const RuntimeModule = {", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "get Items() {");
@@ -15412,7 +15413,7 @@ export function Create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "import { IsReadOnlyDictionaryCarrier, MarkAsReadOnlyDictionaryCarrier } from \"clr/System/RuntimeModule.js\";");
+        StringAssert.Contains(script, "import { IsReadOnlyDictionaryCarrier, MarkAsReadOnlyDictionaryCarrier } from \"./clr/System/RuntimeModule.js\";");
         Assert.IsFalse(script.Contains("import { RuntimeModule", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("RuntimeModule,", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return IsReadOnlyDictionaryCarrier(value);");
@@ -15480,7 +15481,7 @@ export function Create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "import { JValue } from \"clr/System/RuntimeModule.js\";");
+        StringAssert.Contains(script, "import { JValue } from \"./clr/System/RuntimeModule.js\";");
         StringAssert.Contains(script, $"return new JValue(\"{intSelector}\", 1);");
         StringAssert.Contains(script, $"return new JValue(\"{stringSelector}\", \"text\");");
     }
@@ -15533,7 +15534,7 @@ export function Create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "import { JDateTime } from \"clr/System/RuntimeModule.js\";");
+        StringAssert.Contains(script, "import { JDateTime } from \"./clr/System/RuntimeModule.js\";");
         StringAssert.Contains(script, "return value instanceof JDateTime ? value : null;");
     }
 
@@ -15564,7 +15565,7 @@ export function Create() {{
         Assert.IsNotNull(module);
         Assert.IsNotNull(script);
         var import = module.Body.OfType<ImportDeclaration>().Single();
-        Assert.AreEqual("clr/System/RuntimeModule.js", ((StringLiteral)import.Source).Value);
+        Assert.AreEqual("./clr/System/RuntimeModule.js", ((StringLiteral)import.Source).Value);
         var importedNames = import.Specifiers
             .OfType<ImportSpecifier>()
             .Select(static specifier => ((Identifier)specifier.Imported).Name)
@@ -15623,19 +15624,19 @@ export function Create() {{
                 StringComparer.Ordinal);
 
         AssertImportedNames(
-            "clr/System/Collections/Generic/ListT1Module.js",
+            "./clr/System/Collections/Generic/ListT1Module.js",
             "add",
             "createWithInitialCapacity",
             "ensureCapacity",
             "setCapacity");
         AssertImportedNames(
-            "clr/System/Collections/Generic/DictionaryT2Module.js",
+            "./clr/System/Collections/Generic/DictionaryT2Module.js",
             "createDefault",
             "ensureCapacity",
             "getCapacityMember",
             "setItem");
         AssertImportedNames(
-            "clr/System/Collections/Generic/HashSetT1Module.js",
+            "./clr/System/Collections/Generic/HashSetT1Module.js",
             "createDefault",
             "ensureCapacity",
             "getCapacityMember");
@@ -15671,8 +15672,8 @@ export function Create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        var carrierBinding = ImportBindingName("clr/System/RuntimeModule.js", "JDateTime");
-        StringAssert.Contains(script, $"import {{ JDateTime as {carrierBinding} }} from \"clr/System/RuntimeModule.js\";");
+        var carrierBinding = ImportBindingName("./clr/System/RuntimeModule.js", "JDateTime");
+        StringAssert.Contains(script, $"import {{ JDateTime as {carrierBinding} }} from \"./clr/System/RuntimeModule.js\";");
         StringAssert.Contains(script, $"value instanceof {carrierBinding}");
         _ = new Acornima.Parser().ParseModule(script);
     }
@@ -15713,8 +15714,8 @@ export function Create() {{
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "getDefault");
-        StringAssert.Contains(script, "clr/System/Collections/Generic/EqualityComparerT1Module.js");
-        StringAssert.Contains(script, "clr/System/Collections/Generic/IEqualityComparerT1Module.js");
+        StringAssert.Contains(script, "./clr/System/Collections/Generic/EqualityComparerT1Module.js");
+        StringAssert.Contains(script, "./clr/System/Collections/Generic/IEqualityComparerT1Module.js");
 
         var importLines = script
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -15734,8 +15735,8 @@ export function Create() {{
         CollectionAssert.AreEqual(
             new[]
             {
-                "clr/System/Collections/Generic/EqualityComparerT1Module.js",
-                "clr/System/Collections/Generic/IEqualityComparerT1Module.js"
+                "./clr/System/Collections/Generic/EqualityComparerT1Module.js",
+                "./clr/System/Collections/Generic/IEqualityComparerT1Module.js"
             },
             modulePaths);
 
@@ -15853,7 +15854,7 @@ export function Create() {{
 
         Assert.IsNotNull(module);
         var import = module.Body.OfType<ImportDeclaration>().Single();
-        Assert.AreEqual("clr/System/GuidModule.js", ((StringLiteral)import.Source).Value);
+        Assert.AreEqual("./clr/System/GuidModule.js", ((StringLiteral)import.Source).Value);
         var importedNames = import.Specifiers
             .OfType<ImportSpecifier>()
             .Select(static specifier => ((Identifier)specifier.Imported).Name)
@@ -15861,6 +15862,54 @@ export function Create() {{
         Assert.HasCount(2, importedNames);
         Assert.HasCount(importedNames.Length, importedNames.Distinct(StringComparer.Ordinal));
         _ = new Acornima.Parser().ParseModule(module.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public async Task Convert_ProjectSourceImport_PreservesCompleteIdentityAndUsesImporterRelativeSpecifier()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public static Guid Parse(string input) => Guid.Parse(input);
+            }
+            """;
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+
+        var rootConverter = new AstConverter(
+            classSymbol,
+            semanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                CurrentModuleOutputPath: "entry.js"));
+        var rootModule = await rootConverter.Convert();
+
+        var nestedConverter = new AstConverter(
+            classSymbol,
+            semanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                CurrentModuleOutputPath: "components/Page.js"));
+        var nestedModule = await nestedConverter.Convert();
+
+        Assert.AreEqual(
+            "./clr/System/GuidModule.js",
+            rootModule!.Body.OfType<ImportDeclaration>().Single().Source.Value);
+        Assert.AreEqual(
+            "../clr/System/GuidModule.js",
+            nestedModule!.Body.OfType<ImportDeclaration>().Single().Source.Value);
+        CollectionAssert.AreEquivalent(
+            new[] { "clr/System/GuidModule.js" },
+            rootConverter.ProjectSourceImportKeys.ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "clr/System/GuidModule.js" },
+            nestedConverter.ProjectSourceImportKeys.ToArray());
+        Assert.AreEqual(
+            "clr/System/GuidModule.js",
+            ECMAScriptModulePath.ResolveRelativePath(
+                "components/Page.js",
+                nestedModule.Body.OfType<ImportDeclaration>().Single().Source.Value));
     }
 
     [TestMethod]
@@ -15942,4 +15991,3 @@ export function Create() {{
 
     #endregion
 }
-

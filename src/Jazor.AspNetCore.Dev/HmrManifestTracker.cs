@@ -110,10 +110,12 @@ internal sealed class HmrManifestTracker(
                 continue;
             }
 
-            if (changedPath.EndsWith(".mjs.map", StringComparison.OrdinalIgnoreCase))
+            if (changedPath.EndsWith(".js.map", StringComparison.OrdinalIgnoreCase) ||
+                changedPath.EndsWith(".mjs.map", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (!changedPath.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+            if (!changedPath.EndsWith(".js", StringComparison.OrdinalIgnoreCase) &&
+                !changedPath.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
                 return HmrDecision.FullReload("hmr-non-module-change");
 
             changedModulePaths.Add(changedPath);

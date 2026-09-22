@@ -1,6 +1,6 @@
 namespace Todo.Host;
 
-/// <summary>Writes the minimal document shell; the development reload middleware adds its transport client.</summary>
+/// <summary>Writes the document shell for the standard JavaScript project's web server.</summary>
 internal static class TodoHostShell
 {
     private const string Document = """
@@ -13,7 +13,8 @@ internal static class TodoHostShell
         </head>
         <body>
           <div id="app"></div>
-          <script type="module" src="{0}/jazor/app.mjs"></script>
+          {1}
+          <script type="module" src="{0}/jazor/{2}"></script>
         </body>
         </html>
         """;
@@ -25,6 +26,9 @@ internal static class TodoHostShell
             return Task.CompletedTask;
 
         var pathBase = context.Request.PathBase.Value ?? string.Empty;
-        return context.Response.WriteAsync(string.Format(Document, pathBase), cancellationToken);
+        var development = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
+        var client = development ? $"<script type=\"module\" src=\"{pathBase}/jazor/@vite/client\"></script>" : string.Empty;
+        return context.Response.WriteAsync(
+            string.Format(Document, pathBase, client, development ? "entry.js" : "dist/bundle.js"), cancellationToken);
     }
 }

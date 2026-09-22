@@ -18,7 +18,7 @@ namespace Jazor.CLR;
 /// - System.Type → object（JavaScript 无类型系统）
 /// - int → Number
 /// </summary>
-[ECMAScriptModule("clr/System/ObjectModule.js")]
+[ECMAScriptModule("./clr/System/ObjectModule.js")]
 [Jazor(Op.Alias, "object", "Object")]
 public static class ObjectModule
 {

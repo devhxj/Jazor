@@ -20,7 +20,7 @@ namespace Jazor.CLR;
 /// state/token 形参适配成一个零参回调。
 /// </para>
 /// </remarks>
-[ECMAScriptModule("clr/System/Threading/CancellationTokenModule.js")]
+[ECMAScriptModule("./clr/System/Threading/CancellationTokenModule.js")]
 [Jazor(Op.Alias, "System.Threading.CancellationToken", "AbortSignal")]
 public static class CancellationTokenModule
 {

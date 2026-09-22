@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑（Parse/TryParse）
 /// - Discard: 不支持的功能
 /// </summary>
-[ECMAScriptModule("clr/System/UInt16Module.js")]
+[ECMAScriptModule("./clr/System/UInt16Module.js")]
 [Jazor(Op.Alias, "ushort", "Number")]
 public static class UInt16Module
 {

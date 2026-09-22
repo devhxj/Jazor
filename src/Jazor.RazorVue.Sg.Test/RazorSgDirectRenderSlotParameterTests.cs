@@ -39,14 +39,14 @@ public sealed class RazorSgDirectRenderSlotParameterTests
         Assert.IsFalse(observation.ModuleText.Contains("syncSlotParameters", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/child-content-bridge-runtime.mjs",
+            "components/child-content-bridge-runtime.js",
             observation.ModuleText,
             "official-child-content-bridge-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/child-content-bridge-runtime.mjs";
+            import component from "./components/child-content-bridge-runtime.js";
 
             test("direct child content renders the Vue default slot without a builder adapter", () => {
                 const render = component.setup({}, {

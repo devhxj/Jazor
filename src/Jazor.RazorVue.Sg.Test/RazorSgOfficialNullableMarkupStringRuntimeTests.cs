@@ -31,14 +31,14 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createRawMarkup", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nullable-release-summary-runtime.mjs",
+            "components/nullable-release-summary-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nullable-release-summary-runtime.mjs";
+            import component from "./components/nullable-release-summary-runtime.js";
 
             test("official Razor nullable MarkupString renders markup only when a value exists", () => {
                 const populated = component.setup(
@@ -81,14 +81,14 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nullable-release-summary-panel-runtime.mjs",
+            "components/nullable-release-summary-panel-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-panel-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nullable-release-summary-panel-runtime.mjs";
+            import component from "./components/nullable-release-summary-panel-runtime.js";
 
             test("official Razor nullable MarkupString expands to zero or one element child", () => {
                 const populated = component.setup(
@@ -142,7 +142,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "ReadSummary()", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nullable-release-summary-method-runtime.mjs",
+            "components/nullable-release-summary-method-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-method-runtime.test.mjs",
             """
@@ -150,7 +150,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             import test from "node:test";
             import { Fragment } from "vue";
 
-            import component from "./components/nullable-release-summary-method-runtime.mjs";
+            import component from "./components/nullable-release-summary-method-runtime.js";
 
             test("official Razor nullable MarkupString methods are evaluated once per render", () => {
                 const render = component.setup(
@@ -219,15 +219,15 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createRawMarkup", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nullable-release-summary-slot-runtime.mjs",
+            "components/nullable-release-summary-slot-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-slot-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nullable-release-summary-slot-runtime.mjs";
-            import panelComponent from "./components/nullable-release-summary-slot-panel-runtime.mjs";
+            import component from "./components/nullable-release-summary-slot-runtime.js";
+            import panelComponent from "./components/nullable-release-summary-slot-panel-runtime.js";
 
             test("official Razor nullable MarkupString child content emits an empty default slot when absent", () => {
                 const populated = component.setup(
@@ -247,7 +247,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/nullable-release-summary-slot-panel-runtime.mjs"] = "export default { name: \"nullable-release-summary-slot-panel-runtime\" };"
+                ["components/nullable-release-summary-slot-panel-runtime.js"] = "export default { name: \"nullable-release-summary-slot-panel-runtime\" };"
             });
     }
 
@@ -287,14 +287,14 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Array.from(props.Releases ?? []", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nullable-release-summary-list-runtime.mjs",
+            "components/nullable-release-summary-list-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-list-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nullable-release-summary-list-runtime.mjs";
+            import component from "./components/nullable-release-summary-list-runtime.js";
 
             test("official Razor nullable MarkupString expands independently inside foreach element children", () => {
                 const releases = component.setup(

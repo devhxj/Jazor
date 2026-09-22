@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 /// 该类型在浏览器端没有运行时身份，构造后由 <c>path</c> 属性承载全部状态，
 /// 因此构造器显式写出该字段，避免未赋值时读到 undefined。
 /// </summary>
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs", "Object")]
 public static class NotFoundEventArgsModule
 {

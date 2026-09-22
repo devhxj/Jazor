@@ -29,14 +29,14 @@ public sealed class RazorSgOfficialInlineConstantRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/static-boolean-content-runtime.mjs",
+            "components/static-boolean-content-runtime.js",
             observation.ModuleText,
             "official-static-boolean-content-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/static-boolean-content-runtime.mjs";
+            import component from "./components/static-boolean-content-runtime.js";
 
             test("official Razor boolean content remains an immutable VNode child", () => {
                 const paragraph = component.setup({}, { slots: {} })();
@@ -84,14 +84,14 @@ public sealed class RazorSgOfficialInlineConstantRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("retryLimit =", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-policy-summary-runtime.mjs",
+            "components/release-policy-summary-runtime.js",
             observation.ModuleText,
             "official-release-policy-summary-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-policy-summary-runtime.mjs";
+            import component from "./components/release-policy-summary-runtime.js";
 
             test("official Razor frame-local constants are emitted as stable child values", () => {
                 const section = component.setup({}, { slots: {} })();

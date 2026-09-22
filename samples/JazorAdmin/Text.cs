@@ -1,6 +1,6 @@
 namespace JazorAdmin;
 
-[ECMAScriptModule("components/text.mjs")]
+[ECMAScriptModule("components/text.js")]
 public static class Text
 {
     public static string? Normalize(string? value)

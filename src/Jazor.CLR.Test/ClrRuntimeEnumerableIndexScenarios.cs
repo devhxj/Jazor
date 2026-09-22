@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableIndexScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
     private const string IndexMember = "static System.Linq.Enumerable.Index<TSource>(System.Collections.Generic.IEnumerable<TSource>)";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =

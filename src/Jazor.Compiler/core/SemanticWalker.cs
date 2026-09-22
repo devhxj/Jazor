@@ -948,7 +948,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 // Op.Import 的 path 由 CLR 模块声明给出，始终指向项目内源码 carrier
                 // （System/**、Microsoft/**），不存在外部包形态；因此一律按项目内模块
                 // 写成相对 specifier。宿主类型只用于实例宿主拼参，不决定 carrier 分类。
-                var id = context.BindCarrierImportSpecifier(entry.Path!, entry.Value!);
+                var id = context.BindProjectSourceImportSpecifier(entry.Path!, entry.Value!);
                 return new CallExpression(id, NodeList.From(legacyArguments), optional: false);
             }
         }
@@ -1039,6 +1039,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     // changes only compiler-emitted storage names, never authored member visibility rules.
     private readonly RuntimeClassPrivateStorage _runtimeClassPrivateStorage;
 
+    private readonly Action<string>? _registerStyleSpecifier;
+
     private readonly Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> _whiteListCompiles;
 
     private readonly CancellationToken _cancellationToken;
@@ -1069,11 +1071,13 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         ITypeSymbol moduleRootType,
         IReadOnlyDictionary<ISymbol, string> moduleDeclaredNames,
         CancellationToken cancellationToken,
-        RuntimeClassPrivateStorage runtimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields) : this(cancellationToken)
+        RuntimeClassPrivateStorage runtimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields,
+        Action<string>? registerStyleSpecifier = null) : this(cancellationToken)
     {
         _moduleRootType = moduleRootType;
         _moduleDeclaredNames = moduleDeclaredNames;
         _runtimeClassPrivateStorage = runtimeClassPrivateStorage;
+        _registerStyleSpecifier = registerStyleSpecifier;
     }
 
     public SemanticWalker(bool test) : this() => _test = test;

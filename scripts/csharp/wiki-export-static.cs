@@ -328,7 +328,7 @@ static void ValidateOutput(string outputRoot, IReadOnlyList<string> routes, stri
         }
     }
 
-    foreach (var required in new[] { "robots.txt", "sitemap.xml", "404.html", "site.css", "favicon.svg", "jazor/bundle.js", "jazor/bundle.js.map" })
+    foreach (var required in new[] { "robots.txt", "sitemap.xml", "404.html", "site.css", "favicon.svg", "jazor/dist/bundle.js", "jazor/dist/bundle.js.map" })
         if (!File.Exists(Path.Combine(outputRoot, required)))
             throw new InvalidOperationException("Static output is missing " + required + ".");
 }

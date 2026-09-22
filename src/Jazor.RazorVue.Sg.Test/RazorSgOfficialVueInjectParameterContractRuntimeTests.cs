@@ -72,20 +72,20 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "AddComponentParameter(2, \"data-region\", \"release\")", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./injected-shell-parameter-contract-runtime.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./injected-shell-parameter-contract-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "injectedTitle: \"Account\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "\"data-region\": \"release\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/injected-shell-parameter-contract-parent-runtime.mjs",
+            "components/injected-shell-parameter-contract-parent-runtime.js",
             observation.ModuleText,
             "official-vue-inject-parameter-contract-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import parent from "./components/injected-shell-parameter-contract-parent-runtime.mjs";
-            import injectedShell from "./components/injected-shell-parameter-contract-runtime.mjs";
+            import parent from "./components/injected-shell-parameter-contract-parent-runtime.js";
+            import injectedShell from "./components/injected-shell-parameter-contract-runtime.js";
 
             test("official Razor VueInject preserves required and unmatched parameters", () => {
                 const vnode = parent.setup({}, { slots: {} })();
@@ -102,7 +102,7 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/injected-shell-parameter-contract-runtime.mjs"] = "export default { name: \"injected-shell-parameter-contract-runtime\" };"
+                ["components/injected-shell-parameter-contract-runtime.js"] = "export default { name: \"injected-shell-parameter-contract-runtime\" };"
             });
     }
 }

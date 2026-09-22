@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 /// URL 只表示绝对 URI，因此这里只提供 Blazor 导航路径上真正会用到的绝对 URI 切片；
 /// 相对 URI、UNC/文件路径、Segments 与等值语义继续保持 unsupported，由使用点显式失败。
 /// </summary>
-[ECMAScriptModule("clr/System/UriModule.js")]
+[ECMAScriptModule("./clr/System/UriModule.js")]
 [Jazor(Op.Alias, "System.Uri", "URL")]
 public static class UriModule
 {

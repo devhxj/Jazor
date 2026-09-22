@@ -61,19 +61,19 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "CreateItemTemplate()", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-factory-runtime.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-factory-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/template-factory-runtime.mjs",
+            "components/template-factory-runtime.js",
             observation.ModuleText,
             "official-template-factory-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/template-factory-runtime.mjs";
-            import templatePanel from "./components/template-panel-factory-runtime.mjs";
+            import component from "./components/template-factory-runtime.js";
+            import templatePanel from "./components/template-panel-factory-runtime.js";
 
             test("official Razor RenderFragment factory emits a scoped slot", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -89,7 +89,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/template-panel-factory-runtime.mjs"] = "export default { name: \"template-panel-factory-runtime\" };"
+                ["components/template-panel-factory-runtime.js"] = "export default { name: \"template-panel-factory-runtime\" };"
             });
     }
 
@@ -155,19 +155,19 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "ItemTemplate", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-property-runtime.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./template-panel-property-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/template-property-runtime.mjs",
+            "components/template-property-runtime.js",
             observation.ModuleText,
             "official-template-property-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/template-property-runtime.mjs";
-            import templatePanel from "./components/template-panel-property-runtime.mjs";
+            import component from "./components/template-property-runtime.js";
+            import templatePanel from "./components/template-panel-property-runtime.js";
 
             test("official Razor RenderFragment property emits a scoped slot", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -183,7 +183,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/template-panel-property-runtime.mjs"] = "export default { name: \"template-panel-property-runtime\" };"
+                ["components/template-panel-property-runtime.js"] = "export default { name: \"template-panel-property-runtime\" };"
             });
     }
 
@@ -260,15 +260,15 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/conditional-template-property-runtime.mjs",
+            "components/conditional-template-property-runtime.js",
             observation.ModuleText,
             "official-conditional-template-property-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/conditional-template-property-runtime.mjs";
-            import slotPanel from "./components/slot-panel-conditional-property-runtime.mjs";
+            import component from "./components/conditional-template-property-runtime.js";
+            import slotPanel from "./components/slot-panel-conditional-property-runtime.js";
 
             test("official Razor conditional RenderFragment property selects the matching slot", () => {
                 const detailed = component.setup({ Detailed: true }, { slots: {} })();
@@ -287,7 +287,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-conditional-property-runtime.mjs"] = "export default { name: \"slot-panel-conditional-property-runtime\" };"
+                ["components/slot-panel-conditional-property-runtime.js"] = "export default { name: \"slot-panel-conditional-property-runtime\" };"
             });
     }
 
@@ -363,15 +363,15 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/conditional-template-parameter-runtime.mjs",
+            "components/conditional-template-parameter-runtime.js",
             observation.ModuleText,
             "official-conditional-template-parameter-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/conditional-template-parameter-runtime.mjs";
-            import slotPanel from "./components/slot-panel-conditional-parameter-runtime.mjs";
+            import component from "./components/conditional-template-parameter-runtime.js";
+            import slotPanel from "./components/slot-panel-conditional-parameter-runtime.js";
 
             test("official Razor conditional RenderFragment parameter selects the matching slot", () => {
                 const detailed = component.setup({ Detailed: true }, { slots: {} })();
@@ -390,7 +390,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-conditional-parameter-runtime.mjs"] = "export default { name: \"slot-panel-conditional-parameter-runtime\" };"
+                ["components/slot-panel-conditional-parameter-runtime.js"] = "export default { name: \"slot-panel-conditional-parameter-runtime\" };"
             });
     }
 
@@ -456,15 +456,15 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "_: 1", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/template-method-group-runtime.mjs",
+            "components/template-method-group-runtime.js",
             observation.ModuleText,
             "official-template-method-group-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/template-method-group-runtime.mjs";
-            import slotPanel from "./components/slot-panel-method-group-runtime.mjs";
+            import component from "./components/template-method-group-runtime.js";
+            import slotPanel from "./components/slot-panel-method-group-runtime.js";
 
             test("official Razor method groups provide instance and static Vue slots", () => {
                 const panel = component.setup({ Label: "Deployments" }, { slots: {} })();
@@ -483,7 +483,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-method-group-runtime.mjs"] = "export default { name: \"slot-panel-method-group-runtime\" };"
+                ["components/slot-panel-method-group-runtime.js"] = "export default { name: \"slot-panel-method-group-runtime\" };"
             });
     }
 

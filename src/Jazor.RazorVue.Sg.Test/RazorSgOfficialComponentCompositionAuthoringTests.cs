@@ -76,7 +76,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "from \"./authoring-child.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./authoring-child.js\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "heading: state.Title", StringComparison.Ordinal);
         StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(
@@ -150,7 +150,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "RuntimeHelpers.CreateInferredEventCallback", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "from \"./bind-after-child.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./bind-after-child.js\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.Selected = __value", StringComparison.Ordinal);
         StringAssert.Contains(script, "PersistSelectedAsync()", StringComparison.Ordinal);
@@ -219,7 +219,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "RuntimeHelpers.CreateInferredEventCallback", StringComparison.Ordinal);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "from \"./bind-set-child.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./bind-set-child.js\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"onUpdate:modelValue\": SetSelectedAsync", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.Selected = value", StringComparison.Ordinal);

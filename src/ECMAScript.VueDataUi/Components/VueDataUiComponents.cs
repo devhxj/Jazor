@@ -4,6 +4,7 @@ namespace ECMAScript.VueDataUi;
 /// <c>VueDataUiExtendedComponents</c> 中；每个 descriptor 均指向单独 ESM entry，
 /// so an authored chart never imports the package root bundle.</summary>
 [ECMAScriptName("VueUiXy")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-xy")]
 public sealed class VdXy : VdChartComponent<VdXyDatasetItem[], VdXyConfig>
 {
@@ -19,6 +20,7 @@ public sealed class VdXy : VdChartComponent<VdXyDatasetItem[], VdXyConfig>
 /// 以环形扇区显示各项的数值占比，支持图例和数据提示。
 /// </summary>
 [ECMAScriptName("VueUiDonut")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-donut")]
 public sealed class VdDonut : VdChartComponent<VdDonutDatasetItem[], VdDonutConfig>
 {
@@ -34,6 +36,7 @@ public sealed class VdDonut : VdChartComponent<VdDonutDatasetItem[], VdDonutConf
 /// 在仪表盘刻度上显示当前值及多个区间。
 /// </summary>
 [ECMAScriptName("VueUiGauge")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-gauge")]
 public sealed class VdGauge : VdChartComponent<VdGaugeDataset, VdGaugeConfig>;
 
@@ -41,6 +44,7 @@ public sealed class VdGauge : VdChartComponent<VdGaugeDataset, VdGaugeConfig>;
 /// 使用竖直条形比较各分类数值，支持子项细分。
 /// </summary>
 [ECMAScriptName("VueUiVerticalBar")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-vertical-bar")]
 public sealed class VdVerticalBar : VdChartComponent<VdVerticalBarDatasetItem[], VdVerticalBarConfig>;
 
@@ -48,6 +52,7 @@ public sealed class VdVerticalBar : VdChartComponent<VdVerticalBarDatasetItem[],
 /// 使用水平条形比较各分类数值。
 /// </summary>
 [ECMAScriptName("VueUiHorizontalBar")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-horizontal-bar")]
 public sealed class VdHorizontalBar : VdChartComponent<VdHorizontalBarDatasetItem[], VdHorizontalBarConfig>;
 
@@ -55,6 +60,7 @@ public sealed class VdHorizontalBar : VdChartComponent<VdHorizontalBarDatasetIte
 /// 按分类堆叠多条数据序列，显示总量及组成。
 /// </summary>
 [ECMAScriptName("VueUiStackbar")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-stackbar")]
 public sealed class VdStackbar : VdChartComponent<VdStackbarDatasetItem[], VdStackbarConfig>;
 
@@ -62,6 +68,7 @@ public sealed class VdStackbar : VdChartComponent<VdStackbarDatasetItem[], VdSta
 /// 将多条折线或面积序列叠加显示，适合比较随时间变化的组成。
 /// </summary>
 [ECMAScriptName("VueUiStackline")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-stackline")]
 public sealed class VdStackline : VdChartComponent<VdStacklineDatasetItem[], VdStacklineConfig>
 {
@@ -77,6 +84,7 @@ public sealed class VdStackline : VdChartComponent<VdStacklineDatasetItem[], VdS
 /// 以紧凑折线显示一组按时间或分类排列的数据。
 /// </summary>
 [ECMAScriptName("VueUiSparkline")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-sparkline")]
 public sealed class VdSparkline : VdChartComponent<VdSparklineDatasetItem[], VdSparklineConfig>;
 
@@ -84,6 +92,7 @@ public sealed class VdSparkline : VdChartComponent<VdSparklineDatasetItem[], VdS
 /// 以紧凑条形展示分类数值。
 /// </summary>
 [ECMAScriptName("VueUiSparkbar")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-sparkbar")]
 public sealed class VdSparkbar : VdChartComponent<VdSparkbarDatasetItem[], VdSparkbarConfig>;
 
@@ -91,6 +100,7 @@ public sealed class VdSparkbar : VdChartComponent<VdSparkbarDatasetItem[], VdSpa
 /// 以紧凑直方图展示各时间段的数值。
 /// </summary>
 [ECMAScriptName("VueUiSparkHistogram")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-sparkhistogram")]
 public sealed class VdSparkHistogram : VdChartComponent<VdSparkHistogramDatasetItem[], VdSparkHistogramConfig>;
 
@@ -98,6 +108,7 @@ public sealed class VdSparkHistogram : VdChartComponent<VdSparkHistogramDatasetI
 /// 沿多个分类轴比较一条或多条数据序列。
 /// </summary>
 [ECMAScriptName("VueUiRadar")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-radar")]
 public sealed class VdRadar : VdChartComponent<VdRadarDataset, VdRadarConfig>;
 
@@ -105,6 +116,7 @@ public sealed class VdRadar : VdChartComponent<VdRadarDataset, VdRadarConfig>;
 /// 以方格填充比例展示各数据项的占比。
 /// </summary>
 [ECMAScriptName("VueUiWaffle")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-waffle")]
 public sealed class VdWaffle : VdChartComponent<VdWaffleDatasetItem[], VdWaffleConfig>;
 
@@ -112,6 +124,7 @@ public sealed class VdWaffle : VdChartComponent<VdWaffleDatasetItem[], VdWaffleC
 /// 使用嵌套矩形的面积展示层级数据的数值关系。
 /// </summary>
 [ECMAScriptName("VueUiTreemap")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-treemap")]
 public sealed class VdTreemap : VdChartComponent<VdTreemapDatasetItem[], VdTreemapConfig>;
 
@@ -119,6 +132,7 @@ public sealed class VdTreemap : VdChartComponent<VdTreemapDatasetItem[], VdTreem
 /// 使用颜色强度展示二维分类中的数值大小。
 /// </summary>
 [ECMAScriptName("VueUiHeatmap")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-heatmap")]
 public sealed class VdHeatmap : VdChartComponent<VdHeatmapDatasetItem[], VdHeatmapConfig>;
 
@@ -126,6 +140,7 @@ public sealed class VdHeatmap : VdChartComponent<VdHeatmapDatasetItem[], VdHeatm
 /// 根据 X/Y 坐标绘制散点，支持权重和多序列。
 /// </summary>
 [ECMAScriptName("VueUiScatter")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-scatter")]
 public sealed class VdScatter : VdChartComponent<VdScatterDatasetItem[], VdScatterConfig>;
 
@@ -133,6 +148,7 @@ public sealed class VdScatter : VdChartComponent<VdScatterDatasetItem[], VdScatt
 /// 显示依次缩减或变化的各阶段数值。
 /// </summary>
 [ECMAScriptName("VueUiFunnel")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-funnel")]
 public sealed class VdFunnel : VdChartComponent<VdFunnelDatasetItem[], VdFunnelConfig>;
 
@@ -140,6 +156,7 @@ public sealed class VdFunnel : VdChartComponent<VdFunnelDatasetItem[], VdFunnelC
 /// 根据词条权重绘制大小不同的文字。
 /// </summary>
 [ECMAScriptName("VueUiWordCloud")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-word-cloud")]
 public sealed class VdWordCloud : VdChartComponent<VdWordCloudDataset, VdWordCloudConfig>;
 
@@ -147,6 +164,7 @@ public sealed class VdWordCloud : VdChartComponent<VdWordCloudDataset, VdWordClo
 /// 显示关键指标数值，支持前后缀、舍入和变化动画。
 /// </summary>
 [ECMAScriptName("VueUiKpi")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-kpi")]
 public sealed class VdKpi : VdChartComponent<double, VdKpiConfig>;
 
@@ -154,6 +172,7 @@ public sealed class VdKpi : VdChartComponent<double, VdKpiConfig>;
 /// 显示可配置排序、搜索、汇总和分页的数据表格。
 /// </summary>
 [ECMAScriptName("VueUiTable")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-table")]
 public sealed class VdTable : VdChartComponent<VdTableDataset, VdTableConfig>;
 
@@ -161,6 +180,7 @@ public sealed class VdTable : VdChartComponent<VdTableDataset, VdTableConfig>;
 /// 在表格单元格中以颜色强度表达数值差异。
 /// </summary>
 [ECMAScriptName("VueUiTableHeatmap")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-table-heatmap")]
 public sealed class VdTableHeatmap : VdChartComponent<VdTableHeatmapDatasetItem[], VdTableHeatmapConfig>;
 
@@ -168,6 +188,7 @@ public sealed class VdTableHeatmap : VdChartComponent<VdTableHeatmapDatasetItem[
 /// 在表格行中显示序列的小型趋势图。
 /// </summary>
 [ECMAScriptName("VueUiTableSparkline")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-table-sparkline")]
 public sealed class VdTableSparkline : VdRequiredConfigChartComponent<VdTableSparklineDatasetItem[], VdTableSparklineConfig>;
 
@@ -175,6 +196,7 @@ public sealed class VdTableSparkline : VdRequiredConfigChartComponent<VdTableSpa
 /// 根据简化配置快速呈现图表，支持图例和提示开关。
 /// </summary>
 [ECMAScriptName("VueUiQuickChart")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-quick-chart")]
 public sealed class VdQuickChart : VdChartComponent<VdQuickChartDataset, VdQuickChartConfig>;
 
@@ -182,6 +204,7 @@ public sealed class VdQuickChart : VdChartComponent<VdQuickChartDataset, VdQuick
 /// 展示开盘、最高、最低、收盘及成交量等金融时间序列。
 /// </summary>
 [ECMAScriptName("VueUiCandlestick")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-candlestick")]
 public sealed class VdCandlestick : VdChartComponent<VdCellValue[][], VdCandlestickConfig>
 {
@@ -197,6 +220,7 @@ public sealed class VdCandlestick : VdChartComponent<VdCellValue[][], VdCandlest
 /// 以两端点及连接线比较每项的起始和结束数值。
 /// </summary>
 [ECMAScriptName("VueUiDumbbell")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-dumbbell")]
 public sealed class VdDumbbell : VdChartComponent<VdDumbbellDataset[], VdDumbbellConfig>;
 
@@ -204,5 +228,6 @@ public sealed class VdDumbbell : VdChartComponent<VdDumbbellDataset[], VdDumbbel
 /// 将实际值、目标值与背景区间放在同一刻度上比较。
 /// </summary>
 [ECMAScriptName("VueUiBullet")]
+[Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-bullet")]
 public sealed class VdBullet : VdChartComponent<VdBulletDataset, VdBulletConfig>;

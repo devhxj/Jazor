@@ -10,6 +10,7 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 {
     private readonly EmitLoadContext _loadContext = loadContext;
     private readonly HashSet<string> _assemblyPaths = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _rootAssemblyPaths = new(StringComparer.OrdinalIgnoreCase);
 
     public void AddAssembly(string assemblyPath)
     {
@@ -19,6 +20,13 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         var fullPath = Path.GetFullPath(assemblyPath);
         if (File.Exists(fullPath))
             _assemblyPaths.Add(fullPath);
+    }
+
+    public void AddRootAssembly(string assemblyPath)
+    {
+        AddAssembly(assemblyPath);
+        if (!string.IsNullOrWhiteSpace(assemblyPath))
+            _rootAssemblyPaths.Add(Path.GetFullPath(assemblyPath));
     }
 
     public CollectResult Collect(string rootAssemblyPath)
@@ -90,6 +98,20 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 
             if (selectedByRelativePath.TryGetValue(module.RelativePath, out var existingByPath))
             {
+                // The host assembly is the authored application root. A package may carry a
+                // generated catalog with the same path/type; keep the host copy so its route
+                // and component declarations remain authoritative.
+                var existingIsRoot = SamePath(existingByPath.SourceAssemblyPath, normalizedRootAssemblyPath);
+                var moduleIsRoot = SamePath(module.SourceAssemblyPath, normalizedRootAssemblyPath);
+                if (string.Equals(existingByPath.TypeName, module.TypeName, StringComparison.Ordinal) &&
+                    (existingIsRoot || moduleIsRoot))
+                {
+                    if (moduleIsRoot && !existingIsRoot)
+                        selectedByRelativePath[module.RelativePath] = module;
+                    selectedByKey[key] = moduleIsRoot ? module : existingByPath;
+                    return true;
+                }
+
                 if (!HasSameContent(existingByPath, module))
                 {
                     error = $"Path conflict for '{module.RelativePath}' between '{existingByPath.TypeName}' and '{module.TypeName}'.";
@@ -106,28 +128,32 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             return true;
         }
 
+        var rootAssemblyPaths = _rootAssemblyPaths;
         var rootModules = discoveredModules
-            .Where(module => SamePath(module.SourceAssemblyPath, normalizedRootAssemblyPath))
+            .Where(module => SamePath(module.SourceAssemblyPath, normalizedRootAssemblyPath) ||
+                             rootAssemblyPaths.Contains(Path.GetFullPath(module.SourceAssemblyPath)))
             .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
             .ThenBy(static module => module.Id, StringComparer.Ordinal)
             .ToArray();
 
-        // A host is allowed to be a pure consumer: it may have no module of its own while
-        // invoking APIs supplied by referenced Jazor libraries. There is no root module from
-        // which to infer a narrower closure in that shape, so every supplied catalog module is
-        // an explicit root. This is deterministic and preserves the upstream catalog bytes;
-        // dependency traversal and conflict checks remain identical to the normal path.
+        // Every assembly supplied through --assembly-list is an explicit project input. Its
+        // catalog modules must remain available to the same standard JS project graph even
+        // when the host assembly also has an entry module; otherwise referenced component
+        // modules are mistaken for missing library imports.
         var roots = rootModules.Length > 0
             ? rootModules
-            : discoveredModules
-                .OrderBy(static module => module.SourceAssemblyPath, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
-                .ThenBy(static module => module.Id, StringComparer.Ordinal)
-                .ToArray();
+            : discoveredModules.ToArray();
 
-        foreach (var rootModule in roots)
+        var orderedRoots = roots
+            .OrderByDescending(module => SamePath(module.SourceAssemblyPath, normalizedRootAssemblyPath))
+            .ThenBy(static module => module.SourceAssemblyPath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
+            .ThenBy(static module => module.Id, StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var rootModule in orderedRoots)
         {
             if (!TrySelect(rootModule, out var error))
                 return CollectResult.Fail(4, error!);
@@ -136,7 +162,13 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         while (queue.Count > 0)
         {
             var module = queue.Dequeue();
-            foreach (var dependency in module.Dependencies ?? [])
+            // A declared source import can be supplied by a referenced ModuleCatalog as well
+            // as a resource carrier. Resolve known catalog paths before resource materialization;
+            // the generated import text and the declared project path stay unchanged.
+            var dependencies = (module.Dependencies ?? [])
+                .Concat((module.PackageImports ?? []).Where(candidatesByRelativePath.ContainsKey))
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+            foreach (var dependency in dependencies)
             {
                 if (!candidatesByRelativePath.TryGetValue(dependency, out var candidates) || candidates.Length == 0)
                 {

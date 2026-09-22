@@ -28,7 +28,7 @@ public sealed class RazorVueInheritedSlotContextIntegrationTests
 
             public sealed record EditorSlots : BaseSlots;
 
-            [ECMAScriptModule("components/inherited-slot.mjs")]
+            [ECMAScriptModule("components/inherited-slot.js")]
             public static class EditorModule
             {
                 public static IVueSlotComponent<EditorSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<EditorSlots>

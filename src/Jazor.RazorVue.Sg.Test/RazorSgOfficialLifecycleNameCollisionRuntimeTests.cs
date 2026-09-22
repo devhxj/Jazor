@@ -38,14 +38,14 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/lifecycle-name-collision.mjs",
+            "components/lifecycle-name-collision.js",
             observation.ModuleText,
             "official-lifecycle-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/lifecycle-name-collision.mjs";
+            import component from "./components/lifecycle-name-collision.js";
 
             test("official Razor lifecycle uses its declared runtime alias", () => {
                 const vnode = component.setup({}, { slots: {} })();
@@ -139,7 +139,7 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/lifecycle-names.mjs",
+            "components/lifecycle-names.js",
             observation.ModuleText,
             "official-lifecycle-names.test.mjs",
             """
@@ -147,7 +147,7 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
             import test from "node:test";
             import { __runMounted, __runUpdated } from "vue";
 
-            import component from "./components/lifecycle-names.mjs";
+            import component from "./components/lifecycle-names.js";
 
             test("official Razor lifecycle aliases remain semantic", async () => {
                 const render = component.setup({}, { slots: {} });

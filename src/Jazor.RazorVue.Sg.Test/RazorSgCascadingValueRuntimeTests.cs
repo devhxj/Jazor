@@ -96,20 +96,20 @@ public sealed class RazorSgCascadingValueRuntimeTests
             componentMetadataName: "Demo.Pages.CascadingConsumer");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "@jazor/vue-runtime/cascading.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "runtime/vue/cascading.js", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "__jazorCascadeType", StringComparison.Ordinal);
         StringAssert.Contains(consumerObservation.ModuleText, "jazor:cascade:", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("JAZORVCA008", StringComparison.Ordinal));
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/cascading-runtime.mjs",
+            "components/cascading-runtime.js",
             observation.ModuleText,
             "cascading-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import host from "./components/cascading-runtime.mjs";
-            import consumer from "./components/cascading-consumer.mjs";
+            import host from "./components/cascading-runtime.js";
+            import consumer from "./components/cascading-consumer.js";
             import { __runWatchers, __resetProviders } from "vue";
 
             test("standard CascadingValue keeps named typed values in the browser adapter", () => {
@@ -155,7 +155,7 @@ public sealed class RazorSgCascadingValueRuntimeTests
             """,
             supportingModules: new Dictionary<string, string>
             {
-                ["components/cascading-consumer.mjs"] = consumerObservation.ModuleText
+                ["components/cascading-consumer.js"] = consumerObservation.ModuleText
             });
     }
 
@@ -227,14 +227,14 @@ public sealed class RazorSgCascadingValueRuntimeTests
         StringAssert.Contains(consumer.ModuleText, "runSetParametersAsync", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/cascading-parameter-view-provider.mjs",
+            "components/cascading-parameter-view-provider.js",
             provider.ModuleText,
             "cascading-parameter-view.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import providerHost from "./components/cascading-parameter-view-provider.mjs";
-            import consumer from "./components/cascading-parameter-view-consumer.mjs";
+            import providerHost from "./components/cascading-parameter-view-provider.js";
+            import consumer from "./components/cascading-parameter-view-consumer.js";
             import { __runWatchers, __resetProviders } from "vue";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -264,7 +264,7 @@ public sealed class RazorSgCascadingValueRuntimeTests
             vueRuntimeSource: CascadeVueRuntime,
             supportingModules: new Dictionary<string, string>
             {
-                ["components/cascading-parameter-view-consumer.mjs"] = consumer.ModuleText
+                ["components/cascading-parameter-view-consumer.js"] = consumer.ModuleText
             });
     }
 
@@ -325,14 +325,14 @@ public sealed class RazorSgCascadingValueRuntimeTests
             componentMetadataName: "Demo.Pages.FixedNullCascadeConsumer");
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/fixed-null-cascade-provider.mjs",
+            "components/fixed-null-cascade-provider.js",
             provider.ModuleText,
             "fixed-null-cascade.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import providerHost from "./components/fixed-null-cascade-provider.mjs";
-            import consumer from "./components/fixed-null-cascade-consumer.mjs";
+            import providerHost from "./components/fixed-null-cascade-provider.js";
+            import consumer from "./components/fixed-null-cascade-consumer.js";
             import { __runWatchers, __resetProviders } from "vue";
 
             const text = render => {
@@ -362,7 +362,7 @@ public sealed class RazorSgCascadingValueRuntimeTests
             vueRuntimeSource: CascadeVueRuntime,
             supportingModules: new Dictionary<string, string>
             {
-                ["components/fixed-null-cascade-consumer.mjs"] = consumer.ModuleText
+                ["components/fixed-null-cascade-consumer.js"] = consumer.ModuleText
             });
     }
 }

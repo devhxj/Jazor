@@ -26,8 +26,8 @@ public sealed class DateFnsManifestTests
         foreach (var entry in imports.EnumerateObject())
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
-            Assert.AreEqual(entry.Name, entry.Value.GetProperty("development").GetString());
-            Assert.AreEqual(entry.Name, entry.Value.GetProperty("production").GetString());
+            Assert.AreEqual(entry.Name, entry.Value.GetProperty("path").GetString());
+            Assert.AreEqual(entry.Name, entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _));
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _));
         }

@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/TouchPointModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/Web/TouchPointModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.TouchPoint", "Touch")]
 public static class TouchPointModule
 {

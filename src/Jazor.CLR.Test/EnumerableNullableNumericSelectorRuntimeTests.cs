@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableNullableNumericSelectorRuntimeTests
 {
-    private const string ModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task NullableNumericSelectorExports_PreserveSingleEvaluationAndCarrierContractsOnDenoHost()
@@ -45,9 +45,6 @@ public sealed class EnumerableNullableNumericSelectorRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(configPath, "{ \"imports\": { \"clr/System/\": \"./System/\", \"System/\": \"./System/\" } }", new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "nullable-numeric-selector.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -108,7 +105,7 @@ public sealed class EnumerableNullableNumericSelectorRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--config", configPath, "--quiet", "--allow-read", testPath], timeout.Token);
+            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
         }
         finally
         {

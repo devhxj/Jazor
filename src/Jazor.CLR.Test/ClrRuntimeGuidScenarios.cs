@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeGuidScenarios
 {
-    private const string ModulePath = "clr/System/GuidModule.js";
+    private const string ModulePath = "./clr/System/GuidModule.js";
     private const string CanonicalGuid = "00112233-4455-6677-8899-aabbccddeeff";
     private const string EmptyGuid = "00000000-0000-0000-0000-000000000000";
 

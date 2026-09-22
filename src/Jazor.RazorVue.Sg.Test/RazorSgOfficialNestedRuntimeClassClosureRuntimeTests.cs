@@ -61,14 +61,14 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("this.#", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/reactive-nested-runtime-class.mjs",
+            "components/reactive-nested-runtime-class.js",
             observation.ModuleText,
             "official-reactive-nested-runtime-class.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/reactive-nested-runtime-class.mjs";
+            import component from "./components/reactive-nested-runtime-class.js";
             import { reactiveWrites } from "vue";
 
             function findNode(node, name) {
@@ -203,14 +203,14 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Combine(title)", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nested-runtime-class-closure-runtime.mjs",
+            "components/nested-runtime-class-closure-runtime.js",
             observation.ModuleText,
             "official-nested-runtime-class-closure-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nested-runtime-class-closure-runtime.mjs";
+            import component from "./components/nested-runtime-class-closure-runtime.js";
 
             test("official Razor nested runtime classes retain reachable field, property, and helper semantics", () => {
                 const render = component.setup({ Title: "Deploy API" }, { slots: {} });

@@ -12,17 +12,13 @@
   "imports": {
     "date-fns": {
       "type": "module",
-      "development": "date-fns",
-      "production": "date-fns",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "date-fns",
+      "dependencies": []
     },
     "date-fns/locale": {
       "type": "module",
-      "development": "date-fns/locale",
-      "production": "date-fns/locale",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "date-fns/locale",
+      "dependencies": []
     }
   },
   "requires": {},

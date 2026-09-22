@@ -10,7 +10,7 @@ namespace Jazor.CLR;
 /// - Import: 通过 List carrier marker 保留接口可变性和固定数组边界
 /// - Discard: 仅保留尚无完整运行时协议的成员
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/ICollectionT1Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/ICollectionT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.ICollection<T>", "Array")]
 public static class ICollectionT1Module<T>
 {

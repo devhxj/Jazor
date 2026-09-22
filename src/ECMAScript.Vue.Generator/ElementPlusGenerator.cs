@@ -568,6 +568,7 @@ internal static class ElementPlusGenerator
             builder.AppendLine($"    /// <summary>用于 render/h 调用的组件导出；组件参数见 <see cref=\"{component.ClassName}\"/>。</summary>");
             builder.AppendLine($"    /// <remarks>{EscapeXml(component.Description)}</remarks>");
             builder.AppendLine($"    [ECMAScript(\"{GetComponentImportSpecifier(component, componentModulePaths)}\")]");
+            builder.AppendLine($"    [Style(\"{GetComponentStyleSpecifier(component, componentModulePaths)}\")]");
             builder.AppendLine($"    [ECMAScriptName(\"{component.RuntimeExportName}\")]");
             builder.AppendLine($"    public extern static IElementPlusComponent {component.AuthoringName} {{ get; }}");
             builder.AppendLine();
@@ -636,6 +637,7 @@ internal static class ElementPlusGenerator
             builder.AppendLine("/// </summary>");
             builder.AppendLine($"[ECMAScriptName(\"{component.RuntimeExportName}\")]");
             builder.AppendLine($"[ECMAScript(\"{GetComponentImportSpecifier(component, componentModulePaths)}\")]");
+            builder.AppendLine($"[Style(\"{GetComponentStyleSpecifier(component, componentModulePaths)}\")]");
 
             builder.AppendLine($"public sealed class {component.ClassName} : {(component.HasDefaultSlot ? "ElContentComponentBase" : "ElComponentBase")}");
             builder.AppendLine("{");
@@ -911,6 +913,15 @@ internal static class ElementPlusGenerator
 
         return "element-plus/es/components/" + module + "/index.mjs";
     }
+
+    /// <summary>
+    /// Resolves the explicit Element Plus component CSS side-effect entry next to its ESM entry.
+    /// </summary>
+    private static string GetComponentStyleSpecifier(
+        ElementPlusComponentMetadata component,
+        IReadOnlyDictionary<string, string> componentModulePaths)
+        => GetComponentImportSpecifier(component, componentModulePaths)
+            .Replace("/index.mjs", "/style/css.mjs", StringComparison.Ordinal);
 
     private static void ValidateRuntimeComponentExportOverrides(HashSet<string> validComponentExports)
     {

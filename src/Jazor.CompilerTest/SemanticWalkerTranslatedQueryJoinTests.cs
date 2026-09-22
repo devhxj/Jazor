@@ -56,7 +56,7 @@ public sealed class SemanticWalkerTranslatedQueryJoinTests
 
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToArray();
-        var enumerableImport = imports.Single(static pair => pair.Key == "clr/System/Linq/EnumerableModule.js");
+        var enumerableImport = imports.Single(static pair => pair.Key == "./clr/System/Linq/EnumerableModule.js");
         var names = enumerableImport.Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         foreach (var expectedImport in expectedEnumerableImports)
             CollectionAssert.Contains(names, expectedImport);

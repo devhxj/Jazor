@@ -6,15 +6,15 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableElementAtRuntimeTests
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task ElementAtExports_PreserveFromStartAndFromEndTraversalOnDenoHost()
     {
         var elementAt = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
         var elementAtIndex = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)");
-        var fromStart = GetExportName("static System.Index.FromStart(int)", "clr/System/IndexModule.js");
-        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "clr/System/IndexModule.js");
+        var fromStart = GetExportName("static System.Index.FromStart(int)", "./clr/System/IndexModule.js");
+        var fromEnd = GetExportName("static System.Index.FromEnd(int)", "./clr/System/IndexModule.js");
         var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-element-at-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -26,18 +26,6 @@ public sealed class EnumerableElementAtRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(
-                configPath,
-                """
-                {
-                  "imports": {
-                    "clr/System/": "./System/", "System/": "./System/"
-                  }
-                }
-                """,
-                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "element-at.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -103,7 +91,7 @@ public sealed class EnumerableElementAtRuntimeTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--config", configPath, "--quiet", "--allow-read", testPath],
+                ["test", "--quiet", "--allow-read", testPath],
                 timeout.Token);
         }
         finally

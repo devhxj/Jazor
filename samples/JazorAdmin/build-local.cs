@@ -48,7 +48,7 @@ var packArguments = new List<string>
     "--package", "admin",
     "--package", "tdesign",
     "--package", "dataui",
-    "--package", "vu-icons"
+    "--package", "lucide"
 };
 if (!string.IsNullOrWhiteSpace(options.PackageVersion))
 {

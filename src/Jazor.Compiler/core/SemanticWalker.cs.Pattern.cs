@@ -1207,7 +1207,7 @@ public partial class SemanticWalker
 
 		else if (TryGetWhiteListRuntimeValueCarrier(typeSymbol, out var runtimeValueCarrier))
 		{
-			var carrierConstructor = context.BindCarrierImportSpecifier(runtimeValueCarrier.Path, runtimeValueCarrier.Name);
+			var carrierConstructor = context.BindProjectSourceImportSpecifier(runtimeValueCarrier.Path, runtimeValueCarrier.Name);
 			result = InstanceOfExpr(value, carrierConstructor);
 		}
 		else

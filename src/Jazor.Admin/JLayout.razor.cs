@@ -70,7 +70,7 @@ public partial class JLayout : JContentComponentBase, IVueContainerComponent
 
     private bool IsSidebarLayout => Mode != AdminLayoutMode.Top;
 
-    // nav-item.mjs 只导出成员函数；渲染位直接引用 AdminNavItemRenderHelper 会触发 phantom
+    // nav-item.js 只导出成员函数；渲染位直接引用 AdminNavItemRenderHelper 会触发 phantom
     // 类名导入，因此经成员位置间接判定导航存在性。
     private bool HasNavigationItems
         => AdminNavItemRenderHelper.BuildEffectiveItems(NavItems?.AsArray).Length > 0;

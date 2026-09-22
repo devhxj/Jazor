@@ -16,25 +16,13 @@
   "imports": {
     "filepond": {
       "type": "module",
-      "development": "filepond",
-      "production": "filepond",
-      "developmentDependencies": [],
-      "productionDependencies": [],
-      "developmentStylesheetImports": [
-        "filepond/dist/filepond.css"
-      ],
-      "productionStylesheetImports": [
-        "filepond/dist/filepond.css"
-      ]
+      "path": "filepond",
+      "dependencies": []
     },
     "vue-filepond": {
       "type": "module",
-      "development": "vue-filepond",
-      "production": "vue-filepond",
-      "developmentDependencies": [
-        "filepond"
-      ],
-      "productionDependencies": [
+      "path": "vue-filepond",
+      "dependencies": [
         "filepond"
       ]
     }

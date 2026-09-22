@@ -284,7 +284,7 @@ public sealed class WhiteListLookupCompatibilityTests
         }
     }
 
-    [TestMethod]
+	[TestMethod]
 	public void WhiteListLookup_ReducedExtensionInvocation_ResolvesStaticExtensionKey()
 	{
         const string source = """
@@ -325,6 +325,52 @@ public sealed class WhiteListLookupCompatibilityTests
         Assert.AreEqual(staticKey, matchedKey);
 		Assert.AreEqual("measure", matchedValue);
 	}
+
+    [TestMethod]
+    public void WhiteListLookup_StaticExtensionInvocation_ResolvesStaticExtensionKey()
+    {
+        const string source = """
+            namespace LookupTests;
+
+            public static class TextExtensions
+            {
+                public static int Measure(this string value, int offset)
+                    => value.Length + offset;
+            }
+
+            public sealed class Consumer
+            {
+                public int Read(string value)
+                    => TextExtensions.Measure(value, 2);
+            }
+            """;
+        var compilation = CreateCompilation(source, "WhiteListLookup.StaticExtension");
+        var syntaxTree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(syntaxTree);
+        var invocation = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Single();
+        var method = compilation.GetTypeByMetadataName("LookupTests.TextExtensions")!
+            .GetMembers("Measure")
+            .OfType<IMethodSymbol>()
+            .Single();
+        var staticKey = method.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
+
+        Assert.IsTrue(WhiteListLookup.TryGetValue(
+            new Dictionary<string, string> { [staticKey] = "measure" },
+            method,
+            out var matchedKey,
+            out var matchedValue));
+        Assert.AreEqual(staticKey, matchedKey);
+        Assert.AreEqual("measure", matchedValue);
+
+        Assert.IsFalse(WhiteListLookup.TryGetValue(
+            new Dictionary<string, string>(),
+            method,
+            out _,
+            out _));
+    }
 
 	[TestMethod]
 	public void WhiteListLookup_ReducedExtensionInvocation_PrefersStaticContractOverReducedAlias()

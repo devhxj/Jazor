@@ -74,14 +74,14 @@ public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
         StringAssert.Contains(artifact.ModuleText, "[].concat", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/direct-generic-slot-alias-runtime.mjs",
+            "components/direct-generic-slot-alias-runtime.js",
             artifact.ModuleText,
             "direct-generic-slot-alias-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/direct-generic-slot-alias-runtime.mjs";
+            import component from "./components/direct-generic-slot-alias-runtime.js";
 
             test("direct generic slot aliases expand the returned VNode sequence", () => {
                 const section = component.setup({}, {

@@ -30,14 +30,14 @@ public sealed class FloatingUiManifestTests
             imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "@floating-ui/dom", "@floating-ui/utils/dom" },
-            imports.GetProperty("@floating-ui/vue").GetProperty("productionDependencies")
+            imports.GetProperty("@floating-ui/vue").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
 
         foreach (var entry in imports.EnumerateObject())
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
-            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("production").GetString()!), entry.Name);
-            Assert.AreEqual(entry.Value.GetProperty("development").GetString(), entry.Value.GetProperty("production").GetString());
+            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("path").GetString()!), entry.Name);
+            Assert.AreEqual(entry.Value.GetProperty("path").GetString(), entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _));
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _));
         }

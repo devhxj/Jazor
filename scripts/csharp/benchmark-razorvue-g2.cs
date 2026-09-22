@@ -334,7 +334,7 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
 
     var directory = Path.Combine(repoRoot, ".tmp", "razorvue-production-vue", Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(directory);
-    var rawMarkupRuntimePath = Path.Combine(repoRoot, "src", "Jazor.Vue", "dist", "raw-markup.mjs");
+    var rawMarkupRuntimePath = Path.Combine(repoRoot, "src", "Jazor.Vue", "runtime", "vue", "raw-markup.mjs");
     if (!File.Exists(rawMarkupRuntimePath))
     {
         return new ProductionVueRuntimeVerification(
@@ -342,7 +342,7 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
             false,
             "unavailable",
             browser,
-            "Jazor.Vue raw-markup embedded carrier was not found under src/Jazor.Vue/dist.");
+            "Jazor.Vue raw-markup embedded carrier was not found under src/Jazor.Vue/runtime/vue.");
     }
 
     WriteText(

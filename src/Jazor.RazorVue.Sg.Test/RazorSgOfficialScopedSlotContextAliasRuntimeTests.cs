@@ -56,15 +56,15 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-list-page-scoped-slot-context-alias-runtime.mjs",
+            "components/release-list-page-scoped-slot-context-alias-runtime.js",
             observation.ModuleText,
             "official-release-list-scoped-slot-context-alias-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-list-page-scoped-slot-context-alias-runtime.mjs";
-            import releaseList from "./components/release-list-scoped-slot-context-alias-runtime.mjs";
+            import component from "./components/release-list-page-scoped-slot-context-alias-runtime.js";
+            import releaseList from "./components/release-list-scoped-slot-context-alias-runtime.js";
 
             test("official Razor scoped-slot Context aliases bind the declared Vue slot context", () => {
                 const list = component.setup({}, { slots: {} })();
@@ -80,7 +80,7 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-list-scoped-slot-context-alias-runtime.mjs"] = "export default { name: \"release-list-scoped-slot-context-alias-runtime\" };"
+                ["components/release-list-scoped-slot-context-alias-runtime.js"] = "export default { name: \"release-list-scoped-slot-context-alias-runtime\" };"
             });
     }
 }

@@ -155,7 +155,7 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoArgumentModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NullModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
-        AssertComponentImport(fixture, GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
+        AssertComponentImport(fixture, GetNamedType(fixture, "ModuleComponent"), "./components/module.js", "default");
         AssertComponentImport(fixture, GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
         var slotMapComponent = GetNamedType(fixture, "SlotMapComponent");
         var slotNames = Invoke<ImmutableDictionary<IPropertySymbol, string>>(
@@ -163,24 +163,24 @@ public sealed class RenderEmitterPrivateContractTests
             slotMapComponent);
         Assert.AreEqual("header-slot", slotNames[GetProperty(slotMapComponent, "Header")]);
         var noArgumentImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoArgumentModuleComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoArgumentModuleComponent"), null));
         StringAssert.Contains(noArgumentImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var nullModuleImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NullModuleComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NullModuleComponent"), null));
         StringAssert.Contains(nullModuleImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var importFailure = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoImportComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoImportComponent"), null));
         StringAssert.Contains(importFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
         // [ECMAScript] 无参形式是环境契约，不构成组件绑定。
         var allowMarkerFailure = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "AllowMarkerComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "AllowMarkerComponent"), null));
         StringAssert.Contains(allowMarkerFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
         // [ECMAScript("specifier")] 现在同时服务值绑定与组件绑定，因此 import 标记的组件是合法声明。
         var importMarkerDescriptor = Invoke<object>(
-            "ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ImportMarkerComponent"));
+            "ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ImportMarkerComponent"), null);
         Assert.IsNotNull(importMarkerDescriptor);
         var invalidLibraryImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "InvalidLibraryComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "InvalidLibraryComponent"), null));
         StringAssert.Contains(invalidLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
 
         var contractFailure = Assert.Throws<TargetInvocationException>(() =>
@@ -2882,7 +2882,7 @@ public sealed class RenderEmitterPrivateContractTests
         string importSpecifier,
         string exportName)
     {
-        var descriptor = Invoke<object>("ResolveComponentImport", fixture.Compilation, componentType);
+        var descriptor = Invoke<object>("ResolveComponentImport", fixture.Compilation, componentType, null);
         var descriptorType = descriptor.GetType();
         var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         Assert.AreEqual(importSpecifier, descriptorType.GetProperty("ImportSpecifier", flags)!.GetValue(descriptor));
@@ -2913,7 +2913,7 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(emitterType);
         var constructor = emitterType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 7);
+            .Single(candidate => candidate.GetParameters().Length == 8);
         return constructor.Invoke(
         [
             fixture.Compilation,
@@ -2922,6 +2922,7 @@ public sealed class RenderEmitterPrivateContractTests
             null,
             VueInjectRegistry.ForCompilation(fixture.Compilation),
             null,
+            false,
             null
         ]);
     }

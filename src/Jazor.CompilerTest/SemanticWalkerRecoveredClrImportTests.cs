@@ -46,8 +46,8 @@ public sealed class SemanticWalkerRecoveredClrImportTests
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
         Assert.HasCount(2, imports);
-        Assert.IsTrue(imports.TryGetValue("clr/System/StringModule.js", out var stringImports));
-        Assert.IsTrue(imports.TryGetValue("clr/System/NullableT1Module.js", out var nullableImports));
+        Assert.IsTrue(imports.TryGetValue("./clr/System/StringModule.js", out var stringImports));
+        Assert.IsTrue(imports.TryGetValue("./clr/System/NullableT1Module.js", out var nullableImports));
         Assert.HasCount(
             11,
             stringImports,

@@ -4,7 +4,7 @@ using static ECMAScript.Vue;
 namespace RazorVue.Authoring;
 
 /// <summary>Vue framing owned by the sample host; page behavior remains ordinary Razor.</summary>
-[ECMAScriptModule("app.mjs")]
+[ECMAScriptModule("app.js")]
 public static class Bootstrap
 {
     private static readonly IVueComponent Root = DefineComponent(new VueComponentOptions

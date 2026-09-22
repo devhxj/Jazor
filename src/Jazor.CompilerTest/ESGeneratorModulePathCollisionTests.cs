@@ -223,43 +223,43 @@ internal static class ModulePathScenarioCatalog
         Collision(
             "es-generator.module-path.exact-duplicate",
             "exact-normalized-output-path-collision",
-            "shared.mjs",
+            "shared.js",
             [Module("SecondModule", "\"shared\"", 2), Module("FirstModule", "\"shared\"", 1)]),
         Collision(
             "es-generator.module-path.extension-normalized",
             "relative-prefix-and-extension-equivalence",
-            "feature/tool.mjs",
-            [Module("FirstModule", "\"./feature/tool\"", 1), Module("SecondModule", "\"feature/tool.mjs\"", 2)]),
+            "feature/tool.js",
+            [Module("FirstModule", "\"./feature/tool\"", 1), Module("SecondModule", "\"feature/tool.js\"", 2)]),
         Collision(
             "es-generator.module-path.separator-normalized",
             "platform-separator-equivalence",
-            "feature/tool.mjs",
+            "feature/tool.js",
             [Module("FirstModule", "@\"feature\\tool\"", 1), Module("SecondModule", "\"feature/tool\"", 2)]),
         Collision(
             "es-generator.module-path.case-insensitive",
             "cross-platform-case-equivalence",
-            "Feature/Tool.mjs",
-            [Module("FirstModule", "\"feature/tool\"", 1), Module("SecondModule", "\"Feature/Tool.mjs\"", 2)]),
+            "Feature/Tool.js",
+            [Module("FirstModule", "\"feature/tool\"", 1), Module("SecondModule", "\"Feature/Tool.js\"", 2)]),
         Collision(
             "es-generator.module-path.three-way",
             "multi-owner-diagnostic-completeness",
-            "shared.mjs",
+            "shared.js",
             [
                 Module("GammaModule", "@\"shared\\\"", 3),
                 Module("AlphaModule", "\"shared\"", 1),
-                Module("BetaModule", "\"./shared.mjs\"", 2)
+                Module("BetaModule", "\"./shared.js\"", 2)
             ]),
         new(
             "es-generator.module-path.collision-with-valid-module",
             "conflict-isolation-and-partial-generation",
             [
                 Module("FirstModule", "\"shared/module\"", 1),
-                Module("SecondModule", "\"./shared/module.mjs\"", 2),
+                Module("SecondModule", "\"./shared/module.js\"", 2),
                 Module("ValidModule", "\"valid/module\"", 3)
             ],
-            "shared/module.mjs",
+            "shared/module.js",
             [Conflict("FirstModule"), Conflict("SecondModule")],
-            ["valid/module.mjs"]),
+            ["valid/module.js"]),
         new(
             "es-generator.module-path.partial-symbol",
             "partial-declarations-remain-one-module",
@@ -284,7 +284,7 @@ internal static class ModulePathScenarioCatalog
             ],
             null,
             [],
-            ["partial/module.mjs"]),
+            ["partial/module.js"]),
         new(
             "es-generator.module-path.distinct-js-extensions",
             "js-and-mjs-paths-remain-distinct",

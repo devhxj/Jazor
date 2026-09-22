@@ -45,14 +45,14 @@ public sealed class RazorSgDirectRenderTypedSlotParameterTests
         Assert.IsFalse(observation.ModuleText.Contains("syncSlotParameters", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/typed-template-bridge-runtime.mjs",
+            "components/typed-template-bridge-runtime.js",
             observation.ModuleText,
             "official-typed-template-bridge-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/typed-template-bridge-runtime.mjs";
+            import component from "./components/typed-template-bridge-runtime.js";
 
             test("direct typed template renders the Vue scoped slot with the current context", () => {
                 const withoutTemplate = component.setup({}, { slots: {} })();

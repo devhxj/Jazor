@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeStringBuilderScenarios
 {
-    private const string ModulePath = "clr/System/Text/StringBuilderModule.js";
+    private const string ModulePath = "./clr/System/Text/StringBuilderModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

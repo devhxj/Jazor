@@ -8,7 +8,7 @@ internal static class Program
     private static void Main(string[] args)
     {
         var builder = JazorWebApplication.CreateBuilder(args);
-        builder.Services.AddJazorReload();
+        builder.Services.AddJazorViteProxy(options => options.ServerOrigin = new Uri(builder.Configuration["Showcase:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
 
         var app = builder.Build();
         var pathBase = builder.Configuration["Showcase:PathBase"];
@@ -28,7 +28,7 @@ internal static class Program
             if (!string.IsNullOrWhiteSpace(configuredRoot))
                 options.Assets.ConfigureArtifacts = artifact => artifact.RootPath = ResolveArtifactRoot(app.Environment.ContentRootPath, configuredRoot);
         });
-        app.UseJazorReload();
+        app.UseJazorViteProxy();
         app.UseJazorSpaFallback(ShowcaseHostShell.WriteAsync);
         app.Run();
     }

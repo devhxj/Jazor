@@ -26,7 +26,7 @@ public sealed record AdminRouteDefinition : VueProps
     public AdminRouteDefinition[]? Children { get; init; }
 }
 
-[ECMAScriptModule("components/admin/routes.mjs")]
+[ECMAScriptModule("components/admin/routes.js")]
 public static class AdminRouteCatalog
 {
     private const string CatchAllPath = "/:pathMatch(.*)*";

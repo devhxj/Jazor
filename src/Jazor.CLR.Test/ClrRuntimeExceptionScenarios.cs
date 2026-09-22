@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeExceptionScenarios
 {
-    private const string ModulePath = "clr/System/ExceptionModule.js";
+    private const string ModulePath = "./clr/System/ExceptionModule.js";
     private const string ConstructorMember = "System.Exception.Exception(string, System.Exception)";
     private const string InnerExceptionMember = "System.Exception.InnerException.get";
     private const string GetBaseExceptionMember = "virtual System.Exception.GetBaseException()";

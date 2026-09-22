@@ -48,14 +48,14 @@ public sealed class RazorSgOfficialEventModifierRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.StopSubmit", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-deploy-form-event-modifiers-runtime.mjs",
+            "components/release-deploy-form-event-modifiers-runtime.js",
             observation.ModuleText,
             "official-release-deploy-form-event-modifiers-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-deploy-form-event-modifiers-runtime.mjs";
+            import component from "./components/release-deploy-form-event-modifiers-runtime.js";
 
             test("official Razor dynamic form modifiers run before the submit callback", () => {
                 const enabledRender = component.setup({

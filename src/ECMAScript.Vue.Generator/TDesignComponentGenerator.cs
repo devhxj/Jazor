@@ -220,6 +220,7 @@ internal static class TDesignComponentGenerator
             AppendXmlSummary(builder, component.Component.Contract.Description);
             builder.AppendLine($"[ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
             builder.AppendLine($"[ECMAScript(\"{GetModuleSpecifier(component.Component.Binding)}\")]");
+            builder.AppendLine($"[Style(\"{GetStyleSpecifier(component.Component.Binding)}\")]");
             var genericSuffix = component.TypeParameters.Length == 0
                 ? string.Empty
                 : "<" + string.Join(", ", component.TypeParameters.Select(static parameter => parameter.Name)) + ">";
@@ -276,6 +277,7 @@ internal static class TDesignComponentGenerator
                 builder.AppendLine();
                 builder.AppendLine($"[ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"[ECMAScript(\"{GetModuleSpecifier(component.Component.Binding)}\")]");
+                builder.AppendLine($"[Style(\"{GetStyleSpecifier(component.Component.Binding)}\")]");
                 // Razor's component discovery cannot disambiguate a generic component and a
                 // same-named closed alias. Keep the generated alias for assembly-internal
                 // metadata compatibility, while typed Razor markup uses the generic component
@@ -295,6 +297,7 @@ internal static class TDesignComponentGenerator
             {
                 AppendXmlSummary(builder, component.Component.Contract.Description, "    ");
                 builder.AppendLine($"    [ECMAScript(\"{GetModuleSpecifier(component.Component.Binding)}\")]");
+                builder.AppendLine($"    [Style(\"{GetStyleSpecifier(component.Component.Binding)}\")]");
                 builder.AppendLine($"    [ECMAScriptName(\"{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"    public extern static ITDesignComponent {component.Component.Contract.AuthoringType} {{ get; }}");
                 builder.AppendLine();
@@ -344,6 +347,10 @@ internal static class TDesignComponentGenerator
     /// </summary>
     private static string GetModuleSpecifier(Binding binding)
         => $"tdesign-vue-next/es/{binding.Module}/index.mjs";
+
+    private static string GetStyleSpecifier(Binding binding)
+        => $"tdesign-vue-next/es/{binding.Module}/style/index.css";
+
 
     private static string EscapeXml(string value)
         => value.Replace("&", "&amp;", StringComparison.Ordinal)

@@ -17,7 +17,7 @@ internal static class VueRawMarkup
 
     public const string RuntimeExportName = "createRawMarkup";
 
-    public const string RuntimeModuleSpecifier = "@jazor/vue-runtime/raw-markup.mjs";
+    public const string RuntimeModuleSpecifier = "./runtime/vue/raw-markup.js";
 
     /// <summary>
     /// Parses one static fragment with an HTML5 parser so <c>staticCount</c> matches DOM siblings.

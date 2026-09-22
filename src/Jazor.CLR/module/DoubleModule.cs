@@ -19,7 +19,7 @@ namespace Jazor.CLR;
 /// expm1/log1p 与 LN2/LN10 换底。换底会保留一次乘法/除法舍入，但避免了在零附近的灾难性消减，
 /// 这是当前 ECMAScript API 能提供的可维护精度边界。
 /// </remarks>
-[ECMAScriptModule("clr/System/DoubleModule.js")]
+[ECMAScriptModule("./clr/System/DoubleModule.js")]
 [Jazor(Op.Alias, "double", "Number")]
 public static class DoubleModule
 {

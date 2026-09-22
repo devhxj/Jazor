@@ -56,13 +56,13 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 | `JazorMode` | 行为 |
 | --- | --- |
 | `none` | 默认值，不写入产物 |
-| `debug` | 直接物化模块、source map、`jazor-manifest.json` 与 import map |
-| `release` | 经内置 Netpack 路径输出生产浏览器 bundle 与所需资源 |
+| `debug` | 生成标准 JS 项目、模块、source map、package.json 与入口 |
+| `release` | 从同一项目调用默认 Vite 构建，输出生产浏览器 bundle 与所需资源 |
 
 `JazorDir` 是最终输出目录。`Jazor.targets` 在最终 `Exe`/`WinExe` 的 `Build` 后调用
-`Jazor.Emit`，Emit 先在同卷 staging 目录完成校验，再原子替换该目录。`JazorSSR=true` 会在
-同一依赖闭包下额外物化 SSR runner、Vue 和 server-renderer 所需资源；开发 reload 消费本次
-成功 Emit 的模块与 HMR 元数据。输出目录不是类库 carrier，也不会成为下一次资源发现的输入。
+`Jazor.Emit`，Emit 在此生成标准 JS 项目。增量状态写入 `obj/jazor-manifest.json`，不参与运行。
+`JazorSSR=true` 会在同一依赖图下生成 SSR 与 hydration 入口。开发服务和 HMR 由标准前端工具
+负责，ASP.NET Core 代理 HTTP/WebSocket。输出目录不是类库 carrier，也不会成为下一次资源发现的输入。
 
 ## 可选生态包
 
@@ -103,7 +103,7 @@ app.UseJazorHost();
 app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
-ASP.NET Core 持有请求管线、静态资源与响应文档，DenoHost 执行本地 Vue 服务器模块，Netpack 只负责浏览器构建。应用不需要全局 Deno、`node_modules`、CDN 或远程 import。
+ASP.NET Core 持有请求管线与响应文档，DenoHost 执行标准项目中的 Vue 服务器模块，Vite 是可替换的默认浏览器工具。依赖恢复到项目的 `node_modules`，无需全局 Deno 或 CDN。
 
 ## Razor-to-Vue
 

@@ -45,14 +45,14 @@ public sealed class RazorSgOfficialBindAfterRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.PersistedReleaseName", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-name-persistence-runtime.mjs",
+            "components/release-name-persistence-runtime.js",
             observation.ModuleText,
             "official-release-name-persistence-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-name-persistence-runtime.mjs";
+            import component from "./components/release-name-persistence-runtime.js";
 
             test("official Razor bind:after persists the updated DOM value", async () => {
                 const render = component.setup({}, { slots: {} });

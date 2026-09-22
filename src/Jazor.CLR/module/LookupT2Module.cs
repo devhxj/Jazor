@@ -8,7 +8,7 @@ namespace Jazor.CLR;
 /// 创建并携带私有 key metadata 的 Array。成员语义由 EnumerableModule 统一实现，确保
 /// ToLookup、GroupBy 和 lookup key 查询使用同一 EqualityComparer&lt;TKey&gt; 协议。
 /// </remarks>
-[ECMAScriptModule("clr/System/Linq/LookupT2Module.js")]
+[ECMAScriptModule("./clr/System/Linq/LookupT2Module.js")]
 [Jazor(Op.Alias, "System.Linq.ILookup<TKey, TElement>", "Array")]
 public static class LookupT2Module<TKey, TElement>
 {

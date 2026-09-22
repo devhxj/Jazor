@@ -250,10 +250,8 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = specifier,
-            ["production"] = specifier,
-            ["developmentDependencies"] = (JsonArray)dependenciesNode.DeepClone(),
-            ["productionDependencies"] = dependenciesNode,
+            ["path"] = specifier,
+            ["dependencies"] = dependenciesNode,
         };
     }
 

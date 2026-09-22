@@ -57,17 +57,19 @@ public sealed class RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "import { ElButton } from \"element-plus/es/components/button/index.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "import { ElInput } from \"element-plus/es/components/input/index.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import \"element-plus/es/components/button/style/css.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import \"element-plus/es/components/input/style/css.mjs\";", StringComparison.Ordinal);
         Assert.DoesNotContain("builder.OpenComponent", observation.ModuleText, StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/element-plus-natural-authoring-runtime.mjs",
+            "components/element-plus-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-element-plus-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/element-plus-natural-authoring-runtime.mjs";
+            import component from "./components/element-plus-natural-authoring-runtime.js";
             import { ElButton } from "element-plus/es/components/button/index.mjs";
             import { ElInput } from "element-plus/es/components/input/index.mjs";
 
@@ -108,7 +110,9 @@ public sealed class RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests
             {
                 ["node_modules/element-plus/package.json"] = """{"type":"module"}""",
                 ["node_modules/element-plus/es/components/button/index.mjs"] = "export const ElButton = { name: \"el-button\" };",
-                ["node_modules/element-plus/es/components/input/index.mjs"] = "export const ElInput = { name: \"el-input\" };"
+                ["node_modules/element-plus/es/components/input/index.mjs"] = "export const ElInput = { name: \"el-input\" };",
+                ["node_modules/element-plus/es/components/button/style/css.mjs"] = "",
+                ["node_modules/element-plus/es/components/input/style/css.mjs"] = ""
             });
     }
 }

@@ -7,7 +7,7 @@ namespace JazorAdmin;
 /// The complete TDesign Starter page inventory used by the sample navigation.
 /// 页面目录与 TDesign Starter 的 22 个功能模板一一对应，避免路由落到空白占位页。
 /// </summary>
-[ECMAScriptModule("components/starter-catalog.mjs")]
+[ECMAScriptModule("components/starter-catalog.js")]
 internal static class StarterCatalog
 {
     public const string RootKey = "starter";

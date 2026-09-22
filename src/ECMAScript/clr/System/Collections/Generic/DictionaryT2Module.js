@@ -59,10 +59,10 @@ function NativeGet(instance, key) {
   return Reflect.apply(get, instance, [key]);
 }
 function NativeDelete(instance, key) {
-  let __binding$1bae7632d608c93b = Reflect.get(Map.prototype, "delete");
-  if (__binding$1bae7632d608c93b === null)
+  let __binding$94bbe65f96ffc4da = Reflect.get(Map.prototype, "delete");
+  if (__binding$94bbe65f96ffc4da === null)
     throw new Error("MissingMethodException: Map.prototype.delete is unavailable.");
-  return Reflect.apply(__binding$1bae7632d608c93b, instance, [key]);
+  return Reflect.apply(__binding$94bbe65f96ffc4da, instance, [key]);
 }
 function NativeClear(instance) {
   let clear = Reflect.get(Map.prototype, "clear");

@@ -73,15 +73,15 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
         StringAssert.Contains(artifact.ModuleText, "[].concat", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/direct-nullable-markup-parent.mjs",
+            "components/direct-nullable-markup-parent.js",
             artifact.ModuleText,
             "direct-nullable-markup-child-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/direct-nullable-markup-parent.mjs";
-            import child from "./components/direct-nullable-markup-child.mjs";
+            import component from "./components/direct-nullable-markup-parent.js";
+            import child from "./components/direct-nullable-markup-child.js";
 
             test("direct nullable markup component children preserve the RenderTreeBuilder empty-content contract", () => {
                 const populated = component.setup(
@@ -100,7 +100,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
             """,
             new Dictionary<string, string>
             {
-                ["components/direct-nullable-markup-child.mjs"] = "export default { name: \"direct-nullable-markup-child\" };"
+                ["components/direct-nullable-markup-child.js"] = "export default { name: \"direct-nullable-markup-child\" };"
             });
     }
 }

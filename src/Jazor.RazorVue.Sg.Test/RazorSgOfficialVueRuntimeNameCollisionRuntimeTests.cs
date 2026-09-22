@@ -40,14 +40,14 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("function h()", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/runtime-name-collision.mjs",
+            "components/runtime-name-collision.js",
             observation.ModuleText,
             "official-runtime-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/runtime-name-collision.mjs";
+            import component from "./components/runtime-name-collision.js";
 
             test("official Razor member names do not shadow Vue render imports", () => {
                 const render = component.setup({}, { slots: {} });
@@ -98,14 +98,14 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("class h ", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/nested-runtime-name-collision.mjs",
+            "components/nested-runtime-name-collision.js",
             observation.ModuleText,
             "official-nested-runtime-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/nested-runtime-name-collision.mjs";
+            import component from "./components/nested-runtime-name-collision.js";
 
             test("nested runtime types do not shadow Vue render imports", () => {
                 const section = component.setup({}, { slots: {} })();

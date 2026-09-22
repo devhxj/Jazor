@@ -355,10 +355,9 @@ void Trace(string message)
 
 void AssertDebugArtifacts(string artifactRoot)
 {
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs"), "emitted main module");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "entry.js"), "standard project entry");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs.map"), "emitted main source map");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "jazor-manifest.json"), "emit manifest");
-    AssertImportMapTargetExists(artifactRoot, "System/StringModule.js");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "package.json"), "standard project package manifest");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs"), "emitted wiki component module");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs.map"), "emitted wiki component source map");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-styles.mjs"), "emitted Wiki CSS module");
@@ -366,8 +365,8 @@ void AssertDebugArtifacts(string artifactRoot)
 
 void AssertReleaseArtifacts(string artifactRoot)
 {
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js"), "production browser bundle");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js.map"), "production browser bundle source map");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js.map"), "production browser bundle source map");
 
     // Netpack may retain its entry helper, but the inspectable debug graph must not leak into
     // a non-SSR release publish. That catches a configuration-only release build by mistake.
@@ -375,11 +374,11 @@ void AssertReleaseArtifacts(string artifactRoot)
     foreach (var unexpectedPath in new[]
     {
         Path.Combine(artifactRoot, "main.mjs"),
-        Path.Combine(artifactRoot, "jazor-manifest.json"),
+        Path.Combine(artifactRoot, "obj", "jazor-manifest.json"),
         Path.Combine(artifactRoot, "importmap.json"),
         Path.Combine(artifactRoot, "ssr-importmap.json"),
         Path.Combine(artifactRoot, "manifest.json"),
-        Path.Combine(artifactRoot, "style.mjs"),
+        Path.Combine(artifactRoot, "style.js"),
         Path.Combine(artifactRoot, "components")
     })
     {
@@ -388,31 +387,6 @@ void AssertReleaseArtifacts(string artifactRoot)
             throw new InvalidOperationException("Release publish unexpectedly retained debug artifact: " + unexpectedPath);
         }
     }
-}
-
-void AssertImportMapTargetExists(string artifactRoot, string specifier)
-{
-    var importMapPath = Path.Combine(artifactRoot, "importmap.json");
-    WikiScriptHelpers.EnsureFileExists(importMapPath, "browser import map");
-
-    using var document = JsonDocument.Parse(File.ReadAllText(importMapPath, Encoding.UTF8));
-    if (!document.RootElement.TryGetProperty("imports", out var imports) ||
-        imports.ValueKind != JsonValueKind.Object ||
-        !imports.TryGetProperty(specifier, out var targetElement) ||
-        targetElement.ValueKind != JsonValueKind.String ||
-        targetElement.GetString() is not { } target)
-    {
-        throw new InvalidOperationException("Browser import map is missing string entry '" + specifier + "'.");
-    }
-
-    const string artifactPrefix = "/jazor/";
-    if (!target.StartsWith(artifactPrefix, StringComparison.Ordinal))
-        throw new InvalidOperationException("Browser import target for '" + specifier + "' is not a Jazor artifact URL: " + target);
-
-    var relativePath = target[artifactPrefix.Length..].Replace('/', Path.DirectorySeparatorChar);
-    WikiScriptHelpers.EnsureFileExists(
-        Path.Combine(artifactRoot, relativePath),
-        "materialized browser import target for " + specifier);
 }
 
 BrowserVerificationRoutes ReadBrowserVerificationRoutes(string generatedCatalogPath)

@@ -6,7 +6,7 @@ namespace Jazor.CLR;
 /// 目标支持面：
 /// - IDisposable.Dispose()
 /// </summary>
-[ECMAScriptModule("clr/System/IDisposableModule.js")]
+[ECMAScriptModule("./clr/System/IDisposableModule.js")]
 [Jazor(Op.Alias, "System.IDisposable", "Object")]
 public static class IDisposableModule
 {

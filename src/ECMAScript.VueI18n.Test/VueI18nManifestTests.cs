@@ -22,11 +22,11 @@ public sealed class VueI18nManifestTests
         Assert.AreEqual("^3.0.0", root.GetProperty("requires").GetProperty("vue3").GetString());
 
         var entry = root.GetProperty("imports").GetProperty("vue-i18n");
-        Assert.AreEqual("vue-i18n", entry.GetProperty("development").GetString());
-        Assert.AreEqual("vue-i18n", entry.GetProperty("production").GetString());
+        Assert.AreEqual("vue-i18n", entry.GetProperty("path").GetString());
+        Assert.AreEqual("vue-i18n", entry.GetProperty("path").GetString());
         CollectionAssert.AreEquivalent(
             new[] { "vue" },
-            entry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
+            entry.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
         Assert.IsFalse(entry.TryGetProperty("developmentHash", out _));
         Assert.IsFalse(entry.TryGetProperty("files", out _));
         Assert.AreEqual("npm", root.GetProperty("packages").GetProperty("vue-i18n").GetProperty("source").GetString());

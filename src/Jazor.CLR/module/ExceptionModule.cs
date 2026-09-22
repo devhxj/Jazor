@@ -13,7 +13,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的构造函数
 /// - Discard: 不支持或极少使用的功能
 /// </summary>
-[ECMAScriptModule("clr/System/ExceptionModule.js")]
+[ECMAScriptModule("./clr/System/ExceptionModule.js")]
 [Jazor(Op.Alias, "System.Exception","Error")]
 public static class ExceptionModule
 {

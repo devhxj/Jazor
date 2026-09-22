@@ -13,6 +13,12 @@ namespace Jazor.Common;
 public static class ECMAScriptModulePath
 {
     /// <summary>
+    /// Default extension for Jazor-owned generated modules.
+    /// Explicit <c>.js</c>/<c>.mjs</c> declarations remain authored paths.
+    /// </summary>
+    public const string DefaultGeneratedExtension = ".js";
+
+    /// <summary>
     /// Validates an external ESM specifier and returns it without generated-module rewriting.
     /// 外部 ESM specifier 只做协议边界校验，保留作者提供的文本，不补扩展名或改写目录。
     /// </summary>
@@ -108,10 +114,6 @@ public static class ECMAScriptModulePath
     }
 
     /// <summary>
-    /// Returns whether an import is resolved by a package manifest rather than Jazor's
-    /// generated-module namespaces.
-    /// </summary>
-    /// <summary>
     /// Builds a relative import specifier from one project-relative module path to another.
     ///
     /// 与 <see cref="ResolveRelativePath"/> 不同：后者把"已经是相对的"specifier 按 importer 展开，
@@ -160,20 +162,6 @@ public static class ECMAScriptModulePath
         return relative.StartsWith(".", StringComparison.Ordinal) ? relative : "./" + relative;
     }
 
-    public static bool IsPackageSpecifier(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return false;
-
-        var normalized = path.Replace('\\', '/').Trim();
-        // System/* and @jazor/* are packaged JS resources, just like vue or vuetify.
-        // Only generated-root paths and relative paths bypass a library manifest.
-        return !normalized.StartsWith(".", StringComparison.Ordinal) &&
-               !normalized.StartsWith("/", StringComparison.Ordinal) &&
-               !normalized.StartsWith("components/", StringComparison.Ordinal) &&
-               !string.Equals(normalized, "style.mjs", StringComparison.Ordinal);
-    }
-
     private static string NormalizeCore(string path, bool includeRelativePrefix)
     {
         var normalized = path.Replace('\\', '/').Trim();
@@ -194,7 +182,9 @@ public static class ECMAScriptModulePath
         if (!normalized.EndsWith(".js", StringComparison.OrdinalIgnoreCase) &&
             !normalized.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
         {
-            normalized += ".mjs";
+            // Jazor-owned modules use the standard JavaScript extension. An authored .js or
+            // .mjs suffix is preserved verbatim; only an omitted suffix gets the project default.
+            normalized += DefaultGeneratedExtension;
         }
 
         return includeRelativePrefix ? "./" + normalized : normalized;

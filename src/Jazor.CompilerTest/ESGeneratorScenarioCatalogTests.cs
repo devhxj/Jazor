@@ -225,7 +225,7 @@ internal static class ESGeneratorScenarioCatalog
             "Generator.Global.Default",
             [Source("GlobalModule.cs", "[ECMAScript.ECMAScriptModule] public static class GlobalModule { public static int Read() => 1; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["Generator.Global.Default/GlobalModule.mjs"],
+            ["Generator.Global.Default/GlobalModule.js"],
             ["function Read()"]),
         Case(
             "es-generator.namespace-default-path",
@@ -235,7 +235,7 @@ internal static class ESGeneratorScenarioCatalog
                 "NamespacedModule.cs",
                 "namespace Demo.Tools { [ECMAScript.ECMAScriptModule] public static class NamespacedModule { public static int Read() => 2; } }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["Generator.Namespace.Default/Demo/Tools/NamespacedModule.mjs"],
+            ["Generator.Namespace.Default/Demo/Tools/NamespacedModule.js"],
             ["function Read()"]),
         Case(
             "es-generator.missing-assembly-name",
@@ -245,7 +245,7 @@ internal static class ESGeneratorScenarioCatalog
                 "FallbackAssemblyModule.cs",
                 "[ECMAScript.ECMAScriptModule] public static class FallbackAssemblyModule { public static int Read() => 7; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["Jazor.Assembly/FallbackAssemblyModule.mjs"],
+            ["Jazor.Assembly/FallbackAssemblyModule.js"],
             ["assemblyName: \"Jazor.Assembly\""]),
         Case(
             "es-generator.null-configured-path",
@@ -255,7 +255,7 @@ internal static class ESGeneratorScenarioCatalog
                 "NullPathModule.cs",
                 "[ECMAScript.ECMAScriptModule(null)] public static class NullPathModule { public static int Read() => 8; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["Generator.Configured.Null/NullPathModule.mjs"],
+            ["Generator.Configured.Null/NullPathModule.js"],
             ["function Read()"]),
         Case(
             "es-generator.configured-dot-path",
@@ -265,7 +265,7 @@ internal static class ESGeneratorScenarioCatalog
                 "MathModule.cs",
                 "[ECMAScript.ECMAScriptModule(\"./features/math\")] public static class MathModule { public static int Add(int left, int right) => left + right; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["features/math.mjs"],
+            ["features/math.js"],
             ["function Add(left, right)"]),
         Case(
             "es-generator.configured-js-extension",
@@ -285,7 +285,7 @@ internal static class ESGeneratorScenarioCatalog
                 "BackslashModule.cs",
                 "[ECMAScript.ECMAScriptModule(@\"tools\\format\")] public static class BackslashModule { public static string Apply(string value) => value; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["tools/format.mjs"],
+            ["tools/format.js"],
             ["function Apply(value)"]),
         Case(
             "es-generator.empty-configured-path",
@@ -295,7 +295,7 @@ internal static class ESGeneratorScenarioCatalog
                 "EmptyPathModule.cs",
                 "[ECMAScript.ECMAScriptModule(\"\")] public static class EmptyPathModule { public static int Read() => 3; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["Generator.Configured.Empty/EmptyPathModule.mjs"],
+            ["Generator.Configured.Empty/EmptyPathModule.js"],
             ["function Read()"]),
         Case(
             "es-generator.erased-declarations-empty-module",
@@ -313,7 +313,7 @@ internal static class ESGeneratorScenarioCatalog
                 }
                 """)],
             ESGeneratorCatalogOutcome.ModuleOnly,
-            ["contracts/types.mjs"],
+            ["contracts/types.js"],
             ["hash: \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\""]),
         Case(
             "es-generator.traversal-path-rejected",
@@ -355,7 +355,7 @@ internal static class ESGeneratorScenarioCatalog
                 }
                 """)],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["valid.mjs"],
+            ["valid.js"],
             ["function Read()"],
             expectedModuleErrors: 1,
             expectedDiagnosticFragment: "InvalidModule"),
@@ -376,7 +376,7 @@ internal static class ESGeneratorScenarioCatalog
                 public static class BetaModule { public static int Read() => 3; }
                 """)],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["Alpha.mjs", "beta.mjs", "zeta.mjs"]),
+            ["Alpha.js", "beta.js", "zeta.js"]),
         Case(
             "es-generator.in-memory-source-without-path",
             "pathless-source-map-generation",
@@ -385,7 +385,7 @@ internal static class ESGeneratorScenarioCatalog
                 string.Empty,
                 "[ECMAScript.ECMAScriptModule(\"memory/module\")] public static class MemoryModule { public static int Read() => 5; }")],
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["memory/module.mjs"],
+            ["memory/module.js"],
             ["function Read()"]),
         Case(
             "es-generator.rooted-multi-source-map",
@@ -393,7 +393,7 @@ internal static class ESGeneratorScenarioCatalog
             "Generator.RootedSources",
             RootedSources(),
             ESGeneratorCatalogOutcome.ModuleAndSourceMap,
-            ["rooted/module.mjs"],
+            ["rooted/module.js"],
             ["function Read()"],
             ["Modules/RootedModule.cs"])
     ];

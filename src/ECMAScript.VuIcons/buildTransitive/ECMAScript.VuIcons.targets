@@ -1,5 +1,3 @@
 <Project>
-  <ItemGroup>
-    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vu-icons\manifest.json" />
-  </ItemGroup>
+  <!-- VuIcons is retired; this target intentionally registers no runtime metadata. -->
 </Project>

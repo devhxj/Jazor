@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeMathScenarios
 {
-    private const string ModulePath = "clr/System/MathModule.js";
+    private const string ModulePath = "./clr/System/MathModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

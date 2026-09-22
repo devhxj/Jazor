@@ -99,8 +99,8 @@ if (Directory.Exists(licensesRoot))
     Directory.Delete(licensesRoot, recursive: true);
 Directory.CreateDirectory(licensesRoot);
 
-// Validate the published stylesheet without copying it into the binding package. Emit carries
-// this bare stylesheet import through the npm package graph.
+// Validate the published stylesheet without copying it into the binding package. The binding
+// source carries the side-effect edge through [Style].
 var stylesheet = Path.Combine(sources["@wangeditor/editor"], "dist", "css", "style.css");
 if (!File.Exists(stylesheet))
     throw new InvalidOperationException("@wangeditor/editor does not ship 'dist/css/style.css'.");
@@ -307,19 +307,9 @@ static JsonNode BuildManifest(
         var entry = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = specifier,
-            ["production"] = specifier,
-            ["developmentDependencies"] = (JsonArray)dependenciesNode.DeepClone(),
-            ["productionDependencies"] = dependenciesNode,
+            ["path"] = specifier,
+            ["dependencies"] = dependenciesNode,
         };
-
-        // WangEditor publishes one CSS entry from the editor core. Keep it as a bare package
-        // stylesheet edge so the consumer bundler resolves it from npm.
-        if (specifier == "@wangeditor/editor")
-        {
-            entry["developmentStylesheetImports"] = new JsonArray { "@wangeditor/editor/dist/css/style.css" };
-            entry["productionStylesheetImports"] = new JsonArray { "@wangeditor/editor/dist/css/style.css" };
-        }
 
         imports[specifier] = entry;
     }

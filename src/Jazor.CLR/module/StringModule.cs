@@ -10,7 +10,7 @@ namespace Jazor.CLR;
 /// Trim 必须严格按调用方提供的字符集合扫描。Split 的 null 分隔符则使用 .NET BMP whitespace
 /// 集合（包括 U+0085 NEL），不能用会折叠连续空白或遗漏 NEL 的正则别名替代。
 /// </remarks>
-[ECMAScriptModule("clr/System/StringModule.js")]
+[ECMAScriptModule("./clr/System/StringModule.js")]
 [Jazor(Op.Alias, "string","String")]
 public static class StringModule
 {

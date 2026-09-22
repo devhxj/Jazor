@@ -1,4 +1,4 @@
-# Public API snapshot (2026-09-12)
+# Public API snapshot (2026-09-22)
 
 ## ECMAScript.ElementPlus
 - type ECMAScript.ElementPlus.ElAffix
@@ -9111,6 +9111,3429 @@
   - ECMAScript.ElementPlus.ElPlugin Default
   - System.String Version
 - type ECMAScript.ElementPlus.IElementPlusComponent
+
+## ECMAScript.Lucide
+- type ECMAScript.Lucide.AArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.AArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ALargeSmall
+  - Void .ctor()
+- type ECMAScript.Lucide.Accessibility
+  - Void .ctor()
+- type ECMAScript.Lucide.Activity
+  - Void .ctor()
+- type ECMAScript.Lucide.AirVent
+  - Void .ctor()
+- type ECMAScript.Lucide.Airplay
+  - Void .ctor()
+- type ECMAScript.Lucide.AlarmClock
+  - Void .ctor()
+- type ECMAScript.Lucide.AlarmClockCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.AlarmClockMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.AlarmClockOff
+  - Void .ctor()
+- type ECMAScript.Lucide.AlarmClockPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.AlarmSmoke
+  - Void .ctor()
+- type ECMAScript.Lucide.Album
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignCenterHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignCenterVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignEndHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignEndVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalDistributeCenter
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalDistributeEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalDistributeStart
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalJustifyCenter
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalJustifyEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalJustifyStart
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalSpaceAround
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignHorizontalSpaceBetween
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignStartHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignStartVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalDistributeCenter
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalDistributeEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalDistributeStart
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalJustifyCenter
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalJustifyEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalJustifyStart
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalSpaceAround
+  - Void .ctor()
+- type ECMAScript.Lucide.AlignVerticalSpaceBetween
+  - Void .ctor()
+- type ECMAScript.Lucide.Ambulance
+  - Void .ctor()
+- type ECMAScript.Lucide.Ampersand
+  - Void .ctor()
+- type ECMAScript.Lucide.Ampersands
+  - Void .ctor()
+- type ECMAScript.Lucide.Amphora
+  - Void .ctor()
+- type ECMAScript.Lucide.Anchor
+  - Void .ctor()
+- type ECMAScript.Lucide.Angry
+  - Void .ctor()
+- type ECMAScript.Lucide.Annoyed
+  - Void .ctor()
+- type ECMAScript.Lucide.Antenna
+  - Void .ctor()
+- type ECMAScript.Lucide.Anvil
+  - Void .ctor()
+- type ECMAScript.Lucide.Aperture
+  - Void .ctor()
+- type ECMAScript.Lucide.AppWindow
+  - Void .ctor()
+- type ECMAScript.Lucide.AppWindowMac
+  - Void .ctor()
+- type ECMAScript.Lucide.Apple
+  - Void .ctor()
+- type ECMAScript.Lucide.Archive
+  - Void .ctor()
+- type ECMAScript.Lucide.ArchiveRestore
+  - Void .ctor()
+- type ECMAScript.Lucide.ArchiveX
+  - Void .ctor()
+- type ECMAScript.Lucide.Armchair
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigDownDash
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigLeftDash
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigRightDash
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowBigUpDash
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDown01
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDown10
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownAZ
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownFromLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownNarrowWide
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownToDot
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownToLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownWideNarrow
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowDownZA
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowLeftFromLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowLeftRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowLeftToLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowRightFromLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowRightLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowRightToLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUp01
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUp10
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpAZ
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpFromDot
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpFromLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpNarrowWide
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpToLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpWideNarrow
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowUpZA
+  - Void .ctor()
+- type ECMAScript.Lucide.ArrowsUpFromLine
+  - Void .ctor()
+- type ECMAScript.Lucide.Asterisk
+  - Void .ctor()
+- type ECMAScript.Lucide.AtSign
+  - Void .ctor()
+- type ECMAScript.Lucide.Atom
+  - Void .ctor()
+- type ECMAScript.Lucide.AudioLines
+  - Void .ctor()
+- type ECMAScript.Lucide.AudioWaveform
+  - Void .ctor()
+- type ECMAScript.Lucide.Award
+  - Void .ctor()
+- type ECMAScript.Lucide.Axe
+  - Void .ctor()
+- type ECMAScript.Lucide.Axis3d
+  - Void .ctor()
+- type ECMAScript.Lucide.Baby
+  - Void .ctor()
+- type ECMAScript.Lucide.Backpack
+  - Void .ctor()
+- type ECMAScript.Lucide.Badge
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeCent
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeDollarSign
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeEuro
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeIndianRupee
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeInfo
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeJapaneseYen
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgePercent
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgePoundSterling
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeQuestionMark
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeRussianRuble
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeSwissFranc
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeTurkishLira
+  - Void .ctor()
+- type ECMAScript.Lucide.BadgeX
+  - Void .ctor()
+- type ECMAScript.Lucide.BaggageClaim
+  - Void .ctor()
+- type ECMAScript.Lucide.Balloon
+  - Void .ctor()
+- type ECMAScript.Lucide.Ban
+  - Void .ctor()
+- type ECMAScript.Lucide.Banana
+  - Void .ctor()
+- type ECMAScript.Lucide.Bandage
+  - Void .ctor()
+- type ECMAScript.Lucide.Banknote
+  - Void .ctor()
+- type ECMAScript.Lucide.BanknoteArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.BanknoteArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.BanknoteX
+  - Void .ctor()
+- type ECMAScript.Lucide.Barcode
+  - Void .ctor()
+- type ECMAScript.Lucide.Barrel
+  - Void .ctor()
+- type ECMAScript.Lucide.Baseline
+  - Void .ctor()
+- type ECMAScript.Lucide.Bath
+  - Void .ctor()
+- type ECMAScript.Lucide.Battery
+  - Void .ctor()
+- type ECMAScript.Lucide.BatteryCharging
+  - Void .ctor()
+- type ECMAScript.Lucide.BatteryFull
+  - Void .ctor()
+- type ECMAScript.Lucide.BatteryLow
+  - Void .ctor()
+- type ECMAScript.Lucide.BatteryMedium
+  - Void .ctor()
+- type ECMAScript.Lucide.BatteryPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.BatteryWarning
+  - Void .ctor()
+- type ECMAScript.Lucide.Beaker
+  - Void .ctor()
+- type ECMAScript.Lucide.Bean
+  - Void .ctor()
+- type ECMAScript.Lucide.BeanOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Bed
+  - Void .ctor()
+- type ECMAScript.Lucide.BedDouble
+  - Void .ctor()
+- type ECMAScript.Lucide.BedSingle
+  - Void .ctor()
+- type ECMAScript.Lucide.Beef
+  - Void .ctor()
+- type ECMAScript.Lucide.Beer
+  - Void .ctor()
+- type ECMAScript.Lucide.BeerOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Bell
+  - Void .ctor()
+- type ECMAScript.Lucide.BellDot
+  - Void .ctor()
+- type ECMAScript.Lucide.BellElectric
+  - Void .ctor()
+- type ECMAScript.Lucide.BellMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.BellOff
+  - Void .ctor()
+- type ECMAScript.Lucide.BellPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.BellRing
+  - Void .ctor()
+- type ECMAScript.Lucide.BetweenHorizontalEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.BetweenHorizontalStart
+  - Void .ctor()
+- type ECMAScript.Lucide.BetweenVerticalEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.BetweenVerticalStart
+  - Void .ctor()
+- type ECMAScript.Lucide.BicepsFlexed
+  - Void .ctor()
+- type ECMAScript.Lucide.Bike
+  - Void .ctor()
+- type ECMAScript.Lucide.Binary
+  - Void .ctor()
+- type ECMAScript.Lucide.Binoculars
+  - Void .ctor()
+- type ECMAScript.Lucide.Biohazard
+  - Void .ctor()
+- type ECMAScript.Lucide.Bird
+  - Void .ctor()
+- type ECMAScript.Lucide.Birdhouse
+  - Void .ctor()
+- type ECMAScript.Lucide.Bitcoin
+  - Void .ctor()
+- type ECMAScript.Lucide.Blend
+  - Void .ctor()
+- type ECMAScript.Lucide.Blinds
+  - Void .ctor()
+- type ECMAScript.Lucide.Blocks
+  - Void .ctor()
+- type ECMAScript.Lucide.Bluetooth
+  - Void .ctor()
+- type ECMAScript.Lucide.BluetoothConnected
+  - Void .ctor()
+- type ECMAScript.Lucide.BluetoothOff
+  - Void .ctor()
+- type ECMAScript.Lucide.BluetoothSearching
+  - Void .ctor()
+- type ECMAScript.Lucide.Bold
+  - Void .ctor()
+- type ECMAScript.Lucide.Bolt
+  - Void .ctor()
+- type ECMAScript.Lucide.Bomb
+  - Void .ctor()
+- type ECMAScript.Lucide.Bone
+  - Void .ctor()
+- type ECMAScript.Lucide.Book
+  - Void .ctor()
+- type ECMAScript.Lucide.BookA
+  - Void .ctor()
+- type ECMAScript.Lucide.BookAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.BookAudio
+  - Void .ctor()
+- type ECMAScript.Lucide.BookCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.BookCopy
+  - Void .ctor()
+- type ECMAScript.Lucide.BookDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.BookDown
+  - Void .ctor()
+- type ECMAScript.Lucide.BookHeadphones
+  - Void .ctor()
+- type ECMAScript.Lucide.BookHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.BookImage
+  - Void .ctor()
+- type ECMAScript.Lucide.BookKey
+  - Void .ctor()
+- type ECMAScript.Lucide.BookLock
+  - Void .ctor()
+- type ECMAScript.Lucide.BookMarked
+  - Void .ctor()
+- type ECMAScript.Lucide.BookMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.BookOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.BookOpenCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.BookOpenText
+  - Void .ctor()
+- type ECMAScript.Lucide.BookPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.BookSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.BookText
+  - Void .ctor()
+- type ECMAScript.Lucide.BookType
+  - Void .ctor()
+- type ECMAScript.Lucide.BookUp
+  - Void .ctor()
+- type ECMAScript.Lucide.BookUp2
+  - Void .ctor()
+- type ECMAScript.Lucide.BookUser
+  - Void .ctor()
+- type ECMAScript.Lucide.BookX
+  - Void .ctor()
+- type ECMAScript.Lucide.Bookmark
+  - Void .ctor()
+- type ECMAScript.Lucide.BookmarkCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.BookmarkMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.BookmarkPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.BookmarkX
+  - Void .ctor()
+- type ECMAScript.Lucide.BoomBox
+  - Void .ctor()
+- type ECMAScript.Lucide.Bot
+  - Void .ctor()
+- type ECMAScript.Lucide.BotMessageSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.BotOff
+  - Void .ctor()
+- type ECMAScript.Lucide.BottleWine
+  - Void .ctor()
+- type ECMAScript.Lucide.BowArrow
+  - Void .ctor()
+- type ECMAScript.Lucide.Box
+  - Void .ctor()
+- type ECMAScript.Lucide.Boxes
+  - Void .ctor()
+- type ECMAScript.Lucide.Braces
+  - Void .ctor()
+- type ECMAScript.Lucide.Brackets
+  - Void .ctor()
+- type ECMAScript.Lucide.Brain
+  - Void .ctor()
+- type ECMAScript.Lucide.BrainCircuit
+  - Void .ctor()
+- type ECMAScript.Lucide.BrainCog
+  - Void .ctor()
+- type ECMAScript.Lucide.BrickWall
+  - Void .ctor()
+- type ECMAScript.Lucide.BrickWallFire
+  - Void .ctor()
+- type ECMAScript.Lucide.BrickWallShield
+  - Void .ctor()
+- type ECMAScript.Lucide.Briefcase
+  - Void .ctor()
+- type ECMAScript.Lucide.BriefcaseBusiness
+  - Void .ctor()
+- type ECMAScript.Lucide.BriefcaseConveyorBelt
+  - Void .ctor()
+- type ECMAScript.Lucide.BriefcaseMedical
+  - Void .ctor()
+- type ECMAScript.Lucide.BringToFront
+  - Void .ctor()
+- type ECMAScript.Lucide.Brush
+  - Void .ctor()
+- type ECMAScript.Lucide.BrushCleaning
+  - Void .ctor()
+- type ECMAScript.Lucide.Bubbles
+  - Void .ctor()
+- type ECMAScript.Lucide.Bug
+  - Void .ctor()
+- type ECMAScript.Lucide.BugOff
+  - Void .ctor()
+- type ECMAScript.Lucide.BugPlay
+  - Void .ctor()
+- type ECMAScript.Lucide.Building
+  - Void .ctor()
+- type ECMAScript.Lucide.Building2
+  - Void .ctor()
+- type ECMAScript.Lucide.Bus
+  - Void .ctor()
+- type ECMAScript.Lucide.BusFront
+  - Void .ctor()
+- type ECMAScript.Lucide.Cable
+  - Void .ctor()
+- type ECMAScript.Lucide.CableCar
+  - Void .ctor()
+- type ECMAScript.Lucide.Cake
+  - Void .ctor()
+- type ECMAScript.Lucide.CakeSlice
+  - Void .ctor()
+- type ECMAScript.Lucide.Calculator
+  - Void .ctor()
+- type ECMAScript.Lucide.Calendar
+  - Void .ctor()
+- type ECMAScript.Lucide.Calendar1
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarCheck2
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarClock
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarCog
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarDays
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarFold
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarMinus2
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarOff
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarPlus2
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarRange
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarSync
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarX
+  - Void .ctor()
+- type ECMAScript.Lucide.CalendarX2
+  - Void .ctor()
+- type ECMAScript.Lucide.Calendars
+  - Void .ctor()
+- type ECMAScript.Lucide.Camera
+  - Void .ctor()
+- type ECMAScript.Lucide.CameraOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Candy
+  - Void .ctor()
+- type ECMAScript.Lucide.CandyCane
+  - Void .ctor()
+- type ECMAScript.Lucide.CandyOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Cannabis
+  - Void .ctor()
+- type ECMAScript.Lucide.CannabisOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Captions
+  - Void .ctor()
+- type ECMAScript.Lucide.CaptionsOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Car
+  - Void .ctor()
+- type ECMAScript.Lucide.CarFront
+  - Void .ctor()
+- type ECMAScript.Lucide.CarTaxiFront
+  - Void .ctor()
+- type ECMAScript.Lucide.Caravan
+  - Void .ctor()
+- type ECMAScript.Lucide.CardSim
+  - Void .ctor()
+- type ECMAScript.Lucide.Carrot
+  - Void .ctor()
+- type ECMAScript.Lucide.CaseLower
+  - Void .ctor()
+- type ECMAScript.Lucide.CaseSensitive
+  - Void .ctor()
+- type ECMAScript.Lucide.CaseUpper
+  - Void .ctor()
+- type ECMAScript.Lucide.CassetteTape
+  - Void .ctor()
+- type ECMAScript.Lucide.Cast
+  - Void .ctor()
+- type ECMAScript.Lucide.Castle
+  - Void .ctor()
+- type ECMAScript.Lucide.Cat
+  - Void .ctor()
+- type ECMAScript.Lucide.Cctv
+  - Void .ctor()
+- type ECMAScript.Lucide.CctvOff
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartArea
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartBar
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartBarBig
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartBarDecreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartBarIncreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartBarStacked
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartCandlestick
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartColumn
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartColumnBig
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartColumnDecreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartColumnIncreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartColumnStacked
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartGantt
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartNetwork
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartNoAxesColumn
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartNoAxesColumnDecreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartNoAxesColumnIncreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartNoAxesCombined
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartNoAxesGantt
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartPie
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartScatter
+  - Void .ctor()
+- type ECMAScript.Lucide.ChartSpline
+  - Void .ctor()
+- type ECMAScript.Lucide.Check
+  - Void .ctor()
+- type ECMAScript.Lucide.CheckCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.CheckLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ChefHat
+  - Void .ctor()
+- type ECMAScript.Lucide.Cherry
+  - Void .ctor()
+- type ECMAScript.Lucide.ChessBishop
+  - Void .ctor()
+- type ECMAScript.Lucide.ChessKing
+  - Void .ctor()
+- type ECMAScript.Lucide.ChessKnight
+  - Void .ctor()
+- type ECMAScript.Lucide.ChessPawn
+  - Void .ctor()
+- type ECMAScript.Lucide.ChessQueen
+  - Void .ctor()
+- type ECMAScript.Lucide.ChessRook
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronFirst
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronLast
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsDownUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsLeftRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsLeftRightEllipsis
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsRight
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsRightLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ChevronsUpDown
+  - Void .ctor()
+- type ECMAScript.Lucide.Chromium
+  - Void .ctor()
+- type ECMAScript.Lucide.Church
+  - Void .ctor()
+- type ECMAScript.Lucide.Cigarette
+  - Void .ctor()
+- type ECMAScript.Lucide.CigaretteOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Circle
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowOutDownLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowOutDownRight
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowOutUpLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowOutUpRight
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowRight
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleCheckBig
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleChevronDown
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleChevronLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleChevronRight
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleChevronUp
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleDivide
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleDollarSign
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleDot
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleDotDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleEllipsis
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleEqual
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleFadingArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleFadingPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleGauge
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleOff
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleParking
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleParkingOff
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePause
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePercent
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePile
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePlay
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePoundSterling
+  - Void .ctor()
+- type ECMAScript.Lucide.CirclePower
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleQuestionMark
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleSlash
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleSlash2
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleSmall
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleStar
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleStop
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleUser
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleUserRound
+  - Void .ctor()
+- type ECMAScript.Lucide.CircleX
+  - Void .ctor()
+- type ECMAScript.Lucide.CircuitBoard
+  - Void .ctor()
+- type ECMAScript.Lucide.Citrus
+  - Void .ctor()
+- type ECMAScript.Lucide.Clapperboard
+  - Void .ctor()
+- type ECMAScript.Lucide.Clipboard
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardClock
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardCopy
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardList
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardPaste
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardPen
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardPenLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardType
+  - Void .ctor()
+- type ECMAScript.Lucide.ClipboardX
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock1
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock10
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock11
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock12
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock2
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock3
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock4
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock5
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock6
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock7
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock8
+  - Void .ctor()
+- type ECMAScript.Lucide.Clock9
+  - Void .ctor()
+- type ECMAScript.Lucide.ClockAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.ClockArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ClockArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ClockCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.ClockFading
+  - Void .ctor()
+- type ECMAScript.Lucide.ClockPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.ClosedCaption
+  - Void .ctor()
+- type ECMAScript.Lucide.Cloud
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudBackup
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudCog
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudDownload
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudDrizzle
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudFog
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudHail
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudLightning
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudMoon
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudMoonRain
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudOff
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudRain
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudRainWind
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudSnow
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudSun
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudSunRain
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudSync
+  - Void .ctor()
+- type ECMAScript.Lucide.CloudUpload
+  - Void .ctor()
+- type ECMAScript.Lucide.Cloudy
+  - Void .ctor()
+- type ECMAScript.Lucide.Clover
+  - Void .ctor()
+- type ECMAScript.Lucide.Club
+  - Void .ctor()
+- type ECMAScript.Lucide.Code
+  - Void .ctor()
+- type ECMAScript.Lucide.CodeXml
+  - Void .ctor()
+- type ECMAScript.Lucide.Codepen
+  - Void .ctor()
+- type ECMAScript.Lucide.Codesandbox
+  - Void .ctor()
+- type ECMAScript.Lucide.Coffee
+  - Void .ctor()
+- type ECMAScript.Lucide.Cog
+  - Void .ctor()
+- type ECMAScript.Lucide.Coins
+  - Void .ctor()
+- type ECMAScript.Lucide.Columns2
+  - Void .ctor()
+- type ECMAScript.Lucide.Columns3
+  - Void .ctor()
+- type ECMAScript.Lucide.Columns3Cog
+  - Void .ctor()
+- type ECMAScript.Lucide.Columns4
+  - Void .ctor()
+- type ECMAScript.Lucide.Combine
+  - Void .ctor()
+- type ECMAScript.Lucide.Command
+  - Void .ctor()
+- type ECMAScript.Lucide.Compass
+  - Void .ctor()
+- type ECMAScript.Lucide.Component
+  - Void .ctor()
+- type ECMAScript.Lucide.Computer
+  - Void .ctor()
+- type ECMAScript.Lucide.ConciergeBell
+  - Void .ctor()
+- type ECMAScript.Lucide.Cone
+  - Void .ctor()
+- type ECMAScript.Lucide.Construction
+  - Void .ctor()
+- type ECMAScript.Lucide.Contact
+  - Void .ctor()
+- type ECMAScript.Lucide.ContactRound
+  - Void .ctor()
+- type ECMAScript.Lucide.Container
+  - Void .ctor()
+- type ECMAScript.Lucide.Contrast
+  - Void .ctor()
+- type ECMAScript.Lucide.Cookie
+  - Void .ctor()
+- type ECMAScript.Lucide.CookingPot
+  - Void .ctor()
+- type ECMAScript.Lucide.Copy
+  - Void .ctor()
+- type ECMAScript.Lucide.CopyCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.CopyMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.CopyPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.CopySlash
+  - Void .ctor()
+- type ECMAScript.Lucide.CopyX
+  - Void .ctor()
+- type ECMAScript.Lucide.Copyleft
+  - Void .ctor()
+- type ECMAScript.Lucide.Copyright
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerDownLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerDownRight
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerLeftDown
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerLeftUp
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerRightDown
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerRightUp
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerUpLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.CornerUpRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Cpu
+  - Void .ctor()
+- type ECMAScript.Lucide.CreativeCommons
+  - Void .ctor()
+- type ECMAScript.Lucide.CreditCard
+  - Void .ctor()
+- type ECMAScript.Lucide.Croissant
+  - Void .ctor()
+- type ECMAScript.Lucide.Crop
+  - Void .ctor()
+- type ECMAScript.Lucide.Cross
+  - Void .ctor()
+- type ECMAScript.Lucide.Crosshair
+  - Void .ctor()
+- type ECMAScript.Lucide.Crown
+  - Void .ctor()
+- type ECMAScript.Lucide.Cuboid
+  - Void .ctor()
+- type ECMAScript.Lucide.CupSoda
+  - Void .ctor()
+- type ECMAScript.Lucide.Currency
+  - Void .ctor()
+- type ECMAScript.Lucide.Cylinder
+  - Void .ctor()
+- type ECMAScript.Lucide.Dam
+  - Void .ctor()
+- type ECMAScript.Lucide.Database
+  - Void .ctor()
+- type ECMAScript.Lucide.DatabaseBackup
+  - Void .ctor()
+- type ECMAScript.Lucide.DatabaseSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.DatabaseZap
+  - Void .ctor()
+- type ECMAScript.Lucide.DecimalsArrowLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.DecimalsArrowRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Delete
+  - Void .ctor()
+- type ECMAScript.Lucide.Dessert
+  - Void .ctor()
+- type ECMAScript.Lucide.Diameter
+  - Void .ctor()
+- type ECMAScript.Lucide.Diamond
+  - Void .ctor()
+- type ECMAScript.Lucide.DiamondMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.DiamondPercent
+  - Void .ctor()
+- type ECMAScript.Lucide.DiamondPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.Dice1
+  - Void .ctor()
+- type ECMAScript.Lucide.Dice2
+  - Void .ctor()
+- type ECMAScript.Lucide.Dice3
+  - Void .ctor()
+- type ECMAScript.Lucide.Dice4
+  - Void .ctor()
+- type ECMAScript.Lucide.Dice5
+  - Void .ctor()
+- type ECMAScript.Lucide.Dice6
+  - Void .ctor()
+- type ECMAScript.Lucide.Dices
+  - Void .ctor()
+- type ECMAScript.Lucide.Diff
+  - Void .ctor()
+- type ECMAScript.Lucide.Disc
+  - Void .ctor()
+- type ECMAScript.Lucide.Disc2
+  - Void .ctor()
+- type ECMAScript.Lucide.Disc3
+  - Void .ctor()
+- type ECMAScript.Lucide.DiscAlbum
+  - Void .ctor()
+- type ECMAScript.Lucide.Divide
+  - Void .ctor()
+- type ECMAScript.Lucide.Dna
+  - Void .ctor()
+- type ECMAScript.Lucide.DnaOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Dock
+  - Void .ctor()
+- type ECMAScript.Lucide.Dog
+  - Void .ctor()
+- type ECMAScript.Lucide.DollarSign
+  - Void .ctor()
+- type ECMAScript.Lucide.Donut
+  - Void .ctor()
+- type ECMAScript.Lucide.DoorClosed
+  - Void .ctor()
+- type ECMAScript.Lucide.DoorClosedLocked
+  - Void .ctor()
+- type ECMAScript.Lucide.DoorOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.Dot
+  - Void .ctor()
+- type ECMAScript.Lucide.Download
+  - Void .ctor()
+- type ECMAScript.Lucide.DraftingCompass
+  - Void .ctor()
+- type ECMAScript.Lucide.Drama
+  - Void .ctor()
+- type ECMAScript.Lucide.Dribbble
+  - Void .ctor()
+- type ECMAScript.Lucide.Drill
+  - Void .ctor()
+- type ECMAScript.Lucide.Drone
+  - Void .ctor()
+- type ECMAScript.Lucide.Droplet
+  - Void .ctor()
+- type ECMAScript.Lucide.DropletOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Droplets
+  - Void .ctor()
+- type ECMAScript.Lucide.Drum
+  - Void .ctor()
+- type ECMAScript.Lucide.Drumstick
+  - Void .ctor()
+- type ECMAScript.Lucide.Dumbbell
+  - Void .ctor()
+- type ECMAScript.Lucide.Ear
+  - Void .ctor()
+- type ECMAScript.Lucide.EarOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Earth
+  - Void .ctor()
+- type ECMAScript.Lucide.EarthLock
+  - Void .ctor()
+- type ECMAScript.Lucide.Eclipse
+  - Void .ctor()
+- type ECMAScript.Lucide.Egg
+  - Void .ctor()
+- type ECMAScript.Lucide.EggFried
+  - Void .ctor()
+- type ECMAScript.Lucide.EggOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Ellipse
+  - Void .ctor()
+- type ECMAScript.Lucide.Ellipsis
+  - Void .ctor()
+- type ECMAScript.Lucide.EllipsisVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Equal
+  - Void .ctor()
+- type ECMAScript.Lucide.EqualApproximately
+  - Void .ctor()
+- type ECMAScript.Lucide.EqualNot
+  - Void .ctor()
+- type ECMAScript.Lucide.Eraser
+  - Void .ctor()
+- type ECMAScript.Lucide.EthernetPort
+  - Void .ctor()
+- type ECMAScript.Lucide.Euro
+  - Void .ctor()
+- type ECMAScript.Lucide.EvCharger
+  - Void .ctor()
+- type ECMAScript.Lucide.Expand
+  - Void .ctor()
+- type ECMAScript.Lucide.ExternalLink
+  - Void .ctor()
+- type ECMAScript.Lucide.Eye
+  - Void .ctor()
+- type ECMAScript.Lucide.EyeClosed
+  - Void .ctor()
+- type ECMAScript.Lucide.EyeOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Facebook
+  - Void .ctor()
+- type ECMAScript.Lucide.Factory
+  - Void .ctor()
+- type ECMAScript.Lucide.Fan
+  - Void .ctor()
+- type ECMAScript.Lucide.FastForward
+  - Void .ctor()
+- type ECMAScript.Lucide.Feather
+  - Void .ctor()
+- type ECMAScript.Lucide.Fence
+  - Void .ctor()
+- type ECMAScript.Lucide.FerrisWheel
+  - Void .ctor()
+- type ECMAScript.Lucide.Figma
+  - Void .ctor()
+- type ECMAScript.Lucide.File
+  - Void .ctor()
+- type ECMAScript.Lucide.FileArchive
+  - Void .ctor()
+- type ECMAScript.Lucide.FileAxis3d
+  - Void .ctor()
+- type ECMAScript.Lucide.FileBadge
+  - Void .ctor()
+- type ECMAScript.Lucide.FileBox
+  - Void .ctor()
+- type ECMAScript.Lucide.FileBraces
+  - Void .ctor()
+- type ECMAScript.Lucide.FileBracesCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileChartColumn
+  - Void .ctor()
+- type ECMAScript.Lucide.FileChartColumnIncreasing
+  - Void .ctor()
+- type ECMAScript.Lucide.FileChartLine
+  - Void .ctor()
+- type ECMAScript.Lucide.FileChartPie
+  - Void .ctor()
+- type ECMAScript.Lucide.FileCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.FileCheckCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileClock
+  - Void .ctor()
+- type ECMAScript.Lucide.FileCode
+  - Void .ctor()
+- type ECMAScript.Lucide.FileCodeCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileCog
+  - Void .ctor()
+- type ECMAScript.Lucide.FileDiff
+  - Void .ctor()
+- type ECMAScript.Lucide.FileDigit
+  - Void .ctor()
+- type ECMAScript.Lucide.FileDown
+  - Void .ctor()
+- type ECMAScript.Lucide.FileExclamationPoint
+  - Void .ctor()
+- type ECMAScript.Lucide.FileHeadphone
+  - Void .ctor()
+- type ECMAScript.Lucide.FileHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.FileImage
+  - Void .ctor()
+- type ECMAScript.Lucide.FileInput
+  - Void .ctor()
+- type ECMAScript.Lucide.FileKey
+  - Void .ctor()
+- type ECMAScript.Lucide.FileLock
+  - Void .ctor()
+- type ECMAScript.Lucide.FileMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.FileMinusCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileMusic
+  - Void .ctor()
+- type ECMAScript.Lucide.FileOutput
+  - Void .ctor()
+- type ECMAScript.Lucide.FilePen
+  - Void .ctor()
+- type ECMAScript.Lucide.FilePenLine
+  - Void .ctor()
+- type ECMAScript.Lucide.FilePlay
+  - Void .ctor()
+- type ECMAScript.Lucide.FilePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.FilePlusCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileQuestionMark
+  - Void .ctor()
+- type ECMAScript.Lucide.FileScan
+  - Void .ctor()
+- type ECMAScript.Lucide.FileSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.FileSearchCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileSignal
+  - Void .ctor()
+- type ECMAScript.Lucide.FileSliders
+  - Void .ctor()
+- type ECMAScript.Lucide.FileSpreadsheet
+  - Void .ctor()
+- type ECMAScript.Lucide.FileStack
+  - Void .ctor()
+- type ECMAScript.Lucide.FileSymlink
+  - Void .ctor()
+- type ECMAScript.Lucide.FileTerminal
+  - Void .ctor()
+- type ECMAScript.Lucide.FileText
+  - Void .ctor()
+- type ECMAScript.Lucide.FileType
+  - Void .ctor()
+- type ECMAScript.Lucide.FileTypeCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.FileUp
+  - Void .ctor()
+- type ECMAScript.Lucide.FileUser
+  - Void .ctor()
+- type ECMAScript.Lucide.FileVideoCamera
+  - Void .ctor()
+- type ECMAScript.Lucide.FileVolume
+  - Void .ctor()
+- type ECMAScript.Lucide.FileX
+  - Void .ctor()
+- type ECMAScript.Lucide.FileXCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.Files
+  - Void .ctor()
+- type ECMAScript.Lucide.Film
+  - Void .ctor()
+- type ECMAScript.Lucide.FingerprintPattern
+  - Void .ctor()
+- type ECMAScript.Lucide.FireExtinguisher
+  - Void .ctor()
+- type ECMAScript.Lucide.Fish
+  - Void .ctor()
+- type ECMAScript.Lucide.FishOff
+  - Void .ctor()
+- type ECMAScript.Lucide.FishSymbol
+  - Void .ctor()
+- type ECMAScript.Lucide.FishingHook
+  - Void .ctor()
+- type ECMAScript.Lucide.FishingRod
+  - Void .ctor()
+- type ECMAScript.Lucide.Flag
+  - Void .ctor()
+- type ECMAScript.Lucide.FlagOff
+  - Void .ctor()
+- type ECMAScript.Lucide.FlagTriangleLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.FlagTriangleRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Flame
+  - Void .ctor()
+- type ECMAScript.Lucide.FlameKindling
+  - Void .ctor()
+- type ECMAScript.Lucide.Flashlight
+  - Void .ctor()
+- type ECMAScript.Lucide.FlashlightOff
+  - Void .ctor()
+- type ECMAScript.Lucide.FlaskConical
+  - Void .ctor()
+- type ECMAScript.Lucide.FlaskConicalOff
+  - Void .ctor()
+- type ECMAScript.Lucide.FlaskRound
+  - Void .ctor()
+- type ECMAScript.Lucide.FlipHorizontal2
+  - Void .ctor()
+- type ECMAScript.Lucide.FlipVertical2
+  - Void .ctor()
+- type ECMAScript.Lucide.Flower
+  - Void .ctor()
+- type ECMAScript.Lucide.Flower2
+  - Void .ctor()
+- type ECMAScript.Lucide.Focus
+  - Void .ctor()
+- type ECMAScript.Lucide.FoldHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.FoldVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Folder
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderArchive
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderClock
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderClosed
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderCode
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderCog
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderDot
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderDown
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderGit
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderGit2
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderInput
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderKanban
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderKey
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderLock
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderOpenDot
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderOutput
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderPen
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderRoot
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderSearch2
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderSymlink
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderSync
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderTree
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderUp
+  - Void .ctor()
+- type ECMAScript.Lucide.FolderX
+  - Void .ctor()
+- type ECMAScript.Lucide.Folders
+  - Void .ctor()
+- type ECMAScript.Lucide.Footprints
+  - Void .ctor()
+- type ECMAScript.Lucide.Forklift
+  - Void .ctor()
+- type ECMAScript.Lucide.Form
+  - Void .ctor()
+- type ECMAScript.Lucide.Forward
+  - Void .ctor()
+- type ECMAScript.Lucide.Frame
+  - Void .ctor()
+- type ECMAScript.Lucide.Framer
+  - Void .ctor()
+- type ECMAScript.Lucide.Frown
+  - Void .ctor()
+- type ECMAScript.Lucide.Fuel
+  - Void .ctor()
+- type ECMAScript.Lucide.Fullscreen
+  - Void .ctor()
+- type ECMAScript.Lucide.Funnel
+  - Void .ctor()
+- type ECMAScript.Lucide.FunnelPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.FunnelX
+  - Void .ctor()
+- type ECMAScript.Lucide.GalleryHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.GalleryHorizontalEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.GalleryThumbnails
+  - Void .ctor()
+- type ECMAScript.Lucide.GalleryVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.GalleryVerticalEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.Gamepad
+  - Void .ctor()
+- type ECMAScript.Lucide.Gamepad2
+  - Void .ctor()
+- type ECMAScript.Lucide.GamepadDirectional
+  - Void .ctor()
+- type ECMAScript.Lucide.Gauge
+  - Void .ctor()
+- type ECMAScript.Lucide.Gavel
+  - Void .ctor()
+- type ECMAScript.Lucide.Gem
+  - Void .ctor()
+- type ECMAScript.Lucide.GeorgianLari
+  - Void .ctor()
+- type ECMAScript.Lucide.Ghost
+  - Void .ctor()
+- type ECMAScript.Lucide.Gift
+  - Void .ctor()
+- type ECMAScript.Lucide.GitBranch
+  - Void .ctor()
+- type ECMAScript.Lucide.GitBranchMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.GitBranchPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.GitCommitHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.GitCommitVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.GitCompare
+  - Void .ctor()
+- type ECMAScript.Lucide.GitCompareArrows
+  - Void .ctor()
+- type ECMAScript.Lucide.GitFork
+  - Void .ctor()
+- type ECMAScript.Lucide.GitGraph
+  - Void .ctor()
+- type ECMAScript.Lucide.GitMerge
+  - Void .ctor()
+- type ECMAScript.Lucide.GitMergeConflict
+  - Void .ctor()
+- type ECMAScript.Lucide.GitPullRequest
+  - Void .ctor()
+- type ECMAScript.Lucide.GitPullRequestArrow
+  - Void .ctor()
+- type ECMAScript.Lucide.GitPullRequestClosed
+  - Void .ctor()
+- type ECMAScript.Lucide.GitPullRequestCreate
+  - Void .ctor()
+- type ECMAScript.Lucide.GitPullRequestCreateArrow
+  - Void .ctor()
+- type ECMAScript.Lucide.GitPullRequestDraft
+  - Void .ctor()
+- type ECMAScript.Lucide.Github
+  - Void .ctor()
+- type ECMAScript.Lucide.Gitlab
+  - Void .ctor()
+- type ECMAScript.Lucide.GlassWater
+  - Void .ctor()
+- type ECMAScript.Lucide.Glasses
+  - Void .ctor()
+- type ECMAScript.Lucide.Globe
+  - Void .ctor()
+- type ECMAScript.Lucide.GlobeLock
+  - Void .ctor()
+- type ECMAScript.Lucide.GlobeOff
+  - Void .ctor()
+- type ECMAScript.Lucide.GlobeX
+  - Void .ctor()
+- type ECMAScript.Lucide.Goal
+  - Void .ctor()
+- type ECMAScript.Lucide.Gpu
+  - Void .ctor()
+- type ECMAScript.Lucide.GraduationCap
+  - Void .ctor()
+- type ECMAScript.Lucide.Grape
+  - Void .ctor()
+- type ECMAScript.Lucide.Grid2x2
+  - Void .ctor()
+- type ECMAScript.Lucide.Grid2x2Check
+  - Void .ctor()
+- type ECMAScript.Lucide.Grid2x2Plus
+  - Void .ctor()
+- type ECMAScript.Lucide.Grid2x2X
+  - Void .ctor()
+- type ECMAScript.Lucide.Grid3x2
+  - Void .ctor()
+- type ECMAScript.Lucide.Grid3x3
+  - Void .ctor()
+- type ECMAScript.Lucide.Grip
+  - Void .ctor()
+- type ECMAScript.Lucide.GripHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.GripVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Group
+  - Void .ctor()
+- type ECMAScript.Lucide.Guitar
+  - Void .ctor()
+- type ECMAScript.Lucide.Ham
+  - Void .ctor()
+- type ECMAScript.Lucide.Hamburger
+  - Void .ctor()
+- type ECMAScript.Lucide.Hammer
+  - Void .ctor()
+- type ECMAScript.Lucide.Hand
+  - Void .ctor()
+- type ECMAScript.Lucide.HandCoins
+  - Void .ctor()
+- type ECMAScript.Lucide.HandFist
+  - Void .ctor()
+- type ECMAScript.Lucide.HandGrab
+  - Void .ctor()
+- type ECMAScript.Lucide.HandHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.HandHelping
+  - Void .ctor()
+- type ECMAScript.Lucide.HandMetal
+  - Void .ctor()
+- type ECMAScript.Lucide.HandPlatter
+  - Void .ctor()
+- type ECMAScript.Lucide.Handbag
+  - Void .ctor()
+- type ECMAScript.Lucide.Handshake
+  - Void .ctor()
+- type ECMAScript.Lucide.HardDrive
+  - Void .ctor()
+- type ECMAScript.Lucide.HardDriveDownload
+  - Void .ctor()
+- type ECMAScript.Lucide.HardDriveUpload
+  - Void .ctor()
+- type ECMAScript.Lucide.HardHat
+  - Void .ctor()
+- type ECMAScript.Lucide.Hash
+  - Void .ctor()
+- type ECMAScript.Lucide.HatGlasses
+  - Void .ctor()
+- type ECMAScript.Lucide.Haze
+  - Void .ctor()
+- type ECMAScript.Lucide.Hd
+  - Void .ctor()
+- type ECMAScript.Lucide.HdmiPort
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading1
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading2
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading3
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading4
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading5
+  - Void .ctor()
+- type ECMAScript.Lucide.Heading6
+  - Void .ctor()
+- type ECMAScript.Lucide.HeadphoneOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Headphones
+  - Void .ctor()
+- type ECMAScript.Lucide.Headset
+  - Void .ctor()
+- type ECMAScript.Lucide.Heart
+  - Void .ctor()
+- type ECMAScript.Lucide.HeartCrack
+  - Void .ctor()
+- type ECMAScript.Lucide.HeartHandshake
+  - Void .ctor()
+- type ECMAScript.Lucide.HeartMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.HeartOff
+  - Void .ctor()
+- type ECMAScript.Lucide.HeartPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.HeartPulse
+  - Void .ctor()
+- type ECMAScript.Lucide.Heater
+  - Void .ctor()
+- type ECMAScript.Lucide.Helicopter
+  - Void .ctor()
+- type ECMAScript.Lucide.Hexagon
+  - Void .ctor()
+- type ECMAScript.Lucide.Highlighter
+  - Void .ctor()
+- type ECMAScript.Lucide.History
+  - Void .ctor()
+- type ECMAScript.Lucide.Hop
+  - Void .ctor()
+- type ECMAScript.Lucide.HopOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Hospital
+  - Void .ctor()
+- type ECMAScript.Lucide.Hotel
+  - Void .ctor()
+- type ECMAScript.Lucide.Hourglass
+  - Void .ctor()
+- type ECMAScript.Lucide.House
+  - Void .ctor()
+- type ECMAScript.Lucide.HouseHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.HousePlug
+  - Void .ctor()
+- type ECMAScript.Lucide.HousePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.HouseWifi
+  - Void .ctor()
+- type ECMAScript.Lucide.IceCreamBowl
+  - Void .ctor()
+- type ECMAScript.Lucide.IceCreamCone
+  - Void .ctor()
+- type ECMAScript.Lucide.IdCard
+  - Void .ctor()
+- type ECMAScript.Lucide.IdCardLanyard
+  - Void .ctor()
+- type ECMAScript.Lucide.Image
+  - Void .ctor()
+- type ECMAScript.Lucide.ImageDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ImageMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.ImageOff
+  - Void .ctor()
+- type ECMAScript.Lucide.ImagePlay
+  - Void .ctor()
+- type ECMAScript.Lucide.ImagePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.ImageUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ImageUpscale
+  - Void .ctor()
+- type ECMAScript.Lucide.Images
+  - Void .ctor()
+- type ECMAScript.Lucide.Import
+  - Void .ctor()
+- type ECMAScript.Lucide.Inbox
+  - Void .ctor()
+- type ECMAScript.Lucide.IndianRupee
+  - Void .ctor()
+- type ECMAScript.Lucide.Infinity
+  - Void .ctor()
+- type ECMAScript.Lucide.Info
+  - Void .ctor()
+- type ECMAScript.Lucide.InspectionPanel
+  - Void .ctor()
+- type ECMAScript.Lucide.Instagram
+  - Void .ctor()
+- type ECMAScript.Lucide.Italic
+  - Void .ctor()
+- type ECMAScript.Lucide.IterationCcw
+  - Void .ctor()
+- type ECMAScript.Lucide.IterationCw
+  - Void .ctor()
+- type ECMAScript.Lucide.JapaneseYen
+  - Void .ctor()
+- type ECMAScript.Lucide.Joystick
+  - Void .ctor()
+- type ECMAScript.Lucide.Kanban
+  - Void .ctor()
+- type ECMAScript.Lucide.Kayak
+  - Void .ctor()
+- type ECMAScript.Lucide.Key
+  - Void .ctor()
+- type ECMAScript.Lucide.KeyRound
+  - Void .ctor()
+- type ECMAScript.Lucide.KeySquare
+  - Void .ctor()
+- type ECMAScript.Lucide.Keyboard
+  - Void .ctor()
+- type ECMAScript.Lucide.KeyboardMusic
+  - Void .ctor()
+- type ECMAScript.Lucide.KeyboardOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Lamp
+  - Void .ctor()
+- type ECMAScript.Lucide.LampCeiling
+  - Void .ctor()
+- type ECMAScript.Lucide.LampDesk
+  - Void .ctor()
+- type ECMAScript.Lucide.LampFloor
+  - Void .ctor()
+- type ECMAScript.Lucide.LampWallDown
+  - Void .ctor()
+- type ECMAScript.Lucide.LampWallUp
+  - Void .ctor()
+- type ECMAScript.Lucide.LandPlot
+  - Void .ctor()
+- type ECMAScript.Lucide.Landmark
+  - Void .ctor()
+- type ECMAScript.Lucide.Languages
+  - Void .ctor()
+- type ECMAScript.Lucide.Laptop
+  - Void .ctor()
+- type ECMAScript.Lucide.LaptopMinimal
+  - Void .ctor()
+- type ECMAScript.Lucide.LaptopMinimalCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.Lasso
+  - Void .ctor()
+- type ECMAScript.Lucide.LassoSelect
+  - Void .ctor()
+- type ECMAScript.Lucide.Laugh
+  - Void .ctor()
+- type ECMAScript.Lucide.Layers
+  - Void .ctor()
+- type ECMAScript.Lucide.Layers2
+  - Void .ctor()
+- type ECMAScript.Lucide.LayersPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.LayoutDashboard
+  - Void .ctor()
+- type ECMAScript.Lucide.LayoutGrid
+  - Void .ctor()
+- type ECMAScript.Lucide.LayoutList
+  - Void .ctor()
+- type ECMAScript.Lucide.LayoutPanelLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.LayoutPanelTop
+  - Void .ctor()
+- type ECMAScript.Lucide.LayoutTemplate
+  - Void .ctor()
+- type ECMAScript.Lucide.Leaf
+  - Void .ctor()
+- type ECMAScript.Lucide.LeafyGreen
+  - Void .ctor()
+- type ECMAScript.Lucide.Lectern
+  - Void .ctor()
+- type ECMAScript.Lucide.LensConcave
+  - Void .ctor()
+- type ECMAScript.Lucide.LensConvex
+  - Void .ctor()
+- type ECMAScript.Lucide.Library
+  - Void .ctor()
+- type ECMAScript.Lucide.LibraryBig
+  - Void .ctor()
+- type ECMAScript.Lucide.LifeBuoy
+  - Void .ctor()
+- type ECMAScript.Lucide.Ligature
+  - Void .ctor()
+- type ECMAScript.Lucide.Lightbulb
+  - Void .ctor()
+- type ECMAScript.Lucide.LightbulbOff
+  - Void .ctor()
+- type ECMAScript.Lucide.LineDotRightHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.LineSquiggle
+  - Void .ctor()
+- type ECMAScript.Lucide.Link
+  - Void .ctor()
+- type ECMAScript.Lucide.Link2
+  - Void .ctor()
+- type ECMAScript.Lucide.Link2Off
+  - Void .ctor()
+- type ECMAScript.Lucide.Linkedin
+  - Void .ctor()
+- type ECMAScript.Lucide.List
+  - Void .ctor()
+- type ECMAScript.Lucide.ListCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.ListChecks
+  - Void .ctor()
+- type ECMAScript.Lucide.ListChevronsDownUp
+  - Void .ctor()
+- type ECMAScript.Lucide.ListChevronsUpDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ListCollapse
+  - Void .ctor()
+- type ECMAScript.Lucide.ListEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.ListFilter
+  - Void .ctor()
+- type ECMAScript.Lucide.ListFilterPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.ListIndentDecrease
+  - Void .ctor()
+- type ECMAScript.Lucide.ListIndentIncrease
+  - Void .ctor()
+- type ECMAScript.Lucide.ListMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.ListMusic
+  - Void .ctor()
+- type ECMAScript.Lucide.ListOrdered
+  - Void .ctor()
+- type ECMAScript.Lucide.ListPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.ListRestart
+  - Void .ctor()
+- type ECMAScript.Lucide.ListStart
+  - Void .ctor()
+- type ECMAScript.Lucide.ListTodo
+  - Void .ctor()
+- type ECMAScript.Lucide.ListTree
+  - Void .ctor()
+- type ECMAScript.Lucide.ListVideo
+  - Void .ctor()
+- type ECMAScript.Lucide.ListX
+  - Void .ctor()
+- type ECMAScript.Lucide.Loader
+  - Void .ctor()
+- type ECMAScript.Lucide.LoaderCircle
+  - Void .ctor()
+- type ECMAScript.Lucide.LoaderPinwheel
+  - Void .ctor()
+- type ECMAScript.Lucide.Locate
+  - Void .ctor()
+- type ECMAScript.Lucide.LocateFixed
+  - Void .ctor()
+- type ECMAScript.Lucide.LocateOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Lock
+  - Void .ctor()
+- type ECMAScript.Lucide.LockKeyhole
+  - Void .ctor()
+- type ECMAScript.Lucide.LockKeyholeOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.LockOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.LogIn
+  - Void .ctor()
+- type ECMAScript.Lucide.LogOut
+  - Void .ctor()
+- type ECMAScript.Lucide.Logs
+  - Void .ctor()
+- type ECMAScript.Lucide.Lollipop
+  - Void .ctor()
+- type ECMAScript.Lucide.LucideIconBase
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] get_AdditionalAttributes()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Size()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_StrokeWidth()
+  - System.Nullable`1[System.Boolean] get_AbsoluteStrokeWidth()
+  - Void set_AbsoluteStrokeWidth(System.Nullable`1[System.Boolean])
+  - Void set_AdditionalAttributes(System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object])
+  - Void set_Size(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_StrokeWidth(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] AdditionalAttributes
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Size
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] StrokeWidth
+  - System.Nullable`1[System.Boolean] AbsoluteStrokeWidth
+- type ECMAScript.Lucide.Luggage
+  - Void .ctor()
+- type ECMAScript.Lucide.Magnet
+  - Void .ctor()
+- type ECMAScript.Lucide.Mail
+  - Void .ctor()
+- type ECMAScript.Lucide.MailCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.MailMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.MailOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.MailPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.MailQuestionMark
+  - Void .ctor()
+- type ECMAScript.Lucide.MailSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.MailWarning
+  - Void .ctor()
+- type ECMAScript.Lucide.MailX
+  - Void .ctor()
+- type ECMAScript.Lucide.Mailbox
+  - Void .ctor()
+- type ECMAScript.Lucide.Mails
+  - Void .ctor()
+- type ECMAScript.Lucide.Map
+  - Void .ctor()
+- type ECMAScript.Lucide.MapMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPin
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinCheckInside
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinHouse
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinMinusInside
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinOff
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinPen
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinPlusInside
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinX
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinXInside
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPinned
+  - Void .ctor()
+- type ECMAScript.Lucide.MapPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.Mars
+  - Void .ctor()
+- type ECMAScript.Lucide.MarsStroke
+  - Void .ctor()
+- type ECMAScript.Lucide.Martini
+  - Void .ctor()
+- type ECMAScript.Lucide.Maximize
+  - Void .ctor()
+- type ECMAScript.Lucide.Maximize2
+  - Void .ctor()
+- type ECMAScript.Lucide.Medal
+  - Void .ctor()
+- type ECMAScript.Lucide.Megaphone
+  - Void .ctor()
+- type ECMAScript.Lucide.MegaphoneOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Meh
+  - Void .ctor()
+- type ECMAScript.Lucide.MemoryStick
+  - Void .ctor()
+- type ECMAScript.Lucide.Menu
+  - Void .ctor()
+- type ECMAScript.Lucide.Merge
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircle
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleCode
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleMore
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleOff
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCirclePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleQuestionMark
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleReply
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleWarning
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageCircleX
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareCode
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareDiff
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareDot
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareLock
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareMore
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareOff
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquarePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareQuote
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareReply
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareShare
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareText
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareWarning
+  - Void .ctor()
+- type ECMAScript.Lucide.MessageSquareX
+  - Void .ctor()
+- type ECMAScript.Lucide.MessagesSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.Metronome
+  - Void .ctor()
+- type ECMAScript.Lucide.Mic
+  - Void .ctor()
+- type ECMAScript.Lucide.MicOff
+  - Void .ctor()
+- type ECMAScript.Lucide.MicVocal
+  - Void .ctor()
+- type ECMAScript.Lucide.Microchip
+  - Void .ctor()
+- type ECMAScript.Lucide.Microscope
+  - Void .ctor()
+- type ECMAScript.Lucide.Microwave
+  - Void .ctor()
+- type ECMAScript.Lucide.Milestone
+  - Void .ctor()
+- type ECMAScript.Lucide.Milk
+  - Void .ctor()
+- type ECMAScript.Lucide.MilkOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Minimize
+  - Void .ctor()
+- type ECMAScript.Lucide.Minimize2
+  - Void .ctor()
+- type ECMAScript.Lucide.Minus
+  - Void .ctor()
+- type ECMAScript.Lucide.MirrorRectangular
+  - Void .ctor()
+- type ECMAScript.Lucide.MirrorRound
+  - Void .ctor()
+- type ECMAScript.Lucide.Monitor
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorCloud
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorCog
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorDot
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorDown
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorOff
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorPause
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorPlay
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorSmartphone
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorSpeaker
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorStop
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorUp
+  - Void .ctor()
+- type ECMAScript.Lucide.MonitorX
+  - Void .ctor()
+- type ECMAScript.Lucide.Moon
+  - Void .ctor()
+- type ECMAScript.Lucide.MoonStar
+  - Void .ctor()
+- type ECMAScript.Lucide.Motorbike
+  - Void .ctor()
+- type ECMAScript.Lucide.Mountain
+  - Void .ctor()
+- type ECMAScript.Lucide.MountainSnow
+  - Void .ctor()
+- type ECMAScript.Lucide.Mouse
+  - Void .ctor()
+- type ECMAScript.Lucide.MouseLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.MouseOff
+  - Void .ctor()
+- type ECMAScript.Lucide.MousePointer
+  - Void .ctor()
+- type ECMAScript.Lucide.MousePointer2
+  - Void .ctor()
+- type ECMAScript.Lucide.MousePointer2Off
+  - Void .ctor()
+- type ECMAScript.Lucide.MousePointerBan
+  - Void .ctor()
+- type ECMAScript.Lucide.MousePointerClick
+  - Void .ctor()
+- type ECMAScript.Lucide.MouseRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Move
+  - Void .ctor()
+- type ECMAScript.Lucide.Move3d
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveDiagonal
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveDiagonal2
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveDown
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveDownLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveDownRight
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveRight
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveUp
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveUpLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveUpRight
+  - Void .ctor()
+- type ECMAScript.Lucide.MoveVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Music
+  - Void .ctor()
+- type ECMAScript.Lucide.Music2
+  - Void .ctor()
+- type ECMAScript.Lucide.Music3
+  - Void .ctor()
+- type ECMAScript.Lucide.Music4
+  - Void .ctor()
+- type ECMAScript.Lucide.Navigation
+  - Void .ctor()
+- type ECMAScript.Lucide.Navigation2
+  - Void .ctor()
+- type ECMAScript.Lucide.Navigation2Off
+  - Void .ctor()
+- type ECMAScript.Lucide.NavigationOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Network
+  - Void .ctor()
+- type ECMAScript.Lucide.Newspaper
+  - Void .ctor()
+- type ECMAScript.Lucide.Nfc
+  - Void .ctor()
+- type ECMAScript.Lucide.NonBinary
+  - Void .ctor()
+- type ECMAScript.Lucide.Notebook
+  - Void .ctor()
+- type ECMAScript.Lucide.NotebookPen
+  - Void .ctor()
+- type ECMAScript.Lucide.NotebookTabs
+  - Void .ctor()
+- type ECMAScript.Lucide.NotebookText
+  - Void .ctor()
+- type ECMAScript.Lucide.NotepadText
+  - Void .ctor()
+- type ECMAScript.Lucide.NotepadTextDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.Nut
+  - Void .ctor()
+- type ECMAScript.Lucide.NutOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Octagon
+  - Void .ctor()
+- type ECMAScript.Lucide.OctagonAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.OctagonMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.OctagonPause
+  - Void .ctor()
+- type ECMAScript.Lucide.OctagonX
+  - Void .ctor()
+- type ECMAScript.Lucide.Omega
+  - Void .ctor()
+- type ECMAScript.Lucide.Option
+  - Void .ctor()
+- type ECMAScript.Lucide.Orbit
+  - Void .ctor()
+- type ECMAScript.Lucide.Origami
+  - Void .ctor()
+- type ECMAScript.Lucide.Package
+  - Void .ctor()
+- type ECMAScript.Lucide.Package2
+  - Void .ctor()
+- type ECMAScript.Lucide.PackageCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.PackageMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.PackageOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.PackagePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.PackageSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.PackageX
+  - Void .ctor()
+- type ECMAScript.Lucide.PaintBucket
+  - Void .ctor()
+- type ECMAScript.Lucide.PaintRoller
+  - Void .ctor()
+- type ECMAScript.Lucide.Paintbrush
+  - Void .ctor()
+- type ECMAScript.Lucide.PaintbrushVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Palette
+  - Void .ctor()
+- type ECMAScript.Lucide.Panda
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelBottom
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelBottomClose
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelBottomDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelBottomOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelLeftClose
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelLeftDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelLeftOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelLeftRightDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelRight
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelRightClose
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelRightDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelRightOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelTop
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelTopBottomDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelTopClose
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelTopDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelTopOpen
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelsLeftBottom
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelsRightBottom
+  - Void .ctor()
+- type ECMAScript.Lucide.PanelsTopLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.Paperclip
+  - Void .ctor()
+- type ECMAScript.Lucide.Parentheses
+  - Void .ctor()
+- type ECMAScript.Lucide.ParkingMeter
+  - Void .ctor()
+- type ECMAScript.Lucide.PartyPopper
+  - Void .ctor()
+- type ECMAScript.Lucide.Pause
+  - Void .ctor()
+- type ECMAScript.Lucide.PawPrint
+  - Void .ctor()
+- type ECMAScript.Lucide.PcCase
+  - Void .ctor()
+- type ECMAScript.Lucide.Pen
+  - Void .ctor()
+- type ECMAScript.Lucide.PenLine
+  - Void .ctor()
+- type ECMAScript.Lucide.PenOff
+  - Void .ctor()
+- type ECMAScript.Lucide.PenTool
+  - Void .ctor()
+- type ECMAScript.Lucide.Pencil
+  - Void .ctor()
+- type ECMAScript.Lucide.PencilLine
+  - Void .ctor()
+- type ECMAScript.Lucide.PencilOff
+  - Void .ctor()
+- type ECMAScript.Lucide.PencilRuler
+  - Void .ctor()
+- type ECMAScript.Lucide.Pentagon
+  - Void .ctor()
+- type ECMAScript.Lucide.Percent
+  - Void .ctor()
+- type ECMAScript.Lucide.PersonStanding
+  - Void .ctor()
+- type ECMAScript.Lucide.PhilippinePeso
+  - Void .ctor()
+- type ECMAScript.Lucide.Phone
+  - Void .ctor()
+- type ECMAScript.Lucide.PhoneCall
+  - Void .ctor()
+- type ECMAScript.Lucide.PhoneForwarded
+  - Void .ctor()
+- type ECMAScript.Lucide.PhoneIncoming
+  - Void .ctor()
+- type ECMAScript.Lucide.PhoneMissed
+  - Void .ctor()
+- type ECMAScript.Lucide.PhoneOff
+  - Void .ctor()
+- type ECMAScript.Lucide.PhoneOutgoing
+  - Void .ctor()
+- type ECMAScript.Lucide.Pi
+  - Void .ctor()
+- type ECMAScript.Lucide.Piano
+  - Void .ctor()
+- type ECMAScript.Lucide.Pickaxe
+  - Void .ctor()
+- type ECMAScript.Lucide.PictureInPicture
+  - Void .ctor()
+- type ECMAScript.Lucide.PictureInPicture2
+  - Void .ctor()
+- type ECMAScript.Lucide.PiggyBank
+  - Void .ctor()
+- type ECMAScript.Lucide.Pilcrow
+  - Void .ctor()
+- type ECMAScript.Lucide.PilcrowLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.PilcrowRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Pill
+  - Void .ctor()
+- type ECMAScript.Lucide.PillBottle
+  - Void .ctor()
+- type ECMAScript.Lucide.Pin
+  - Void .ctor()
+- type ECMAScript.Lucide.PinOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Pipette
+  - Void .ctor()
+- type ECMAScript.Lucide.Pizza
+  - Void .ctor()
+- type ECMAScript.Lucide.Plane
+  - Void .ctor()
+- type ECMAScript.Lucide.PlaneLanding
+  - Void .ctor()
+- type ECMAScript.Lucide.PlaneTakeoff
+  - Void .ctor()
+- type ECMAScript.Lucide.Play
+  - Void .ctor()
+- type ECMAScript.Lucide.Plug
+  - Void .ctor()
+- type ECMAScript.Lucide.Plug2
+  - Void .ctor()
+- type ECMAScript.Lucide.PlugZap
+  - Void .ctor()
+- type ECMAScript.Lucide.Plus
+  - Void .ctor()
+- type ECMAScript.Lucide.Pocket
+  - Void .ctor()
+- type ECMAScript.Lucide.PocketKnife
+  - Void .ctor()
+- type ECMAScript.Lucide.Podcast
+  - Void .ctor()
+- type ECMAScript.Lucide.Pointer
+  - Void .ctor()
+- type ECMAScript.Lucide.PointerOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Popcorn
+  - Void .ctor()
+- type ECMAScript.Lucide.Popsicle
+  - Void .ctor()
+- type ECMAScript.Lucide.PoundSterling
+  - Void .ctor()
+- type ECMAScript.Lucide.Power
+  - Void .ctor()
+- type ECMAScript.Lucide.PowerOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Presentation
+  - Void .ctor()
+- type ECMAScript.Lucide.Printer
+  - Void .ctor()
+- type ECMAScript.Lucide.PrinterCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.PrinterX
+  - Void .ctor()
+- type ECMAScript.Lucide.Projector
+  - Void .ctor()
+- type ECMAScript.Lucide.Proportions
+  - Void .ctor()
+- type ECMAScript.Lucide.Puzzle
+  - Void .ctor()
+- type ECMAScript.Lucide.Pyramid
+  - Void .ctor()
+- type ECMAScript.Lucide.QrCode
+  - Void .ctor()
+- type ECMAScript.Lucide.Quote
+  - Void .ctor()
+- type ECMAScript.Lucide.Rabbit
+  - Void .ctor()
+- type ECMAScript.Lucide.Radar
+  - Void .ctor()
+- type ECMAScript.Lucide.Radiation
+  - Void .ctor()
+- type ECMAScript.Lucide.Radical
+  - Void .ctor()
+- type ECMAScript.Lucide.Radio
+  - Void .ctor()
+- type ECMAScript.Lucide.RadioReceiver
+  - Void .ctor()
+- type ECMAScript.Lucide.RadioTower
+  - Void .ctor()
+- type ECMAScript.Lucide.Radius
+  - Void .ctor()
+- type ECMAScript.Lucide.RailSymbol
+  - Void .ctor()
+- type ECMAScript.Lucide.Rainbow
+  - Void .ctor()
+- type ECMAScript.Lucide.Rat
+  - Void .ctor()
+- type ECMAScript.Lucide.Ratio
+  - Void .ctor()
+- type ECMAScript.Lucide.Receipt
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptCent
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptEuro
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptIndianRupee
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptJapaneseYen
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptPoundSterling
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptRussianRuble
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptSwissFranc
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptText
+  - Void .ctor()
+- type ECMAScript.Lucide.ReceiptTurkishLira
+  - Void .ctor()
+- type ECMAScript.Lucide.RectangleCircle
+  - Void .ctor()
+- type ECMAScript.Lucide.RectangleEllipsis
+  - Void .ctor()
+- type ECMAScript.Lucide.RectangleGoggles
+  - Void .ctor()
+- type ECMAScript.Lucide.RectangleHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.RectangleVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Recycle
+  - Void .ctor()
+- type ECMAScript.Lucide.Redo
+  - Void .ctor()
+- type ECMAScript.Lucide.Redo2
+  - Void .ctor()
+- type ECMAScript.Lucide.RedoDot
+  - Void .ctor()
+- type ECMAScript.Lucide.RefreshCcw
+  - Void .ctor()
+- type ECMAScript.Lucide.RefreshCcwDot
+  - Void .ctor()
+- type ECMAScript.Lucide.RefreshCw
+  - Void .ctor()
+- type ECMAScript.Lucide.RefreshCwOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Refrigerator
+  - Void .ctor()
+- type ECMAScript.Lucide.Regex
+  - Void .ctor()
+- type ECMAScript.Lucide.RemoveFormatting
+  - Void .ctor()
+- type ECMAScript.Lucide.Repeat
+  - Void .ctor()
+- type ECMAScript.Lucide.Repeat1
+  - Void .ctor()
+- type ECMAScript.Lucide.Repeat2
+  - Void .ctor()
+- type ECMAScript.Lucide.Replace
+  - Void .ctor()
+- type ECMAScript.Lucide.ReplaceAll
+  - Void .ctor()
+- type ECMAScript.Lucide.Reply
+  - Void .ctor()
+- type ECMAScript.Lucide.ReplyAll
+  - Void .ctor()
+- type ECMAScript.Lucide.Rewind
+  - Void .ctor()
+- type ECMAScript.Lucide.Ribbon
+  - Void .ctor()
+- type ECMAScript.Lucide.Rocket
+  - Void .ctor()
+- type ECMAScript.Lucide.RockingChair
+  - Void .ctor()
+- type ECMAScript.Lucide.RollerCoaster
+  - Void .ctor()
+- type ECMAScript.Lucide.Rose
+  - Void .ctor()
+- type ECMAScript.Lucide.Rotate3d
+  - Void .ctor()
+- type ECMAScript.Lucide.RotateCcw
+  - Void .ctor()
+- type ECMAScript.Lucide.RotateCcwKey
+  - Void .ctor()
+- type ECMAScript.Lucide.RotateCcwSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.RotateCw
+  - Void .ctor()
+- type ECMAScript.Lucide.RotateCwSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.Route
+  - Void .ctor()
+- type ECMAScript.Lucide.RouteOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Router
+  - Void .ctor()
+- type ECMAScript.Lucide.Rows2
+  - Void .ctor()
+- type ECMAScript.Lucide.Rows3
+  - Void .ctor()
+- type ECMAScript.Lucide.Rows4
+  - Void .ctor()
+- type ECMAScript.Lucide.Rss
+  - Void .ctor()
+- type ECMAScript.Lucide.Ruler
+  - Void .ctor()
+- type ECMAScript.Lucide.RulerDimensionLine
+  - Void .ctor()
+- type ECMAScript.Lucide.RussianRuble
+  - Void .ctor()
+- type ECMAScript.Lucide.Sailboat
+  - Void .ctor()
+- type ECMAScript.Lucide.Salad
+  - Void .ctor()
+- type ECMAScript.Lucide.Sandwich
+  - Void .ctor()
+- type ECMAScript.Lucide.Satellite
+  - Void .ctor()
+- type ECMAScript.Lucide.SatelliteDish
+  - Void .ctor()
+- type ECMAScript.Lucide.SaudiRiyal
+  - Void .ctor()
+- type ECMAScript.Lucide.Save
+  - Void .ctor()
+- type ECMAScript.Lucide.SaveAll
+  - Void .ctor()
+- type ECMAScript.Lucide.SaveOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Scale
+  - Void .ctor()
+- type ECMAScript.Lucide.Scale3d
+  - Void .ctor()
+- type ECMAScript.Lucide.Scaling
+  - Void .ctor()
+- type ECMAScript.Lucide.Scan
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanBarcode
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanEye
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanFace
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanHeart
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanLine
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanQrCode
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.ScanText
+  - Void .ctor()
+- type ECMAScript.Lucide.School
+  - Void .ctor()
+- type ECMAScript.Lucide.Scissors
+  - Void .ctor()
+- type ECMAScript.Lucide.ScissorsLineDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.Scooter
+  - Void .ctor()
+- type ECMAScript.Lucide.ScreenShare
+  - Void .ctor()
+- type ECMAScript.Lucide.ScreenShareOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Scroll
+  - Void .ctor()
+- type ECMAScript.Lucide.ScrollText
+  - Void .ctor()
+- type ECMAScript.Lucide.Search
+  - Void .ctor()
+- type ECMAScript.Lucide.SearchAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.SearchCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.SearchCode
+  - Void .ctor()
+- type ECMAScript.Lucide.SearchSlash
+  - Void .ctor()
+- type ECMAScript.Lucide.SearchX
+  - Void .ctor()
+- type ECMAScript.Lucide.Section
+  - Void .ctor()
+- type ECMAScript.Lucide.Send
+  - Void .ctor()
+- type ECMAScript.Lucide.SendHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.SendToBack
+  - Void .ctor()
+- type ECMAScript.Lucide.SeparatorHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.SeparatorVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Server
+  - Void .ctor()
+- type ECMAScript.Lucide.ServerCog
+  - Void .ctor()
+- type ECMAScript.Lucide.ServerCrash
+  - Void .ctor()
+- type ECMAScript.Lucide.ServerOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Settings
+  - Void .ctor()
+- type ECMAScript.Lucide.Settings2
+  - Void .ctor()
+- type ECMAScript.Lucide.Shapes
+  - Void .ctor()
+- type ECMAScript.Lucide.Share
+  - Void .ctor()
+- type ECMAScript.Lucide.Share2
+  - Void .ctor()
+- type ECMAScript.Lucide.Sheet
+  - Void .ctor()
+- type ECMAScript.Lucide.Shell
+  - Void .ctor()
+- type ECMAScript.Lucide.ShelvingUnit
+  - Void .ctor()
+- type ECMAScript.Lucide.Shield
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldBan
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldEllipsis
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldHalf
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldOff
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldQuestionMark
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldUser
+  - Void .ctor()
+- type ECMAScript.Lucide.ShieldX
+  - Void .ctor()
+- type ECMAScript.Lucide.Ship
+  - Void .ctor()
+- type ECMAScript.Lucide.ShipWheel
+  - Void .ctor()
+- type ECMAScript.Lucide.Shirt
+  - Void .ctor()
+- type ECMAScript.Lucide.ShoppingBag
+  - Void .ctor()
+- type ECMAScript.Lucide.ShoppingBasket
+  - Void .ctor()
+- type ECMAScript.Lucide.ShoppingCart
+  - Void .ctor()
+- type ECMAScript.Lucide.Shovel
+  - Void .ctor()
+- type ECMAScript.Lucide.ShowerHead
+  - Void .ctor()
+- type ECMAScript.Lucide.Shredder
+  - Void .ctor()
+- type ECMAScript.Lucide.Shrimp
+  - Void .ctor()
+- type ECMAScript.Lucide.Shrink
+  - Void .ctor()
+- type ECMAScript.Lucide.Shrub
+  - Void .ctor()
+- type ECMAScript.Lucide.Shuffle
+  - Void .ctor()
+- type ECMAScript.Lucide.Sigma
+  - Void .ctor()
+- type ECMAScript.Lucide.Signal
+  - Void .ctor()
+- type ECMAScript.Lucide.SignalHigh
+  - Void .ctor()
+- type ECMAScript.Lucide.SignalLow
+  - Void .ctor()
+- type ECMAScript.Lucide.SignalMedium
+  - Void .ctor()
+- type ECMAScript.Lucide.SignalZero
+  - Void .ctor()
+- type ECMAScript.Lucide.Signature
+  - Void .ctor()
+- type ECMAScript.Lucide.Signpost
+  - Void .ctor()
+- type ECMAScript.Lucide.SignpostBig
+  - Void .ctor()
+- type ECMAScript.Lucide.Siren
+  - Void .ctor()
+- type ECMAScript.Lucide.SkipBack
+  - Void .ctor()
+- type ECMAScript.Lucide.SkipForward
+  - Void .ctor()
+- type ECMAScript.Lucide.Skull
+  - Void .ctor()
+- type ECMAScript.Lucide.Slack
+  - Void .ctor()
+- type ECMAScript.Lucide.Slash
+  - Void .ctor()
+- type ECMAScript.Lucide.Slice
+  - Void .ctor()
+- type ECMAScript.Lucide.SlidersHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.SlidersVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Smartphone
+  - Void .ctor()
+- type ECMAScript.Lucide.SmartphoneCharging
+  - Void .ctor()
+- type ECMAScript.Lucide.SmartphoneNfc
+  - Void .ctor()
+- type ECMAScript.Lucide.Smile
+  - Void .ctor()
+- type ECMAScript.Lucide.SmilePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.Snail
+  - Void .ctor()
+- type ECMAScript.Lucide.Snowflake
+  - Void .ctor()
+- type ECMAScript.Lucide.SoapDispenserDroplet
+  - Void .ctor()
+- type ECMAScript.Lucide.Sofa
+  - Void .ctor()
+- type ECMAScript.Lucide.SolarPanel
+  - Void .ctor()
+- type ECMAScript.Lucide.Soup
+  - Void .ctor()
+- type ECMAScript.Lucide.Space
+  - Void .ctor()
+- type ECMAScript.Lucide.Spade
+  - Void .ctor()
+- type ECMAScript.Lucide.Sparkle
+  - Void .ctor()
+- type ECMAScript.Lucide.Sparkles
+  - Void .ctor()
+- type ECMAScript.Lucide.Speaker
+  - Void .ctor()
+- type ECMAScript.Lucide.Speech
+  - Void .ctor()
+- type ECMAScript.Lucide.SpellCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.SpellCheck2
+  - Void .ctor()
+- type ECMAScript.Lucide.Spline
+  - Void .ctor()
+- type ECMAScript.Lucide.SplinePointer
+  - Void .ctor()
+- type ECMAScript.Lucide.Split
+  - Void .ctor()
+- type ECMAScript.Lucide.Spool
+  - Void .ctor()
+- type ECMAScript.Lucide.Spotlight
+  - Void .ctor()
+- type ECMAScript.Lucide.SprayCan
+  - Void .ctor()
+- type ECMAScript.Lucide.Sprout
+  - Void .ctor()
+- type ECMAScript.Lucide.Square
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareActivity
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowDownLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowDownRight
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowOutDownLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowOutDownRight
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowOutUpLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowOutUpRight
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowRight
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowRightEnter
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowRightExit
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowUpLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareArrowUpRight
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareAsterisk
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareBottomDashedScissors
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareCenterlineDashedHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareCenterlineDashedVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareChartGantt
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareCheckBig
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareChevronDown
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareChevronLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareChevronRight
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareChevronUp
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareCode
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDashedBottom
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDashedBottomCode
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDashedKanban
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDashedMousePointer
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDashedTopSolid
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDivide
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareDot
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareEqual
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareFunction
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareKanban
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareLibrary
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareM
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareMenu
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareMousePointer
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareParking
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareParkingOff
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePause
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePen
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePercent
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePi
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePilcrow
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePlay
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePlus
+  - Void .ctor()
+- type ECMAScript.Lucide.SquarePower
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareRadical
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareRoundCorner
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareScissors
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareSigma
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareSlash
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareSplitHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareSplitVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareStack
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareStar
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareStop
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareTerminal
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareUser
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareUserRound
+  - Void .ctor()
+- type ECMAScript.Lucide.SquareX
+  - Void .ctor()
+- type ECMAScript.Lucide.SquaresExclude
+  - Void .ctor()
+- type ECMAScript.Lucide.SquaresIntersect
+  - Void .ctor()
+- type ECMAScript.Lucide.SquaresSubtract
+  - Void .ctor()
+- type ECMAScript.Lucide.SquaresUnite
+  - Void .ctor()
+- type ECMAScript.Lucide.Squircle
+  - Void .ctor()
+- type ECMAScript.Lucide.SquircleDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.Squirrel
+  - Void .ctor()
+- type ECMAScript.Lucide.Stamp
+  - Void .ctor()
+- type ECMAScript.Lucide.Star
+  - Void .ctor()
+- type ECMAScript.Lucide.StarHalf
+  - Void .ctor()
+- type ECMAScript.Lucide.StarOff
+  - Void .ctor()
+- type ECMAScript.Lucide.StepBack
+  - Void .ctor()
+- type ECMAScript.Lucide.StepForward
+  - Void .ctor()
+- type ECMAScript.Lucide.Stethoscope
+  - Void .ctor()
+- type ECMAScript.Lucide.Sticker
+  - Void .ctor()
+- type ECMAScript.Lucide.StickyNote
+  - Void .ctor()
+- type ECMAScript.Lucide.Stone
+  - Void .ctor()
+- type ECMAScript.Lucide.Store
+  - Void .ctor()
+- type ECMAScript.Lucide.StretchHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.StretchVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Strikethrough
+  - Void .ctor()
+- type ECMAScript.Lucide.Subscript
+  - Void .ctor()
+- type ECMAScript.Lucide.Sun
+  - Void .ctor()
+- type ECMAScript.Lucide.SunDim
+  - Void .ctor()
+- type ECMAScript.Lucide.SunMedium
+  - Void .ctor()
+- type ECMAScript.Lucide.SunMoon
+  - Void .ctor()
+- type ECMAScript.Lucide.SunSnow
+  - Void .ctor()
+- type ECMAScript.Lucide.Sunrise
+  - Void .ctor()
+- type ECMAScript.Lucide.Sunset
+  - Void .ctor()
+- type ECMAScript.Lucide.Superscript
+  - Void .ctor()
+- type ECMAScript.Lucide.SwatchBook
+  - Void .ctor()
+- type ECMAScript.Lucide.SwissFranc
+  - Void .ctor()
+- type ECMAScript.Lucide.SwitchCamera
+  - Void .ctor()
+- type ECMAScript.Lucide.Sword
+  - Void .ctor()
+- type ECMAScript.Lucide.Swords
+  - Void .ctor()
+- type ECMAScript.Lucide.Syringe
+  - Void .ctor()
+- type ECMAScript.Lucide.Table
+  - Void .ctor()
+- type ECMAScript.Lucide.Table2
+  - Void .ctor()
+- type ECMAScript.Lucide.TableCellsMerge
+  - Void .ctor()
+- type ECMAScript.Lucide.TableCellsSplit
+  - Void .ctor()
+- type ECMAScript.Lucide.TableColumnsSplit
+  - Void .ctor()
+- type ECMAScript.Lucide.TableOfContents
+  - Void .ctor()
+- type ECMAScript.Lucide.TableProperties
+  - Void .ctor()
+- type ECMAScript.Lucide.TableRowsSplit
+  - Void .ctor()
+- type ECMAScript.Lucide.Tablet
+  - Void .ctor()
+- type ECMAScript.Lucide.TabletSmartphone
+  - Void .ctor()
+- type ECMAScript.Lucide.Tablets
+  - Void .ctor()
+- type ECMAScript.Lucide.Tag
+  - Void .ctor()
+- type ECMAScript.Lucide.Tags
+  - Void .ctor()
+- type ECMAScript.Lucide.Tally1
+  - Void .ctor()
+- type ECMAScript.Lucide.Tally2
+  - Void .ctor()
+- type ECMAScript.Lucide.Tally3
+  - Void .ctor()
+- type ECMAScript.Lucide.Tally4
+  - Void .ctor()
+- type ECMAScript.Lucide.Tally5
+  - Void .ctor()
+- type ECMAScript.Lucide.Tangent
+  - Void .ctor()
+- type ECMAScript.Lucide.Target
+  - Void .ctor()
+- type ECMAScript.Lucide.Telescope
+  - Void .ctor()
+- type ECMAScript.Lucide.Tent
+  - Void .ctor()
+- type ECMAScript.Lucide.TentTree
+  - Void .ctor()
+- type ECMAScript.Lucide.Terminal
+  - Void .ctor()
+- type ECMAScript.Lucide.TestTube
+  - Void .ctor()
+- type ECMAScript.Lucide.TestTubeDiagonal
+  - Void .ctor()
+- type ECMAScript.Lucide.TestTubes
+  - Void .ctor()
+- type ECMAScript.Lucide.TextAlignCenter
+  - Void .ctor()
+- type ECMAScript.Lucide.TextAlignEnd
+  - Void .ctor()
+- type ECMAScript.Lucide.TextAlignJustify
+  - Void .ctor()
+- type ECMAScript.Lucide.TextAlignStart
+  - Void .ctor()
+- type ECMAScript.Lucide.TextCursor
+  - Void .ctor()
+- type ECMAScript.Lucide.TextCursorInput
+  - Void .ctor()
+- type ECMAScript.Lucide.TextInitial
+  - Void .ctor()
+- type ECMAScript.Lucide.TextQuote
+  - Void .ctor()
+- type ECMAScript.Lucide.TextSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.TextSelect
+  - Void .ctor()
+- type ECMAScript.Lucide.TextWrap
+  - Void .ctor()
+- type ECMAScript.Lucide.Theater
+  - Void .ctor()
+- type ECMAScript.Lucide.Thermometer
+  - Void .ctor()
+- type ECMAScript.Lucide.ThermometerSnowflake
+  - Void .ctor()
+- type ECMAScript.Lucide.ThermometerSun
+  - Void .ctor()
+- type ECMAScript.Lucide.ThumbsDown
+  - Void .ctor()
+- type ECMAScript.Lucide.ThumbsUp
+  - Void .ctor()
+- type ECMAScript.Lucide.Ticket
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketPercent
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketSlash
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketX
+  - Void .ctor()
+- type ECMAScript.Lucide.Tickets
+  - Void .ctor()
+- type ECMAScript.Lucide.TicketsPlane
+  - Void .ctor()
+- type ECMAScript.Lucide.Timer
+  - Void .ctor()
+- type ECMAScript.Lucide.TimerOff
+  - Void .ctor()
+- type ECMAScript.Lucide.TimerReset
+  - Void .ctor()
+- type ECMAScript.Lucide.ToggleLeft
+  - Void .ctor()
+- type ECMAScript.Lucide.ToggleRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Toilet
+  - Void .ctor()
+- type ECMAScript.Lucide.ToolCase
+  - Void .ctor()
+- type ECMAScript.Lucide.Toolbox
+  - Void .ctor()
+- type ECMAScript.Lucide.Tornado
+  - Void .ctor()
+- type ECMAScript.Lucide.Torus
+  - Void .ctor()
+- type ECMAScript.Lucide.Touchpad
+  - Void .ctor()
+- type ECMAScript.Lucide.TouchpadOff
+  - Void .ctor()
+- type ECMAScript.Lucide.TowelRack
+  - Void .ctor()
+- type ECMAScript.Lucide.TowerControl
+  - Void .ctor()
+- type ECMAScript.Lucide.ToyBrick
+  - Void .ctor()
+- type ECMAScript.Lucide.Tractor
+  - Void .ctor()
+- type ECMAScript.Lucide.TrafficCone
+  - Void .ctor()
+- type ECMAScript.Lucide.TrainFront
+  - Void .ctor()
+- type ECMAScript.Lucide.TrainFrontTunnel
+  - Void .ctor()
+- type ECMAScript.Lucide.TrainTrack
+  - Void .ctor()
+- type ECMAScript.Lucide.TramFront
+  - Void .ctor()
+- type ECMAScript.Lucide.Transgender
+  - Void .ctor()
+- type ECMAScript.Lucide.Trash
+  - Void .ctor()
+- type ECMAScript.Lucide.Trash2
+  - Void .ctor()
+- type ECMAScript.Lucide.TreeDeciduous
+  - Void .ctor()
+- type ECMAScript.Lucide.TreePalm
+  - Void .ctor()
+- type ECMAScript.Lucide.TreePine
+  - Void .ctor()
+- type ECMAScript.Lucide.Trees
+  - Void .ctor()
+- type ECMAScript.Lucide.Trello
+  - Void .ctor()
+- type ECMAScript.Lucide.TrendingDown
+  - Void .ctor()
+- type ECMAScript.Lucide.TrendingUp
+  - Void .ctor()
+- type ECMAScript.Lucide.TrendingUpDown
+  - Void .ctor()
+- type ECMAScript.Lucide.Triangle
+  - Void .ctor()
+- type ECMAScript.Lucide.TriangleAlert
+  - Void .ctor()
+- type ECMAScript.Lucide.TriangleDashed
+  - Void .ctor()
+- type ECMAScript.Lucide.TriangleRight
+  - Void .ctor()
+- type ECMAScript.Lucide.Trophy
+  - Void .ctor()
+- type ECMAScript.Lucide.Truck
+  - Void .ctor()
+- type ECMAScript.Lucide.TruckElectric
+  - Void .ctor()
+- type ECMAScript.Lucide.TurkishLira
+  - Void .ctor()
+- type ECMAScript.Lucide.Turntable
+  - Void .ctor()
+- type ECMAScript.Lucide.Turtle
+  - Void .ctor()
+- type ECMAScript.Lucide.Tv
+  - Void .ctor()
+- type ECMAScript.Lucide.TvMinimal
+  - Void .ctor()
+- type ECMAScript.Lucide.TvMinimalPlay
+  - Void .ctor()
+- type ECMAScript.Lucide.Twitch
+  - Void .ctor()
+- type ECMAScript.Lucide.Twitter
+  - Void .ctor()
+- type ECMAScript.Lucide.Type
+  - Void .ctor()
+- type ECMAScript.Lucide.TypeOutline
+  - Void .ctor()
+- type ECMAScript.Lucide.Umbrella
+  - Void .ctor()
+- type ECMAScript.Lucide.UmbrellaOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Underline
+  - Void .ctor()
+- type ECMAScript.Lucide.Undo
+  - Void .ctor()
+- type ECMAScript.Lucide.Undo2
+  - Void .ctor()
+- type ECMAScript.Lucide.UndoDot
+  - Void .ctor()
+- type ECMAScript.Lucide.UnfoldHorizontal
+  - Void .ctor()
+- type ECMAScript.Lucide.UnfoldVertical
+  - Void .ctor()
+- type ECMAScript.Lucide.Ungroup
+  - Void .ctor()
+- type ECMAScript.Lucide.University
+  - Void .ctor()
+- type ECMAScript.Lucide.Unlink
+  - Void .ctor()
+- type ECMAScript.Lucide.Unlink2
+  - Void .ctor()
+- type ECMAScript.Lucide.Unplug
+  - Void .ctor()
+- type ECMAScript.Lucide.Upload
+  - Void .ctor()
+- type ECMAScript.Lucide.Usb
+  - Void .ctor()
+- type ECMAScript.Lucide.User
+  - Void .ctor()
+- type ECMAScript.Lucide.UserCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.UserCog
+  - Void .ctor()
+- type ECMAScript.Lucide.UserKey
+  - Void .ctor()
+- type ECMAScript.Lucide.UserLock
+  - Void .ctor()
+- type ECMAScript.Lucide.UserMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.UserPen
+  - Void .ctor()
+- type ECMAScript.Lucide.UserPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRound
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundCheck
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundCog
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundKey
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundMinus
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundPen
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundPlus
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.UserRoundX
+  - Void .ctor()
+- type ECMAScript.Lucide.UserSearch
+  - Void .ctor()
+- type ECMAScript.Lucide.UserStar
+  - Void .ctor()
+- type ECMAScript.Lucide.UserX
+  - Void .ctor()
+- type ECMAScript.Lucide.Users
+  - Void .ctor()
+- type ECMAScript.Lucide.UsersRound
+  - Void .ctor()
+- type ECMAScript.Lucide.Utensils
+  - Void .ctor()
+- type ECMAScript.Lucide.UtensilsCrossed
+  - Void .ctor()
+- type ECMAScript.Lucide.UtilityPole
+  - Void .ctor()
+- type ECMAScript.Lucide.Van
+  - Void .ctor()
+- type ECMAScript.Lucide.Variable
+  - Void .ctor()
+- type ECMAScript.Lucide.Vault
+  - Void .ctor()
+- type ECMAScript.Lucide.VectorSquare
+  - Void .ctor()
+- type ECMAScript.Lucide.Vegan
+  - Void .ctor()
+- type ECMAScript.Lucide.VenetianMask
+  - Void .ctor()
+- type ECMAScript.Lucide.Venus
+  - Void .ctor()
+- type ECMAScript.Lucide.VenusAndMars
+  - Void .ctor()
+- type ECMAScript.Lucide.Vibrate
+  - Void .ctor()
+- type ECMAScript.Lucide.VibrateOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Video
+  - Void .ctor()
+- type ECMAScript.Lucide.VideoOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Videotape
+  - Void .ctor()
+- type ECMAScript.Lucide.View
+  - Void .ctor()
+- type ECMAScript.Lucide.Voicemail
+  - Void .ctor()
+- type ECMAScript.Lucide.Volleyball
+  - Void .ctor()
+- type ECMAScript.Lucide.Volume
+  - Void .ctor()
+- type ECMAScript.Lucide.Volume1
+  - Void .ctor()
+- type ECMAScript.Lucide.Volume2
+  - Void .ctor()
+- type ECMAScript.Lucide.VolumeOff
+  - Void .ctor()
+- type ECMAScript.Lucide.VolumeX
+  - Void .ctor()
+- type ECMAScript.Lucide.Vote
+  - Void .ctor()
+- type ECMAScript.Lucide.Wallet
+  - Void .ctor()
+- type ECMAScript.Lucide.WalletCards
+  - Void .ctor()
+- type ECMAScript.Lucide.WalletMinimal
+  - Void .ctor()
+- type ECMAScript.Lucide.Wallpaper
+  - Void .ctor()
+- type ECMAScript.Lucide.Wand
+  - Void .ctor()
+- type ECMAScript.Lucide.WandSparkles
+  - Void .ctor()
+- type ECMAScript.Lucide.Warehouse
+  - Void .ctor()
+- type ECMAScript.Lucide.WashingMachine
+  - Void .ctor()
+- type ECMAScript.Lucide.Watch
+  - Void .ctor()
+- type ECMAScript.Lucide.Waves
+  - Void .ctor()
+- type ECMAScript.Lucide.WavesArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.WavesArrowUp
+  - Void .ctor()
+- type ECMAScript.Lucide.WavesLadder
+  - Void .ctor()
+- type ECMAScript.Lucide.Waypoints
+  - Void .ctor()
+- type ECMAScript.Lucide.Webcam
+  - Void .ctor()
+- type ECMAScript.Lucide.Webhook
+  - Void .ctor()
+- type ECMAScript.Lucide.WebhookOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Weight
+  - Void .ctor()
+- type ECMAScript.Lucide.WeightTilde
+  - Void .ctor()
+- type ECMAScript.Lucide.Wheat
+  - Void .ctor()
+- type ECMAScript.Lucide.WheatOff
+  - Void .ctor()
+- type ECMAScript.Lucide.WholeWord
+  - Void .ctor()
+- type ECMAScript.Lucide.Wifi
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiCog
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiHigh
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiLow
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiOff
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiPen
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiSync
+  - Void .ctor()
+- type ECMAScript.Lucide.WifiZero
+  - Void .ctor()
+- type ECMAScript.Lucide.Wind
+  - Void .ctor()
+- type ECMAScript.Lucide.WindArrowDown
+  - Void .ctor()
+- type ECMAScript.Lucide.Wine
+  - Void .ctor()
+- type ECMAScript.Lucide.WineOff
+  - Void .ctor()
+- type ECMAScript.Lucide.Workflow
+  - Void .ctor()
+- type ECMAScript.Lucide.Worm
+  - Void .ctor()
+- type ECMAScript.Lucide.Wrench
+  - Void .ctor()
+- type ECMAScript.Lucide.X
+  - Void .ctor()
+- type ECMAScript.Lucide.XLineTop
+  - Void .ctor()
+- type ECMAScript.Lucide.Youtube
+  - Void .ctor()
+- type ECMAScript.Lucide.Zap
+  - Void .ctor()
+- type ECMAScript.Lucide.ZapOff
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacAquarius
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacAries
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacCancer
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacCapricorn
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacGemini
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacLeo
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacLibra
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacOphiuchus
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacPisces
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacSagittarius
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacScorpio
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacTaurus
+  - Void .ctor()
+- type ECMAScript.Lucide.ZodiacVirgo
+  - Void .ctor()
+- type ECMAScript.Lucide.ZoomIn
+  - Void .ctor()
+- type ECMAScript.Lucide.ZoomOut
+  - Void .ctor()
 
 ## ECMAScript.Pinia.Testing
 - type ECMAScript.PiniaTesting
@@ -48959,5503 +52382,6 @@
   - System.Nullable`1[System.Boolean] Lazy
   - System.Nullable`1[System.Boolean] Transition
   - T[] Data
-
-## ECMAScript.VuIcons
-- type ECMAScript.VuIcons.VuAArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuALargeSmall
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAccessibility
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuActive
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuActivity
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAdd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAirVent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAirplay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarm
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarmClock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarmClockCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarmClockMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarmClockOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarmClockPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlarmSmoke
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlbum
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignCenter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignCenterHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignCenterVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignEndHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignEndVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalDistributeCenter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalDistributeEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalDistributeStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalJustifyCenter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalJustifyEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalJustifyStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalSpaceAround
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignHorizontalSpaceBetween
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignJustify
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignStartHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignStartVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalDistributeCenter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalDistributeEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalDistributeStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalJustifyCenter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalJustifyEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalJustifyStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalSpaceAround
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAlignVerticalSpaceBetween
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAmbulance
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAmpersand
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAmpersands
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAmphora
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAnchor
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAngry
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAnnoyed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAntenna
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAnvil
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAperture
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAppWindow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAppWindowMac
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuApple
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAppointment
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArchive
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArchiveRestore
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArchiveX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAreaChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArmchair
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigDownDash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigLeftDash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigRightDash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowBigUpDash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDown01
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDown10
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownAZ
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownFromLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownNarrowWide
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownToDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownToLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownWideNarrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowDownZA
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowLeftFromLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowLeftRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowLeftToLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowRightFromLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowRightLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowRightToLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUp01
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUp10
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpAZ
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpFromDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpFromLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpNarrowWide
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpToLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpWideNarrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowUpZA
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowsExpand
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowsHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuArrowsUpFromLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAsterisk
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAtSign
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAtom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAudioLines
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAudioWaveform
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAvatar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAxe
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuAxis3d
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBaby
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBackpack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeCent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeDollarSign
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeEuro
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeIndianRupee
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeInfo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeJapaneseYen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgePercent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgePoundSterling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeQuestionMark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeRussianRuble
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeSwissFranc
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeTurkishLira
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBadgeX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBaggageClaim
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBalloon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBanana
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBandage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBankCard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBanknote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBanknoteArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBanknoteArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBanknoteX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarChart3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarChart4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarChartBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarChartHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarChartHorizontalBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarcode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBarrel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBaseline
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBath
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBattery
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBatteryCharging
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBatteryFull
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBatteryLow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBatteryMedium
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBatteryPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBatteryWarning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBeaker
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBean
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBeanOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBedDouble
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBedSingle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBeef
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBeer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBeerOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBell
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBellDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBellElectric
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBellMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBellOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBellPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBellRing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBetweenHorizontalEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBetweenHorizontalStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBetweenVerticalEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBetweenVerticalStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBicepsFlexed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBike
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBill
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBinary
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBinoculars
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBiohazard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBird
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBirdhouse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBitcoin
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBlend
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBlinds
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBlocks
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBluetooth
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBluetoothConnected
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBluetoothOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBluetoothSearching
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBold
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBolt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBomb
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookA
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookAudio
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookCopy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookHeadphones
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookImage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookKey
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookMarked
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookOpenCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookOpenText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookType
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookUp2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookUser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookmark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookmarkCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookmarkMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookmarkPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBookmarkX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBoomBox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBotMessageSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBotOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBottleWine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBottomBar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBowArrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBoxes
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBraces
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrackets
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrain
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrainCircuit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrainCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBreadcrumb
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrickWall
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrickWallFire
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrickWallShield
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBriefcase
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBriefcaseBusiness
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBriefcaseConveyorBelt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBriefcaseMedical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBringToFront
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrush
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBrushCleaning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBubbles
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBug
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBugOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBugPlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBuilding
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBuilding2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuBusFront
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCable
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCableCar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCake
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCakeSlice
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalculator
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendar1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarCheck2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarClock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarDays
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarFold
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarMinus2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarPlus2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarRange
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarSync
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendarX2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCalendars
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCamera
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCameraOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCandlestickChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCandy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCandyCane
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCandyOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCannabis
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCannabisOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCaptions
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCaptionsOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCarFront
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCarTaxiFront
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCaravan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCardSim
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCarrot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCaseLower
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCaseSensitive
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCaseUpper
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCassetteTape
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCast
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCastle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCategory
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCctv
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCharging
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartArea
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartBar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartBarBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartBarDecreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartBarIncreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartBarStacked
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartCandlestick
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartColumn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartColumnBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartColumnDecreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartColumnIncreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartColumnStacked
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartGantt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartNetwork
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartNoAxesColumn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartNoAxesColumnDecreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartNoAxesColumnIncreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartNoAxesCombined
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartNoAxesGantt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartPie
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartScatter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChartSpline
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCheckCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCheckLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCheckup
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChefHat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCherry
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChessBishop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChessKing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChessKnight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChessPawn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChessQueen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChessRook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronFirst
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronLast
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsDownUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsLeftRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsLeftRightEllipsis
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsRightLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChevronsUpDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChrome
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChromium
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuChurch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCigarette
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCigaretteOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowOutDownLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowOutDownRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowOutUpLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowOutUpRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleCheckBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleChevronDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleChevronLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleChevronRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleChevronUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleDivide
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleDollarSign
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleDotDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleEllipsis
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleEqual
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleFadingArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleFadingPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleGauge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleParking
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleParkingOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePause
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePercent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePile
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePoundSterling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCirclePower
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleQuestionMark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleSlash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleSlash2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleSmall
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleStar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleStop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleUser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleUserRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircleX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCircuitBoard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCitrus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClapperboard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClassroom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardClock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardCopy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardList
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardPaste
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardPenLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardType
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClipboardX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock10
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock11
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock12
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock5
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock6
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock7
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock8
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClock9
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClockAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClockArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClockArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClockCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClockFading
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClockPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClose
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClosedCaption
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloud
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudBackup
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudDownload
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudDrizzle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudFog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudHail
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudLightning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudMoon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudMoonRain
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudRain
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudRainWind
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudSnow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudSun
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudSunRain
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudSync
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudUpload
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCloudy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClover
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuClub
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCodeXml
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCodepen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCodesandbox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCoffee
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCoins
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuColumns2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuColumns3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuColumns3Cog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuColumns4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCombine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCommand
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuComment
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCompass
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCompleted
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuComponent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuComputer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuConciergeBell
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuConstruction
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuContact
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuContactRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuContainer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuContrast
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCookie
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCookingPot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopyCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopyMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopyPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopySlash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopyX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopyleft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCopyright
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerDownLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerDownRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerLeftDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerLeftUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerRightDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerRightUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerUpLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCornerUpRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCoupon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCourse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCpu
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCreativeCommons
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCreditCard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCroissant
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCrop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCross
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCrosshair
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCrown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCuboid
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCupSoda
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCurrency
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCut
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuCylinder
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDam
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDataCompare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDataExport
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDataFilter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDataRefresh
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDatabase
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDatabaseBackup
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDatabaseZap
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDecimalsArrowLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDecimalsArrowRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDelete
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDelivery
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDessert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiameter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiamond
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiamondMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiamondPercent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiamondPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDice1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDice2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDice3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDice4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDice5
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDice6
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDices
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDisabled
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDisc
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDisc2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDisc3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDiscAlbum
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDislike
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDivide
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDna
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDnaOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDollarSign
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDonut
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDoorClosed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDoorClosedLocked
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDoorOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDoughnutChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDownload
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDraftingCompass
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDrama
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDribbble
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDrill
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDrone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDroplet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDropletOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDroplets
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDrum
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDrumstick
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuDumbbell
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEarOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEarth
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEarthLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEclipse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEdit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEgg
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEggFried
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEggOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEllipsis
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEllipsisVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEnter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEqual
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEqualApproximately
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEqualNot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEraser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuError
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEthernetPort
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEuro
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEvCharger
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuExam
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuExitFullscreen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuExpand
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuExternalLink
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEye
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEyeClosed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuEyeOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFacebook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFactory
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFailure
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFastBackward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFastForward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFavorite
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFeather
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFence
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFerrisWheel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFigma
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFile
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileArchive
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileAudio
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileAudio2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileAxis3d
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileBadge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileBadge2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileBox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileBraces
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileBracesCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileChartColumn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileChartColumnIncreasing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileChartLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileChartPie
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCheck2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCheckCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileClock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCode2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCodeCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileDiff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileDigit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileExclamationPoint
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileHeadphone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileImage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileInput
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileJson
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileJson2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileKey
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileKey2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileLock2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileMinus2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileMinusCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileMusic
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileOutput
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePenLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePieChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePlus2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilePlusCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileQuestionMark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileScan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSearch2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSearchCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSignal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSliders
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSpreadsheet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileStack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileSymlink
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileTerminal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileType
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileType2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileTypeCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileUser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileVideoCamera
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileVolume
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileVolume2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileWarning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileX2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFileXCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFiles
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilm
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFilterX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFinance
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFingerprintPattern
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFireExtinguisher
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFish
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFishOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFishSymbol
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFishingHook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFitness
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlag
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlagOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlagTriangleLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlagTriangleRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlame
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlameKindling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlashlight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlashlightOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlaskConical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlaskConicalOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlaskRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlipHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlipHorizontal2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlipVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlipVertical2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlower
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFlower2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFocus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFoldHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFoldVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolder
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderArchive
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderClock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderClosed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderGit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderGit2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderInput
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderKanban
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderKey
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderOpenDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderOutput
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderRoot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderSearch2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderSymlink
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderSync
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderTree
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolderX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFolders
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFollow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFollowers
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFood
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFootprints
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuForklift
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuForm
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuForward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFrame
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFramer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFrown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFuel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFullscreen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFunnel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFunnelChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFunnelPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuFunnelX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGalleryHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGalleryHorizontalEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGalleryThumbnails
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGalleryVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGalleryVerticalEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGamepad
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGamepad2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGamepadDirectional
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGauge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGavel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGem
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGeorgianLari
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGhost
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGift
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitBranch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitBranchMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitBranchPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitCommitHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitCommitVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitCompare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitCompareArrows
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitFork
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitGraph
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitMerge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitPullRequest
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitPullRequestArrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitPullRequestClosed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitPullRequestCreate
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitPullRequestCreateArrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitPullRequestDraft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGithub
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGitlab
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGlassWater
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGlasses
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGlobe
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGlobeLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGlobeX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGoal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGpu
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGraduationCap
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrape
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrid2x2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrid2x2Check
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrid2x2Plus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrid2x2X
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrid3x2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrid3x3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGrip
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGripHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGripVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGroup
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGroupBuy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuGuitar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHam
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHamburger
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHammer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHand
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandCoins
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandFist
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandGrab
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandHelping
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandMetal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandPlatter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandbag
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHandshake
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHardDrive
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHardDriveDownload
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHardDriveUpload
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHardHat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHatGlasses
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHaze
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHdmiPort
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading5
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeading6
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeadphoneOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeadphones
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeadset
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeartCrack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeartHandshake
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeartMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeartOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeartPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeartPulse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHeater
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHelicopter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHexagon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHighlighter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHint
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHistory
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHome
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHomework
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHopOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHospital
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHotel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHourglass
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHouse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHouseHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHousePlug
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHousePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuHouseWifi
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIceCreamBowl
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIceCreamCone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIcon
-  - Void .ctor()
-  - ECMAScript.VuIcons.VuIconName get_Name()
-  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Size()
-  - System.Nullable`1[System.Boolean] get_Spin()
-  - System.String get_Class()
-  - System.String get_Color()
-  - Void set_Class(System.String)
-  - Void set_Color(System.String)
-  - Void set_Name(ECMAScript.VuIcons.VuIconName)
-  - Void set_Size(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
-  - Void set_Spin(System.Nullable`1[System.Boolean])
-  - ECMAScript.VuIcons.VuIconName Name
-  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Size
-  - System.Nullable`1[System.Boolean] Spin
-  - System.String Class
-  - System.String Color
-- type ECMAScript.VuIcons.VuIconComponentBase
-  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Size()
-  - System.Nullable`1[System.Boolean] get_Spin()
-  - System.String get_ClassName()
-  - System.String get_Color()
-  - Void set_ClassName(System.String)
-  - Void set_Color(System.String)
-  - Void set_Size(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
-  - Void set_Spin(System.Nullable`1[System.Boolean])
-  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Size
-  - System.Nullable`1[System.Boolean] Spin
-  - System.String ClassName
-  - System.String Color
-- enum ECMAScript.VuIcons.VuIconName
-  - ECMAScript.VuIcons.VuIconName AArrowDown
-  - ECMAScript.VuIcons.VuIconName AArrowUp
-  - ECMAScript.VuIcons.VuIconName ALargeSmall
-  - ECMAScript.VuIcons.VuIconName Accessibility
-  - ECMAScript.VuIcons.VuIconName Active
-  - ECMAScript.VuIcons.VuIconName Activity
-  - ECMAScript.VuIcons.VuIconName Add
-  - ECMAScript.VuIcons.VuIconName AirVent
-  - ECMAScript.VuIcons.VuIconName Airplay
-  - ECMAScript.VuIcons.VuIconName Alarm
-  - ECMAScript.VuIcons.VuIconName AlarmClock
-  - ECMAScript.VuIcons.VuIconName AlarmClockCheck
-  - ECMAScript.VuIcons.VuIconName AlarmClockMinus
-  - ECMAScript.VuIcons.VuIconName AlarmClockOff
-  - ECMAScript.VuIcons.VuIconName AlarmClockPlus
-  - ECMAScript.VuIcons.VuIconName AlarmSmoke
-  - ECMAScript.VuIcons.VuIconName Album
-  - ECMAScript.VuIcons.VuIconName AlignCenter
-  - ECMAScript.VuIcons.VuIconName AlignCenterHorizontal
-  - ECMAScript.VuIcons.VuIconName AlignCenterVertical
-  - ECMAScript.VuIcons.VuIconName AlignEndHorizontal
-  - ECMAScript.VuIcons.VuIconName AlignEndVertical
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalDistributeCenter
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalDistributeEnd
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalDistributeStart
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalJustifyCenter
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalJustifyEnd
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalJustifyStart
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalSpaceAround
-  - ECMAScript.VuIcons.VuIconName AlignHorizontalSpaceBetween
-  - ECMAScript.VuIcons.VuIconName AlignJustify
-  - ECMAScript.VuIcons.VuIconName AlignLeft
-  - ECMAScript.VuIcons.VuIconName AlignRight
-  - ECMAScript.VuIcons.VuIconName AlignStartHorizontal
-  - ECMAScript.VuIcons.VuIconName AlignStartVertical
-  - ECMAScript.VuIcons.VuIconName AlignVerticalDistributeCenter
-  - ECMAScript.VuIcons.VuIconName AlignVerticalDistributeEnd
-  - ECMAScript.VuIcons.VuIconName AlignVerticalDistributeStart
-  - ECMAScript.VuIcons.VuIconName AlignVerticalJustifyCenter
-  - ECMAScript.VuIcons.VuIconName AlignVerticalJustifyEnd
-  - ECMAScript.VuIcons.VuIconName AlignVerticalJustifyStart
-  - ECMAScript.VuIcons.VuIconName AlignVerticalSpaceAround
-  - ECMAScript.VuIcons.VuIconName AlignVerticalSpaceBetween
-  - ECMAScript.VuIcons.VuIconName Ambulance
-  - ECMAScript.VuIcons.VuIconName Ampersand
-  - ECMAScript.VuIcons.VuIconName Ampersands
-  - ECMAScript.VuIcons.VuIconName Amphora
-  - ECMAScript.VuIcons.VuIconName Anchor
-  - ECMAScript.VuIcons.VuIconName Angry
-  - ECMAScript.VuIcons.VuIconName Annoyed
-  - ECMAScript.VuIcons.VuIconName Antenna
-  - ECMAScript.VuIcons.VuIconName Anvil
-  - ECMAScript.VuIcons.VuIconName Aperture
-  - ECMAScript.VuIcons.VuIconName AppWindow
-  - ECMAScript.VuIcons.VuIconName AppWindowMac
-  - ECMAScript.VuIcons.VuIconName Apple
-  - ECMAScript.VuIcons.VuIconName Appointment
-  - ECMAScript.VuIcons.VuIconName Archive
-  - ECMAScript.VuIcons.VuIconName ArchiveRestore
-  - ECMAScript.VuIcons.VuIconName ArchiveX
-  - ECMAScript.VuIcons.VuIconName AreaChart
-  - ECMAScript.VuIcons.VuIconName Armchair
-  - ECMAScript.VuIcons.VuIconName ArrowBigDown
-  - ECMAScript.VuIcons.VuIconName ArrowBigDownDash
-  - ECMAScript.VuIcons.VuIconName ArrowBigLeft
-  - ECMAScript.VuIcons.VuIconName ArrowBigLeftDash
-  - ECMAScript.VuIcons.VuIconName ArrowBigRight
-  - ECMAScript.VuIcons.VuIconName ArrowBigRightDash
-  - ECMAScript.VuIcons.VuIconName ArrowBigUp
-  - ECMAScript.VuIcons.VuIconName ArrowBigUpDash
-  - ECMAScript.VuIcons.VuIconName ArrowDown
-  - ECMAScript.VuIcons.VuIconName ArrowDown01
-  - ECMAScript.VuIcons.VuIconName ArrowDown10
-  - ECMAScript.VuIcons.VuIconName ArrowDownAZ
-  - ECMAScript.VuIcons.VuIconName ArrowDownFromLine
-  - ECMAScript.VuIcons.VuIconName ArrowDownLeft
-  - ECMAScript.VuIcons.VuIconName ArrowDownNarrowWide
-  - ECMAScript.VuIcons.VuIconName ArrowDownRight
-  - ECMAScript.VuIcons.VuIconName ArrowDownToDot
-  - ECMAScript.VuIcons.VuIconName ArrowDownToLine
-  - ECMAScript.VuIcons.VuIconName ArrowDownUp
-  - ECMAScript.VuIcons.VuIconName ArrowDownWideNarrow
-  - ECMAScript.VuIcons.VuIconName ArrowDownZA
-  - ECMAScript.VuIcons.VuIconName ArrowLeft
-  - ECMAScript.VuIcons.VuIconName ArrowLeftFromLine
-  - ECMAScript.VuIcons.VuIconName ArrowLeftRight
-  - ECMAScript.VuIcons.VuIconName ArrowLeftToLine
-  - ECMAScript.VuIcons.VuIconName ArrowRight
-  - ECMAScript.VuIcons.VuIconName ArrowRightFromLine
-  - ECMAScript.VuIcons.VuIconName ArrowRightLeft
-  - ECMAScript.VuIcons.VuIconName ArrowRightToLine
-  - ECMAScript.VuIcons.VuIconName ArrowUp
-  - ECMAScript.VuIcons.VuIconName ArrowUp01
-  - ECMAScript.VuIcons.VuIconName ArrowUp10
-  - ECMAScript.VuIcons.VuIconName ArrowUpAZ
-  - ECMAScript.VuIcons.VuIconName ArrowUpDown
-  - ECMAScript.VuIcons.VuIconName ArrowUpFromDot
-  - ECMAScript.VuIcons.VuIconName ArrowUpFromLine
-  - ECMAScript.VuIcons.VuIconName ArrowUpLeft
-  - ECMAScript.VuIcons.VuIconName ArrowUpNarrowWide
-  - ECMAScript.VuIcons.VuIconName ArrowUpRight
-  - ECMAScript.VuIcons.VuIconName ArrowUpToLine
-  - ECMAScript.VuIcons.VuIconName ArrowUpWideNarrow
-  - ECMAScript.VuIcons.VuIconName ArrowUpZA
-  - ECMAScript.VuIcons.VuIconName ArrowsExpand
-  - ECMAScript.VuIcons.VuIconName ArrowsHorizontal
-  - ECMAScript.VuIcons.VuIconName ArrowsUpFromLine
-  - ECMAScript.VuIcons.VuIconName Asterisk
-  - ECMAScript.VuIcons.VuIconName At
-  - ECMAScript.VuIcons.VuIconName AtSign
-  - ECMAScript.VuIcons.VuIconName Atom
-  - ECMAScript.VuIcons.VuIconName AudioLines
-  - ECMAScript.VuIcons.VuIconName AudioWaveform
-  - ECMAScript.VuIcons.VuIconName Avatar
-  - ECMAScript.VuIcons.VuIconName Award
-  - ECMAScript.VuIcons.VuIconName Axe
-  - ECMAScript.VuIcons.VuIconName Axis3d
-  - ECMAScript.VuIcons.VuIconName Baby
-  - ECMAScript.VuIcons.VuIconName Backpack
-  - ECMAScript.VuIcons.VuIconName Badge
-  - ECMAScript.VuIcons.VuIconName BadgeAlert
-  - ECMAScript.VuIcons.VuIconName BadgeCent
-  - ECMAScript.VuIcons.VuIconName BadgeCheck
-  - ECMAScript.VuIcons.VuIconName BadgeDollarSign
-  - ECMAScript.VuIcons.VuIconName BadgeEuro
-  - ECMAScript.VuIcons.VuIconName BadgeIndianRupee
-  - ECMAScript.VuIcons.VuIconName BadgeInfo
-  - ECMAScript.VuIcons.VuIconName BadgeJapaneseYen
-  - ECMAScript.VuIcons.VuIconName BadgeMinus
-  - ECMAScript.VuIcons.VuIconName BadgePercent
-  - ECMAScript.VuIcons.VuIconName BadgePlus
-  - ECMAScript.VuIcons.VuIconName BadgePoundSterling
-  - ECMAScript.VuIcons.VuIconName BadgeQuestionMark
-  - ECMAScript.VuIcons.VuIconName BadgeRussianRuble
-  - ECMAScript.VuIcons.VuIconName BadgeSwissFranc
-  - ECMAScript.VuIcons.VuIconName BadgeTurkishLira
-  - ECMAScript.VuIcons.VuIconName BadgeX
-  - ECMAScript.VuIcons.VuIconName BaggageClaim
-  - ECMAScript.VuIcons.VuIconName Balloon
-  - ECMAScript.VuIcons.VuIconName Ban
-  - ECMAScript.VuIcons.VuIconName Banana
-  - ECMAScript.VuIcons.VuIconName Bandage
-  - ECMAScript.VuIcons.VuIconName BankCard
-  - ECMAScript.VuIcons.VuIconName Banknote
-  - ECMAScript.VuIcons.VuIconName BanknoteArrowDown
-  - ECMAScript.VuIcons.VuIconName BanknoteArrowUp
-  - ECMAScript.VuIcons.VuIconName BanknoteX
-  - ECMAScript.VuIcons.VuIconName BarChart
-  - ECMAScript.VuIcons.VuIconName BarChart3
-  - ECMAScript.VuIcons.VuIconName BarChart4
-  - ECMAScript.VuIcons.VuIconName BarChartBig
-  - ECMAScript.VuIcons.VuIconName BarChartHorizontal
-  - ECMAScript.VuIcons.VuIconName BarChartHorizontalBig
-  - ECMAScript.VuIcons.VuIconName Barcode
-  - ECMAScript.VuIcons.VuIconName Barrel
-  - ECMAScript.VuIcons.VuIconName Baseline
-  - ECMAScript.VuIcons.VuIconName Bath
-  - ECMAScript.VuIcons.VuIconName Battery
-  - ECMAScript.VuIcons.VuIconName BatteryCharging
-  - ECMAScript.VuIcons.VuIconName BatteryFull
-  - ECMAScript.VuIcons.VuIconName BatteryLow
-  - ECMAScript.VuIcons.VuIconName BatteryMedium
-  - ECMAScript.VuIcons.VuIconName BatteryPlus
-  - ECMAScript.VuIcons.VuIconName BatteryWarning
-  - ECMAScript.VuIcons.VuIconName Beaker
-  - ECMAScript.VuIcons.VuIconName Bean
-  - ECMAScript.VuIcons.VuIconName BeanOff
-  - ECMAScript.VuIcons.VuIconName Bed
-  - ECMAScript.VuIcons.VuIconName BedDouble
-  - ECMAScript.VuIcons.VuIconName BedSingle
-  - ECMAScript.VuIcons.VuIconName Beef
-  - ECMAScript.VuIcons.VuIconName Beer
-  - ECMAScript.VuIcons.VuIconName BeerOff
-  - ECMAScript.VuIcons.VuIconName Bell
-  - ECMAScript.VuIcons.VuIconName BellDot
-  - ECMAScript.VuIcons.VuIconName BellElectric
-  - ECMAScript.VuIcons.VuIconName BellMinus
-  - ECMAScript.VuIcons.VuIconName BellOff
-  - ECMAScript.VuIcons.VuIconName BellPlus
-  - ECMAScript.VuIcons.VuIconName BellRing
-  - ECMAScript.VuIcons.VuIconName BetweenHorizontalEnd
-  - ECMAScript.VuIcons.VuIconName BetweenHorizontalStart
-  - ECMAScript.VuIcons.VuIconName BetweenVerticalEnd
-  - ECMAScript.VuIcons.VuIconName BetweenVerticalStart
-  - ECMAScript.VuIcons.VuIconName BicepsFlexed
-  - ECMAScript.VuIcons.VuIconName Bike
-  - ECMAScript.VuIcons.VuIconName Bill
-  - ECMAScript.VuIcons.VuIconName Binary
-  - ECMAScript.VuIcons.VuIconName Binoculars
-  - ECMAScript.VuIcons.VuIconName Biohazard
-  - ECMAScript.VuIcons.VuIconName Bird
-  - ECMAScript.VuIcons.VuIconName Birdhouse
-  - ECMAScript.VuIcons.VuIconName Bitcoin
-  - ECMAScript.VuIcons.VuIconName Blend
-  - ECMAScript.VuIcons.VuIconName Blinds
-  - ECMAScript.VuIcons.VuIconName Blocks
-  - ECMAScript.VuIcons.VuIconName Bluetooth
-  - ECMAScript.VuIcons.VuIconName BluetoothConnected
-  - ECMAScript.VuIcons.VuIconName BluetoothOff
-  - ECMAScript.VuIcons.VuIconName BluetoothSearching
-  - ECMAScript.VuIcons.VuIconName Bold
-  - ECMAScript.VuIcons.VuIconName Bolt
-  - ECMAScript.VuIcons.VuIconName Bomb
-  - ECMAScript.VuIcons.VuIconName Bone
-  - ECMAScript.VuIcons.VuIconName Book
-  - ECMAScript.VuIcons.VuIconName BookA
-  - ECMAScript.VuIcons.VuIconName BookAlert
-  - ECMAScript.VuIcons.VuIconName BookAudio
-  - ECMAScript.VuIcons.VuIconName BookCheck
-  - ECMAScript.VuIcons.VuIconName BookCopy
-  - ECMAScript.VuIcons.VuIconName BookDashed
-  - ECMAScript.VuIcons.VuIconName BookDown
-  - ECMAScript.VuIcons.VuIconName BookHeadphones
-  - ECMAScript.VuIcons.VuIconName BookHeart
-  - ECMAScript.VuIcons.VuIconName BookImage
-  - ECMAScript.VuIcons.VuIconName BookKey
-  - ECMAScript.VuIcons.VuIconName BookLock
-  - ECMAScript.VuIcons.VuIconName BookMarked
-  - ECMAScript.VuIcons.VuIconName BookMinus
-  - ECMAScript.VuIcons.VuIconName BookOpen
-  - ECMAScript.VuIcons.VuIconName BookOpenCheck
-  - ECMAScript.VuIcons.VuIconName BookOpenText
-  - ECMAScript.VuIcons.VuIconName BookPlus
-  - ECMAScript.VuIcons.VuIconName BookSearch
-  - ECMAScript.VuIcons.VuIconName BookText
-  - ECMAScript.VuIcons.VuIconName BookType
-  - ECMAScript.VuIcons.VuIconName BookUp
-  - ECMAScript.VuIcons.VuIconName BookUp2
-  - ECMAScript.VuIcons.VuIconName BookUser
-  - ECMAScript.VuIcons.VuIconName BookX
-  - ECMAScript.VuIcons.VuIconName Bookmark
-  - ECMAScript.VuIcons.VuIconName BookmarkCheck
-  - ECMAScript.VuIcons.VuIconName BookmarkMinus
-  - ECMAScript.VuIcons.VuIconName BookmarkPlus
-  - ECMAScript.VuIcons.VuIconName BookmarkX
-  - ECMAScript.VuIcons.VuIconName BoomBox
-  - ECMAScript.VuIcons.VuIconName Bot
-  - ECMAScript.VuIcons.VuIconName BotMessageSquare
-  - ECMAScript.VuIcons.VuIconName BotOff
-  - ECMAScript.VuIcons.VuIconName BottleWine
-  - ECMAScript.VuIcons.VuIconName BottomBar
-  - ECMAScript.VuIcons.VuIconName BowArrow
-  - ECMAScript.VuIcons.VuIconName Box
-  - ECMAScript.VuIcons.VuIconName Boxes
-  - ECMAScript.VuIcons.VuIconName Braces
-  - ECMAScript.VuIcons.VuIconName Brackets
-  - ECMAScript.VuIcons.VuIconName Brain
-  - ECMAScript.VuIcons.VuIconName BrainCircuit
-  - ECMAScript.VuIcons.VuIconName BrainCog
-  - ECMAScript.VuIcons.VuIconName Breadcrumb
-  - ECMAScript.VuIcons.VuIconName BrickWall
-  - ECMAScript.VuIcons.VuIconName BrickWallFire
-  - ECMAScript.VuIcons.VuIconName BrickWallShield
-  - ECMAScript.VuIcons.VuIconName Briefcase
-  - ECMAScript.VuIcons.VuIconName BriefcaseBusiness
-  - ECMAScript.VuIcons.VuIconName BriefcaseConveyorBelt
-  - ECMAScript.VuIcons.VuIconName BriefcaseMedical
-  - ECMAScript.VuIcons.VuIconName BringToFront
-  - ECMAScript.VuIcons.VuIconName Brush
-  - ECMAScript.VuIcons.VuIconName BrushCleaning
-  - ECMAScript.VuIcons.VuIconName Bubbles
-  - ECMAScript.VuIcons.VuIconName Bug
-  - ECMAScript.VuIcons.VuIconName BugOff
-  - ECMAScript.VuIcons.VuIconName BugPlay
-  - ECMAScript.VuIcons.VuIconName Building
-  - ECMAScript.VuIcons.VuIconName Building2
-  - ECMAScript.VuIcons.VuIconName Bus
-  - ECMAScript.VuIcons.VuIconName BusFront
-  - ECMAScript.VuIcons.VuIconName Cable
-  - ECMAScript.VuIcons.VuIconName CableCar
-  - ECMAScript.VuIcons.VuIconName Cake
-  - ECMAScript.VuIcons.VuIconName CakeSlice
-  - ECMAScript.VuIcons.VuIconName Calculator
-  - ECMAScript.VuIcons.VuIconName Calendar
-  - ECMAScript.VuIcons.VuIconName Calendar1
-  - ECMAScript.VuIcons.VuIconName CalendarArrowDown
-  - ECMAScript.VuIcons.VuIconName CalendarArrowUp
-  - ECMAScript.VuIcons.VuIconName CalendarCheck
-  - ECMAScript.VuIcons.VuIconName CalendarCheck2
-  - ECMAScript.VuIcons.VuIconName CalendarClock
-  - ECMAScript.VuIcons.VuIconName CalendarCog
-  - ECMAScript.VuIcons.VuIconName CalendarDays
-  - ECMAScript.VuIcons.VuIconName CalendarFold
-  - ECMAScript.VuIcons.VuIconName CalendarHeart
-  - ECMAScript.VuIcons.VuIconName CalendarMinus
-  - ECMAScript.VuIcons.VuIconName CalendarMinus2
-  - ECMAScript.VuIcons.VuIconName CalendarOff
-  - ECMAScript.VuIcons.VuIconName CalendarPlus
-  - ECMAScript.VuIcons.VuIconName CalendarPlus2
-  - ECMAScript.VuIcons.VuIconName CalendarRange
-  - ECMAScript.VuIcons.VuIconName CalendarSearch
-  - ECMAScript.VuIcons.VuIconName CalendarSync
-  - ECMAScript.VuIcons.VuIconName CalendarX
-  - ECMAScript.VuIcons.VuIconName CalendarX2
-  - ECMAScript.VuIcons.VuIconName Calendars
-  - ECMAScript.VuIcons.VuIconName Camera
-  - ECMAScript.VuIcons.VuIconName CameraOff
-  - ECMAScript.VuIcons.VuIconName CandlestickChart
-  - ECMAScript.VuIcons.VuIconName Candy
-  - ECMAScript.VuIcons.VuIconName CandyCane
-  - ECMAScript.VuIcons.VuIconName CandyOff
-  - ECMAScript.VuIcons.VuIconName Cannabis
-  - ECMAScript.VuIcons.VuIconName CannabisOff
-  - ECMAScript.VuIcons.VuIconName Captions
-  - ECMAScript.VuIcons.VuIconName CaptionsOff
-  - ECMAScript.VuIcons.VuIconName Car
-  - ECMAScript.VuIcons.VuIconName CarFront
-  - ECMAScript.VuIcons.VuIconName CarTaxiFront
-  - ECMAScript.VuIcons.VuIconName Caravan
-  - ECMAScript.VuIcons.VuIconName CardSim
-  - ECMAScript.VuIcons.VuIconName Carrot
-  - ECMAScript.VuIcons.VuIconName CaseLower
-  - ECMAScript.VuIcons.VuIconName CaseSensitive
-  - ECMAScript.VuIcons.VuIconName CaseUpper
-  - ECMAScript.VuIcons.VuIconName CassetteTape
-  - ECMAScript.VuIcons.VuIconName Cast
-  - ECMAScript.VuIcons.VuIconName Castle
-  - ECMAScript.VuIcons.VuIconName Cat
-  - ECMAScript.VuIcons.VuIconName Category
-  - ECMAScript.VuIcons.VuIconName Cctv
-  - ECMAScript.VuIcons.VuIconName Charging
-  - ECMAScript.VuIcons.VuIconName ChartArea
-  - ECMAScript.VuIcons.VuIconName ChartBar
-  - ECMAScript.VuIcons.VuIconName ChartBarBig
-  - ECMAScript.VuIcons.VuIconName ChartBarDecreasing
-  - ECMAScript.VuIcons.VuIconName ChartBarIncreasing
-  - ECMAScript.VuIcons.VuIconName ChartBarStacked
-  - ECMAScript.VuIcons.VuIconName ChartCandlestick
-  - ECMAScript.VuIcons.VuIconName ChartColumn
-  - ECMAScript.VuIcons.VuIconName ChartColumnBig
-  - ECMAScript.VuIcons.VuIconName ChartColumnDecreasing
-  - ECMAScript.VuIcons.VuIconName ChartColumnIncreasing
-  - ECMAScript.VuIcons.VuIconName ChartColumnStacked
-  - ECMAScript.VuIcons.VuIconName ChartGantt
-  - ECMAScript.VuIcons.VuIconName ChartLine
-  - ECMAScript.VuIcons.VuIconName ChartNetwork
-  - ECMAScript.VuIcons.VuIconName ChartNoAxesColumn
-  - ECMAScript.VuIcons.VuIconName ChartNoAxesColumnDecreasing
-  - ECMAScript.VuIcons.VuIconName ChartNoAxesColumnIncreasing
-  - ECMAScript.VuIcons.VuIconName ChartNoAxesCombined
-  - ECMAScript.VuIcons.VuIconName ChartNoAxesGantt
-  - ECMAScript.VuIcons.VuIconName ChartPie
-  - ECMAScript.VuIcons.VuIconName ChartScatter
-  - ECMAScript.VuIcons.VuIconName ChartSpline
-  - ECMAScript.VuIcons.VuIconName Check
-  - ECMAScript.VuIcons.VuIconName CheckCheck
-  - ECMAScript.VuIcons.VuIconName CheckLine
-  - ECMAScript.VuIcons.VuIconName Checkup
-  - ECMAScript.VuIcons.VuIconName ChefHat
-  - ECMAScript.VuIcons.VuIconName Cherry
-  - ECMAScript.VuIcons.VuIconName ChessBishop
-  - ECMAScript.VuIcons.VuIconName ChessKing
-  - ECMAScript.VuIcons.VuIconName ChessKnight
-  - ECMAScript.VuIcons.VuIconName ChessPawn
-  - ECMAScript.VuIcons.VuIconName ChessQueen
-  - ECMAScript.VuIcons.VuIconName ChessRook
-  - ECMAScript.VuIcons.VuIconName ChevronDown
-  - ECMAScript.VuIcons.VuIconName ChevronFirst
-  - ECMAScript.VuIcons.VuIconName ChevronLast
-  - ECMAScript.VuIcons.VuIconName ChevronLeft
-  - ECMAScript.VuIcons.VuIconName ChevronRight
-  - ECMAScript.VuIcons.VuIconName ChevronUp
-  - ECMAScript.VuIcons.VuIconName ChevronsDown
-  - ECMAScript.VuIcons.VuIconName ChevronsDownUp
-  - ECMAScript.VuIcons.VuIconName ChevronsLeft
-  - ECMAScript.VuIcons.VuIconName ChevronsLeftRight
-  - ECMAScript.VuIcons.VuIconName ChevronsLeftRightEllipsis
-  - ECMAScript.VuIcons.VuIconName ChevronsRight
-  - ECMAScript.VuIcons.VuIconName ChevronsRightLeft
-  - ECMAScript.VuIcons.VuIconName ChevronsUp
-  - ECMAScript.VuIcons.VuIconName ChevronsUpDown
-  - ECMAScript.VuIcons.VuIconName Chrome
-  - ECMAScript.VuIcons.VuIconName Chromium
-  - ECMAScript.VuIcons.VuIconName Church
-  - ECMAScript.VuIcons.VuIconName Cigarette
-  - ECMAScript.VuIcons.VuIconName CigaretteOff
-  - ECMAScript.VuIcons.VuIconName Circle
-  - ECMAScript.VuIcons.VuIconName CircleAlert
-  - ECMAScript.VuIcons.VuIconName CircleArrowDown
-  - ECMAScript.VuIcons.VuIconName CircleArrowLeft
-  - ECMAScript.VuIcons.VuIconName CircleArrowOutDownLeft
-  - ECMAScript.VuIcons.VuIconName CircleArrowOutDownRight
-  - ECMAScript.VuIcons.VuIconName CircleArrowOutUpLeft
-  - ECMAScript.VuIcons.VuIconName CircleArrowOutUpRight
-  - ECMAScript.VuIcons.VuIconName CircleArrowRight
-  - ECMAScript.VuIcons.VuIconName CircleArrowUp
-  - ECMAScript.VuIcons.VuIconName CircleCheck
-  - ECMAScript.VuIcons.VuIconName CircleCheckBig
-  - ECMAScript.VuIcons.VuIconName CircleChevronDown
-  - ECMAScript.VuIcons.VuIconName CircleChevronLeft
-  - ECMAScript.VuIcons.VuIconName CircleChevronRight
-  - ECMAScript.VuIcons.VuIconName CircleChevronUp
-  - ECMAScript.VuIcons.VuIconName CircleDashed
-  - ECMAScript.VuIcons.VuIconName CircleDivide
-  - ECMAScript.VuIcons.VuIconName CircleDollarSign
-  - ECMAScript.VuIcons.VuIconName CircleDot
-  - ECMAScript.VuIcons.VuIconName CircleDotDashed
-  - ECMAScript.VuIcons.VuIconName CircleEllipsis
-  - ECMAScript.VuIcons.VuIconName CircleEqual
-  - ECMAScript.VuIcons.VuIconName CircleFadingArrowUp
-  - ECMAScript.VuIcons.VuIconName CircleFadingPlus
-  - ECMAScript.VuIcons.VuIconName CircleGauge
-  - ECMAScript.VuIcons.VuIconName CircleMinus
-  - ECMAScript.VuIcons.VuIconName CircleOff
-  - ECMAScript.VuIcons.VuIconName CircleParking
-  - ECMAScript.VuIcons.VuIconName CircleParkingOff
-  - ECMAScript.VuIcons.VuIconName CirclePause
-  - ECMAScript.VuIcons.VuIconName CirclePercent
-  - ECMAScript.VuIcons.VuIconName CirclePile
-  - ECMAScript.VuIcons.VuIconName CirclePlay
-  - ECMAScript.VuIcons.VuIconName CirclePlus
-  - ECMAScript.VuIcons.VuIconName CirclePoundSterling
-  - ECMAScript.VuIcons.VuIconName CirclePower
-  - ECMAScript.VuIcons.VuIconName CircleQuestionMark
-  - ECMAScript.VuIcons.VuIconName CircleSlash
-  - ECMAScript.VuIcons.VuIconName CircleSlash2
-  - ECMAScript.VuIcons.VuIconName CircleSmall
-  - ECMAScript.VuIcons.VuIconName CircleStar
-  - ECMAScript.VuIcons.VuIconName CircleStop
-  - ECMAScript.VuIcons.VuIconName CircleUser
-  - ECMAScript.VuIcons.VuIconName CircleUserRound
-  - ECMAScript.VuIcons.VuIconName CircleX
-  - ECMAScript.VuIcons.VuIconName CircuitBoard
-  - ECMAScript.VuIcons.VuIconName Citrus
-  - ECMAScript.VuIcons.VuIconName Clapperboard
-  - ECMAScript.VuIcons.VuIconName Classroom
-  - ECMAScript.VuIcons.VuIconName Clipboard
-  - ECMAScript.VuIcons.VuIconName ClipboardCheck
-  - ECMAScript.VuIcons.VuIconName ClipboardClock
-  - ECMAScript.VuIcons.VuIconName ClipboardCopy
-  - ECMAScript.VuIcons.VuIconName ClipboardList
-  - ECMAScript.VuIcons.VuIconName ClipboardMinus
-  - ECMAScript.VuIcons.VuIconName ClipboardPaste
-  - ECMAScript.VuIcons.VuIconName ClipboardPen
-  - ECMAScript.VuIcons.VuIconName ClipboardPenLine
-  - ECMAScript.VuIcons.VuIconName ClipboardPlus
-  - ECMAScript.VuIcons.VuIconName ClipboardType
-  - ECMAScript.VuIcons.VuIconName ClipboardX
-  - ECMAScript.VuIcons.VuIconName Clock
-  - ECMAScript.VuIcons.VuIconName Clock1
-  - ECMAScript.VuIcons.VuIconName Clock10
-  - ECMAScript.VuIcons.VuIconName Clock11
-  - ECMAScript.VuIcons.VuIconName Clock12
-  - ECMAScript.VuIcons.VuIconName Clock2
-  - ECMAScript.VuIcons.VuIconName Clock3
-  - ECMAScript.VuIcons.VuIconName Clock4
-  - ECMAScript.VuIcons.VuIconName Clock5
-  - ECMAScript.VuIcons.VuIconName Clock6
-  - ECMAScript.VuIcons.VuIconName Clock7
-  - ECMAScript.VuIcons.VuIconName Clock8
-  - ECMAScript.VuIcons.VuIconName Clock9
-  - ECMAScript.VuIcons.VuIconName ClockAlert
-  - ECMAScript.VuIcons.VuIconName ClockArrowDown
-  - ECMAScript.VuIcons.VuIconName ClockArrowUp
-  - ECMAScript.VuIcons.VuIconName ClockCheck
-  - ECMAScript.VuIcons.VuIconName ClockFading
-  - ECMAScript.VuIcons.VuIconName ClockPlus
-  - ECMAScript.VuIcons.VuIconName Close
-  - ECMAScript.VuIcons.VuIconName ClosedCaption
-  - ECMAScript.VuIcons.VuIconName Cloud
-  - ECMAScript.VuIcons.VuIconName CloudAlert
-  - ECMAScript.VuIcons.VuIconName CloudBackup
-  - ECMAScript.VuIcons.VuIconName CloudCheck
-  - ECMAScript.VuIcons.VuIconName CloudCog
-  - ECMAScript.VuIcons.VuIconName CloudDownload
-  - ECMAScript.VuIcons.VuIconName CloudDrizzle
-  - ECMAScript.VuIcons.VuIconName CloudFog
-  - ECMAScript.VuIcons.VuIconName CloudHail
-  - ECMAScript.VuIcons.VuIconName CloudLightning
-  - ECMAScript.VuIcons.VuIconName CloudMoon
-  - ECMAScript.VuIcons.VuIconName CloudMoonRain
-  - ECMAScript.VuIcons.VuIconName CloudOff
-  - ECMAScript.VuIcons.VuIconName CloudRain
-  - ECMAScript.VuIcons.VuIconName CloudRainWind
-  - ECMAScript.VuIcons.VuIconName CloudSnow
-  - ECMAScript.VuIcons.VuIconName CloudSun
-  - ECMAScript.VuIcons.VuIconName CloudSunRain
-  - ECMAScript.VuIcons.VuIconName CloudSync
-  - ECMAScript.VuIcons.VuIconName CloudUpload
-  - ECMAScript.VuIcons.VuIconName Cloudy
-  - ECMAScript.VuIcons.VuIconName Clover
-  - ECMAScript.VuIcons.VuIconName Club
-  - ECMAScript.VuIcons.VuIconName Code
-  - ECMAScript.VuIcons.VuIconName CodeXml
-  - ECMAScript.VuIcons.VuIconName Codepen
-  - ECMAScript.VuIcons.VuIconName Codesandbox
-  - ECMAScript.VuIcons.VuIconName Coffee
-  - ECMAScript.VuIcons.VuIconName Cog
-  - ECMAScript.VuIcons.VuIconName Coins
-  - ECMAScript.VuIcons.VuIconName Columns2
-  - ECMAScript.VuIcons.VuIconName Columns3
-  - ECMAScript.VuIcons.VuIconName Columns3Cog
-  - ECMAScript.VuIcons.VuIconName Columns4
-  - ECMAScript.VuIcons.VuIconName Combine
-  - ECMAScript.VuIcons.VuIconName Command
-  - ECMAScript.VuIcons.VuIconName Comment
-  - ECMAScript.VuIcons.VuIconName Compass
-  - ECMAScript.VuIcons.VuIconName Completed
-  - ECMAScript.VuIcons.VuIconName Component
-  - ECMAScript.VuIcons.VuIconName Computer
-  - ECMAScript.VuIcons.VuIconName ConciergeBell
-  - ECMAScript.VuIcons.VuIconName Cone
-  - ECMAScript.VuIcons.VuIconName Construction
-  - ECMAScript.VuIcons.VuIconName Contact
-  - ECMAScript.VuIcons.VuIconName ContactRound
-  - ECMAScript.VuIcons.VuIconName Container
-  - ECMAScript.VuIcons.VuIconName Contrast
-  - ECMAScript.VuIcons.VuIconName Cookie
-  - ECMAScript.VuIcons.VuIconName CookingPot
-  - ECMAScript.VuIcons.VuIconName Copy
-  - ECMAScript.VuIcons.VuIconName CopyCheck
-  - ECMAScript.VuIcons.VuIconName CopyMinus
-  - ECMAScript.VuIcons.VuIconName CopyPlus
-  - ECMAScript.VuIcons.VuIconName CopySlash
-  - ECMAScript.VuIcons.VuIconName CopyX
-  - ECMAScript.VuIcons.VuIconName Copyleft
-  - ECMAScript.VuIcons.VuIconName Copyright
-  - ECMAScript.VuIcons.VuIconName CornerDownLeft
-  - ECMAScript.VuIcons.VuIconName CornerDownRight
-  - ECMAScript.VuIcons.VuIconName CornerLeftDown
-  - ECMAScript.VuIcons.VuIconName CornerLeftUp
-  - ECMAScript.VuIcons.VuIconName CornerRightDown
-  - ECMAScript.VuIcons.VuIconName CornerRightUp
-  - ECMAScript.VuIcons.VuIconName CornerUpLeft
-  - ECMAScript.VuIcons.VuIconName CornerUpRight
-  - ECMAScript.VuIcons.VuIconName Coupon
-  - ECMAScript.VuIcons.VuIconName Course
-  - ECMAScript.VuIcons.VuIconName Cpu
-  - ECMAScript.VuIcons.VuIconName CreativeCommons
-  - ECMAScript.VuIcons.VuIconName CreditCard
-  - ECMAScript.VuIcons.VuIconName Croissant
-  - ECMAScript.VuIcons.VuIconName Crop
-  - ECMAScript.VuIcons.VuIconName Cross
-  - ECMAScript.VuIcons.VuIconName Crosshair
-  - ECMAScript.VuIcons.VuIconName Crown
-  - ECMAScript.VuIcons.VuIconName Cuboid
-  - ECMAScript.VuIcons.VuIconName CupSoda
-  - ECMAScript.VuIcons.VuIconName Currency
-  - ECMAScript.VuIcons.VuIconName Cut
-  - ECMAScript.VuIcons.VuIconName Cylinder
-  - ECMAScript.VuIcons.VuIconName Dam
-  - ECMAScript.VuIcons.VuIconName DataCompare
-  - ECMAScript.VuIcons.VuIconName DataExport
-  - ECMAScript.VuIcons.VuIconName DataFilter
-  - ECMAScript.VuIcons.VuIconName DataRefresh
-  - ECMAScript.VuIcons.VuIconName Database
-  - ECMAScript.VuIcons.VuIconName DatabaseBackup
-  - ECMAScript.VuIcons.VuIconName DatabaseZap
-  - ECMAScript.VuIcons.VuIconName DecimalsArrowLeft
-  - ECMAScript.VuIcons.VuIconName DecimalsArrowRight
-  - ECMAScript.VuIcons.VuIconName Delete
-  - ECMAScript.VuIcons.VuIconName Delivery
-  - ECMAScript.VuIcons.VuIconName Dessert
-  - ECMAScript.VuIcons.VuIconName Diameter
-  - ECMAScript.VuIcons.VuIconName Diamond
-  - ECMAScript.VuIcons.VuIconName DiamondMinus
-  - ECMAScript.VuIcons.VuIconName DiamondPercent
-  - ECMAScript.VuIcons.VuIconName DiamondPlus
-  - ECMAScript.VuIcons.VuIconName Dice1
-  - ECMAScript.VuIcons.VuIconName Dice2
-  - ECMAScript.VuIcons.VuIconName Dice3
-  - ECMAScript.VuIcons.VuIconName Dice4
-  - ECMAScript.VuIcons.VuIconName Dice5
-  - ECMAScript.VuIcons.VuIconName Dice6
-  - ECMAScript.VuIcons.VuIconName Dices
-  - ECMAScript.VuIcons.VuIconName Diff
-  - ECMAScript.VuIcons.VuIconName Disabled
-  - ECMAScript.VuIcons.VuIconName Disc
-  - ECMAScript.VuIcons.VuIconName Disc2
-  - ECMAScript.VuIcons.VuIconName Disc3
-  - ECMAScript.VuIcons.VuIconName DiscAlbum
-  - ECMAScript.VuIcons.VuIconName Dislike
-  - ECMAScript.VuIcons.VuIconName Divide
-  - ECMAScript.VuIcons.VuIconName Dna
-  - ECMAScript.VuIcons.VuIconName DnaOff
-  - ECMAScript.VuIcons.VuIconName Dock
-  - ECMAScript.VuIcons.VuIconName Dog
-  - ECMAScript.VuIcons.VuIconName DollarSign
-  - ECMAScript.VuIcons.VuIconName Donut
-  - ECMAScript.VuIcons.VuIconName DoorClosed
-  - ECMAScript.VuIcons.VuIconName DoorClosedLocked
-  - ECMAScript.VuIcons.VuIconName DoorOpen
-  - ECMAScript.VuIcons.VuIconName Dot
-  - ECMAScript.VuIcons.VuIconName DoughnutChart
-  - ECMAScript.VuIcons.VuIconName Download
-  - ECMAScript.VuIcons.VuIconName DraftingCompass
-  - ECMAScript.VuIcons.VuIconName Drama
-  - ECMAScript.VuIcons.VuIconName Dribbble
-  - ECMAScript.VuIcons.VuIconName Drill
-  - ECMAScript.VuIcons.VuIconName Drone
-  - ECMAScript.VuIcons.VuIconName Droplet
-  - ECMAScript.VuIcons.VuIconName DropletOff
-  - ECMAScript.VuIcons.VuIconName Droplets
-  - ECMAScript.VuIcons.VuIconName Drum
-  - ECMAScript.VuIcons.VuIconName Drumstick
-  - ECMAScript.VuIcons.VuIconName Dumbbell
-  - ECMAScript.VuIcons.VuIconName Ear
-  - ECMAScript.VuIcons.VuIconName EarOff
-  - ECMAScript.VuIcons.VuIconName Earth
-  - ECMAScript.VuIcons.VuIconName EarthLock
-  - ECMAScript.VuIcons.VuIconName Eclipse
-  - ECMAScript.VuIcons.VuIconName Edit
-  - ECMAScript.VuIcons.VuIconName Egg
-  - ECMAScript.VuIcons.VuIconName EggFried
-  - ECMAScript.VuIcons.VuIconName EggOff
-  - ECMAScript.VuIcons.VuIconName Ellipsis
-  - ECMAScript.VuIcons.VuIconName EllipsisVertical
-  - ECMAScript.VuIcons.VuIconName Enter
-  - ECMAScript.VuIcons.VuIconName Equal
-  - ECMAScript.VuIcons.VuIconName EqualApproximately
-  - ECMAScript.VuIcons.VuIconName EqualNot
-  - ECMAScript.VuIcons.VuIconName Eraser
-  - ECMAScript.VuIcons.VuIconName Error
-  - ECMAScript.VuIcons.VuIconName EthernetPort
-  - ECMAScript.VuIcons.VuIconName Euro
-  - ECMAScript.VuIcons.VuIconName EvCharger
-  - ECMAScript.VuIcons.VuIconName Exam
-  - ECMAScript.VuIcons.VuIconName ExitFullscreen
-  - ECMAScript.VuIcons.VuIconName Expand
-  - ECMAScript.VuIcons.VuIconName ExternalLink
-  - ECMAScript.VuIcons.VuIconName Eye
-  - ECMAScript.VuIcons.VuIconName EyeClosed
-  - ECMAScript.VuIcons.VuIconName EyeOff
-  - ECMAScript.VuIcons.VuIconName Facebook
-  - ECMAScript.VuIcons.VuIconName Factory
-  - ECMAScript.VuIcons.VuIconName Failure
-  - ECMAScript.VuIcons.VuIconName Fan
-  - ECMAScript.VuIcons.VuIconName FastBackward
-  - ECMAScript.VuIcons.VuIconName FastForward
-  - ECMAScript.VuIcons.VuIconName Favorite
-  - ECMAScript.VuIcons.VuIconName Feather
-  - ECMAScript.VuIcons.VuIconName Fence
-  - ECMAScript.VuIcons.VuIconName FerrisWheel
-  - ECMAScript.VuIcons.VuIconName Figma
-  - ECMAScript.VuIcons.VuIconName File
-  - ECMAScript.VuIcons.VuIconName FileArchive
-  - ECMAScript.VuIcons.VuIconName FileAudio
-  - ECMAScript.VuIcons.VuIconName FileAudio2
-  - ECMAScript.VuIcons.VuIconName FileAxis3d
-  - ECMAScript.VuIcons.VuIconName FileBadge
-  - ECMAScript.VuIcons.VuIconName FileBadge2
-  - ECMAScript.VuIcons.VuIconName FileBox
-  - ECMAScript.VuIcons.VuIconName FileBraces
-  - ECMAScript.VuIcons.VuIconName FileBracesCorner
-  - ECMAScript.VuIcons.VuIconName FileChartColumn
-  - ECMAScript.VuIcons.VuIconName FileChartColumnIncreasing
-  - ECMAScript.VuIcons.VuIconName FileChartLine
-  - ECMAScript.VuIcons.VuIconName FileChartPie
-  - ECMAScript.VuIcons.VuIconName FileCheck
-  - ECMAScript.VuIcons.VuIconName FileCheck2
-  - ECMAScript.VuIcons.VuIconName FileCheckCorner
-  - ECMAScript.VuIcons.VuIconName FileClock
-  - ECMAScript.VuIcons.VuIconName FileCode
-  - ECMAScript.VuIcons.VuIconName FileCode2
-  - ECMAScript.VuIcons.VuIconName FileCodeCorner
-  - ECMAScript.VuIcons.VuIconName FileCog
-  - ECMAScript.VuIcons.VuIconName FileDiff
-  - ECMAScript.VuIcons.VuIconName FileDigit
-  - ECMAScript.VuIcons.VuIconName FileDown
-  - ECMAScript.VuIcons.VuIconName FileExclamationPoint
-  - ECMAScript.VuIcons.VuIconName FileHeadphone
-  - ECMAScript.VuIcons.VuIconName FileHeart
-  - ECMAScript.VuIcons.VuIconName FileImage
-  - ECMAScript.VuIcons.VuIconName FileInput
-  - ECMAScript.VuIcons.VuIconName FileJson
-  - ECMAScript.VuIcons.VuIconName FileJson2
-  - ECMAScript.VuIcons.VuIconName FileKey
-  - ECMAScript.VuIcons.VuIconName FileKey2
-  - ECMAScript.VuIcons.VuIconName FileLock
-  - ECMAScript.VuIcons.VuIconName FileLock2
-  - ECMAScript.VuIcons.VuIconName FileMinus
-  - ECMAScript.VuIcons.VuIconName FileMinus2
-  - ECMAScript.VuIcons.VuIconName FileMinusCorner
-  - ECMAScript.VuIcons.VuIconName FileMusic
-  - ECMAScript.VuIcons.VuIconName FileOutput
-  - ECMAScript.VuIcons.VuIconName FilePen
-  - ECMAScript.VuIcons.VuIconName FilePenLine
-  - ECMAScript.VuIcons.VuIconName FilePieChart
-  - ECMAScript.VuIcons.VuIconName FilePlay
-  - ECMAScript.VuIcons.VuIconName FilePlus
-  - ECMAScript.VuIcons.VuIconName FilePlus2
-  - ECMAScript.VuIcons.VuIconName FilePlusCorner
-  - ECMAScript.VuIcons.VuIconName FileQuestionMark
-  - ECMAScript.VuIcons.VuIconName FileScan
-  - ECMAScript.VuIcons.VuIconName FileSearch
-  - ECMAScript.VuIcons.VuIconName FileSearch2
-  - ECMAScript.VuIcons.VuIconName FileSearchCorner
-  - ECMAScript.VuIcons.VuIconName FileSignal
-  - ECMAScript.VuIcons.VuIconName FileSliders
-  - ECMAScript.VuIcons.VuIconName FileSpreadsheet
-  - ECMAScript.VuIcons.VuIconName FileStack
-  - ECMAScript.VuIcons.VuIconName FileSymlink
-  - ECMAScript.VuIcons.VuIconName FileTerminal
-  - ECMAScript.VuIcons.VuIconName FileText
-  - ECMAScript.VuIcons.VuIconName FileType
-  - ECMAScript.VuIcons.VuIconName FileType2
-  - ECMAScript.VuIcons.VuIconName FileTypeCorner
-  - ECMAScript.VuIcons.VuIconName FileUp
-  - ECMAScript.VuIcons.VuIconName FileUser
-  - ECMAScript.VuIcons.VuIconName FileVideoCamera
-  - ECMAScript.VuIcons.VuIconName FileVolume
-  - ECMAScript.VuIcons.VuIconName FileVolume2
-  - ECMAScript.VuIcons.VuIconName FileWarning
-  - ECMAScript.VuIcons.VuIconName FileX
-  - ECMAScript.VuIcons.VuIconName FileX2
-  - ECMAScript.VuIcons.VuIconName FileXCorner
-  - ECMAScript.VuIcons.VuIconName Files
-  - ECMAScript.VuIcons.VuIconName Film
-  - ECMAScript.VuIcons.VuIconName Filter
-  - ECMAScript.VuIcons.VuIconName FilterX
-  - ECMAScript.VuIcons.VuIconName Finance
-  - ECMAScript.VuIcons.VuIconName FingerprintPattern
-  - ECMAScript.VuIcons.VuIconName FireExtinguisher
-  - ECMAScript.VuIcons.VuIconName Fish
-  - ECMAScript.VuIcons.VuIconName FishOff
-  - ECMAScript.VuIcons.VuIconName FishSymbol
-  - ECMAScript.VuIcons.VuIconName FishingHook
-  - ECMAScript.VuIcons.VuIconName Fitness
-  - ECMAScript.VuIcons.VuIconName Flag
-  - ECMAScript.VuIcons.VuIconName FlagOff
-  - ECMAScript.VuIcons.VuIconName FlagTriangleLeft
-  - ECMAScript.VuIcons.VuIconName FlagTriangleRight
-  - ECMAScript.VuIcons.VuIconName Flame
-  - ECMAScript.VuIcons.VuIconName FlameKindling
-  - ECMAScript.VuIcons.VuIconName Flashlight
-  - ECMAScript.VuIcons.VuIconName FlashlightOff
-  - ECMAScript.VuIcons.VuIconName FlaskConical
-  - ECMAScript.VuIcons.VuIconName FlaskConicalOff
-  - ECMAScript.VuIcons.VuIconName FlaskRound
-  - ECMAScript.VuIcons.VuIconName FlipHorizontal
-  - ECMAScript.VuIcons.VuIconName FlipHorizontal2
-  - ECMAScript.VuIcons.VuIconName FlipVertical
-  - ECMAScript.VuIcons.VuIconName FlipVertical2
-  - ECMAScript.VuIcons.VuIconName Flower
-  - ECMAScript.VuIcons.VuIconName Flower2
-  - ECMAScript.VuIcons.VuIconName Focus
-  - ECMAScript.VuIcons.VuIconName FoldHorizontal
-  - ECMAScript.VuIcons.VuIconName FoldVertical
-  - ECMAScript.VuIcons.VuIconName Folder
-  - ECMAScript.VuIcons.VuIconName FolderArchive
-  - ECMAScript.VuIcons.VuIconName FolderCheck
-  - ECMAScript.VuIcons.VuIconName FolderClock
-  - ECMAScript.VuIcons.VuIconName FolderClosed
-  - ECMAScript.VuIcons.VuIconName FolderCode
-  - ECMAScript.VuIcons.VuIconName FolderCog
-  - ECMAScript.VuIcons.VuIconName FolderDot
-  - ECMAScript.VuIcons.VuIconName FolderDown
-  - ECMAScript.VuIcons.VuIconName FolderGit
-  - ECMAScript.VuIcons.VuIconName FolderGit2
-  - ECMAScript.VuIcons.VuIconName FolderHeart
-  - ECMAScript.VuIcons.VuIconName FolderInput
-  - ECMAScript.VuIcons.VuIconName FolderKanban
-  - ECMAScript.VuIcons.VuIconName FolderKey
-  - ECMAScript.VuIcons.VuIconName FolderLock
-  - ECMAScript.VuIcons.VuIconName FolderMinus
-  - ECMAScript.VuIcons.VuIconName FolderOpen
-  - ECMAScript.VuIcons.VuIconName FolderOpenDot
-  - ECMAScript.VuIcons.VuIconName FolderOutput
-  - ECMAScript.VuIcons.VuIconName FolderPen
-  - ECMAScript.VuIcons.VuIconName FolderPlus
-  - ECMAScript.VuIcons.VuIconName FolderRoot
-  - ECMAScript.VuIcons.VuIconName FolderSearch
-  - ECMAScript.VuIcons.VuIconName FolderSearch2
-  - ECMAScript.VuIcons.VuIconName FolderSymlink
-  - ECMAScript.VuIcons.VuIconName FolderSync
-  - ECMAScript.VuIcons.VuIconName FolderTree
-  - ECMAScript.VuIcons.VuIconName FolderUp
-  - ECMAScript.VuIcons.VuIconName FolderX
-  - ECMAScript.VuIcons.VuIconName Folders
-  - ECMAScript.VuIcons.VuIconName Follow
-  - ECMAScript.VuIcons.VuIconName Followers
-  - ECMAScript.VuIcons.VuIconName Food
-  - ECMAScript.VuIcons.VuIconName Footprints
-  - ECMAScript.VuIcons.VuIconName Forklift
-  - ECMAScript.VuIcons.VuIconName Form
-  - ECMAScript.VuIcons.VuIconName Forward
-  - ECMAScript.VuIcons.VuIconName Frame
-  - ECMAScript.VuIcons.VuIconName Framer
-  - ECMAScript.VuIcons.VuIconName Frown
-  - ECMAScript.VuIcons.VuIconName Fuel
-  - ECMAScript.VuIcons.VuIconName Fullscreen
-  - ECMAScript.VuIcons.VuIconName Funnel
-  - ECMAScript.VuIcons.VuIconName FunnelChart
-  - ECMAScript.VuIcons.VuIconName FunnelPlus
-  - ECMAScript.VuIcons.VuIconName FunnelX
-  - ECMAScript.VuIcons.VuIconName GalleryHorizontal
-  - ECMAScript.VuIcons.VuIconName GalleryHorizontalEnd
-  - ECMAScript.VuIcons.VuIconName GalleryThumbnails
-  - ECMAScript.VuIcons.VuIconName GalleryVertical
-  - ECMAScript.VuIcons.VuIconName GalleryVerticalEnd
-  - ECMAScript.VuIcons.VuIconName Gamepad
-  - ECMAScript.VuIcons.VuIconName Gamepad2
-  - ECMAScript.VuIcons.VuIconName GamepadDirectional
-  - ECMAScript.VuIcons.VuIconName Gauge
-  - ECMAScript.VuIcons.VuIconName Gavel
-  - ECMAScript.VuIcons.VuIconName Gem
-  - ECMAScript.VuIcons.VuIconName GeorgianLari
-  - ECMAScript.VuIcons.VuIconName Ghost
-  - ECMAScript.VuIcons.VuIconName Gift
-  - ECMAScript.VuIcons.VuIconName GitBranch
-  - ECMAScript.VuIcons.VuIconName GitBranchMinus
-  - ECMAScript.VuIcons.VuIconName GitBranchPlus
-  - ECMAScript.VuIcons.VuIconName GitCommitHorizontal
-  - ECMAScript.VuIcons.VuIconName GitCommitVertical
-  - ECMAScript.VuIcons.VuIconName GitCompare
-  - ECMAScript.VuIcons.VuIconName GitCompareArrows
-  - ECMAScript.VuIcons.VuIconName GitFork
-  - ECMAScript.VuIcons.VuIconName GitGraph
-  - ECMAScript.VuIcons.VuIconName GitMerge
-  - ECMAScript.VuIcons.VuIconName GitPullRequest
-  - ECMAScript.VuIcons.VuIconName GitPullRequestArrow
-  - ECMAScript.VuIcons.VuIconName GitPullRequestClosed
-  - ECMAScript.VuIcons.VuIconName GitPullRequestCreate
-  - ECMAScript.VuIcons.VuIconName GitPullRequestCreateArrow
-  - ECMAScript.VuIcons.VuIconName GitPullRequestDraft
-  - ECMAScript.VuIcons.VuIconName Github
-  - ECMAScript.VuIcons.VuIconName Gitlab
-  - ECMAScript.VuIcons.VuIconName GlassWater
-  - ECMAScript.VuIcons.VuIconName Glasses
-  - ECMAScript.VuIcons.VuIconName Globe
-  - ECMAScript.VuIcons.VuIconName GlobeLock
-  - ECMAScript.VuIcons.VuIconName GlobeX
-  - ECMAScript.VuIcons.VuIconName Goal
-  - ECMAScript.VuIcons.VuIconName Gpu
-  - ECMAScript.VuIcons.VuIconName GraduationCap
-  - ECMAScript.VuIcons.VuIconName Grape
-  - ECMAScript.VuIcons.VuIconName Grid2x2
-  - ECMAScript.VuIcons.VuIconName Grid2x2Check
-  - ECMAScript.VuIcons.VuIconName Grid2x2Plus
-  - ECMAScript.VuIcons.VuIconName Grid2x2X
-  - ECMAScript.VuIcons.VuIconName Grid3x2
-  - ECMAScript.VuIcons.VuIconName Grid3x3
-  - ECMAScript.VuIcons.VuIconName Grip
-  - ECMAScript.VuIcons.VuIconName GripHorizontal
-  - ECMAScript.VuIcons.VuIconName GripVertical
-  - ECMAScript.VuIcons.VuIconName Group
-  - ECMAScript.VuIcons.VuIconName GroupBuy
-  - ECMAScript.VuIcons.VuIconName Guitar
-  - ECMAScript.VuIcons.VuIconName Ham
-  - ECMAScript.VuIcons.VuIconName Hamburger
-  - ECMAScript.VuIcons.VuIconName Hammer
-  - ECMAScript.VuIcons.VuIconName Hand
-  - ECMAScript.VuIcons.VuIconName HandCoins
-  - ECMAScript.VuIcons.VuIconName HandFist
-  - ECMAScript.VuIcons.VuIconName HandGrab
-  - ECMAScript.VuIcons.VuIconName HandHeart
-  - ECMAScript.VuIcons.VuIconName HandHelping
-  - ECMAScript.VuIcons.VuIconName HandMetal
-  - ECMAScript.VuIcons.VuIconName HandPlatter
-  - ECMAScript.VuIcons.VuIconName Handbag
-  - ECMAScript.VuIcons.VuIconName Handshake
-  - ECMAScript.VuIcons.VuIconName HardDrive
-  - ECMAScript.VuIcons.VuIconName HardDriveDownload
-  - ECMAScript.VuIcons.VuIconName HardDriveUpload
-  - ECMAScript.VuIcons.VuIconName HardHat
-  - ECMAScript.VuIcons.VuIconName Hash
-  - ECMAScript.VuIcons.VuIconName HatGlasses
-  - ECMAScript.VuIcons.VuIconName Haze
-  - ECMAScript.VuIcons.VuIconName Hd
-  - ECMAScript.VuIcons.VuIconName HdmiPort
-  - ECMAScript.VuIcons.VuIconName Heading
-  - ECMAScript.VuIcons.VuIconName Heading1
-  - ECMAScript.VuIcons.VuIconName Heading2
-  - ECMAScript.VuIcons.VuIconName Heading3
-  - ECMAScript.VuIcons.VuIconName Heading4
-  - ECMAScript.VuIcons.VuIconName Heading5
-  - ECMAScript.VuIcons.VuIconName Heading6
-  - ECMAScript.VuIcons.VuIconName HeadphoneOff
-  - ECMAScript.VuIcons.VuIconName Headphones
-  - ECMAScript.VuIcons.VuIconName Headset
-  - ECMAScript.VuIcons.VuIconName Heart
-  - ECMAScript.VuIcons.VuIconName HeartCrack
-  - ECMAScript.VuIcons.VuIconName HeartHandshake
-  - ECMAScript.VuIcons.VuIconName HeartMinus
-  - ECMAScript.VuIcons.VuIconName HeartOff
-  - ECMAScript.VuIcons.VuIconName HeartPlus
-  - ECMAScript.VuIcons.VuIconName HeartPulse
-  - ECMAScript.VuIcons.VuIconName Heater
-  - ECMAScript.VuIcons.VuIconName Helicopter
-  - ECMAScript.VuIcons.VuIconName Hexagon
-  - ECMAScript.VuIcons.VuIconName Highlighter
-  - ECMAScript.VuIcons.VuIconName Hint
-  - ECMAScript.VuIcons.VuIconName History
-  - ECMAScript.VuIcons.VuIconName Home
-  - ECMAScript.VuIcons.VuIconName Homework
-  - ECMAScript.VuIcons.VuIconName Hop
-  - ECMAScript.VuIcons.VuIconName HopOff
-  - ECMAScript.VuIcons.VuIconName Hospital
-  - ECMAScript.VuIcons.VuIconName Hotel
-  - ECMAScript.VuIcons.VuIconName Hourglass
-  - ECMAScript.VuIcons.VuIconName House
-  - ECMAScript.VuIcons.VuIconName HouseHeart
-  - ECMAScript.VuIcons.VuIconName HousePlug
-  - ECMAScript.VuIcons.VuIconName HousePlus
-  - ECMAScript.VuIcons.VuIconName HouseWifi
-  - ECMAScript.VuIcons.VuIconName IceCreamBowl
-  - ECMAScript.VuIcons.VuIconName IceCreamCone
-  - ECMAScript.VuIcons.VuIconName IdCard
-  - ECMAScript.VuIcons.VuIconName IdCardLanyard
-  - ECMAScript.VuIcons.VuIconName Image
-  - ECMAScript.VuIcons.VuIconName ImageDown
-  - ECMAScript.VuIcons.VuIconName ImageMinus
-  - ECMAScript.VuIcons.VuIconName ImageOff
-  - ECMAScript.VuIcons.VuIconName ImagePlay
-  - ECMAScript.VuIcons.VuIconName ImagePlus
-  - ECMAScript.VuIcons.VuIconName ImageUp
-  - ECMAScript.VuIcons.VuIconName ImageUpscale
-  - ECMAScript.VuIcons.VuIconName Images
-  - ECMAScript.VuIcons.VuIconName Import
-  - ECMAScript.VuIcons.VuIconName InProgress
-  - ECMAScript.VuIcons.VuIconName Inbox
-  - ECMAScript.VuIcons.VuIconName Incomplete
-  - ECMAScript.VuIcons.VuIconName IndentDecrease
-  - ECMAScript.VuIcons.VuIconName IndentIncrease
-  - ECMAScript.VuIcons.VuIconName IndianRupee
-  - ECMAScript.VuIcons.VuIconName Infinity
-  - ECMAScript.VuIcons.VuIconName Info
-  - ECMAScript.VuIcons.VuIconName InspectionPanel
-  - ECMAScript.VuIcons.VuIconName Instagram
-  - ECMAScript.VuIcons.VuIconName Insurance
-  - ECMAScript.VuIcons.VuIconName Invoice
-  - ECMAScript.VuIcons.VuIconName Italic
-  - ECMAScript.VuIcons.VuIconName IterationCcw
-  - ECMAScript.VuIcons.VuIconName IterationCw
-  - ECMAScript.VuIcons.VuIconName JapaneseYen
-  - ECMAScript.VuIcons.VuIconName Joystick
-  - ECMAScript.VuIcons.VuIconName Kanban
-  - ECMAScript.VuIcons.VuIconName Kayak
-  - ECMAScript.VuIcons.VuIconName Key
-  - ECMAScript.VuIcons.VuIconName KeyRound
-  - ECMAScript.VuIcons.VuIconName KeySquare
-  - ECMAScript.VuIcons.VuIconName Keyboard
-  - ECMAScript.VuIcons.VuIconName KeyboardMusic
-  - ECMAScript.VuIcons.VuIconName KeyboardOff
-  - ECMAScript.VuIcons.VuIconName Laboratory
-  - ECMAScript.VuIcons.VuIconName Lamp
-  - ECMAScript.VuIcons.VuIconName LampCeiling
-  - ECMAScript.VuIcons.VuIconName LampDesk
-  - ECMAScript.VuIcons.VuIconName LampFloor
-  - ECMAScript.VuIcons.VuIconName LampWallDown
-  - ECMAScript.VuIcons.VuIconName LampWallUp
-  - ECMAScript.VuIcons.VuIconName LandPlot
-  - ECMAScript.VuIcons.VuIconName Landmark
-  - ECMAScript.VuIcons.VuIconName Languages
-  - ECMAScript.VuIcons.VuIconName Laptop
-  - ECMAScript.VuIcons.VuIconName LaptopMinimal
-  - ECMAScript.VuIcons.VuIconName LaptopMinimalCheck
-  - ECMAScript.VuIcons.VuIconName Lasso
-  - ECMAScript.VuIcons.VuIconName LassoSelect
-  - ECMAScript.VuIcons.VuIconName Laugh
-  - ECMAScript.VuIcons.VuIconName Layers
-  - ECMAScript.VuIcons.VuIconName Layers2
-  - ECMAScript.VuIcons.VuIconName Layers3
-  - ECMAScript.VuIcons.VuIconName LayersPlus
-  - ECMAScript.VuIcons.VuIconName LayoutDashboard
-  - ECMAScript.VuIcons.VuIconName LayoutGrid
-  - ECMAScript.VuIcons.VuIconName LayoutList
-  - ECMAScript.VuIcons.VuIconName LayoutPanelLeft
-  - ECMAScript.VuIcons.VuIconName LayoutPanelTop
-  - ECMAScript.VuIcons.VuIconName LayoutTemplate
-  - ECMAScript.VuIcons.VuIconName Leaf
-  - ECMAScript.VuIcons.VuIconName LeafyGreen
-  - ECMAScript.VuIcons.VuIconName Lectern
-  - ECMAScript.VuIcons.VuIconName LetterText
-  - ECMAScript.VuIcons.VuIconName Library
-  - ECMAScript.VuIcons.VuIconName LibraryBig
-  - ECMAScript.VuIcons.VuIconName LifeBuoy
-  - ECMAScript.VuIcons.VuIconName Ligature
-  - ECMAScript.VuIcons.VuIconName Lightbulb
-  - ECMAScript.VuIcons.VuIconName LightbulbOff
-  - ECMAScript.VuIcons.VuIconName Like
-  - ECMAScript.VuIcons.VuIconName LineChart
-  - ECMAScript.VuIcons.VuIconName LineSquiggle
-  - ECMAScript.VuIcons.VuIconName Link
-  - ECMAScript.VuIcons.VuIconName Link2
-  - ECMAScript.VuIcons.VuIconName Link2Off
-  - ECMAScript.VuIcons.VuIconName Linkedin
-  - ECMAScript.VuIcons.VuIconName List
-  - ECMAScript.VuIcons.VuIconName ListCheck
-  - ECMAScript.VuIcons.VuIconName ListChecks
-  - ECMAScript.VuIcons.VuIconName ListChevronsDownUp
-  - ECMAScript.VuIcons.VuIconName ListChevronsUpDown
-  - ECMAScript.VuIcons.VuIconName ListCollapse
-  - ECMAScript.VuIcons.VuIconName ListEnd
-  - ECMAScript.VuIcons.VuIconName ListFilter
-  - ECMAScript.VuIcons.VuIconName ListFilterPlus
-  - ECMAScript.VuIcons.VuIconName ListIndentDecrease
-  - ECMAScript.VuIcons.VuIconName ListIndentIncrease
-  - ECMAScript.VuIcons.VuIconName ListMinus
-  - ECMAScript.VuIcons.VuIconName ListMusic
-  - ECMAScript.VuIcons.VuIconName ListOrdered
-  - ECMAScript.VuIcons.VuIconName ListPlus
-  - ECMAScript.VuIcons.VuIconName ListRestart
-  - ECMAScript.VuIcons.VuIconName ListStart
-  - ECMAScript.VuIcons.VuIconName ListTodo
-  - ECMAScript.VuIcons.VuIconName ListTree
-  - ECMAScript.VuIcons.VuIconName ListVideo
-  - ECMAScript.VuIcons.VuIconName ListX
-  - ECMAScript.VuIcons.VuIconName Loader
-  - ECMAScript.VuIcons.VuIconName LoaderCircle
-  - ECMAScript.VuIcons.VuIconName LoaderPinwheel
-  - ECMAScript.VuIcons.VuIconName Loading
-  - ECMAScript.VuIcons.VuIconName Locate
-  - ECMAScript.VuIcons.VuIconName LocateFixed
-  - ECMAScript.VuIcons.VuIconName LocateOff
-  - ECMAScript.VuIcons.VuIconName Location
-  - ECMAScript.VuIcons.VuIconName Lock
-  - ECMAScript.VuIcons.VuIconName LockKeyhole
-  - ECMAScript.VuIcons.VuIconName LockKeyholeOpen
-  - ECMAScript.VuIcons.VuIconName LockOpen
-  - ECMAScript.VuIcons.VuIconName LockScreen
-  - ECMAScript.VuIcons.VuIconName LogIn
-  - ECMAScript.VuIcons.VuIconName LogOut
-  - ECMAScript.VuIcons.VuIconName Logs
-  - ECMAScript.VuIcons.VuIconName Lollipop
-  - ECMAScript.VuIcons.VuIconName Luggage
-  - ECMAScript.VuIcons.VuIconName Magnet
-  - ECMAScript.VuIcons.VuIconName Mail
-  - ECMAScript.VuIcons.VuIconName MailCheck
-  - ECMAScript.VuIcons.VuIconName MailMinus
-  - ECMAScript.VuIcons.VuIconName MailOpen
-  - ECMAScript.VuIcons.VuIconName MailPlus
-  - ECMAScript.VuIcons.VuIconName MailQuestionMark
-  - ECMAScript.VuIcons.VuIconName MailSearch
-  - ECMAScript.VuIcons.VuIconName MailWarning
-  - ECMAScript.VuIcons.VuIconName MailX
-  - ECMAScript.VuIcons.VuIconName Mailbox
-  - ECMAScript.VuIcons.VuIconName Mails
-  - ECMAScript.VuIcons.VuIconName Map
-  - ECMAScript.VuIcons.VuIconName MapMinus
-  - ECMAScript.VuIcons.VuIconName MapPin
-  - ECMAScript.VuIcons.VuIconName MapPinCheck
-  - ECMAScript.VuIcons.VuIconName MapPinCheckInside
-  - ECMAScript.VuIcons.VuIconName MapPinHouse
-  - ECMAScript.VuIcons.VuIconName MapPinMinus
-  - ECMAScript.VuIcons.VuIconName MapPinMinusInside
-  - ECMAScript.VuIcons.VuIconName MapPinOff
-  - ECMAScript.VuIcons.VuIconName MapPinPen
-  - ECMAScript.VuIcons.VuIconName MapPinPlus
-  - ECMAScript.VuIcons.VuIconName MapPinPlusInside
-  - ECMAScript.VuIcons.VuIconName MapPinX
-  - ECMAScript.VuIcons.VuIconName MapPinXInside
-  - ECMAScript.VuIcons.VuIconName MapPinned
-  - ECMAScript.VuIcons.VuIconName MapPlus
-  - ECMAScript.VuIcons.VuIconName Mars
-  - ECMAScript.VuIcons.VuIconName MarsStroke
-  - ECMAScript.VuIcons.VuIconName Martini
-  - ECMAScript.VuIcons.VuIconName Mask
-  - ECMAScript.VuIcons.VuIconName Maximize
-  - ECMAScript.VuIcons.VuIconName Maximize2
-  - ECMAScript.VuIcons.VuIconName Medal
-  - ECMAScript.VuIcons.VuIconName MedicalRecord
-  - ECMAScript.VuIcons.VuIconName Medicine
-  - ECMAScript.VuIcons.VuIconName Megaphone
-  - ECMAScript.VuIcons.VuIconName MegaphoneOff
-  - ECMAScript.VuIcons.VuIconName Meh
-  - ECMAScript.VuIcons.VuIconName MemoryStick
-  - ECMAScript.VuIcons.VuIconName Menu
-  - ECMAScript.VuIcons.VuIconName Merge
-  - ECMAScript.VuIcons.VuIconName Message
-  - ECMAScript.VuIcons.VuIconName MessageCircle
-  - ECMAScript.VuIcons.VuIconName MessageCircleCode
-  - ECMAScript.VuIcons.VuIconName MessageCircleDashed
-  - ECMAScript.VuIcons.VuIconName MessageCircleHeart
-  - ECMAScript.VuIcons.VuIconName MessageCircleMore
-  - ECMAScript.VuIcons.VuIconName MessageCircleOff
-  - ECMAScript.VuIcons.VuIconName MessageCirclePlus
-  - ECMAScript.VuIcons.VuIconName MessageCircleQuestionMark
-  - ECMAScript.VuIcons.VuIconName MessageCircleReply
-  - ECMAScript.VuIcons.VuIconName MessageCircleWarning
-  - ECMAScript.VuIcons.VuIconName MessageCircleX
-  - ECMAScript.VuIcons.VuIconName MessagePrivate
-  - ECMAScript.VuIcons.VuIconName MessageSquare
-  - ECMAScript.VuIcons.VuIconName MessageSquareCode
-  - ECMAScript.VuIcons.VuIconName MessageSquareDashed
-  - ECMAScript.VuIcons.VuIconName MessageSquareDiff
-  - ECMAScript.VuIcons.VuIconName MessageSquareDot
-  - ECMAScript.VuIcons.VuIconName MessageSquareHeart
-  - ECMAScript.VuIcons.VuIconName MessageSquareLock
-  - ECMAScript.VuIcons.VuIconName MessageSquareMore
-  - ECMAScript.VuIcons.VuIconName MessageSquareOff
-  - ECMAScript.VuIcons.VuIconName MessageSquarePlus
-  - ECMAScript.VuIcons.VuIconName MessageSquareQuote
-  - ECMAScript.VuIcons.VuIconName MessageSquareReply
-  - ECMAScript.VuIcons.VuIconName MessageSquareShare
-  - ECMAScript.VuIcons.VuIconName MessageSquareText
-  - ECMAScript.VuIcons.VuIconName MessageSquareWarning
-  - ECMAScript.VuIcons.VuIconName MessageSquareX
-  - ECMAScript.VuIcons.VuIconName MessagesSquare
-  - ECMAScript.VuIcons.VuIconName Mic
-  - ECMAScript.VuIcons.VuIconName MicOff
-  - ECMAScript.VuIcons.VuIconName MicVocal
-  - ECMAScript.VuIcons.VuIconName Microchip
-  - ECMAScript.VuIcons.VuIconName Microscope
-  - ECMAScript.VuIcons.VuIconName Microwave
-  - ECMAScript.VuIcons.VuIconName Milestone
-  - ECMAScript.VuIcons.VuIconName Milk
-  - ECMAScript.VuIcons.VuIconName MilkOff
-  - ECMAScript.VuIcons.VuIconName Minimize
-  - ECMAScript.VuIcons.VuIconName Minimize2
-  - ECMAScript.VuIcons.VuIconName Minus
-  - ECMAScript.VuIcons.VuIconName Monitor
-  - ECMAScript.VuIcons.VuIconName MonitorCheck
-  - ECMAScript.VuIcons.VuIconName MonitorCloud
-  - ECMAScript.VuIcons.VuIconName MonitorCog
-  - ECMAScript.VuIcons.VuIconName MonitorDot
-  - ECMAScript.VuIcons.VuIconName MonitorDown
-  - ECMAScript.VuIcons.VuIconName MonitorOff
-  - ECMAScript.VuIcons.VuIconName MonitorPause
-  - ECMAScript.VuIcons.VuIconName MonitorPlay
-  - ECMAScript.VuIcons.VuIconName MonitorSmartphone
-  - ECMAScript.VuIcons.VuIconName MonitorSpeaker
-  - ECMAScript.VuIcons.VuIconName MonitorStop
-  - ECMAScript.VuIcons.VuIconName MonitorUp
-  - ECMAScript.VuIcons.VuIconName MonitorX
-  - ECMAScript.VuIcons.VuIconName Moon
-  - ECMAScript.VuIcons.VuIconName MoonStar
-  - ECMAScript.VuIcons.VuIconName Motorbike
-  - ECMAScript.VuIcons.VuIconName Mountain
-  - ECMAScript.VuIcons.VuIconName MountainSnow
-  - ECMAScript.VuIcons.VuIconName Mouse
-  - ECMAScript.VuIcons.VuIconName MouseOff
-  - ECMAScript.VuIcons.VuIconName MousePointer
-  - ECMAScript.VuIcons.VuIconName MousePointer2
-  - ECMAScript.VuIcons.VuIconName MousePointer2Off
-  - ECMAScript.VuIcons.VuIconName MousePointerBan
-  - ECMAScript.VuIcons.VuIconName MousePointerClick
-  - ECMAScript.VuIcons.VuIconName Move
-  - ECMAScript.VuIcons.VuIconName Move3d
-  - ECMAScript.VuIcons.VuIconName MoveDiagonal
-  - ECMAScript.VuIcons.VuIconName MoveDiagonal2
-  - ECMAScript.VuIcons.VuIconName MoveDown
-  - ECMAScript.VuIcons.VuIconName MoveDownLeft
-  - ECMAScript.VuIcons.VuIconName MoveDownRight
-  - ECMAScript.VuIcons.VuIconName MoveHorizontal
-  - ECMAScript.VuIcons.VuIconName MoveLeft
-  - ECMAScript.VuIcons.VuIconName MoveRight
-  - ECMAScript.VuIcons.VuIconName MoveUp
-  - ECMAScript.VuIcons.VuIconName MoveUpLeft
-  - ECMAScript.VuIcons.VuIconName MoveUpRight
-  - ECMAScript.VuIcons.VuIconName MoveVertical
-  - ECMAScript.VuIcons.VuIconName Movie
-  - ECMAScript.VuIcons.VuIconName Multiply
-  - ECMAScript.VuIcons.VuIconName Music
-  - ECMAScript.VuIcons.VuIconName Music2
-  - ECMAScript.VuIcons.VuIconName Music3
-  - ECMAScript.VuIcons.VuIconName Music4
-  - ECMAScript.VuIcons.VuIconName Navigation
-  - ECMAScript.VuIcons.VuIconName Navigation2
-  - ECMAScript.VuIcons.VuIconName Navigation2Off
-  - ECMAScript.VuIcons.VuIconName NavigationDot
-  - ECMAScript.VuIcons.VuIconName NavigationOff
-  - ECMAScript.VuIcons.VuIconName Network
-  - ECMAScript.VuIcons.VuIconName Newspaper
-  - ECMAScript.VuIcons.VuIconName Nfc
-  - ECMAScript.VuIcons.VuIconName NonBinary
-  - ECMAScript.VuIcons.VuIconName Note
-  - ECMAScript.VuIcons.VuIconName Notebook
-  - ECMAScript.VuIcons.VuIconName NotebookPen
-  - ECMAScript.VuIcons.VuIconName NotebookTabs
-  - ECMAScript.VuIcons.VuIconName NotebookText
-  - ECMAScript.VuIcons.VuIconName NotepadText
-  - ECMAScript.VuIcons.VuIconName NotepadTextDashed
-  - ECMAScript.VuIcons.VuIconName Nut
-  - ECMAScript.VuIcons.VuIconName NutOff
-  - ECMAScript.VuIcons.VuIconName Octagon
-  - ECMAScript.VuIcons.VuIconName OctagonAlert
-  - ECMAScript.VuIcons.VuIconName OctagonMinus
-  - ECMAScript.VuIcons.VuIconName OctagonPause
-  - ECMAScript.VuIcons.VuIconName OctagonX
-  - ECMAScript.VuIcons.VuIconName Omega
-  - ECMAScript.VuIcons.VuIconName Option
-  - ECMAScript.VuIcons.VuIconName Orbit
-  - ECMAScript.VuIcons.VuIconName Origami
-  - ECMAScript.VuIcons.VuIconName Package
-  - ECMAScript.VuIcons.VuIconName Package2
-  - ECMAScript.VuIcons.VuIconName PackageCheck
-  - ECMAScript.VuIcons.VuIconName PackageMinus
-  - ECMAScript.VuIcons.VuIconName PackageOpen
-  - ECMAScript.VuIcons.VuIconName PackagePlus
-  - ECMAScript.VuIcons.VuIconName PackageSearch
-  - ECMAScript.VuIcons.VuIconName PackageX
-  - ECMAScript.VuIcons.VuIconName Pagination
-  - ECMAScript.VuIcons.VuIconName PaintBucket
-  - ECMAScript.VuIcons.VuIconName PaintRoller
-  - ECMAScript.VuIcons.VuIconName Paintbrush
-  - ECMAScript.VuIcons.VuIconName PaintbrushVertical
-  - ECMAScript.VuIcons.VuIconName Palette
-  - ECMAScript.VuIcons.VuIconName Panda
-  - ECMAScript.VuIcons.VuIconName PanelBottom
-  - ECMAScript.VuIcons.VuIconName PanelBottomClose
-  - ECMAScript.VuIcons.VuIconName PanelBottomDashed
-  - ECMAScript.VuIcons.VuIconName PanelBottomOpen
-  - ECMAScript.VuIcons.VuIconName PanelLeft
-  - ECMAScript.VuIcons.VuIconName PanelLeftClose
-  - ECMAScript.VuIcons.VuIconName PanelLeftDashed
-  - ECMAScript.VuIcons.VuIconName PanelLeftOpen
-  - ECMAScript.VuIcons.VuIconName PanelLeftRightDashed
-  - ECMAScript.VuIcons.VuIconName PanelRight
-  - ECMAScript.VuIcons.VuIconName PanelRightClose
-  - ECMAScript.VuIcons.VuIconName PanelRightDashed
-  - ECMAScript.VuIcons.VuIconName PanelRightOpen
-  - ECMAScript.VuIcons.VuIconName PanelTop
-  - ECMAScript.VuIcons.VuIconName PanelTopBottomDashed
-  - ECMAScript.VuIcons.VuIconName PanelTopClose
-  - ECMAScript.VuIcons.VuIconName PanelTopDashed
-  - ECMAScript.VuIcons.VuIconName PanelTopOpen
-  - ECMAScript.VuIcons.VuIconName PanelsLeftBottom
-  - ECMAScript.VuIcons.VuIconName PanelsRightBottom
-  - ECMAScript.VuIcons.VuIconName PanelsTopLeft
-  - ECMAScript.VuIcons.VuIconName Paperclip
-  - ECMAScript.VuIcons.VuIconName Parentheses
-  - ECMAScript.VuIcons.VuIconName ParkingMeter
-  - ECMAScript.VuIcons.VuIconName PartyPopper
-  - ECMAScript.VuIcons.VuIconName Paste
-  - ECMAScript.VuIcons.VuIconName Pause
-  - ECMAScript.VuIcons.VuIconName PawPrint
-  - ECMAScript.VuIcons.VuIconName Payment
-  - ECMAScript.VuIcons.VuIconName PaymentMedical
-  - ECMAScript.VuIcons.VuIconName PcCase
-  - ECMAScript.VuIcons.VuIconName Pen
-  - ECMAScript.VuIcons.VuIconName PenLine
-  - ECMAScript.VuIcons.VuIconName PenOff
-  - ECMAScript.VuIcons.VuIconName PenTool
-  - ECMAScript.VuIcons.VuIconName Pencil
-  - ECMAScript.VuIcons.VuIconName PencilLine
-  - ECMAScript.VuIcons.VuIconName PencilOff
-  - ECMAScript.VuIcons.VuIconName PencilRuler
-  - ECMAScript.VuIcons.VuIconName Pentagon
-  - ECMAScript.VuIcons.VuIconName Percent
-  - ECMAScript.VuIcons.VuIconName PersonStanding
-  - ECMAScript.VuIcons.VuIconName PhilippinePeso
-  - ECMAScript.VuIcons.VuIconName Phone
-  - ECMAScript.VuIcons.VuIconName PhoneCall
-  - ECMAScript.VuIcons.VuIconName PhoneForwarded
-  - ECMAScript.VuIcons.VuIconName PhoneIncoming
-  - ECMAScript.VuIcons.VuIconName PhoneMissed
-  - ECMAScript.VuIcons.VuIconName PhoneOff
-  - ECMAScript.VuIcons.VuIconName PhoneOutgoing
-  - ECMAScript.VuIcons.VuIconName Pi
-  - ECMAScript.VuIcons.VuIconName Piano
-  - ECMAScript.VuIcons.VuIconName Pickaxe
-  - ECMAScript.VuIcons.VuIconName PictureInPicture
-  - ECMAScript.VuIcons.VuIconName PictureInPicture2
-  - ECMAScript.VuIcons.VuIconName PieChart
-  - ECMAScript.VuIcons.VuIconName PiggyBank
-  - ECMAScript.VuIcons.VuIconName Pilcrow
-  - ECMAScript.VuIcons.VuIconName PilcrowLeft
-  - ECMAScript.VuIcons.VuIconName PilcrowRight
-  - ECMAScript.VuIcons.VuIconName Pill
-  - ECMAScript.VuIcons.VuIconName PillBottle
-  - ECMAScript.VuIcons.VuIconName Pin
-  - ECMAScript.VuIcons.VuIconName PinOff
-  - ECMAScript.VuIcons.VuIconName Pipette
-  - ECMAScript.VuIcons.VuIconName Pizza
-  - ECMAScript.VuIcons.VuIconName Plane
-  - ECMAScript.VuIcons.VuIconName PlaneLanding
-  - ECMAScript.VuIcons.VuIconName PlaneTakeoff
-  - ECMAScript.VuIcons.VuIconName Play
-  - ECMAScript.VuIcons.VuIconName Plug
-  - ECMAScript.VuIcons.VuIconName Plug2
-  - ECMAScript.VuIcons.VuIconName PlugZap
-  - ECMAScript.VuIcons.VuIconName Plus
-  - ECMAScript.VuIcons.VuIconName Pocket
-  - ECMAScript.VuIcons.VuIconName PocketKnife
-  - ECMAScript.VuIcons.VuIconName Podcast
-  - ECMAScript.VuIcons.VuIconName Pointer
-  - ECMAScript.VuIcons.VuIconName PointerOff
-  - ECMAScript.VuIcons.VuIconName Points
-  - ECMAScript.VuIcons.VuIconName Popcorn
-  - ECMAScript.VuIcons.VuIconName Popsicle
-  - ECMAScript.VuIcons.VuIconName PoundSterling
-  - ECMAScript.VuIcons.VuIconName Power
-  - ECMAScript.VuIcons.VuIconName PowerOff
-  - ECMAScript.VuIcons.VuIconName Presentation
-  - ECMAScript.VuIcons.VuIconName Printer
-  - ECMAScript.VuIcons.VuIconName PrinterCheck
-  - ECMAScript.VuIcons.VuIconName Product
-  - ECMAScript.VuIcons.VuIconName Projector
-  - ECMAScript.VuIcons.VuIconName Proportions
-  - ECMAScript.VuIcons.VuIconName Puzzle
-  - ECMAScript.VuIcons.VuIconName Pyramid
-  - ECMAScript.VuIcons.VuIconName QrCode
-  - ECMAScript.VuIcons.VuIconName QrcodeBox
-  - ECMAScript.VuIcons.VuIconName Quote
-  - ECMAScript.VuIcons.VuIconName Rabbit
-  - ECMAScript.VuIcons.VuIconName Radar
-  - ECMAScript.VuIcons.VuIconName RadarChart
-  - ECMAScript.VuIcons.VuIconName Radiation
-  - ECMAScript.VuIcons.VuIconName Radical
-  - ECMAScript.VuIcons.VuIconName Radio
-  - ECMAScript.VuIcons.VuIconName RadioReceiver
-  - ECMAScript.VuIcons.VuIconName RadioTower
-  - ECMAScript.VuIcons.VuIconName Radius
-  - ECMAScript.VuIcons.VuIconName RailSymbol
-  - ECMAScript.VuIcons.VuIconName Rainbow
-  - ECMAScript.VuIcons.VuIconName Rainy
-  - ECMAScript.VuIcons.VuIconName Rat
-  - ECMAScript.VuIcons.VuIconName Ratio
-  - ECMAScript.VuIcons.VuIconName Read
-  - ECMAScript.VuIcons.VuIconName Receipt
-  - ECMAScript.VuIcons.VuIconName ReceiptCent
-  - ECMAScript.VuIcons.VuIconName ReceiptEuro
-  - ECMAScript.VuIcons.VuIconName ReceiptIndianRupee
-  - ECMAScript.VuIcons.VuIconName ReceiptJapaneseYen
-  - ECMAScript.VuIcons.VuIconName ReceiptPoundSterling
-  - ECMAScript.VuIcons.VuIconName ReceiptRussianRuble
-  - ECMAScript.VuIcons.VuIconName ReceiptSwissFranc
-  - ECMAScript.VuIcons.VuIconName ReceiptText
-  - ECMAScript.VuIcons.VuIconName ReceiptTurkishLira
-  - ECMAScript.VuIcons.VuIconName Recharge
-  - ECMAScript.VuIcons.VuIconName RectangleCircle
-  - ECMAScript.VuIcons.VuIconName RectangleEllipsis
-  - ECMAScript.VuIcons.VuIconName RectangleGoggles
-  - ECMAScript.VuIcons.VuIconName RectangleHorizontal
-  - ECMAScript.VuIcons.VuIconName RectangleVertical
-  - ECMAScript.VuIcons.VuIconName Recycle
-  - ECMAScript.VuIcons.VuIconName Redo
-  - ECMAScript.VuIcons.VuIconName Redo2
-  - ECMAScript.VuIcons.VuIconName RedoDot
-  - ECMAScript.VuIcons.VuIconName Refresh
-  - ECMAScript.VuIcons.VuIconName RefreshCcw
-  - ECMAScript.VuIcons.VuIconName RefreshCcwDot
-  - ECMAScript.VuIcons.VuIconName RefreshCw
-  - ECMAScript.VuIcons.VuIconName RefreshCwOff
-  - ECMAScript.VuIcons.VuIconName Refrigerator
-  - ECMAScript.VuIcons.VuIconName Refund
-  - ECMAScript.VuIcons.VuIconName Regex
-  - ECMAScript.VuIcons.VuIconName RemoveFormatting
-  - ECMAScript.VuIcons.VuIconName Repeat
-  - ECMAScript.VuIcons.VuIconName Repeat1
-  - ECMAScript.VuIcons.VuIconName Repeat2
-  - ECMAScript.VuIcons.VuIconName Replace
-  - ECMAScript.VuIcons.VuIconName ReplaceAll
-  - ECMAScript.VuIcons.VuIconName Reply
-  - ECMAScript.VuIcons.VuIconName ReplyAll
-  - ECMAScript.VuIcons.VuIconName Report
-  - ECMAScript.VuIcons.VuIconName ReportMedical
-  - ECMAScript.VuIcons.VuIconName Rewind
-  - ECMAScript.VuIcons.VuIconName Ribbon
-  - ECMAScript.VuIcons.VuIconName Rocket
-  - ECMAScript.VuIcons.VuIconName RockingChair
-  - ECMAScript.VuIcons.VuIconName RollerCoaster
-  - ECMAScript.VuIcons.VuIconName Rose
-  - ECMAScript.VuIcons.VuIconName Rotate3d
-  - ECMAScript.VuIcons.VuIconName RotateCcw
-  - ECMAScript.VuIcons.VuIconName RotateCcwKey
-  - ECMAScript.VuIcons.VuIconName RotateCcwSquare
-  - ECMAScript.VuIcons.VuIconName RotateCw
-  - ECMAScript.VuIcons.VuIconName RotateCwSquare
-  - ECMAScript.VuIcons.VuIconName Route
-  - ECMAScript.VuIcons.VuIconName RouteOff
-  - ECMAScript.VuIcons.VuIconName Router
-  - ECMAScript.VuIcons.VuIconName Rows2
-  - ECMAScript.VuIcons.VuIconName Rows3
-  - ECMAScript.VuIcons.VuIconName Rows4
-  - ECMAScript.VuIcons.VuIconName Rss
-  - ECMAScript.VuIcons.VuIconName Ruler
-  - ECMAScript.VuIcons.VuIconName RulerDimensionLine
-  - ECMAScript.VuIcons.VuIconName RussianRuble
-  - ECMAScript.VuIcons.VuIconName Sailboat
-  - ECMAScript.VuIcons.VuIconName Salad
-  - ECMAScript.VuIcons.VuIconName Sandwich
-  - ECMAScript.VuIcons.VuIconName Satellite
-  - ECMAScript.VuIcons.VuIconName SatelliteDish
-  - ECMAScript.VuIcons.VuIconName SaudiRiyal
-  - ECMAScript.VuIcons.VuIconName Save
-  - ECMAScript.VuIcons.VuIconName SaveAll
-  - ECMAScript.VuIcons.VuIconName SaveOff
-  - ECMAScript.VuIcons.VuIconName Scale
-  - ECMAScript.VuIcons.VuIconName Scale3d
-  - ECMAScript.VuIcons.VuIconName Scaling
-  - ECMAScript.VuIcons.VuIconName Scan
-  - ECMAScript.VuIcons.VuIconName ScanBarcode
-  - ECMAScript.VuIcons.VuIconName ScanEye
-  - ECMAScript.VuIcons.VuIconName ScanFace
-  - ECMAScript.VuIcons.VuIconName ScanHeart
-  - ECMAScript.VuIcons.VuIconName ScanLine
-  - ECMAScript.VuIcons.VuIconName ScanQrCode
-  - ECMAScript.VuIcons.VuIconName ScanSearch
-  - ECMAScript.VuIcons.VuIconName ScanText
-  - ECMAScript.VuIcons.VuIconName ScatterChart
-  - ECMAScript.VuIcons.VuIconName School
-  - ECMAScript.VuIcons.VuIconName Scissors
-  - ECMAScript.VuIcons.VuIconName ScissorsLineDashed
-  - ECMAScript.VuIcons.VuIconName Scooter
-  - ECMAScript.VuIcons.VuIconName ScreenShare
-  - ECMAScript.VuIcons.VuIconName ScreenShareOff
-  - ECMAScript.VuIcons.VuIconName Screenshot
-  - ECMAScript.VuIcons.VuIconName Scroll
-  - ECMAScript.VuIcons.VuIconName ScrollText
-  - ECMAScript.VuIcons.VuIconName Search
-  - ECMAScript.VuIcons.VuIconName SearchAlert
-  - ECMAScript.VuIcons.VuIconName SearchCheck
-  - ECMAScript.VuIcons.VuIconName SearchCode
-  - ECMAScript.VuIcons.VuIconName SearchLarge
-  - ECMAScript.VuIcons.VuIconName SearchSlash
-  - ECMAScript.VuIcons.VuIconName SearchX
-  - ECMAScript.VuIcons.VuIconName Section
-  - ECMAScript.VuIcons.VuIconName Selected
-  - ECMAScript.VuIcons.VuIconName Send
-  - ECMAScript.VuIcons.VuIconName SendHorizontal
-  - ECMAScript.VuIcons.VuIconName SendToBack
-  - ECMAScript.VuIcons.VuIconName SeparatorHorizontal
-  - ECMAScript.VuIcons.VuIconName SeparatorVertical
-  - ECMAScript.VuIcons.VuIconName Server
-  - ECMAScript.VuIcons.VuIconName ServerCog
-  - ECMAScript.VuIcons.VuIconName ServerCrash
-  - ECMAScript.VuIcons.VuIconName ServerOff
-  - ECMAScript.VuIcons.VuIconName Settings
-  - ECMAScript.VuIcons.VuIconName Settings2
-  - ECMAScript.VuIcons.VuIconName Shapes
-  - ECMAScript.VuIcons.VuIconName Share
-  - ECMAScript.VuIcons.VuIconName Share2
-  - ECMAScript.VuIcons.VuIconName Sheet
-  - ECMAScript.VuIcons.VuIconName Shell
-  - ECMAScript.VuIcons.VuIconName Shield
-  - ECMAScript.VuIcons.VuIconName ShieldAlert
-  - ECMAScript.VuIcons.VuIconName ShieldBan
-  - ECMAScript.VuIcons.VuIconName ShieldCheck
-  - ECMAScript.VuIcons.VuIconName ShieldEllipsis
-  - ECMAScript.VuIcons.VuIconName ShieldHalf
-  - ECMAScript.VuIcons.VuIconName ShieldMinus
-  - ECMAScript.VuIcons.VuIconName ShieldOff
-  - ECMAScript.VuIcons.VuIconName ShieldPlus
-  - ECMAScript.VuIcons.VuIconName ShieldQuestionMark
-  - ECMAScript.VuIcons.VuIconName ShieldUser
-  - ECMAScript.VuIcons.VuIconName ShieldX
-  - ECMAScript.VuIcons.VuIconName Ship
-  - ECMAScript.VuIcons.VuIconName ShipWheel
-  - ECMAScript.VuIcons.VuIconName Shirt
-  - ECMAScript.VuIcons.VuIconName ShoppingBag
-  - ECMAScript.VuIcons.VuIconName ShoppingBasket
-  - ECMAScript.VuIcons.VuIconName ShoppingCart
-  - ECMAScript.VuIcons.VuIconName Shovel
-  - ECMAScript.VuIcons.VuIconName ShowerHead
-  - ECMAScript.VuIcons.VuIconName Shredder
-  - ECMAScript.VuIcons.VuIconName Shrimp
-  - ECMAScript.VuIcons.VuIconName Shrink
-  - ECMAScript.VuIcons.VuIconName Shrub
-  - ECMAScript.VuIcons.VuIconName Shuffle
-  - ECMAScript.VuIcons.VuIconName Sidebar
-  - ECMAScript.VuIcons.VuIconName Sigma
-  - ECMAScript.VuIcons.VuIconName Signal
-  - ECMAScript.VuIcons.VuIconName SignalHigh
-  - ECMAScript.VuIcons.VuIconName SignalLow
-  - ECMAScript.VuIcons.VuIconName SignalMedium
-  - ECMAScript.VuIcons.VuIconName SignalZero
-  - ECMAScript.VuIcons.VuIconName Signature
-  - ECMAScript.VuIcons.VuIconName Signpost
-  - ECMAScript.VuIcons.VuIconName SignpostBig
-  - ECMAScript.VuIcons.VuIconName Siren
-  - ECMAScript.VuIcons.VuIconName SkipBack
-  - ECMAScript.VuIcons.VuIconName SkipBackward
-  - ECMAScript.VuIcons.VuIconName SkipForward
-  - ECMAScript.VuIcons.VuIconName Skull
-  - ECMAScript.VuIcons.VuIconName Slack
-  - ECMAScript.VuIcons.VuIconName Slash
-  - ECMAScript.VuIcons.VuIconName Slice
-  - ECMAScript.VuIcons.VuIconName SlidersHorizontal
-  - ECMAScript.VuIcons.VuIconName SlidersVertical
-  - ECMAScript.VuIcons.VuIconName Smartphone
-  - ECMAScript.VuIcons.VuIconName SmartphoneCharging
-  - ECMAScript.VuIcons.VuIconName SmartphoneNfc
-  - ECMAScript.VuIcons.VuIconName Smile
-  - ECMAScript.VuIcons.VuIconName SmilePlus
-  - ECMAScript.VuIcons.VuIconName Snail
-  - ECMAScript.VuIcons.VuIconName Snowflake
-  - ECMAScript.VuIcons.VuIconName SoapDispenserDroplet
-  - ECMAScript.VuIcons.VuIconName Sofa
-  - ECMAScript.VuIcons.VuIconName SolarPanel
-  - ECMAScript.VuIcons.VuIconName Sort
-  - ECMAScript.VuIcons.VuIconName Soup
-  - ECMAScript.VuIcons.VuIconName Space
-  - ECMAScript.VuIcons.VuIconName Spade
-  - ECMAScript.VuIcons.VuIconName Sparkle
-  - ECMAScript.VuIcons.VuIconName Sparkles
-  - ECMAScript.VuIcons.VuIconName Speaker
-  - ECMAScript.VuIcons.VuIconName Speech
-  - ECMAScript.VuIcons.VuIconName SpellCheck
-  - ECMAScript.VuIcons.VuIconName SpellCheck2
-  - ECMAScript.VuIcons.VuIconName Spline
-  - ECMAScript.VuIcons.VuIconName SplinePointer
-  - ECMAScript.VuIcons.VuIconName Split
-  - ECMAScript.VuIcons.VuIconName SplitBill
-  - ECMAScript.VuIcons.VuIconName Spool
-  - ECMAScript.VuIcons.VuIconName Sports
-  - ECMAScript.VuIcons.VuIconName Spotlight
-  - ECMAScript.VuIcons.VuIconName SprayCan
-  - ECMAScript.VuIcons.VuIconName Sprout
-  - ECMAScript.VuIcons.VuIconName Square
-  - ECMAScript.VuIcons.VuIconName SquareActivity
-  - ECMAScript.VuIcons.VuIconName SquareArrowDown
-  - ECMAScript.VuIcons.VuIconName SquareArrowDownLeft
-  - ECMAScript.VuIcons.VuIconName SquareArrowDownRight
-  - ECMAScript.VuIcons.VuIconName SquareArrowLeft
-  - ECMAScript.VuIcons.VuIconName SquareArrowOutDownLeft
-  - ECMAScript.VuIcons.VuIconName SquareArrowOutDownRight
-  - ECMAScript.VuIcons.VuIconName SquareArrowOutUpLeft
-  - ECMAScript.VuIcons.VuIconName SquareArrowOutUpRight
-  - ECMAScript.VuIcons.VuIconName SquareArrowRight
-  - ECMAScript.VuIcons.VuIconName SquareArrowUp
-  - ECMAScript.VuIcons.VuIconName SquareArrowUpLeft
-  - ECMAScript.VuIcons.VuIconName SquareArrowUpRight
-  - ECMAScript.VuIcons.VuIconName SquareAsterisk
-  - ECMAScript.VuIcons.VuIconName SquareBottomDashedScissors
-  - ECMAScript.VuIcons.VuIconName SquareChartGantt
-  - ECMAScript.VuIcons.VuIconName SquareCheck
-  - ECMAScript.VuIcons.VuIconName SquareCheckBig
-  - ECMAScript.VuIcons.VuIconName SquareChevronDown
-  - ECMAScript.VuIcons.VuIconName SquareChevronLeft
-  - ECMAScript.VuIcons.VuIconName SquareChevronRight
-  - ECMAScript.VuIcons.VuIconName SquareChevronUp
-  - ECMAScript.VuIcons.VuIconName SquareCode
-  - ECMAScript.VuIcons.VuIconName SquareDashed
-  - ECMAScript.VuIcons.VuIconName SquareDashedBottom
-  - ECMAScript.VuIcons.VuIconName SquareDashedBottomCode
-  - ECMAScript.VuIcons.VuIconName SquareDashedKanban
-  - ECMAScript.VuIcons.VuIconName SquareDashedMousePointer
-  - ECMAScript.VuIcons.VuIconName SquareDashedTopSolid
-  - ECMAScript.VuIcons.VuIconName SquareDivide
-  - ECMAScript.VuIcons.VuIconName SquareDot
-  - ECMAScript.VuIcons.VuIconName SquareEqual
-  - ECMAScript.VuIcons.VuIconName SquareFunction
-  - ECMAScript.VuIcons.VuIconName SquareKanban
-  - ECMAScript.VuIcons.VuIconName SquareLibrary
-  - ECMAScript.VuIcons.VuIconName SquareM
-  - ECMAScript.VuIcons.VuIconName SquareMenu
-  - ECMAScript.VuIcons.VuIconName SquareMinus
-  - ECMAScript.VuIcons.VuIconName SquareMousePointer
-  - ECMAScript.VuIcons.VuIconName SquareParking
-  - ECMAScript.VuIcons.VuIconName SquareParkingOff
-  - ECMAScript.VuIcons.VuIconName SquarePause
-  - ECMAScript.VuIcons.VuIconName SquarePen
-  - ECMAScript.VuIcons.VuIconName SquarePercent
-  - ECMAScript.VuIcons.VuIconName SquarePi
-  - ECMAScript.VuIcons.VuIconName SquarePilcrow
-  - ECMAScript.VuIcons.VuIconName SquarePlay
-  - ECMAScript.VuIcons.VuIconName SquarePlus
-  - ECMAScript.VuIcons.VuIconName SquarePower
-  - ECMAScript.VuIcons.VuIconName SquareRadical
-  - ECMAScript.VuIcons.VuIconName SquareRoundCorner
-  - ECMAScript.VuIcons.VuIconName SquareScissors
-  - ECMAScript.VuIcons.VuIconName SquareSigma
-  - ECMAScript.VuIcons.VuIconName SquareSlash
-  - ECMAScript.VuIcons.VuIconName SquareSplitHorizontal
-  - ECMAScript.VuIcons.VuIconName SquareSplitVertical
-  - ECMAScript.VuIcons.VuIconName SquareSquare
-  - ECMAScript.VuIcons.VuIconName SquareStack
-  - ECMAScript.VuIcons.VuIconName SquareStar
-  - ECMAScript.VuIcons.VuIconName SquareStop
-  - ECMAScript.VuIcons.VuIconName SquareTerminal
-  - ECMAScript.VuIcons.VuIconName SquareUser
-  - ECMAScript.VuIcons.VuIconName SquareUserRound
-  - ECMAScript.VuIcons.VuIconName SquareX
-  - ECMAScript.VuIcons.VuIconName SquaresExclude
-  - ECMAScript.VuIcons.VuIconName SquaresIntersect
-  - ECMAScript.VuIcons.VuIconName SquaresSubtract
-  - ECMAScript.VuIcons.VuIconName SquaresUnite
-  - ECMAScript.VuIcons.VuIconName Squircle
-  - ECMAScript.VuIcons.VuIconName SquircleDashed
-  - ECMAScript.VuIcons.VuIconName Squirrel
-  - ECMAScript.VuIcons.VuIconName Stamp
-  - ECMAScript.VuIcons.VuIconName Star
-  - ECMAScript.VuIcons.VuIconName StarHalf
-  - ECMAScript.VuIcons.VuIconName StarOff
-  - ECMAScript.VuIcons.VuIconName Statistics
-  - ECMAScript.VuIcons.VuIconName StepBack
-  - ECMAScript.VuIcons.VuIconName StepForward
-  - ECMAScript.VuIcons.VuIconName Stethoscope
-  - ECMAScript.VuIcons.VuIconName Sticker
-  - ECMAScript.VuIcons.VuIconName StickyNote
-  - ECMAScript.VuIcons.VuIconName Stone
-  - ECMAScript.VuIcons.VuIconName Stop
-  - ECMAScript.VuIcons.VuIconName Store
-  - ECMAScript.VuIcons.VuIconName StretchHorizontal
-  - ECMAScript.VuIcons.VuIconName StretchVertical
-  - ECMAScript.VuIcons.VuIconName Strikethrough
-  - ECMAScript.VuIcons.VuIconName Subscript
-  - ECMAScript.VuIcons.VuIconName Subway
-  - ECMAScript.VuIcons.VuIconName Success
-  - ECMAScript.VuIcons.VuIconName Sun
-  - ECMAScript.VuIcons.VuIconName SunDim
-  - ECMAScript.VuIcons.VuIconName SunMedium
-  - ECMAScript.VuIcons.VuIconName SunMoon
-  - ECMAScript.VuIcons.VuIconName SunSnow
-  - ECMAScript.VuIcons.VuIconName Sunny
-  - ECMAScript.VuIcons.VuIconName Sunrise
-  - ECMAScript.VuIcons.VuIconName Sunset
-  - ECMAScript.VuIcons.VuIconName Superscript
-  - ECMAScript.VuIcons.VuIconName SwatchBook
-  - ECMAScript.VuIcons.VuIconName SwissFranc
-  - ECMAScript.VuIcons.VuIconName SwitchCamera
-  - ECMAScript.VuIcons.VuIconName Sword
-  - ECMAScript.VuIcons.VuIconName Swords
-  - ECMAScript.VuIcons.VuIconName Syringe
-  - ECMAScript.VuIcons.VuIconName Table
-  - ECMAScript.VuIcons.VuIconName Table2
-  - ECMAScript.VuIcons.VuIconName TableCellsMerge
-  - ECMAScript.VuIcons.VuIconName TableCellsSplit
-  - ECMAScript.VuIcons.VuIconName TableColumnsSplit
-  - ECMAScript.VuIcons.VuIconName TableOfContents
-  - ECMAScript.VuIcons.VuIconName TableProperties
-  - ECMAScript.VuIcons.VuIconName TableRowsSplit
-  - ECMAScript.VuIcons.VuIconName Tablet
-  - ECMAScript.VuIcons.VuIconName TabletSmartphone
-  - ECMAScript.VuIcons.VuIconName Tablets
-  - ECMAScript.VuIcons.VuIconName Tag
-  - ECMAScript.VuIcons.VuIconName Tags
-  - ECMAScript.VuIcons.VuIconName Takeout
-  - ECMAScript.VuIcons.VuIconName Tally1
-  - ECMAScript.VuIcons.VuIconName Tally2
-  - ECMAScript.VuIcons.VuIconName Tally3
-  - ECMAScript.VuIcons.VuIconName Tally4
-  - ECMAScript.VuIcons.VuIconName Tally5
-  - ECMAScript.VuIcons.VuIconName Tangent
-  - ECMAScript.VuIcons.VuIconName Target
-  - ECMAScript.VuIcons.VuIconName Telescope
-  - ECMAScript.VuIcons.VuIconName Tent
-  - ECMAScript.VuIcons.VuIconName TentTree
-  - ECMAScript.VuIcons.VuIconName Terminal
-  - ECMAScript.VuIcons.VuIconName TestTube
-  - ECMAScript.VuIcons.VuIconName TestTubeDiagonal
-  - ECMAScript.VuIcons.VuIconName TestTubes
-  - ECMAScript.VuIcons.VuIconName Text
-  - ECMAScript.VuIcons.VuIconName TextAlignCenter
-  - ECMAScript.VuIcons.VuIconName TextAlignEnd
-  - ECMAScript.VuIcons.VuIconName TextAlignJustify
-  - ECMAScript.VuIcons.VuIconName TextAlignStart
-  - ECMAScript.VuIcons.VuIconName TextCursor
-  - ECMAScript.VuIcons.VuIconName TextCursorInput
-  - ECMAScript.VuIcons.VuIconName TextInitial
-  - ECMAScript.VuIcons.VuIconName TextQuote
-  - ECMAScript.VuIcons.VuIconName TextSearch
-  - ECMAScript.VuIcons.VuIconName TextSelect
-  - ECMAScript.VuIcons.VuIconName TextWrap
-  - ECMAScript.VuIcons.VuIconName Theater
-  - ECMAScript.VuIcons.VuIconName Thermometer
-  - ECMAScript.VuIcons.VuIconName ThermometerSnowflake
-  - ECMAScript.VuIcons.VuIconName ThermometerSun
-  - ECMAScript.VuIcons.VuIconName ThumbsDown
-  - ECMAScript.VuIcons.VuIconName ThumbsUp
-  - ECMAScript.VuIcons.VuIconName Ticket
-  - ECMAScript.VuIcons.VuIconName TicketCheck
-  - ECMAScript.VuIcons.VuIconName TicketMinus
-  - ECMAScript.VuIcons.VuIconName TicketPercent
-  - ECMAScript.VuIcons.VuIconName TicketPlus
-  - ECMAScript.VuIcons.VuIconName TicketSlash
-  - ECMAScript.VuIcons.VuIconName TicketX
-  - ECMAScript.VuIcons.VuIconName Tickets
-  - ECMAScript.VuIcons.VuIconName TicketsPlane
-  - ECMAScript.VuIcons.VuIconName Timer
-  - ECMAScript.VuIcons.VuIconName TimerOff
-  - ECMAScript.VuIcons.VuIconName TimerReset
-  - ECMAScript.VuIcons.VuIconName ToBottom
-  - ECMAScript.VuIcons.VuIconName ToTop
-  - ECMAScript.VuIcons.VuIconName ToggleLeft
-  - ECMAScript.VuIcons.VuIconName ToggleRight
-  - ECMAScript.VuIcons.VuIconName Toilet
-  - ECMAScript.VuIcons.VuIconName ToolCase
-  - ECMAScript.VuIcons.VuIconName Toolbox
-  - ECMAScript.VuIcons.VuIconName TopBar
-  - ECMAScript.VuIcons.VuIconName Tornado
-  - ECMAScript.VuIcons.VuIconName Torus
-  - ECMAScript.VuIcons.VuIconName Touchpad
-  - ECMAScript.VuIcons.VuIconName TouchpadOff
-  - ECMAScript.VuIcons.VuIconName TowerControl
-  - ECMAScript.VuIcons.VuIconName ToyBrick
-  - ECMAScript.VuIcons.VuIconName Tractor
-  - ECMAScript.VuIcons.VuIconName TrafficCone
-  - ECMAScript.VuIcons.VuIconName Train
-  - ECMAScript.VuIcons.VuIconName TrainFront
-  - ECMAScript.VuIcons.VuIconName TrainFrontTunnel
-  - ECMAScript.VuIcons.VuIconName TrainTrack
-  - ECMAScript.VuIcons.VuIconName TramFront
-  - ECMAScript.VuIcons.VuIconName Transfer
-  - ECMAScript.VuIcons.VuIconName Transgender
-  - ECMAScript.VuIcons.VuIconName Trash
-  - ECMAScript.VuIcons.VuIconName Trash2
-  - ECMAScript.VuIcons.VuIconName Travel
-  - ECMAScript.VuIcons.VuIconName TreeDeciduous
-  - ECMAScript.VuIcons.VuIconName TreePalm
-  - ECMAScript.VuIcons.VuIconName TreePine
-  - ECMAScript.VuIcons.VuIconName Trees
-  - ECMAScript.VuIcons.VuIconName Trello
-  - ECMAScript.VuIcons.VuIconName TrendingDown
-  - ECMAScript.VuIcons.VuIconName TrendingUp
-  - ECMAScript.VuIcons.VuIconName TrendingUpDown
-  - ECMAScript.VuIcons.VuIconName Triangle
-  - ECMAScript.VuIcons.VuIconName TriangleAlert
-  - ECMAScript.VuIcons.VuIconName TriangleDashed
-  - ECMAScript.VuIcons.VuIconName TriangleRight
-  - ECMAScript.VuIcons.VuIconName Trophy
-  - ECMAScript.VuIcons.VuIconName Truck
-  - ECMAScript.VuIcons.VuIconName TruckElectric
-  - ECMAScript.VuIcons.VuIconName TurkishLira
-  - ECMAScript.VuIcons.VuIconName Turntable
-  - ECMAScript.VuIcons.VuIconName Turtle
-  - ECMAScript.VuIcons.VuIconName Tv
-  - ECMAScript.VuIcons.VuIconName TvMinimal
-  - ECMAScript.VuIcons.VuIconName TvMinimalPlay
-  - ECMAScript.VuIcons.VuIconName Twitch
-  - ECMAScript.VuIcons.VuIconName Twitter
-  - ECMAScript.VuIcons.VuIconName Type
-  - ECMAScript.VuIcons.VuIconName TypeOutline
-  - ECMAScript.VuIcons.VuIconName Umbrella
-  - ECMAScript.VuIcons.VuIconName UmbrellaOff
-  - ECMAScript.VuIcons.VuIconName Underline
-  - ECMAScript.VuIcons.VuIconName Undo
-  - ECMAScript.VuIcons.VuIconName Undo2
-  - ECMAScript.VuIcons.VuIconName UndoDot
-  - ECMAScript.VuIcons.VuIconName UnfoldHorizontal
-  - ECMAScript.VuIcons.VuIconName UnfoldVertical
-  - ECMAScript.VuIcons.VuIconName Unfollow
-  - ECMAScript.VuIcons.VuIconName Ungroup
-  - ECMAScript.VuIcons.VuIconName University
-  - ECMAScript.VuIcons.VuIconName Unlink
-  - ECMAScript.VuIcons.VuIconName Unlink2
-  - ECMAScript.VuIcons.VuIconName Unlock
-  - ECMAScript.VuIcons.VuIconName Unplug
-  - ECMAScript.VuIcons.VuIconName Unread
-  - ECMAScript.VuIcons.VuIconName Unselected
-  - ECMAScript.VuIcons.VuIconName Upload
-  - ECMAScript.VuIcons.VuIconName Usb
-  - ECMAScript.VuIcons.VuIconName User
-  - ECMAScript.VuIcons.VuIconName UserCheck
-  - ECMAScript.VuIcons.VuIconName UserCog
-  - ECMAScript.VuIcons.VuIconName UserLock
-  - ECMAScript.VuIcons.VuIconName UserMinus
-  - ECMAScript.VuIcons.VuIconName UserPen
-  - ECMAScript.VuIcons.VuIconName UserPlus
-  - ECMAScript.VuIcons.VuIconName UserRound
-  - ECMAScript.VuIcons.VuIconName UserRoundCheck
-  - ECMAScript.VuIcons.VuIconName UserRoundCog
-  - ECMAScript.VuIcons.VuIconName UserRoundMinus
-  - ECMAScript.VuIcons.VuIconName UserRoundPen
-  - ECMAScript.VuIcons.VuIconName UserRoundPlus
-  - ECMAScript.VuIcons.VuIconName UserRoundSearch
-  - ECMAScript.VuIcons.VuIconName UserRoundX
-  - ECMAScript.VuIcons.VuIconName UserSearch
-  - ECMAScript.VuIcons.VuIconName UserStar
-  - ECMAScript.VuIcons.VuIconName UserX
-  - ECMAScript.VuIcons.VuIconName Users
-  - ECMAScript.VuIcons.VuIconName UsersRound
-  - ECMAScript.VuIcons.VuIconName Utensils
-  - ECMAScript.VuIcons.VuIconName UtensilsCrossed
-  - ECMAScript.VuIcons.VuIconName UtilityPole
-  - ECMAScript.VuIcons.VuIconName Van
-  - ECMAScript.VuIcons.VuIconName Variable
-  - ECMAScript.VuIcons.VuIconName Vault
-  - ECMAScript.VuIcons.VuIconName VectorSquare
-  - ECMAScript.VuIcons.VuIconName Vegan
-  - ECMAScript.VuIcons.VuIconName VenetianMask
-  - ECMAScript.VuIcons.VuIconName Venus
-  - ECMAScript.VuIcons.VuIconName VenusAndMars
-  - ECMAScript.VuIcons.VuIconName Vibrate
-  - ECMAScript.VuIcons.VuIconName VibrateOff
-  - ECMAScript.VuIcons.VuIconName Video
-  - ECMAScript.VuIcons.VuIconName VideoOff
-  - ECMAScript.VuIcons.VuIconName Videotape
-  - ECMAScript.VuIcons.VuIconName View
-  - ECMAScript.VuIcons.VuIconName Voicemail
-  - ECMAScript.VuIcons.VuIconName Volleyball
-  - ECMAScript.VuIcons.VuIconName Volume
-  - ECMAScript.VuIcons.VuIconName Volume1
-  - ECMAScript.VuIcons.VuIconName Volume2
-  - ECMAScript.VuIcons.VuIconName VolumeDown
-  - ECMAScript.VuIcons.VuIconName VolumeOff
-  - ECMAScript.VuIcons.VuIconName VolumeOn
-  - ECMAScript.VuIcons.VuIconName VolumeUp
-  - ECMAScript.VuIcons.VuIconName VolumeX
-  - ECMAScript.VuIcons.VuIconName Vote
-  - ECMAScript.VuIcons.VuIconName Walk
-  - ECMAScript.VuIcons.VuIconName Wallet
-  - ECMAScript.VuIcons.VuIconName WalletCards
-  - ECMAScript.VuIcons.VuIconName WalletMinimal
-  - ECMAScript.VuIcons.VuIconName Wallpaper
-  - ECMAScript.VuIcons.VuIconName Wand
-  - ECMAScript.VuIcons.VuIconName WandSparkles
-  - ECMAScript.VuIcons.VuIconName Warehouse
-  - ECMAScript.VuIcons.VuIconName Warning
-  - ECMAScript.VuIcons.VuIconName WashingMachine
-  - ECMAScript.VuIcons.VuIconName Watch
-  - ECMAScript.VuIcons.VuIconName WaterfallChart
-  - ECMAScript.VuIcons.VuIconName Waves
-  - ECMAScript.VuIcons.VuIconName WavesArrowDown
-  - ECMAScript.VuIcons.VuIconName WavesArrowUp
-  - ECMAScript.VuIcons.VuIconName WavesLadder
-  - ECMAScript.VuIcons.VuIconName Waypoints
-  - ECMAScript.VuIcons.VuIconName Webcam
-  - ECMAScript.VuIcons.VuIconName Webhook
-  - ECMAScript.VuIcons.VuIconName WebhookOff
-  - ECMAScript.VuIcons.VuIconName Weight
-  - ECMAScript.VuIcons.VuIconName WeightTilde
-  - ECMAScript.VuIcons.VuIconName Wheat
-  - ECMAScript.VuIcons.VuIconName WheatOff
-  - ECMAScript.VuIcons.VuIconName WholeWord
-  - ECMAScript.VuIcons.VuIconName Wifi
-  - ECMAScript.VuIcons.VuIconName WifiCog
-  - ECMAScript.VuIcons.VuIconName WifiHigh
-  - ECMAScript.VuIcons.VuIconName WifiLow
-  - ECMAScript.VuIcons.VuIconName WifiOff
-  - ECMAScript.VuIcons.VuIconName WifiPen
-  - ECMAScript.VuIcons.VuIconName WifiSync
-  - ECMAScript.VuIcons.VuIconName WifiZero
-  - ECMAScript.VuIcons.VuIconName Wind
-  - ECMAScript.VuIcons.VuIconName WindArrowDown
-  - ECMAScript.VuIcons.VuIconName Wine
-  - ECMAScript.VuIcons.VuIconName WineOff
-  - ECMAScript.VuIcons.VuIconName Wishlist
-  - ECMAScript.VuIcons.VuIconName Withdraw
-  - ECMAScript.VuIcons.VuIconName Workflow
-  - ECMAScript.VuIcons.VuIconName Worm
-  - ECMAScript.VuIcons.VuIconName WrapText
-  - ECMAScript.VuIcons.VuIconName Wrench
-  - ECMAScript.VuIcons.VuIconName X
-  - ECMAScript.VuIcons.VuIconName Youtube
-  - ECMAScript.VuIcons.VuIconName Zap
-  - ECMAScript.VuIcons.VuIconName ZapOff
-  - ECMAScript.VuIcons.VuIconName ZoomIn
-  - ECMAScript.VuIcons.VuIconName ZoomOut
-  - Int32 value__
-- type ECMAScript.VuIcons.VuIdCard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIdCardLanyard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImageDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImageMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImageOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImagePlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImagePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImageUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImageUpscale
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImages
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuImport
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInProgress
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInbox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIncomplete
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIndentDecrease
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIndentIncrease
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIndianRupee
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInfinity
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInfo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInspectionPanel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInstagram
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInsurance
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuInvoice
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuItalic
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIterationCcw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuIterationCw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuJapaneseYen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuJoystick
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKanban
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKayak
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKey
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKeyRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKeySquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKeyboard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKeyboardMusic
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuKeyboardOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLaboratory
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLamp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLampCeiling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLampDesk
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLampFloor
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLampWallDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLampWallUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLandPlot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLandmark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLanguages
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLaptop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLaptopMinimal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLaptopMinimalCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLasso
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLassoSelect
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLaugh
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayers
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayers2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayers3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayersPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayoutDashboard
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayoutGrid
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayoutList
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayoutPanelLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayoutPanelTop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLayoutTemplate
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLeaf
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLeafyGreen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLectern
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLetterText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLibrary
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLibraryBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLifeBuoy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLigature
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLightbulb
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLightbulbOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLike
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLineChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLineSquiggle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLink
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLink2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLink2Off
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLinkedin
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuList
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListChecks
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListChevronsDownUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListChevronsUpDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListCollapse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListFilter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListFilterPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListIndentDecrease
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListIndentIncrease
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListMusic
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListOrdered
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListRestart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListTodo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListTree
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListVideo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuListX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLoader
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLoaderCircle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLoaderPinwheel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLoading
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLocate
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLocateFixed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLocateOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLocation
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLockKeyhole
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLockKeyholeOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLockOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLockScreen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLogIn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLogOut
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLogs
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLollipop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuLuggage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMagnet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMail
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailQuestionMark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailWarning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMailbox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMails
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMap
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPin
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinCheckInside
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinHouse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinMinusInside
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinPlusInside
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinXInside
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPinned
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMapPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMars
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMarsStroke
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMartini
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMask
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMaximize
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMaximize2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMedal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMedicalRecord
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMedicine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMegaphone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMegaphoneOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMeh
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMemoryStick
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMenu
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMerge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleMore
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCirclePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleQuestionMark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleReply
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleWarning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageCircleX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessagePrivate
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareDiff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareMore
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquarePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareQuote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareReply
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareShare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareWarning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessageSquareX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMessagesSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMic
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMicOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMicVocal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMicrochip
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMicroscope
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMicrowave
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMilestone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMilk
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMilkOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMinimize
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMinimize2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitor
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorCloud
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorPause
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorPlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorSmartphone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorSpeaker
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorStop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMonitorX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoonStar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMotorbike
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMountain
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMountainSnow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMouse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMouseOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMousePointer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMousePointer2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMousePointer2Off
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMousePointerBan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMousePointerClick
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMove
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMove3d
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveDiagonal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveDiagonal2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveDownLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveDownRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveUpLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveUpRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMoveVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMovie
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMultiply
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMusic
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMusic2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMusic3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuMusic4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNavigation
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNavigation2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNavigation2Off
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNavigationDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNavigationOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNetwork
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNewspaper
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNfc
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNonBinary
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNotebook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNotebookPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNotebookTabs
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNotebookText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNotepadText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNotepadTextDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNut
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuNutOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOctagon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOctagonAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOctagonMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOctagonPause
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOctagonX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOmega
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOption
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOrbit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuOrigami
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackage
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackage2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackageCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackageMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackageOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackagePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackageSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPackageX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPagination
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaintBucket
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaintRoller
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaintbrush
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaintbrushVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPalette
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanda
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelBottom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelBottomClose
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelBottomDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelBottomOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelLeftClose
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelLeftDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelLeftOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelLeftRightDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelRightClose
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelRightDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelRightOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelTop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelTopBottomDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelTopClose
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelTopDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelTopOpen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelsLeftBottom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelsRightBottom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPanelsTopLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaperclip
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuParentheses
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuParkingMeter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPartyPopper
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaste
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPause
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPawPrint
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPayment
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPaymentMedical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPcCase
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPenLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPenOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPenTool
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPencil
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPencilLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPencilOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPencilRuler
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPentagon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPercent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPersonStanding
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhilippinePeso
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhoneCall
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhoneForwarded
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhoneIncoming
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhoneMissed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhoneOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPhoneOutgoing
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPi
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPiano
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPickaxe
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPictureInPicture
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPictureInPicture2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPieChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPiggyBank
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPilcrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPilcrowLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPilcrowRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPill
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPillBottle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPin
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPinOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPipette
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPizza
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlane
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlaneLanding
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlaneTakeoff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlug
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlug2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlugZap
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPocket
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPocketKnife
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPodcast
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPointer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPointerOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPoints
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPopcorn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPopsicle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPoundSterling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPower
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPowerOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPresentation
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPrinter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPrinterCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuProduct
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuProjector
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuProportions
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPuzzle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuPyramid
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuQrCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuQrcodeBox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuQuote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRabbit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadarChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadiation
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadio
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadioReceiver
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadioTower
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRadius
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRailSymbol
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRainbow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRainy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRatio
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRead
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceipt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptCent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptEuro
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptIndianRupee
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptJapaneseYen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptPoundSterling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptRussianRuble
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptSwissFranc
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReceiptTurkishLira
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRecharge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRectangleCircle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRectangleEllipsis
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRectangleGoggles
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRectangleHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRectangleVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRecycle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRedo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRedo2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRedoDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefresh
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefreshCcw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefreshCcwDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefreshCw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefreshCwOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefrigerator
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRefund
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRegex
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRemoveFormatting
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRepeat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRepeat1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRepeat2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReplace
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReplaceAll
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReply
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReplyAll
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReport
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuReportMedical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRewind
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRibbon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRocket
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRockingChair
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRollerCoaster
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRose
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRotate3d
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRotateCcw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRotateCcwKey
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRotateCcwSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRotateCw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRotateCwSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRoute
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRouteOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRouter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRows2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRows3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRows4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRss
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRuler
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRulerDimensionLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuRussianRuble
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSailboat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSalad
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSandwich
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSatellite
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSatelliteDish
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSaudiRiyal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSave
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSaveAll
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSaveOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScale
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScale3d
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScaling
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanBarcode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanEye
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanFace
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanHeart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanLine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanQrCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScanText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScatterChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSchool
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScissors
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScissorsLineDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScooter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScreenShare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScreenShareOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScreenshot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScroll
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuScrollText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearchAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearchCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearchCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearchLarge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearchSlash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSearchX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSection
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSelected
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSend
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSendHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSendToBack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSeparatorHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSeparatorVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuServer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuServerCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuServerCrash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuServerOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSettings
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSettings2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShapes
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShare2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSheet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShell
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShield
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldBan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldEllipsis
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldHalf
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldQuestionMark
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldUser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShieldX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShip
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShipWheel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShirt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShoppingBag
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShoppingBasket
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShoppingCart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShovel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShowerHead
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShredder
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShrimp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShrink
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShrub
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuShuffle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSidebar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSigma
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignalHigh
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignalLow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignalMedium
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignalZero
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignature
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignpost
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSignpostBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSiren
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSkipBack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSkipBackward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSkipForward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSkull
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSlack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSlash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSlice
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSlidersHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSlidersVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSmartphone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSmartphoneCharging
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSmartphoneNfc
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSmile
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSmilePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSnail
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSnowflake
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSoapDispenserDroplet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSofa
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSolarPanel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSort
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSoup
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpace
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpade
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSparkle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSparkles
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpeaker
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpeech
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpellCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpellCheck2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpline
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSplinePointer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSplit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSplitBill
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpool
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSports
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSpotlight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSprayCan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSprout
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareActivity
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowDownLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowDownRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowOutDownLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowOutDownRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowOutUpLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowOutUpRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowUpLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareArrowUpRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareAsterisk
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareBottomDashedScissors
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareChartGantt
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareCheckBig
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareChevronDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareChevronLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareChevronRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareChevronUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDashedBottom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDashedBottomCode
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDashedKanban
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDashedMousePointer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDashedTopSolid
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDivide
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareEqual
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareFunction
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareKanban
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareLibrary
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareM
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareMenu
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareMousePointer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareParking
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareParkingOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePause
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePercent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePi
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePilcrow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquarePower
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareRadical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareRoundCorner
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareScissors
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareSigma
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareSlash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareSplitHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareSplitVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareStack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareStar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareStop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareTerminal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareUser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareUserRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquareX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquaresExclude
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquaresIntersect
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquaresSubtract
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquaresUnite
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquircle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquircleDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSquirrel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStamp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStarHalf
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStarOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStatistics
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStepBack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStepForward
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStethoscope
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSticker
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStickyNote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStore
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStretchHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStretchVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuStrikethrough
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSubscript
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSubway
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSuccess
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSun
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunDim
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunMedium
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunMoon
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunSnow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunny
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunrise
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSunset
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSuperscript
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSwatchBook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSwissFranc
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSwitchCamera
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSword
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSwords
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuSyringe
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTable
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTable2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTableCellsMerge
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTableCellsSplit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTableColumnsSplit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTableOfContents
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTableProperties
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTableRowsSplit
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTablet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTabletSmartphone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTablets
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTag
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTags
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTakeout
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTally1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTally2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTally3
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTally4
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTally5
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTangent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTarget
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTelescope
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTentTree
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTerminal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTestTube
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTestTubeDiagonal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTestTubes
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextAlignCenter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextAlignEnd
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextAlignJustify
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextAlignStart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextCursor
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextCursorInput
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextInitial
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextQuote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextSelect
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTextWrap
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTheater
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuThermometer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuThermometerSnowflake
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuThermometerSun
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuThumbsDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuThumbsUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicket
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketPercent
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketSlash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTickets
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTicketsPlane
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTimer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTimerOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTimerReset
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToBottom
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToTop
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToggleLeft
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToggleRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToilet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToolCase
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToolbox
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTopBar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTornado
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTorus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTouchpad
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTouchpadOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTowerControl
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuToyBrick
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTractor
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrafficCone
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrain
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrainFront
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrainFrontTunnel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrainTrack
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTramFront
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTransfer
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTransgender
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrash
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrash2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTravel
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTreeDeciduous
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTreePalm
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTreePine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrees
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrello
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrendingDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrendingUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrendingUpDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTriangle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTriangleAlert
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTriangleDashed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTriangleRight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTrophy
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTruck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTruckElectric
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTurkishLira
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTurntable
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTurtle
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTv
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTvMinimal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTvMinimalPlay
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTwitch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTwitter
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuType
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuTypeOutline
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUmbrella
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUmbrellaOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnderline
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUndo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUndo2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUndoDot
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnfoldHorizontal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnfoldVertical
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnfollow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUngroup
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUniversity
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnlink
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnlink2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnlock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnplug
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnread
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUnselected
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUpload
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUsb
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUser
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserLock
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundCheck
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundMinus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundPlus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserRoundX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserSearch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserStar
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUserX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUsers
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUsersRound
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUtensils
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUtensilsCrossed
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuUtilityPole
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVariable
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVault
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVectorSquare
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVegan
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVenetianMask
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVenus
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVenusAndMars
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVibrate
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVibrateOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVideo
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVideoOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVideotape
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuView
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVoicemail
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolleyball
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolume
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolume1
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolume2
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolumeDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolumeOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolumeOn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolumeUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVolumeX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuVote
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWalk
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWallet
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWalletCards
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWalletMinimal
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWallpaper
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWand
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWandSparkles
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWarehouse
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWarning
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWashingMachine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWatch
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWaterfallChart
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWaves
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWavesArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWavesArrowUp
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWavesLadder
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWaypoints
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWebcam
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWebhook
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWebhookOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWeight
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWeightTilde
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWheat
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWheatOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWholeWord
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifi
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiCog
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiHigh
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiLow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiPen
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiSync
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWifiZero
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWind
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWindArrowDown
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWine
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWineOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWishlist
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWithdraw
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWorkflow
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWorm
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWrapText
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuWrench
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuX
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuYoutube
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuZap
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuZapOff
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuZoomIn
-  - Void .ctor()
-- type ECMAScript.VuIcons.VuZoomOut
-  - Void .ctor()
 
 ## ECMAScript.Vue.Devtools
 - type ECMAScript.DevtoolsAsyncInspectorActionCallback
@@ -128981,6 +126907,18 @@
   - System.TimeSpan DebounceInterval
   - System.TimeSpan KeepAliveInterval
   - System.TimeSpan PollingInterval
+- type Jazor.AspNetCore.Dev.JazorViteOptions
+  - Void .ctor()
+  - Microsoft.AspNetCore.Http.PathString get_RequestPath()
+  - System.Uri get_ServerOrigin()
+  - Void set_RequestPath(Microsoft.AspNetCore.Http.PathString)
+  - Void set_ServerOrigin(System.Uri)
+  - Microsoft.AspNetCore.Http.PathString RequestPath
+  - System.Uri ServerOrigin
+- type Jazor.AspNetCore.Dev.JazorViteProxyExtensions
+  - Microsoft.AspNetCore.Builder.IApplicationBuilder UseJazorViteProxy(Microsoft.AspNetCore.Builder.IApplicationBuilder)
+  - Microsoft.Extensions.DependencyInjection.IServiceCollection AddJazorViteProxy(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  - Microsoft.Extensions.DependencyInjection.IServiceCollection AddJazorViteProxy(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action`1[Jazor.AspNetCore.Dev.JazorViteOptions])
 
 ## Jazor.AspNetCore
 - type Jazor.AspNetCore.IJazorSsrRenderer
@@ -128988,7 +126926,7 @@
 - type Jazor.AspNetCore.JazorArtifactOptions
   - Void .ctor()
   - System.String BundleProbeRelativePath
-  - System.String ManifestProbeRelativePath
+  - System.String EntryProbeRelativePath
   - Boolean get_ReturnNotFoundOnMiss()
   - Microsoft.AspNetCore.Http.PathString get_RequestPath()
   - System.Action`1[Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext] get_OnPrepareResponse()
@@ -129155,16 +127093,22 @@
   - Void .ctor()
   - Int32 get_WorkerCount()
   - System.String get_ArtifactRootPath()
+  - System.String get_HydrationEntryPath()
   - System.String get_MountElementId()
   - System.String get_RequestPath()
+  - System.String get_TaskName()
   - Void set_ArtifactRootPath(System.String)
+  - Void set_HydrationEntryPath(System.String)
   - Void set_MountElementId(System.String)
   - Void set_RequestPath(System.String)
+  - Void set_TaskName(System.String)
   - Void set_WorkerCount(Int32)
   - Int32 WorkerCount
   - System.String ArtifactRootPath
+  - System.String HydrationEntryPath
   - System.String MountElementId
   - System.String RequestPath
+  - System.String TaskName
 - type Jazor.AspNetCore.JazorSsrProvider
   - Void .ctor(System.String, System.Object)
   - Boolean Equals(Jazor.AspNetCore.JazorSsrProvider)

@@ -33,14 +33,14 @@ public sealed class RazorSgOfficialPropertyLocalNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "\"state\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/computed-status.mjs",
+            "components/computed-status.js",
             observation.ModuleText,
             "official-property-local-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/computed-status.mjs";
+            import component from "./components/computed-status.js";
 
             test("Razor local names do not shadow computed component properties", () => {
                 const section = component.setup({}, { slots: {} })();

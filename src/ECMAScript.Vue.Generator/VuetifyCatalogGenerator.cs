@@ -344,6 +344,17 @@ internal static class VuetifyCatalogGenerator
     private static string GetComponentImportPath(Component component)
         => component.Specifier;
 
+    private static string GetComponentStylePath(Component component)
+    {
+        var separator = component.Specifier.LastIndexOf('/');
+        if (separator < 0 || separator == component.Specifier.Length - 1)
+            throw new InvalidOperationException(
+                $"Unable to derive Vuetify component stylesheet from '{component.Specifier}'.");
+
+        var module = component.Specifier[(separator + 1)..];
+        return $"vuetify/lib/components/{module}/{module}.css";
+    }
+
     private static HashSet<string> ReadWebTypeTags(string path)
     {
         if (!SystemFile.Exists(path))
@@ -531,6 +542,7 @@ internal static class VuetifyCatalogGenerator
         {
             builder.AppendLine($"    /// <summary>用于 render/h 调用的组件导出；组件用法与参数见 <see cref=\"{component.Export}\"/>。</summary>");
             builder.AppendLine($"    [ECMAScript(\"{GetComponentImportPath(component)}\")]");
+            builder.AppendLine($"    [Style(\"{GetComponentStylePath(component)}\")]");
             builder.AppendLine($"    [ECMAScriptName(\"{component.Export}\")]");
             builder.AppendLine($"    public extern static IVuetifyComponent {component.Export} {{ get; }}");
             builder.AppendLine();

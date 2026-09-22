@@ -28,29 +28,18 @@
   "imports": {
     "@tanstack/match-sorter-utils": {
       "type": "module",
-      "development": "@tanstack/match-sorter-utils",
-      "production": "@tanstack/match-sorter-utils",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "@tanstack/match-sorter-utils",
+      "dependencies": []
     },
     "@tanstack/query-core": {
       "type": "module",
-      "development": "@tanstack/query-core",
-      "production": "@tanstack/query-core",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "@tanstack/query-core",
+      "dependencies": []
     },
     "@tanstack/vue-query": {
       "type": "module",
-      "development": "@tanstack/vue-query",
-      "production": "@tanstack/vue-query",
-      "developmentDependencies": [
-        "@tanstack/match-sorter-utils",
-        "@tanstack/query-core",
-        "@vue/devtools-api",
-        "vue-demi"
-      ],
-      "productionDependencies": [
+      "path": "@tanstack/vue-query",
+      "dependencies": [
         "@tanstack/match-sorter-utils",
         "@tanstack/query-core",
         "@vue/devtools-api",
@@ -59,12 +48,8 @@
     },
     "vue-demi": {
       "type": "module",
-      "development": "vue-demi",
-      "production": "vue-demi",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vue-demi",
+      "dependencies": [
         "vue"
       ]
     }

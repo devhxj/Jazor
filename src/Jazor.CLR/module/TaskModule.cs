@@ -10,7 +10,7 @@ namespace Jazor.CLR;
 /// 主动抛出同名错误，会被状态投影视为取消而不是故障。这是 Promise carrier 的边界，取消路径必须
 /// 继续使用该协议，不能只修改某一个 Status/IsCanceled 模板。
 /// </remarks>
-[ECMAScriptModule("clr/System/Threading/Tasks/TaskModule.js")]
+[ECMAScriptModule("./clr/System/Threading/Tasks/TaskModule.js")]
 [Jazor(Op.Alias, "System.Threading.Tasks.Task", "Promise")]
 public static class TaskModule
 {

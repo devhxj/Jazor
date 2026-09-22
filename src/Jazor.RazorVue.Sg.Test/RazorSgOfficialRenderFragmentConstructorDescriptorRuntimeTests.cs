@@ -74,15 +74,15 @@ public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTes
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/constructor-content-descriptor-runtime.mjs",
+            "components/constructor-content-descriptor-runtime.js",
             observation.ModuleText,
             "official-constructor-content-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/constructor-content-descriptor-runtime.mjs";
-            import slotPanel from "./components/slot-panel-constructor-descriptor-runtime.mjs";
+            import component from "./components/constructor-content-descriptor-runtime.js";
+            import slotPanel from "./components/slot-panel-constructor-descriptor-runtime.js";
 
             test("official Razor constructor content descriptor provides its named slot", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -98,7 +98,7 @@ public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTes
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-constructor-descriptor-runtime.mjs"] = "export default { name: \"slot-panel-constructor-descriptor-runtime\" };"
+                ["components/slot-panel-constructor-descriptor-runtime.js"] = "export default { name: \"slot-panel-constructor-descriptor-runtime\" };"
             });
     }
 }

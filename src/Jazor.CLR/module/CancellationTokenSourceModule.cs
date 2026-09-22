@@ -18,7 +18,7 @@ namespace Jazor.CLR;
 /// 挂私有属性。<c>TryReset()</c> 保持 unsupported：AbortController 一旦 abort 就不可复位。
 /// </para>
 /// </remarks>
-[ECMAScriptModule("clr/System/Threading/CancellationTokenSourceModule.js")]
+[ECMAScriptModule("./clr/System/Threading/CancellationTokenSourceModule.js")]
 [Jazor(Op.Alias, "System.Threading.CancellationTokenSource", "AbortController")]
 public static class CancellationTokenSourceModule
 {

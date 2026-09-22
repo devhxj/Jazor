@@ -19,21 +19,21 @@ public sealed class EcmaScriptStyleCatalogReaderTests
         var module = modules.Single();
         Assert.AreEqual("ECMAScript.Style", module.AssemblyName);
         Assert.AreEqual("ECMAScript.Style.css", module.TypeName);
-        Assert.AreEqual("style.mjs", module.RelativePath);
+        Assert.AreEqual("style.js", module.RelativePath);
         StringAssert.Contains(module.Content, " as style };");
         StringAssert.Contains(module.Content, " as context };");
         StringAssert.Contains(module.Content, "export function styleIn(");
         StringAssert.Contains(module.Content, "export function atRuleIn(");
         StringAssert.Contains(module.Content, "export function snapshotFrom(");
         Assert.HasCount(64, module.Hash);
-        Assert.AreEqual("style.mjs.map", module.SourceMapRelativePath);
+        Assert.AreEqual("style.js.map", module.SourceMapRelativePath);
         Assert.HasCount(64, module.MapHash!);
         Assert.AreEqual(ComputeHash(module.Content), module.Hash);
         Assert.AreEqual(ComputeHash(module.SourceMapContent!), module.MapHash);
 
         using var sourceMap = JsonDocument.Parse(module.SourceMapContent!);
         Assert.AreEqual(3, sourceMap.RootElement.GetProperty("version").GetInt32());
-        Assert.AreEqual("style.mjs", sourceMap.RootElement.GetProperty("file").GetString());
+        Assert.AreEqual("style.js", sourceMap.RootElement.GetProperty("file").GetString());
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public sealed class EcmaScriptStyleCatalogReaderTests
         Assert.AreEqual(1, result.AssemblyCount);
         Assert.AreEqual(1, result.CatalogCount);
         var module = result.Modules.Single();
-        Assert.AreEqual("style.mjs", module.RelativePath);
+        Assert.AreEqual("style.js", module.RelativePath);
         Assert.IsNotNull(module.SourceMapContent);
     }
 

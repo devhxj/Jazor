@@ -111,13 +111,13 @@ public sealed class BlazorClrMappingTests
         var expectedImports = new Dictionary<string, (string ExportName, string ModulePath)>(StringComparer.Ordinal)
         {
             ["Microsoft.AspNetCore.Components.ChangeEventArgs.captureChangeEvent"] =
-                ("captureChangeEvent", "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"),
+                ("captureChangeEvent", "./clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"),
             ["Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get"] =
-                ("getChangeEventValue", "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"),
+                ("getChangeEventValue", "./clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"),
             ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] =
-                ("focusAsync", "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"),
+                ("focusAsync", "./clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"),
             ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] =
-                ("focusAsyncWithOptions", "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js")
+                ("focusAsyncWithOptions", "./clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js")
         };
 
         foreach (var (typeName, runtimeName) in expectedAliases)
@@ -222,18 +222,18 @@ public sealed class BlazorClrMappingTests
         CollectionAssert.AreEquivalent(
             new[]
             {
-                "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
-                "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"
+                "./clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
+                "./clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"
             },
             importsByModule.Keys.ToArray(),
             body);
         CollectionAssert.AreEqual(
             new[] { "getChangeEventValue" },
-            importsByModule["clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"],
+            importsByModule["./clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"],
             body);
         CollectionAssert.AreEqual(
             new[] { "focusAsync", "focusAsyncWithOptions" },
-            importsByModule["clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"],
+            importsByModule["./clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"],
             body);
         StringAssert.Contains(body, "clientX", StringComparison.Ordinal);
         StringAssert.Contains(body, "keyboard.key", StringComparison.Ordinal);

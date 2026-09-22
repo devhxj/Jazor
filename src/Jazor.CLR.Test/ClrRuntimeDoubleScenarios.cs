@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDoubleScenarios
 {
-    private const string ModulePath = "clr/System/DoubleModule.js";
+    private const string ModulePath = "./clr/System/DoubleModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

@@ -42,7 +42,7 @@ public partial class JFrame : JContentComponentBase, IVueContainerComponent
 
     // Keep the display-text host call in a member position: render-position references
     // alone make RazorVue import collection emit a phantom class-name binding that the
-    // helper module does not export (components/admin/display-text.mjs exports Normalize only).
+    // helper module does not export (components/admin/display-text.js exports Normalize only).
     // 让 display-text 宿主调用保持在成员位置：仅有渲染位引用时，导入收集会额外发出
     // helper 模块并未导出的类名绑定，导致浏览器模块链接失败。
     private string? LanguageTag
@@ -50,7 +50,7 @@ public partial class JFrame : JContentComponentBase, IVueContainerComponent
 
     private static void EnsureStylesRegistered()
     {
-        // styles.mjs 只导出 EnsureLoaded；渲染位的 AdminStyleSheet 限定引用同样会触发
+        // styles.js 只导出 EnsureLoaded；渲染位的 AdminStyleSheet 限定引用同样会触发
         // phantom 类名导入，因此经由本方法间接调用。
         AdminStyleSheet.EnsureLoaded();
     }

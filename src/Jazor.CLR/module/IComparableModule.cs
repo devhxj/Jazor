@@ -5,7 +5,7 @@ namespace Jazor.CLR;
 ///
 /// 当前仅开放 CompareTo(object) 的接口分发调用。
 /// </summary>
-[ECMAScriptModule("clr/System/IComparableModule.js")]
+[ECMAScriptModule("./clr/System/IComparableModule.js")]
 [Jazor(Op.Alias, "System.IComparable", "Object")]
 public static class IComparableModule
 {

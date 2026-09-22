@@ -16,13 +16,8 @@
   "imports": {
     "vee-validate": {
       "type": "module",
-      "development": "vee-validate",
-      "production": "vee-validate",
-      "developmentDependencies": [
-        "@vue/devtools-api",
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "vee-validate",
+      "dependencies": [
         "@vue/devtools-api",
         "vue"
       ]

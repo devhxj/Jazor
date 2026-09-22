@@ -20,7 +20,7 @@ using ECMAScript;
 
 namespace Sample.Modules;
 
-[ECMAScriptModule("features/greetings.mjs")]
+[ECMAScriptModule("features/greetings.js")]
 public static class Greetings
 {
     public static string Create(string name) => $"Hello, {name}";
@@ -56,7 +56,7 @@ dotnet add Sample.Host package Jazor --version 1.0.0-preview.3
 dotnet build Sample.Host
 ```
 
-构建完成后，MSBuild 在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，一次性物化 `features/greetings.mjs`、对应 source map、`jazor-manifest.json` 和 import map 到 `JazorDir`。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`；最终宿主负责输出目录。生成模块使用标准 ECMAScript 具名导出；跨模块调用由编译器创建稳定 import。发布时 SDK 复制已物化目录到发布输出的 `jazor/` 位置。
+构建完成后，MSBuild 在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，在 `JazorDir` 生成标准 JavaScript 项目。项目包含 `features/greetings.js` 及其 source map、`entry.js`、`package.json`、`deno.lock` 和恢复后的 `node_modules`；release 模式还会执行项目的 `deno task build`，默认由 Vite 写入 `dist/`。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主负责项目目录。生成模块使用标准 ECMAScript 具名导出，跨模块调用由编译器创建稳定 import。`jazor-manifest.json` 只保存在 `obj` 中用于增量状态与诊断，不参与浏览器、SSR 或 Deno 的模块解析；标准项目不生成运行时 import map。发布时 SDK 复制该项目到发布输出的 `jazor/` 位置。
 
 ## 4. 可选：加入 Razor-to-Vue
 

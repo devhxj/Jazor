@@ -14,7 +14,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: JavaScript 无对应概念或不常用
 /// </summary>
-[ECMAScriptModule("clr/System/CharModule.js")]
+[ECMAScriptModule("./clr/System/CharModule.js")]
 [Jazor(Op.Alias, "char","String")]
 public static class CharModule
 {

@@ -22,6 +22,8 @@ internal static class VueModuleBuilder
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string HmrComponentVariableName = "__jazorComponent";
+    private const string HmrDataVariableName = "__jazor$hmrData";
+    private const string HmrReloadVariableName = "__jazor$hmrReload";
     private const string CascadingMissingLocalName = "__jazor$cascade$missing";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
     private static readonly ImmutableHashSet<string> FramingReservedNames =
@@ -48,6 +50,8 @@ internal static class VueModuleBuilder
         "watch",
         "inject",
         "unref",
+        HmrDataVariableName,
+        HmrReloadVariableName,
         CascadingMissingLocalName,
         "props",
         "slots",
@@ -61,6 +65,10 @@ internal static class VueModuleBuilder
         "hasRendered",
         "cachedVNode",
         "__jazor$handlerCache",
+        // Parser represents import.meta through free-name tokens; these are supplied by the
+        // ECMAScript module environment and must not be reported as authored globals.
+        "import",
+        "meta",
         "stateHasChanged",
         "invokeAsync",
         "parametersSetAsyncGen",
@@ -118,6 +126,7 @@ internal static class VueModuleBuilder
             binding,
             component,
             closure,
+            relativePath,
             declaredNames,
             CollectCompilerImportLocalNames(
                 compilerOutput.Module,
@@ -146,6 +155,7 @@ internal static class VueModuleBuilder
                 binding,
                 component,
                 closure,
+                relativePath,
                 declaredNames,
                 CollectCompilerImportLocalNames(
                     compilerOutput.Module,
@@ -162,6 +172,7 @@ internal static class VueModuleBuilder
             compilerOutput.Layout?.NodePositions,
             compilerOutput.Initialization,
             compilerOutput.OrdinaryRenderFeatures,
+            compilerOutput.ProjectSourceImportKeys,
             relativePath,
             declaredNames,
             hmr.ModuleId);
@@ -226,6 +237,7 @@ internal static class VueModuleBuilder
             declaredNames,
             module?.Body.OfType<ImportDeclaration>() ?? Enumerable.Empty<ImportDeclaration>(),
             FramingReservedNames,
+            relativePath,
             cancellationToken);
         var layout = module is null
             ? null
@@ -234,7 +246,17 @@ internal static class VueModuleBuilder
                 includeSourcesContent: false,
                 sourceRootPath: TryGetCompilationSourceRoot(binding.Compilation, component.Document),
                 readSourceContent: null);
-        return new CompilerOutput(module, layout, initialization, ordinaryRenderFeatures);
+        var projectSourceImportKeys = converter.ProjectSourceImportKeys
+            .Concat(initialization.ProjectSourceImportKeys)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToImmutableArray();
+        return new CompilerOutput(
+            module,
+            layout,
+            initialization,
+            ordinaryRenderFeatures,
+            projectSourceImportKeys);
     }
 
     private static Module? AppendFlattenedRuntimeClasses(
@@ -335,6 +357,7 @@ internal static class VueModuleBuilder
         GeneratedCSharpBinding binding,
         BoundComponent component,
         MemberClosure closure,
+        string relativePath,
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         IEnumerable<string> reservedImportNames,
         VueInjectRegistry injectRegistry)
@@ -343,6 +366,7 @@ internal static class VueModuleBuilder
                 binding,
                 component,
                 closure,
+                relativePath,
                 declaredNames,
                 reservedImportNames,
                 injectRegistry,
@@ -506,6 +530,7 @@ internal static class VueModuleBuilder
         IReadOnlyDictionary<Node, GeneratedNodePosition>? compilerNodePositions,
         ComponentInitializationBuildResult initialization,
         VueRenderRuntimeFeatures ordinaryRenderFeatures,
+        ImmutableArray<string> compilerProjectSourceImportKeys,
         string relativePath,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         string hmrModuleId)
@@ -649,10 +674,17 @@ internal static class VueModuleBuilder
             usesServerPrefetch: features.UsesParameterViewState ||
                                 features.OnInitializedAsync is not null));
 
+        if (features.UsesState)
+        {
+            // Vite preserves import.meta.hot.data across module replacement. Keep the reactive
+            // carrier there so a Vue component reload does not reset authored state.
+            moduleStatements.AddRange(BuildHmrDataDeclarations());
+        }
+
         if (directRender.UsesRawMarkupRuntime || ordinaryRenderFeatures.UsesRawMarkupRuntime)
         {
             moduleStatements.AddRange(ImportDeclarationFactory.Create(
-                VueRawMarkup.RuntimeModuleSpecifier,
+                ECMAScriptModulePath.ResolveRelativeToImporter(relativePath, VueRawMarkup.RuntimeModuleSpecifier),
                 [new ImportSpecifier(
                     new Identifier(VueRawMarkup.RuntimeExportName),
                     new Identifier(VueRawMarkup.CreateRawMarkupName))]));
@@ -665,8 +697,7 @@ internal static class VueModuleBuilder
             if (!IsCompilerImportReferenced(importDeclaration, directRender, parts))
                 continue;
 
-            var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
-            var importToEmit = FilterEmittedImportSpecifiers(rebasedImport, emittedImportBindings);
+            var importToEmit = FilterEmittedImportSpecifiers(importDeclaration, emittedImportBindings);
             if (importToEmit is null)
                 continue;
             moduleStatements.Add(importToEmit);
@@ -681,8 +712,7 @@ internal static class VueModuleBuilder
             // local binding after ordinary-member fragments have joined the feature set.
             if (IsVueFramingImport(importDeclaration))
                 continue;
-            var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
-            var importToEmit = FilterEmittedImportSpecifiers(rebasedImport, emittedImportBindings);
+            var importToEmit = FilterEmittedImportSpecifiers(importDeclaration, emittedImportBindings);
             if (importToEmit is null)
                 continue;
             moduleStatements.Add(importToEmit);
@@ -725,6 +755,11 @@ internal static class VueModuleBuilder
             features,
             propNames));
         moduleStatements.Add(BuildVueHmrRegistration(hmrModuleId));
+        // Vite does not transform generated render modules as Vue SFCs. Register an explicit
+        // ESM HMR boundary so the Vue runtime can replace the component definition while
+        // preserving mounted instance state. The fallback JazorHmr bridge remains available
+        // for hosts that use the ASP.NET Core development transport.
+        moduleStatements.AddRange(BuildViteHmrRegistration(hmrModuleId));
         moduleStatements.Add(new ExportDefaultDeclaration(new Identifier(HmrComponentVariableName)));
 
         var vueModule = new Module(NodeList.From(moduleStatements));
@@ -736,30 +771,30 @@ internal static class VueModuleBuilder
         var moduleLayout = vueModule.ToKnRECMAScriptWithNodePositions();
         var moduleText = Util.NormalizeLineEndingsToLf(moduleLayout.Content);
         var lineMappings = BuildCompiledLineMappings(moduleLayout.NodePositions, parts);
-        var packageImports = moduleStatements
+        var projectSourceImportKeys = new HashSet<string>(
+            compilerProjectSourceImportKeys.Concat(directRender.ProjectSourceImportKeys),
+            StringComparer.Ordinal);
+        if (directRender.UsesRawMarkupRuntime || ordinaryRenderFeatures.UsesRawMarkupRuntime)
+            projectSourceImportKeys.Add(ECMAScriptModulePath.NormalizeRelativePath(VueRawMarkup.RuntimeModuleSpecifier));
+        var emittedImportSpecifiers = moduleStatements
             .OfType<ImportDeclaration>()
+            // [Style] is emitted as a pure side-effect import. It remains in the JavaScript
+            // source graph for Vite/Deno, but must not be treated as a binding manifest root.
+            .Where(static declaration => declaration.Specifiers.Count > 0)
             .Select(static declaration => declaration.Source.Value)
-            .Where(ECMAScriptModulePath.IsPackageSpecifier)
-            .Concat(moduleStatements
-                .OfType<ImportDeclaration>()
-                .Select(static declaration => declaration.Source.Value)
-                // carrier 引用写出的 specifier 是相对的，但它不是本图模块：载体由资源库清单
-                // 物化。逻辑键无法从相对文本反推，因此在这里补记，供 --library-manifest 选择。
-                .Where(specifier => IsCarrierImportSpecifier(specifier, relativePath))
-                .Select(specifier => ResolveModuleDependency(specifier, relativePath)))
+            .ToImmutableArray();
+        var packageImports = emittedImportSpecifiers
+            .Where(static specifier => !IsRelativeModuleSpecifier(specifier))
+            .Concat(projectSourceImportKeys)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToImmutableArray();
-        var dependencies = moduleStatements
-            .OfType<ImportDeclaration>()
-            .Select(static declaration => declaration.Source.Value)
-            .Where(static specifier => !ECMAScriptModulePath.IsPackageSpecifier(specifier) &&
-                                       !string.Equals(specifier, "style.mjs", StringComparison.Ordinal))
+        var dependencies = emittedImportSpecifiers
+            .Where(IsRelativeModuleSpecifier)
             .Select(specifier => ResolveModuleDependency(specifier, relativePath))
-            // carrier 引用（clr/**）不是本编译的 ModuleCatalog 模块：载体由资源库清单物化，
-            // 载体内部的模块边由载体自身的 manifest 表达。记成本图依赖会让 ModuleCollector
-            // 去当前程序集闭包里找 clr/** 而失败。
-            .Where(static dependency => !dependency.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
+            // 资源清单物化的项目源码不属于当前程序集的 ModuleCatalog 闭包。
+            // lowering 显式提供目标身份；目录名不参与分类。
+            .Where(dependency => !projectSourceImportKeys.Contains(dependency))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToImmutableArray();
@@ -788,20 +823,9 @@ internal static class VueModuleBuilder
         return ECMAScriptModulePath.ResolveRelativePath(relativePath, specifier);
     }
 
-    /// <summary>
-    /// 判定一个 import specifier 是否指向 ECMAScript 源码 carrier（clr/**）。
-    ///
-    /// 判据是"解析后的项目路径落在 carrier 根下"，与 specifier 的书写形态无关：
-    /// carrier 内部互引用相对路径，用户模块引用 carrier 也由编译器写成相对路径。
-    /// </summary>
-    private static bool IsCarrierImportSpecifier(string specifier, string relativePath)
-    {
-        if (ECMAScriptModulePath.IsPackageSpecifier(specifier))
-            return false;
-
-        var resolved = ResolveModuleDependency(specifier, relativePath);
-        return resolved.StartsWith(CarrierSourceRoot, StringComparison.Ordinal);
-    }
+    private static bool IsRelativeModuleSpecifier(string specifier)
+        => specifier.StartsWith("./", StringComparison.Ordinal) ||
+           specifier.StartsWith("../", StringComparison.Ordinal);
 
     private static FunctionDeclaration BuildSetupFactoryDeclaration(
         string setupFactoryName,
@@ -821,8 +845,16 @@ internal static class VueModuleBuilder
         if (features.UsesState)
         {
             statements.Add(parts.InitializationPhases.Any(static phase => phase.ConstructorStatement is not null)
-                ? BuildStateDefaultsDeclaration(parts.StateSlots)
-                : BuildStateDeclaration(parts.StateSlots));
+                ? BuildStateDefaultsDeclaration(parts.StateSlots, reuseHmrState: true)
+                : BuildStateDeclaration(parts.StateSlots, reuseHmrState: true));
+            statements.Add(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new MemberExpression(
+                    new Identifier(HmrDataVariableName),
+                    StringLiteral("state"),
+                    computed: true,
+                    optional: false),
+                new Identifier("state"))));
         }
 
         // Component construction occurs after every instance slot has its CLR default, then
@@ -940,26 +972,62 @@ internal static class VueModuleBuilder
             async: false);
     }
 
-    private static VariableDeclaration BuildStateDeclaration(ImmutableArray<StateSlot> stateSlots)
+    private static VariableDeclaration BuildStateDeclaration(
+        ImmutableArray<StateSlot> stateSlots,
+        bool reuseHmrState = false)
     {
         var properties = stateSlots.Select(slot => (Node)CreateObjectProperty(
             slot.RuntimeName,
             slot.Initializer ?? CurrentComponentStateDefaultInitializer.CreateExpression(slot.Type)));
-        var state = CreateCall(
+        var freshState = CreateCall(
             "reactive",
             new ObjectExpression(NodeList.From(properties)));
-        return CreateVariableDeclaration(VariableDeclarationKind.Const, "state", state);
+        Expression state = reuseHmrState
+            ? new LogicalExpression(
+                Operator.LogicalOr,
+                new LogicalExpression(
+                    Operator.LogicalAnd,
+                    new Identifier(HmrReloadVariableName),
+                    new MemberExpression(
+                        new Identifier(HmrDataVariableName),
+                        StringLiteral("state"),
+                        computed: true,
+                        optional: false)),
+                freshState)
+            : freshState;
+        return CreateVariableDeclaration(
+            reuseHmrState ? VariableDeclarationKind.Let : VariableDeclarationKind.Const,
+            "state",
+            state);
     }
 
-    private static VariableDeclaration BuildStateDefaultsDeclaration(ImmutableArray<StateSlot> stateSlots)
+    private static VariableDeclaration BuildStateDefaultsDeclaration(
+        ImmutableArray<StateSlot> stateSlots,
+        bool reuseHmrState = false)
     {
         var properties = stateSlots.Select(slot => (Node)CreateObjectProperty(
             slot.RuntimeName,
             CurrentComponentStateDefaultInitializer.CreateExpression(slot.Type)));
-        var state = CreateCall(
+        var freshState = CreateCall(
             "reactive",
             new ObjectExpression(NodeList.From(properties)));
-        return CreateVariableDeclaration(VariableDeclarationKind.Const, "state", state);
+        Expression state = reuseHmrState
+            ? new LogicalExpression(
+                Operator.LogicalOr,
+                new LogicalExpression(
+                    Operator.LogicalAnd,
+                    new Identifier(HmrReloadVariableName),
+                    new MemberExpression(
+                        new Identifier(HmrDataVariableName),
+                        StringLiteral("state"),
+                        computed: true,
+                        optional: false)),
+                freshState)
+            : freshState;
+        return CreateVariableDeclaration(
+            reuseHmrState ? VariableDeclarationKind.Let : VariableDeclarationKind.Const,
+            "state",
+            state);
     }
 
     private static IEnumerable<Statement> BuildComponentInitializationStatements(
@@ -1076,6 +1144,132 @@ internal static class VueModuleBuilder
             condition,
             CreateBlock(CreateExpressionStatement(registration)),
             null);
+    }
+
+    private static IEnumerable<Statement> BuildViteHmrRegistration(string moduleId)
+    {
+        // Vue's runtime registers mounted instances by the component definition's __hmrId.
+        // The ASP.NET Core JazorHmr bridge can call createRecord directly, but a standard Vite
+        // project has no bridge script; keep the definition metadata in the generated module so
+        // Vue's normal mount path records the component before import.meta.hot.reload runs.
+        var importMetaHot = new MemberExpression(
+            new MemberExpression(
+                new Identifier("import"),
+                new Identifier("meta"),
+                computed: false,
+                optional: false),
+            new Identifier("hot"),
+            computed: false,
+            optional: false);
+        var runtime = new Identifier("runtime");
+        var runtimeReload = new MemberExpression(
+            runtime,
+            new Identifier("reload"),
+            computed: false,
+            optional: false);
+        var updated = new Identifier("updated");
+        var updatedDefault = new MemberExpression(
+            updated,
+            new Identifier("default"),
+            computed: false,
+            optional: false);
+        var runtimeCondition = new LogicalExpression(
+            Operator.LogicalAnd,
+            new LogicalExpression(
+                Operator.LogicalAnd,
+                new LogicalExpression(
+                    Operator.LogicalAnd,
+                    runtime,
+                    new NonLogicalBinaryExpression(
+                        Operator.StrictEquality,
+                        new NonUpdateUnaryExpression(Operator.TypeOf, runtimeReload),
+                        StringLiteral("function"))),
+                updated),
+            updatedDefault);
+        var acceptBody = new List<Statement>
+        {
+            CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "runtime",
+                new MemberExpression(
+                    new Identifier("globalThis"),
+                    new Identifier("__VUE_HMR_RUNTIME__"),
+                    computed: false,
+                    optional: false)),
+            new IfStatement(
+                runtimeCondition,
+                CreateBlock(CreateExpressionStatement(CreateCallMember(
+                    runtime,
+                    "reload",
+                    StringLiteral(moduleId),
+                    updatedDefault))),
+                null)
+        };
+        return
+        [
+            CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new MemberExpression(
+                    new Identifier(HmrComponentVariableName),
+                    new Identifier("__hmrId"),
+                    computed: false,
+                    optional: false),
+                StringLiteral(moduleId))),
+            new IfStatement(
+                importMetaHot,
+                CreateBlock(CreateExpressionStatement(CreateCallMember(
+                    importMetaHot,
+                    "accept",
+                    CreateArrowFunction(["updated"], acceptBody)))),
+                null)
+        ];
+    }
+
+    private static IEnumerable<Statement> BuildHmrDataDeclarations()
+    {
+        // import.meta.hot.data is Vite's standard state hand-off across module replacement.
+        // Build the expression directly so compiler lowering never round-trips through JS text.
+        var importMeta = new MemberExpression(
+            new Identifier("import"),
+            new Identifier("meta"),
+            computed: false,
+            optional: false);
+        var hot = new MemberExpression(
+            new MemberExpression(importMeta, new Identifier("hot"), computed: false, optional: false),
+            new Identifier("data"),
+            computed: false,
+            optional: false);
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            HmrDataVariableName,
+            new ConditionalExpression(
+                new MemberExpression(
+                    new MemberExpression(
+                        new Identifier("import"),
+                        new Identifier("meta"),
+                        computed: false,
+                        optional: false),
+                    new Identifier("hot"),
+                    computed: false,
+                    optional: false),
+                hot,
+                new ObjectExpression(NodeList.Empty<Node>())));
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            HmrReloadVariableName,
+            new MemberExpression(
+                new Identifier(HmrDataVariableName),
+                StringLiteral("loaded"),
+                computed: true,
+                optional: false));
+        yield return CreateExpressionStatement(new AssignmentExpression(
+            Operator.Assignment,
+            new MemberExpression(
+                new Identifier(HmrDataVariableName),
+                StringLiteral("loaded"),
+                computed: true,
+                optional: false),
+            BooleanLiteral(true)));
     }
 
     private static IEnumerable<Identifier> BuildSetupFactoryIdentifiers(VueModuleFeatures features)
@@ -2902,6 +3096,7 @@ internal static class VueModuleBuilder
         GeneratedCSharpBinding binding,
         BoundComponent component,
         MemberClosure closure,
+        string relativePath,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
@@ -2920,7 +3115,8 @@ internal static class VueModuleBuilder
                 injectRegistry,
                 out var operationResult,
                 out diagnostic,
-                parameterPropertiesUseState: closure.UsesParameterViewState))
+                parameterPropertiesUseState: closure.UsesParameterViewState,
+                currentModuleOutputPath: relativePath))
         {
             return false;
         }
@@ -2943,7 +3139,8 @@ internal static class VueModuleBuilder
             operationResult.UsesProps,
             operationResult.UsesSlots,
             operationResult.ImportDeclarations,
-            operationResult.ReferenceCaptureStateMembers);
+            operationResult.ReferenceCaptureStateMembers,
+            operationResult.ProjectSourceImportKeys);
         return true;
     }
 
@@ -3312,13 +3509,17 @@ internal static class VueModuleBuilder
         var specifier = declaration.Source.Value;
         if ((!specifier.StartsWith("./", StringComparison.Ordinal) &&
              !specifier.StartsWith("../", StringComparison.Ordinal)) ||
-            !specifier.EndsWith(".vue.mjs", StringComparison.OrdinalIgnoreCase))
+            (!specifier.EndsWith(".vue.js", StringComparison.OrdinalIgnoreCase) &&
+             !specifier.EndsWith(".vue.mjs", StringComparison.OrdinalIgnoreCase)))
         {
             return false;
         }
 
         var importPath = ResolveImportArtifactPath(specifier, importerRelativePath);
-        var artifactPath = ResolveImportArtifactPath(specifier.Substring(0, specifier.Length - ".mjs".Length), importerRelativePath);
+        var moduleExtensionLength = specifier.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)
+            ? ".mjs".Length
+            : ".js".Length;
+        var artifactPath = ResolveImportArtifactPath(specifier.Substring(0, specifier.Length - moduleExtensionLength), importerRelativePath);
         asset = new VueAsset(
             SourcePath: artifactPath,
             ArtifactPath: artifactPath,
@@ -3968,62 +4169,6 @@ internal static class VueModuleBuilder
                     StringComparison.Ordinal));
     }
 
-    private static ImportDeclaration RebaseImportDeclaration(
-        ImportDeclaration declaration,
-        string importerRelativePath)
-    {
-        var modulePath = declaration.Source.Value;
-        if (modulePath.StartsWith("./", StringComparison.Ordinal))
-        {
-            var rebased = RebaseRootRelativeModuleSpecifier(modulePath, importerRelativePath);
-            return ImportDeclarationFactory.WithModulePath(declaration, rebased);
-        }
-
-        // 项目内模块但写成项目相对路径（自有源码 carrier 的 clr/**）时同样需要 rebase：
-        // carrier 是项目源码，不是包，裸路径没有包上下文可供解析。
-        // 外部包说明符（vue、@scope/pkg）不含 clr/ 前缀，保持原样。
-        if (modulePath.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
-        {
-            var rebased = RebaseRootRelativeModuleSpecifier(modulePath, importerRelativePath);
-            return ImportDeclarationFactory.WithModulePath(declaration, rebased);
-        }
-
-        return declaration;
-    }
-
-    /// <summary>项目源码树中 CLR 源码 carrier 的根目录。</summary>
-    private const string CarrierSourceRoot = "clr/";
-
-    private static string RebaseRootRelativeModuleSpecifier(
-        string rootRelativeSpecifier,
-        string importerRelativePath)
-    {
-        var target = NormalizeGeneratedSourcePath(rootRelativeSpecifier);
-        var importer = NormalizeGeneratedSourcePath(importerRelativePath);
-        var importerDirectory = Path.GetDirectoryName(importer)?.Replace('\\', '/') ?? string.Empty;
-        var targetSegments = SplitPathSegments(target);
-        var importerSegments = SplitPathSegments(importerDirectory);
-        var commonLength = 0;
-        while (commonLength < targetSegments.Length &&
-               commonLength < importerSegments.Length &&
-               string.Equals(targetSegments[commonLength], importerSegments[commonLength], StringComparison.Ordinal))
-        {
-            commonLength++;
-        }
-
-        var relativeSegments = Enumerable
-            .Repeat("..", importerSegments.Length - commonLength)
-            .Concat(targetSegments.Skip(commonLength))
-            .ToArray();
-        var relative = string.Join("/", relativeSegments);
-        if (string.IsNullOrWhiteSpace(relative))
-            relative = Path.GetFileName(target).Replace('\\', '/');
-
-        return relative.StartsWith(".", StringComparison.Ordinal)
-            ? relative
-            : "./" + relative;
-    }
-
     private static string[] SplitPathSegments(string path)
         => NormalizeGeneratedSourcePath(path)
             .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
@@ -4118,6 +4263,9 @@ internal static class VueModuleBuilder
                 attribute.ConstructorArguments[0].Value is string importPath &&
                 !string.IsNullOrWhiteSpace(importPath))
             {
+                // The authored module path is the output contract. Preserve its extension and
+                // relative spelling so the generated standard project has the same path that
+                // the attribute declares; only slash normalization is shared with Emit.
                 return NormalizeRelativePath(importPath);
             }
         }
@@ -4128,7 +4276,7 @@ internal static class VueModuleBuilder
         var namespaceName = componentSymbol.ContainingNamespace!.IsGlobalNamespace
             ? string.Empty
             : componentSymbol.ContainingNamespace!.ToDisplayString().Replace('.', '/');
-        var fileName = componentSymbol.Name + ".mjs";
+        var fileName = componentSymbol.Name + ECMAScriptModulePath.DefaultGeneratedExtension;
 
         return string.IsNullOrEmpty(namespaceName)
             ? assemblyName + "/" + fileName
@@ -4211,7 +4359,7 @@ internal static class VueModuleBuilder
         var moduleMaps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         // The compiler map starts at generated C#. Join it with Razor #line mappings here so
-        // downstream consumers only need the final .mjs.map and never load SDK-generated files.
+        // downstream consumers only need the final .js.map and never load SDK-generated files.
         // 将 compiler -> .g.cs map 与 .g.cs -> .razor map 在此链接，最终产物只暴露作者源文件。
         var generatedCSharpMap = BuildGeneratedCSharpSourceMap(component.Document, compilerMap);
         if (generatedCSharpMap.Segments.Count > 0)
@@ -4928,7 +5076,8 @@ internal static class VueModuleBuilder
         Module? Module,
         GeneratedJavaScriptLayout? Layout,
         ComponentInitializationBuildResult Initialization,
-        VueRenderRuntimeFeatures OrdinaryRenderFeatures);
+        VueRenderRuntimeFeatures OrdinaryRenderFeatures,
+        ImmutableArray<string> ProjectSourceImportKeys);
 
     /// <summary>Separates imports, declarations, and executable statements for deterministic framing.</summary>
     private sealed record CompilerModuleParts(
@@ -4958,7 +5107,8 @@ internal static class VueModuleBuilder
         bool UsesProps,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
-        ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
+        ImmutableArray<ISymbol> ReferenceCaptureStateMembers,
+        ImmutableArray<string> ProjectSourceImportKeys);
 
     /// <summary>Maps one Blazor parameter name to its Vue carrier and component state slot.</summary>
     private sealed record ParameterBinding(
@@ -4995,7 +5145,7 @@ internal static class VueModuleBuilder
         int? InitializerCompiledColumn = null);
 }
 
-/// <summary>One generated Vue module and the source assets it imports. 是 emit pipeline 写入 .mjs、map 与附属资源的不可变载体。</summary>
+/// <summary>One generated Vue module and the source assets it imports. 是 emit pipeline 写入 .js、map 与附属资源的不可变载体。</summary>
 internal sealed record VueModuleArtifact(
     string ComponentId,
     string RelativePath,

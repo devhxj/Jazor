@@ -20,7 +20,7 @@ var assemblyPaths = new Dictionary<string, string>(StringComparer.Ordinal)
     ["ECMAScript"] = "net11.0", ["ECMAScript.ElementPlus"] = "net11.0", ["ECMAScript.Pinia"] = "net11.0",
     ["ECMAScript.Pinia.Testing"] = "net11.0", ["ECMAScript.Style"] = "net11.0", ["ECMAScript.TDesign"] = "net11.0",
     ["ECMAScript.Vue"] = "net11.0", ["ECMAScript.Vue.Devtools"] = "net11.0", ["ECMAScript.VueDataUi"] = "net11.0",
-    ["ECMAScript.VueRoute"] = "net11.0", ["ECMAScript.Vuetify"] = "net11.0", ["ECMAScript.VuIcons"] = "net11.0",
+    ["ECMAScript.VueRoute"] = "net11.0", ["ECMAScript.Vuetify"] = "net11.0", ["ECMAScript.Lucide"] = "net11.0",
     ["Jazor"] = "net11.0", ["Jazor.Vue"] = "net11.0"
 };
 var assemblies = assemblyPaths.Select(pair => Path.Combine(repoRoot, "src", pair.Key, "bin", configuration, pair.Value, pair.Key + ".dll"));
@@ -94,7 +94,7 @@ else
 {
     var resolved = Path.IsPathRooted(outputPath) ? outputPath : Path.Combine(repoRoot, outputPath);
     Directory.CreateDirectory(Path.GetDirectoryName(resolved) ?? repoRoot);
-    File.WriteAllText(resolved, builder.ToString(), Encoding.UTF8);
+    File.WriteAllText(resolved, builder.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     Console.WriteLine($"Wrote public API snapshot: {resolved}");
 }
 

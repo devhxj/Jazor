@@ -24,37 +24,25 @@
   "imports": {
     "@vue/devtools-api": {
       "type": "module",
-      "development": "@vue/devtools-api",
-      "production": "@vue/devtools-api",
-      "developmentDependencies": [
-        "perfect-debounce"
-      ],
-      "productionDependencies": [
+      "path": "@vue/devtools-api",
+      "dependencies": [
         "perfect-debounce"
       ]
     },
     "@vue/server-renderer": {
       "type": "module",
-      "development": "@vue/server-renderer",
-      "production": "@vue/server-renderer",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "@vue/server-renderer",
+      "dependencies": []
     },
     "perfect-debounce": {
       "type": "module",
-      "development": "perfect-debounce",
-      "production": "perfect-debounce",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "perfect-debounce",
+      "dependencies": []
     },
     "vue": {
       "type": "module",
-      "development": "vue",
-      "production": "vue",
-      "browserDevelopment": "vue/dist/vue.runtime.esm-browser.js",
-      "browserProduction": "vue/dist/vue.runtime.esm-browser.prod.js",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "vue",
+      "dependencies": []
     }
   },
   "requires": {},

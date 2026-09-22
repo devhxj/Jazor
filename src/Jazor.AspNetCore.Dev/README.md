@@ -1,8 +1,26 @@
 # Jazor.AspNetCore.Dev
 
-Development 环境下的 HTML 客户端注入、WebSocket 通知、文件观察和 Vue 模板 HMR。程序集与 XML 文档随 **Jazor** 包交付。它观察构建后的文件，**不会执行 C#/Razor 编译**；用 `dotnet watch` 或构建命令持续产生新产物。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
+Development 环境下可将浏览器请求交给标准项目的 Vite 开发服务器。程序集与 XML 文档随 **Jazor** 包交付。Vite/Deno 负责文件服务和 HMR，ASP.NET Core 只做可选 HTTP/WebSocket 代理；`AddJazorReload` 是旧的宿主通知兼容层，不是项目运行所需。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
 
-## 最小接入
+## Vite 代理
+
+标准项目生成 `package.json` 后，先在 `jazor/` 目录运行 `deno task dev`。宿主可以把请求和 Vite 的 HMR WebSocket 透明转发：
+
+```csharp
+builder.Services.AddJazorViteProxy(options =>
+{
+    options.ServerOrigin = new Uri("http://127.0.0.1:5173");
+    options.RequestPath = "/jazor";
+});
+var app = builder.Build();
+app.UseJazorViteProxy();
+```
+
+Vite 的 `base` 配置需匹配完整公开前缀；例如宿主使用 `/portal` PathBase 时设为 `/portal/jazor/`。代理不会改写响应里的 import URL。
+
+该代理不读取 `jazor-manifest.json`，也不监听或静态托管 `jazor/` 目录。生产环境不应注册此代理，生产文件由标准构建输出或 CDN 提供。
+
+## 可选宿主 reload
 
 ```csharp
 using Jazor.AspNetCore;
@@ -29,8 +47,8 @@ reload 必须位于会产生 HTML 的静态文件、SPA fallback、SSR 之前。
 | --- | --- |
 | `ClientScriptPath` | `/@jazor/client`，GET/HEAD 加载 reload 模块 |
 | `WebSocketPath` | `/@jazor/reload`，只接受 WebSocket 升级 |
-| `WatchPaths` | `jazor`、`wwwroot`，相对 ContentRootPath；也支持绝对目录 |
-| `HmrMappings` | `jazor` → `/jazor`；映射目录自动加入观察范围 |
+| `WatchPaths` | 仅 `wwwroot`，相对 ContentRootPath；也支持绝对目录 |
+| `HmrMappings` | 空；标准项目由 Vite 管理，旧协议须显式配置 |
 | `DebounceInterval` | 100 ms，合并构建连续写入 |
 | `PollingInterval` | 750 ms，与文件监听一起运行，补充遗漏事件 |
 | `KeepAliveInterval` | 15 s，WebSocket transport 心跳 |

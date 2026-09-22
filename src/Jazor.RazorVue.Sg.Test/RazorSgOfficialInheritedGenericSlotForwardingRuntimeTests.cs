@@ -69,15 +69,15 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
         StringAssert.Contains(observation.ModuleText, "name: \"item\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/inherited-release-template-forwarder-runtime.mjs",
+            "components/inherited-release-template-forwarder-runtime.js",
             observation.ModuleText,
             "official-inherited-generic-slot-forwarder-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/inherited-release-template-forwarder-runtime.mjs";
-            import releaseList from "./components/release-list-inherited-generic-slot-runtime.mjs";
+            import component from "./components/inherited-release-template-forwarder-runtime.js";
+            import releaseList from "./components/release-list-inherited-generic-slot-runtime.js";
 
             test("official Razor inherited generic slot preserves the derived slot name and context", () => {
                 const incoming = component.setup({}, {
@@ -108,7 +108,7 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/release-list-inherited-generic-slot-runtime.mjs"] = "export default { name: \"release-list-inherited-generic-slot-runtime\" };"
+                ["components/release-list-inherited-generic-slot-runtime.js"] = "export default { name: \"release-list-inherited-generic-slot-runtime\" };"
             });
     }
 }

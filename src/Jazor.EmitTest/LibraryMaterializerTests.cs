@@ -38,9 +38,8 @@ public sealed class LibraryMaterializerTests
             else if (manifest.Source == "embedded-mjs")
             {
                 var declaredCarrierFiles = manifest.Imports.Values
-                    .SelectMany(static entry => new[] { entry.Development, entry.Production }
-                        .Concat(entry.DevelopmentStyles.Select(static file => file.Path))
-                        .Concat(entry.ProductionStyles.Select(static file => file.Path))
+                    .SelectMany(static entry => new[] { entry.Path }
+                        .Concat(entry.Styles.Select(static file => file.Path))
                         .Concat(entry.Files.Select(static file => file.Path)))
                     .Distinct(StringComparer.Ordinal)
                     .ToArray();
@@ -171,7 +170,7 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public async Task Materialize_JsrPackageUsesCanonicalDenoIdentityAndAuthoredImportAliases()
+    public void Materialize_JsrPackageUsesCanonicalDenoIdentityAndAuthoredImportAliases()
     {
         using var workspace = new LibraryWorkspace();
         var manifestPath = Path.Combine(workspace.Root, "jsr-manifest.json");
@@ -194,14 +193,12 @@ public sealed class LibraryMaterializerTests
                 ["@std/path"] = new JsonObject
                 {
                     ["type"] = "module",
-                    ["development"] = "@std/path",
-                    ["production"] = "@std/path"
+                    ["path"] = "@std/path"
                 },
                 ["@std/path/posix"] = new JsonObject
                 {
                     ["type"] = "module",
-                    ["development"] = "@std/path/posix",
-                    ["production"] = "@std/path/posix"
+                    ["path"] = "@std/path/posix"
                 }
             },
             ["requires"] = new JsonObject(),
@@ -230,7 +227,7 @@ public sealed class LibraryMaterializerTests
         var dependencies = package.RootElement.GetProperty("dependencies");
         Assert.AreEqual(
             "jsr:@std/path@1.0.8",
-            dependencies.GetProperty("@jsr/std__path").GetString());
+            dependencies.GetProperty("@std/path").GetString());
         var metadata = package.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("@std/path");
         Assert.AreEqual("jsr", metadata.GetProperty("source").GetString());
         Assert.AreEqual("@jsr/std__path", metadata.GetProperty("canonicalName").GetString());
@@ -259,28 +256,7 @@ public sealed class LibraryMaterializerTests
         File.WriteAllText(Path.Combine(packageRoot, "index.mjs"), "export const runtime = 'import';\n");
         File.WriteAllText(Path.Combine(packageRoot, "posix.mjs"), "export const runtime = 'posix';\n");
 
-        await ImportMapWriter.WriteAsync(outputRoot, libraries);
-        using var browserMap = JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
-        using var rootSsrMap = JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
-        Assert.AreEqual(
-            "/jazor/node_modules/@jsr/std__path/browser.mjs",
-            browserMap.RootElement.GetProperty("imports").GetProperty("@std/path").GetString());
-        Assert.AreEqual(
-            "/jazor/node_modules/@jsr/std__path/posix.mjs",
-            browserMap.RootElement.GetProperty("imports").GetProperty("@std/path/posix").GetString());
-        Assert.AreEqual(
-            "./node_modules/@jsr/std__path/index.mjs",
-            rootSsrMap.RootElement.GetProperty("imports").GetProperty("@std/path").GetString());
 
-        var ssrRoot = Path.Combine(outputRoot, "ssr");
-        await ImportMapWriter.WriteSsrAsync(ssrRoot, libraries);
-        using var ssrMap = JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(ssrRoot, ImportMapWriter.SsrImportMapFileName)));
-        Assert.AreEqual(
-            "../node_modules/@jsr/std__path/index.mjs",
-            ssrMap.RootElement.GetProperty("imports").GetProperty("@std/path").GetString());
     }
 
     [TestMethod]
@@ -306,8 +282,7 @@ public sealed class LibraryMaterializerTests
                 ["@std/path"] = new JsonObject
                 {
                     ["type"] = "module",
-                    ["development"] = "@std/path",
-                    ["production"] = "@std/path"
+                    ["path"] = "@std/path"
                 }
             },
             ["requires"] = new JsonObject(),
@@ -359,7 +334,7 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public void Materialize_EntryStylesFollowSelectedProfileAndDoNotLeakOtherEntries()
+    public void Materialize_EntryStylesFollowDeclaredGraphAndDoNotLeakOtherEntries()
     {
         using var workspace = new LibraryWorkspace();
         workspace.WriteFile("dist/dev.mjs", "export const mode = 'development';");
@@ -391,12 +366,12 @@ public sealed class LibraryMaterializerTests
         var result = new LibraryMaterializer().Materialize(
             [manifestPath],
             outputRoot,
-            BuildMode.Development,
+            BuildMode.Production,
             requiredImports: ["profile-library/used"]);
 
-        Assert.AreEqual("dist/dev.css", result.StylePaths.Single());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "dev.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "dist", "prod.css")));
+        Assert.AreEqual("dist/prod.css", result.StylePaths.Single());
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "prod.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "dist", "dev.css")));
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "dist", "unused.css")));
 
         var releaseRoot = Path.Combine(workspace.Root, "release");
@@ -428,7 +403,7 @@ public sealed class LibraryMaterializerTests
             Assert.IsFalse(result.ImportPaths.ContainsKey("tdesign-vue-next/es/alert/index.mjs"));
             Assert.IsFalse(result.StylePaths.Any(path => path.Contains("alert", StringComparison.OrdinalIgnoreCase)));
             Assert.IsFalse(result.StylePaths.Any(path => path.Contains("root", StringComparison.OrdinalIgnoreCase)));
-            Assert.IsTrue(result.ExternalStylesheetPaths.Any(path => path.Contains("button", StringComparison.OrdinalIgnoreCase)));
+            Assert.IsEmpty(result.StylePaths);
             Assert.AreEqual("tdesign-vue-next/es/button/index.mjs", result.ImportPaths["tdesign-vue-next/es/button/index.mjs"]);
             Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("tdesign-vue-next", StringComparison.OrdinalIgnoreCase)));
         }
@@ -446,6 +421,12 @@ public sealed class LibraryMaterializerTests
         var vueManifest = FindLibraryManifest("ECMAScript.Vue");
         using var manifest = JsonDocument.Parse(File.ReadAllText(elementPlusManifest));
 
+        var dayjsPackage = manifest.RootElement.GetProperty("packages").GetProperty("dayjs");
+        Assert.AreEqual("npm", dayjsPackage.GetProperty("source").GetString());
+        Assert.AreEqual("1.11.23", dayjsPackage.GetProperty("version").GetString());
+        var dayjsImport = manifest.RootElement.GetProperty("imports").GetProperty("dayjs");
+        Assert.AreEqual("dayjs", dayjsImport.GetProperty("path").GetString());
+
         var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "element-plus", Guid.NewGuid().ToString("N"));
         try
         {
@@ -458,7 +439,7 @@ public sealed class LibraryMaterializerTests
             Assert.IsTrue(result.ImportPaths.ContainsKey("element-plus/es/components/button/index.mjs"));
             Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/es/components/alert/index.mjs"));
             Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/es/index.mjs"));
-            Assert.IsTrue(result.ExternalStyleModuleImports.Any(path => path.Contains("button", StringComparison.OrdinalIgnoreCase)));
+            Assert.IsEmpty(result.StylePaths);
             Assert.AreEqual("element-plus/es/components/button/index.mjs", result.ImportPaths["element-plus/es/components/button/index.mjs"]);
             Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("element-plus", StringComparison.OrdinalIgnoreCase)));
         }
@@ -612,9 +593,9 @@ public sealed class LibraryMaterializerTests
     public void Materialize_P3CComponentClosures_ResolveTheirEntryGraphs()
     {
         // vue-draggable-plus、filepond 与 wangeditor 各自 vendor 一个多包闭包。选择作者入口必须
-        // 物化整图；FilePond/WangEditor 还必须在 manifest 中携带样式资源，vue 由 Vue 资源库提供。
+        // 物化整图；FilePond/WangEditor 的样式由生成模块 side-effect import 交给标准构建器。
         // The P3-C packages each vendor a multi-package closure; selecting the author entry must
-        // materialize the whole graph, and FilePond/WangEditor must carry their stylesheet.
+        // materialize the whole graph; FilePond/WangEditor styles stay in the generated ESM graph.
         var cases = new[]
         {
             (Manifest: "ECMAScript.VueDraggable", Id: "vue-draggable", Specifier: "vue-draggable-plus"),
@@ -628,9 +609,6 @@ public sealed class LibraryMaterializerTests
             var manifestPath = FindLibraryManifest(manifestName);
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             var version = manifest.RootElement.GetProperty("version").GetString()!;
-            var expectedStyles = manifest.RootElement.GetProperty("styles").EnumerateArray()
-                .Select(static style => style.GetProperty("path").GetString()!)
-                .ToArray();
             var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
             try
             {
@@ -644,19 +622,17 @@ public sealed class LibraryMaterializerTests
 
                 // 请求入口必须连同其 package 依赖链一起被选中（含闭包内的核心包）。
                 var requested = manifest.RootElement.GetProperty("imports").GetProperty(specifier);
-                foreach (var dependency in requested.GetProperty("productionDependencies").EnumerateArray()
+                foreach (var dependency in requested.GetProperty("dependencies").EnumerateArray()
                              .Select(static value => value.GetString()!)
                              .Where(static value => value != "vue"))
                     Assert.IsTrue(result.ImportPaths.ContainsKey(dependency), $"{libraryId}: dependency '{dependency}' was not selected.");
 
-                if (requested.GetProperty("productionDependencies").EnumerateArray()
+                if (requested.GetProperty("dependencies").EnumerateArray()
                     .Any(static value => value.GetString() == "vue"))
                     Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), $"{libraryId}: the vue peer was not resolved.");
 
-                // Styles are external package edges; local style paths stay empty.
+                // Styles are declared on the binding entry and emitted with the consuming module.
                 Assert.AreEqual(0, result.StylePaths.Count, $"{libraryId}: external styles must not be copied from binding output.");
-                foreach (var style in expectedStyles)
-                    Assert.Contains(style, result.ExternalStylesheetPaths.ToArray());
             }
             finally
             {
@@ -849,14 +825,14 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public async Task Materialize_RecursivelyMapsNamedModuleDependencies()
+    public void Materialize_RecursivelyMapsNamedModuleDependencies()
     {
         using var workspace = new LibraryWorkspace();
         var outputRoot = Path.Combine(workspace.Root, "out");
 
         // The CLR resource manifest has a real nested ESM chain:
         // IndexModule -> RuntimeModule -> StringModule. Every named edge must be exposed in
-        // the import map, while unrelated modules remain unmaterialized.
+        // the project source tree, while unrelated modules remain unmaterialized.
         var result = new LibraryMaterializer().Materialize(
             [FindLibraryManifest("ECMAScript")],
             outputRoot,
@@ -876,15 +852,9 @@ public sealed class LibraryMaterializerTests
             result.ImportPaths.Keys.ToArray());
         Assert.IsFalse(result.ImportPaths.ContainsKey("clr/System/ArrayModule.js"));
 
-        await ImportMapWriter.WriteAsync(outputRoot, result);
-        using var importMap = JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
-        var imports = importMap.RootElement.GetProperty("imports");
-        foreach (var specifier in result.ImportPaths.Keys)
-        {
-            var target = imports.GetProperty(specifier).GetString();
-            Assert.IsTrue(target?.StartsWith("/jazor/clr/", StringComparison.Ordinal));
-        }
+        foreach (var relativePath in result.ImportPaths.Values)
+            Assert.IsTrue(File.Exists(Path.Combine(outputRoot, relativePath)));
+
     }
 
     [TestMethod]
@@ -1004,93 +974,6 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public async Task ImportMapWriter_WritesLocalSsrImportsAlongsideBrowserImports()
-    {
-        using var workspace = new LibraryWorkspace();
-        var vueManifest = workspace.WriteLibrary("vue", "vue3", "3.5.42", "vue");
-        var rendererManifest = workspace.WriteLibrary(
-            "renderer",
-            "vue-server-renderer",
-            "3.5.42",
-            "@vue/server-renderer",
-            new Dictionary<string, string> { ["vue3"] = "3.5.42" });
-        var outputRoot = Path.Combine(workspace.Root, "out");
-        var materialization = new LibraryMaterializer().Materialize(
-            [vueManifest, rendererManifest],
-            outputRoot,
-            BuildMode.Production);
-
-        await ImportMapWriter.WriteAsync(
-            outputRoot,
-            materialization);
-
-        using var browserMap = System.Text.Json.JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
-        using var ssrMap = System.Text.Json.JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
-        Assert.AreEqual(
-            "/jazor/vue/dist/index.mjs",
-            browserMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
-        Assert.AreEqual(
-            "./vue/dist/index.mjs",
-            ssrMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
-        Assert.AreEqual(
-            "./renderer/dist/index.mjs",
-            ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
-        Assert.IsFalse(
-            (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
-                .Contains("node_modules", StringComparison.Ordinal));
-    }
-
-    [TestMethod]
-    public async Task ImportMapWriter_ResolvesExternalExportsFromSharedNodeModulesAtRootAndSsr()
-    {
-        var tdesignManifest = FindLibraryManifest("ECMAScript.TDesign");
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "external-import-map", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(outputRoot);
-        try
-        {
-            var materialization = new LibraryMaterializer().Materialize(
-                [tdesignManifest],
-                outputRoot,
-                BuildMode.Production,
-                requiredImports: ["tdesign-vue-next/es/button/index.mjs"]);
-
-            WriteRestoredPackage(
-                outputRoot,
-                "tdesign-vue-next",
-                "1.20.7",
-                "./es/button/index.mjs",
-                "./es/button/index.mjs");
-
-            await ImportMapWriter.WriteAsync(outputRoot, materialization);
-            using var browserMap = JsonDocument.Parse(
-                await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
-            using var rootSsrMap = JsonDocument.Parse(
-                await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
-            Assert.AreEqual(
-                "/jazor/node_modules/tdesign-vue-next/es/button/index.mjs",
-                browserMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/es/button/index.mjs").GetString());
-            Assert.AreEqual(
-                "./node_modules/tdesign-vue-next/es/button/index.mjs",
-                rootSsrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/es/button/index.mjs").GetString());
-
-            var ssrRoot = Path.Combine(outputRoot, "ssr");
-            await ImportMapWriter.WriteSsrAsync(ssrRoot, materialization);
-            using var ssrMap = JsonDocument.Parse(
-                await File.ReadAllTextAsync(Path.Combine(ssrRoot, ImportMapWriter.SsrImportMapFileName)));
-            Assert.AreEqual(
-                "../node_modules/tdesign-vue-next/es/button/index.mjs",
-                ssrMap.RootElement.GetProperty("imports").GetProperty("tdesign-vue-next/es/button/index.mjs").GetString());
-        }
-        finally
-        {
-            if (Directory.Exists(outputRoot))
-                Directory.Delete(outputRoot, recursive: true);
-        }
-    }
-
-    [TestMethod]
     public void Materialize_RejectsDifferentProvidersForSameLogicalImport()
     {
         using var workspace = new LibraryWorkspace();
@@ -1111,11 +994,9 @@ public sealed class LibraryMaterializerTests
               "source": "embedded-mjs",
               "imports": { "vue": {
                 "type": "module",
-                "development": "dist/dev.mjs", "production": "dist/prod.mjs",
-                "developmentHash": "8fae6a0c6a49529f37de5867ce360d0a8af6f46b7673fbe5fd810fdaebc9f020",
-                "productionHash": "8fae6a0c6a49529f37de5867ce360d0a8af6f46b7673fbe5fd810fdaebc9f020",
-                "developmentDependencies": [], "productionDependencies": [],
-                "developmentModuleDependencies": [], "productionModuleDependencies": [], "files": []
+                "path": "dist/prod.mjs",
+                "hash": "8fae6a0c6a49529f37de5867ce360d0a8af6f46b7673fbe5fd810fdaebc9f020",
+                "dependencies": [], "moduleDependencies": [], "files": []
               } },
               "requires": {}, "styles": [], "files": []
             }
@@ -1146,11 +1027,9 @@ public sealed class LibraryMaterializerTests
               "source": "embedded-mjs",
               "imports": { "component": {
                 "type": "module",
-                "development": "dist/component.mjs", "production": "dist/component.mjs",
-                "developmentHash": "6e022b4c49ef4368c407c653dda43e5b44565cfa549b47150e3f8f4427199ac7",
-                "productionHash": "6e022b4c49ef4368c407c653dda43e5b44565cfa549b47150e3f8f4427199ac7",
-                "developmentDependencies": [], "productionDependencies": [],
-                "developmentModuleDependencies": [], "productionModuleDependencies": [], "files": []
+                "path": "dist/component.mjs",
+                "hash": "6e022b4c49ef4368c407c653dda43e5b44565cfa549b47150e3f8f4427199ac7",
+                "dependencies": [], "moduleDependencies": [], "files": []
               } },
               "requires": { "vue3": "^3.5.0" }, "styles": [], "files": []
             }
@@ -1329,7 +1208,7 @@ public sealed class LibraryMaterializerTests
         Assert.HasCount(1, result.ImportPaths);
         Assert.IsTrue(result.ImportPaths.ContainsKey("vue"));
         Assert.AreEqual("vue", result.ImportPaths["vue"]);
-        Assert.AreEqual("vue/dist/vue.runtime.esm-browser.prod.js", result.BrowserImportPaths["vue"]);
+        Assert.AreEqual("vue", result.BrowserImportPaths["vue"]);
         Assert.AreEqual("npm", result.PackageReferences["vue"].Source);
         Assert.IsEmpty(result.MaterializedPaths);
     }
@@ -1384,7 +1263,7 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public void Materialize_DevelopmentPiniaEntry_FollowsDeclaredDiagnosticsAndDevtoolsClosure()
+    public void Materialize_DevelopmentPiniaEntry_FollowsDeclaredRuntimeClosure()
     {
         using var workspace = new LibraryWorkspace();
         var outputRoot = Path.Combine(workspace.Root, "out");
@@ -1399,15 +1278,15 @@ public sealed class LibraryMaterializerTests
             ["pinia"]);
 
         CollectionAssert.AreEquivalent(
-            new[] { "pinia", "vue", "nostics", "@vue/devtools-api", "perfect-debounce" },
+            new[] { "pinia", "vue" },
             result.ImportPaths.Keys.ToArray());
         Assert.AreEqual("pinia", result.ImportPaths["pinia"]);
-        Assert.AreEqual("nostics", result.ImportPaths["nostics"]);
+        Assert.AreEqual("vue", result.ImportPaths["vue"]);
         Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
-    public void Materialize_DevelopmentVueRouterEntry_FollowsStandaloneDiagnosticsClosure()
+    public void Materialize_DevelopmentVueRouterEntry_FollowsStandaloneRuntimeClosure()
     {
         using var workspace = new LibraryWorkspace();
         var outputRoot = Path.Combine(workspace.Root, "out");
@@ -1422,10 +1301,10 @@ public sealed class LibraryMaterializerTests
             ["vue-router"]);
 
         CollectionAssert.AreEquivalent(
-            new[] { "vue-router", "nostics", "vue", "@vue/devtools-api", "perfect-debounce" },
+            new[] { "vue-router", "vue" },
             result.ImportPaths.Keys.ToArray());
         Assert.AreEqual("vue-router", result.ImportPaths["vue-router"]);
-        Assert.AreEqual("nostics", result.ImportPaths["nostics"]);
+        Assert.AreEqual("vue", result.ImportPaths["vue"]);
         Assert.IsEmpty(result.MaterializedPaths);
     }
 
@@ -1475,8 +1354,7 @@ public sealed class LibraryMaterializerTests
         // 因此键与目标同为 stable 入口（labs 路径在当前版本经 exports 无法解析）。
         Assert.AreEqual("vuetify/components/VCalendar", result.ImportPaths["vuetify/components/VCalendar"]);
         Assert.IsEmpty(result.MaterializedPaths);
-        Assert.IsEmpty(result.ExternalStyleModuleImports);
-        Assert.IsEmpty(result.ExternalStylesheetPaths);
+        Assert.IsEmpty(result.StylePaths);
     }
 
     [TestMethod]
@@ -1491,16 +1369,8 @@ public sealed class LibraryMaterializerTests
             .Where(static entry => entry.Name.StartsWith("vue-data-ui/", StringComparison.Ordinal))
             .ToArray();
         Assert.HasCount(71, components);
-        Assert.IsTrue(components.All(static component => component.Value
-            .GetProperty("productionStylesheetImports")
-            .EnumerateArray()
-            .Any(static style => style.GetString() == "vue-data-ui/style.css")));
-        var donutStyles = root.GetProperty("imports").GetProperty("vue-data-ui/vue-ui-donut")
-            .GetProperty("productionStylesheetImports")
-            .EnumerateArray()
-            .Select(static style => style.GetString()!)
-            .ToArray();
-        CollectionAssert.AreEqual(new[] { "vue-data-ui/style.css" }, donutStyles);
+        Assert.IsTrue(components.All(static component =>
+            !component.Value.TryGetProperty("stylesheetImports", out _)));
     }
 
     [TestMethod]
@@ -1521,13 +1391,12 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue", "jspdf", "vue-data-ui/vue-ui-donut" },
             result.ImportPaths.Keys.ToArray());
-        Assert.Contains("vue-data-ui/style.css", result.ExternalStylesheetPaths.ToArray());
         Assert.IsEmpty(result.StylePaths);
         Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]
-    public async Task Materialize_ProductionVueDataUiTable_ProvidesImportMapForCompleteBrowserClosure()
+    public void Materialize_ProductionVueDataUiTable_PreservesPackageDependenciesForCompleteBrowserClosure()
     {
         using var workspace = new LibraryWorkspace();
         var outputRoot = Path.Combine(workspace.Root, "out");
@@ -1544,16 +1413,6 @@ public sealed class LibraryMaterializerTests
         CollectionAssert.AreEquivalent(
             new[] { "vue", "jspdf", "vue-data-ui/vue-ui-table" },
             materialization.ImportPaths.Keys.ToArray());
-        await ImportMapWriter.WriteAsync(outputRoot, materialization);
-
-        using var browserMap = JsonDocument.Parse(
-            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
-        var providers = browserMap.RootElement
-            .GetProperty("imports")
-            .EnumerateObject()
-            .Select(static entry => entry.Name)
-            .ToArray();
-        Assert.Contains("vue-data-ui/style.css", materialization.ExternalStylesheetPaths.ToArray());
         Assert.IsEmpty(materialization.MaterializedPaths);
     }
 
@@ -1577,62 +1436,7 @@ public sealed class LibraryMaterializerTests
             result.ImportPaths.Keys.ToArray());
 
         Assert.AreEqual("vue-data-ui/vue-ui-flow", result.ImportPaths["vue-data-ui/vue-ui-flow"]);
-        Assert.Contains("vue-data-ui/style.css", result.ExternalStylesheetPaths.ToArray());
         Assert.IsEmpty(result.MaterializedPaths);
-    }
-
-    [TestMethod]
-    public void Materialize_ProductionVuIconsStaticEntry_CopiesOnlyTheSelectedIconClosure()
-    {
-        using var workspace = new LibraryWorkspace();
-        var outputRoot = Path.Combine(workspace.Root, "out");
-
-        var result = new LibraryMaterializer().Materialize(
-            [
-                FindLibraryManifest("ECMAScript.VuIcons"),
-                FindLibraryManifest("ECMAScript.Vue")
-            ],
-            outputRoot,
-            BuildMode.Production,
-            ["vu-icons/VuUser"]);
-
-        CollectionAssert.AreEquivalent(
-            new[] { "vue", "vu-icons/VuUser" },
-            result.ImportPaths.Keys.ToArray());
-        CollectionAssert.Contains(result.StylePaths.ToArray(), "runtime/vu-icons/vu-icons.css");
-
-        var iconsRoot = Path.Combine(outputRoot, "runtime", "vu-icons");
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "components", "VuUser.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "runtime.mjs")));
-        Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "components", "VuSearch.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "licenses", "VU-ICONS-LICENSE")));
-    }
-
-    [TestMethod]
-    public void Materialize_ProductionVuIconsDynamicEntry_CopiesTheRuntimeIconCatalog()
-    {
-        using var workspace = new LibraryWorkspace();
-        var outputRoot = Path.Combine(workspace.Root, "out");
-
-        var result = new LibraryMaterializer().Materialize(
-            [
-                FindLibraryManifest("ECMAScript.VuIcons"),
-                FindLibraryManifest("ECMAScript.Vue")
-            ],
-            outputRoot,
-            BuildMode.Production,
-            ["vu-icons"]);
-
-        CollectionAssert.AreEquivalent(
-            new[] { "vue", "vu-icons" },
-            result.ImportPaths.Keys.ToArray());
-
-        var iconsRoot = Path.Combine(outputRoot, "runtime", "vu-icons");
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "index.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "runtime.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
-        Assert.IsFalse(Directory.Exists(Path.Combine(iconsRoot, "components")));
     }
 
     private static string FindRepositoryRoot()
@@ -1644,39 +1448,6 @@ public sealed class LibraryMaterializerTests
         }
 
         throw new FileNotFoundException("Could not locate the Jazor repository root.");
-    }
-
-    private static void WriteRestoredPackage(
-        string outputRoot,
-        string packageName,
-        string version,
-        string importTarget,
-        string defaultTarget)
-    {
-        var packageRoot = Path.Combine(
-            outputRoot,
-            "node_modules",
-            packageName.Replace('/', Path.DirectorySeparatorChar));
-        Directory.CreateDirectory(Path.Combine(packageRoot, "es", "button"));
-        File.WriteAllText(
-            Path.Combine(packageRoot, "package.json"),
-            $$"""
-            {
-              "name": "{{packageName}}",
-              "version": "{{version}}",
-              "type": "module",
-              "exports": {
-                ".": "{{defaultTarget}}",
-                "./button/Button": "{{importTarget}}"
-              }
-            }
-            """.Replace("\r\n", "\n", StringComparison.Ordinal));
-        File.WriteAllText(
-            Path.Combine(packageRoot, importTarget.TrimStart('.', '/').Replace('/', Path.DirectorySeparatorChar)),
-            "export const Button = true;\n");
-        File.WriteAllText(
-            Path.Combine(packageRoot, defaultTarget.TrimStart('.', '/').Replace('/', Path.DirectorySeparatorChar)),
-            "export const root = true;\n");
     }
 
     private static string FindLibraryManifest(string projectName)
@@ -1877,21 +1648,11 @@ public sealed class LibraryMaterializerTests
                 => new
                 {
                     type = "module",
-                    development = developmentPath,
-                    production = productionPath,
-                    developmentHash = HashFile(developmentPath),
-                    productionHash = HashFile(productionPath),
-                    developmentDependencies = Array.Empty<string>(),
-                    productionDependencies = Array.Empty<string>(),
-                    developmentModuleDependencies = entryModuleDependencies ?? [],
-                    productionModuleDependencies = entryModuleDependencies ?? [],
-                    developmentStyles = (entryDevelopmentStyles ?? []).Select(path => (object)new
-                    {
-                        type = "style",
-                        path,
-                        hash = HashFile(path)
-                    }).ToArray(),
-                    productionStyles = (entryProductionStyles ?? []).Select(path => (object)new
+                    path = productionPath,
+                    hash = HashFile(productionPath),
+                    dependencies = Array.Empty<string>(),
+                    moduleDependencies = entryModuleDependencies ?? [],
+                    styles = (entryProductionStyles ?? []).Select(path => (object)new
                     {
                         type = "style",
                         path,
@@ -1952,14 +1713,10 @@ public sealed class LibraryMaterializerTests
                         [import] = new
                         {
                             type = "module",
-                            development = declaredModule,
-                            production = declaredModule,
-                            developmentHash = HashFile(modulePath),
-                            productionHash = HashFile(modulePath),
-                            developmentDependencies = Array.Empty<string>(),
-                            productionDependencies = Array.Empty<string>(),
-                            developmentModuleDependencies = Array.Empty<string>(),
-                            productionModuleDependencies = Array.Empty<string>(),
+                            path = declaredModule,
+                            hash = HashFile(modulePath),
+                            dependencies = Array.Empty<string>(),
+                            moduleDependencies = Array.Empty<string>(),
                             files = Array.Empty<object>()
                         }
                     },
@@ -2027,8 +1784,7 @@ public sealed class LibraryMaterializerTests
         var entry = root["imports"]?[importSpecifier]?.AsObject()
             ?? throw new InvalidOperationException("Test manifest entry does not exist.");
         var values = new JsonArray(dependencies.Select(static value => JsonValue.Create(value)).ToArray());
-        entry["developmentModuleDependencies"] = values.DeepClone();
-        entry["productionModuleDependencies"] = values;
+        entry["moduleDependencies"] = values;
         File.WriteAllText(
             manifestPath,
             root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));

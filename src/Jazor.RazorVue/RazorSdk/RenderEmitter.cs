@@ -20,11 +20,11 @@ internal static class RenderEmitter
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
     private const string MarkupStringMetadataName = "Microsoft.AspNetCore.Components.MarkupString";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
-    private const string CascadingValueRuntimeModuleSpecifier = "@jazor/vue-runtime/cascading.mjs";
+    private const string CascadingValueRuntimeModuleSpecifier = "./runtime/vue/cascading.js";
     private const string CascadingValueRuntimeExportName = "CascadingValue";
     private const string CascadingValueMetadataName = "Microsoft.AspNetCore.Components.CascadingValue`1";
     private const string CascadingValueTypePropName = "__jazorCascadeType";
-    // carrier 声明路径含项目源码树前缀（clr/），硬编码引用必须与声明和 manifest 键一致。
+    // 硬编码引用使用模块声明的完整项目路径，与 manifest 键保持同一身份。
     private const string ChangeEventArgsRuntimeModuleSpecifier = "clr/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
@@ -67,6 +67,7 @@ internal static class RenderEmitter
             declaredNames,
             reservedImportNames,
             injectRegistry,
+            currentModuleOutputPath: null,
             parameterPropertiesUseState: false,
             out result,
             out var exception);
@@ -120,7 +121,8 @@ internal static class RenderEmitter
         VueInjectRegistry injectRegistry,
         out RenderResult result,
         out RazorVueDiagnosticInfo? diagnostic,
-        bool parameterPropertiesUseState = false)
+        bool parameterPropertiesUseState = false,
+        string? currentModuleOutputPath = null)
     {
         var emitted = TryEmitCore(
             compilation,
@@ -130,6 +132,7 @@ internal static class RenderEmitter
             declaredNames,
             reservedImportNames,
             injectRegistry,
+            currentModuleOutputPath,
             parameterPropertiesUseState,
             out result,
             out var exception);
@@ -175,6 +178,7 @@ internal static class RenderEmitter
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
+        string? currentModuleOutputPath,
         bool parameterPropertiesUseState,
         out RenderResult result,
         out Exception? failure)
@@ -208,6 +212,7 @@ internal static class RenderEmitter
                     declaredNames,
                     reservedImportNames,
                     injectRegistry,
+                    currentModuleOutputPath,
                     parameterPropertiesUseState)
                 // A concrete component can inherit BuildRenderTree from a generic base. Roslyn
                 // then supplies a constructed method symbol here, while the source body keeps
@@ -235,7 +240,8 @@ internal static class RenderEmitter
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
                 UsesSlots: lowered.UsesSlots,
                 lowered.ImportDeclarations,
-                lowered.ReferenceCaptureStateMembers);
+                lowered.ReferenceCaptureStateMembers,
+                lowered.ProjectSourceImportKeys);
             return true;
         }
         catch (RazorVueDiagnosticException exception)
@@ -281,6 +287,8 @@ internal static class RenderEmitter
         private readonly Dictionary<string, int> _localNameCounts = new(StringComparer.Ordinal);
         private readonly ImmutableDictionary<IPropertySymbol, string> _componentSlotNames;
         private readonly VueInjectRegistry _injectRegistry;
+        private readonly string? _currentModuleOutputPath;
+        private readonly List<string> _styleSpecifiers = new();
         private EmitContext? _activeExpressionContext;
         private readonly HashSet<IMethodSymbol> _activeRenderFragmentHelpers = new(SymbolComparer);
         private readonly HashSet<IPropertySymbol> _activeRenderFragmentProperties = new(SymbolComparer);
@@ -316,6 +324,7 @@ internal static class RenderEmitter
             IReadOnlyDictionary<ISymbol, string>? declaredNames,
             IEnumerable<string>? reservedImportNames,
             VueInjectRegistry injectRegistry,
+            string? currentModuleOutputPath = null,
             bool parameterPropertiesUseState = false,
             SenseArgument? sharedArgument = null)
         {
@@ -342,7 +351,7 @@ internal static class RenderEmitter
                     directBinderHandlerObserver: (handler, valueKind) => _directBinderHandlers[handler] = valueKind)
             };
             var argument = sharedArgument?.WithNewScope() ?? new SenseArgument(Sense.Any, UseImportAliases: true);
-            if (sharedArgument is null && reservedImportNames is not null)
+            if (sharedArgument is null)
             {
                 // Direct render is lowered after ordinary component members but uses a separate
                 // SemanticWalker. Seed it with compiler bindings so another module's same export
@@ -351,13 +360,18 @@ internal static class RenderEmitter
                 argument = argument.WithImportContext(
                     new Dictionary<string, string>(StringComparer.Ordinal),
                     new Dictionary<string, string>(StringComparer.Ordinal),
-                    new HashSet<string>(reservedImportNames, StringComparer.Ordinal),
+                    new HashSet<string>(reservedImportNames ?? [], StringComparer.Ordinal),
                     currentModuleImportPath: null,
-                    currentModuleBindings: new HashSet<string>(StringComparer.Ordinal));
+                    currentModuleBindings: new HashSet<string>(StringComparer.Ordinal),
+                    currentModuleOutputPath: currentModuleOutputPath,
+                    projectSourceImportKeys: new HashSet<string>(StringComparer.Ordinal));
             }
             _argument = argument;
             _componentSlotNames = BuildComponentSlotNameMap(componentSymbol);
             _injectRegistry = injectRegistry;
+            _currentModuleOutputPath = currentModuleOutputPath;
+            foreach (var style in GetStyleSpecifiers(componentSymbol))
+                _styleSpecifiers.Add(style);
         }
 
         public Expression? TryEmitTDesignTableCell(
@@ -468,6 +482,9 @@ internal static class RenderEmitter
                 BuildImportDeclarations(),
                 _referenceCaptureStateMembers
                     .OrderBy(static member => member.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), StringComparer.Ordinal)
+                    .ToImmutableArray(),
+                context.Argument.ProjectSourceImportKeys
+                    .OrderBy(static path => path, StringComparer.Ordinal)
                     .ToImmutableArray());
         }
 
@@ -2040,7 +2057,7 @@ internal static class RenderEmitter
                     }
                     var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
                     var componentExpression = isCascadingValue
-                        ? _argument.BindImportSpecifier(
+                        ? _argument.BindProjectSourceImportSpecifier(
                             CascadingValueRuntimeModuleSpecifier,
                             CascadingValueRuntimeExportName)
                         : BindComponentImport(componentType);
@@ -2338,7 +2355,7 @@ internal static class RenderEmitter
                 // shaped value once before the lowered callback can start async work; the helper
                 // remains CLR-owned and the render emitter only frames the listener call.
                 // carrier 是项目源码，引用要相对本组件模块计算（carrier-aware 绑定）。
-                var captureHelper = context.Argument.BindCarrierImportSpecifier(
+                var captureHelper = context.Argument.BindProjectSourceImportSpecifier(
                     ChangeEventArgsRuntimeModuleSpecifier,
                     "captureChangeEvent");
                 value = BuildChangeEventCaptureHandler(value, captureHelper);
@@ -4237,7 +4254,15 @@ internal static class RenderEmitter
         private Expression BindComponentImport(INamedTypeSymbol componentType)
         {
             var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
-            var descriptor = ResolveComponentImport(_compilation, runtimeComponentType);
+            var descriptor = ResolveComponentImport(
+                _compilation,
+                runtimeComponentType,
+                _currentModuleOutputPath);
+            foreach (var style in descriptor.StyleSpecifiers)
+            {
+                if (!_styleSpecifiers.Contains(style, StringComparer.Ordinal))
+                    _styleSpecifiers.Add(style);
+            }
             return _argument
                 .BindExternalImportSpecifier(descriptor.ImportSpecifier, descriptor.ExportName);
         }
@@ -4259,6 +4284,8 @@ internal static class RenderEmitter
             }
 
             var declarations = ImmutableArray.CreateBuilder<ImportDeclaration>();
+            foreach (var styleSpecifier in _styleSpecifiers)
+                declarations.Add(ImportDeclarationFactory.CreateSideEffect(styleSpecifier));
             foreach (var pair in groupedSpecifiers.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
                 declarations.AddRange(ImportDeclarationFactory.Create(pair.Key, pair.Value));
             return declarations.ToImmutable();
@@ -4983,16 +5010,23 @@ internal static class RenderEmitter
 
     private static ComponentImportDescriptor ResolveComponentImport(
         Compilation compilation,
-        INamedTypeSymbol componentType)
+        INamedTypeSymbol componentType,
+        string? currentModuleOutputPath)
     {
         EnsureRazorVueComponentContract(compilation, componentType);
 
-        // 输出方向：[ECMAScriptModule("./x.mjs")] 描述 Jazor 自己生成的组件模块。
+        // 输出方向：[ECMAScriptModule("./x.js")] 描述 Jazor 自己生成的组件模块。
         // RazorVue 生成的组件模块以 `export default __jazorComponent` 交付组件本体，
         // 因此这条路径固定为 default；导出名不参与名字机制。
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (!string.IsNullOrWhiteSpace(exportPath))
-            return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), "default");
+        {
+            var targetPath = ECMAScriptModulePath.NormalizeRelativePath(exportPath!);
+            var importSpecifier = string.IsNullOrWhiteSpace(currentModuleOutputPath)
+                ? ECMAScriptModulePath.NormalizeRootRelativeImportSpecifier(targetPath)
+                : ECMAScriptModulePath.ResolveRelativeToImporter(currentModuleOutputPath!, targetPath);
+            return new ComponentImportDescriptor(importSpecifier, "default", []);
+        }
 
         // 输入方向：[ECMAScript("specifier")] 绑定外部包。导出名由名字机制给出
         // （ECMAScriptName / Description("@#...")，缺省回退符号名）；default 导出写成 [ECMAScriptName("default")]。
@@ -5002,7 +5036,7 @@ internal static class RenderEmitter
             if (!ECMAScriptComponentMetadata.TryGetComponentImport(attribute, out var descriptor))
                 continue;
 
-            return new ComponentImportDescriptor(descriptor.ImportSpecifier, exportName);
+            return new ComponentImportDescriptor(descriptor.ImportSpecifier, exportName, GetStyleSpecifiers(componentType));
         }
 
         throw new InvalidOperationException(
@@ -5011,6 +5045,19 @@ internal static class RenderEmitter
             "' must declare [ECMAScriptModule(\"./path\")] or " +
             "[ECMAScript(\"package\")] for direct render lowering.");
     }
+
+    private static IReadOnlyList<string> GetStyleSpecifiers(INamedTypeSymbol symbol)
+        => symbol.GetAttributes()
+            .Where(static attribute => string.Equals(
+                attribute.AttributeClass?.ToDisplayString(),
+                "ECMAScript.StyleAttribute",
+                StringComparison.Ordinal))
+            .Where(static attribute => attribute.ConstructorArguments.Length == 1 &&
+                attribute.ConstructorArguments[0].Value is string value &&
+                !string.IsNullOrWhiteSpace(value))
+            .Select(static attribute => ECMAScriptModulePath.ValidateExternalImportSpecifier(
+                (string)attribute.ConstructorArguments[0].Value!))
+            .ToArray();
 
     private static void EnsureRazorVueComponentContract(
         Compilation compilation,
@@ -5448,9 +5495,6 @@ internal static class RenderEmitter
         // keeps this protocol distinction without traversing the whole operation tree.
         return operation.Syntax.ToString().Contains("ChangeEventArgs", StringComparison.Ordinal);
     }
-
-    private static string NormalizeModuleImportPath(string path)
-        => ECMAScriptModulePath.NormalizeRootRelativeImportSpecifier(path);
 
     private static bool TryGetConstantString(IOperation operation, out string value)
     {
@@ -6758,11 +6802,13 @@ internal static class RenderEmitter
         bool UsesHandlerCache,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
-        ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
+        ImmutableArray<ISymbol> ReferenceCaptureStateMembers,
+        ImmutableArray<string> ProjectSourceImportKeys);
 
     private readonly record struct ComponentImportDescriptor(
         string ImportSpecifier,
-        string ExportName);
+        string ExportName,
+        IReadOnlyList<string> StyleSpecifiers);
 
     /// <summary>Preserves an attribute pair until frame completion determines its Vue prop form.</summary>
     private sealed record DirectAttribute(
@@ -6970,7 +7016,8 @@ internal sealed record RenderResult(
     bool UsesProps,
     bool UsesSlots,
     ImmutableArray<ImportDeclaration> ImportDeclarations,
-    ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
+    ImmutableArray<ISymbol> ReferenceCaptureStateMembers,
+    ImmutableArray<string> ProjectSourceImportKeys);
 
 /// <summary>Represents an immutable expression allocated once at module scope.</summary>
 internal sealed record RenderModuleHoist(

@@ -1,6 +1,6 @@
 namespace Jazor.Admin;
 
-[ECMAScriptModule("components/admin/navigation-key.mjs")]
+[ECMAScriptModule("components/admin/navigation-key.js")]
 internal static class AdminNavigationKeyHelper
 {
     public static string? Normalize(string? key)

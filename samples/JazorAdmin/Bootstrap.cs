@@ -3,7 +3,7 @@ using static ECMAScript.VueRoute;
 namespace JazorAdmin;
 
 /// <summary>Imports the generated root component used by the application entry module.</summary>
-[ECMAScript("components/app.mjs")]
+[ECMAScript("./components/app.js")]
 [Description("@#")]
 internal static class AppModule
 {
@@ -14,7 +14,7 @@ internal static class AppModule
 }
 
 /// <summary>Creates and mounts the Vue application from the generated root component.</summary>
-[ECMAScriptModule("app.mjs")]
+[ECMAScriptModule("./app.js")]
 public static class Bootstrap
 {
     // Importing this generated module is the whole startup contract. The field initializer keeps

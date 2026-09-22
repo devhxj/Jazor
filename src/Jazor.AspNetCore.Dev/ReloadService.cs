@@ -67,7 +67,7 @@ internal sealed class ReloadService : IHostedService, IAsyncDisposable
         // Resolve paths once at startup so all watcher and manifest comparisons use absolute paths.
         ResolveHmrArtifactRegistrations();
         // HMR eligibility is derived from two manifest snapshots, never from file names alone.
-        // That keeps logic changes on the full-reload path even when a .mjs file was updated.
+        // That keeps logic changes on the full-reload path even when a generated .js module was updated.
         _hmrManifestTracker = new HmrManifestTracker(_hmrArtifactRegistrations);
         _hmrManifestTracker.Initialize();
         ResolveWatchRegistrations();

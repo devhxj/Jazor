@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/Microsoft/AspNetCore/Components/Web/PointerEventArgsModule.js")]
+[ECMAScriptModule("./clr/Microsoft/AspNetCore/Components/Web/PointerEventArgsModule.js")]
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.Web.PointerEventArgs", "PointerEvent")]
 public static class PointerEventArgsModule
 {

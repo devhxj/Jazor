@@ -65,21 +65,21 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
 
         StringAssert.Contains(observation.GeneratedCSharp, "OpenComponent<global::Demo.Components.ContractShell>", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "from \"./injected-shell-runtime.mjs\"", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "from \"./injected-shell-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "injectedTitle: \"Account\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "\"injected-content\": withCtx(() =>", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("contract-shell-runtime", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/injected-parent-runtime.mjs",
+            "components/injected-parent-runtime.js",
             observation.ModuleText,
             "official-vue-inject-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import parent from "./components/injected-parent-runtime.mjs";
-            import injectedShell from "./components/injected-shell-runtime.mjs";
+            import parent from "./components/injected-parent-runtime.js";
+            import injectedShell from "./components/injected-shell-runtime.js";
 
             test("official Razor VueInject resolves the implementation component and its member names", () => {
                 const vnode = parent.setup({}, { slots: {} })();
@@ -95,7 +95,7 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/injected-shell-runtime.mjs"] = "export default { name: \"injected-shell-runtime\" };"
+                ["components/injected-shell-runtime.js"] = "export default { name: \"injected-shell-runtime\" };"
             });
     }
 }

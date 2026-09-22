@@ -55,8 +55,8 @@
            Text="Could not locate Jazor.Emit. Install the Jazor package with its tools assets, or add a ProjectReference to Jazor.Emit for repository source builds." />
   </Target>
 
-  <!-- Resolve the DenoHost runtime carried by the final application. Emit owns restore; this
-       target only supplies an explicit executable path when the runtime asset is present. -->
+  <!-- Emit 自带 DenoHost runtime 并经 DenoProcess 启动 restore/check/build；这里的 deno 参数
+       是兼容入口，只做存在性校验，不再选择实际执行的二进制。 -->
   <Target Name="_ResolveJazorDeno">
     <PropertyGroup>
       <_JazorDenoOverride Condition="'$(JazorDenoPath)' != ''">$([System.IO.Path]::GetFullPath('$(JazorDenoPath)'))</_JazorDenoOverride>
@@ -89,12 +89,16 @@
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
-      <_JazorDebugManifestPath>$(_JazorDebugOutputDir)\jazor-manifest.json</_JazorDebugManifestPath>
+      <_JazorDebugManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorDebugManifestPath>
+      <_JazorDebugAssemblyListPath>$(IntermediateOutputPath)jazor-assemblies.txt</_JazorDebugAssemblyListPath>
+      <_JazorDebugModuleAssemblyListPath>$(IntermediateOutputPath)jazor-module-assemblies.txt</_JazorDebugModuleAssemblyListPath>
+      <_JazorDebugLibraryManifestListPath>$(IntermediateOutputPath)jazor-library-manifests.txt</_JazorDebugLibraryManifestListPath>
       <_JazorDebugSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorDebugSourceRoot>
     </PropertyGroup>
 
     <ItemGroup>
       <JazorDebugAssembly Include="$(TargetPath)" />
+      <JazorDebugAssembly Include="@(JazorAdditionalAssembly)" />
       <JazorDebugAssembly Include="@(ReferenceCopyLocalPaths)"
                          Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
     </ItemGroup>
@@ -103,7 +107,12 @@
     <!-- Emit 仅反射托管程序集；Windows 的原生 runtime DLL 也会使用 .dll 扩展名，必须在此排除。 -->
 
     <!-- A single Emit invocation owns collection, dependency resolution and the atomic output commit. -->
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) @(JazorDebugAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" ConsoleToMSBuild="true" />
+    <!-- Large applications can carry hundreds of references. Keep those paths out of the Windows
+         command line; these obj files are process-input transport, not runtime manifests. -->
+    <WriteLinesToFile File="$(_JazorDebugAssemblyListPath)" Lines="@(JazorDebugAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(_JazorDebugModuleAssemblyListPath)" Lines="@(JazorAdditionalAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(_JazorDebugLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <Target Name="JazorRelease"
@@ -112,12 +121,16 @@
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
-      <_JazorReleaseManifestPath>$(_JazorReleaseOutputDir)\jazor-manifest.json</_JazorReleaseManifestPath>
+      <_JazorReleaseManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorReleaseManifestPath>
+      <_JazorReleaseAssemblyListPath>$(IntermediateOutputPath)jazor-assemblies.txt</_JazorReleaseAssemblyListPath>
+      <_JazorReleaseModuleAssemblyListPath>$(IntermediateOutputPath)jazor-module-assemblies.txt</_JazorReleaseModuleAssemblyListPath>
+      <_JazorReleaseLibraryManifestListPath>$(IntermediateOutputPath)jazor-library-manifests.txt</_JazorReleaseLibraryManifestListPath>
       <_JazorReleaseSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorReleaseSourceRoot>
     </PropertyGroup>
 
     <ItemGroup>
       <JazorReleaseAssembly Include="$(TargetPath)" />
+      <JazorReleaseAssembly Include="@(JazorAdditionalAssembly)" />
       <JazorReleaseAssembly Include="@(ReferenceCopyLocalPaths)"
                            Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
     </ItemGroup>
@@ -126,7 +139,10 @@
     <!-- Release 与 Debug 保持同一托管程序集边界，避免发布构建重新传入原生库。 -->
 
     <!-- Release uses the same managed assembly boundary and profile transaction as Debug. -->
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) @(JazorReleaseAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" ConsoleToMSBuild="true" />
+    <WriteLinesToFile File="$(_JazorReleaseAssemblyListPath)" Lines="@(JazorReleaseAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(_JazorReleaseModuleAssemblyListPath)" Lines="@(JazorAdditionalAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(_JazorReleaseLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <!--

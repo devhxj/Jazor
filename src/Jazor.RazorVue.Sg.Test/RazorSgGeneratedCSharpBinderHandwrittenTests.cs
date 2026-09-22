@@ -295,7 +295,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        StringAssert.Contains(script, "from \"./generic-table.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(script, "from \"./generic-table.js\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "return h(", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
     }
@@ -472,15 +472,15 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/mixed-slot-page.mjs",
+            "components/mixed-slot-page.js",
             script,
             "handwritten-mixed-slot-page.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/mixed-slot-page.mjs";
-            import panel from "./components/mixed-slot-panel.mjs";
+            import component from "./components/mixed-slot-page.js";
+            import panel from "./components/mixed-slot-panel.js";
 
             test("same named slot remains dynamic when direct RenderTreeBuilder mixes attribute forms", () => {
                 const attributeResult = component.setup({ UseAttributeSlot: true }, { slots: {} })();
@@ -494,7 +494,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
             """,
             new Dictionary<string, string>
             {
-                ["components/mixed-slot-panel.mjs"] = "export default { name: \"mixed-slot-panel\" };"
+                ["components/mixed-slot-panel.js"] = "export default { name: \"mixed-slot-panel\" };"
             });
     }
 
@@ -564,14 +564,14 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/expression-helper-page.mjs",
+            "components/expression-helper-page.js",
             script,
             "handwritten-expression-helper-page.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/expression-helper-page.mjs";
+            import component from "./components/expression-helper-page.js";
 
             test("expression-bodied direct RenderTreeBuilder helpers retain static and instance substitutions", () => {
                 const paragraph = component.setup({ Title: "Deploy API" }, { slots: {} })();
@@ -651,14 +651,14 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/static-scalar-page.mjs",
+            "components/static-scalar-page.js",
             script,
             "handwritten-static-scalar-page.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/static-scalar-page.mjs";
+            import component from "./components/static-scalar-page.js";
 
             test("direct RenderTreeBuilder scalar literals remain immutable Vue children", () => {
                 const result = component.setup({}, { slots: {} })();
@@ -758,15 +758,15 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         StringAssert.Contains(script, "props.ShowHeader", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/optional-slot-page.mjs",
+            "components/optional-slot-page.js",
             script,
             "handwritten-optional-slot-page.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/optional-slot-page.mjs";
-            import panel from "./components/optional-slot-panel.mjs";
+            import component from "./components/optional-slot-page.js";
+            import panel from "./components/optional-slot-panel.js";
 
             test("a conditional direct slot is omitted rather than invoked as an empty callback", () => {
                 const visible = component.setup({ ShowHeader: true }, { slots: {} })();
@@ -781,7 +781,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
             """,
             new Dictionary<string, string>
             {
-                ["components/optional-slot-panel.mjs"] = "export default { name: \"optional-slot-panel\" };"
+                ["components/optional-slot-panel.js"] = "export default { name: \"optional-slot-panel\" };"
             });
     }
 }

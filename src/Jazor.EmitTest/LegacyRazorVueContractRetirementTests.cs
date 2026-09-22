@@ -28,23 +28,6 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void ToolchainCommand_RejectsLegacyRazorVueUpdatePlanArgument()
-    {
-        var parsed = ToolchainCommand.TryParse(
-            [
-                "build",
-                "--manifest", "manifest.json",
-                "--root", "jazor",
-                "--write-razorvue-update-plan", "plan.json"
-            ],
-            out _,
-            out var error);
-
-        Assert.IsFalse(parsed);
-        StringAssert.Contains(error, "--write-razorvue-update-plan");
-    }
-
-    [TestMethod]
     public void SdkTargets_DoNotDefineLegacyRazorVueConsumerOrHostContracts()
     {
         var repositoryRoot = FindRepositoryRoot();
@@ -83,7 +66,9 @@ public sealed class LegacyRazorVueContractRetirementTests
         StringAssert.Contains(targets, "--mode debug", StringComparison.Ordinal);
         StringAssert.Contains(targets, "--mode release", StringComparison.Ordinal);
         StringAssert.Contains(targets, "--source-root", StringComparison.Ordinal);
-        StringAssert.Contains(targets, "--library-manifest", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--assembly-list", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--library-manifest-list", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "WriteLinesToFile", StringComparison.Ordinal);
         Assert.IsFalse(targets.Contains("JazorArtifactProviderAssembly", StringComparison.Ordinal), targets);
     }
 

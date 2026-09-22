@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 /// - Comparer&lt;T&gt;.Default
 /// - Comparer&lt;T&gt;.Compare(T, T)
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/ComparerT1Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/ComparerT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.Comparer<T>", "Object")]
 public static class ComparerT1Module<T>
 {

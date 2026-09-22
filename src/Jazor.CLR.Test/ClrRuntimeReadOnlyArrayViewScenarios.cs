@@ -2,9 +2,9 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeReadOnlyArrayViewScenarios
 {
-	private const string ArrayModulePath = "clr/System/ArrayModule.js";
-	private const string ListModulePath = "clr/System/Collections/Generic/ListT1Module.js";
-	private const string ReadOnlyCollectionModulePath = "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
+	private const string ArrayModulePath = "./clr/System/ArrayModule.js";
+	private const string ListModulePath = "./clr/System/Collections/Generic/ListT1Module.js";
+	private const string ReadOnlyCollectionModulePath = "./clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
 	private const string ListAddMember = "System.Collections.Generic.List<T>.Add(T)";
 	private const string ReadOnlyIndexerMember = "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get";
 

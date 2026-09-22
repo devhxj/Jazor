@@ -21,9 +21,6 @@ namespace Jazor.Compiler;
 /// </remarks>
 public sealed class ESGenerator : IIncrementalGenerator
 {
-    /// <summary>ECMAScript 自有源码 carrier 在项目源码树中的根目录。</summary>
-    private const string CarrierSourceRoot = "clr/";
-
     private static readonly DiagnosticDescriptor ModuleGenerationFailed = new(
         id: "JAZORG001",
         title: "Jazor module generation failed",
@@ -153,6 +150,9 @@ public sealed class ESGenerator : IIncrementalGenerator
         var generatedModules = new List<GeneratedModuleInfo>();
         var sourceContentLookup = BuildSourceContentLookup(compilation);
         var sourceRootPath = TryGetCompilationSourceRoot(compilation);
+        var generatedModulePaths = new HashSet<string>(
+            validPlans.Select(static plan => ECMAScriptModulePath.NormalizeRelativePath(plan.RelativePath)),
+            StringComparer.OrdinalIgnoreCase);
 
         foreach (var plan in validPlans)
         {
@@ -160,9 +160,7 @@ public sealed class ESGenerator : IIncrementalGenerator
 
             try
             {
-                // 生成模块的导入目标：本模块自身的输出路径是相对 specifier 的起点；
-                // CLR 源码 carrier 写在项目源码树的 clr/ 下（由 ClrRuntimeCatalogEmitter 决定），
-                // 因此这里用同一前缀解析 catalog 逻辑路径。
+                // 本模块输出路径是所有项目源码引用计算相对 specifier 的统一起点。
                 var converter = new AstConverter(
                     candidate.ClassSymbol,
                     candidate.SemanticModel,
@@ -170,24 +168,33 @@ public sealed class ESGenerator : IIncrementalGenerator
                         AstConverterProfile.ClrRuntime,
                         CurrentModuleOutputPath: plan.RelativePath));
                 var module = converter.Convert().GetAwaiter().GetResult();
-                // 产物图边记录的是**逻辑路径**（stable identity），而模块体里写的是相对
-                // specifier（D3）。因此判定 catalog 导入时先把相对 specifier 按本模块位置
-                // 还原成项目路径，再与逻辑集合比对。
+                // Catalog/manifest records the declared project file path. A module body uses
+                // the ordinary relative URL from its own directory to that same file.
                 var moduleCatalogImportPaths = new HashSet<string>(
                     converter.ModuleCatalogImportPaths.Select(ECMAScriptModulePath.NormalizeImportSpecifier),
                     StringComparer.Ordinal);
-                // packageImports 有两类来源，键都必须是"可被清单解析的逻辑 specifier"：
-                // 1) 外部包引用——保留在生成文本里的裸 specifier；
-                // 2) carrier 引用——生成文本里是相对 specifier，但选择资源库需要逻辑键，
-                //    因此由 AstConverter 单独记录（无法从文本反推）。
+                var projectSourceImportKeys = new HashSet<string>(
+                    converter.ProjectSourceImportKeys.Select(ECMAScriptModulePath.NormalizeImportSpecifier),
+                    StringComparer.Ordinal);
+                // packageImports 只包含外部包与项目资源载体。相对路径若已存在于本次
+                // ModuleCatalog，则是生成模块依赖，不能再被要求由 library manifest 提供。
                 var emittedPackageImports = module?.Body
                     .OfType<Acornima.Ast.ImportDeclaration>()
+                    // Side-effect imports (notably [Style]) are part of the emitted ESM
+                    // source graph, but they are not binding/module roots for library closure.
+                    // The standard JS resolver owns those edges.
+                    .Where(static declaration => declaration.Specifiers.Count > 0)
                     .Select(static declaration => declaration.Source.Value)
                     .Where(source => !IsModuleCatalogImport(source, plan.RelativePath, moduleCatalogImportPaths))
-                    .Where(source => ECMAScriptModulePath.IsPackageSpecifier(source))
+                    // Project modules are emitted as relative URLs. Any remaining bare import
+                    // came from an external [ECMAScript] declaration; directory names never
+                    // participate in this classification.
+                    .Where(static source => !source.StartsWith("./", StringComparison.Ordinal) &&
+                                            !source.StartsWith("../", StringComparison.Ordinal) &&
+                                            !source.StartsWith("/", StringComparison.Ordinal))
                     .ToArray() ?? [];
                 var packageImports = emittedPackageImports
-                    .Concat(converter.CarrierImportKeys)
+                    .Concat(projectSourceImportKeys.Where(projectPath => !generatedModulePaths.Contains(projectPath)))
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(static specifier => specifier, StringComparer.Ordinal)
                     .ToArray();
@@ -234,7 +241,12 @@ public sealed class ESGenerator : IIncrementalGenerator
                     content,
                     ComputeSha256Hex(content),
                     packageImports,
-                    CollectModuleDependencies(module, plan.RelativePath, moduleCatalogImportPaths),
+                    CollectModuleDependencies(
+                        module,
+                        plan.RelativePath,
+                        moduleCatalogImportPaths,
+                        projectSourceImportKeys,
+                        generatedModulePaths),
                     artifact is null ? null : BuildSourceMapRelativePath(plan.RelativePath),
                     sourceMapContent,
                     sourceMapContent is null ? null : ComputeSha256Hex(sourceMapContent)));
@@ -412,7 +424,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         var namespaceName = classSymbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
             : classSymbol.ContainingNamespace.ToDisplayString().Replace('.', '/');
-        var fileName = $"{classSymbol.Name}.mjs";
+        var fileName = $"{classSymbol.Name}{ECMAScriptModulePath.DefaultGeneratedExtension}";
 
         return string.IsNullOrEmpty(namespaceName)
             ? $"{assemblyName}/{fileName}"
@@ -432,8 +444,8 @@ public sealed class ESGenerator : IIncrementalGenerator
         string relativePath,
         ISet<string> moduleCatalogImportPaths)
     {
-        // 本图模块必须先于 package 判定：逻辑路径（features/greeter.mjs）在形式上
-        // 与包说明符无法区分，catalog 集合才是"是否属于本图"的权威依据。
+        // Older no-output-context conversions can still contain the declared project path.
+        // Membership comes from the catalog, never from a directory-name convention.
         if (!source.StartsWith("./", StringComparison.Ordinal) &&
             !source.StartsWith("../", StringComparison.Ordinal))
         {
@@ -441,7 +453,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                 ECMAScriptModulePath.NormalizeImportSpecifier(source));
         }
 
-        // 相对 specifier 解析回完整项目路径；ModuleCatalog identity 使用同一个路径。
+        // 相对 specifier 解析回声明的项目路径；ModuleCatalog identity 使用同一个路径。
         var projectPath = ECMAScriptModulePath.ResolveRelativePath(relativePath, source);
         return moduleCatalogImportPaths.Contains(projectPath);
     }
@@ -449,7 +461,9 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static IReadOnlyList<string> CollectModuleDependencies(
         Acornima.Ast.Module? module,
         string relativePath,
-        ISet<string> moduleCatalogImportPaths)
+        ISet<string> moduleCatalogImportPaths,
+        ISet<string> projectSourceImportKeys,
+        ISet<string> generatedModulePaths)
     {
         if (module is null)
             return [];
@@ -465,10 +479,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             var isModuleCatalogImport = !isRelativeSpecifier &&
                                         moduleCatalogImportPaths.Contains(
                                             ECMAScriptModulePath.NormalizeImportSpecifier(source));
-            if (!isRelativeSpecifier &&
-                !isModuleCatalogImport &&
-                (string.Equals(source, "style.mjs", StringComparison.Ordinal) ||
-                 ECMAScriptModulePath.IsPackageSpecifier(source)))
+            if (!isRelativeSpecifier && !isModuleCatalogImport)
             {
                 continue;
             }
@@ -478,10 +489,10 @@ public sealed class ESGenerator : IIncrementalGenerator
                 ? ECMAScriptModulePath.ResolveRelativePath(relativePath, source)
                 : NormalizeRelativePath(source);
 
-            // carrier 引用（clr/**）不是本编译的 ModuleCatalog 模块：载体由资源库清单物化，
-            // 载体内部的模块边由载体自身的 manifest 表达。把它记成本图依赖会让
-            // ModuleCollector 去当前程序集闭包里找 clr/** 而失败。
-            if (dependency.StartsWith(CarrierSourceRoot, StringComparison.Ordinal))
+            // 资源清单物化的项目源码不属于当前程序集的 ModuleCatalog 闭包。只有
+            // ModuleCatalog 已声明的项目路径才是生成模块依赖；目录名不参与分类。
+            if (projectSourceImportKeys.Contains(dependency) &&
+                !generatedModulePaths.Contains(dependency))
                 continue;
 
             dependencies.Add(dependency);

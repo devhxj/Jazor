@@ -2,9 +2,9 @@
 
 > 定位：面向 Jazor ECMAScript 模块的强类型、确定性 CSS-in-JS binding。
 
-`ECMAScript.Style` 将结构化 C# 值转换为标准 `style.mjs` runtime 模块。它保持普通 ECMAScript import、Razor-to-Vue 互操作、基于内容的稳定命名、隔离 registry、Shadow DOM 所有权、SSR snapshot、CSP nonce 与幂等 hydration。
+`ECMAScript.Style` 将结构化 C# 值转换为标准 `style.js` runtime 模块。它保持普通 ECMAScript import、Razor-to-Vue 互操作、基于内容的稳定命名、隔离 registry、Shadow DOM 所有权、SSR snapshot、CSP nonce 与幂等 hydration。
 
-本包是纯 Jazor 类库：`style.mjs` 由 Jazor 编译并写入程序集内的
+本包是纯 Jazor 类库：`style.js` 由 Jazor 编译并写入程序集内的
 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`），不携带外部 npm/JSR runtime package
 资源。编写或组合 Jazor 模块的项目应直接引用 `Jazor`；RazorVue 项目还应直接引用
 `Jazor.Vue`。最终宿主只通过一次 Emit 物化选中的 catalog 依赖闭包。
@@ -37,9 +37,9 @@ var actionClass = style(new CssRule
 });
 ```
 
-CSS authoring DSL uses `lower_snake_case`: generated declaration properties, `css` facade members, tokens, and structural members such as `additional` and `children` all follow CSS-oriented spelling. CLR data/configuration models remain PascalCase, including `CssRule`, `CssDeclarations`, `CssAtRule`, `CssShadow`, `CssChild`, and `CssOptions`. The C# spelling changes do not change the generated CSS or the `style.mjs` JavaScript export ABI.
+CSS authoring DSL uses `lower_snake_case`: generated declaration properties, `css` facade members, tokens, and structural members such as `additional` and `children` all follow CSS-oriented spelling. CLR data/configuration models remain PascalCase, including `CssRule`, `CssDeclarations`, `CssAtRule`, `CssShadow`, `CssChild`, and `CssOptions`. The C# spelling changes do not change the generated CSS or the `style.js` JavaScript export ABI.
 
-CSS authoring DSL 使用 `lower_snake_case`：生成的声明属性、`css` facade 成员、token，以及 `additional`、`children` 等结构成员都采用面向 CSS 的拼写。CLR 数据/配置模型仍保持 PascalCase，包括 `CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 与 `CssOptions`。C# 拼写变化不会改变生成的 CSS 或 `style.mjs` 的 JavaScript 导出 ABI。
+CSS authoring DSL 使用 `lower_snake_case`：生成的声明属性、`css` facade 成员、token，以及 `additional`、`children` 等结构成员都采用面向 CSS 的拼写。CLR 数据/配置模型仍保持 PascalCase，包括 `CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 与 `CssOptions`。C# 拼写变化不会改变生成的 CSS 或 `style.js` 的 JavaScript 导出 ABI。
 
 The public API uses typed domains for lengths, colors, time, display, selectors, and at-rules. Use an existing typed value directly; reserve `raw(...)` for CSS grammar that is not yet modeled and whose semantics the caller deliberately owns. `px(8) | px(12) | px(16) | px(20)` is a one-to-four-value padding shorthand, while `px(1) | solid` remains a typed border shorthand.
 
@@ -106,7 +106,7 @@ return new ButtonModel { ClassName = buttonClass };
 
 ## 产物与验证
 
-`JazorMode=debug` 会随应用产物物化 `style.mjs`；release 由 `Jazor.Emit` 与 Netpack 处理。运行相关回归：
+`JazorMode=debug` 会随应用产物物化 `style.js`；release 由 `Jazor.Emit` 与 Vite 处理。运行相关回归：
 
 ```bash
 dotnet test src/ECMAScript.Style.Test/ECMAScript.Style.Test.csproj

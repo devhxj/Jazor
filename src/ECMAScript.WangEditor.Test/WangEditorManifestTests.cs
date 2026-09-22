@@ -32,17 +32,18 @@ public sealed class WangEditorManifestTests
             imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
         CollectionAssert.AreEquivalent(
             new[] { "@wangeditor/editor", "vue" },
-            imports.GetProperty("@wangeditor/editor-for-vue").GetProperty("productionDependencies")
+            imports.GetProperty("@wangeditor/editor-for-vue").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
-        CollectionAssert.AreEquivalent(
-            new[] { "@wangeditor/editor/dist/css/style.css" },
-            imports.GetProperty("@wangeditor/editor").GetProperty("productionStylesheetImports")
-                .EnumerateArray().Select(static value => value.GetString()!).ToArray());
+        foreach (var entry in imports.EnumerateObject())
+            Assert.IsFalse(entry.Value.TryGetProperty("stylesheetImports", out _));
+        Assert.AreEqual("@wangeditor/editor/dist/css/style.css",
+            typeof(ECMAScript.WangEditor).GetCustomAttributes(typeof(StyleAttribute), false)
+                .Cast<StyleAttribute>().Single().Specifier);
 
         foreach (var entry in imports.EnumerateObject())
         {
-            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("production").GetString()!), entry.Name);
-            Assert.AreEqual(entry.Value.GetProperty("development").GetString(), entry.Value.GetProperty("production").GetString());
+            Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("path").GetString()!), entry.Name);
+            Assert.AreEqual(entry.Value.GetProperty("path").GetString(), entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _));
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _));
         }
@@ -66,7 +67,8 @@ public sealed class WangEditorManifestTests
     {
         var components = typeof(ECMAScript.WangEditor).Assembly.GetExportedTypes()
             .Select(static type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
-            .Where(static item => item.Attribute?.Import is not null)
+            .Where(static item => item.Attribute?.Import is not null &&
+                                  typeof(Microsoft.AspNetCore.Components.ComponentBase).IsAssignableFrom(item.Type))
             .ToArray();
         Assert.IsTrue(components.Length >= 2);
         foreach (var component in components)

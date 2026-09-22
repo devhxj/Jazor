@@ -44,14 +44,14 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.heading", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/inherited-release-panel-self-contract-runtime.mjs",
+            "components/inherited-release-panel-self-contract-runtime.js",
             observation.ModuleText,
             "official-inherited-self-descriptor-contract-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/inherited-release-panel-self-contract-runtime.mjs";
+            import component from "./components/inherited-release-panel-self-contract-runtime.js";
 
             test("official Razor derived component exposes base Vue descriptors", () => {
                 const root = component.setup({ heading: "Queued release" }, { slots: {} })();
@@ -129,15 +129,15 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-editor-inherited-contract-runtime.mjs",
+            "components/release-editor-inherited-contract-runtime.js",
             observation.ModuleText,
             "official-inherited-descriptor-contract-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-editor-inherited-contract-runtime.mjs";
-            import inheritedReleasePanel from "./components/inherited-release-panel-contract-runtime.mjs";
+            import component from "./components/release-editor-inherited-contract-runtime.js";
+            import inheritedReleasePanel from "./components/inherited-release-panel-contract-runtime.js";
 
             test("official Razor inherited descriptors preserve the component contract", () => {
                 const render = component.setup({ Title: "Draft release" }, { slots: {} });
@@ -162,7 +162,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/inherited-release-panel-contract-runtime.mjs"] = "export default { name: \"inherited-release-panel-contract-runtime\" };"
+                ["components/inherited-release-panel-contract-runtime.js"] = "export default { name: \"inherited-release-panel-contract-runtime\" };"
             });
     }
 }

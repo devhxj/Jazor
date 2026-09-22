@@ -5,12 +5,12 @@ namespace Jazor.AspNetCore;
 /// <summary>Configures the combined generated-artifact and ordinary static-file pipeline.</summary>
 public sealed class JazorAssetOptions
 {
-    /// <summary>Initializes asset hosting with generated artifacts and ordinary web-root files enabled.</summary>
+    /// <summary>Initializes ordinary web-root hosting; generated project hosting is opt-in.</summary>
     public JazorAssetOptions()
     {
         ArtifactProbeRelativePaths =
         [
-            JazorArtifactOptions.ManifestProbeRelativePath,
+            JazorArtifactOptions.EntryProbeRelativePath,
             JazorArtifactOptions.BundleProbeRelativePath
         ];
 
@@ -30,11 +30,11 @@ public sealed class JazorAssetOptions
     public bool ServeWebRoot { get; set; } = true;
 
     /// <summary>Determines whether the generated content-root artifact graph is served.</summary>
-    /// <remarks>默认 true；在 UseJazorAssets 注册时读取。</remarks>
-    public bool ServeArtifacts { get; set; } = true;
+    /// <remarks>默认 false；jazor/ 由项目服务器提供。显式静态部署时可启用。</remarks>
+    public bool ServeArtifacts { get; set; }
 
     /// <summary>Artifact files whose presence makes the generated graph ready to mount.</summary>
-    /// <remarks>默认 jazor-manifest.json 与 dist/bundle.js，注册时任意一个存在即可挂载。</remarks>
+    /// <remarks>默认 entry.js 与一个兼容性 fallback，注册时任意一个存在即可挂载。</remarks>
     public IList<string> ArtifactProbeRelativePaths { get; }
 
     /// <summary>Request-path prefixes that may receive immutable cache headers.</summary>

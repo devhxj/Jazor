@@ -5,7 +5,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeTimeSpanScenarios
 {
-    private const string ModulePath = "clr/System/TimeSpanModule.js";
+    private const string ModulePath = "./clr/System/TimeSpanModule.js";
     private static readonly TimeSpan SampleValue = new TimeSpan(2, 3, 4, 5, 6, 7) + TimeSpan.FromTicks(9);
     private static readonly TimeSpan NegativeSampleValue = -SampleValue;
 

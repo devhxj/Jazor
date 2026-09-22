@@ -318,8 +318,8 @@ static string GetBrowserHarness() => """
       <body>
         <button id="target">Styled</button>
         <script type="module">
-          import * as firstModule from "./style.mjs";
-          import * as secondModule from "./style.mjs?hmr=1";
+          import * as firstModule from "./style.js";
+          import * as secondModule from "./style.js?hmr=1";
 
           function finish(value) {
             const bytes = new TextEncoder().encode(JSON.stringify(value));

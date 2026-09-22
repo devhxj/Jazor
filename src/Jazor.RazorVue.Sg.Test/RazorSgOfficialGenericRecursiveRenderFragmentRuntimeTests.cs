@@ -76,15 +76,15 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/navigation-template-runtime.mjs",
+            "components/navigation-template-runtime.js",
             observation.ModuleText,
             "official-navigation-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/navigation-template-runtime.mjs";
-            import navigationPanel from "./components/navigation-panel-recursive-scoped-slot-runtime.mjs";
+            import component from "./components/navigation-template-runtime.js";
+            import navigationPanel from "./components/navigation-panel-recursive-scoped-slot-runtime.js";
 
             test("official Razor recursive scoped slot keeps the current node context", () => {
                 const panel = component.setup({ MaxDepth: 2 }, { slots: {} })();
@@ -120,7 +120,7 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/navigation-panel-recursive-scoped-slot-runtime.mjs"] = "export default { name: \"navigation-panel-recursive-scoped-slot-runtime\" };"
+                ["components/navigation-panel-recursive-scoped-slot-runtime.js"] = "export default { name: \"navigation-panel-recursive-scoped-slot-runtime\" };"
             });
     }
 }

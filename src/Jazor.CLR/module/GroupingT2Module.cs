@@ -8,7 +8,7 @@ namespace Jazor.CLR;
 /// 原生迭代协议。Key 属于 IGrouping 的附加 CLR 语义，放在模块私有 WeakMap 中，避免污染 Array
 /// 实例，也不会与用户定义的数组字段发生冲突。
 /// </remarks>
-[ECMAScriptModule("clr/System/Linq/GroupingT2Module.js")]
+[ECMAScriptModule("./clr/System/Linq/GroupingT2Module.js")]
 [Jazor(Op.Alias, "System.Linq.IGrouping<TKey, TElement>", "Array")]
 public static class GroupingT2Module<TKey, TElement>
 {

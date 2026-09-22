@@ -17,7 +17,7 @@ namespace Jazor.RazorVue.Generation;
 /// </summary>
 internal static class RazorVueRouteCatalogBuilder
 {
-    internal const string RelativePath = "@jazor/vue-runtime/routes.mjs";
+    internal const string RelativePath = "runtime/vue/routes.js";
 
     private const string RouteAttributeMetadataName = "Microsoft.AspNetCore.Components.RouteAttribute";
     private const string LayoutAttributeMetadataName = "Microsoft.AspNetCore.Components.LayoutAttribute";
@@ -75,7 +75,7 @@ internal static class RazorVueRouteCatalogBuilder
 
         routes.Sort(RouteDefinitionComparer.Instance);
         var moduleText = Util.NormalizeLineEndingsToLf(BuildModuleText(routes));
-        var sourceMapContent = "{\"version\":3,\"file\":\"routes.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}";
+        var sourceMapContent = "{\"version\":3,\"file\":\"routes.js\",\"sources\":[],\"names\":[],\"mappings\":\"\"}";
         var contentHash = ComputeContentHash(moduleText);
         return new VueModuleArtifact(
             "Jazor.Generated.RazorVue.RouteCatalog",

@@ -7,1382 +7,587 @@
     "element-plus": {
       "source": "npm",
       "version": "2.14.5",
-      "integrity": "sha512-bghYy/S\u002Bqg87enHPXELirhEdDqsVAUGcGpbGIeG8dz0kwpIkGz7gYsifulBshXX74iRtHib85XWQj0uSH2A1Yg=="
+      "integrity": "sha512-bghYy/S+qg87enHPXELirhEdDqsVAUGcGpbGIeG8dz0kwpIkGz7gYsifulBshXX74iRtHib85XWQj0uSH2A1Yg=="
     },
     "vue": {
       "source": "npm",
       "version": "3.5.42"
+    },
+    "dayjs": {
+      "source": "npm",
+      "version": "1.11.23"
     }
   },
   "imports": {
     "element-plus/es/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/index.mjs",
-      "production": "element-plus/es/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "element-plus/dist/index.css"
-      ],
-      "productionStylesheetImports": [
-        "element-plus/dist/index.css"
       ]
+    },
+    "dayjs": {
+      "type": "module",
+      "path": "dayjs",
+      "dependencies": []
     },
     "element-plus/es/components/affix/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/affix/index.mjs",
-      "production": "element-plus/es/components/affix/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/affix/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/affix/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/affix/style/css.mjs"
       ]
     },
     "element-plus/es/components/alert/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/alert/index.mjs",
-      "production": "element-plus/es/components/alert/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/alert/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/alert/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/alert/style/css.mjs"
       ]
     },
     "element-plus/es/components/anchor/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/anchor/index.mjs",
-      "production": "element-plus/es/components/anchor/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/anchor/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/anchor/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/anchor/style/css.mjs"
       ]
     },
     "element-plus/es/components/container/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/container/index.mjs",
-      "production": "element-plus/es/components/container/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/container/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/container/style/css.mjs"
       ]
     },
     "element-plus/es/components/table-v2/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/table-v2/index.mjs",
-      "production": "element-plus/es/components/table-v2/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/table-v2/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/table-v2/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/table-v2/style/css.mjs"
       ]
     },
     "element-plus/es/components/autocomplete/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/autocomplete/index.mjs",
-      "production": "element-plus/es/components/autocomplete/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/autocomplete/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/autocomplete/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/autocomplete/style/css.mjs"
       ]
     },
     "element-plus/es/components/avatar/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/avatar/index.mjs",
-      "production": "element-plus/es/components/avatar/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/avatar/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/avatar/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/avatar/style/css.mjs"
       ]
     },
     "element-plus/es/components/backtop/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/backtop/index.mjs",
-      "production": "element-plus/es/components/backtop/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/backtop/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/backtop/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/backtop/style/css.mjs"
       ]
     },
     "element-plus/es/components/badge/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/badge/index.mjs",
-      "production": "element-plus/es/components/badge/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/badge/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/badge/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/badge/style/css.mjs"
       ]
     },
     "element-plus/es/components/breadcrumb/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/breadcrumb/index.mjs",
-      "production": "element-plus/es/components/breadcrumb/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/breadcrumb/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/breadcrumb/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/breadcrumb/style/css.mjs"
       ]
     },
     "element-plus/es/components/button/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/button/index.mjs",
-      "production": "element-plus/es/components/button/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/button/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/button/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/button/style/css.mjs"
       ]
     },
     "element-plus/es/components/calendar/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/calendar/index.mjs",
-      "production": "element-plus/es/components/calendar/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/calendar/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/calendar/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/calendar/style/css.mjs"
       ]
     },
     "element-plus/es/components/card/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/card/index.mjs",
-      "production": "element-plus/es/components/card/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/card/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/card/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/card/style/css.mjs"
       ]
     },
     "element-plus/es/components/carousel/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/carousel/index.mjs",
-      "production": "element-plus/es/components/carousel/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/carousel/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/carousel/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/carousel/style/css.mjs"
       ]
     },
     "element-plus/es/components/cascader/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/cascader/index.mjs",
-      "production": "element-plus/es/components/cascader/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/cascader/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/cascader/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/cascader/style/css.mjs"
       ]
     },
     "element-plus/es/components/cascader-panel/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/cascader-panel/index.mjs",
-      "production": "element-plus/es/components/cascader-panel/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/cascader-panel/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/cascader-panel/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/cascader-panel/style/css.mjs"
       ]
     },
     "element-plus/es/components/check-tag/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/check-tag/index.mjs",
-      "production": "element-plus/es/components/check-tag/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/check-tag/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/check-tag/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/check-tag/style/css.mjs"
       ]
     },
     "element-plus/es/components/checkbox/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/checkbox/index.mjs",
-      "production": "element-plus/es/components/checkbox/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/checkbox/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/checkbox/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/checkbox/style/css.mjs"
       ]
     },
     "element-plus/es/components/col/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/col/index.mjs",
-      "production": "element-plus/es/components/col/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/col/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/col/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/col/style/css.mjs"
       ]
     },
     "element-plus/es/components/collapse/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/collapse/index.mjs",
-      "production": "element-plus/es/components/collapse/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/collapse/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/collapse/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/collapse/style/css.mjs"
       ]
     },
     "element-plus/es/components/collapse-transition/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/collapse-transition/index.mjs",
-      "production": "element-plus/es/components/collapse-transition/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/collapse-transition/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/collapse-transition/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/collapse-transition/style/css.mjs"
       ]
     },
     "element-plus/es/components/color-picker/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/color-picker/index.mjs",
-      "production": "element-plus/es/components/color-picker/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/color-picker/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/color-picker/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/color-picker/style/css.mjs"
       ]
     },
     "element-plus/es/components/color-picker-panel/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/color-picker-panel/index.mjs",
-      "production": "element-plus/es/components/color-picker-panel/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/color-picker-panel/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/color-picker-panel/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/color-picker-panel/style/css.mjs"
       ]
     },
     "element-plus/es/components/config-provider/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/config-provider/index.mjs",
-      "production": "element-plus/es/components/config-provider/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/config-provider/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/config-provider/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/config-provider/style/css.mjs"
       ]
     },
     "element-plus/es/components/countdown/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/countdown/index.mjs",
-      "production": "element-plus/es/components/countdown/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/countdown/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/countdown/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/countdown/style/css.mjs"
       ]
     },
     "element-plus/es/components/date-picker/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/date-picker/index.mjs",
-      "production": "element-plus/es/components/date-picker/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/date-picker/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/date-picker/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/date-picker/style/css.mjs"
       ]
     },
     "element-plus/es/components/date-picker-panel/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/date-picker-panel/index.mjs",
-      "production": "element-plus/es/components/date-picker-panel/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/date-picker-panel/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/date-picker-panel/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/date-picker-panel/style/css.mjs"
       ]
     },
     "element-plus/es/components/descriptions/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/descriptions/index.mjs",
-      "production": "element-plus/es/components/descriptions/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/descriptions/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/descriptions/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/descriptions/style/css.mjs"
       ]
     },
     "element-plus/es/components/dialog/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/dialog/index.mjs",
-      "production": "element-plus/es/components/dialog/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/dialog/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/dialog/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/dialog/style/css.mjs"
       ]
     },
     "element-plus/es/components/divider/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/divider/index.mjs",
-      "production": "element-plus/es/components/divider/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/divider/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/divider/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/divider/style/css.mjs"
       ]
     },
     "element-plus/es/components/drawer/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/drawer/index.mjs",
-      "production": "element-plus/es/components/drawer/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/drawer/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/drawer/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/drawer/style/css.mjs"
       ]
     },
     "element-plus/es/components/dropdown/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/dropdown/index.mjs",
-      "production": "element-plus/es/components/dropdown/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/dropdown/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/dropdown/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/dropdown/style/css.mjs"
       ]
     },
     "element-plus/es/components/empty/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/empty/index.mjs",
-      "production": "element-plus/es/components/empty/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/empty/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/empty/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/empty/style/css.mjs"
       ]
     },
     "element-plus/es/components/form/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/form/index.mjs",
-      "production": "element-plus/es/components/form/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/form/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/form/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/form/style/css.mjs"
       ]
     },
     "element-plus/es/components/icon/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/icon/index.mjs",
-      "production": "element-plus/es/components/icon/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/icon/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/icon/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/icon/style/css.mjs"
       ]
     },
     "element-plus/es/components/image/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/image/index.mjs",
-      "production": "element-plus/es/components/image/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/image/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/image/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/image/style/css.mjs"
       ]
     },
     "element-plus/es/components/image-viewer/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/image-viewer/index.mjs",
-      "production": "element-plus/es/components/image-viewer/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/image-viewer/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/image-viewer/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/image-viewer/style/css.mjs"
       ]
     },
     "element-plus/es/components/input/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/input/index.mjs",
-      "production": "element-plus/es/components/input/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/input/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/input/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/input/style/css.mjs"
       ]
     },
     "element-plus/es/components/input-number/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/input-number/index.mjs",
-      "production": "element-plus/es/components/input-number/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/input-number/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/input-number/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/input-number/style/css.mjs"
       ]
     },
     "element-plus/es/components/input-otp/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/input-otp/index.mjs",
-      "production": "element-plus/es/components/input-otp/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/input-otp/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/input-otp/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/input-otp/style/css.mjs"
       ]
     },
     "element-plus/es/components/input-tag/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/input-tag/index.mjs",
-      "production": "element-plus/es/components/input-tag/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/input-tag/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/input-tag/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/input-tag/style/css.mjs"
       ]
     },
     "element-plus/es/components/link/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/link/index.mjs",
-      "production": "element-plus/es/components/link/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/link/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/link/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/link/style/css.mjs"
       ]
     },
     "element-plus/es/components/mention/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/mention/index.mjs",
-      "production": "element-plus/es/components/mention/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/mention/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/mention/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/mention/style/css.mjs"
       ]
     },
     "element-plus/es/components/menu/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/menu/index.mjs",
-      "production": "element-plus/es/components/menu/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/menu/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/menu/style/css.mjs"
       ]
     },
     "element-plus/es/components/select/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/select/index.mjs",
-      "production": "element-plus/es/components/select/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/select/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/select/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/select/style/css.mjs"
       ]
     },
     "element-plus/es/components/page-header/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/page-header/index.mjs",
-      "production": "element-plus/es/components/page-header/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/page-header/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/page-header/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/page-header/style/css.mjs"
       ]
     },
     "element-plus/es/components/pagination/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/pagination/index.mjs",
-      "production": "element-plus/es/components/pagination/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/pagination/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/pagination/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/pagination/style/css.mjs"
       ]
     },
     "element-plus/es/components/popconfirm/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/popconfirm/index.mjs",
-      "production": "element-plus/es/components/popconfirm/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/popconfirm/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/popconfirm/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/popconfirm/style/css.mjs"
       ]
     },
     "element-plus/es/components/popover/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/popover/index.mjs",
-      "production": "element-plus/es/components/popover/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/popover/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/popover/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/popover/style/css.mjs"
       ]
     },
     "element-plus/es/components/popper/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/popper/index.mjs",
-      "production": "element-plus/es/components/popper/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/popper/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/popper/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/popper/style/css.mjs"
       ]
     },
     "element-plus/es/components/progress/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/progress/index.mjs",
-      "production": "element-plus/es/components/progress/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/progress/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/progress/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/progress/style/css.mjs"
       ]
     },
     "element-plus/es/components/radio/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/radio/index.mjs",
-      "production": "element-plus/es/components/radio/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/radio/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/radio/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/radio/style/css.mjs"
       ]
     },
     "element-plus/es/components/rate/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/rate/index.mjs",
-      "production": "element-plus/es/components/rate/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/rate/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/rate/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/rate/style/css.mjs"
       ]
     },
     "element-plus/es/components/result/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/result/index.mjs",
-      "production": "element-plus/es/components/result/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/result/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/result/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/result/style/css.mjs"
       ]
     },
     "element-plus/es/components/row/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/row/index.mjs",
-      "production": "element-plus/es/components/row/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/row/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/row/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/row/style/css.mjs"
       ]
     },
     "element-plus/es/components/scrollbar/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/scrollbar/index.mjs",
-      "production": "element-plus/es/components/scrollbar/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/scrollbar/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/scrollbar/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/scrollbar/style/css.mjs"
       ]
     },
     "element-plus/es/components/segmented/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/segmented/index.mjs",
-      "production": "element-plus/es/components/segmented/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/segmented/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/segmented/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/segmented/style/css.mjs"
       ]
     },
     "element-plus/es/components/select-v2/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/select-v2/index.mjs",
-      "production": "element-plus/es/components/select-v2/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/select-v2/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/select-v2/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/select-v2/style/css.mjs"
       ]
     },
     "element-plus/es/components/skeleton/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/skeleton/index.mjs",
-      "production": "element-plus/es/components/skeleton/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/skeleton/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/skeleton/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/skeleton/style/css.mjs"
       ]
     },
     "element-plus/es/components/slider/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/slider/index.mjs",
-      "production": "element-plus/es/components/slider/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/slider/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/slider/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/slider/style/css.mjs"
       ]
     },
     "element-plus/es/components/space/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/space/index.mjs",
-      "production": "element-plus/es/components/space/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/space/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/space/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/space/style/css.mjs"
       ]
     },
     "element-plus/es/components/splitter/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/splitter/index.mjs",
-      "production": "element-plus/es/components/splitter/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/splitter/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/splitter/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/splitter/style/css.mjs"
       ]
     },
     "element-plus/es/components/statistic/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/statistic/index.mjs",
-      "production": "element-plus/es/components/statistic/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/statistic/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/statistic/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/statistic/style/css.mjs"
       ]
     },
     "element-plus/es/components/steps/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/steps/index.mjs",
-      "production": "element-plus/es/components/steps/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/steps/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/steps/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/steps/style/css.mjs"
       ]
     },
     "element-plus/es/components/switch/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/switch/index.mjs",
-      "production": "element-plus/es/components/switch/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/switch/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/switch/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/switch/style/css.mjs"
       ]
     },
     "element-plus/es/components/tabs/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tabs/index.mjs",
-      "production": "element-plus/es/components/tabs/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tabs/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tabs/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tabs/style/css.mjs"
       ]
     },
     "element-plus/es/components/table/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/table/index.mjs",
-      "production": "element-plus/es/components/table/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/table/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/table/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/table/style/css.mjs"
       ]
     },
     "element-plus/es/components/tag/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tag/index.mjs",
-      "production": "element-plus/es/components/tag/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tag/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tag/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tag/style/css.mjs"
       ]
     },
     "element-plus/es/components/text/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/text/index.mjs",
-      "production": "element-plus/es/components/text/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/text/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/text/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/text/style/css.mjs"
       ]
     },
     "element-plus/es/components/time-picker/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/time-picker/index.mjs",
-      "production": "element-plus/es/components/time-picker/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/time-picker/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/time-picker/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/time-picker/style/css.mjs"
       ]
     },
     "element-plus/es/components/time-select/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/time-select/index.mjs",
-      "production": "element-plus/es/components/time-select/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/time-select/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/time-select/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/time-select/style/css.mjs"
       ]
     },
     "element-plus/es/components/timeline/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/timeline/index.mjs",
-      "production": "element-plus/es/components/timeline/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/timeline/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/timeline/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/timeline/style/css.mjs"
       ]
     },
     "element-plus/es/components/tooltip/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tooltip/index.mjs",
-      "production": "element-plus/es/components/tooltip/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tooltip/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tooltip/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tooltip/style/css.mjs"
       ]
     },
     "element-plus/es/components/tour/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tour/index.mjs",
-      "production": "element-plus/es/components/tour/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tour/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tour/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tour/style/css.mjs"
       ]
     },
     "element-plus/es/components/transfer/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/transfer/index.mjs",
-      "production": "element-plus/es/components/transfer/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/transfer/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/transfer/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/transfer/style/css.mjs"
       ]
     },
     "element-plus/es/components/tree/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tree/index.mjs",
-      "production": "element-plus/es/components/tree/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tree/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tree/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tree/style/css.mjs"
       ]
     },
     "element-plus/es/components/tree-select/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tree-select/index.mjs",
-      "production": "element-plus/es/components/tree-select/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tree-select/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tree-select/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tree-select/style/css.mjs"
       ]
     },
     "element-plus/es/components/tree-v2/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/tree-v2/index.mjs",
-      "production": "element-plus/es/components/tree-v2/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/tree-v2/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/tree-v2/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/tree-v2/style/css.mjs"
       ]
     },
     "element-plus/es/components/upload/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/upload/index.mjs",
-      "production": "element-plus/es/components/upload/index.mjs",
-      "developmentDependencies": [
+      "path": "element-plus/es/components/upload/index.mjs",
+      "dependencies": [
         "vue"
-      ],
-      "productionDependencies": [
-        "vue"
-      ],
-      "developmentStyleImports": [
-        "element-plus/es/components/upload/style/css.mjs"
-      ],
-      "productionStyleImports": [
-        "element-plus/es/components/upload/style/css.mjs"
       ]
     },
     "element-plus/es/components/watermark/index.mjs": {
       "type": "module",
-      "development": "element-plus/es/components/watermark/index.mjs",
-      "production": "element-plus/es/components/watermark/index.mjs",
-      "developmentDependencies": [
-        "vue"
-      ],
-      "productionDependencies": [
+      "path": "element-plus/es/components/watermark/index.mjs",
+      "dependencies": [
         "vue"
       ]
     }

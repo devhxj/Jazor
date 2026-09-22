@@ -7,7 +7,7 @@ namespace Jazor.AspNetCore;
 public static class JazorWebApplication
 {
     /// <summary>Creates a builder whose content root works for source and publish layouts.</summary>
-    /// <remarks>优先使用带 jazor-manifest.json 或 dist/bundle.js 的应用输出目录，其次调用源文件目录；否则使用含 wwwroot 的输出目录或源文件目录。建议从 Program.cs 直接调用以保留正确的 CallerFilePath。本方法不注册 Jazor 服务或中间件。</remarks>
+    /// <remarks>优先使用带标准 entry.js 的应用输出目录（兼容性 fallback 仍受支持），其次调用源文件目录；否则使用含 wwwroot 的输出目录或源文件目录。建议从 Program.cs 直接调用以保留正确的 CallerFilePath。本方法不注册 Jazor 服务或中间件。</remarks>
     /// <param name="args">宿主命令行参数。</param>
     /// <param name="sourceFilePath">调用源文件路径，通常由编译器自动填入，用于定位项目目录。</param>
     /// <returns>已选择 content root 的 WebApplicationBuilder。</returns>
@@ -54,7 +54,7 @@ public static class JazorWebApplication
     private static bool HasReadyArtifactGraph(string rootPath)
     {
         var artifactRoot = Path.Combine(rootPath, "jazor");
-        return File.Exists(Path.Combine(artifactRoot, JazorArtifactOptions.ManifestProbeRelativePath)) ||
+        return File.Exists(Path.Combine(artifactRoot, JazorArtifactOptions.EntryProbeRelativePath)) ||
                File.Exists(Path.Combine(artifactRoot, JazorArtifactOptions.BundleProbeRelativePath));
     }
 }

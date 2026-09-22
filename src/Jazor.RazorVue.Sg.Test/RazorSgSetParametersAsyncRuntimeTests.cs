@@ -36,7 +36,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             componentMetadataName: "Demo.Pages.SetParametersInitialValue");
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-initial-value.mjs",
+            "components/set-parameters-initial-value.js",
             observation.ModuleText,
             "set-parameters-initial-value.test.mjs",
             """
@@ -44,7 +44,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             import test from "node:test";
             import { __runServerPrefetch } from "vue";
 
-            import component from "./components/set-parameters-initial-value.mjs";
+            import component from "./components/set-parameters-initial-value.js";
 
             test("the initial ParameterView snapshot is visible to the first render", async () => {
                 const render = component.setup({ Title: "first" }, { slots: {} });
@@ -108,7 +108,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
         StringAssert.Contains(observation.ModuleText, "applyComponentBaseParameters", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-runtime.mjs",
+            "components/set-parameters-runtime.js",
             observation.ModuleText,
             "set-parameters-runtime.test.mjs",
             """
@@ -116,7 +116,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             import test from "node:test";
             import { __runServerPrefetch, __runWatchers } from "vue";
 
-            import component from "./components/set-parameters-runtime.mjs";
+            import component from "./components/set-parameters-runtime.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -173,7 +173,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
 
         StringAssert.Contains(observation.ModuleText, "title-value", StringComparison.Ordinal);
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-sparse.mjs",
+            "components/set-parameters-sparse.js",
             observation.ModuleText,
             "set-parameters-sparse.test.mjs",
             """
@@ -181,7 +181,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             import test from "node:test";
             import { __runWatchers } from "vue";
 
-            import component from "./components/set-parameters-sparse.mjs";
+            import component from "./components/set-parameters-sparse.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -240,14 +240,14 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
 
         StringAssert.Contains(observation.ModuleText, "applyParameterProperties", StringComparison.Ordinal);
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-properties.mjs",
+            "components/set-parameters-properties.js",
             observation.ModuleText,
             "set-parameters-properties.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/set-parameters-properties.mjs";
+            import component from "./components/set-parameters-properties.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -291,7 +291,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header-slot", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "createSnapshot", StringComparison.Ordinal);
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-slot.mjs",
+            "components/set-parameters-slot.js",
             observation.ModuleText,
             "set-parameters-slot.test.mjs",
             """
@@ -299,7 +299,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             import test from "node:test";
             import { __runWatchers } from "vue";
 
-            import component from "./components/set-parameters-slot.mjs";
+            import component from "./components/set-parameters-slot.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -353,7 +353,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             componentMetadataName: "Demo.Pages.SetParametersQueue");
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-queue.mjs",
+            "components/set-parameters-queue.js",
             observation.ModuleText,
             "set-parameters-queue.test.mjs",
             """
@@ -361,7 +361,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             import test from "node:test";
             import { __runWatchers } from "vue";
 
-            import component from "./components/set-parameters-queue.mjs";
+            import component from "./components/set-parameters-queue.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -411,14 +411,14 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
 
         StringAssert.Contains(observation.ModuleText, "hasParameterFailure", StringComparison.Ordinal);
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/set-parameters-failure.mjs",
+            "components/set-parameters-failure.js",
             observation.ModuleText,
             "set-parameters-failure.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/set-parameters-failure.mjs";
+            import component from "./components/set-parameters-failure.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -469,7 +469,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Object.defineProperty", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/capture-unmatched-runtime.mjs",
+            "components/capture-unmatched-runtime.js",
             observation.ModuleText,
             "capture-unmatched-runtime.test.mjs",
             """
@@ -477,7 +477,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             import test from "node:test";
             import { __runWatchers } from "vue";
 
-            import component from "./components/capture-unmatched-runtime.mjs";
+            import component from "./components/capture-unmatched-runtime.js";
 
             const settle = () => new Promise(resolve => setTimeout(resolve, 0));
             const text = render => render().children.map(child => child.children ?? child).join("");

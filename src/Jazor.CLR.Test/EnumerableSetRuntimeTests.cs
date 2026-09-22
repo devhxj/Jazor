@@ -6,8 +6,8 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableSetRuntimeTests
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
-    private const string MemoryExtensionsModulePath = "clr/System/MemoryExtensionsModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
+    private const string MemoryExtensionsModulePath = "./clr/System/MemoryExtensionsModule.js";
 
     [TestMethod]
     public async Task SetOperatorExports_PreserveClrEqualityAndMaterializedEnumerationOrderOnDenoHost()
@@ -29,18 +29,6 @@ public sealed class EnumerableSetRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(
-                configPath,
-                """
-                {
-                  "imports": {
-                    "clr/System/": "./System/", "System/": "./System/"
-                  }
-                }
-                """,
-                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "set-operators.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -71,7 +59,7 @@ public sealed class EnumerableSetRuntimeTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--config", configPath, "--quiet", "--allow-read", testPath],
+                ["test", "--quiet", "--allow-read", testPath],
                 timeout.Token);
         }
         finally

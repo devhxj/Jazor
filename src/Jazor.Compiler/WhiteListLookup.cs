@@ -68,19 +68,6 @@ internal static class WhiteListLookup
 					return true;
 			}
 
-			if (candidate is IMethodSymbol method &&
-				(method.IsExtensionMethod || method.ReducedFrom is not null) &&
-				staticExtensionKey is null)
-			{
-				var extensionSource = method.ReducedFrom?.OriginalDefinition ?? method.OriginalDefinition;
-				staticExtensionKey = extensionSource.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
-				foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticExtensionKey))
-				{
-					if (TryGetValue(mappings, lookupKey, out displayString, out value))
-						return true;
-				}
-			}
-
 			if (candidate is IMethodSymbol supplementalMethod)
 			{
 				var synthesizedStaticKey = TryBuildMethodWhiteListKey(supplementalMethod);

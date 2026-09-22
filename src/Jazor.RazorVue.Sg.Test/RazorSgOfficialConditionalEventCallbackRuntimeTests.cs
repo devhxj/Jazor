@@ -44,14 +44,14 @@ public sealed class RazorSgOfficialConditionalEventCallbackRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.IsDeploying", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-action-control.mjs",
+            "components/release-action-control.js",
             observation.ModuleText,
             "official-conditional-event-callback-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-action-control.mjs";
+            import component from "./components/release-action-control.js";
 
             test("official Razor conditional callbacks dispatch the selected release action", async () => {
                 const deployRender = component.setup({ IsDeploying: false }, { slots: {} });

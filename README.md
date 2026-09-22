@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.3&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.4&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.3 is the current preview release.
+> Jazor 1.0.0-preview.4 is the current preview release.
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -51,7 +51,7 @@ flowchart LR
         Roslyn --> Compiler["Jazor.Compiler"]
         Bindings["CLR and ECMAScript bindings"] --> Compiler
         Compiler --> Ast["ESTree"] --> Emit["Jazor.Emit"]
-        Emit --> Artifacts[".mjs, source maps, manifest, bundle"]
+        Emit --> Artifacts["Standard JS project, .mjs, source maps, build output"]
     end
 
     subgraph Integrations["Framework integration layer"]
@@ -82,7 +82,7 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 | `Jazor.Vue` | Vue authoring, Razor-to-Vue opt-in, Vue runtime assets, `ECMAScript.Vue` and `ECMAScript.VueContract` payload |
 | `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
 | `ECMAScript.VueDataUi` | Typed `Vd*` RazorVue charts with per-component local ESM materialization; [prefix migration](src/ECMAScript.VueDataUi/README.md#razor-使用) |
-| `ECMAScript.VuIcons` | Typed `vu-icons` RazorVue icons with static per-icon and dynamic catalog paths |
+| `ECMAScript.Lucide` | Typed `Lucide / lucide-vue-next` RazorVue icons with static per-icon and dynamic catalog paths |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
 [`samples/JazorAdmin`](samples/JazorAdmin) is the production-grade admin reference application that consumes [`Jazor.Admin`](src/Jazor.Admin/README.md); it is not part of the library's public contract.
@@ -110,7 +110,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.3
+dotnet add package Jazor --version 1.0.0-preview.4
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -118,8 +118,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.4" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.4" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -159,8 +159,8 @@ The executable or web host selects its artifact mode through MSBuild:
 | Mode | Result |
 | --- | --- |
 | `none` | Default; no Jazor artifacts are written |
-| `debug` | Inspectable modules, external source maps, and `jazor-manifest.json` |
-| `release` | Production browser bundle through the packaged Netpack lane |
+| `debug` | Standard JS project with inspectable modules and external source maps; Emit state stays in `obj` |
+| `release` | Production browser output through the project's configured JavaScript build tool |
 
 Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core application needs Vue server rendering and hydration. See [Artifact Pipeline](docs/02-architecture/artifact-pipeline.md).
 
@@ -200,14 +200,14 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Release status
 
-### Jazor 1.0.0-preview.3 · 2026-09-16
+### Jazor 1.0.0-preview.4 · 2026-09-22
 
-- Vue Data UI components and supporting public types now use the `Vd` prefix. Migrate `VueUi*` / `VueDataUi*` references to `Vd*`.
-- The empty ECMAScript.Blazor assembly has been removed; RazorVue CLR mappings remain available.
-- Analyzer pre-diagnostics cover additional unsupported usages; ASP.NET Core APIs now ship XML documentation and SPA/SSR/HMR guides.
+- Standard JavaScript project output now uses direct ESM paths, Deno lockfiles and the configured frontend build tool for browser development, HMR and production output.
+- npm/JSR bindings now use upstream public entrypoints, typed `[Style]` side-effect imports and a single dependency graph; VuIcons is retired and Lucide is the supported icon binding.
+- CLR carrier imports, RazorVue output, SSR worker invalidation and ASP.NET Core proxy/HMR paths now share the standard project root and are covered by the release gates.
 - This is a preview release; stable 1.0 has not been published. See [Current Status](docs/04-roadmap/current-status.md) for supported scope and quality gates.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3) and matching Git tag as the version reference. Mirrors may lag behind or show an older stable release when previews are hidden. Keep all Jazor/ECMAScript packages on the same version and explicitly select `1.0.0-preview.3`.
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4) and matching Git tag as the version reference. Mirrors may lag behind or show an older stable release when previews are hidden. Keep all Jazor/ECMAScript packages on the same version and explicitly select `1.0.0-preview.4`.
 
 The main branch may contain unreleased changes. Read [Unreleased and version history](CHANGELOG.md) before applying main-branch examples to an installed package.
 

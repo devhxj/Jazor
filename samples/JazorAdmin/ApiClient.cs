@@ -15,7 +15,7 @@ namespace JazorAdmin;
 /// Owns same-origin HTTP transport through browser WebIDL bindings.
 /// 业务页面只依赖此边界，不维护手写 JavaScript bridge。
 /// </summary>
-[ECMAScriptModule("components/api-client.mjs")]
+[ECMAScriptModule("components/api-client.js")]
 public static class ApiClient
 {
     public static IPromise<ApiOutcome> GetSession()

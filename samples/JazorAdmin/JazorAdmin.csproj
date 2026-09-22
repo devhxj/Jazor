@@ -35,7 +35,7 @@
     <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
     <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
     <PackageReference Include="ECMAScript.VueDataUi" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.VuIcons" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Lucide" Version="$(JazorPackageVersion)" />
     <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
   </ItemGroup>
 </Project>

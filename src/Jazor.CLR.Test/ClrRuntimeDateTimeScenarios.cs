@@ -4,7 +4,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeDateTimeScenarios
 {
-    private const string ModulePath = "clr/System/DateTimeModule.js";
+    private const string ModulePath = "./clr/System/DateTimeModule.js";
     private const string MinText = "0001-01-01T00:00:00.0000000";
     private const string MaxText = "9999-12-31T23:59:59.9999999";
     private const string PreciseText = "2024-01-02T03:04:05.0060079";

@@ -37,15 +37,20 @@ if (!options.SkipBuild)
 var artifactRoot = Path.Combine(sampleRoot, "BindingsShowcase.Host", "jazor");
 if (!Directory.Exists(artifactRoot))
     throw new DirectoryNotFoundException($"Generated Jazor artifacts were not found: {artifactRoot}");
+var showcaseModulePath = Path.Combine(artifactRoot, "components", "showcase-landing.js");
+var originalShowcaseModule = await File.ReadAllTextAsync(showcaseModulePath);
 
 var port = ReservePort();
+var vitePort = ReservePort();
 var pageUrl = $"http://127.0.0.1:{port}/";
 var profileRoot = Path.Combine(repoRoot, ".tmp", "bindings-showcase-smoke", Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(profileRoot);
 
-using var host = StartHost(outputRoot, artifactRoot, port);
+using var vite = StartVite(artifactRoot, repoRoot, vitePort);
+using var host = StartHost(outputRoot, artifactRoot, port, vitePort);
 try
 {
+    await WaitForViteAsync($"http://127.0.0.1:{vitePort}/jazor/entry.js");
     await WaitForHostAsync(pageUrl);
     using var browser = await BrowserSession.StartAsync(browserPath, profileRoot, pageUrl);
 
@@ -79,11 +84,42 @@ try
     RequireEqual("来自 vue-i18n 的问候", await browser.EvaluateAsync(
         "document.querySelector('[data-i18n-greeting]').getAttribute('data-i18n-greeting')"), "message re-translated after switch");
 
+    // A generated render module is a normal Vite HMR boundary. Change its source after the
+    // mounted component owns local state; Vue should replace the definition without recreating
+    // the instance, so the counter remains 1 while the static heading updates.
+    await browser.EvaluateAsync("document.querySelector('[data-hmr-action=\"increment\"]').click()");
+    await browser.EvaluateAsync("new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))");
+    RequireEqual("1", await browser.EvaluateAsync(
+        "document.querySelector('[data-hmr-counter]').getAttribute('data-hmr-counter')"), "HMR counter primed");
+
+    var updatedShowcaseModule = originalShowcaseModule.Replace(
+        "Vue ecosystem bindings showcase",
+        "Vue ecosystem bindings showcase v2",
+        StringComparison.Ordinal);
+    if (string.Equals(updatedShowcaseModule, originalShowcaseModule, StringComparison.Ordinal))
+        throw new InvalidOperationException("The generated showcase module did not contain the HMR update marker.");
+    await File.WriteAllTextAsync(showcaseModulePath, updatedShowcaseModule);
+    await browser.WaitUntilAsync(
+        "document.querySelector('h1')?.textContent === 'Vue ecosystem bindings showcase v2'",
+        "generated Vue component HMR update",
+        TimeSpan.FromSeconds(30));
+    RequireEqual("1", await browser.EvaluateAsync(
+        "document.querySelector('[data-hmr-counter]').getAttribute('data-hmr-counter')"), "HMR state preserved");
+
     Console.WriteLine("ECMAScript bindings showcase browser smoke passed.");
     Console.WriteLine("Verified: DateFns, VueI18n (locale switch), VueUse, Floating UI, VeeValidate, and Vue Query render in a real browser.");
 }
 finally
 {
+    try
+    {
+        await File.WriteAllTextAsync(showcaseModulePath, originalShowcaseModule);
+    }
+    catch (Exception)
+    {
+        // Restore is best-effort cleanup after the browser and project processes are stopped.
+    }
+    TryKill(vite);
     TryKill(host);
     TryDelete(profileRoot);
 }
@@ -115,7 +151,7 @@ static async Task RunAsync(string fileName, string[] arguments, string workingDi
         throw new InvalidOperationException($"{fileName} {string.Join(' ', arguments)} failed ({process.ExitCode}).\n{stdout}\n{stderr}");
 }
 
-static Process StartHost(string outputRoot, string artifactRoot, int port)
+static Process StartHost(string outputRoot, string artifactRoot, int port, int vitePort)
 {
     var executable = Path.Combine(outputRoot, "BindingsShowcase.Host.dll");
     if (!File.Exists(executable))
@@ -130,16 +166,81 @@ static Process StartHost(string outputRoot, string artifactRoot, int port)
     };
     startInfo.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
     startInfo.Environment["Showcase__JazorRoot"] = artifactRoot;
-    startInfo.Environment["DOTNET_ENVIRONMENT"] = "Production";
+    startInfo.Environment["Showcase__JavaScriptServer"] = $"http://127.0.0.1:{vitePort}";
+    // The browser smoke exercises the standard project's Vite dev server and HMR proxy.
+    // Development selects the ordinary entry.js shell; production is covered by the Vite build
+    // and release smoke lanes.
+    startInfo.Environment["DOTNET_ENVIRONMENT"] = "Development";
     startInfo.Environment["Logging__LogLevel__Default"] = "Warning";
     startInfo.ArgumentList.Add(executable);
     var process = Process.Start(startInfo)
         ?? throw new InvalidOperationException("Failed to start the showcase host.");
     // Drain both streams: a redirected pipe that is never read fills up and blocks the host.
     // 必须持续读取被重定向的输出管道，否则管道填满后宿主会阻塞。
-    _ = process.StandardOutput.ReadToEndAsync();
-    _ = process.StandardError.ReadToEndAsync();
+    DrainProcessOutput(process, "bindings-showcase-host");
     return process;
+}
+
+static Process StartVite(string artifactRoot, string repoRoot, int port)
+{
+    var deno = ResolveDenoHostRuntime(repoRoot);
+    var startInfo = new ProcessStartInfo(deno)
+    {
+        WorkingDirectory = artifactRoot,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false
+    };
+    startInfo.ArgumentList.Add("task");
+    startInfo.ArgumentList.Add("dev");
+    startInfo.ArgumentList.Add("--host");
+    startInfo.ArgumentList.Add("127.0.0.1");
+    startInfo.ArgumentList.Add("--port");
+    startInfo.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    startInfo.ArgumentList.Add("--strictPort");
+    startInfo.Environment["DENO_NO_PROMPT"] = "1";
+    var process = Process.Start(startInfo)
+        ?? throw new InvalidOperationException("Failed to start the generated project's Vite server.");
+    // Keep both pipes drained so Vite cannot block on redirected diagnostics.
+    DrainProcessOutput(process, "bindings-showcase-vite");
+    return process;
+}
+
+static void DrainProcessOutput(Process process, string name)
+{
+    _ = Task.Run(async () =>
+    {
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        await Task.WhenAll(stdout, stderr);
+        if (process.ExitCode is not 0 and not -1)
+        {
+            Console.Error.WriteLine($"{name} exited with code {process.ExitCode}.");
+            Console.Error.WriteLine(stdout.Result);
+            Console.Error.WriteLine(stderr.Result);
+        }
+    });
+}
+
+static async Task WaitForViteAsync(string url)
+{
+    using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+    for (var attempt = 0; attempt < 60; attempt++)
+    {
+        try
+        {
+            using var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+                return;
+        }
+        catch (HttpRequestException)
+        {
+        }
+
+        await Task.Delay(500);
+    }
+
+    throw new TimeoutException($"The generated project's Vite server did not respond at {url}.");
 }
 
 static async Task WaitForHostAsync(string url)
@@ -206,6 +307,28 @@ static string FindRepositoryRoot()
     }
 
     throw new InvalidOperationException("Run from the repository root (Jazor.slnx not found).");
+}
+
+static string ResolveDenoHostRuntime(string repoRoot)
+{
+    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE")?.Trim();
+    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
+        return explicitPath;
+
+    var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
+    var packageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages");
+    var candidate = Directory.Exists(packageRoot)
+        ? Directory.EnumerateDirectories(packageRoot, "denohost.runtime.*")
+            .SelectMany(static root => Directory.EnumerateFiles(root, "deno*", SearchOption.AllDirectories))
+            .Where(path => string.Equals(Path.GetFileName(path), executableName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault()
+        : null;
+    if (candidate is not null)
+        return candidate;
+
+    throw new FileNotFoundException(
+        "DenoHost runtime was not restored. Set JAZOR_DENO_EXE to a Deno executable or restore Jazor.Emit.");
 }
 
 static void RequireEqual(string expected, string? actual, string description)
@@ -338,10 +461,21 @@ internal sealed class BrowserSession : IDisposable
             ["awaitPromise"] = true,
             ["returnByValue"] = true
         });
-        if (result.RootElement.TryGetProperty("exceptionDetails", out var exception))
+        var payload = result.RootElement.GetProperty("result");
+        if (payload.TryGetProperty("exceptionDetails", out var exception))
             throw new InvalidOperationException("Runtime.evaluate failed: " + exception.GetRawText());
-        var value = result.RootElement.GetProperty("result");
-        return value.TryGetProperty("value", out var v) && v.ValueKind != JsonValueKind.Null ? v.ToString() : null;
+        var value = payload.GetProperty("result");
+        if (value.TryGetProperty("value", out var v) && v.ValueKind != JsonValueKind.Null)
+            return v.ValueKind switch
+            {
+                JsonValueKind.True => "true",
+                JsonValueKind.False => "false",
+                _ => v.ToString()
+            };
+        if (value.TryGetProperty("type", out var type) && type.GetString() == "undefined")
+            return null;
+
+        throw new InvalidOperationException("Runtime.evaluate returned no value: " + result.RootElement.GetRawText());
     }
 
     public async Task WaitUntilAsync(string expression, string description, TimeSpan timeout)

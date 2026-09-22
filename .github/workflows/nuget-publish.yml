@@ -39,7 +39,7 @@ jobs:
             --package admin `
             --package devtools `
             --package dataui `
-            --package vu-icons `
+            --package lucide `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

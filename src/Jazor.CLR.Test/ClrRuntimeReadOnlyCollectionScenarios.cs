@@ -2,9 +2,9 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeReadOnlyCollectionScenarios
 {
-    private const string ReadOnlySetModulePath = "clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js";
-    private const string ReadOnlyCollectionModulePath = "clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string ReadOnlySetModulePath = "./clr/System/Collections/ObjectModel/ReadOnlySetT1Module.js";
+    private const string ReadOnlyCollectionModulePath = "./clr/System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
@@ -38,7 +38,7 @@ internal static class ClrRuntimeReadOnlyCollectionScenarios
         Failure(
             "read-only-set.constructor-rejects-view-mutation",
             "System.Collections.Generic.ISet<T>.Add(T)",
-            "clr/System/Collections/Generic/ISetT1Module.js",
+            "./clr/System/Collections/Generic/ISetT1Module.js",
             [
                 Invoke(
                     "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)",
@@ -59,7 +59,7 @@ internal static class ClrRuntimeReadOnlyCollectionScenarios
         Failure(
             "read-only-collection.rejects-array-prototype-sort",
             "static System.Array.Sort<T>(T[])",
-            "clr/System/ArrayModule.js",
+            "./clr/System/ArrayModule.js",
             [Invoke("static System.Array.AsReadOnly<T>(T[])", Array(Number(3), Number(1), Number(2)))],
             "NotSupportedException: Collection is read-only."),
         Success("read-only-collection.indexer.get-existing", "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get", ReadOnlyCollectionModulePath, [Array(Text("release"), Text("owner")), Number(1)], Text("owner")),

@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("clr/System/IndexModule.js")]
+[ECMAScriptModule("./clr/System/IndexModule.js")]
 [Jazor(Op.Alias, "System.Index", "Object")]
 public static class IndexModule
 {

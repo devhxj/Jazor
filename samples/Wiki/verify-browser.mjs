@@ -323,55 +323,29 @@ async function main() {
     verificationMode,
     pathBase
   };
-  const reloadClientPath = externalPath("/@jazor/client");
-  const reloadSocketPath = externalPath("/@jazor/reload");
-  const reloadClientUrl = toAbsoluteUrl(reloadClientPath);
-  const reloadSocketUrl = `${new URL(baseUrl).protocol === "https:" ? "wss" : "ws"}://${new URL(baseUrl).host}${reloadSocketPath}`;
-  const reloadClientResponse = await fetch(reloadClientUrl, { cache: "no-store" });
-  const reloadClientText = reloadClientResponse.ok ? await reloadClientResponse.text() : "";
-  report.runtime.reloadClientInjected = await evaluate(`(function(){
-    const script = document.querySelector('script[src="${reloadClientPath}"]');
+  const viteClientPath = externalPath("/jazor/@vite/client");
+  const viteClientUrl = toAbsoluteUrl(viteClientPath);
+  const viteClientResponse = await fetch(viteClientUrl, { cache: "no-store" });
+  report.runtime.viteClientInjected = await evaluate(`(function(){
+    const script = document.querySelector('script[src="${viteClientPath}"]');
     return !!script;
   })()`);
-  report.runtime.reloadClientStatus = reloadClientResponse.status;
-  report.runtime.reloadClientContentType = reloadClientResponse.headers.get("content-type") || "";
-  report.runtime.reloadClientHasSocketPath = reloadClientText.includes('const socketPath = "/@jazor/reload";');
-  report.runtime.reloadSocketObserved = false;
+  report.runtime.viteClientStatus = viteClientResponse.status;
+  report.runtime.viteClientContentType = viteClientResponse.headers.get("content-type") || "";
 
   if (isDevelopmentVerification) {
-    const reloadSocketConnection = await waitForState(
-      () => reverseFind(webSocketCreatedEvents, entry => entry.url === reloadSocketUrl),
-      `development reload websocket ${reloadSocketUrl}`,
-      10000,
-      100).catch(() => null);
-    report.runtime.reloadSocketObserved = reloadSocketConnection !== null;
-
-    if (!report.runtime.reloadClientInjected) {
-      failures.push("Development verification did not inject the /@jazor/client script into the served HTML.");
+    if (!report.runtime.viteClientInjected) {
+      failures.push("Development verification did not inject the /jazor/@vite/client script into the served HTML.");
     }
-    if (report.runtime.reloadClientStatus !== 200) {
-      failures.push(`Development verification expected /@jazor/client to return HTTP 200 but received ${report.runtime.reloadClientStatus}.`);
+    if (report.runtime.viteClientStatus !== 200) {
+      failures.push(`Development verification expected /jazor/@vite/client to return HTTP 200 but received ${report.runtime.viteClientStatus}.`);
     }
-    if (!report.runtime.reloadClientContentType.includes("text/javascript")) {
-      failures.push(`Development verification expected /@jazor/client to be JavaScript but received '${report.runtime.reloadClientContentType}'.`);
-    }
-    if (!report.runtime.reloadClientHasSocketPath) {
-      failures.push("Development reload client script did not contain the expected /@jazor/reload socket path.");
-    }
-    if (!report.runtime.reloadSocketObserved) {
-      failures.push("Development verification did not observe the /@jazor/reload websocket connection from the injected browser client.");
+    if (!report.runtime.viteClientContentType.includes("javascript")) {
+      failures.push(`Development verification expected /jazor/@vite/client to be JavaScript but received '${report.runtime.viteClientContentType}'.`);
     }
   } else {
-    report.runtime.reloadSocketObserved = webSocketCreatedEvents.some(entry => entry.url === reloadSocketUrl);
-
-    if (report.runtime.reloadClientInjected) {
-      failures.push("Production verification unexpectedly injected the /@jazor/client development script.");
-    }
-    if (report.runtime.reloadClientStatus !== 404) {
-      failures.push(`Production verification expected /@jazor/client to stay unavailable but received HTTP ${report.runtime.reloadClientStatus}.`);
-    }
-    if (report.runtime.reloadSocketObserved) {
-      failures.push("Production verification unexpectedly observed a /@jazor/reload websocket connection.");
+    if (report.runtime.viteClientInjected) {
+      failures.push("Production verification unexpectedly injected the Vite development client.");
     }
   }
 
@@ -413,14 +387,14 @@ async function main() {
     : [
       {
         label: "bundle",
-        scriptPath: externalPath("/jazor/bundle.js"),
-        sourceMapPath: externalPath("/jazor/bundle.js.map"),
+        scriptPath: externalPath("/jazor/dist/bundle.js"),
+        sourceMapPath: externalPath("/jazor/dist/bundle.js.map"),
         moduleFile: "bundle.js",
         expectedSources: [
           "main.mjs",
           "components/wiki-home.mjs",
           "components/wiki-styles.mjs",
-          "style.mjs"
+          "style.js"
         ],
         expectedSourceContentMarkers: [
           "ecmascript-style:v1",

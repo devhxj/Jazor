@@ -54,10 +54,12 @@
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
-    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
-    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
+    <!-- Emit 经 DenoProcess 执行 restore/check/build，DenoHost 只从 AppContext.BaseDirectory
+         解析 runtime；pack 机固定在 Windows，必须无条件引用全部 RID 才能进缓存并被显式打包。 -->
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -139,10 +141,62 @@
   <Target Name="AddJazorEmitPublishOutputToPackage"
           DependsOnTargets="PrepareJazorPackageArtifacts">
     <ItemGroup>
-      <!-- Vue's SFC compiler is opt-in and is packaged by Jazor.Vue, not core Jazor. -->
+      <!-- Vue's SFC compiler is opt-in and is packaged by Jazor.Vue, not core Jazor.
+           publish 输出里的 runtimes/ 只覆盖构建机 RID；跨 RID 的签名 runtime 由下方
+           NuGetPackageRoot 显式打包，避免重复条目。 -->
       <TfmSpecificPackageFile Include="$(JazorEmitPublishOutputRoot)**\*"
-                              Exclude="$(JazorEmitPublishOutputRoot)tooling\vue\**\*">
+                              Exclude="$(JazorEmitPublishOutputRoot)tooling\vue\**\*;$(JazorEmitPublishOutputRoot)runtimes\**\*">
         <PackagePath>tools\net11.0\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+      <!-- DenoHost 只从 AppContext.BaseDirectory/runtimes/<rid>/native 解析并签名校验 runtime，
+           包必须在 tools 下携带全部受支持 RID（二进制 + sha256sum + metadata + sig）。 -->
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.exe">
+        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.exe.sha256sum">
+        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.metadata.json">
+        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.metadata.sig">
+        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno">
+        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno.sha256sum">
+        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno.metadata.json">
+        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno.metadata.sig">
+        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno">
+        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno.sha256sum">
+        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno.metadata.json">
+        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno.metadata.sig">
+        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno">
+        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno.sha256sum">
+        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno.metadata.json">
+        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno.metadata.sig">
+        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

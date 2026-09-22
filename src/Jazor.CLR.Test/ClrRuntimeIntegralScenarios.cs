@@ -2,14 +2,14 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeIntegralScenarios
 {
-	private const string Int64ModulePath = "clr/System/Int64Module.js";
-	private const string Int32ModulePath = "clr/System/Int32Module.js";
-    private const string Int16ModulePath = "clr/System/Int16Module.js";
-    private const string UInt16ModulePath = "clr/System/UInt16Module.js";
-    private const string UInt32ModulePath = "clr/System/UInt32Module.js";
-    private const string ByteModulePath = "clr/System/ByteModule.js";
-    private const string SByteModulePath = "clr/System/SByteModule.js";
-    private const string UInt64ModulePath = "clr/System/UInt64Module.js";
+	private const string Int64ModulePath = "./clr/System/Int64Module.js";
+	private const string Int32ModulePath = "./clr/System/Int32Module.js";
+    private const string Int16ModulePath = "./clr/System/Int16Module.js";
+    private const string UInt16ModulePath = "./clr/System/UInt16Module.js";
+    private const string UInt32ModulePath = "./clr/System/UInt32Module.js";
+    private const string ByteModulePath = "./clr/System/ByteModule.js";
+    private const string SByteModulePath = "./clr/System/SByteModule.js";
+    private const string UInt64ModulePath = "./clr/System/UInt64Module.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

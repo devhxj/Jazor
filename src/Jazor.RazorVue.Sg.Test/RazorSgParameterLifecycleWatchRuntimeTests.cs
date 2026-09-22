@@ -50,7 +50,7 @@ public sealed class RazorSgParameterLifecycleWatchRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("deep: true", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/parameter-lifecycle-runtime.mjs",
+            "components/parameter-lifecycle-runtime.js",
             observation.ModuleText,
             "parameter-lifecycle-runtime.test.mjs",
             """
@@ -58,7 +58,7 @@ public sealed class RazorSgParameterLifecycleWatchRuntimeTests
             import test from "node:test";
             import { __runWatchers } from "vue";
 
-            import component from "./components/parameter-lifecycle-runtime.mjs";
+            import component from "./components/parameter-lifecycle-runtime.js";
 
             test("parameter lifecycle follows shallow value and reference replacement", () => {
                 const model = { Value: "one" };

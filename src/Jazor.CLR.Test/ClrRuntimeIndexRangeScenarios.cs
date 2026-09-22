@@ -2,8 +2,8 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeIndexRangeScenarios
 {
-    private const string IndexModulePath = "clr/System/IndexModule.js";
-    private const string RangeModulePath = "clr/System/RangeModule.js";
+    private const string IndexModulePath = "./clr/System/IndexModule.js";
+    private const string RangeModulePath = "./clr/System/RangeModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [

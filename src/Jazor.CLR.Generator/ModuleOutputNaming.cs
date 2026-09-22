@@ -30,8 +30,8 @@ public static class ModuleOutputNaming
     /// <summary>
     /// 返回 carrier 在项目源码树中的模块路径。
     ///
-    /// 自有源码 carrier 写在 <c>clr/</c> 下（与 [ECMAScriptModule] 声明和 ClrRuntimeCatalog 一致），
-    /// 因此这里带上同一前缀；逻辑路径（不含前缀）只用于产物图内部的稳定身份。
+    /// 自有源码 carrier 声明为 <c>./clr/</c> 下的标准项目相对路径；该声明同时用于
+    /// <c>[ECMAScriptModule]</c>、catalog、manifest 和最终文件，不存在第二种内部身份。
     /// </summary>
     public static string GetModulePath(Type type)
     {
@@ -45,5 +45,5 @@ public static class ModuleOutputNaming
     }
 
     /// <summary>carrier 在项目源码树中的根目录。</summary>
-    public const string CarrierRoot = "clr/";
+    public const string CarrierRoot = "./clr/";
 }

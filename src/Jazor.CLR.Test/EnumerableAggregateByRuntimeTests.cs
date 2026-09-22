@@ -6,7 +6,7 @@ namespace Jazor.CLR.Test;
 [TestClass]
 public sealed class EnumerableAggregateByRuntimeTests
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
     public async Task AggregateByExports_PreserveComparerRepresentativeSeedProtocolAndEntryCarrierOnDenoHost()
@@ -14,7 +14,7 @@ public sealed class EnumerableAggregateByRuntimeTests
         var countBy = GetExportName("static System.Linq.Enumerable.CountBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Collections.Generic.IEqualityComparer<TKey>)");
         var aggregateBy = GetExportName("static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)");
         var aggregateByWithSeedSelector = GetExportName("static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Func<TKey, TAccumulate>, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)");
-        var enumerableModule = ClrRuntimeCatalog.All.Single(module => module.RelativePath == EnumerableModulePath);
+        var enumerableModule = ClrRuntimeCatalog.Get(EnumerableModulePath);
         StringAssert.Contains(enumerableModule.Content, "CountBy count exceeds Int32.MaxValue.", StringComparison.Ordinal);
         StringAssert.Contains(enumerableModule.Content, "count === 2147483647", StringComparison.Ordinal);
 
@@ -29,18 +29,6 @@ public sealed class EnumerableAggregateByRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
                 await File.WriteAllTextAsync(outputPath, module.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-
-            var configPath = Path.Combine(root, "deno.json");
-            await File.WriteAllTextAsync(
-                configPath,
-                """
-                {
-                  "imports": {
-                    "clr/System/": "./System/", "System/": "./System/"
-                  }
-                }
-                """,
-                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             var testPath = Path.Combine(root, "aggregate-by.test.mjs");
             await File.WriteAllTextAsync(
                 testPath,
@@ -134,7 +122,7 @@ public sealed class EnumerableAggregateByRuntimeTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             await Deno.Execute(
                 new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--config", configPath, "--quiet", "--allow-read", testPath],
+                ["test", "--quiet", "--allow-read", testPath],
                 timeout.Token);
         }
         finally

@@ -7,7 +7,7 @@ public sealed class EcmaScriptStyleCatalogTests
     public void Build_RuntimeModule_EmitsAssemblyCatalog()
     {
         var module = EcmaScriptStyleModuleTestHost.GetRuntimeModule();
-        Assert.AreEqual("style.mjs", module.RelativePath);
+        Assert.AreEqual("style.js", module.RelativePath);
         Assert.AreEqual("ECMAScript.Style.css", module.TypeName);
 
         var content = module.Content;

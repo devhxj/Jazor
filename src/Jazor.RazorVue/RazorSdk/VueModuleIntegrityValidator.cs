@@ -34,6 +34,10 @@ internal static class VueModuleIntegrityValidator
             "Float32Array",
             "Float64Array",
             "globalThis",
+            // Acornima exposes import.meta as identifier nodes during validation; the module
+            // environment provides both names and they are never authored globals.
+            "import",
+            "meta",
             // Browser host globals are explicit runtime dependencies. Keep this list narrow:
             // generated modules may use the standard browser surface, but an arbitrary free
             // identifier must still fail at build time instead of becoming a console error.

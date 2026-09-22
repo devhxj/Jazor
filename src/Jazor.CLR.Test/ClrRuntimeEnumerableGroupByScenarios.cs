@@ -2,8 +2,8 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableGroupByScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
-    private const string GroupingModulePath = "clr/System/Linq/GroupingT2Module.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
+    private const string GroupingModulePath = "./clr/System/Linq/GroupingT2Module.js";
     private const string GroupByMember =
         "static System.Linq.Enumerable.GroupBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)";
 

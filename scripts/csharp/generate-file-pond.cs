@@ -92,7 +92,7 @@ if (Directory.Exists(licensesRoot))
     Directory.Delete(licensesRoot, recursive: true);
 Directory.CreateDirectory(licensesRoot);
 
-// Validate the upstream stylesheet and record it as an entry-level package edge.
+// Validate the upstream stylesheet; the binding source declares it with [Style].
 var filePondDist = Path.Combine(sources["filepond"], "dist");
 if (!File.Exists(Path.Combine(filePondDist, "filepond.css")))
     throw new InvalidOperationException("filepond does not ship 'filepond.css'.");
@@ -267,16 +267,9 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = specifier,
-            ["production"] = specifier,
-            ["developmentDependencies"] = (JsonArray)dependenciesNode.DeepClone(),
-            ["productionDependencies"] = dependenciesNode,
+            ["path"] = specifier,
+            ["dependencies"] = dependenciesNode,
         };
-        if (string.Equals(specifier, "filepond", StringComparison.Ordinal))
-        {
-            imports[specifier]!["developmentStylesheetImports"] = new JsonArray { "filepond/dist/filepond.css" };
-            imports[specifier]!["productionStylesheetImports"] = new JsonArray { "filepond/dist/filepond.css" };
-        }
     }
 
     var requiresNode = new JsonObject();

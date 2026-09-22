@@ -9,6 +9,52 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed partial class RazorVueAnalyzerScopeTests
 {
     [TestMethod]
+    public async Task WhitelistedInvocation_DoesNotDiagnoseItsCompilerProtocolReturnType()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+
+            [ECMAScriptModule("./task-yield")]
+            public static class TaskYieldModule
+            {
+                public static async Task YieldAsync()
+                {
+                    await Task.Yield();
+                }
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task UnmappedInvocation_StillDiagnosesItsUnsupportedReturnType()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./unsupported-return")]
+            public static class UnsupportedReturnModule
+            {
+                public static void Open()
+                {
+                    _ = System.IO.File.OpenRead("missing.txt");
+                }
+            }
+            """);
+
+        Assert.IsTrue(
+            diagnostics.Any(static diagnostic =>
+                diagnostic.Id == "JAZOR001" &&
+                diagnostic.GetMessage().Contains("System.IO.FileStream", StringComparison.Ordinal)),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task ComponentSurface_DoesNotTriggerGenericWhitelistAnalyzer()
     {
         var diagnostics = await AnalyzeAsync(

@@ -2,7 +2,7 @@ namespace Jazor.CLR.Test;
 
 internal static class ClrRuntimeEnumerableSetScenarios
 {
-    private const string EnumerableModulePath = "clr/System/Linq/EnumerableModule.js";
+    private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     public static IReadOnlyList<ClrRuntimeScenario> All { get; } =
     [
@@ -34,7 +34,7 @@ internal static class ClrRuntimeEnumerableSetScenarios
         Success(
             "memory-extensions.contains.read-only-span-array-carrier-uses-default-clr-equality",
             "static System.MemoryExtensions.Contains<T>(System.ReadOnlySpan<T>, T)",
-            "clr/System/MemoryExtensionsModule.js",
+            "./clr/System/MemoryExtensionsModule.js",
             [Array(Number(1d), Number(double.NaN), Number(3d)), Number(double.NaN)],
             Boolean(true))
     ];

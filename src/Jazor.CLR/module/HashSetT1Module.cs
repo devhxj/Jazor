@@ -13,7 +13,7 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: 不支持或极少使用
 /// </summary>
-[ECMAScriptModule("clr/System/Collections/Generic/HashSetT1Module.js")]
+[ECMAScriptModule("./clr/System/Collections/Generic/HashSetT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>","Set")]
 public static class HashSetT1Module<T>
 {

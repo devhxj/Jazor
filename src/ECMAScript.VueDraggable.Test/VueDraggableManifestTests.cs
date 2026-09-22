@@ -31,8 +31,8 @@ public sealed class VueDraggableManifestTests
         var entry = imports.GetProperty("vue-draggable-plus");
         CollectionAssert.AreEquivalent(
             new[] { "vue" },
-            entry.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
-        Assert.AreEqual("vue-draggable-plus", entry.GetProperty("production").GetString());
+            entry.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
+        Assert.AreEqual("vue-draggable-plus", entry.GetProperty("path").GetString());
         Assert.IsFalse(entry.TryGetProperty("developmentHash", out _));
         Assert.IsFalse(entry.TryGetProperty("files", out _));
         Assert.AreEqual(0, root.GetProperty("styles").GetArrayLength());

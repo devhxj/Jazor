@@ -129,17 +129,24 @@ static async Task<string> MaterializeArtifactGraphAsync(string repoRoot, string 
           "name": "@jazor/ssr-benchmark",
           "private": true,
           "type": "module",
+          "main": "./entry.js",
+          "exports": {
+            ".": "./entry.js",
+            "./ssr": "./ssr-entry.js"
+          },
+          "scripts": {
+            "ssr": "deno run --node-modules-dir=manual --frozen-lockfile --no-remote --no-prompt --allow-env=NODE_ENV --allow-read=. --allow-net=127.0.0.1 ssr-entry.js"
+          },
           "dependencies": {
             "vue": "3.5.42",
             "@vue/server-renderer": "3.5.42"
           }
         }
         """.Replace("\r\n", "\n", StringComparison.Ordinal));
-    // Bare package imports resolve through the restored package.json exports map.
-    WriteText(Path.Combine(artifactRoot, "importmap.json"), "{\"imports\":{}}\n");
-    WriteText(Path.Combine(artifactRoot, "ssr-importmap.json"), "{\"imports\":{}}\n");
-    WriteText(Path.Combine(artifactRoot, "manifest.json"), "{\"styles\":[]}");
-    WriteText(Path.Combine(artifactRoot, "jazor-manifest.json"), "{\"generation\":\"benchmark-v1\"}");
+    WriteText(Path.Combine(artifactRoot, "entry.js"), "export {};\n");
+    File.Copy(
+        Path.Combine(repoRoot, "src", "Jazor.Emit", "tooling", "ssr-runner.js"),
+        Path.Combine(artifactRoot, "ssr-entry.js"));
     WriteText(
         Path.Combine(artifactRoot, "components", "benchmark.mjs"),
         """
@@ -162,7 +169,7 @@ static async Task<string> MaterializeArtifactGraphAsync(string repoRoot, string 
 
     var check = await RunProcessAsync(
         deno,
-        ["check", "--node-modules-dir=manual", "--no-remote", "--frozen-lockfile", "components/benchmark.mjs"],
+        ["check", "--node-modules-dir=manual", "--no-remote", "--no-config", "--frozen-lockfile", "entry.js", "ssr-entry.js"],
         artifactRoot);
     if (check.ExitCode != 0)
         throw new InvalidOperationException("SSR benchmark Deno offline check failed." + Environment.NewLine + check.StandardError);
@@ -335,9 +342,6 @@ internal sealed record MetricSummary(
     double MaxMilliseconds,
     IReadOnlyList<double> Samples);
 
-internal sealed record ImportMapDocument(
-    [property: JsonPropertyName("imports")] IReadOnlyDictionary<string, string> Imports);
-
 internal sealed record SsrBenchmarkReport(
     string SchemaVersion,
     string Status,
@@ -389,7 +393,6 @@ internal sealed record SsrBenchmarkReport(
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(ImportMapDocument))]
 [JsonSerializable(typeof(SsrBenchmarkReport))]
 internal sealed partial class BenchmarkJsonContext : JsonSerializerContext;
 

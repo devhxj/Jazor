@@ -47,14 +47,14 @@ public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.DismissCount++;", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/dismissible-panel-runtime.mjs",
+            "components/dismissible-panel-runtime.js",
             observation.ModuleText,
             "official-optional-event-callback-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/dismissible-panel-runtime.mjs";
+            import component from "./components/dismissible-panel-runtime.js";
 
             test("official Razor EventCallback remains optional and awaits a subscribed listener", async () => {
                 const withoutListener = component.setup({}, { slots: {} });

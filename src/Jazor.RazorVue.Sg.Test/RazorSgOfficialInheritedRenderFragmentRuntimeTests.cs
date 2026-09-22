@@ -75,15 +75,15 @@ public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/inherited-template-runtime.mjs",
+            "components/inherited-template-runtime.js",
             observation.ModuleText,
             "official-inherited-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/inherited-template-runtime.mjs";
-            import slotPanel from "./components/slot-panel-inherited-template-runtime.mjs";
+            import component from "./components/inherited-template-runtime.js";
+            import slotPanel from "./components/slot-panel-inherited-template-runtime.js";
 
             test("official Razor inherited RenderFragment members provide base slots", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -106,7 +106,7 @@ public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-panel-inherited-template-runtime.mjs"] = "export default { name: \"slot-panel-inherited-template-runtime\" };"
+                ["components/slot-panel-inherited-template-runtime.js"] = "export default { name: \"slot-panel-inherited-template-runtime\" };"
             });
     }
 }

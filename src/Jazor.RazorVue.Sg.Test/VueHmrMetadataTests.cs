@@ -39,8 +39,14 @@ public sealed class VueHmrMetadataTests
             StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "globalThis.JazorHmr.registerVueComponent(\"RazorSg.OfficialAuthoring.Tests:components/hmr-counter.mjs\", __jazorComponent);",
+            "globalThis.JazorHmr.registerVueComponent(\"RazorSg.OfficialAuthoring.Tests:components/hmr-counter.js\", __jazorComponent);",
             StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import.meta.hot.accept", StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "__jazorComponent.__hmrId = \"RazorSg.OfficialAuthoring.Tests:components/hmr-counter.js\";",
+            StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "runtime.reload(\"RazorSg.OfficialAuthoring.Tests:components/hmr-counter.js\", updated.default)", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "export default __jazorComponent;", StringComparison.Ordinal);
     }
 }

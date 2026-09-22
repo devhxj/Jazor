@@ -7,13 +7,10 @@ namespace Jazor.Emit;
 ///
 /// A producer has exactly one of two carriers (ModuleCatalog or a JS-resource manifest). This
 /// class is the only boundary that turns those carriers into a host output directory. Individual
-/// writers are deliberately used only inside the private staging tree; callers never observe
-/// their intermediate files.
+/// writers update the standard project in place, with atomic writes for individual files.
 /// </summary>
 internal sealed class EmitPipeline
 {
-    private const string ApplicationManifestFileName = "jazor-manifest.json";
-    private const string SsrDirectoryName = "ssr";
     private const string SsrVueSpecifier = "vue";
     private const string SsrRendererSpecifier = "@vue/server-renderer";
 
@@ -30,8 +27,6 @@ internal sealed class EmitPipeline
 
             var outputRoot = Path.GetFullPath(options.OutputDirectory);
             var manifestPath = Path.GetFullPath(options.ManifestPath);
-            EnsureManifestIsOwnedByOutput(outputRoot, manifestPath);
-
             var collection = CollectModules(options);
             if (!collection.IsSuccess)
                 return EmitPipelineResult.Fail(collection.ExitCode, collection.Error!);
@@ -60,6 +55,12 @@ internal sealed class EmitPipeline
 
             var applicationManifest = ManifestModel.TryLoad(manifestPath)
                 ?? throw new InvalidOperationException("Emit did not produce the application manifest.");
+            var entryPaths = ProjectEntryWriter.Write(
+                outputRoot,
+                applicationManifest.Entries,
+                options.EnableSsr,
+                applicationManifest.Modules.Where(module => module.Hmr is not null)
+                    .Select(module => module.RelativePath).ToArray());
             var packageImports = GetPackageImports(applicationManifest);
             if (options.EnableSsr)
             {
@@ -97,62 +98,26 @@ internal sealed class EmitPipeline
                     packageImports,
                     applicationManifest.Modules.Select(static module => module.RelativePath));
             }
-            // Keep the browser/debug artifact root package-aware as well. NetPack uses a
-            // temporary projection for release, while DenoHost and local diagnostics consume
-            // this same package.json/node_modules contract from jazor/.
-            ResetPackageWorkspace(outputRoot);
-            LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries);
+            // Standard JavaScript tooling and DenoHost consume this same package.json/node_modules from jazor/.
+            LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);
             await DenoPackageRestorer.RestoreAndCheckAsync(
                 outputRoot,
                 options.DenoExecutablePath,
-                applicationManifest.Modules
-                    .Select(module => Path.Combine(outputRoot, module.RelativePath))
-                    .ToArray(),
+                entryPaths,
                 packageLibraries,
                 cancellationToken).ConfigureAwait(false);
-            // External imports are mapped only after restore, so the map can follow the
-            // package's real exports target from the shared node_modules tree.
-            await ImportMapWriter.WriteAsync(
-                outputRoot,
-                browserLibraries,
-                applicationManifest.Modules,
-                cancellationToken).ConfigureAwait(false);
-
             if (options.Mode == BuildMode.Production)
             {
                 var bundleResult = await BuildBrowserBundleAsync(
                     options,
                     outputRoot,
                     manifestPath,
-                    browserLibraries,
                     cancellationToken).ConfigureAwait(false);
                 if (!bundleResult.IsSuccess)
                     return EmitPipelineResult.Fail(
                         bundleResult.ExitCode,
                         bundleResult.Diagnostic?.Message ?? "Jazor browser bundle failed.");
 
-                // The browser release contract is the bundle projection. The raw application
-                // graph is an input to Netpack, not a second release carrier; keep only assets
-                // that the bundle still references (package/static/CSS) and remove generated
-                // modules plus their debug manifests/maps before the outer atomic commit.
-                // 浏览器 Release 只交付 bundle 投影，不能把调试 raw graph 一并暴露到 JazorDir。
-                RemoveBrowserRawProjection(outputRoot, applicationManifest);
-            }
-
-            if (options.EnableSsr)
-            {
-                var ssrResult = await BuildSsrProfileAsync(
-                    options,
-                    outputRoot,
-                    collection.Modules,
-                    collection.Assets,
-                    packageLibraries,
-                    cancellationToken).ConfigureAwait(false);
-                if (!ssrResult.IsSuccess)
-                    return EmitPipelineResult.Fail(ssrResult.ExitCode, ssrResult.Error!);
-
-                // The package project and node_modules retain the complete graph for SSR. The
-                // browser-facing package view remains the selected browser closure.
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -181,35 +146,17 @@ internal sealed class EmitPipeline
         }
     }
 
-    private static void ResetPackageWorkspace(string workspaceRoot)
-    {
-        // The materializer owns `packages/`: it is the local package carrier for embedded-mjs
-        // sources and has already been committed for the current closure. Only the package
-        // manager output is reset here; deno.lock remains available for an identity comparison.
-        foreach (var directory in new[] { "node_modules" })
-        {
-            var path = Path.Combine(workspaceRoot, directory);
-            if (Directory.Exists(path))
-                Directory.Delete(path, recursive: true);
-        }
-
-        foreach (var fileName in new[] { "package.json", "package-lock.json" })
-        {
-            var path = Path.Combine(workspaceRoot, fileName);
-            if (File.Exists(path))
-                File.Delete(path);
-        }
-    }
-
     private static CollectResult CollectModules(EmitOptions options)
     {
         var loadContext = new EmitLoadContext(options.RootAssemblyPath);
         try
         {
             var collector = new ModuleCollector(loadContext);
-            collector.AddAssembly(options.RootAssemblyPath);
+            collector.AddRootAssembly(options.RootAssemblyPath);
             foreach (var assemblyPath in options.AssemblyPaths)
                 collector.AddAssembly(assemblyPath);
+            foreach (var assemblyPath in options.ModuleAssemblyPaths ?? [])
+                collector.AddRootAssembly(assemblyPath);
             return collector.Collect(options.RootAssemblyPath);
         }
         finally
@@ -221,111 +168,47 @@ internal sealed class EmitPipeline
     }
 
     private static IReadOnlyList<string> GetPackageImports(ManifestModel manifest)
-        => manifest.Modules
+    {
+        // The application manifest is the authoritative carrier for generated project modules.
+        // A module path may also appear in PackageImports when a direct Razor render edge was
+        // discovered before the catalog was assembled; keep it in the application graph and do
+        // not ask a library manifest to provide the same authored path.
+        var applicationModulePaths = manifest.Modules
+            .Select(static module => NormalizeModuleIdentity(module.RelativePath))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return manifest.Modules
             .SelectMany(static module => module.PackageImports ?? [])
             .Where(static value => !string.IsNullOrWhiteSpace(value))
             .Select(static value => value.Trim())
+            .Where(value => !applicationModulePaths.Contains(NormalizeModuleIdentity(value)))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToArray();
+
+        static string NormalizeModuleIdentity(string value)
+        {
+            var normalized = value.Replace('\\', '/').Trim();
+            while (normalized.StartsWith("./", StringComparison.Ordinal))
+                normalized = normalized[2..];
+            return normalized.TrimStart('/');
+        }
+    }
 
     private static async Task<ToolchainResult> BuildBrowserBundleAsync(
         EmitOptions options,
         string projectRoot,
         string manifestPath,
-        LibraryAssets materializedLibraries,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        // 单一项目根：输入、依赖恢复根、package 解析根与 bundle 输出都在 jazor/ 下，
-        // 不再向 NetPack 传四个可能不一致的根。
-        var request = ToolchainRequest.Create(
-            manifestPath,
+        // The authored package script owns the tool and output layout.
+        var result = await new JavaScriptProjectBuilder().BuildAsync(
             projectRoot,
-            mode: BuildMode.Production,
-            sourceMaps: true,
-            minify: true,
-            requiredCapabilities: new HashSet<ToolchainCapability>
-            {
-                ToolchainCapability.ProductionBuild,
-                ToolchainCapability.SourceMaps,
-                ToolchainCapability.Minify
-            },
-            libraryManifests: options.LibraryManifests,
-            materializedLibraries: materializedLibraries);
-        return await new Toolchain().BuildAsync(request).ConfigureAwait(false);
-    }
-
-    private static async Task<EmitPipelineResult> BuildSsrProfileAsync(
-        EmitOptions options,
-        string browserStagingRoot,
-        IReadOnlyList<ModuleRecord> modules,
-        IReadOnlyList<AssetEntry> assets,
-        LibraryAssets libraries,
-        CancellationToken cancellationToken)
-    {
-        var ssrRoot = Path.Combine(browserStagingRoot, SsrDirectoryName);
-        Directory.CreateDirectory(ssrRoot);
-        var ssrManifestPath = Path.Combine(ssrRoot, ApplicationManifestFileName);
-        var moduleWrite = ModuleWriter.Write(
-            options.RootAssemblyPath,
-            ssrRoot,
-            ssrManifestPath,
-            modules);
-        if (!moduleWrite.IsSuccess)
-            return EmitPipelineResult.Fail(moduleWrite.ExitCode, moduleWrite.Error!);
-
-        var ssrValidatedAssets = ValidateCatalogAssets(
-            options.SourceRoot,
-            assets,
-            GetReservedOutputPaths(modules),
-            cancellationToken);
-        var manifest = ManifestModel.TryLoad(ssrManifestPath)
-            ?? throw new InvalidOperationException("Emit did not produce the SSR application manifest.");
-        CopyCatalogAssets(ssrRoot, ssrValidatedAssets, cancellationToken);
-
-        // Keep the SSR browser-facing asset URLs stable while the executable package imports
-        // resolve through the single restored node_modules tree in the parent jazor root.
-        CopyMaterializedLibraryFiles(browserStagingRoot, ssrRoot, libraries, cancellationToken);
-        // The root profile already restored the complete package graph, including Vue SSR
-        // packages. SSR only writes its module/import-map view and resolves node_modules from
-        // the parent jazor directory.
-        await ImportMapWriter.WriteSsrAsync(
-            ssrRoot,
-            libraries,
-            manifest.Modules,
+            options.DenoExecutablePath,
             cancellationToken).ConfigureAwait(false);
-        return EmitPipelineResult.Success(
-            assemblyCount: 0,
-            catalogCount: 0,
-            moduleCount: modules.Count,
-            assetCount: assets.Count,
-            written: moduleWrite.Written,
-            skipped: moduleWrite.Skipped,
-            deleted: moduleWrite.Deleted,
-            outputDirectory: ssrRoot);
-    }
-
-    private static void CopyMaterializedLibraryFiles(
-        string sourceRoot,
-        string destinationRoot,
-        LibraryAssets libraries,
-        CancellationToken cancellationToken)
-    {
-        foreach (var relativePath in libraries.MaterializedPaths
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
-                     .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var sourcePath = GetSafePath(sourceRoot, relativePath);
-            if (!File.Exists(sourcePath))
-                throw new FileNotFoundException($"Materialized library file was not found: '{relativePath}'.", sourcePath);
-
-            var targetPath = GetSafePath(destinationRoot, relativePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-            File.Copy(sourcePath, targetPath, overwrite: true);
-        }
+        return result with { ModuleCount = ManifestModel.TryLoad(manifestPath)?.Modules.Count ?? 0 };
     }
 
     /// <summary>
@@ -421,76 +304,41 @@ internal sealed class EmitPipeline
         string ArtifactPath,
         string? ExpectedHash);
 
-    private static IReadOnlySet<string> GetReservedOutputPaths(ManifestModel manifest)
-    {
-        var paths = CreateReservedPathSet();
-        foreach (var module in manifest.Modules)
-        {
-            paths.Add(NormalizeRelativePath(module.RelativePath));
-            if (!string.IsNullOrWhiteSpace(module.SourceMapPath))
-                paths.Add(NormalizeRelativePath(module.SourceMapPath!));
-        }
-
-        return paths;
-    }
-
     /// <summary>
-    /// 与 <see cref="GetReservedOutputPaths(ManifestModel)"/> 等价的提前版本：manifest 尚未写出时，
-    /// 用收集到的模块记录算出同一组保留路径，使 asset 冲突能在任何写入之前被拒绝。
+    /// 在首次写入前检查模块是否覆盖项目入口/配置，并保留模块与 map 路径供 asset 冲突检查。
     /// </summary>
     private static IReadOnlySet<string> GetReservedOutputPaths(IReadOnlyList<ModuleRecord> modules)
     {
-        var paths = CreateReservedPathSet();
+        var owned = CreateReservedPathSet();
+        var paths = new HashSet<string>(owned, StringComparer.OrdinalIgnoreCase);
         foreach (var module in modules)
         {
-            paths.Add(NormalizeRelativePath(module.RelativePath));
+            AddModulePath(module.RelativePath);
             if (!string.IsNullOrWhiteSpace(module.SourceMapRelativePath))
-                paths.Add(NormalizeRelativePath(module.SourceMapRelativePath!));
+                AddModulePath(module.SourceMapRelativePath!);
         }
 
         return paths;
+
+        void AddModulePath(string path)
+        {
+            var normalized = NormalizeRelativePath(path);
+            if (owned.Contains(normalized))
+                throw new InvalidOperationException($"Module path '{path}' conflicts with a generated or Emit-owned output file.");
+            paths.Add(normalized);
+        }
     }
 
     private static HashSet<string> CreateReservedPathSet()
         => new(StringComparer.OrdinalIgnoreCase)
         {
-            ApplicationManifestFileName,
-            ImportMapWriter.BrowserImportMapFileName,
-            ImportMapWriter.SsrImportMapFileName,
-            ImportMapWriter.AssetManifestFileName
+            ProjectEntryWriter.BrowserEntryFileName,
+            ProjectEntryWriter.SsrEntryFileName,
+            ProjectEntryWriter.HydrationEntryFileName,
+            "package.json",
+            "package-lock.json",
+            "deno.lock"
         };
-
-    private static void RemoveBrowserRawProjection(
-        string outputRoot,
-        ManifestModel applicationManifest)
-    {
-        foreach (var module in applicationManifest.Modules)
-        {
-            DeleteOutputFile(outputRoot, module.RelativePath);
-            if (!string.IsNullOrWhiteSpace(module.SourceMapPath))
-                DeleteOutputFile(outputRoot, module.SourceMapPath!);
-        }
-
-        // These files are debug/SSR graph metadata. SSR gets its own complete projection under
-        // `ssr/`; retaining the browser copies would make profile selection ambiguous.
-        foreach (var fileName in new[]
-                 {
-                     ApplicationManifestFileName,
-                     ImportMapWriter.BrowserImportMapFileName,
-                     ImportMapWriter.SsrImportMapFileName,
-                     ImportMapWriter.AssetManifestFileName
-                 })
-        {
-            DeleteOutputFile(outputRoot, fileName);
-        }
-    }
-
-    private static void DeleteOutputFile(string outputRoot, string relativePath)
-    {
-        var target = GetSafePath(outputRoot, relativePath);
-        if (File.Exists(target))
-            File.Delete(target);
-    }
 
     private static void ValidateOptions(EmitOptions options)
     {
@@ -505,18 +353,6 @@ internal sealed class EmitPipeline
         {
             if (!File.Exists(manifestPath))
                 throw new FileNotFoundException("Library manifest was not found.", manifestPath);
-        }
-    }
-
-    private static void EnsureManifestIsOwnedByOutput(string outputRoot, string manifestPath)
-    {
-        var normalizedRoot = EnsureDirectorySeparator(outputRoot);
-        var normalizedManifest = Path.GetFullPath(manifestPath);
-        if (!normalizedManifest.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(Path.GetFileName(normalizedManifest), ApplicationManifestFileName, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                $"Emit manifest must be '{ApplicationManifestFileName}' directly under the output root '{outputRoot}'.");
         }
     }
 

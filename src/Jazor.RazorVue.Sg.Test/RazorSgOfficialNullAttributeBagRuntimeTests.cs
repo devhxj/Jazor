@@ -29,14 +29,14 @@ public sealed class RazorSgOfficialNullAttributeBagRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("mergeProps", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-action-without-attributes-runtime.mjs",
+            "components/release-action-without-attributes-runtime.js",
             observation.ModuleText,
             "official-release-action-without-attributes-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-action-without-attributes-runtime.mjs";
+            import component from "./components/release-action-without-attributes-runtime.js";
 
             test("official Razor null attribute bags leave explicit attributes as the complete prop object", () => {
                 const output = component.setup({}, { slots: {} })();

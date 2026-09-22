@@ -39,14 +39,14 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("new Dictionary", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-deployment-inline-attributes.mjs",
+            "components/release-deployment-inline-attributes.js",
             observation.ModuleText,
             "official-release-deployment-inline-attributes-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-deployment-inline-attributes.mjs";
+            import component from "./components/release-deployment-inline-attributes.js";
 
             test("official Razor inline attribute bags expand known entries before explicit Razor attributes", () => {
                 const idle = component.setup({

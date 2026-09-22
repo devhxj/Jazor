@@ -72,15 +72,15 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "content:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-summary-render-fragment-composition-runtime.mjs",
+            "components/release-summary-render-fragment-composition-runtime.js",
             observation.ModuleText,
             "official-release-summary-render-fragment-composition-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-summary-render-fragment-composition-runtime.mjs";
-            import slotHost from "./components/slot-host-render-fragment-composition-runtime.mjs";
+            import component from "./components/release-summary-render-fragment-composition-runtime.js";
+            import slotHost from "./components/slot-host-render-fragment-composition-runtime.js";
 
             test("official Razor local RenderFragment composition forwards the complete named slot", () => {
                 const host = component.setup({ ReleaseName: "May deployment" }, { slots: {} })();
@@ -107,7 +107,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-host-render-fragment-composition-runtime.mjs"] = "export default { name: \"slot-host-render-fragment-composition-runtime\" };"
+                ["components/slot-host-render-fragment-composition-runtime.js"] = "export default { name: \"slot-host-render-fragment-composition-runtime\" };"
             });
     }
 
@@ -184,15 +184,15 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-item-template-render-fragment-composition-runtime.mjs",
+            "components/release-item-template-render-fragment-composition-runtime.js",
             observation.ModuleText,
             "official-release-item-template-render-fragment-composition-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-item-template-render-fragment-composition-runtime.mjs";
-            import itemPanel from "./components/item-panel-render-fragment-composition-runtime.mjs";
+            import component from "./components/release-item-template-render-fragment-composition-runtime.js";
+            import itemPanel from "./components/item-panel-render-fragment-composition-runtime.js";
 
             test("official Razor local generic RenderFragment composition forwards the scoped slot context", () => {
                 const panel = component.setup({}, { slots: {} })();
@@ -212,7 +212,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/item-panel-render-fragment-composition-runtime.mjs"] = "export default { name: \"item-panel-render-fragment-composition-runtime\" };"
+                ["components/item-panel-render-fragment-composition-runtime.js"] = "export default { name: \"item-panel-render-fragment-composition-runtime\" };"
             });
     }
 
@@ -293,14 +293,14 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-item-variant-render-fragment-runtime.mjs",
+            "components/release-item-variant-render-fragment-runtime.js",
             observation.ModuleText,
             "official-release-item-variant-render-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-item-variant-render-fragment-runtime.mjs";
+            import component from "./components/release-item-variant-render-fragment-runtime.js";
 
             test("official Razor conditional local generic RenderFragment selects the matching scoped slot content", () => {
                 const compactPanel = component.setup({ Detailed: false }, { slots: {} })();
@@ -318,7 +318,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/item-panel-render-fragment-variant-runtime.mjs"] = "export default { name: \"item-panel-render-fragment-variant-runtime\" };"
+                ["components/item-panel-render-fragment-variant-runtime.js"] = "export default { name: \"item-panel-render-fragment-variant-runtime\" };"
             });
     }
 
@@ -388,14 +388,14 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "renderRenderTree", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-tree-local-render-fragment-runtime.mjs",
+            "components/release-tree-local-render-fragment-runtime.js",
             observation.ModuleText,
             "official-release-tree-local-render-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-tree-local-render-fragment-runtime.mjs";
+            import component from "./components/release-tree-local-render-fragment-runtime.js";
 
             test("official Razor recursive local RenderFragment keeps nested node order", () => {
                 const panel = component.setup({ Depth: 2 }, { slots: {} })();
@@ -417,7 +417,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/tree-panel-local-render-fragment-runtime.mjs"] = "export default { name: \"tree-panel-local-render-fragment-runtime\" };"
+                ["components/tree-panel-local-render-fragment-runtime.js"] = "export default { name: \"tree-panel-local-render-fragment-runtime\" };"
             });
     }
 
@@ -474,14 +474,14 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-notice-expression-fragment-runtime.mjs",
+            "components/release-notice-expression-fragment-runtime.js",
             observation.ModuleText,
             "official-release-notice-expression-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-notice-expression-fragment-runtime.mjs";
+            import component from "./components/release-notice-expression-fragment-runtime.js";
 
             test("official Razor expression-bodied RenderFragment factory forwards current props", () => {
                 const host = component.setup({ Message: "Approval pending" }, { slots: {} })();
@@ -493,7 +493,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-host-expression-fragment-runtime.mjs"] = "export default { name: \"slot-host-expression-fragment-runtime\" };"
+                ["components/slot-host-expression-fragment-runtime.js"] = "export default { name: \"slot-host-expression-fragment-runtime\" };"
             });
     }
 }

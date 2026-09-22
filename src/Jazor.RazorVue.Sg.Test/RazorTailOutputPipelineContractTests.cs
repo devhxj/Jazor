@@ -107,7 +107,7 @@ public sealed class RazorTailOutputPipelineContractTests
         Assert.IsTrue(built, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.Message)));
         Assert.IsNotNull(catalogSource);
         Assert.IsEmpty(diagnostics);
-        StringAssert.Contains(catalogSource, "repeated-parent.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "repeated-parent.js", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "repeated-child.vue", StringComparison.Ordinal);
     }
 

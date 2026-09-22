@@ -60,8 +60,8 @@ public sealed class RazorTailOutputFallbackPathTests
         Assert.IsTrue(result, DescribeDiagnostics(diagnostics));
         Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
-        StringAssert.Contains(catalogSource, "ReleaseConsole/ReleaseShell.mjs", StringComparison.Ordinal);
-        StringAssert.Contains(catalogSource, "ReleaseConsole/Demo/Pages/ReleaseStatus.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "ReleaseConsole/ReleaseShell.js", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "ReleaseConsole/Demo/Pages/ReleaseStatus.js", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "internal static partial class ModuleCatalog", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "hmrProviderId: \"jazor.vue\"", StringComparison.Ordinal);
         Assert.IsFalse(catalogSource.Contains("\"module-source\"", StringComparison.Ordinal), catalogSource);
@@ -137,10 +137,10 @@ public sealed class RazorTailOutputFallbackPathTests
 
         Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
-        StringAssert.Contains(catalogSource, "components/pages/release-dashboard.mjs", StringComparison.Ordinal);
-        StringAssert.Contains(catalogSource, "components/pages/release-history.mjs", StringComparison.Ordinal);
-        StringAssert.Contains(catalogSource, "../badges/ReleaseBadge.vue.mjs", StringComparison.Ordinal);
-        StringAssert.Contains(catalogSource, "../cards/ReleaseCard.vue.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "components/pages/release-dashboard.js", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "components/pages/release-history.js", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "../badges/ReleaseBadge.vue.js", StringComparison.Ordinal);
+        StringAssert.Contains(catalogSource, "../cards/ReleaseCard.vue.js", StringComparison.Ordinal);
         var badgeAssetIndex = catalogSource.IndexOf(
             "artifactPath: \"components/badges/ReleaseBadge.vue\"",
             StringComparison.Ordinal);

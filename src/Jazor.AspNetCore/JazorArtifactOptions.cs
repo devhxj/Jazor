@@ -6,21 +6,21 @@ namespace Jazor.AspNetCore;
 /// <summary>Configures discovery and serving of the generated Jazor artifact graph.</summary>
 public sealed class JazorArtifactOptions
 {
-    /// <summary>Default manifest used to detect a ready generated artifact graph.</summary>
-    public const string ManifestProbeRelativePath = "jazor-manifest.json";
+    /// <summary>Standard browser entry used to detect a ready generated project.</summary>
+    public const string EntryProbeRelativePath = "entry.js";
 
     /// <summary>
-    /// Fallback browser bundle used to detect a ready release artifact graph.
-    /// Bundle 输出固定在项目根的 <c>dist/</c> 下。
+    /// Backward-compatible fallback artifact used when a consumer has no entry probe.
+    /// The generated project itself does not require this path; its build tool may choose any output layout.
     /// </summary>
     public const string BundleProbeRelativePath = "dist/bundle.js";
 
-    /// <summary>Initializes artifact discovery with manifest and release-bundle probes.</summary>
+    /// <summary>Initializes artifact discovery with the standard entry and a compatibility fallback probe.</summary>
     public JazorArtifactOptions()
     {
         ProbeRelativePaths =
         [
-            ManifestProbeRelativePath,
+            EntryProbeRelativePath,
             BundleProbeRelativePath
         ];
 
@@ -40,7 +40,7 @@ public sealed class JazorArtifactOptions
     public string DirectoryName { get; set; } = "jazor";
 
     /// <summary>Probe files checked once when registering the artifact mount.</summary>
-    /// <remarks>默认包含 jazor-manifest.json 和 dist/bundle.js，任意一个存在即通过。仅在注册中间件时探测，不保证整个 SSR 图完整。</remarks>
+    /// <remarks>默认包含 entry.js 和一个兼容性 fallback，任意一个存在即通过。仅在注册中间件时探测，不保证整个项目图完整。</remarks>
     public IList<string> ProbeRelativePaths { get; }
 
     /// <summary>Request-path prefixes that may receive immutable cache headers.</summary>

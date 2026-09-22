@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using Acornima;
 using Acornima.Ast;
+using Jazor.Common;
 using Jazor.Compiler;
 using Jazor.Common.SourceMaps;
 using Jazor.RazorVue.Generation;
@@ -84,7 +85,7 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsFalse(string.Join(Environment.NewLine, nonGuardedFailure).Contains("disposed", StringComparison.Ordinal));
 
         Assert.AreEqual(
-            "vue/runtime.mjs",
+            "vue/runtime.js",
             Invoke<string>("ResolveModuleDependency", "vue/runtime", "pages/host.mjs"));
         Assert.AreEqual(
             "pages/child.mjs",
@@ -238,10 +239,10 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("fallback9_value", Invoke<string>("SanitizeJavaScriptIdentifierPart", "9-value", "fallback"));
         Assert.AreEqual("ready$value", Invoke<string>("SanitizeJavaScriptIdentifierPart", "ready$value", "fallback"));
 
-        Assert.AreEqual("components/marked.mjs", Invoke<string>("GetRelativePath", marked));
-        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/Blank.mjs", Invoke<string>("GetRelativePath", blank));
-        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/NullMarked.mjs", Invoke<string>("GetRelativePath", nullMarked));
-        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/Plain.mjs", Invoke<string>("GetRelativePath", plain));
+        Assert.AreEqual("components/marked.js", Invoke<string>("GetRelativePath", marked));
+        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/Blank.js", Invoke<string>("GetRelativePath", blank));
+        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/NullMarked.js", Invoke<string>("GetRelativePath", nullMarked));
+        Assert.AreEqual("RazorVue.PrivateContracts/PrivateContracts/Plain.js", Invoke<string>("GetRelativePath", plain));
 
         Assert.IsTrue(Invoke<bool>("IsRuntimeMemberClass", plain));
         Assert.IsFalse(Invoke<bool>("IsRuntimeMemberClass", record));
@@ -255,7 +256,7 @@ public sealed class VueModuleBuilderPrivateContractTests
             """
             import defaultLocal, * as namespaceLocal from "./names.mjs";
             import { sourceName as namedLocal } from "./named.mjs";
-            import Child from "./components/child.vue.mjs";
+            import Child from "./components/child.vue.js";
             import "vue";
             """);
         var imports = module.Body.OfType<ImportDeclaration>().ToArray();
@@ -271,31 +272,31 @@ public sealed class VueModuleBuilderPrivateContractTests
                 .Select(specifier => Invoke<string>("GetImportLocalName", specifier))
                 .ToArray());
 
-        var assetArguments = new object?[] { imports[2], "pages/host.mjs", null };
+        var assetArguments = new object?[] { imports[2], "pages/host.js", null };
         Assert.IsTrue(Invoke<bool>("TryCreateVueSfcAsset", assetArguments));
         var asset = assetArguments[2] as VueAsset;
         Assert.IsNotNull(asset);
         Assert.AreEqual("pages/components/child.vue", asset.ArtifactPath);
         Assert.AreEqual("module-source", asset.Kind);
-        Assert.AreEqual("pages/components/child.vue.mjs", asset.ImportPath);
-        Assert.IsFalse(Invoke<bool>("TryCreateVueSfcAsset", new object?[] { imports[3], "pages/host.mjs", null }));
+        Assert.AreEqual("pages/components/child.vue.js", asset.ImportPath);
+        Assert.IsFalse(Invoke<bool>("TryCreateVueSfcAsset", new object?[] { imports[3], "pages/host.js", null }));
 
         Assert.AreEqual(
             "pages/components/child.vue",
-            Invoke<string>("ResolveImportArtifactPath", "./components/child.vue", "pages/host.mjs"));
+            Invoke<string>("ResolveImportArtifactPath", "./components/child.vue", "pages/host.js"));
         Assert.AreEqual(
             "shared/child.vue",
-            Invoke<string>("ResolveImportArtifactPath", "../shared/child.vue", "pages/host.mjs"));
+            Invoke<string>("ResolveImportArtifactPath", "../shared/child.vue", "pages/host.js"));
         var escape = Assert.Throws<TargetInvocationException>(() =>
             Invoke<string>("ResolveImportArtifactPath", "../escape.vue", "host.mjs"));
         StringAssert.Contains(escape.InnerException!.Message, "cannot escape", StringComparison.Ordinal);
 
         Assert.AreEqual(
             "./entry.mjs",
-            Invoke<string>("RebaseRootRelativeModuleSpecifier", "pages/entry.mjs", "pages/host.mjs"));
+            ECMAScriptModulePath.ResolveRelativeToImporter("pages/host.mjs", "pages/entry.mjs"));
         Assert.AreEqual(
-            "../../components/card.mjs",
-            Invoke<string>("RebaseRootRelativeModuleSpecifier", "components/card.mjs", "pages/nested/host.mjs"));
+            "../../components/card.js",
+            ECMAScriptModulePath.ResolveRelativeToImporter("pages/nested/host.mjs", "components/card.js"));
     }
 
     [TestMethod]
@@ -329,7 +330,8 @@ public sealed class VueModuleBuilderPrivateContractTests
             false,
             false,
             CreateImmutableArray(typeof(ImportDeclaration), imports[1]),
-            CreateImmutableArray(typeof(ISymbol)));
+            CreateImmutableArray(typeof(ISymbol)),
+            ImmutableArray<string>.Empty);
 
         var names = Invoke<HashSet<string>>(
             "CollectImportLocalNames",
@@ -637,7 +639,9 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("namedLocal", Invoke<string>("GetImportLocalName", imports[2].Specifiers[0]));
 
         Assert.AreEqual("pages/host.mjs", Invoke<string>("ResolveImportArtifactPath", "host.mjs", "pages/host.mjs"));
-        Assert.AreEqual("./host.mjs", Invoke<string>("RebaseRootRelativeModuleSpecifier", "pages/host.mjs", "pages/host.mjs"));
+        Assert.AreEqual(
+            "./host.mjs",
+            ECMAScriptModulePath.ResolveRelativeToImporter("pages/host.mjs", "pages/host.mjs"));
     }
 
     [TestMethod]
@@ -791,20 +795,9 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsTrue(bracketAccess.Computed);
         Assert.AreEqual("item-value", ((StringLiteral)bracketAccess.Property).Value);
 
-        var imports = new Parser().ParseModule(
-            """
-            import local from "./local.mjs";
-            import packageLocal from "package";
-            """)
-            .Body
-            .OfType<ImportDeclaration>()
-            .ToArray();
         Assert.AreEqual(
             "../local.mjs",
-            Invoke<ImportDeclaration>("RebaseImportDeclaration", imports[0], "pages/host.mjs").Source.Value);
-        Assert.AreSame(
-            imports[1],
-            Invoke<ImportDeclaration>("RebaseImportDeclaration", imports[1], "pages/host.mjs"));
+            ECMAScriptModulePath.ResolveRelativeToImporter("pages/host.mjs", "local.mjs"));
     }
 
     [TestMethod]
@@ -815,21 +808,20 @@ public sealed class VueModuleBuilderPrivateContractTests
         var noisyMarked = GetNamedType(compilation, "PrivateContracts.NoisyMarked");
 
         Assert.AreEqual(
-            "RazorVue.PrivateContracts/PrivateContracts/NoArgumentMarked.mjs",
+            "RazorVue.PrivateContracts/PrivateContracts/NoArgumentMarked.js",
             Invoke<string>("GetRelativePath", noArgumentMarked));
-        Assert.AreEqual("components/noisy.mjs", Invoke<string>("GetRelativePath", noisyMarked));
+        Assert.AreEqual("components/noisy.js", Invoke<string>("GetRelativePath", noisyMarked));
         var globalCompilation = CreateStandaloneCompilation("public sealed class GlobalComponent { }", "GlobalComponent.cs");
         var globalComponent = globalCompilation.GetTypeByMetadataName("GlobalComponent");
         Assert.IsNotNull(globalComponent);
-        Assert.AreEqual("Standalone/GlobalComponent.mjs", Invoke<string>("GetRelativePath", globalComponent!));
+        Assert.AreEqual("Standalone/GlobalComponent.js", Invoke<string>("GetRelativePath", globalComponent!));
 
         var emptyImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<string>("ResolveImportArtifactPath", ".", "host.mjs"));
         StringAssert.Contains(emptyImport.InnerException!.Message, "cannot be empty", StringComparison.Ordinal);
         Assert.AreEqual(
-            "../../shared/card.mjs",
-            Invoke<string>("RebaseRootRelativeModuleSpecifier", "../shared/card.mjs", "pages/host.mjs"));
-        Assert.AreEqual("./", Invoke<string>("RebaseRootRelativeModuleSpecifier", string.Empty, string.Empty));
+            "../shared/card.mjs",
+            ECMAScriptModulePath.ResolveRelativeToImporter("pages/host.mjs", "shared/card.mjs"));
 
         Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierStart", '$'));
         Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierStart", '_'));
@@ -950,7 +942,7 @@ public sealed class VueModuleBuilderPrivateContractTests
             "GlobalComponent.cs");
         var globalComponent = globalCompilation.GetTypeByMetadataName("GlobalComponent");
         Assert.IsNotNull(globalComponent);
-        Assert.AreEqual("Standalone/GlobalComponent.mjs", Invoke<string>("GetRelativePath", globalComponent!));
+        Assert.AreEqual("Standalone/GlobalComponent.js", Invoke<string>("GetRelativePath", globalComponent!));
 
         var callbackCompilation = CreateStandaloneCompilation(
             "namespace Microsoft.AspNetCore.Components; public sealed class EventCallback<TLeft, TRight> { }",
@@ -1327,7 +1319,8 @@ public sealed class VueModuleBuilderPrivateContractTests
             false,
             false,
             CreateImmutableArray(typeof(ImportDeclaration)),
-            CreateImmutableArray(typeof(ISymbol)));
+            CreateImmutableArray(typeof(ISymbol)),
+            ImmutableArray<string>.Empty);
         var initializationPhases = ImmutableArray.Create(
             new ComponentInitializationPhaseBuild(component.BaseType!, null),
             new ComponentInitializationPhaseBuild(
@@ -1384,7 +1377,7 @@ public sealed class VueModuleBuilderPrivateContractTests
             ]);
         var projected = Invoke<SourceMapDocument>(
             "ProjectCompilerSourceMap",
-            "components/output.mjs",
+            "components/output.js",
             compilerMap,
             CreateCompiledLineMappings(
                 (GeneratedLine: 20, GeneratedColumn: 3, CompiledLine: 5, CompiledColumn: 0),
@@ -1501,7 +1494,8 @@ public sealed class VueModuleBuilderPrivateContractTests
             false,
             false,
             CreateImmutableArray(typeof(ImportDeclaration)),
-            CreateImmutableArray(typeof(ISymbol)));
+            CreateImmutableArray(typeof(ISymbol)),
+            ImmutableArray<string>.Empty);
         var setupStatement = new Parser().ParseModule("setupReference;").Body.Single();
         var compilerStatement = CreatePrivateRecord("CompilerStatement", setupStatement, 0, 0);
         var stateSlot = CreatePrivateRecord(

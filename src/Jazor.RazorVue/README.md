@@ -1,6 +1,6 @@
 # Jazor.RazorVue
 
-> 定位：官方 Razor Source Generator 到 Vue render-function `.mjs` 的当前集成实现。
+> 定位：官方 Razor Source Generator 到 Vue render-function `.js` 的当前集成实现。
 
 `Jazor.RazorVue` 只消费 official Razor SG 完成后的 Roslyn `Compilation` 和 generated C#。它将 `BuildRenderTree` 相关 `IOperation` 通过 `Jazor.Compiler` 降低为 Vue render-function artifact，不将 Razor DR/IR、SFC 或中间 marker protocol 作为回退路径。
 
@@ -9,7 +9,7 @@
 - 选择 RazorVue 组件并绑定最终 generated C# 中的组件类型与 `BuildRenderTree` operation。
 - 建立当前组件成员闭包，并通过 `AstConverterOptions`、`SemanticWalkerHost` 和模块策略进入核心 compiler。
 - 在 `RazorSdk/Lowering/` 中处理 current-component state、children-to-slot 等产品特有 projection；`RenderEmitter` 直接将 RenderTreeBuilder operation 组织为 Vue VNode AST。
-- 构建确定的 Vue module、source map 并写入 `Jazor.Generated.ModuleCatalog`，交由 `Jazor.Emit` 统一物化为 `.mjs`、map 和输出 projections。
+- 构建确定的 Vue module、source map 并写入 `Jazor.Generated.ModuleCatalog`，交由 `Jazor.Emit` 统一物化为 `.js`、map 和输出 projections。
 - Vue runtime helper 直接从 `vue` 导入；Vue HMR payload 仍由本项目生成和解释。
 
 ## 组件契约

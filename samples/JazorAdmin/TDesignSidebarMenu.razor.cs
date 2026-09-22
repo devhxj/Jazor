@@ -115,7 +115,7 @@ public partial class TDesignSidebarMenu : JComponentBase
         return leaves.ToArray();
     }
 
-    // routes.mjs 只导出成员函数；渲染 lambda 内直接限定 TDesignRouteMapper 会触发 phantom
+    // routes.js 只导出成员函数；渲染 lambda 内直接限定 TDesignRouteMapper 会触发 phantom
     // 类名导入（浏览器模块链接失败），因此经成员位置间接映射，与 RouteBreadcrumb 保持同一形态。
     private static string? MapItemHref(AdminNavItem item)
         => TDesignRouteMapper.MapHref(item.Href, item.RouteTarget);

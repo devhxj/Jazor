@@ -34,14 +34,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "for (;", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/indexed-for-loop-runtime.mjs",
+            "components/indexed-for-loop-runtime.js",
             observation.ModuleText,
             "official-indexed-for-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/indexed-for-loop-runtime.mjs";
+            import component from "./components/indexed-for-loop-runtime.js";
 
             test("official Razor @for lowers indexed keyed children", () => {
                 const fragment = component.setup({ Items: ["Audit", "Deploy"] }, { slots: {} })();
@@ -90,14 +90,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "let index = 0", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/indexed-while-loop-runtime.mjs",
+            "components/indexed-while-loop-runtime.js",
             observation.ModuleText,
             "official-indexed-while-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/indexed-while-loop-runtime.mjs";
+            import component from "./components/indexed-while-loop-runtime.js";
 
             test("official Razor @while preserves the body-then-update ordering", () => {
                 const fragment = component.setup({ Items: ["Audit", "Deploy"] }, { slots: {} })();
@@ -145,14 +145,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "let index = 0", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/do-while-loop-runtime.mjs",
+            "components/do-while-loop-runtime.js",
             observation.ModuleText,
             "official-do-while-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/do-while-loop-runtime.mjs";
+            import component from "./components/do-while-loop-runtime.js";
 
             test("official Razor @do executes one iteration before checking Count", () => {
                 const zeroCount = component.setup({ Count: 0 }, { slots: {} })();
@@ -199,14 +199,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "for (;", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/for-loop-without-update-runtime.mjs",
+            "components/for-loop-without-update-runtime.js",
             observation.ModuleText,
             "official-for-loop-without-update-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/for-loop-without-update-runtime.mjs";
+            import component from "./components/for-loop-without-update-runtime.js";
 
             test("official Razor @for accepts a body-owned counter update", () => {
                 const fragment = component.setup({ Items: ["Audit", "Deploy"] }, { slots: {} })();
@@ -247,14 +247,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "ordinal += 10", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/for-loop-multiple-updates-runtime.mjs",
+            "components/for-loop-multiple-updates-runtime.js",
             observation.ModuleText,
             "official-for-loop-multiple-updates-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/for-loop-multiple-updates-runtime.mjs";
+            import component from "./components/for-loop-multiple-updates-runtime.js";
 
             test("official Razor @for emits all update expressions in source order", () => {
                 const fragment = component.setup({ Items: ["Audit", "Deploy", "Ship"] }, { slots: {} })();
@@ -300,14 +300,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "key: props.Items[index]", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/keyed-while-loop-runtime.mjs",
+            "components/keyed-while-loop-runtime.js",
             observation.ModuleText,
             "official-keyed-while-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/keyed-while-loop-runtime.mjs";
+            import component from "./components/keyed-while-loop-runtime.js";
 
             test("official Razor @while retains authored keys", () => {
                 const fragment = component.setup({ Items: ["Audit", "Deploy"] }, { slots: {} })();
@@ -354,14 +354,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createElementBlock(Fragment", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/do-while-multiple-roots-runtime.mjs",
+            "components/do-while-multiple-roots-runtime.js",
             observation.ModuleText,
             "official-do-while-multiple-roots-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/do-while-multiple-roots-runtime.mjs";
+            import component from "./components/do-while-multiple-roots-runtime.js";
 
             test("official Razor @do retains every root in each rendered iteration", () => {
                 const fragment = component.setup({ Count: 2 }, { slots: {} })();
@@ -477,14 +477,14 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "for (let value of", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/loop-branches-runtime.mjs",
+            "components/loop-branches-runtime.js",
             observation.ModuleText,
             "official-loop-branches-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/loop-branches-runtime.mjs";
+            import component from "./components/loop-branches-runtime.js";
 
             function collectText(node, name, values = []) {
                 if (Array.isArray(node)) {

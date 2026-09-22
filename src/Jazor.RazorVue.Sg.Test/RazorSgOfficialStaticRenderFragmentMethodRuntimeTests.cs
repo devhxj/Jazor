@@ -56,15 +56,15 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
         StringAssert.Contains(observation.ModuleText, "content:", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-terms-static-render-fragment-runtime.mjs",
+            "components/release-terms-static-render-fragment-runtime.js",
             observation.ModuleText,
             "official-release-terms-static-render-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-terms-static-render-fragment-runtime.mjs";
-            import slotHost from "./components/slot-host-static-render-fragment-runtime.mjs";
+            import component from "./components/release-terms-static-render-fragment-runtime.js";
+            import slotHost from "./components/slot-host-static-render-fragment-runtime.js";
 
             test("official Razor static RenderFragment method groups provide a named slot callback", () => {
                 const host = component.setup({}, { slots: {} })();
@@ -82,7 +82,7 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
             """,
             new Dictionary<string, string>
             {
-                ["components/slot-host-static-render-fragment-runtime.mjs"] = "export default { name: \"slot-host-static-render-fragment-runtime\" };"
+                ["components/slot-host-static-render-fragment-runtime.js"] = "export default { name: \"slot-host-static-render-fragment-runtime\" };"
             });
     }
 }

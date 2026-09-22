@@ -220,10 +220,8 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = specifier,
-            ["production"] = specifier,
-            ["developmentDependencies"] = (JsonArray)packageDependencies.DeepClone(),
-            ["productionDependencies"] = packageDependencies,
+            ["path"] = specifier,
+            ["dependencies"] = packageDependencies,
         };
     }
 

@@ -32,14 +32,14 @@ public sealed class RazorSgOfficialFormNameRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("\"release-deployment\"", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/release-deployment-form.mjs",
+            "components/release-deployment-form.js",
             observation.ModuleText,
             "official-form-name-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/release-deployment-form.mjs";
+            import component from "./components/release-deployment-form.js";
 
             test("official Razor form names preserve the Vue form tree", () => {
                 const form = component.setup({}, { slots: {} })();

@@ -38,14 +38,14 @@ public sealed class RazorSgOfficialLocalMemberNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "readStatus", StringComparison.OrdinalIgnoreCase);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/local-member-name-collision.mjs",
+            "components/local-member-name-collision.js",
             observation.ModuleText,
             "official-local-member-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
 
-            import component from "./components/local-member-name-collision.mjs";
+            import component from "./components/local-member-name-collision.js";
 
             test("Razor local variables do not shadow component state members", () => {
                 const section = component.setup({}, { slots: {} })();

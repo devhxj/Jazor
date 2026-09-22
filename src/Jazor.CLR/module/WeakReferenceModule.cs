@@ -7,7 +7,7 @@ namespace Jazor.CLR;
 	/// JavaScript WeakRef 的可观察 API 与 CLR resurrection tracking 不完全相同；因此仅开放
 	/// <c>trackResurrection == false</c> 的构造路径，并在请求 resurrection tracking 时明确失败。
 	/// </remarks>
-[ECMAScriptModule("clr/System/WeakReferenceModule.js")]
+[ECMAScriptModule("./clr/System/WeakReferenceModule.js")]
 [Jazor(Op.Alias, "System.WeakReference", "WeakRef")]
 public static class WeakReferenceModule
 {

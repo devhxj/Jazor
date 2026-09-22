@@ -94,7 +94,7 @@ public sealed class BlazorClrWhitelistTests
     [TestMethod]
     public void ElementReferenceModules_UseHtmlElementCarrierAndExplicitFocusImports()
     {
-        const string modulePath = "clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js";
+        const string modulePath = "./clr/Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js";
 
         AssertTypeMapping(
             typeof(ElementReferenceModule),
@@ -154,10 +154,10 @@ public sealed class BlazorClrWhitelistTests
             "Microsoft.AspNetCore.Components.Web.WheelEventArgs");
         AssertModulePath(
             typeof(PointerEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/PointerEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/PointerEventArgsModule.js");
         AssertModulePath(
             typeof(WheelEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/WheelEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/WheelEventArgsModule.js");
 
         AssertMember(
             typeof(PointerEventArgsModule),
@@ -266,13 +266,13 @@ public sealed class BlazorClrWhitelistTests
             "Microsoft.AspNetCore.Components.Web.ClipboardEventArgs");
         AssertModulePath(
             typeof(DragEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/DragEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/DragEventArgsModule.js");
         AssertModulePath(
             typeof(DataTransferModule),
-            "clr/Microsoft/AspNetCore/Components/Web/DataTransferModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/DataTransferModule.js");
         AssertModulePath(
             typeof(ClipboardEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/ClipboardEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/ClipboardEventArgsModule.js");
 
         AssertMember(
             typeof(DragEventArgsModule),
@@ -358,16 +358,16 @@ public sealed class BlazorClrWhitelistTests
 
         AssertModulePath(
             typeof(TouchEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/TouchEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/TouchEventArgsModule.js");
         AssertModulePath(
             typeof(TouchPointModule),
-            "clr/Microsoft/AspNetCore/Components/Web/TouchPointModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/TouchPointModule.js");
         AssertModulePath(
             typeof(ErrorEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/ErrorEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/ErrorEventArgsModule.js");
         AssertModulePath(
             typeof(ProgressEventArgsModule),
-            "clr/Microsoft/AspNetCore/Components/Web/ProgressEventArgsModule.js");
+            "./clr/Microsoft/AspNetCore/Components/Web/ProgressEventArgsModule.js");
 
         foreach (var (module, member, value) in new[]
         {

@@ -159,10 +159,8 @@ static JsonNode BuildManifest(
         imports[specifier] = new JsonObject
         {
             ["type"] = "module",
-            ["development"] = target,
-            ["production"] = target,
-            ["developmentDependencies"] = new JsonArray(),
-            ["productionDependencies"] = new JsonArray(),
+            ["path"] = target,
+            ["dependencies"] = new JsonArray(),
         };
     }
 

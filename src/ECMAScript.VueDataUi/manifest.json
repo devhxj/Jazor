@@ -7,7 +7,7 @@
     "vue-data-ui": {
       "source": "npm",
       "version": "3.23.4",
-      "integrity": "sha512-6zIXEfJLJo1d7k2h1qeYNKlu\u002Bwwlfr6DM8WRWRAml1XeEp41V2JDk3yqRfP3mXjCRKySaZz8Ry0cmFTa1cs1TQ=="
+      "integrity": "sha512-6zIXEfJLJo1d7k2h1qeYNKlu+wwlfr6DM8WRWRAml1XeEp41V2JDk3yqRfP3mXjCRKySaZz8Ry0cmFTa1cs1TQ=="
     },
     "jspdf": {
       "source": "npm",
@@ -21,1363 +21,580 @@
   "imports": {
     "jspdf": {
       "type": "module",
-      "development": "jspdf",
-      "production": "jspdf",
-      "developmentDependencies": [],
-      "productionDependencies": []
+      "path": "jspdf",
+      "dependencies": []
     },
     "vue-data-ui/vue-ui-3d-bar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-3d-bar",
-      "production": "vue-data-ui/vue-ui-3d-bar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-3d-bar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-accordion": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-accordion",
-      "production": "vue-data-ui/vue-ui-accordion",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-accordion",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-age-pyramid": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-age-pyramid",
-      "production": "vue-data-ui/vue-ui-age-pyramid",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-age-pyramid",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-annotator": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-annotator",
-      "production": "vue-data-ui/vue-ui-annotator",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-annotator",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-bullet": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-bullet",
-      "production": "vue-data-ui/vue-ui-bullet",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-bullet",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-bump": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-bump",
-      "production": "vue-data-ui/vue-ui-bump",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-bump",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-candlestick": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-candlestick",
-      "production": "vue-data-ui/vue-ui-candlestick",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-candlestick",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-carousel-table": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-carousel-table",
-      "production": "vue-data-ui/vue-ui-carousel-table",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-carousel-table",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-chestnut": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-chestnut",
-      "production": "vue-data-ui/vue-ui-chestnut",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-chestnut",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-chord": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-chord",
-      "production": "vue-data-ui/vue-ui-chord",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-chord",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-circle-pack": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-circle-pack",
-      "production": "vue-data-ui/vue-ui-circle-pack",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-circle-pack",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-cursor": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-cursor",
-      "production": "vue-data-ui/vue-ui-cursor",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-cursor",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-dag": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-dag",
-      "production": "vue-data-ui/vue-ui-dag",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-dag",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-dashboard": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-dashboard",
-      "production": "vue-data-ui/vue-ui-dashboard",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-dashboard",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-digits": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-digits",
-      "production": "vue-data-ui/vue-ui-digits",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-digits",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-donut-evolution": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-donut-evolution",
-      "production": "vue-data-ui/vue-ui-donut-evolution",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-donut-evolution",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-donut": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-donut",
-      "production": "vue-data-ui/vue-ui-donut",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-donut",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-dumbbell": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-dumbbell",
-      "production": "vue-data-ui/vue-ui-dumbbell",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-dumbbell",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-flow": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-flow",
-      "production": "vue-data-ui/vue-ui-flow",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-flow",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-funnel": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-funnel",
-      "production": "vue-data-ui/vue-ui-funnel",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-funnel",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-galaxy": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-galaxy",
-      "production": "vue-data-ui/vue-ui-galaxy",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-galaxy",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-gauge": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-gauge",
-      "production": "vue-data-ui/vue-ui-gauge",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-gauge",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-geo": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-geo",
-      "production": "vue-data-ui/vue-ui-geo",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-geo",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-gizmo": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-gizmo",
-      "production": "vue-data-ui/vue-ui-gizmo",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-gizmo",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-heatmap": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-heatmap",
-      "production": "vue-data-ui/vue-ui-heatmap",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-heatmap",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-hill": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-hill",
-      "production": "vue-data-ui/vue-ui-hill",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-hill",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-history-plot": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-history-plot",
-      "production": "vue-data-ui/vue-ui-history-plot",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-history-plot",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-horizontal-bar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-horizontal-bar",
-      "production": "vue-data-ui/vue-ui-horizontal-bar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-horizontal-bar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-icon": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-icon",
-      "production": "vue-data-ui/vue-ui-icon",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-icon",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-kpi": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-kpi",
-      "production": "vue-data-ui/vue-ui-kpi",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-kpi",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-mini-loader": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-mini-loader",
-      "production": "vue-data-ui/vue-ui-mini-loader",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-mini-loader",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-molecule": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-molecule",
-      "production": "vue-data-ui/vue-ui-molecule",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-molecule",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-mood-radar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-mood-radar",
-      "production": "vue-data-ui/vue-ui-mood-radar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-mood-radar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-nested-donuts": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-nested-donuts",
-      "production": "vue-data-ui/vue-ui-nested-donuts",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-nested-donuts",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-onion": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-onion",
-      "production": "vue-data-ui/vue-ui-onion",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-onion",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-parallel-coordinate-plot": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-parallel-coordinate-plot",
-      "production": "vue-data-ui/vue-ui-parallel-coordinate-plot",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-parallel-coordinate-plot",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-pattern-seed": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-pattern-seed",
-      "production": "vue-data-ui/vue-ui-pattern-seed",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-pattern-seed",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-pattern": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-pattern",
-      "production": "vue-data-ui/vue-ui-pattern",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-pattern",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-quadrant": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-quadrant",
-      "production": "vue-data-ui/vue-ui-quadrant",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-quadrant",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-quick-chart": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-quick-chart",
-      "production": "vue-data-ui/vue-ui-quick-chart",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-quick-chart",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-radar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-radar",
-      "production": "vue-data-ui/vue-ui-radar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-radar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-rating": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-rating",
-      "production": "vue-data-ui/vue-ui-rating",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-rating",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-relation-circle": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-relation-circle",
-      "production": "vue-data-ui/vue-ui-relation-circle",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-relation-circle",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-ridgeline": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-ridgeline",
-      "production": "vue-data-ui/vue-ui-ridgeline",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-ridgeline",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-rings": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-rings",
-      "production": "vue-data-ui/vue-ui-rings",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-rings",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-scatter": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-scatter",
-      "production": "vue-data-ui/vue-ui-scatter",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-scatter",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-skeleton": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-skeleton",
-      "production": "vue-data-ui/vue-ui-skeleton",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-skeleton",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-smiley": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-smiley",
-      "production": "vue-data-ui/vue-ui-smiley",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-smiley",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-spark-trend": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-spark-trend",
-      "production": "vue-data-ui/vue-ui-spark-trend",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-spark-trend",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-sparkbar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-sparkbar",
-      "production": "vue-data-ui/vue-ui-sparkbar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-sparkbar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-sparkgauge": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-sparkgauge",
-      "production": "vue-data-ui/vue-ui-sparkgauge",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-sparkgauge",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-sparkhistogram": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-sparkhistogram",
-      "production": "vue-data-ui/vue-ui-sparkhistogram",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-sparkhistogram",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-sparkline": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-sparkline",
-      "production": "vue-data-ui/vue-ui-sparkline",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-sparkline",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-sparkstackbar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-sparkstackbar",
-      "production": "vue-data-ui/vue-ui-sparkstackbar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-sparkstackbar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-stackbar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-stackbar",
-      "production": "vue-data-ui/vue-ui-stackbar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-stackbar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-stackline": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-stackline",
-      "production": "vue-data-ui/vue-ui-stackline",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-stackline",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-strip-plot": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-strip-plot",
-      "production": "vue-data-ui/vue-ui-strip-plot",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-strip-plot",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-table-heatmap": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-table-heatmap",
-      "production": "vue-data-ui/vue-ui-table-heatmap",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-table-heatmap",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-table-sparkline": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-table-sparkline",
-      "production": "vue-data-ui/vue-ui-table-sparkline",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-table-sparkline",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-table": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-table",
-      "production": "vue-data-ui/vue-ui-table",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-table",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-thermometer": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-thermometer",
-      "production": "vue-data-ui/vue-ui-thermometer",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-thermometer",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-timer": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-timer",
-      "production": "vue-data-ui/vue-ui-timer",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-timer",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-tiremarks": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-tiremarks",
-      "production": "vue-data-ui/vue-ui-tiremarks",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-tiremarks",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-treemap": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-treemap",
-      "production": "vue-data-ui/vue-ui-treemap",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-treemap",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-vertical-bar": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-vertical-bar",
-      "production": "vue-data-ui/vue-ui-vertical-bar",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-vertical-bar",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-waffle": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-waffle",
-      "production": "vue-data-ui/vue-ui-waffle",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-waffle",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-wheel": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-wheel",
-      "production": "vue-data-ui/vue-ui-wheel",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-wheel",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-word-cloud": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-word-cloud",
-      "production": "vue-data-ui/vue-ui-word-cloud",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-word-cloud",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-world": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-world",
-      "production": "vue-data-ui/vue-ui-world",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-world",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-xy-canvas": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-xy-canvas",
-      "production": "vue-data-ui/vue-ui-xy-canvas",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-xy-canvas",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     },
     "vue-data-ui/vue-ui-xy": {
       "type": "module",
-      "development": "vue-data-ui/vue-ui-xy",
-      "production": "vue-data-ui/vue-ui-xy",
-      "developmentDependencies": [
+      "path": "vue-data-ui/vue-ui-xy",
+      "dependencies": [
         "jspdf",
         "vue"
-      ],
-      "productionDependencies": [
-        "jspdf",
-        "vue"
-      ],
-      "developmentStylesheetImports": [
-        "vue-data-ui/style.css"
-      ],
-      "productionStylesheetImports": [
-        "vue-data-ui/style.css"
       ]
     }
   },
   "requires": {
-    "vue3": "\u003E=3.3.0"
+    "vue3": ">=3.3.0"
   },
   "styles": [],
   "files": []
