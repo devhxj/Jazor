@@ -391,10 +391,10 @@ async function main() {
         sourceMapPath: externalPath("/jazor/dist/bundle.js.map"),
         moduleFile: "bundle.js",
         expectedSources: [
-          "main.mjs",
-          "components/wiki-home.mjs",
-          "components/wiki-styles.mjs",
-          "style.js"
+          "../main.mjs",
+          "../components/wiki-home.mjs",
+          "../components/wiki-styles.mjs",
+          "../style.js"
         ],
         expectedSourceContentMarkers: [
           "ecmascript-style:v1",
