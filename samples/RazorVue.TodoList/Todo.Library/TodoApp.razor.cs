@@ -13,7 +13,7 @@ public sealed class TodoBrowserService
 }
 
 /// <summary>Small interactive RazorVue app used by the Windows development-host gate.</summary>
-[ECMAScriptModule("./components/todo-app")]
+[ECMAScriptModule("./components/todo-app.js")]
 public partial class TodoApp : ComponentBase, IVueComponent
 {
     [Parameter]

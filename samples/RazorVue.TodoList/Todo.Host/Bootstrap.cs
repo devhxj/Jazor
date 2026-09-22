@@ -5,7 +5,7 @@ using static ECMAScript.Vue;
 namespace Todo.Host;
 
 /// <summary>Imports the generated TODOList root component from the emitted artifact graph.</summary>
-[ECMAScript("./components/todo-app.mjs")]
+[ECMAScript("./components/todo-app.js")]
 [Description("@#")]
 internal static class TodoAppModule
 {

@@ -894,11 +894,11 @@ internal static class SsrReleaseVerifier
         var ssrRoot = jazorRoot;
         RequireFile(Path.Combine(ssrRoot, "entry.js"), "browser project entry");
         RequireFile(Path.Combine(ssrRoot, "ssr-entry.js"), "SSR project entry");
-        RequireFile(Path.Combine(ssrRoot, "components", "todo-app.mjs"), "SSR root component module");
-        RequireFile(Path.Combine(ssrRoot, "components", "todo-summary-card.mjs"), "SSR cascading child module");
-        RequireFile(Path.Combine(ssrRoot, "components", "todo-styles.mjs"), "SSR style module");
+        RequireFile(Path.Combine(ssrRoot, "components", "todo-app.js"), "SSR root component module");
+        RequireFile(Path.Combine(ssrRoot, "components", "todo-summary-card.js"), "SSR cascading child module");
+        RequireFile(Path.Combine(ssrRoot, "components", "todo-styles.js"), "SSR style module");
 
-        var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.mjs"));
+        var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.js"));
         RequireContains(rootComponent, "runSetParametersAsync", "ParameterView queue in SSR component module");
         RequireContains(rootComponent, "onServerPrefetch", "SSR wait hook in ParameterView component module");
         RequireContains(rootComponent, "cascading", "cascading adapter in SSR root component module");
@@ -931,7 +931,7 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "\"providers\":[{\"key\":\"jazor:service:Todo.Library.TodoBrowserService\"", "serialized SSR providers");
         RequireContains(html, "jazor:service:Todo.Library.TodoBrowserService", "serialized browser service provider key");
         RequireContains(html, pathBase + "/jazor/hydration.js", "hydration entry under the request path base");
-        RequireContains(html, "components/todo-app.mjs", "hydration root component identity");
+        RequireContains(html, "components/todo-app.js", "hydration root component identity");
     }
 
     private static void RequireFile(string path, string description)
