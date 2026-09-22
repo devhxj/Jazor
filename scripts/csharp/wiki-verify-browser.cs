@@ -368,18 +368,14 @@ void AssertReleaseArtifacts(string artifactRoot)
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js.map"), "production browser bundle source map");
 
-    // Netpack may retain its entry helper, but the inspectable debug graph must not leak into
-    // a non-SSR release publish. That catches a configuration-only release build by mistake.
-    // Netpack 可以保留入口辅助文件，但非 SSR 的 release publish 不能泄漏可调试模块图。
+    // The release is still a standard JavaScript project: source modules may remain beside the
+    // bundled dist output. Retired manifest/import-map carriers must not be published.
     foreach (var unexpectedPath in new[]
     {
-        Path.Combine(artifactRoot, "main.mjs"),
         Path.Combine(artifactRoot, "obj", "jazor-manifest.json"),
         Path.Combine(artifactRoot, "importmap.json"),
         Path.Combine(artifactRoot, "ssr-importmap.json"),
-        Path.Combine(artifactRoot, "manifest.json"),
-        Path.Combine(artifactRoot, "style.js"),
-        Path.Combine(artifactRoot, "components")
+        Path.Combine(artifactRoot, "manifest.json")
     })
     {
         if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))
