@@ -140,7 +140,7 @@ internal static class ScriptHelpers
 
     public static void AssertGeneratedArtifacts(string artifactRoot)
     {
-        var modulePath = Path.Combine(artifactRoot, "dashboard", "revenue.mjs");
+        var modulePath = Path.Combine(artifactRoot, "dashboard", "revenue.js");
         if (!File.Exists(modulePath))
             throw new FileNotFoundException("RazorVue dashboard module was not emitted.", modulePath);
 
@@ -159,7 +159,7 @@ internal static class ScriptHelpers
         if (moduleText.Contains("from \"vue-data-ui\"", StringComparison.Ordinal))
             throw new InvalidOperationException("Dashboard must not import the aggregate vue-data-ui root entry.");
 
-        var libraryRoot = Path.Combine(artifactRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
+        var libraryRoot = Path.Combine(artifactRoot, "node_modules", "vue-data-ui", "dist");
         foreach (var entry in new[] { "vue-ui-donut.js", "vue-ui-gauge.js", "vue-ui-sparkline.js" })
         {
             var entryPath = Path.Combine(libraryRoot, "components", entry);
