@@ -339,7 +339,7 @@ internal static class ReleaseVerifier
         RequireContains(bundle, "WikiHome", "Wiki home component marker in release bundle");
 
         var bundleMap = File.ReadAllText(Path.Combine(jazorRoot, "dist", "bundle.js.map"));
-        RequireContains(bundleMap, "components/wiki-styles.js", "Wiki style module source in release source map");
+        RequireContains(bundleMap, "components/wiki-styles.mjs", "Wiki style module source in release source map");
         RequireContains(bundleMap, "main.mjs", "Wiki entry source in release source map");
     }
 
