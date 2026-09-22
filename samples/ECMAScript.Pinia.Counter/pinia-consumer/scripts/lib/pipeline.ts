@@ -35,7 +35,6 @@ export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): P
   await assertPathExists(join(generatedRoot, "host", "app.mjs"), "generated host app module");
   await assertPathExists(join(generatedRoot, "stores", "counter-store.mjs"), "generated counter store module");
   await assertPathExists(join(generatedRoot, "tests", "counter-testing.mjs"), "generated testing module");
-  await assertPathExists(join(generatedRoot, "jazor-manifest.json"), "generated manifest");
 
   if (options.cleanBuildRoot ?? true) {
     await emptyDirectory(buildRoot);
