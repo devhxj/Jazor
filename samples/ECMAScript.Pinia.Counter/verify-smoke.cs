@@ -262,17 +262,17 @@ static void AssertGeneratedHostArtifacts(string generatedOutputRoot)
     var counterStoreModulePath = Path.Combine(generatedOutputRoot, "stores", "counter-store.mjs");
     var testingModulePath = Path.Combine(generatedOutputRoot, "tests", "counter-testing.mjs");
     var hostAppModulePath = Path.Combine(generatedOutputRoot, "host", "app.mjs");
-    var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
+    var packagePath = Path.Combine(generatedOutputRoot, "package.json");
 
     AssertPathExists(counterStoreModulePath, "generated counter store module");
     AssertPathExists(testingModulePath, "generated testing module");
     AssertPathExists(hostAppModulePath, "generated host app module");
-    AssertPathExists(manifestPath, "generated manifest");
+    AssertPathExists(packagePath, "generated standard JavaScript package metadata");
 
     var counterStoreModule = File.ReadAllText(counterStoreModulePath);
     var testingModule = File.ReadAllText(testingModulePath);
     var hostAppModule = File.ReadAllText(hostAppModulePath);
-    var manifest = File.ReadAllText(manifestPath);
+    var package = File.ReadAllText(packagePath);
 
     AssertContains(counterStoreModule, "from \"pinia\"", "pinia runtime import in counter store module");
     AssertContains(counterStoreModule, "defineStore(", "defineStore lowering in counter store module");
@@ -285,9 +285,7 @@ static void AssertGeneratedHostArtifacts(string generatedOutputRoot)
     AssertContains(hostAppModule, "disposePinia(", "disposePinia teardown in host app module");
     AssertContains(hostAppModule, "createPinia()", "createPinia root creation in host app module");
 
-    AssertContains(manifest, "\"host/app.mjs\"", "host app entry in manifest");
-    AssertContains(manifest, "\"stores/counter-store.mjs\"", "counter store entry in manifest");
-    AssertContains(manifest, "\"tests/counter-testing.mjs\"", "testing entry in manifest");
+    AssertContains(package, "\"type\": \"module\"", "standard JavaScript package metadata");
 }
 
 static void AssertPathExists(string path, string description)
