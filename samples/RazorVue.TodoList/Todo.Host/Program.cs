@@ -32,7 +32,7 @@ internal static class Program
         }
 
         app.UseJazorViteProxy();
-        app.UseJazorHost();
+        app.UseJazorHost(options => options.Assets.ServeArtifacts = true);
         if (useSsr)
         {
             // The module path mirrors TodoApp's explicit [ECMAScriptModule("./components/todo-app.js")].
