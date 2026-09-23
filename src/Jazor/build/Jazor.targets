@@ -151,6 +151,7 @@
     /jazor layout without making the build output an authored static-file item.
   -->
   <Target Name="AddJazorArtifactsToPublish"
+          DependsOnTargets="JazorDebug;JazorRelease"
           AfterTargets="ComputeFilesToPublish"
           BeforeTargets="_HandleFileConflictsForPublish"
           Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(JazorDir)')">
