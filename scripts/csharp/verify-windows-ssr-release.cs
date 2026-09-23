@@ -102,11 +102,18 @@ try
         consumerRoot,
         dotnetCliHome);
 
-    SsrReleaseVerifier.VerifyPublishLayout(publishRoot);
-
     var projectRoot = Path.Combine(publishRoot, "jazor");
     var deno = Path.Combine(publishRoot, "runtimes", System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier,
         "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
+    await RunProcessAsync(
+        deno,
+        ["task", "build"],
+        projectRoot,
+        Path.Combine(workRoot, "project-build.stdout.log"),
+        Path.Combine(workRoot, "project-build.stderr.log"));
+
+    SsrReleaseVerifier.VerifyPublishLayout(publishRoot);
+
     using var packageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectRoot, "package.json")));
     var viteVersion = packageJson.RootElement.GetProperty("devDependencies").GetProperty("vite").GetString();
     var projectPort = options.Port + 1;
