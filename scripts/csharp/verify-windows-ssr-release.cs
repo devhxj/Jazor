@@ -272,7 +272,7 @@ async Task VerifyDeploymentAssetsAsync(HttpClient httpClient, string rootUrl, st
 {
     if (html.Contains("type=\"importmap\"", StringComparison.Ordinal))
         throw new InvalidOperationException("The standard project must hydrate without a generated import map.");
-    await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/hydration.js", "production hydration entry through Deno web proxy");
+    await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/dist/hydration.js", "release hydration bundle");
     await RequireAssetAsync(httpClient, rootUrl, pathBase + "/jazor/dist/bundle.js", "release browser bundle");
 
     // A missing SSR module must stay a real 404; letting the SPA fallback answer with HTML
@@ -930,7 +930,7 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "\"props\":{\"SsrTitle\":\"SSR ParameterView title\"}", "serialized SSR props");
         RequireContains(html, "\"providers\":[{\"key\":\"jazor:service:Todo.Library.TodoBrowserService\"", "serialized SSR providers");
         RequireContains(html, "jazor:service:Todo.Library.TodoBrowserService", "serialized browser service provider key");
-        RequireContains(html, pathBase + "/jazor/hydration.js", "hydration entry under the request path base");
+        RequireContains(html, pathBase + "/jazor/dist/hydration.js", "release hydration bundle under the request path base");
         RequireContains(html, "components/todo-app.js", "hydration root component identity");
     }
 

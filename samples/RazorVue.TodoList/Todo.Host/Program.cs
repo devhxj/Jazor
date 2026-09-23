@@ -17,7 +17,11 @@ internal static class Program
         var useSsr = string.Equals(builder.Configuration["Todo:Ssr"], "true", StringComparison.OrdinalIgnoreCase);
         if (useSsr)
             builder.Services.AddJazorSsr(options =>
-                options.TaskName = builder.Environment.IsDevelopment() ? "ssr:dev" : "ssr");
+            {
+                options.TaskName = builder.Environment.IsDevelopment() ? "ssr:dev" : "ssr";
+                if (!builder.Environment.IsDevelopment())
+                    options.HydrationEntryPath = "dist/hydration.js";
+            });
 
         var app = builder.Build();
         var pathBase = builder.Configuration["Todo:PathBase"];
