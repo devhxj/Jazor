@@ -31,7 +31,8 @@ internal static class Program
                 : pathBase);
         }
 
-        app.UseJazorViteProxy();
+        if (app.Environment.IsDevelopment())
+            app.UseJazorViteProxy();
         app.UseJazorHost(options => options.Assets.ServeArtifacts = true);
         if (useSsr)
         {
