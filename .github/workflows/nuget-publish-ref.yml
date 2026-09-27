@@ -95,19 +95,6 @@ jobs:
             --configuration Release `
             --output-directory 'artifacts/packages' `
             --package-version '${{ steps.release_ref.outputs.package_version }}' `
-            --package jazor `
-            --package jazor-vue `
-            --package style `
-            --package admin `
-            --package devtools `
-            --package dataui `
-            --package lucide `
-            --package pinia `
-            --package pinia-testing `
-            --package vueroute `
-            --package vuetify `
-            --package elementplus `
-            --package tdesign `
             --skip-push
 
       - name: Verify packaged Windows SPA release consumer

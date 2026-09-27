@@ -26,12 +26,12 @@ public sealed class MonacoManifestTests
         {
             Assert.AreEqual("module", entry.Value.GetProperty("type").GetString());
             Assert.IsTrue(IsBareSpecifier(entry.Value.GetProperty("path").GetString()!), entry.Name);
-            Assert.AreEqual(entry.Value.GetProperty("path").GetString(), entry.Value.GetProperty("path").GetString());
+            Assert.AreEqual(entry.Name, entry.Value.GetProperty("path").GetString());
             Assert.IsFalse(entry.Value.TryGetProperty("developmentHash", out _));
             Assert.IsFalse(entry.Value.TryGetProperty("files", out _));
         }
 
-        CollectionAssert.Contains(imports.EnumerateObject().Select(static entry => entry.Name).ToArray(), "monaco-editor");
+        CollectionAssert.Contains(imports.EnumerateObject().Select(static entry => entry.Name).ToArray(), "monaco-editor/editor/editor.api.js");
         CollectionAssert.Contains(imports.EnumerateObject().Select(static entry => entry.Name).ToArray(), "monaco-editor/editor/editor.worker.start.js");
         Assert.AreEqual("npm", root.GetProperty("packages").GetProperty("monaco-editor").GetProperty("source").GetString());
         Assert.AreEqual(0, root.GetProperty("styles").GetArrayLength());
@@ -67,7 +67,7 @@ public sealed class MonacoManifestTests
 
         using var manifest = JsonDocument.Parse(File.ReadAllText(GetProjectPath("manifest.json")));
         var imports = manifest.RootElement.GetProperty("imports");
-        Assert.IsTrue(imports.TryGetProperty("monaco-editor", out _));
+        Assert.IsTrue(imports.TryGetProperty("monaco-editor/editor/editor.api.js", out _));
         Assert.AreEqual(5, imports.EnumerateObject().Count(static entry => entry.Name.Contains("worker", StringComparison.Ordinal)));
     }
 
@@ -76,6 +76,7 @@ public sealed class MonacoManifestTests
     {
         var inventory = GetInventory();
         Assert.AreEqual(inventory.GetProperty("version").GetString(), inventory.GetProperty("packages").GetProperty("monaco-editor").GetString());
+        CollectionAssert.Contains(inventory.GetProperty("entryImports").EnumerateArray().Select(static entry => entry.GetString()).ToArray(), "monaco-editor/editor/editor.api.js");
         Assert.AreEqual(6, inventory.GetProperty("validatedEntryCount").GetInt32());
         Assert.IsTrue(inventory.GetProperty("runtimeNote").GetString()!.Contains("node_modules", StringComparison.Ordinal));
 

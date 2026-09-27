@@ -33,19 +33,6 @@ jobs:
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
             --configuration Release `
             --output-directory 'artifacts/packages' `
-            --package jazor `
-            --package jazor-vue `
-            --package style `
-            --package admin `
-            --package devtools `
-            --package dataui `
-            --package lucide `
-            --package pinia `
-            --package pinia-testing `
-            --package vueroute `
-            --package vuetify `
-            --package elementplus `
-            --package tdesign `
             --skip-push
 
       - name: Discover package version

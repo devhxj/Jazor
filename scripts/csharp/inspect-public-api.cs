@@ -21,6 +21,10 @@ var assemblyPaths = new Dictionary<string, string>(StringComparer.Ordinal)
     ["ECMAScript.Pinia.Testing"] = "net11.0", ["ECMAScript.Style"] = "net11.0", ["ECMAScript.TDesign"] = "net11.0",
     ["ECMAScript.Vue"] = "net11.0", ["ECMAScript.Vue.Devtools"] = "net11.0", ["ECMAScript.VueDataUi"] = "net11.0",
     ["ECMAScript.VueRoute"] = "net11.0", ["ECMAScript.Vuetify"] = "net11.0", ["ECMAScript.Lucide"] = "net11.0",
+    ["ECMAScript.DateFns"] = "net11.0", ["ECMAScript.VueUse"] = "net11.0", ["ECMAScript.FloatingUi"] = "net11.0",
+    ["ECMAScript.VeeValidate"] = "net11.0", ["ECMAScript.VueI18n"] = "net11.0", ["ECMAScript.VueQuery"] = "net11.0",
+    ["ECMAScript.VueDraggable"] = "net11.0", ["ECMAScript.FilePond"] = "net11.0", ["ECMAScript.WangEditor"] = "net11.0",
+    ["ECMAScript.Monaco"] = "net11.0",
     ["Jazor"] = "net11.0", ["Jazor.Vue"] = "net11.0"
 };
 var assemblies = assemblyPaths.Select(pair => Path.Combine(repoRoot, "src", pair.Key, "bin", configuration, pair.Value, pair.Key + ".dll"));

@@ -642,6 +642,41 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_MonacoClosure_ResolvesEditorAndWorkerEntries()
+    {
+        // Monaco is an external npm resource. Materialization preserves its declared export paths
+        // and copies the license files; Deno resolves the JavaScript modules during restore.
+        // Monaco 是外部 npm 资源，物化保留声明的导出路径并复制许可证；JavaScript 模块由 Deno 恢复。
+        var manifestPath = FindLibraryManifest("ECMAScript.Monaco");
+        var outputRoot = Path.Combine(FindRepositoryRoot(), ".tmp", "Jazor.EmitTest", "monaco", Guid.NewGuid().ToString("N"));
+        try
+        {
+            using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var imports = manifest.RootElement.GetProperty("imports").EnumerateObject()
+                .Select(static entry => entry.Name)
+                .ToArray();
+            var result = new LibraryMaterializer().Materialize(
+                [manifestPath],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: imports);
+
+            CollectionAssert.AreEquivalent(imports, result.ImportPaths.Keys.ToArray());
+            var package = result.PackageReferences["monaco-editor/editor/editor.api.js"];
+            Assert.AreEqual("monaco-editor", package.Name);
+            Assert.AreEqual("npm", package.Source);
+            Assert.AreEqual("0.56.0", package.Version);
+            Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "licenses", "MONACO-LICENSE")));
+            Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "licenses", "THIRD-PARTY-NOTICES.txt")));
+        }
+        finally
+        {
+            if (Directory.Exists(outputRoot))
+                Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Load_ValidatesProductionEntryBeforeMaterialization()
     {
         using var workspace = new LibraryWorkspace();

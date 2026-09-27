@@ -60,7 +60,7 @@ if (installedVersion != version)
 // paths to `esm/vs/*`; keeping the authored target preserves upstream module boundaries.
 var entries = new (string Specifier, string Target, string Source)[]
 {
-    ("monaco-editor", "monaco-editor/editor/editor.api.js", "esm/vs/editor/editor.api.js"),
+    ("monaco-editor/editor/editor.api.js", "monaco-editor/editor/editor.api.js", "esm/vs/editor/editor.api.js"),
     ("monaco-editor/editor/editor.worker.start.js", "monaco-editor/editor/editor.worker.start.js", "esm/vs/editor/editor.worker.start.js"),
     ("monaco-editor/languages/features/json/json.worker.js", "monaco-editor/languages/features/json/json.worker.js", "esm/vs/languages/features/json/json.worker.js"),
     ("monaco-editor/languages/features/css/css.worker.js", "monaco-editor/languages/features/css/css.worker.js", "esm/vs/languages/features/css/css.worker.js"),
@@ -191,7 +191,7 @@ static void WriteInventory(string projectRoot, string version, int validatedEntr
         ["packages"] = new JsonObject { ["monaco-editor"] = version },
         ["source"] = $"https://registry.npmjs.org/monaco-editor/{version}",
         ["documentation"] = "https://microsoft.github.io/monaco-editor/",
-        ["entryImports"] = new JsonArray { "monaco-editor" },
+        ["entryImports"] = new JsonArray { "monaco-editor/editor/editor.api.js" },
         ["validatedEntryCount"] = validatedEntryCount,
         ["runtimeNote"] = "NetPack resolves the upstream ESM exports, CSS edges, and worker modules from node_modules.",
     };

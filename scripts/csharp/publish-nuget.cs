@@ -497,8 +497,8 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|lucide|pinia|pinia-testing|vueroute|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|vuetify|tdesign|elementplus|PackageId>");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -541,6 +541,7 @@ internal static class PackageCatalog
         "ECMAScript.VeeValidate",
         "ECMAScript.VueI18n",
         "ECMAScript.VueQuery",
+        "ECMAScript.Monaco",
         "ECMAScript.VueDraggable",
         "ECMAScript.FilePond",
         "ECMAScript.WangEditor",
@@ -592,6 +593,8 @@ internal static class PackageCatalog
         ["vue-query"] = "ECMAScript.VueQuery",
         ["vuequery"] = "ECMAScript.VueQuery",
         ["ECMAScript.VueQuery"] = "ECMAScript.VueQuery",
+        ["monaco"] = "ECMAScript.Monaco",
+        ["ECMAScript.Monaco"] = "ECMAScript.Monaco",
         ["vue-draggable"] = "ECMAScript.VueDraggable",
         ["ECMAScript.VueDraggable"] = "ECMAScript.VueDraggable",
         ["file-pond"] = "ECMAScript.FilePond",
@@ -648,7 +651,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, jazor-vue, style, admin, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vuetify, elementplus, tdesign.");
+            "jazor, jazor-vue, style, admin, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vueuse, floating-ui, vee-validate, vue-i18n, vue-query, monaco, vue-draggable, file-pond, wang-editor, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -728,6 +731,11 @@ internal static class PackageCatalog
             ["ECMAScript.VueQuery"] = new(
                 "ECMAScript.VueQuery",
                 Path.Combine(repoRoot, "src", "ECMAScript.VueQuery", "ECMAScript.VueQuery.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
+            ["ECMAScript.Monaco"] = new(
+                "ECMAScript.Monaco",
+                Path.Combine(repoRoot, "src", "ECMAScript.Monaco", "ECMAScript.Monaco.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.VueDraggable"] = new(

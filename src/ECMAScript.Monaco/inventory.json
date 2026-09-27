@@ -8,9 +8,9 @@
   "source": "https://registry.npmjs.org/monaco-editor/0.56.0",
   "documentation": "https://microsoft.github.io/monaco-editor/",
   "entryImports": [
-    "monaco-editor"
+    "monaco-editor/editor/editor.api.js"
   ],
   "validatedEntryCount": 6,
   "runtimeNote": "NetPack resolves the upstream ESM exports, CSS edges, and worker modules from node_modules.",
-  "fingerprint": "90E1CC77CAA92655C5866DC6D43A4A1725B4316648C6A08E706F08207EECC1C5"
+  "fingerprint": "10251B1388A073918B82FC3B51AD2FA5008A02ADB5DC359A0DE9D543A3C1FC90"
 }
