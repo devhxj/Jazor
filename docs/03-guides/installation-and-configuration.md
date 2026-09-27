@@ -6,7 +6,9 @@
 
 ## 前置条件
 
-当前版本为 **1.0.0-preview.3（2026-09-16）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+当前版本为 **1.0.0-preview.4（2026-09-22）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+
+preview.4 的 NuGet 发布清单只包含当时已接通的核心与既有生态包。`ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi`、`ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery`、`ECMAScript.Monaco`、`ECMAScript.VueDraggable`、`ECMAScript.FilePond` 和 `ECMAScript.WangEditor` 已在主线完成源码、测试或发布接线，但不会从 preview.4 NuGet 源安装；发布链路已修正，计划随下一次 tag 发布。
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前项目目标为 `net11.0`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
@@ -32,7 +34,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.4" />
 </ItemGroup>
 ```
 
@@ -45,8 +47,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
-    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.4" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.4" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -55,15 +57,15 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.3" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.3" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.4" />
 </ItemGroup>
 ```
 

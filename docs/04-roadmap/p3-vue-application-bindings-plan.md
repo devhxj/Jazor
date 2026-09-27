@@ -59,7 +59,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 ### P3-D：重量级编辑器
 
-最后实现 `ECMAScript.Monaco`。先交付核心 editor/model/language/marker 生命周期，再评估 worker、diff editor、completion、语义 token 和大文件策略；worker URL 和 bundler 资源必须通过 manifest 明确声明。
+`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；browser smoke 与真实 RazorVue consumer 证据待补，绑定将在下一次 tag 进入默认发布集合。
 
 退出条件：编辑器可在独立 package consumer 中创建、更新、销毁；model 变更、language、theme、marker 和 layout 的事件/调用顺序有浏览器证据；SSR 明确拒绝直接创建浏览器 editor。
 
@@ -89,20 +89,21 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 本计划只有在十个包均满足以下条件后才算完成：独立包和测试项目已加入 solution；每个包都有锁定版本、manifest、许可证、README、inventory/fingerprint；核心 C# contract、compiler/SG/Emit 回归和真实 browser/package consumer 证据齐全；公共边界、SSR 约束、选型变更和已知限制已同步到架构文档、作者指南、current status 与 CHANGELOG；全量质量门禁通过。
 
-计划状态：**进行中（P3-A 已启动）**。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
+计划状态：**进行中（P3-A/B/C/D 已完成源码与验证接线，证据补齐中）**。十个包将在下一次 tag 进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
 
 执行记录：
 
 | 日期 | 条目 | 状态 | 证据 |
 | --- | --- | --- | --- |
-| 2026-09-17 | `ECMAScript.DateFns`（date-fns 4.4.0） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.DateFns`（manifest schema 2、367 模块闭包、inventory fingerprint、MIT 许可证）、`ECMAScript.DateFns.Test` 16/16、`Jazor.EmitTest.Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries`、`test-dotnet.cs --project date-fns` |
-| 2026-09-17 | `ECMAScript.VueUse`（VueUse 15.0.0） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueUse`（`@vueuse/core` + `@vueuse/shared` 闭包、69 策展 composable、MIT 许可证）、`ECMAScript.VueUse.Test` 16/16、`Jazor.EmitTest.Materialize_VueUseClosure_ResolvesSharedFromTheCoreEntry`、`test-dotnet.cs --project vueuse` |
-| 2026-09-17 | `ECMAScript.FloatingUi`（`@floating-ui/vue` 2.0.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FloatingUi`（4 包跨包闭包 + 分包版本、`useFloating` 与 9 个中间件、MIT 许可证）、`ECMAScript.FloatingUi.Test` 13/13、`Jazor.EmitTest.Materialize_FloatingUiClosure_ResolvesSiblingPackagesFromTheAuthorEntry`、`test-dotnet.cs --project floating-ui` |
-| 2026-09-17 | `ECMAScript.VeeValidate`（vee-validate 4.15.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VeeValidate`（单模块闭包、泛型表单/字段返回、MIT）、`ECMAScript.VeeValidate.Test` 14/14、`test-dotnet.cs --project vee-validate` |
-| 2026-09-17 | `ECMAScript.VueI18n`（vue-i18n 11.4.12） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueI18n`（`@intlify/*` 三包闭包、Composer 表面、MIT）、`ECMAScript.VueI18n.Test` 8/8、`test-dotnet.cs --project vue-i18n` |
-| 2026-09-17 | `ECMAScript.VueQuery`（`@tanstack/vue-query` 5.103.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueQuery`（46 模块闭包含 `vue-demi`、query/mutation 返回、MIT）、`ECMAScript.VueQuery.Test` 9/9、`Jazor.EmitTest.Materialize_P3BClosures_ResolveTheirEntryGraphs`、`test-dotnet.cs --project vue-query` |
+| 2026-09-17 | `ECMAScript.DateFns`（date-fns 4.4.0） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.DateFns`（manifest schema 2、367 模块闭包、inventory fingerprint、MIT 许可证）、`ECMAScript.DateFns.Test` 16/16、`Jazor.EmitTest.Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries`、`test-dotnet.cs --project date-fns` |
+| 2026-09-17 | `ECMAScript.VueUse`（VueUse 15.0.0） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueUse`（`@vueuse/core` + `@vueuse/shared` 闭包、69 策展 composable、MIT 许可证）、`ECMAScript.VueUse.Test` 16/16、`Jazor.EmitTest.Materialize_VueUseClosure_ResolvesSharedFromTheCoreEntry`、`test-dotnet.cs --project vueuse` |
+| 2026-09-17 | `ECMAScript.FloatingUi`（`@floating-ui/vue` 2.0.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FloatingUi`（4 包跨包闭包 + 分包版本、`useFloating` 与 9 个中间件、MIT 许可证）、`ECMAScript.FloatingUi.Test` 13/13、`Jazor.EmitTest.Materialize_FloatingUiClosure_ResolvesSiblingPackagesFromTheAuthorEntry`、`test-dotnet.cs --project floating-ui` |
+| 2026-09-17 | `ECMAScript.VeeValidate`（vee-validate 4.15.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VeeValidate`（单模块闭包、泛型表单/字段返回、MIT）、`ECMAScript.VeeValidate.Test` 14/14、`test-dotnet.cs --project vee-validate` |
+| 2026-09-17 | `ECMAScript.VueI18n`（vue-i18n 11.4.12） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueI18n`（`@intlify/*` 三包闭包、Composer 表面、MIT）、`ECMAScript.VueI18n.Test` 8/8、`test-dotnet.cs --project vue-i18n` |
+| 2026-09-17 | `ECMAScript.VueQuery`（`@tanstack/vue-query` 5.103.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueQuery`（46 模块闭包含 `vue-demi`、query/mutation 返回、MIT）、`ECMAScript.VueQuery.Test` 9/9、`Jazor.EmitTest.Materialize_P3BClosures_ResolveTheirEntryGraphs`、`test-dotnet.cs --project vue-query` |
+| 2026-09-27 | `ECMAScript.Monaco`（monaco-editor 0.56.0） | 源码、测试、compiler/Emit 回归与发布接线已完成；下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.Monaco`（editor/model/language/marker API、6 个 ESM 入口、manifest schema 2）、`ECMAScript.Monaco.Test` 5/5、`Jazor.EmitTest.Materialize_MonacoClosure_ResolvesEditorAndWorkerEntries`、`test-dotnet.cs --project monaco` |
 
-| 2026-09-17 | `ECMAScript.VueDraggable`（vue-draggable-plus 0.6.1） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueDraggable`（单包闭包、泛型组件代理 `VueDraggableList<TItem>`、MIT）、`ECMAScript.VueDraggable.Test` 12/12、`test-dotnet.cs --project vue-draggable` |
-| 2026-09-17 | `ECMAScript.FilePond`（vue-filepond 8.0.0 + filepond 4.32.12） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FilePond`（核心+适配器双入口闭包、默认导出工厂代理、`filepond.css`）、`ECMAScript.FilePond.Test` 13/13、`test-dotnet.cs --project file-pond` |
-| 2026-09-17 | `ECMAScript.WangEditor`（editor-for-vue 5.1.12 + editor 5.1.23） | 包、测试与门禁已交付；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.WangEditor`（Vue 3 适配器+核心闭包、Editor/Toolbar 代理、编辑器样式）、`ECMAScript.WangEditor.Test` 11/11、`test-dotnet.cs --project wang-editor` |
+| 2026-09-17 | `ECMAScript.VueDraggable`（vue-draggable-plus 0.6.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueDraggable`（单包闭包、泛型组件代理 `VueDraggableList<TItem>`、MIT）、`ECMAScript.VueDraggable.Test` 12/12、`test-dotnet.cs --project vue-draggable` |
+| 2026-09-17 | `ECMAScript.FilePond`（vue-filepond 8.0.0 + filepond 4.32.12） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FilePond`（核心+适配器双入口闭包、默认导出工厂代理、`filepond.css`）、`ECMAScript.FilePond.Test` 13/13、`test-dotnet.cs --project file-pond` |
+| 2026-09-17 | `ECMAScript.WangEditor`（editor-for-vue 5.1.12 + editor 5.1.23） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.WangEditor`（Vue 3 适配器+核心闭包、Editor/Toolbar 代理、编辑器样式）、`ECMAScript.WangEditor.Test` 11/11、`test-dotnet.cs --project wang-editor` |
 未通过对应测试、资源闭包和真实消费者验证的条目保持 Guidance，不进入当前 Support 矩阵。

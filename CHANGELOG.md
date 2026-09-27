@@ -8,6 +8,10 @@
 
 中文 | English
 
+> **发布范围校正：** preview.4 的 tag 工作流只上传当时已接通的核心与既有生态包。`ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi`、`ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery`、`ECMAScript.Monaco`、`ECMAScript.VueDraggable`、`ECMAScript.FilePond` 和 `ECMAScript.WangEditor` 虽已具备主线源码、测试或接线，但没有随 preview.4 发布；发布链路现已统一到默认包集，计划随下一次 tag 一并发布。以下新增能力条目描述主线实现状态，不表示这些包已经可从 preview.4 NuGet 安装。by @devhxj
+
+> **Release scope correction:** the preview.4 tag workflow uploaded only the core and previously wired ecosystem packages. `ECMAScript.DateFns`, `ECMAScript.VueUse`, `ECMAScript.FloatingUi`, `ECMAScript.VeeValidate`, `ECMAScript.VueI18n`, `ECMAScript.VueQuery`, `ECMAScript.Monaco`, `ECMAScript.VueDraggable`, `ECMAScript.FilePond`, and `ECMAScript.WangEditor` had mainline source, tests, or wiring but were not published with preview.4. The publishing path now uses the unified default package set, and these packages are planned for the next tag. The feature entries below describe mainline implementation status; they do not mean the packages can be installed from the preview.4 NuGet feed. by @devhxj
+
 #### 新增能力
 
 - 新增 `ECMAScript.DateFns` JS resource library（P3-A 首个交付物）：锁定 date-fns 4.4.0 上游（npm SHA-512 integrity + manifest schema 2 + 367 模块资源闭包 + MIT 许可证），提供解析、格式化、加减、比较、区间、模块默认选项共 59 个纯函数绑定与 12 个精选 locale（`date-fns/locale` 生成桥），日期参数统一使用 JavaScript `Date` 宿主类型。配套 `ECMAScript.DateFns.Test` 覆盖 manifest/哈希/inventory fingerprint、上游导出 drift 检查与编译器 emission；`Jazor.EmitTest` 验证真实 materialization 闭包自包含；`test-dotnet.cs` 新增 `date-fns` lane。真实 RazorVue 页面与浏览器 smoke 证据归属 P3-A 退出条件，进入 Support 矩阵前保持 Guidance。by @devhxj

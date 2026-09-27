@@ -1,6 +1,6 @@
 # 1.0 公共 API 冻结审查
 
-> 当前已发布版本：[1.0.0-preview.3（2026-09-16）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.4（2026-09-22）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 状态：核心 API 冻结条件已满足，`1.0.0-preview.1` 已作为首个冻结候选发布；正式 `1.0.0` 仍待在候选 ref 上完成最终复核与完整 RC 门禁。本文是 1.0 发布前的契约基线；任何新增、删除、重命名或签名改变都必须先更新本文、测试和 CHANGELOG。长期发布认证、多版本兼容矩阵和性能趋势属于 1.0 之后的运营质量工作，不作为核心冻结阻塞。
 
@@ -10,7 +10,7 @@
 
 本次审查采用以下稳定决策：
 
-2026-09-14 的本地复核已完成完整解决方案构建和机器快照比较：基线与当前均为 `76108` 条，新增 `0`、删除 `0`。该结果支持进入候选冻结复核，不替代候选 ref 上的完整发布门禁。
+2026-09-27 的机器快照比较覆盖 P3-A/B/C 与 Monaco 绑定程序集：基线与当前均为 `76105` 条，新增 `0`、删除 `0`。Monaco 的 manifest、compiler boundary 和 Emit 物化回归已通过；该结果支持进入候选冻结复核，不替代候选 ref 上的完整发布门禁。
 
 - NuGet 包名保持现状，所有发布包继续 lockstep 版本；`Jazor` 是核心宿主包，`Jazor.Vue` 是 Razor-to-Vue opt-in 包，`Jazor.Admin` 是管理壳包。
 - ASP.NET Core 公共命名空间保持 `Jazor.AspNetCore`；开发期 reload 公共命名空间保持 `Jazor.AspNetCore.Dev`。开发期 API 不混入生产宿主命名空间。
@@ -86,7 +86,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.3
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.4
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only stage1,stage2` 只适用于局部复核，正式候选必须运行完整序列。
@@ -107,7 +107,7 @@ dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api
 dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline artifacts/api/public-api-baseline.md --output artifacts/api/public-api-compatibility.md
 ```
 
-首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，删除或签名变化会使命令失败。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及已发布 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。
+首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，删除或签名变化会使命令失败。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及 P3-A/B/C、Monaco 和其他 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。
 
 ## 变更规则
 

@@ -1,4 +1,384 @@
-# Public API snapshot (2026-09-22)
+# Public API snapshot (2026-09-27)
+
+## ECMAScript.DateFns
+- type ECMAScript.DateFns
+  - Boolean AreIntervalsOverlapping(ECMAScript.DateFnsInterval, ECMAScript.DateFnsInterval, ECMAScript.DateFnsAreIntervalsOverlappingOptions)
+  - Boolean IsAfter(ECMAScript.Date, ECMAScript.Date)
+  - Boolean IsBefore(ECMAScript.Date, ECMAScript.Date)
+  - Boolean IsDate(System.Object)
+  - Boolean IsEqual(ECMAScript.Date, ECMAScript.Date)
+  - Boolean IsValid(ECMAScript.Date)
+  - Boolean IsWithinInterval(ECMAScript.Date, ECMAScript.DateFnsInterval)
+  - ECMAScript.Date Add(ECMAScript.Date, ECMAScript.DateFnsDuration)
+  - ECMAScript.Date AddBusinessDays(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddDays(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddHours(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddMilliseconds(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddMinutes(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddMonths(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddQuarters(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddSeconds(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddWeeks(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date AddYears(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date Clamp(ECMAScript.Date, ECMAScript.DateFnsInterval)
+  - ECMAScript.Date FromUnixTime(ECMAScript.Number)
+  - ECMAScript.Date Max(ECMAScript.Date[])
+  - ECMAScript.Date Min(ECMAScript.Date[])
+  - ECMAScript.Date Parse(System.String, System.String, ECMAScript.Date, ECMAScript.DateFnsParseOptions)
+  - ECMAScript.Date ParseISO(System.String, ECMAScript.DateFnsParseISOOptions)
+  - ECMAScript.Date ParseJSON(System.String)
+  - ECMAScript.Date Sub(ECMAScript.Date, ECMAScript.DateFnsDuration)
+  - ECMAScript.Date SubBusinessDays(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubDays(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubHours(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubMilliseconds(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubMinutes(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubMonths(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubQuarters(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubSeconds(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubWeeks(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date SubYears(ECMAScript.Date, ECMAScript.Number)
+  - ECMAScript.Date ToDate(ECMAScript.Date)
+  - ECMAScript.DateFnsDefaultOptions GetDefaultOptions()
+  - ECMAScript.DateFnsDuration IntervalToDuration(ECMAScript.DateFnsInterval)
+  - ECMAScript.Date[] EachDayOfInterval(ECMAScript.DateFnsInterval, ECMAScript.DateFnsEachDayOfIntervalOptions)
+  - ECMAScript.Number CompareAsc(ECMAScript.Date, ECMAScript.Date)
+  - ECMAScript.Number CompareDesc(ECMAScript.Date, ECMAScript.Date)
+  - ECMAScript.Number DifferenceInDays(ECMAScript.Date, ECMAScript.Date)
+  - ECMAScript.Number DifferenceInHours(ECMAScript.Date, ECMAScript.Date, ECMAScript.DateFnsRoundingOptions)
+  - ECMAScript.Number DifferenceInMilliseconds(ECMAScript.Date, ECMAScript.Date)
+  - ECMAScript.Number DifferenceInMinutes(ECMAScript.Date, ECMAScript.Date, ECMAScript.DateFnsRoundingOptions)
+  - ECMAScript.Number DifferenceInMonths(ECMAScript.Date, ECMAScript.Date)
+  - ECMAScript.Number DifferenceInSeconds(ECMAScript.Date, ECMAScript.Date, ECMAScript.DateFnsRoundingOptions)
+  - ECMAScript.Number DifferenceInWeeks(ECMAScript.Date, ECMAScript.Date)
+  - ECMAScript.Number DifferenceInYears(ECMAScript.Date, ECMAScript.Date)
+  - System.String Format(ECMAScript.Date, System.String, ECMAScript.DateFnsFormatOptions)
+  - System.String FormatDistance(ECMAScript.Date, ECMAScript.Date, ECMAScript.DateFnsFormatDistanceOptions)
+  - System.String FormatDistanceStrict(ECMAScript.Date, ECMAScript.Date, ECMAScript.DateFnsFormatDistanceStrictOptions)
+  - System.String FormatDistanceToNow(ECMAScript.Date, ECMAScript.DateFnsFormatDistanceOptions)
+  - System.String FormatDistanceToNowStrict(ECMAScript.Date, ECMAScript.DateFnsFormatDistanceStrictOptions)
+  - System.String FormatDuration(ECMAScript.DateFnsDuration, ECMAScript.DateFnsFormatDurationOptions)
+  - System.String FormatISO(ECMAScript.Date, ECMAScript.DateFnsFormatISOOptions)
+  - System.String FormatRelative(ECMAScript.Date, ECMAScript.Date, ECMAScript.DateFnsFormatRelativeOptions)
+  - Void SetDefaultOptions(ECMAScript.DateFnsDefaultOptions)
+- enum ECMAScript.DateFnsAdditionalDigits
+  - ECMAScript.DateFnsAdditionalDigits None
+  - ECMAScript.DateFnsAdditionalDigits One
+  - ECMAScript.DateFnsAdditionalDigits Two
+  - Int32 value__
+- type ECMAScript.DateFnsAreIntervalsOverlappingOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsAreIntervalsOverlappingOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsAreIntervalsOverlappingOptions, ECMAScript.DateFnsAreIntervalsOverlappingOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsAreIntervalsOverlappingOptions, ECMAScript.DateFnsAreIntervalsOverlappingOptions)
+  - ECMAScript.DateFnsAreIntervalsOverlappingOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Inclusive()
+  - System.String ToString()
+  - Void set_Inclusive(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] Inclusive
+- type ECMAScript.DateFnsDefaultOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsDefaultOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsDefaultOptions, ECMAScript.DateFnsDefaultOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsDefaultOptions, ECMAScript.DateFnsDefaultOptions)
+  - ECMAScript.DateFnsDefaultOptions <Clone>$()
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate] get_FirstWeekContainsDate()
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] get_WeekStartsOn()
+  - System.String ToString()
+  - Void set_FirstWeekContainsDate(System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate])
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - Void set_WeekStartsOn(System.Nullable`1[ECMAScript.DateFnsWeekStartsOn])
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate] FirstWeekContainsDate
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] WeekStartsOn
+- enum ECMAScript.DateFnsDistanceUnit
+  - ECMAScript.DateFnsDistanceUnit Day
+  - ECMAScript.DateFnsDistanceUnit Hour
+  - ECMAScript.DateFnsDistanceUnit Minute
+  - ECMAScript.DateFnsDistanceUnit Month
+  - ECMAScript.DateFnsDistanceUnit Quarter
+  - ECMAScript.DateFnsDistanceUnit Second
+  - ECMAScript.DateFnsDistanceUnit Week
+  - ECMAScript.DateFnsDistanceUnit Year
+  - Int32 value__
+- type ECMAScript.DateFnsDuration
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsDuration)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsDuration, ECMAScript.DateFnsDuration)
+  - Boolean op_Inequality(ECMAScript.DateFnsDuration, ECMAScript.DateFnsDuration)
+  - ECMAScript.DateFnsDuration <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Days()
+  - System.Nullable`1[ECMAScript.Number] get_Hours()
+  - System.Nullable`1[ECMAScript.Number] get_Minutes()
+  - System.Nullable`1[ECMAScript.Number] get_Months()
+  - System.Nullable`1[ECMAScript.Number] get_Seconds()
+  - System.Nullable`1[ECMAScript.Number] get_Weeks()
+  - System.Nullable`1[ECMAScript.Number] get_Years()
+  - System.String ToString()
+  - Void set_Days(System.Nullable`1[ECMAScript.Number])
+  - Void set_Hours(System.Nullable`1[ECMAScript.Number])
+  - Void set_Minutes(System.Nullable`1[ECMAScript.Number])
+  - Void set_Months(System.Nullable`1[ECMAScript.Number])
+  - Void set_Seconds(System.Nullable`1[ECMAScript.Number])
+  - Void set_Weeks(System.Nullable`1[ECMAScript.Number])
+  - Void set_Years(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] Days
+  - System.Nullable`1[ECMAScript.Number] Hours
+  - System.Nullable`1[ECMAScript.Number] Minutes
+  - System.Nullable`1[ECMAScript.Number] Months
+  - System.Nullable`1[ECMAScript.Number] Seconds
+  - System.Nullable`1[ECMAScript.Number] Weeks
+  - System.Nullable`1[ECMAScript.Number] Years
+- type ECMAScript.DateFnsEachDayOfIntervalOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsEachDayOfIntervalOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsEachDayOfIntervalOptions, ECMAScript.DateFnsEachDayOfIntervalOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsEachDayOfIntervalOptions, ECMAScript.DateFnsEachDayOfIntervalOptions)
+  - ECMAScript.DateFnsEachDayOfIntervalOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Step()
+  - System.String ToString()
+  - Void set_Step(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] Step
+- enum ECMAScript.DateFnsFirstWeekContainsDate
+  - ECMAScript.DateFnsFirstWeekContainsDate FirstDay
+  - ECMAScript.DateFnsFirstWeekContainsDate FourthDay
+  - Int32 value__
+- type ECMAScript.DateFnsFormatDistanceOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsFormatDistanceOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsFormatDistanceOptions, ECMAScript.DateFnsFormatDistanceOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsFormatDistanceOptions, ECMAScript.DateFnsFormatDistanceOptions)
+  - ECMAScript.DateFnsFormatDistanceOptions <Clone>$()
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_AddSuffix()
+  - System.Nullable`1[System.Boolean] get_IncludeSeconds()
+  - System.String ToString()
+  - Void set_AddSuffix(System.Nullable`1[System.Boolean])
+  - Void set_IncludeSeconds(System.Nullable`1[System.Boolean])
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[System.Boolean] AddSuffix
+  - System.Nullable`1[System.Boolean] IncludeSeconds
+- type ECMAScript.DateFnsFormatDistanceStrictOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsFormatDistanceStrictOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsFormatDistanceStrictOptions, ECMAScript.DateFnsFormatDistanceStrictOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsFormatDistanceStrictOptions, ECMAScript.DateFnsFormatDistanceStrictOptions)
+  - ECMAScript.DateFnsFormatDistanceStrictOptions <Clone>$()
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsDistanceUnit] get_Unit()
+  - System.Nullable`1[ECMAScript.DateFnsRoundingMethod] get_RoundingMethod()
+  - System.Nullable`1[System.Boolean] get_AddSuffix()
+  - System.String ToString()
+  - Void set_AddSuffix(System.Nullable`1[System.Boolean])
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - Void set_RoundingMethod(System.Nullable`1[ECMAScript.DateFnsRoundingMethod])
+  - Void set_Unit(System.Nullable`1[ECMAScript.DateFnsDistanceUnit])
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[ECMAScript.DateFnsDistanceUnit] Unit
+  - System.Nullable`1[ECMAScript.DateFnsRoundingMethod] RoundingMethod
+  - System.Nullable`1[System.Boolean] AddSuffix
+- type ECMAScript.DateFnsFormatDurationOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsFormatDurationOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsFormatDurationOptions, ECMAScript.DateFnsFormatDurationOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsFormatDurationOptions, ECMAScript.DateFnsFormatDurationOptions)
+  - ECMAScript.DateFnsDistanceUnit[] get_Format()
+  - ECMAScript.DateFnsFormatDurationOptions <Clone>$()
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Zero()
+  - System.String ToString()
+  - System.String get_Delimiter()
+  - Void set_Delimiter(System.String)
+  - Void set_Format(ECMAScript.DateFnsDistanceUnit[])
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - Void set_Zero(System.Nullable`1[System.Boolean])
+  - ECMAScript.DateFnsDistanceUnit[] Format
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[System.Boolean] Zero
+  - System.String Delimiter
+- type ECMAScript.DateFnsFormatISOOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsFormatISOOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsFormatISOOptions, ECMAScript.DateFnsFormatISOOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsFormatISOOptions, ECMAScript.DateFnsFormatISOOptions)
+  - ECMAScript.DateFnsFormatISOOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsISOFormat] get_Format()
+  - System.Nullable`1[ECMAScript.DateFnsISORepresentation] get_Representation()
+  - System.String ToString()
+  - Void set_Format(System.Nullable`1[ECMAScript.DateFnsISOFormat])
+  - Void set_Representation(System.Nullable`1[ECMAScript.DateFnsISORepresentation])
+  - System.Nullable`1[ECMAScript.DateFnsISOFormat] Format
+  - System.Nullable`1[ECMAScript.DateFnsISORepresentation] Representation
+- type ECMAScript.DateFnsFormatOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsFormatOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsFormatOptions, ECMAScript.DateFnsFormatOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsFormatOptions, ECMAScript.DateFnsFormatOptions)
+  - ECMAScript.DateFnsFormatOptions <Clone>$()
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate] get_FirstWeekContainsDate()
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] get_WeekStartsOn()
+  - System.Nullable`1[System.Boolean] get_UseAdditionalDayOfYearTokens()
+  - System.Nullable`1[System.Boolean] get_UseAdditionalWeekYearTokens()
+  - System.String ToString()
+  - Void set_FirstWeekContainsDate(System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate])
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - Void set_UseAdditionalDayOfYearTokens(System.Nullable`1[System.Boolean])
+  - Void set_UseAdditionalWeekYearTokens(System.Nullable`1[System.Boolean])
+  - Void set_WeekStartsOn(System.Nullable`1[ECMAScript.DateFnsWeekStartsOn])
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate] FirstWeekContainsDate
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] WeekStartsOn
+  - System.Nullable`1[System.Boolean] UseAdditionalDayOfYearTokens
+  - System.Nullable`1[System.Boolean] UseAdditionalWeekYearTokens
+- type ECMAScript.DateFnsFormatRelativeOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsFormatRelativeOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsFormatRelativeOptions, ECMAScript.DateFnsFormatRelativeOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsFormatRelativeOptions, ECMAScript.DateFnsFormatRelativeOptions)
+  - ECMAScript.DateFnsFormatRelativeOptions <Clone>$()
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] get_WeekStartsOn()
+  - System.String ToString()
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - Void set_WeekStartsOn(System.Nullable`1[ECMAScript.DateFnsWeekStartsOn])
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] WeekStartsOn
+- enum ECMAScript.DateFnsISOFormat
+  - ECMAScript.DateFnsISOFormat Basic
+  - ECMAScript.DateFnsISOFormat Extended
+  - Int32 value__
+- enum ECMAScript.DateFnsISORepresentation
+  - ECMAScript.DateFnsISORepresentation Complete
+  - ECMAScript.DateFnsISORepresentation Date
+  - ECMAScript.DateFnsISORepresentation Time
+  - Int32 value__
+- type ECMAScript.DateFnsInterval
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsInterval)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsInterval, ECMAScript.DateFnsInterval)
+  - Boolean op_Inequality(ECMAScript.DateFnsInterval, ECMAScript.DateFnsInterval)
+  - ECMAScript.Date get_End()
+  - ECMAScript.Date get_Start()
+  - ECMAScript.DateFnsInterval <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_End(ECMAScript.Date)
+  - Void set_Start(ECMAScript.Date)
+  - ECMAScript.Date End
+  - ECMAScript.Date Start
+- type ECMAScript.DateFnsLocale
+  - ECMAScript.DateFnsLocaleObject get_De()
+  - ECMAScript.DateFnsLocaleObject get_EnGB()
+  - ECMAScript.DateFnsLocaleObject get_EnUS()
+  - ECMAScript.DateFnsLocaleObject get_Es()
+  - ECMAScript.DateFnsLocaleObject get_Fr()
+  - ECMAScript.DateFnsLocaleObject get_It()
+  - ECMAScript.DateFnsLocaleObject get_Ja()
+  - ECMAScript.DateFnsLocaleObject get_Ko()
+  - ECMAScript.DateFnsLocaleObject get_PtBR()
+  - ECMAScript.DateFnsLocaleObject get_Ru()
+  - ECMAScript.DateFnsLocaleObject get_ZhCN()
+  - ECMAScript.DateFnsLocaleObject get_ZhTW()
+  - ECMAScript.DateFnsLocaleObject De
+  - ECMAScript.DateFnsLocaleObject EnGB
+  - ECMAScript.DateFnsLocaleObject EnUS
+  - ECMAScript.DateFnsLocaleObject Es
+  - ECMAScript.DateFnsLocaleObject Fr
+  - ECMAScript.DateFnsLocaleObject It
+  - ECMAScript.DateFnsLocaleObject Ja
+  - ECMAScript.DateFnsLocaleObject Ko
+  - ECMAScript.DateFnsLocaleObject PtBR
+  - ECMAScript.DateFnsLocaleObject Ru
+  - ECMAScript.DateFnsLocaleObject ZhCN
+  - ECMAScript.DateFnsLocaleObject ZhTW
+- type ECMAScript.DateFnsLocaleObject
+- type ECMAScript.DateFnsParseISOOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsParseISOOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsParseISOOptions, ECMAScript.DateFnsParseISOOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsParseISOOptions, ECMAScript.DateFnsParseISOOptions)
+  - ECMAScript.DateFnsParseISOOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsAdditionalDigits] get_AdditionalDigits()
+  - System.String ToString()
+  - Void set_AdditionalDigits(System.Nullable`1[ECMAScript.DateFnsAdditionalDigits])
+  - System.Nullable`1[ECMAScript.DateFnsAdditionalDigits] AdditionalDigits
+- type ECMAScript.DateFnsParseOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsParseOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsParseOptions, ECMAScript.DateFnsParseOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsParseOptions, ECMAScript.DateFnsParseOptions)
+  - ECMAScript.DateFnsLocaleObject get_Locale()
+  - ECMAScript.DateFnsParseOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate] get_FirstWeekContainsDate()
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] get_WeekStartsOn()
+  - System.Nullable`1[System.Boolean] get_UseAdditionalDayOfYearTokens()
+  - System.Nullable`1[System.Boolean] get_UseAdditionalWeekYearTokens()
+  - System.String ToString()
+  - Void set_FirstWeekContainsDate(System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate])
+  - Void set_Locale(ECMAScript.DateFnsLocaleObject)
+  - Void set_UseAdditionalDayOfYearTokens(System.Nullable`1[System.Boolean])
+  - Void set_UseAdditionalWeekYearTokens(System.Nullable`1[System.Boolean])
+  - Void set_WeekStartsOn(System.Nullable`1[ECMAScript.DateFnsWeekStartsOn])
+  - ECMAScript.DateFnsLocaleObject Locale
+  - System.Nullable`1[ECMAScript.DateFnsFirstWeekContainsDate] FirstWeekContainsDate
+  - System.Nullable`1[ECMAScript.DateFnsWeekStartsOn] WeekStartsOn
+  - System.Nullable`1[System.Boolean] UseAdditionalDayOfYearTokens
+  - System.Nullable`1[System.Boolean] UseAdditionalWeekYearTokens
+- enum ECMAScript.DateFnsRoundingMethod
+  - ECMAScript.DateFnsRoundingMethod Ceil
+  - ECMAScript.DateFnsRoundingMethod Floor
+  - ECMAScript.DateFnsRoundingMethod Round
+  - ECMAScript.DateFnsRoundingMethod Trunc
+  - Int32 value__
+- type ECMAScript.DateFnsRoundingOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.DateFnsRoundingOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.DateFnsRoundingOptions, ECMAScript.DateFnsRoundingOptions)
+  - Boolean op_Inequality(ECMAScript.DateFnsRoundingOptions, ECMAScript.DateFnsRoundingOptions)
+  - ECMAScript.DateFnsRoundingOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.DateFnsRoundingMethod] get_RoundingMethod()
+  - System.String ToString()
+  - Void set_RoundingMethod(System.Nullable`1[ECMAScript.DateFnsRoundingMethod])
+  - System.Nullable`1[ECMAScript.DateFnsRoundingMethod] RoundingMethod
+- enum ECMAScript.DateFnsWeekStartsOn
+  - ECMAScript.DateFnsWeekStartsOn Friday
+  - ECMAScript.DateFnsWeekStartsOn Monday
+  - ECMAScript.DateFnsWeekStartsOn Saturday
+  - ECMAScript.DateFnsWeekStartsOn Sunday
+  - ECMAScript.DateFnsWeekStartsOn Thursday
+  - ECMAScript.DateFnsWeekStartsOn Tuesday
+  - ECMAScript.DateFnsWeekStartsOn Wednesday
+  - Int32 value__
 
 ## ECMAScript.ElementPlus
 - type ECMAScript.ElementPlus.ElAffix
@@ -9112,6 +9492,775 @@
   - System.String Version
 - type ECMAScript.ElementPlus.IElementPlusComponent
 
+## ECMAScript.FilePond
+- type ECMAScript.FilePond
+  - Boolean Supported()
+  - ECMAScript.FilePondInstance Create(ECMAScript.Element, ECMAScript.FilePondOptions)
+  - ECMAScript.FilePondInstance Find(ECMAScript.Element)
+  - ECMAScript.FilePondOptions GetOptions(ECMAScript.Element)
+  - Void Destroy(ECMAScript.Element)
+  - Void RegisterPlugin(ECMAScript.FilePondPlugin[])
+  - Void SetOptions(ECMAScript.FilePondOptions)
+- type ECMAScript.FilePondError
+- type ECMAScript.FilePondFile
+- type ECMAScript.FilePondFileSource
+  - Void .ctor(ECMAScript.Blob)
+  - Void .ctor(System.String)
+  - System.Object get_Value()
+  - System.Object Value
+- enum ECMAScript.FilePondFileStatus
+  - ECMAScript.FilePondFileStatus Idle
+  - ECMAScript.FilePondFileStatus LoadError
+  - ECMAScript.FilePondFileStatus Loaded
+  - ECMAScript.FilePondFileStatus Loading
+  - ECMAScript.FilePondFileStatus Processed
+  - ECMAScript.FilePondFileStatus Processing
+  - ECMAScript.FilePondFileStatus ProcessingError
+  - ECMAScript.FilePondFileStatus RevertError
+  - ECMAScript.FilePondFileStatus Reverting
+  - Int32 value__
+- type ECMAScript.FilePondInstance
+  - ECMAScript.FilePondFile GetFile(ECMAScript.Number)
+  - ECMAScript.FilePondFile GetFile(System.String)
+  - ECMAScript.FilePondFile[] GetFiles()
+  - ECMAScript.IPromise`1[ECMAScript.FilePondFile[]] ProcessFiles()
+  - ECMAScript.IPromise`1[ECMAScript.FilePondFile] ProcessFile(System.String)
+  - Void AddFile(ECMAScript.FilePondFileSource)
+  - Void Browse()
+  - Void Destroy()
+  - Void RemoveFile(ECMAScript.Number)
+  - Void RemoveFile(System.String)
+  - Void RemoveFiles()
+  - Void SetOptions(ECMAScript.FilePondOptions)
+- type ECMAScript.FilePondOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FilePondOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FilePondOptions, ECMAScript.FilePondOptions)
+  - Boolean op_Inequality(ECMAScript.FilePondOptions, ECMAScript.FilePondOptions)
+  - ECMAScript.FilePondFileSource[] get_Files()
+  - ECMAScript.FilePondOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Action`1[ECMAScript.FilePondError] get_OnError()
+  - System.Action`1[ECMAScript.FilePondError] get_OnWarning()
+  - System.Action`1[ECMAScript.FilePondFile[]] get_OnUpdateFiles()
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] get_OnAddFile()
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] get_OnProcessFile()
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] get_OnProcessFileError()
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] get_OnRemoveFile()
+  - System.Action`2[ECMAScript.FilePondFile,System.Nullable`1[ECMAScript.Number]] get_OnProcessFileProgress()
+  - System.Func`2[ECMAScript.FilePondFile,System.Boolean] get_BeforeAddFile()
+  - System.Nullable`1[ECMAScript.FilePondServer] get_Server()
+  - System.Nullable`1[ECMAScript.Number] get_MaxFiles()
+  - System.Nullable`1[System.Boolean] get_AllowBrowse()
+  - System.Nullable`1[System.Boolean] get_AllowDrop()
+  - System.Nullable`1[System.Boolean] get_AllowMultiple()
+  - System.Nullable`1[System.Boolean] get_AllowPaste()
+  - System.Nullable`1[System.Boolean] get_AllowRemove()
+  - System.Nullable`1[System.Boolean] get_AllowReorder()
+  - System.Nullable`1[System.Boolean] get_AllowRevert()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - System.Nullable`1[System.Boolean] get_ForceRevert()
+  - System.Nullable`1[System.Boolean] get_StoreAsFile()
+  - System.String ToString()
+  - System.String get_AcceptedFileTypes()
+  - System.String get_LabelIdle()
+  - System.String get_Name()
+  - Void set_AcceptedFileTypes(System.String)
+  - Void set_AllowBrowse(System.Nullable`1[System.Boolean])
+  - Void set_AllowDrop(System.Nullable`1[System.Boolean])
+  - Void set_AllowMultiple(System.Nullable`1[System.Boolean])
+  - Void set_AllowPaste(System.Nullable`1[System.Boolean])
+  - Void set_AllowRemove(System.Nullable`1[System.Boolean])
+  - Void set_AllowReorder(System.Nullable`1[System.Boolean])
+  - Void set_AllowRevert(System.Nullable`1[System.Boolean])
+  - Void set_BeforeAddFile(System.Func`2[ECMAScript.FilePondFile,System.Boolean])
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_Files(ECMAScript.FilePondFileSource[])
+  - Void set_ForceRevert(System.Nullable`1[System.Boolean])
+  - Void set_LabelIdle(System.String)
+  - Void set_MaxFiles(System.Nullable`1[ECMAScript.Number])
+  - Void set_Name(System.String)
+  - Void set_OnAddFile(System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile])
+  - Void set_OnError(System.Action`1[ECMAScript.FilePondError])
+  - Void set_OnProcessFile(System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile])
+  - Void set_OnProcessFileError(System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile])
+  - Void set_OnProcessFileProgress(System.Action`2[ECMAScript.FilePondFile,System.Nullable`1[ECMAScript.Number]])
+  - Void set_OnRemoveFile(System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile])
+  - Void set_OnUpdateFiles(System.Action`1[ECMAScript.FilePondFile[]])
+  - Void set_OnWarning(System.Action`1[ECMAScript.FilePondError])
+  - Void set_Server(System.Nullable`1[ECMAScript.FilePondServer])
+  - Void set_StoreAsFile(System.Nullable`1[System.Boolean])
+  - ECMAScript.FilePondFileSource[] Files
+  - System.Action`1[ECMAScript.FilePondError] OnError
+  - System.Action`1[ECMAScript.FilePondError] OnWarning
+  - System.Action`1[ECMAScript.FilePondFile[]] OnUpdateFiles
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] OnAddFile
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] OnProcessFile
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] OnProcessFileError
+  - System.Action`2[ECMAScript.FilePondError,ECMAScript.FilePondFile] OnRemoveFile
+  - System.Action`2[ECMAScript.FilePondFile,System.Nullable`1[ECMAScript.Number]] OnProcessFileProgress
+  - System.Func`2[ECMAScript.FilePondFile,System.Boolean] BeforeAddFile
+  - System.Nullable`1[ECMAScript.FilePondServer] Server
+  - System.Nullable`1[ECMAScript.Number] MaxFiles
+  - System.Nullable`1[System.Boolean] AllowBrowse
+  - System.Nullable`1[System.Boolean] AllowDrop
+  - System.Nullable`1[System.Boolean] AllowMultiple
+  - System.Nullable`1[System.Boolean] AllowPaste
+  - System.Nullable`1[System.Boolean] AllowRemove
+  - System.Nullable`1[System.Boolean] AllowReorder
+  - System.Nullable`1[System.Boolean] AllowRevert
+  - System.Nullable`1[System.Boolean] Disabled
+  - System.Nullable`1[System.Boolean] ForceRevert
+  - System.Nullable`1[System.Boolean] StoreAsFile
+  - System.String AcceptedFileTypes
+  - System.String LabelIdle
+  - System.String Name
+- type ECMAScript.FilePondPlugin
+- type ECMAScript.FilePondServer
+  - Void .ctor(ECMAScript.FilePondServerOptions)
+  - Void .ctor(System.String)
+  - System.Object get_Value()
+  - System.Object Value
+- type ECMAScript.FilePondServerOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FilePondServerOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FilePondServerOptions, ECMAScript.FilePondServerOptions)
+  - Boolean op_Inequality(ECMAScript.FilePondServerOptions, ECMAScript.FilePondServerOptions)
+  - ECMAScript.FilePondServerOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_WithCredentials()
+  - System.String ToString()
+  - System.String get_Fetch()
+  - System.String get_Load()
+  - System.String get_Process()
+  - System.String get_Restore()
+  - System.String get_Revert()
+  - System.String get_Url()
+  - Void set_Fetch(System.String)
+  - Void set_Load(System.String)
+  - Void set_Process(System.String)
+  - Void set_Restore(System.String)
+  - Void set_Revert(System.String)
+  - Void set_Url(System.String)
+  - Void set_WithCredentials(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] WithCredentials
+  - System.String Fetch
+  - System.String Load
+  - System.String Process
+  - System.String Restore
+  - System.String Revert
+  - System.String Url
+- type ECMAScript.VueFilePond
+  - Void .ctor()
+  - ECMAScript.FilePondOptions get_Options()
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] get_AdditionalAttributes()
+  - Void set_AdditionalAttributes(System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object])
+  - Void set_Options(ECMAScript.FilePondOptions)
+  - ECMAScript.FilePondOptions Options
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] AdditionalAttributes
+
+## ECMAScript.FloatingUi
+- enum ECMAScript.FloatingAlignment
+  - ECMAScript.FloatingAlignment End
+  - ECMAScript.FloatingAlignment Start
+  - Int32 value__
+- type ECMAScript.FloatingArrowData
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingArrowData)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingArrowData, ECMAScript.FloatingArrowData)
+  - Boolean op_Inequality(ECMAScript.FloatingArrowData, ECMAScript.FloatingArrowData)
+  - ECMAScript.FloatingArrowData <Clone>$()
+  - ECMAScript.Number get_CenterOffset()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_AlignmentOffset()
+  - System.Nullable`1[ECMAScript.Number] get_X()
+  - System.Nullable`1[ECMAScript.Number] get_Y()
+  - System.String ToString()
+  - Void set_AlignmentOffset(System.Nullable`1[ECMAScript.Number])
+  - Void set_CenterOffset(ECMAScript.Number)
+  - Void set_X(System.Nullable`1[ECMAScript.Number])
+  - Void set_Y(System.Nullable`1[ECMAScript.Number])
+  - ECMAScript.Number CenterOffset
+  - System.Nullable`1[ECMAScript.Number] AlignmentOffset
+  - System.Nullable`1[ECMAScript.Number] X
+  - System.Nullable`1[ECMAScript.Number] Y
+- type ECMAScript.FloatingArrowOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingArrowOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingArrowOptions, ECMAScript.FloatingArrowOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingArrowOptions, ECMAScript.FloatingArrowOptions)
+  - ECMAScript.Element get_Element()
+  - ECMAScript.FloatingArrowOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.String ToString()
+  - Void set_Element(ECMAScript.Element)
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - ECMAScript.Element Element
+  - System.Nullable`1[ECMAScript.Number] Padding
+- type ECMAScript.FloatingAutoPlacementOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingAutoPlacementOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingAutoPlacementOptions, ECMAScript.FloatingAutoPlacementOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingAutoPlacementOptions, ECMAScript.FloatingAutoPlacementOptions)
+  - ECMAScript.FloatingAutoPlacementOptions <Clone>$()
+  - ECMAScript.FloatingPlacement[] get_AllowedPlacements()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingAlignment] get_Alignment()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.Nullable`1[System.Boolean] get_Auto()
+  - System.String ToString()
+  - Void set_Alignment(System.Nullable`1[ECMAScript.FloatingAlignment])
+  - Void set_AllowedPlacements(ECMAScript.FloatingPlacement[])
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Auto(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - ECMAScript.FloatingPlacement[] AllowedPlacements
+  - System.Nullable`1[ECMAScript.FloatingAlignment] Alignment
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+  - System.Nullable`1[System.Boolean] Auto
+- type ECMAScript.FloatingAutoUpdateOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingAutoUpdateOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingAutoUpdateOptions, ECMAScript.FloatingAutoUpdateOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingAutoUpdateOptions, ECMAScript.FloatingAutoUpdateOptions)
+  - ECMAScript.FloatingAutoUpdateOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_AncestorResize()
+  - System.Nullable`1[System.Boolean] get_AncestorScroll()
+  - System.Nullable`1[System.Boolean] get_AnimationFrame()
+  - System.Nullable`1[System.Boolean] get_ElementResize()
+  - System.Nullable`1[System.Boolean] get_LayoutShift()
+  - System.String ToString()
+  - Void set_AncestorResize(System.Nullable`1[System.Boolean])
+  - Void set_AncestorScroll(System.Nullable`1[System.Boolean])
+  - Void set_AnimationFrame(System.Nullable`1[System.Boolean])
+  - Void set_ElementResize(System.Nullable`1[System.Boolean])
+  - Void set_LayoutShift(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] AncestorResize
+  - System.Nullable`1[System.Boolean] AncestorScroll
+  - System.Nullable`1[System.Boolean] AnimationFrame
+  - System.Nullable`1[System.Boolean] ElementResize
+  - System.Nullable`1[System.Boolean] LayoutShift
+- type ECMAScript.FloatingBoundary
+  - Void .ctor(ECMAScript.Element)
+  - Void .ctor(ECMAScript.Element[])
+  - Void .ctor(System.String)
+  - System.Object get_Value()
+  - System.Object Value
+- type ECMAScript.FloatingComputePositionConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingComputePositionConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingComputePositionConfig, ECMAScript.FloatingComputePositionConfig)
+  - Boolean op_Inequality(ECMAScript.FloatingComputePositionConfig, ECMAScript.FloatingComputePositionConfig)
+  - ECMAScript.FloatingComputePositionConfig <Clone>$()
+  - ECMAScript.FloatingMiddleware[] get_Middleware()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingPlacement] get_Placement()
+  - System.Nullable`1[ECMAScript.FloatingStrategy] get_Strategy()
+  - System.String ToString()
+  - Void set_Middleware(ECMAScript.FloatingMiddleware[])
+  - Void set_Placement(System.Nullable`1[ECMAScript.FloatingPlacement])
+  - Void set_Strategy(System.Nullable`1[ECMAScript.FloatingStrategy])
+  - ECMAScript.FloatingMiddleware[] Middleware
+  - System.Nullable`1[ECMAScript.FloatingPlacement] Placement
+  - System.Nullable`1[ECMAScript.FloatingStrategy] Strategy
+- type ECMAScript.FloatingComputePositionReturn
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingComputePositionReturn)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingComputePositionReturn, ECMAScript.FloatingComputePositionReturn)
+  - Boolean op_Inequality(ECMAScript.FloatingComputePositionReturn, ECMAScript.FloatingComputePositionReturn)
+  - ECMAScript.FloatingComputePositionReturn <Clone>$()
+  - ECMAScript.FloatingMiddlewareData get_MiddlewareData()
+  - ECMAScript.FloatingPlacement get_Placement()
+  - ECMAScript.FloatingStrategy get_Strategy()
+  - ECMAScript.Number get_X()
+  - ECMAScript.Number get_Y()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_MiddlewareData(ECMAScript.FloatingMiddlewareData)
+  - Void set_Placement(ECMAScript.FloatingPlacement)
+  - Void set_Strategy(ECMAScript.FloatingStrategy)
+  - Void set_X(ECMAScript.Number)
+  - Void set_Y(ECMAScript.Number)
+  - ECMAScript.FloatingMiddlewareData MiddlewareData
+  - ECMAScript.FloatingPlacement Placement
+  - ECMAScript.FloatingStrategy Strategy
+  - ECMAScript.Number X
+  - ECMAScript.Number Y
+- type ECMAScript.FloatingCoords
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingCoords)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingCoords, ECMAScript.FloatingCoords)
+  - Boolean op_Inequality(ECMAScript.FloatingCoords, ECMAScript.FloatingCoords)
+  - ECMAScript.FloatingCoords <Clone>$()
+  - ECMAScript.Number get_X()
+  - ECMAScript.Number get_Y()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_X(ECMAScript.Number)
+  - Void set_Y(ECMAScript.Number)
+  - ECMAScript.Number X
+  - ECMAScript.Number Y
+- type ECMAScript.FloatingDetectOverflowOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingDetectOverflowOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingDetectOverflowOptions, ECMAScript.FloatingDetectOverflowOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingDetectOverflowOptions, ECMAScript.FloatingDetectOverflowOptions)
+  - ECMAScript.FloatingDetectOverflowOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingElementContext] get_ElementContext()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.String ToString()
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_ElementContext(System.Nullable`1[ECMAScript.FloatingElementContext])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingElementContext] ElementContext
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+- type ECMAScript.FloatingDimensions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingDimensions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingDimensions, ECMAScript.FloatingDimensions)
+  - Boolean op_Inequality(ECMAScript.FloatingDimensions, ECMAScript.FloatingDimensions)
+  - ECMAScript.FloatingDimensions <Clone>$()
+  - ECMAScript.Number get_Height()
+  - ECMAScript.Number get_Width()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Height(ECMAScript.Number)
+  - Void set_Width(ECMAScript.Number)
+  - ECMAScript.Number Height
+  - ECMAScript.Number Width
+- enum ECMAScript.FloatingElementContext
+  - ECMAScript.FloatingElementContext Floating
+  - ECMAScript.FloatingElementContext Reference
+  - Int32 value__
+- type ECMAScript.FloatingElementRects
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingElementRects)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingElementRects, ECMAScript.FloatingElementRects)
+  - Boolean op_Inequality(ECMAScript.FloatingElementRects, ECMAScript.FloatingElementRects)
+  - ECMAScript.FloatingElementRects <Clone>$()
+  - ECMAScript.FloatingRect get_Floating()
+  - ECMAScript.FloatingRect get_Reference()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Floating(ECMAScript.FloatingRect)
+  - Void set_Reference(ECMAScript.FloatingRect)
+  - ECMAScript.FloatingRect Floating
+  - ECMAScript.FloatingRect Reference
+- type ECMAScript.FloatingElements
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingElements)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingElements, ECMAScript.FloatingElements)
+  - Boolean op_Inequality(ECMAScript.FloatingElements, ECMAScript.FloatingElements)
+  - ECMAScript.FloatingElements <Clone>$()
+  - ECMAScript.FloatingMaybeElement get_Floating()
+  - ECMAScript.FloatingMaybeElement get_Reference()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Floating(ECMAScript.FloatingMaybeElement)
+  - Void set_Reference(ECMAScript.FloatingMaybeElement)
+  - ECMAScript.FloatingMaybeElement Floating
+  - ECMAScript.FloatingMaybeElement Reference
+- enum ECMAScript.FloatingFallbackStrategy
+  - ECMAScript.FloatingFallbackStrategy BestFit
+  - ECMAScript.FloatingFallbackStrategy InitialPlacement
+  - Int32 value__
+- type ECMAScript.FloatingFlipOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingFlipOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingFlipOptions, ECMAScript.FloatingFlipOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingFlipOptions, ECMAScript.FloatingFlipOptions)
+  - ECMAScript.FloatingFlipOptions <Clone>$()
+  - ECMAScript.FloatingPlacement[] get_AllowedPlacements()
+  - ECMAScript.FloatingPlacement[] get_FallbackPlacements()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingFallbackStrategy] get_FallbackStrategy()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.Nullable`1[System.Boolean] get_CrossAxis()
+  - System.Nullable`1[System.Boolean] get_MainAxis()
+  - System.String ToString()
+  - Void set_AllowedPlacements(ECMAScript.FloatingPlacement[])
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_CrossAxis(System.Nullable`1[System.Boolean])
+  - Void set_FallbackPlacements(ECMAScript.FloatingPlacement[])
+  - Void set_FallbackStrategy(System.Nullable`1[ECMAScript.FloatingFallbackStrategy])
+  - Void set_MainAxis(System.Nullable`1[System.Boolean])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - ECMAScript.FloatingPlacement[] AllowedPlacements
+  - ECMAScript.FloatingPlacement[] FallbackPlacements
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingFallbackStrategy] FallbackStrategy
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+  - System.Nullable`1[System.Boolean] CrossAxis
+  - System.Nullable`1[System.Boolean] MainAxis
+- type ECMAScript.FloatingHideData
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingHideData)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingHideData, ECMAScript.FloatingHideData)
+  - Boolean op_Inequality(ECMAScript.FloatingHideData, ECMAScript.FloatingHideData)
+  - ECMAScript.FloatingHideData <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Escaped()
+  - System.Nullable`1[System.Boolean] get_ReferenceHidden()
+  - System.String ToString()
+  - Void set_Escaped(System.Nullable`1[System.Boolean])
+  - Void set_ReferenceHidden(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] Escaped
+  - System.Nullable`1[System.Boolean] ReferenceHidden
+- type ECMAScript.FloatingHideOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingHideOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingHideOptions, ECMAScript.FloatingHideOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingHideOptions, ECMAScript.FloatingHideOptions)
+  - ECMAScript.FloatingHideOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.String ToString()
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+- type ECMAScript.FloatingInlineOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingInlineOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingInlineOptions, ECMAScript.FloatingInlineOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingInlineOptions, ECMAScript.FloatingInlineOptions)
+  - ECMAScript.FloatingInlineOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.Nullable`1[System.Boolean] get_X()
+  - System.Nullable`1[System.Boolean] get_Y()
+  - System.String ToString()
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - Void set_X(System.Nullable`1[System.Boolean])
+  - Void set_Y(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+  - System.Nullable`1[System.Boolean] X
+  - System.Nullable`1[System.Boolean] Y
+- type ECMAScript.FloatingLimiter
+- type ECMAScript.FloatingMaybeElement
+  - Void .ctor(ECMAScript.Element)
+  - Void .ctor(VueComponentPublicInstance)
+  - System.Object get_Value()
+  - System.Object Value
+- type ECMAScript.FloatingMiddleware
+- type ECMAScript.FloatingMiddlewareData
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingMiddlewareData)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingMiddlewareData, ECMAScript.FloatingMiddlewareData)
+  - Boolean op_Inequality(ECMAScript.FloatingMiddlewareData, ECMAScript.FloatingMiddlewareData)
+  - ECMAScript.FloatingArrowData get_Arrow()
+  - ECMAScript.FloatingHideData get_Hide()
+  - ECMAScript.FloatingMiddlewareData <Clone>$()
+  - ECMAScript.FloatingPlacementData get_Flip()
+  - ECMAScript.FloatingPlacementData get_Shift()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Arrow(ECMAScript.FloatingArrowData)
+  - Void set_Flip(ECMAScript.FloatingPlacementData)
+  - Void set_Hide(ECMAScript.FloatingHideData)
+  - Void set_Shift(ECMAScript.FloatingPlacementData)
+  - ECMAScript.FloatingArrowData Arrow
+  - ECMAScript.FloatingHideData Hide
+  - ECMAScript.FloatingPlacementData Flip
+  - ECMAScript.FloatingPlacementData Shift
+- type ECMAScript.FloatingOffsetValue
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingOffsetValue)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingOffsetValue, ECMAScript.FloatingOffsetValue)
+  - Boolean op_Inequality(ECMAScript.FloatingOffsetValue, ECMAScript.FloatingOffsetValue)
+  - ECMAScript.FloatingOffsetValue <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_AlignmentAxis()
+  - System.Nullable`1[ECMAScript.Number] get_CrossAxis()
+  - System.Nullable`1[ECMAScript.Number] get_MainAxis()
+  - System.String ToString()
+  - Void set_AlignmentAxis(System.Nullable`1[ECMAScript.Number])
+  - Void set_CrossAxis(System.Nullable`1[ECMAScript.Number])
+  - Void set_MainAxis(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] AlignmentAxis
+  - System.Nullable`1[ECMAScript.Number] CrossAxis
+  - System.Nullable`1[ECMAScript.Number] MainAxis
+- enum ECMAScript.FloatingPlacement
+  - ECMAScript.FloatingPlacement Bottom
+  - ECMAScript.FloatingPlacement BottomEnd
+  - ECMAScript.FloatingPlacement BottomStart
+  - ECMAScript.FloatingPlacement Left
+  - ECMAScript.FloatingPlacement LeftEnd
+  - ECMAScript.FloatingPlacement LeftStart
+  - ECMAScript.FloatingPlacement Right
+  - ECMAScript.FloatingPlacement RightEnd
+  - ECMAScript.FloatingPlacement RightStart
+  - ECMAScript.FloatingPlacement Top
+  - ECMAScript.FloatingPlacement TopEnd
+  - ECMAScript.FloatingPlacement TopStart
+  - Int32 value__
+- type ECMAScript.FloatingPlacementData
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingPlacementData)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingPlacementData, ECMAScript.FloatingPlacementData)
+  - Boolean op_Inequality(ECMAScript.FloatingPlacementData, ECMAScript.FloatingPlacementData)
+  - ECMAScript.FloatingPlacementData <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Index()
+  - System.String ToString()
+  - Void set_Index(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] Index
+- type ECMAScript.FloatingRect
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingRect)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingRect, ECMAScript.FloatingRect)
+  - Boolean op_Inequality(ECMAScript.FloatingRect, ECMAScript.FloatingRect)
+  - ECMAScript.FloatingRect <Clone>$()
+  - ECMAScript.Number get_Height()
+  - ECMAScript.Number get_Width()
+  - ECMAScript.Number get_X()
+  - ECMAScript.Number get_Y()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Height(ECMAScript.Number)
+  - Void set_Width(ECMAScript.Number)
+  - Void set_X(ECMAScript.Number)
+  - Void set_Y(ECMAScript.Number)
+  - ECMAScript.Number Height
+  - ECMAScript.Number Width
+  - ECMAScript.Number X
+  - ECMAScript.Number Y
+- enum ECMAScript.FloatingRootBoundary
+  - ECMAScript.FloatingRootBoundary Document
+  - ECMAScript.FloatingRootBoundary Viewport
+  - Int32 value__
+- type ECMAScript.FloatingShiftOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingShiftOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingShiftOptions, ECMAScript.FloatingShiftOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingShiftOptions, ECMAScript.FloatingShiftOptions)
+  - ECMAScript.FloatingLimiter get_Limiter()
+  - ECMAScript.FloatingShiftOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.Nullable`1[System.Boolean] get_CrossAxis()
+  - System.Nullable`1[System.Boolean] get_MainAxis()
+  - System.String ToString()
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_CrossAxis(System.Nullable`1[System.Boolean])
+  - Void set_Limiter(ECMAScript.FloatingLimiter)
+  - Void set_MainAxis(System.Nullable`1[System.Boolean])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - ECMAScript.FloatingLimiter Limiter
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+  - System.Nullable`1[System.Boolean] CrossAxis
+  - System.Nullable`1[System.Boolean] MainAxis
+- enum ECMAScript.FloatingSide
+  - ECMAScript.FloatingSide Bottom
+  - ECMAScript.FloatingSide Left
+  - ECMAScript.FloatingSide Right
+  - ECMAScript.FloatingSide Top
+  - Int32 value__
+- type ECMAScript.FloatingSideObject
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingSideObject)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingSideObject, ECMAScript.FloatingSideObject)
+  - Boolean op_Inequality(ECMAScript.FloatingSideObject, ECMAScript.FloatingSideObject)
+  - ECMAScript.FloatingSideObject <Clone>$()
+  - ECMAScript.Number get_Bottom()
+  - ECMAScript.Number get_Left()
+  - ECMAScript.Number get_Right()
+  - ECMAScript.Number get_Top()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Bottom(ECMAScript.Number)
+  - Void set_Left(ECMAScript.Number)
+  - Void set_Right(ECMAScript.Number)
+  - Void set_Top(ECMAScript.Number)
+  - ECMAScript.Number Bottom
+  - ECMAScript.Number Left
+  - ECMAScript.Number Right
+  - ECMAScript.Number Top
+- type ECMAScript.FloatingSizeOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingSizeOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingSizeOptions, ECMAScript.FloatingSizeOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingSizeOptions, ECMAScript.FloatingSizeOptions)
+  - ECMAScript.FloatingSizeOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingBoundary] get_Boundary()
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] get_RootBoundary()
+  - System.Nullable`1[ECMAScript.Number] get_Padding()
+  - System.Nullable`1[System.Boolean] get_AltBoundary()
+  - System.String ToString()
+  - Void set_AltBoundary(System.Nullable`1[System.Boolean])
+  - Void set_Boundary(System.Nullable`1[ECMAScript.FloatingBoundary])
+  - Void set_Padding(System.Nullable`1[ECMAScript.Number])
+  - Void set_RootBoundary(System.Nullable`1[ECMAScript.FloatingRootBoundary])
+  - System.Nullable`1[ECMAScript.FloatingBoundary] Boundary
+  - System.Nullable`1[ECMAScript.FloatingRootBoundary] RootBoundary
+  - System.Nullable`1[ECMAScript.Number] Padding
+  - System.Nullable`1[System.Boolean] AltBoundary
+- enum ECMAScript.FloatingStrategy
+  - ECMAScript.FloatingStrategy Absolute
+  - ECMAScript.FloatingStrategy Fixed
+  - Int32 value__
+- type ECMAScript.FloatingStyles
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingStyles)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingStyles, ECMAScript.FloatingStyles)
+  - Boolean op_Inequality(ECMAScript.FloatingStyles, ECMAScript.FloatingStyles)
+  - ECMAScript.FloatingStrategy get_Position()
+  - ECMAScript.FloatingStyles <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_Left()
+  - System.String get_Top()
+  - System.String get_Transform()
+  - System.String get_WillChange()
+  - Void set_Left(System.String)
+  - Void set_Position(ECMAScript.FloatingStrategy)
+  - Void set_Top(System.String)
+  - Void set_Transform(System.String)
+  - Void set_WillChange(System.String)
+  - ECMAScript.FloatingStrategy Position
+  - System.String Left
+  - System.String Top
+  - System.String Transform
+  - System.String WillChange
+- type ECMAScript.FloatingUi
+  - ECMAScript.FloatingLimiter LimitShift()
+  - ECMAScript.FloatingMiddleware Arrow(ECMAScript.FloatingArrowOptions)
+  - ECMAScript.FloatingMiddleware AutoPlacement(ECMAScript.FloatingAutoPlacementOptions)
+  - ECMAScript.FloatingMiddleware Flip(ECMAScript.FloatingFlipOptions)
+  - ECMAScript.FloatingMiddleware Hide(ECMAScript.FloatingHideOptions)
+  - ECMAScript.FloatingMiddleware Inline(ECMAScript.FloatingInlineOptions)
+  - ECMAScript.FloatingMiddleware Offset(ECMAScript.FloatingOffsetValue)
+  - ECMAScript.FloatingMiddleware Offset(ECMAScript.Number)
+  - ECMAScript.FloatingMiddleware Shift(ECMAScript.FloatingShiftOptions)
+  - ECMAScript.FloatingMiddleware Size(ECMAScript.FloatingSizeOptions)
+  - ECMAScript.FloatingUseReturn UseFloating[TReference,TFloating](VueReadonlyRef`1, VueReadonlyRef`1, ECMAScript.FloatingUseOptions)
+  - ECMAScript.IPromise`1[ECMAScript.FloatingComputePositionReturn] ComputePosition(ECMAScript.Element, ECMAScript.Element, ECMAScript.FloatingComputePositionConfig)
+  - System.Action AutoUpdate(ECMAScript.Element, ECMAScript.Element, System.Action, ECMAScript.FloatingAutoUpdateOptions)
+- type ECMAScript.FloatingUseOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.FloatingUseOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.FloatingUseOptions, ECMAScript.FloatingUseOptions)
+  - Boolean op_Inequality(ECMAScript.FloatingUseOptions, ECMAScript.FloatingUseOptions)
+  - ECMAScript.FloatingMiddleware[] get_Middleware()
+  - ECMAScript.FloatingUseOptions <Clone>$()
+  - ECMAScript.FloatingWhileElementsMounted get_WhileElementsMounted()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.FloatingPlacement] get_Placement()
+  - System.Nullable`1[ECMAScript.FloatingStrategy] get_Strategy()
+  - System.Nullable`1[System.Boolean] get_Transform()
+  - System.String ToString()
+  - Void set_Middleware(ECMAScript.FloatingMiddleware[])
+  - Void set_Open(VueReadonlyRef`1)
+  - Void set_Placement(System.Nullable`1[ECMAScript.FloatingPlacement])
+  - Void set_Strategy(System.Nullable`1[ECMAScript.FloatingStrategy])
+  - Void set_Transform(System.Nullable`1[System.Boolean])
+  - Void set_WhileElementsMounted(ECMAScript.FloatingWhileElementsMounted)
+  - VueReadonlyRef`1 get_Open()
+  - ECMAScript.FloatingMiddleware[] Middleware
+  - ECMAScript.FloatingWhileElementsMounted WhileElementsMounted
+  - System.Nullable`1[ECMAScript.FloatingPlacement] Placement
+  - System.Nullable`1[ECMAScript.FloatingStrategy] Strategy
+  - System.Nullable`1[System.Boolean] Transform
+  - VueReadonlyRef`1 Open
+- type ECMAScript.FloatingUseReturn
+  - Void Update()
+  - VueReadonlyRef`1 get_FloatingStyles()
+  - VueReadonlyRef`1 get_IsPositioned()
+  - VueReadonlyRef`1 get_MiddlewareData()
+  - VueReadonlyRef`1 get_Placement()
+  - VueReadonlyRef`1 get_Strategy()
+  - VueReadonlyRef`1 get_X()
+  - VueReadonlyRef`1 get_Y()
+  - VueReadonlyRef`1 FloatingStyles
+  - VueReadonlyRef`1 IsPositioned
+  - VueReadonlyRef`1 MiddlewareData
+  - VueReadonlyRef`1 Placement
+  - VueReadonlyRef`1 Strategy
+  - VueReadonlyRef`1 X
+  - VueReadonlyRef`1 Y
+- type ECMAScript.FloatingWhileElementsMounted
+  - Void .ctor(System.Object, IntPtr)
+  - System.Action EndInvoke(System.IAsyncResult)
+  - System.Action Invoke(ECMAScript.Element, ECMAScript.Element, System.Action)
+  - System.IAsyncResult BeginInvoke(ECMAScript.Element, ECMAScript.Element, System.Action, System.AsyncCallback, System.Object)
+
 ## ECMAScript.Lucide
 - type ECMAScript.Lucide.AArrowDown
   - Void .ctor()
@@ -12534,6 +13683,314 @@
   - Void .ctor()
 - type ECMAScript.Lucide.ZoomOut
   - Void .ctor()
+
+## ECMAScript.Monaco
+- type ECMAScript.Monaco
+  - ECMAScript.MonacoDisposable OnDidChangeMarkers(System.Action`1[ECMAScript.MonacoUri[]])
+  - ECMAScript.MonacoEditor Create(ECMAScript.Element, ECMAScript.MonacoEditorConstructionOptions)
+  - ECMAScript.MonacoEditor[] GetEditors()
+  - ECMAScript.MonacoModel CreateModel(System.String, System.String)
+  - ECMAScript.MonacoModel[] GetModels()
+  - ECMAScript.MonacoWebWorker`1[TWorker] CreateWebWorker[TWorker](ECMAScript.MonacoWebWorkerOptions)
+  - Void DefineTheme(System.String, ECMAScript.MonacoThemeData)
+  - Void RemoveAllMarkers(System.String)
+  - Void SetModelLanguage(ECMAScript.MonacoModel, System.String)
+  - Void SetModelMarkers(ECMAScript.MonacoModel, System.String, ECMAScript.MonacoMarker[])
+  - Void SetTheme(System.String)
+- type ECMAScript.MonacoContentChangeEvent
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoContentChangeEvent)
+  - Boolean Equals(System.Object)
+  - Boolean get_IsRedoing()
+  - Boolean get_IsUndoing()
+  - Boolean op_Equality(ECMAScript.MonacoContentChangeEvent, ECMAScript.MonacoContentChangeEvent)
+  - Boolean op_Inequality(ECMAScript.MonacoContentChangeEvent, ECMAScript.MonacoContentChangeEvent)
+  - ECMAScript.MonacoContentChangeEvent <Clone>$()
+  - ECMAScript.Number get_VersionId()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_IsRedoing(Boolean)
+  - Void set_IsUndoing(Boolean)
+  - Void set_VersionId(ECMAScript.Number)
+  - Boolean IsRedoing
+  - Boolean IsUndoing
+  - ECMAScript.Number VersionId
+- type ECMAScript.MonacoCursorPositionEvent
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoCursorPositionEvent)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoCursorPositionEvent, ECMAScript.MonacoCursorPositionEvent)
+  - Boolean op_Inequality(ECMAScript.MonacoCursorPositionEvent, ECMAScript.MonacoCursorPositionEvent)
+  - ECMAScript.MonacoCursorPositionEvent <Clone>$()
+  - ECMAScript.MonacoPosition get_Position()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Position(ECMAScript.MonacoPosition)
+  - ECMAScript.MonacoPosition Position
+- type ECMAScript.MonacoDisposable
+- type ECMAScript.MonacoEditor
+  - ECMAScript.MonacoDisposable OnDidBlurEditorText(System.Action)
+  - ECMAScript.MonacoDisposable OnDidChangeCursorPosition(System.Action`1[ECMAScript.MonacoCursorPositionEvent])
+  - ECMAScript.MonacoDisposable OnDidChangeCursorSelection(System.Action`1[ECMAScript.MonacoSelectionEvent])
+  - ECMAScript.MonacoDisposable OnDidFocusEditorText(System.Action)
+  - ECMAScript.MonacoDisposable OnDidLayoutChange(System.Action`1[ECMAScript.MonacoLayoutInfo])
+  - ECMAScript.MonacoLayoutInfo GetLayoutInfo()
+  - ECMAScript.MonacoModel GetModel()
+  - ECMAScript.Number GetScrollTop()
+  - System.String GetValue()
+  - Void Dispose()
+  - Void Focus()
+  - Void Layout()
+  - Void SetModel(ECMAScript.MonacoModel)
+  - Void SetScrollTop(ECMAScript.Number)
+  - Void Trigger(System.String)
+  - Void UpdateOptions(ECMAScript.MonacoEditorConstructionOptions)
+- type ECMAScript.MonacoEditorConstructionOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoEditorConstructionOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoEditorConstructionOptions, ECMAScript.MonacoEditorConstructionOptions)
+  - Boolean op_Inequality(ECMAScript.MonacoEditorConstructionOptions, ECMAScript.MonacoEditorConstructionOptions)
+  - ECMAScript.MonacoEditorConstructionOptions <Clone>$()
+  - ECMAScript.MonacoMinimapOptions get_Minimap()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_FontSize()
+  - System.Nullable`1[ECMAScript.Number] get_LineHeight()
+  - System.Nullable`1[ECMAScript.Number] get_TabSize()
+  - System.Nullable`1[System.Boolean] get_AutomaticLayout()
+  - System.Nullable`1[System.Boolean] get_InsertSpaces()
+  - System.Nullable`1[System.Boolean] get_LineNumbers()
+  - System.Nullable`1[System.Boolean] get_ReadOnly()
+  - System.Nullable`1[System.Boolean] get_ScrollBeyondLastLine()
+  - System.String ToString()
+  - System.String get_Language()
+  - System.String get_Theme()
+  - System.String get_Value()
+  - System.String get_WordWrap()
+  - Void set_AutomaticLayout(System.Nullable`1[System.Boolean])
+  - Void set_FontSize(System.Nullable`1[ECMAScript.Number])
+  - Void set_InsertSpaces(System.Nullable`1[System.Boolean])
+  - Void set_Language(System.String)
+  - Void set_LineHeight(System.Nullable`1[ECMAScript.Number])
+  - Void set_LineNumbers(System.Nullable`1[System.Boolean])
+  - Void set_Minimap(ECMAScript.MonacoMinimapOptions)
+  - Void set_ReadOnly(System.Nullable`1[System.Boolean])
+  - Void set_ScrollBeyondLastLine(System.Nullable`1[System.Boolean])
+  - Void set_TabSize(System.Nullable`1[ECMAScript.Number])
+  - Void set_Theme(System.String)
+  - Void set_Value(System.String)
+  - Void set_WordWrap(System.String)
+  - ECMAScript.MonacoMinimapOptions Minimap
+  - System.Nullable`1[ECMAScript.Number] FontSize
+  - System.Nullable`1[ECMAScript.Number] LineHeight
+  - System.Nullable`1[ECMAScript.Number] TabSize
+  - System.Nullable`1[System.Boolean] AutomaticLayout
+  - System.Nullable`1[System.Boolean] InsertSpaces
+  - System.Nullable`1[System.Boolean] LineNumbers
+  - System.Nullable`1[System.Boolean] ReadOnly
+  - System.Nullable`1[System.Boolean] ScrollBeyondLastLine
+  - System.String Language
+  - System.String Theme
+  - System.String Value
+  - System.String WordWrap
+- type ECMAScript.MonacoLanguageChangeEvent
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoLanguageChangeEvent)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoLanguageChangeEvent, ECMAScript.MonacoLanguageChangeEvent)
+  - Boolean op_Inequality(ECMAScript.MonacoLanguageChangeEvent, ECMAScript.MonacoLanguageChangeEvent)
+  - ECMAScript.MonacoLanguageChangeEvent <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_NewLanguage()
+  - System.String get_OldLanguage()
+  - Void set_NewLanguage(System.String)
+  - Void set_OldLanguage(System.String)
+  - System.String NewLanguage
+  - System.String OldLanguage
+- type ECMAScript.MonacoLayoutInfo
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoLayoutInfo)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoLayoutInfo, ECMAScript.MonacoLayoutInfo)
+  - Boolean op_Inequality(ECMAScript.MonacoLayoutInfo, ECMAScript.MonacoLayoutInfo)
+  - ECMAScript.MonacoLayoutInfo <Clone>$()
+  - ECMAScript.Number get_Height()
+  - ECMAScript.Number get_Width()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Height(ECMAScript.Number)
+  - Void set_Width(ECMAScript.Number)
+  - ECMAScript.Number Height
+  - ECMAScript.Number Width
+- type ECMAScript.MonacoMarker
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoMarker)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoMarker, ECMAScript.MonacoMarker)
+  - Boolean op_Inequality(ECMAScript.MonacoMarker, ECMAScript.MonacoMarker)
+  - ECMAScript.MonacoMarker <Clone>$()
+  - ECMAScript.MonacoMarkerSeverity get_Severity()
+  - ECMAScript.Number get_EndColumn()
+  - ECMAScript.Number get_EndLineNumber()
+  - ECMAScript.Number get_StartColumn()
+  - ECMAScript.Number get_StartLineNumber()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_Message()
+  - Void set_EndColumn(ECMAScript.Number)
+  - Void set_EndLineNumber(ECMAScript.Number)
+  - Void set_Message(System.String)
+  - Void set_Severity(ECMAScript.MonacoMarkerSeverity)
+  - Void set_StartColumn(ECMAScript.Number)
+  - Void set_StartLineNumber(ECMAScript.Number)
+  - ECMAScript.MonacoMarkerSeverity Severity
+  - ECMAScript.Number EndColumn
+  - ECMAScript.Number EndLineNumber
+  - ECMAScript.Number StartColumn
+  - ECMAScript.Number StartLineNumber
+  - System.String Message
+- enum ECMAScript.MonacoMarkerSeverity
+  - ECMAScript.MonacoMarkerSeverity Error
+  - ECMAScript.MonacoMarkerSeverity Hint
+  - ECMAScript.MonacoMarkerSeverity Info
+  - ECMAScript.MonacoMarkerSeverity Warning
+  - Int32 value__
+- type ECMAScript.MonacoMinimapOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoMinimapOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoMinimapOptions, ECMAScript.MonacoMinimapOptions)
+  - Boolean op_Inequality(ECMAScript.MonacoMinimapOptions, ECMAScript.MonacoMinimapOptions)
+  - ECMAScript.MonacoMinimapOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Enabled()
+  - System.String ToString()
+  - Void set_Enabled(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] Enabled
+- type ECMAScript.MonacoModel
+  - Boolean IsDisposed()
+  - ECMAScript.MonacoDisposable OnDidChangeContent(System.Action`1[ECMAScript.MonacoContentChangeEvent])
+  - ECMAScript.MonacoDisposable OnDidChangeLanguage(System.Action`1[ECMAScript.MonacoLanguageChangeEvent])
+  - ECMAScript.MonacoDisposable OnWillDispose(System.Action)
+  - ECMAScript.MonacoUri get_Uri()
+  - ECMAScript.Number GetLineCount()
+  - ECMAScript.Number GetVersionId()
+  - System.String GetLanguageId()
+  - System.String GetLineContent(ECMAScript.Number)
+  - System.String GetValue()
+  - System.String get_Id()
+  - Void Dispose()
+  - Void SetValue(System.String, ECMAScript.MonacoModelUpdateOptions)
+  - ECMAScript.MonacoUri Uri
+  - System.String Id
+- type ECMAScript.MonacoModelUpdateOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoModelUpdateOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoModelUpdateOptions, ECMAScript.MonacoModelUpdateOptions)
+  - Boolean op_Inequality(ECMAScript.MonacoModelUpdateOptions, ECMAScript.MonacoModelUpdateOptions)
+  - ECMAScript.MonacoModelUpdateOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Append()
+  - System.String ToString()
+  - System.String get_ValuePrevious()
+  - Void set_Append(System.Nullable`1[System.Boolean])
+  - Void set_ValuePrevious(System.String)
+  - System.Nullable`1[System.Boolean] Append
+  - System.String ValuePrevious
+- type ECMAScript.MonacoPosition
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoPosition)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoPosition, ECMAScript.MonacoPosition)
+  - Boolean op_Inequality(ECMAScript.MonacoPosition, ECMAScript.MonacoPosition)
+  - ECMAScript.MonacoPosition <Clone>$()
+  - ECMAScript.Number get_Column()
+  - ECMAScript.Number get_LineNumber()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Column(ECMAScript.Number)
+  - Void set_LineNumber(ECMAScript.Number)
+  - ECMAScript.Number Column
+  - ECMAScript.Number LineNumber
+- type ECMAScript.MonacoSelection
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoSelection)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoSelection, ECMAScript.MonacoSelection)
+  - Boolean op_Inequality(ECMAScript.MonacoSelection, ECMAScript.MonacoSelection)
+  - ECMAScript.MonacoSelection <Clone>$()
+  - ECMAScript.Number get_EndColumn()
+  - ECMAScript.Number get_EndLineNumber()
+  - ECMAScript.Number get_StartColumn()
+  - ECMAScript.Number get_StartLineNumber()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_EndColumn(ECMAScript.Number)
+  - Void set_EndLineNumber(ECMAScript.Number)
+  - Void set_StartColumn(ECMAScript.Number)
+  - Void set_StartLineNumber(ECMAScript.Number)
+  - ECMAScript.Number EndColumn
+  - ECMAScript.Number EndLineNumber
+  - ECMAScript.Number StartColumn
+  - ECMAScript.Number StartLineNumber
+- type ECMAScript.MonacoSelectionEvent
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoSelectionEvent)
+  - Boolean Equals(System.Object)
+  - Boolean get_IsEmpty()
+  - Boolean op_Equality(ECMAScript.MonacoSelectionEvent, ECMAScript.MonacoSelectionEvent)
+  - Boolean op_Inequality(ECMAScript.MonacoSelectionEvent, ECMAScript.MonacoSelectionEvent)
+  - ECMAScript.MonacoSelection get_Selection()
+  - ECMAScript.MonacoSelectionEvent <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_IsEmpty(Boolean)
+  - Void set_Selection(ECMAScript.MonacoSelection)
+  - Boolean IsEmpty
+  - ECMAScript.MonacoSelection Selection
+- type ECMAScript.MonacoThemeData
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoThemeData)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoThemeData, ECMAScript.MonacoThemeData)
+  - Boolean op_Inequality(ECMAScript.MonacoThemeData, ECMAScript.MonacoThemeData)
+  - ECMAScript.MonacoThemeData <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Inherit()
+  - System.String ToString()
+  - System.String get_Base()
+  - Void set_Base(System.String)
+  - Void set_Colors(VueDictionary)
+  - Void set_Inherit(System.Nullable`1[System.Boolean])
+  - VueDictionary get_Colors()
+  - System.Nullable`1[System.Boolean] Inherit
+  - System.String Base
+  - VueDictionary Colors
+- type ECMAScript.MonacoUri
+- type ECMAScript.MonacoWebWorkerOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.MonacoWebWorkerOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.MonacoWebWorkerOptions, ECMAScript.MonacoWebWorkerOptions)
+  - Boolean op_Inequality(ECMAScript.MonacoWebWorkerOptions, ECMAScript.MonacoWebWorkerOptions)
+  - ECMAScript.MonacoWebWorkerOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_KeepIdleModels()
+  - System.String ToString()
+  - System.String get_Worker()
+  - Void set_Host(VueProps)
+  - Void set_KeepIdleModels(System.Nullable`1[System.Boolean])
+  - Void set_Worker(System.String)
+  - VueProps get_Host()
+  - System.Nullable`1[System.Boolean] KeepIdleModels
+  - System.String Worker
+  - VueProps Host
+- type ECMAScript.MonacoWebWorker`1
+  - TWorker GetProxy()
+  - Void Dispose()
+  - Void WithSyncedResources(ECMAScript.MonacoModel[])
 
 ## ECMAScript.Pinia.Testing
 - type ECMAScript.PiniaTesting
@@ -52383,6 +53840,343 @@
   - System.Nullable`1[System.Boolean] Transition
   - T[] Data
 
+## ECMAScript.VeeValidate
+- type ECMAScript.VeeValidate
+  - ECMAScript.VeeValidateFieldArrayReturn`1[TItem] UseFieldArray[TItem](System.String)
+  - ECMAScript.VeeValidateFieldReturn`1[TValue] UseField[TValue](System.String, System.String, ECMAScript.VeeValidateFieldOptions`1[TValue])
+  - ECMAScript.VeeValidateFormReturn`1[TValues] UseFormContext[TValues]()
+  - ECMAScript.VeeValidateFormReturn`1[TValues] UseForm[TValues](ECMAScript.VeeValidateFormOptions`1[TValues])
+  - ECMAScript.VeeValidateResetFormHandler UseResetForm()
+  - ECMAScript.VeeValidateSetErrorHandler UseSetFieldError(System.String)
+  - ECMAScript.VeeValidateSetFormErrorsHandler UseSetFormErrors()
+  - ECMAScript.VeeValidateSetFormTouchedHandler UseSetFormTouched()
+  - ECMAScript.VeeValidateSetFormValuesHandler`1[TValues] UseSetFormValues[TValues]()
+  - ECMAScript.VeeValidateSetTouchedHandler UseSetFieldTouched(System.String)
+  - ECMAScript.VeeValidateSetValueHandler`1[TValue] UseSetFieldValue[TValue](System.String)
+  - ECMAScript.VeeValidateSubmitHandler UseSubmitForm[TValues](ECMAScript.VeeValidateSubmitCallback`1[TValues])
+  - ECMAScript.VeeValidateSubmitHandler UseSubmitForm[TValues](System.Func`2[TValues,ECMAScript.PromiseResult])
+  - ECMAScript.VeeValidateValidateHandler UseValidateField(System.String)
+  - ECMAScript.VeeValidateValidateHandler UseValidateForm()
+  - Void Configure(ECMAScript.VeeValidateConfig)
+  - VueComputedRef`1 UseFieldError(System.String)
+  - VueComputedRef`1 UseFieldValue[TValue](System.String)
+  - VueComputedRef`1 UseFormErrors()
+  - VueComputedRef`1 UseFormValues[TValues]()
+  - VueComputedRef`1 UseIsFieldDirty(System.String)
+  - VueComputedRef`1 UseIsFieldTouched(System.String)
+  - VueComputedRef`1 UseIsFieldValid(System.String)
+  - VueComputedRef`1 UseIsFormDirty()
+  - VueComputedRef`1 UseIsFormTouched()
+  - VueComputedRef`1 UseIsFormValid()
+  - VueComputedRef`1 UseIsSubmitting()
+  - VueComputedRef`1 UseIsValidating()
+  - VueComputedRef`1 UseSubmitCount()
+- type ECMAScript.VeeValidateConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VeeValidateConfig, ECMAScript.VeeValidateConfig)
+  - Boolean op_Inequality(ECMAScript.VeeValidateConfig, ECMAScript.VeeValidateConfig)
+  - ECMAScript.VeeValidateConfig <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_ValidateOnBlur()
+  - System.Nullable`1[System.Boolean] get_ValidateOnChange()
+  - System.Nullable`1[System.Boolean] get_ValidateOnInput()
+  - System.Nullable`1[System.Boolean] get_ValidateOnModelUpdate()
+  - System.String ToString()
+  - Void set_ValidateOnBlur(System.Nullable`1[System.Boolean])
+  - Void set_ValidateOnChange(System.Nullable`1[System.Boolean])
+  - Void set_ValidateOnInput(System.Nullable`1[System.Boolean])
+  - Void set_ValidateOnModelUpdate(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] ValidateOnBlur
+  - System.Nullable`1[System.Boolean] ValidateOnChange
+  - System.Nullable`1[System.Boolean] ValidateOnInput
+  - System.Nullable`1[System.Boolean] ValidateOnModelUpdate
+- type ECMAScript.VeeValidateFieldArrayEntry`1
+  - Boolean get_IsFirst()
+  - Boolean get_IsLast()
+  - ECMAScript.Number get_Key()
+  - IVueRef`1 get_Value()
+  - Boolean IsFirst
+  - Boolean IsLast
+  - ECMAScript.Number Key
+  - IVueRef`1 Value
+- type ECMAScript.VeeValidateFieldArrayReturn`1
+  - Void Insert(ECMAScript.Number, TItem)
+  - Void Move(ECMAScript.Number, ECMAScript.Number)
+  - Void Prepend(TItem)
+  - Void Push(TItem)
+  - Void Remove(ECMAScript.Number)
+  - Void Replace(TItem[])
+  - Void Swap(ECMAScript.Number, ECMAScript.Number)
+  - Void Update(ECMAScript.Number, TItem)
+  - VueComputedRef`1 get_Path()
+  - VueShallowRef`1 get_Fields()
+  - VueComputedRef`1 Path
+  - VueShallowRef`1 Fields
+- type ECMAScript.VeeValidateFieldMeta
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateFieldMeta)
+  - Boolean Equals(System.Object)
+  - Boolean get_Dirty()
+  - Boolean get_Pending()
+  - Boolean get_Touched()
+  - Boolean get_Valid()
+  - Boolean get_Validated()
+  - Boolean op_Equality(ECMAScript.VeeValidateFieldMeta, ECMAScript.VeeValidateFieldMeta)
+  - Boolean op_Inequality(ECMAScript.VeeValidateFieldMeta, ECMAScript.VeeValidateFieldMeta)
+  - ECMAScript.VeeValidateFieldMeta <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Dirty(Boolean)
+  - Void set_Pending(Boolean)
+  - Void set_Touched(Boolean)
+  - Void set_Valid(Boolean)
+  - Void set_Validated(Boolean)
+  - Boolean Dirty
+  - Boolean Pending
+  - Boolean Touched
+  - Boolean Valid
+  - Boolean Validated
+- type ECMAScript.VeeValidateFieldOptions`1
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateFieldOptions`1[TValue])
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VeeValidateFieldOptions`1[TValue], ECMAScript.VeeValidateFieldOptions`1[TValue])
+  - Boolean op_Inequality(ECMAScript.VeeValidateFieldOptions`1[TValue], ECMAScript.VeeValidateFieldOptions`1[TValue])
+  - ECMAScript.VeeValidateFieldOptions`1[TValue] <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Bails()
+  - System.Nullable`1[System.Boolean] get_KeepValueOnUnmount()
+  - System.Nullable`1[System.Boolean] get_ValidateOnMount()
+  - System.Nullable`1[System.Boolean] get_ValidateOnValueUpdate()
+  - System.String ToString()
+  - System.String get_Label()
+  - TValue get_InitialValue()
+  - Void set_Bails(System.Nullable`1[System.Boolean])
+  - Void set_InitialValue(TValue)
+  - Void set_KeepValueOnUnmount(System.Nullable`1[System.Boolean])
+  - Void set_Label(System.String)
+  - Void set_ValidateOnMount(System.Nullable`1[System.Boolean])
+  - Void set_ValidateOnValueUpdate(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] Bails
+  - System.Nullable`1[System.Boolean] KeepValueOnUnmount
+  - System.Nullable`1[System.Boolean] ValidateOnMount
+  - System.Nullable`1[System.Boolean] ValidateOnValueUpdate
+  - System.String Label
+  - TValue InitialValue
+- type ECMAScript.VeeValidateFieldReturn`1
+  - ECMAScript.PromiseResult`1[ECMAScript.VeeValidateValidationResult] Validate()
+  - IVueRef`1 get_Value()
+  - Void ResetField()
+  - Void SetErrors(System.String[])
+  - Void SetTouched(Boolean)
+  - Void SetValue(TValue)
+  - VueComputedRef`1 get_ErrorMessage()
+  - VueComputedRef`1 get_Errors()
+  - VueComputedRef`1 get_Meta()
+  - VueComputedRef`1 get_Name()
+  - IVueRef`1 Value
+  - VueComputedRef`1 ErrorMessage
+  - VueComputedRef`1 Errors
+  - VueComputedRef`1 Meta
+  - VueComputedRef`1 Name
+- type ECMAScript.VeeValidateFormMeta
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateFormMeta)
+  - Boolean Equals(System.Object)
+  - Boolean get_Dirty()
+  - Boolean get_Pending()
+  - Boolean get_Touched()
+  - Boolean get_Valid()
+  - Boolean get_Validated()
+  - Boolean op_Equality(ECMAScript.VeeValidateFormMeta, ECMAScript.VeeValidateFormMeta)
+  - Boolean op_Inequality(ECMAScript.VeeValidateFormMeta, ECMAScript.VeeValidateFormMeta)
+  - ECMAScript.VeeValidateFormMeta <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Dirty(Boolean)
+  - Void set_Pending(Boolean)
+  - Void set_Touched(Boolean)
+  - Void set_Valid(Boolean)
+  - Void set_Validated(Boolean)
+  - Boolean Dirty
+  - Boolean Pending
+  - Boolean Touched
+  - Boolean Valid
+  - Boolean Validated
+- type ECMAScript.VeeValidateFormOptions`1
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateFormOptions`1[TValues])
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VeeValidateFormOptions`1[TValues], ECMAScript.VeeValidateFormOptions`1[TValues])
+  - Boolean op_Inequality(ECMAScript.VeeValidateFormOptions`1[TValues], ECMAScript.VeeValidateFormOptions`1[TValues])
+  - ECMAScript.VeeValidateFormOptions`1[TValues] <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_KeepValuesOnUnmount()
+  - System.Nullable`1[System.Boolean] get_ValidateOnMount()
+  - System.String ToString()
+  - System.String get_Name()
+  - TValues get_InitialValues()
+  - Void set_InitialErrors(VueDictionary`1)
+  - Void set_InitialValues(TValues)
+  - Void set_KeepValuesOnUnmount(System.Nullable`1[System.Boolean])
+  - Void set_Name(System.String)
+  - Void set_ValidateOnMount(System.Nullable`1[System.Boolean])
+  - VueDictionary`1 get_InitialErrors()
+  - System.Nullable`1[System.Boolean] KeepValuesOnUnmount
+  - System.Nullable`1[System.Boolean] ValidateOnMount
+  - System.String Name
+  - TValues InitialValues
+  - VueDictionary`1 InitialErrors
+- type ECMAScript.VeeValidateFormResetState
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateFormResetState)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VeeValidateFormResetState, ECMAScript.VeeValidateFormResetState)
+  - Boolean op_Inequality(ECMAScript.VeeValidateFormResetState, ECMAScript.VeeValidateFormResetState)
+  - ECMAScript.VeeValidateFormResetState <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Errors(VueDictionary`1)
+  - Void set_Touched(VueDictionary`1)
+  - VueDictionary`1 get_Errors()
+  - VueDictionary`1 get_Touched()
+  - VueDictionary`1 Errors
+  - VueDictionary`1 Touched
+- type ECMAScript.VeeValidateFormResetState`1
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateFormResetState)
+  - Boolean Equals(ECMAScript.VeeValidateFormResetState`1[TValues])
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VeeValidateFormResetState`1[TValues], ECMAScript.VeeValidateFormResetState`1[TValues])
+  - Boolean op_Inequality(ECMAScript.VeeValidateFormResetState`1[TValues], ECMAScript.VeeValidateFormResetState`1[TValues])
+  - ECMAScript.VeeValidateFormResetState`1[TValues] <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - TValues get_Values()
+  - Void set_Values(TValues)
+  - TValues Values
+- type ECMAScript.VeeValidateFormReturn`1
+  - ECMAScript.PromiseResult`1[ECMAScript.VeeValidateValidationResult] Validate()
+  - ECMAScript.PromiseResult`1[ECMAScript.VeeValidateValidationResult] ValidateField(System.String)
+  - ECMAScript.VeeValidateFieldReturn`1[TValue] DefineField[TValue](System.String)
+  - ECMAScript.VeeValidateSubmitHandler HandleSubmit(ECMAScript.VeeValidateSubmitCallback`1[TValues], ECMAScript.VeeValidateInvalidSubmitCallback)
+  - ECMAScript.VeeValidateSubmitHandler HandleSubmit(System.Func`2[TValues,ECMAScript.PromiseResult], ECMAScript.VeeValidateInvalidSubmitCallback)
+  - System.String get_Name()
+  - TValues get_Values()
+  - Void ResetForm(ECMAScript.VeeValidateFormResetState`1[TValues])
+  - Void SetErrors(VueDictionary`1)
+  - Void SetFieldError(System.String, System.String)
+  - Void SetFieldTouched(System.String, Boolean)
+  - Void SetFieldValue[TValue](System.String, TValue)
+  - Void SetValues(TValues)
+  - VueComputedRef`1 get_ErrorBag()
+  - VueComputedRef`1 get_Errors()
+  - VueComputedRef`1 get_IsSubmitting()
+  - VueComputedRef`1 get_IsValidating()
+  - VueComputedRef`1 get_Meta()
+  - VueComputedRef`1 get_SubmitCount()
+  - System.String Name
+  - TValues Values
+  - VueComputedRef`1 ErrorBag
+  - VueComputedRef`1 Errors
+  - VueComputedRef`1 IsSubmitting
+  - VueComputedRef`1 IsValidating
+  - VueComputedRef`1 Meta
+  - VueComputedRef`1 SubmitCount
+- type ECMAScript.VeeValidateInvalidSubmitCallback
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(ECMAScript.VeeValidateInvalidSubmitContext, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(ECMAScript.VeeValidateInvalidSubmitContext)
+- type ECMAScript.VeeValidateInvalidSubmitContext
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateInvalidSubmitContext)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VeeValidateInvalidSubmitContext, ECMAScript.VeeValidateInvalidSubmitContext)
+  - Boolean op_Inequality(ECMAScript.VeeValidateInvalidSubmitContext, ECMAScript.VeeValidateInvalidSubmitContext)
+  - ECMAScript.SubmitEvent get_Evt()
+  - ECMAScript.VeeValidateInvalidSubmitContext <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Errors(VueDictionary`1)
+  - Void set_Evt(ECMAScript.SubmitEvent)
+  - Void set_Values(VueDictionary)
+  - VueDictionary get_Values()
+  - VueDictionary`1 get_Errors()
+  - ECMAScript.SubmitEvent Evt
+  - VueDictionary Values
+  - VueDictionary`1 Errors
+- type ECMAScript.VeeValidateResetFormHandler
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(ECMAScript.VeeValidateFormResetState, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(ECMAScript.VeeValidateFormResetState)
+- type ECMAScript.VeeValidateSetErrorHandler
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(System.String, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(System.String)
+- type ECMAScript.VeeValidateSetFormErrorsHandler
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(VueDictionary`1, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(VueDictionary`1)
+- type ECMAScript.VeeValidateSetFormTouchedHandler
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(VueDictionary`1, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(VueDictionary`1)
+- type ECMAScript.VeeValidateSetFormValuesHandler`1
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(TValues, Boolean, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(TValues, Boolean)
+- type ECMAScript.VeeValidateSetTouchedHandler
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(Boolean, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(Boolean)
+- type ECMAScript.VeeValidateSetValueHandler`1
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(TValue, Boolean, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(TValue, Boolean)
+- type ECMAScript.VeeValidateSubmitCallback`1
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(TValues, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(TValues)
+- type ECMAScript.VeeValidateSubmitHandler
+  - Void .ctor(System.Object, IntPtr)
+  - ECMAScript.PromiseResult EndInvoke(System.IAsyncResult)
+  - ECMAScript.PromiseResult Invoke(ECMAScript.SubmitEvent)
+  - System.IAsyncResult BeginInvoke(ECMAScript.SubmitEvent, System.AsyncCallback, System.Object)
+- type ECMAScript.VeeValidateValidateHandler
+  - Void .ctor(System.Object, IntPtr)
+  - ECMAScript.PromiseResult`1[ECMAScript.VeeValidateValidationResult] EndInvoke(System.IAsyncResult)
+  - ECMAScript.PromiseResult`1[ECMAScript.VeeValidateValidationResult] Invoke()
+  - System.IAsyncResult BeginInvoke(System.AsyncCallback, System.Object)
+- type ECMAScript.VeeValidateValidationResult
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VeeValidateValidationResult)
+  - Boolean Equals(System.Object)
+  - Boolean get_Valid()
+  - Boolean op_Equality(ECMAScript.VeeValidateValidationResult, ECMAScript.VeeValidateValidationResult)
+  - Boolean op_Inequality(ECMAScript.VeeValidateValidationResult, ECMAScript.VeeValidateValidationResult)
+  - ECMAScript.VeeValidateValidationResult <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_Source()
+  - Void set_Errors(VueDictionary`1)
+  - Void set_Source(System.String)
+  - Void set_Valid(Boolean)
+  - VueDictionary`1 get_Errors()
+  - Boolean Valid
+  - System.String Source
+  - VueDictionary`1 Errors
+
 ## ECMAScript.Vue.Devtools
 - type ECMAScript.DevtoolsAsyncInspectorActionCallback
   - Void .ctor(System.Object, IntPtr)
@@ -56730,6 +58524,662 @@
   - System.Nullable`1[System.Double][] AsValues
   - System.Object Value
 
+## ECMAScript.VueDraggable
+- type ECMAScript.VueDraggable
+  - ECMAScript.VueDraggableReturn UseDraggable[TItem](ECMAScript.Element, IVueRef`1, ECMAScript.VueDraggableOptions)
+- enum ECMAScript.VueDraggableDirection
+  - ECMAScript.VueDraggableDirection Horizontal
+  - ECMAScript.VueDraggableDirection Vertical
+  - Int32 value__
+- type ECMAScript.VueDraggableEvent
+- type ECMAScript.VueDraggableGroupOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDraggableGroupOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDraggableGroupOptions, ECMAScript.VueDraggableGroupOptions)
+  - Boolean op_Inequality(ECMAScript.VueDraggableGroupOptions, ECMAScript.VueDraggableGroupOptions)
+  - ECMAScript.VueDraggableGroupOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueDraggablePullValue] get_Pull()
+  - System.Nullable`1[ECMAScript.VueDraggablePullValue] get_Put()
+  - System.String ToString()
+  - System.String get_Name()
+  - Void set_Name(System.String)
+  - Void set_Pull(System.Nullable`1[ECMAScript.VueDraggablePullValue])
+  - Void set_Put(System.Nullable`1[ECMAScript.VueDraggablePullValue])
+  - System.Nullable`1[ECMAScript.VueDraggablePullValue] Pull
+  - System.Nullable`1[ECMAScript.VueDraggablePullValue] Put
+  - System.String Name
+- type ECMAScript.VueDraggableList`1
+  - Void .ctor()
+  - ECMAScript.VueDraggableOptions get_Options()
+  - IVueRef`1 get_ModelValue()
+  - Microsoft.AspNetCore.Components.RenderFragment`1[TItem] get_ChildContent()
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] get_AdditionalAttributes()
+  - System.String get_Tag()
+  - Void set_AdditionalAttributes(System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object])
+  - Void set_ChildContent(Microsoft.AspNetCore.Components.RenderFragment`1[TItem])
+  - Void set_ModelValue(IVueRef`1)
+  - Void set_Options(ECMAScript.VueDraggableOptions)
+  - Void set_Tag(System.String)
+  - ECMAScript.VueDraggableOptions Options
+  - IVueRef`1 ModelValue
+  - Microsoft.AspNetCore.Components.RenderFragment`1[TItem] ChildContent
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] AdditionalAttributes
+  - System.String Tag
+- type ECMAScript.VueDraggableOffset
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDraggableOffset)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDraggableOffset, ECMAScript.VueDraggableOffset)
+  - Boolean op_Inequality(ECMAScript.VueDraggableOffset, ECMAScript.VueDraggableOffset)
+  - ECMAScript.Number get_X()
+  - ECMAScript.Number get_Y()
+  - ECMAScript.VueDraggableOffset <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_X(ECMAScript.Number)
+  - Void set_Y(ECMAScript.Number)
+  - ECMAScript.Number X
+  - ECMAScript.Number Y
+- type ECMAScript.VueDraggableOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueDraggableOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueDraggableOptions, ECMAScript.VueDraggableOptions)
+  - Boolean op_Inequality(ECMAScript.VueDraggableOptions, ECMAScript.VueDraggableOptions)
+  - ECMAScript.VueDraggableGroupOptions get_Group()
+  - ECMAScript.VueDraggableOffset get_FallbackOffset()
+  - ECMAScript.VueDraggableOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_CustomUpdate()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnAdd()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnChange()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnChoose()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnClone()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnEnd()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnFilter()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnRemove()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnSort()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnStart()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnUnchoose()
+  - System.Action`1[ECMAScript.VueDraggableEvent] get_OnUpdate()
+  - System.Func`2[ECMAScript.VueDraggableEvent,ECMAScript.VueDraggableEvent] get_CloneHandler()
+  - System.Nullable`1[ECMAScript.Number] get_Animation()
+  - System.Nullable`1[ECMAScript.Number] get_Delay()
+  - System.Nullable`1[ECMAScript.Number] get_EmptyInsertThreshold()
+  - System.Nullable`1[ECMAScript.Number] get_FallbackTolerance()
+  - System.Nullable`1[ECMAScript.Number] get_InvertedSwapThreshold()
+  - System.Nullable`1[ECMAScript.Number] get_SwapThreshold()
+  - System.Nullable`1[ECMAScript.Number] get_TouchStartThreshold()
+  - System.Nullable`1[ECMAScript.VueDraggableDirection] get_Direction()
+  - System.Nullable`1[System.Boolean] get_DelayOnTouchOnly()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - System.Nullable`1[System.Boolean] get_DragoverBubble()
+  - System.Nullable`1[System.Boolean] get_DropBubble()
+  - System.Nullable`1[System.Boolean] get_FallbackOnBody()
+  - System.Nullable`1[System.Boolean] get_ForceFallback()
+  - System.Nullable`1[System.Boolean] get_Immediate()
+  - System.Nullable`1[System.Boolean] get_InvertSwap()
+  - System.Nullable`1[System.Boolean] get_PreventOnFilter()
+  - System.Nullable`1[System.Boolean] get_RemoveCloneOnHide()
+  - System.Nullable`1[System.Boolean] get_Sort()
+  - System.String ToString()
+  - System.String get_ChosenClass()
+  - System.String get_DataIdAttr()
+  - System.String get_DragClass()
+  - System.String get_Draggable()
+  - System.String get_Easing()
+  - System.String get_FallbackClass()
+  - System.String get_Filter()
+  - System.String get_GhostClass()
+  - System.String get_Handle()
+  - Void set_Animation(System.Nullable`1[ECMAScript.Number])
+  - Void set_ChosenClass(System.String)
+  - Void set_CloneHandler(System.Func`2[ECMAScript.VueDraggableEvent,ECMAScript.VueDraggableEvent])
+  - Void set_CustomUpdate(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_DataIdAttr(System.String)
+  - Void set_Delay(System.Nullable`1[ECMAScript.Number])
+  - Void set_DelayOnTouchOnly(System.Nullable`1[System.Boolean])
+  - Void set_Direction(System.Nullable`1[ECMAScript.VueDraggableDirection])
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_DragClass(System.String)
+  - Void set_Draggable(System.String)
+  - Void set_DragoverBubble(System.Nullable`1[System.Boolean])
+  - Void set_DropBubble(System.Nullable`1[System.Boolean])
+  - Void set_Easing(System.String)
+  - Void set_EmptyInsertThreshold(System.Nullable`1[ECMAScript.Number])
+  - Void set_FallbackClass(System.String)
+  - Void set_FallbackOffset(ECMAScript.VueDraggableOffset)
+  - Void set_FallbackOnBody(System.Nullable`1[System.Boolean])
+  - Void set_FallbackTolerance(System.Nullable`1[ECMAScript.Number])
+  - Void set_Filter(System.String)
+  - Void set_ForceFallback(System.Nullable`1[System.Boolean])
+  - Void set_GhostClass(System.String)
+  - Void set_Group(ECMAScript.VueDraggableGroupOptions)
+  - Void set_Handle(System.String)
+  - Void set_Immediate(System.Nullable`1[System.Boolean])
+  - Void set_InvertSwap(System.Nullable`1[System.Boolean])
+  - Void set_InvertedSwapThreshold(System.Nullable`1[ECMAScript.Number])
+  - Void set_OnAdd(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnChange(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnChoose(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnClone(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnEnd(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnFilter(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnRemove(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnSort(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnStart(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnUnchoose(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_OnUpdate(System.Action`1[ECMAScript.VueDraggableEvent])
+  - Void set_PreventOnFilter(System.Nullable`1[System.Boolean])
+  - Void set_RemoveCloneOnHide(System.Nullable`1[System.Boolean])
+  - Void set_Sort(System.Nullable`1[System.Boolean])
+  - Void set_SwapThreshold(System.Nullable`1[ECMAScript.Number])
+  - Void set_TouchStartThreshold(System.Nullable`1[ECMAScript.Number])
+  - ECMAScript.VueDraggableGroupOptions Group
+  - ECMAScript.VueDraggableOffset FallbackOffset
+  - System.Action`1[ECMAScript.VueDraggableEvent] CustomUpdate
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnAdd
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnChange
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnChoose
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnClone
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnEnd
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnFilter
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnRemove
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnSort
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnStart
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnUnchoose
+  - System.Action`1[ECMAScript.VueDraggableEvent] OnUpdate
+  - System.Func`2[ECMAScript.VueDraggableEvent,ECMAScript.VueDraggableEvent] CloneHandler
+  - System.Nullable`1[ECMAScript.Number] Animation
+  - System.Nullable`1[ECMAScript.Number] Delay
+  - System.Nullable`1[ECMAScript.Number] EmptyInsertThreshold
+  - System.Nullable`1[ECMAScript.Number] FallbackTolerance
+  - System.Nullable`1[ECMAScript.Number] InvertedSwapThreshold
+  - System.Nullable`1[ECMAScript.Number] SwapThreshold
+  - System.Nullable`1[ECMAScript.Number] TouchStartThreshold
+  - System.Nullable`1[ECMAScript.VueDraggableDirection] Direction
+  - System.Nullable`1[System.Boolean] DelayOnTouchOnly
+  - System.Nullable`1[System.Boolean] Disabled
+  - System.Nullable`1[System.Boolean] DragoverBubble
+  - System.Nullable`1[System.Boolean] DropBubble
+  - System.Nullable`1[System.Boolean] FallbackOnBody
+  - System.Nullable`1[System.Boolean] ForceFallback
+  - System.Nullable`1[System.Boolean] Immediate
+  - System.Nullable`1[System.Boolean] InvertSwap
+  - System.Nullable`1[System.Boolean] PreventOnFilter
+  - System.Nullable`1[System.Boolean] RemoveCloneOnHide
+  - System.Nullable`1[System.Boolean] Sort
+  - System.String ChosenClass
+  - System.String DataIdAttr
+  - System.String DragClass
+  - System.String Draggable
+  - System.String Easing
+  - System.String FallbackClass
+  - System.String Filter
+  - System.String GhostClass
+  - System.String Handle
+- type ECMAScript.VueDraggablePullValue
+  - Void .ctor(Boolean)
+  - Void .ctor(System.String)
+  - System.Object get_Value()
+  - System.Object Value
+- type ECMAScript.VueDraggableReturn
+  - Void Destroy()
+  - Void Pause()
+  - Void Resume()
+  - Void Start(ECMAScript.Element)
+
+## ECMAScript.VueI18n
+- type ECMAScript.VueI18n
+  - ECMAScript.VueI18nComposer UseI18n(ECMAScript.VueI18nUseOptions)
+  - ECMAScript.VueI18nInstance CreateI18n(ECMAScript.VueI18nCreateOptions)
+- type ECMAScript.VueI18nComposer
+  - Boolean Te(System.String)
+  - Boolean get_InheritLocale()
+  - IVueRef`1 get_FallbackLocale()
+  - IVueRef`1 get_Locale()
+  - System.String D(ECMAScript.Date, System.String, System.String)
+  - System.String D(ECMAScript.Number, System.String, System.String)
+  - System.String N(ECMAScript.Number, System.String, System.String)
+  - System.String Rt(System.String)
+  - System.String T(System.String)
+  - System.String T(System.String, ECMAScript.Number)
+  - System.String T(System.String, ECMAScript.VueI18nTranslateOptions)
+  - System.String T(System.String, VueDictionary)
+  - System.String[] get_AvailableLocales()
+  - Void MergeDateTimeFormat(System.String, VueDictionary)
+  - Void MergeLocaleMessage(System.String, VueDictionary)
+  - Void MergeNumberFormat(System.String, VueDictionary)
+  - Void SetDateTimeFormat(System.String, VueDictionary)
+  - Void SetLocaleMessage(System.String, VueDictionary)
+  - Void SetNumberFormat(System.String, VueDictionary)
+  - Void set_InheritLocale(Boolean)
+  - VueDictionary GetDateTimeFormat(System.String)
+  - VueDictionary GetLocaleMessage(System.String)
+  - VueDictionary GetNumberFormat(System.String)
+  - VueDictionary Tm(System.String)
+  - VueReadonlyRef`1 get_DateTimeFormats()
+  - VueReadonlyRef`1 get_Id()
+  - VueReadonlyRef`1 get_IsGlobal()
+  - VueReadonlyRef`1 get_Messages()
+  - VueReadonlyRef`1 get_NumberFormats()
+  - Boolean InheritLocale
+  - IVueRef`1 FallbackLocale
+  - IVueRef`1 Locale
+  - System.String[] AvailableLocales
+  - VueReadonlyRef`1 DateTimeFormats
+  - VueReadonlyRef`1 Id
+  - VueReadonlyRef`1 IsGlobal
+  - VueReadonlyRef`1 Messages
+  - VueReadonlyRef`1 NumberFormats
+- type ECMAScript.VueI18nCreateOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueI18nCreateOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueI18nCreateOptions, ECMAScript.VueI18nCreateOptions)
+  - Boolean op_Inequality(ECMAScript.VueI18nCreateOptions, ECMAScript.VueI18nCreateOptions)
+  - ECMAScript.VueI18nCreateOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_AllowComposition()
+  - System.Nullable`1[System.Boolean] get_FallbackRoot()
+  - System.Nullable`1[System.Boolean] get_FallbackWarn()
+  - System.Nullable`1[System.Boolean] get_GlobalInjection()
+  - System.Nullable`1[System.Boolean] get_Legacy()
+  - System.Nullable`1[System.Boolean] get_MissingWarn()
+  - System.Nullable`1[System.Boolean] get_WarnHtmlMessage()
+  - System.String ToString()
+  - System.String get_FallbackLocale()
+  - System.String get_Locale()
+  - Void set_AllowComposition(System.Nullable`1[System.Boolean])
+  - Void set_DateTimeFormats(VueDictionary)
+  - Void set_FallbackLocale(System.String)
+  - Void set_FallbackRoot(System.Nullable`1[System.Boolean])
+  - Void set_FallbackWarn(System.Nullable`1[System.Boolean])
+  - Void set_GlobalInjection(System.Nullable`1[System.Boolean])
+  - Void set_Legacy(System.Nullable`1[System.Boolean])
+  - Void set_Locale(System.String)
+  - Void set_Messages(VueDictionary)
+  - Void set_MissingWarn(System.Nullable`1[System.Boolean])
+  - Void set_NumberFormats(VueDictionary)
+  - Void set_WarnHtmlMessage(System.Nullable`1[System.Boolean])
+  - VueDictionary get_DateTimeFormats()
+  - VueDictionary get_Messages()
+  - VueDictionary get_NumberFormats()
+  - System.Nullable`1[System.Boolean] AllowComposition
+  - System.Nullable`1[System.Boolean] FallbackRoot
+  - System.Nullable`1[System.Boolean] FallbackWarn
+  - System.Nullable`1[System.Boolean] GlobalInjection
+  - System.Nullable`1[System.Boolean] Legacy
+  - System.Nullable`1[System.Boolean] MissingWarn
+  - System.Nullable`1[System.Boolean] WarnHtmlMessage
+  - System.String FallbackLocale
+  - System.String Locale
+  - VueDictionary DateTimeFormats
+  - VueDictionary Messages
+  - VueDictionary NumberFormats
+- type ECMAScript.VueI18nInstance
+  - Boolean Equals(ECMAScript.VueI18nInstance)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VuePlugin)
+  - Boolean op_Equality(ECMAScript.VueI18nInstance, ECMAScript.VueI18nInstance)
+  - Boolean op_Inequality(ECMAScript.VueI18nInstance, ECMAScript.VueI18nInstance)
+  - ECMAScript.VueI18nComposer get_Global()
+  - ECMAScript.VueI18nInstance <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_Mode()
+  - Void Dispose()
+  - ECMAScript.VueI18nComposer Global
+  - System.String Mode
+- enum ECMAScript.VueI18nScope
+  - ECMAScript.VueI18nScope Global
+  - ECMAScript.VueI18nScope Local
+  - ECMAScript.VueI18nScope Parent
+  - Int32 value__
+- type ECMAScript.VueI18nTranslateOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueI18nTranslateOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueI18nTranslateOptions, ECMAScript.VueI18nTranslateOptions)
+  - Boolean op_Inequality(ECMAScript.VueI18nTranslateOptions, ECMAScript.VueI18nTranslateOptions)
+  - ECMAScript.VueI18nTranslateOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Plural()
+  - System.Nullable`1[System.Boolean] get_FallbackWarn()
+  - System.Nullable`1[System.Boolean] get_MissingWarn()
+  - System.String ToString()
+  - System.String get_Default()
+  - System.String get_Locale()
+  - Void set_Default(System.String)
+  - Void set_FallbackWarn(System.Nullable`1[System.Boolean])
+  - Void set_Locale(System.String)
+  - Void set_MissingWarn(System.Nullable`1[System.Boolean])
+  - Void set_Named(VueDictionary)
+  - Void set_Plural(System.Nullable`1[ECMAScript.Number])
+  - VueDictionary get_Named()
+  - System.Nullable`1[ECMAScript.Number] Plural
+  - System.Nullable`1[System.Boolean] FallbackWarn
+  - System.Nullable`1[System.Boolean] MissingWarn
+  - System.String Default
+  - System.String Locale
+  - VueDictionary Named
+- type ECMAScript.VueI18nUseOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueI18nUseOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueI18nUseOptions, ECMAScript.VueI18nUseOptions)
+  - Boolean op_Inequality(ECMAScript.VueI18nUseOptions, ECMAScript.VueI18nUseOptions)
+  - ECMAScript.VueI18nUseOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueI18nScope] get_UseScope()
+  - System.Nullable`1[System.Boolean] get_FallbackWarn()
+  - System.Nullable`1[System.Boolean] get_InheritLocale()
+  - System.Nullable`1[System.Boolean] get_MissingWarn()
+  - System.String ToString()
+  - System.String get_FallbackLocale()
+  - System.String get_Locale()
+  - Void set_DateTimeFormats(VueDictionary)
+  - Void set_FallbackLocale(System.String)
+  - Void set_FallbackWarn(System.Nullable`1[System.Boolean])
+  - Void set_InheritLocale(System.Nullable`1[System.Boolean])
+  - Void set_Locale(System.String)
+  - Void set_Messages(VueDictionary)
+  - Void set_MissingWarn(System.Nullable`1[System.Boolean])
+  - Void set_NumberFormats(VueDictionary)
+  - Void set_UseScope(System.Nullable`1[ECMAScript.VueI18nScope])
+  - VueDictionary get_DateTimeFormats()
+  - VueDictionary get_Messages()
+  - VueDictionary get_NumberFormats()
+  - System.Nullable`1[ECMAScript.VueI18nScope] UseScope
+  - System.Nullable`1[System.Boolean] FallbackWarn
+  - System.Nullable`1[System.Boolean] InheritLocale
+  - System.Nullable`1[System.Boolean] MissingWarn
+  - System.String FallbackLocale
+  - System.String Locale
+  - VueDictionary DateTimeFormats
+  - VueDictionary Messages
+  - VueDictionary NumberFormats
+
+## ECMAScript.VueQuery
+- type ECMAScript.VueQuery
+  - ECMAScript.VueQueryClient UseQueryClient()
+  - ECMAScript.VueQueryMutationReturn`2[TData,TVariables] UseMutation[TData,TVariables](ECMAScript.VueQueryMutationOptions`2[TData,TVariables])
+  - ECMAScript.VueQueryQueryReturn`1[TData] UseQuery[TData](ECMAScript.VueQueryQueryOptions`1[TData])
+  - VuePlugin get_VueQueryPlugin()
+  - VueReadonlyRef`1 UseIsFetching(ECMAScript.VueQueryFilterOptions)
+  - VueReadonlyRef`1 UseIsMutating(ECMAScript.VueQueryFilterOptions)
+  - VuePlugin VueQueryPlugin
+- type ECMAScript.VueQueryClient
+  - ECMAScript.PromiseResult CancelQueries(ECMAScript.VueQueryFilterOptions)
+  - ECMAScript.PromiseResult InvalidateQueries(ECMAScript.VueQueryFilterOptions)
+  - ECMAScript.PromiseResult RefetchQueries(ECMAScript.VueQueryFilterOptions)
+  - ECMAScript.PromiseResult ResetQueries(ECMAScript.VueQueryFilterOptions)
+  - ECMAScript.PromiseResult`1[TData] FetchQuery[TData](ECMAScript.VueQueryQueryOptions`1[TData])
+  - TData GetQueryData[TData](ECMAScript.VueQueryKeyPart[])
+  - Void Clear()
+  - Void RemoveQueries(ECMAScript.VueQueryFilterOptions)
+  - Void SetQueryData[TData](ECMAScript.VueQueryKeyPart[], TData)
+- type ECMAScript.VueQueryClientConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryClientConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryClientConfig, ECMAScript.VueQueryClientConfig)
+  - Boolean op_Inequality(ECMAScript.VueQueryClientConfig, ECMAScript.VueQueryClientConfig)
+  - ECMAScript.VueQueryClientConfig <Clone>$()
+  - ECMAScript.VueQueryDefaultOptions get_DefaultOptions()
+  - ECMAScript.VueQueryMutationCache get_MutationCache()
+  - ECMAScript.VueQueryQueryCache get_QueryCache()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_DefaultOptions(ECMAScript.VueQueryDefaultOptions)
+  - Void set_MutationCache(ECMAScript.VueQueryMutationCache)
+  - Void set_QueryCache(ECMAScript.VueQueryQueryCache)
+  - ECMAScript.VueQueryDefaultOptions DefaultOptions
+  - ECMAScript.VueQueryMutationCache MutationCache
+  - ECMAScript.VueQueryQueryCache QueryCache
+- type ECMAScript.VueQueryDefaultOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryDefaultOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryDefaultOptions, ECMAScript.VueQueryDefaultOptions)
+  - Boolean op_Inequality(ECMAScript.VueQueryDefaultOptions, ECMAScript.VueQueryDefaultOptions)
+  - ECMAScript.VueQueryDefaultOptions <Clone>$()
+  - ECMAScript.VueQueryMutationDefaults get_Mutations()
+  - ECMAScript.VueQueryQueryDefaults get_Queries()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Mutations(ECMAScript.VueQueryMutationDefaults)
+  - Void set_Queries(ECMAScript.VueQueryQueryDefaults)
+  - ECMAScript.VueQueryMutationDefaults Mutations
+  - ECMAScript.VueQueryQueryDefaults Queries
+- type ECMAScript.VueQueryFilterOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryFilterOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryFilterOptions, ECMAScript.VueQueryFilterOptions)
+  - Boolean op_Inequality(ECMAScript.VueQueryFilterOptions, ECMAScript.VueQueryFilterOptions)
+  - ECMAScript.VueQueryFilterOptions <Clone>$()
+  - ECMAScript.VueQueryKeyPart[] get_QueryKey()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueQueryFilterType] get_Type()
+  - System.Nullable`1[System.Boolean] get_Exact()
+  - System.Nullable`1[System.Boolean] get_Stale()
+  - System.String ToString()
+  - Void set_Exact(System.Nullable`1[System.Boolean])
+  - Void set_QueryKey(ECMAScript.VueQueryKeyPart[])
+  - Void set_Stale(System.Nullable`1[System.Boolean])
+  - Void set_Type(System.Nullable`1[ECMAScript.VueQueryFilterType])
+  - ECMAScript.VueQueryKeyPart[] QueryKey
+  - System.Nullable`1[ECMAScript.VueQueryFilterType] Type
+  - System.Nullable`1[System.Boolean] Exact
+  - System.Nullable`1[System.Boolean] Stale
+- enum ECMAScript.VueQueryFilterType
+  - ECMAScript.VueQueryFilterType Active
+  - ECMAScript.VueQueryFilterType All
+  - ECMAScript.VueQueryFilterType Inactive
+  - Int32 value__
+- type ECMAScript.VueQueryKeyPart
+  - Void .ctor(Boolean)
+  - Void .ctor(ECMAScript.Number)
+  - Void .ctor(System.String)
+  - Void .ctor(VueProps)
+  - System.Nullable`1[ECMAScript.Number] get_AsNumber()
+  - System.Nullable`1[System.Boolean] get_AsBoolean()
+  - System.Object get_Value()
+  - System.String get_AsString()
+  - VueProps get_AsProps()
+  - System.Nullable`1[ECMAScript.Number] AsNumber
+  - System.Nullable`1[System.Boolean] AsBoolean
+  - System.Object Value
+  - System.String AsString
+  - VueProps AsProps
+- type ECMAScript.VueQueryMutationCache
+- type ECMAScript.VueQueryMutationDefaults
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryMutationDefaults)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryMutationDefaults, ECMAScript.VueQueryMutationDefaults)
+  - Boolean op_Inequality(ECMAScript.VueQueryMutationDefaults, ECMAScript.VueQueryMutationDefaults)
+  - ECMAScript.VueQueryMutationDefaults <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Retry()
+  - System.String ToString()
+  - Void set_Retry(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] Retry
+- type ECMAScript.VueQueryMutationFunction`2
+  - Void .ctor(System.Object, IntPtr)
+  - ECMAScript.PromiseResult`1[TData] EndInvoke(System.IAsyncResult)
+  - ECMAScript.PromiseResult`1[TData] Invoke(TVariables)
+  - System.IAsyncResult BeginInvoke(TVariables, System.AsyncCallback, System.Object)
+- type ECMAScript.VueQueryMutationOptions`2
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryMutationOptions`2[TData,TVariables])
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryMutationOptions`2[TData,TVariables], ECMAScript.VueQueryMutationOptions`2[TData,TVariables])
+  - Boolean op_Inequality(ECMAScript.VueQueryMutationOptions`2[TData,TVariables], ECMAScript.VueQueryMutationOptions`2[TData,TVariables])
+  - ECMAScript.VueQueryKeyPart[] get_MutationKey()
+  - ECMAScript.VueQueryKeyPart[] get_OnSuccessInvalidate()
+  - ECMAScript.VueQueryMutationFunction`2[TData,TVariables] get_MutationFn()
+  - ECMAScript.VueQueryMutationOptions`2[TData,TVariables] <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Retry()
+  - System.String ToString()
+  - Void set_Meta(VueDictionary)
+  - Void set_MutationFn(ECMAScript.VueQueryMutationFunction`2[TData,TVariables])
+  - Void set_MutationKey(ECMAScript.VueQueryKeyPart[])
+  - Void set_OnSuccessInvalidate(ECMAScript.VueQueryKeyPart[])
+  - Void set_Retry(System.Nullable`1[ECMAScript.Number])
+  - VueDictionary get_Meta()
+  - ECMAScript.VueQueryKeyPart[] MutationKey
+  - ECMAScript.VueQueryKeyPart[] OnSuccessInvalidate
+  - ECMAScript.VueQueryMutationFunction`2[TData,TVariables] MutationFn
+  - System.Nullable`1[ECMAScript.Number] Retry
+  - VueDictionary Meta
+- type ECMAScript.VueQueryMutationReturn`2
+  - ECMAScript.PromiseResult`1[TData] MutateAsync(TVariables)
+  - Void Mutate(TVariables)
+  - Void Reset()
+  - VueReadonlyRef`1 get_Data()
+  - VueReadonlyRef`1 get_Error()
+  - VueReadonlyRef`1 get_FailureCount()
+  - VueReadonlyRef`1 get_IsError()
+  - VueReadonlyRef`1 get_IsPending()
+  - VueReadonlyRef`1 get_IsSuccess()
+  - VueReadonlyRef`1 get_Status()
+  - VueReadonlyRef`1 get_Variables()
+  - VueReadonlyRef`1 Data
+  - VueReadonlyRef`1 Error
+  - VueReadonlyRef`1 FailureCount
+  - VueReadonlyRef`1 IsError
+  - VueReadonlyRef`1 IsPending
+  - VueReadonlyRef`1 IsSuccess
+  - VueReadonlyRef`1 Status
+  - VueReadonlyRef`1 Variables
+- type ECMAScript.VueQueryPluginOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryPluginOptions)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VuePluginOptions)
+  - Boolean op_Equality(ECMAScript.VueQueryPluginOptions, ECMAScript.VueQueryPluginOptions)
+  - Boolean op_Inequality(ECMAScript.VueQueryPluginOptions, ECMAScript.VueQueryPluginOptions)
+  - ECMAScript.VueQueryClient get_QueryClient()
+  - ECMAScript.VueQueryClientConfig get_QueryClientConfig()
+  - ECMAScript.VueQueryPluginOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_QueryClient(ECMAScript.VueQueryClient)
+  - Void set_QueryClientConfig(ECMAScript.VueQueryClientConfig)
+  - ECMAScript.VueQueryClient QueryClient
+  - ECMAScript.VueQueryClientConfig QueryClientConfig
+- type ECMAScript.VueQueryQueryCache
+- type ECMAScript.VueQueryQueryDefaults
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryQueryDefaults)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryQueryDefaults, ECMAScript.VueQueryQueryDefaults)
+  - Boolean op_Inequality(ECMAScript.VueQueryQueryDefaults, ECMAScript.VueQueryQueryDefaults)
+  - ECMAScript.VueQueryQueryDefaults <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_GcTime()
+  - System.Nullable`1[ECMAScript.Number] get_Retry()
+  - System.Nullable`1[ECMAScript.Number] get_StaleTime()
+  - System.Nullable`1[System.Boolean] get_RefetchOnReconnect()
+  - System.Nullable`1[System.Boolean] get_RefetchOnWindowFocus()
+  - System.String ToString()
+  - Void set_GcTime(System.Nullable`1[ECMAScript.Number])
+  - Void set_RefetchOnReconnect(System.Nullable`1[System.Boolean])
+  - Void set_RefetchOnWindowFocus(System.Nullable`1[System.Boolean])
+  - Void set_Retry(System.Nullable`1[ECMAScript.Number])
+  - Void set_StaleTime(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] GcTime
+  - System.Nullable`1[ECMAScript.Number] Retry
+  - System.Nullable`1[ECMAScript.Number] StaleTime
+  - System.Nullable`1[System.Boolean] RefetchOnReconnect
+  - System.Nullable`1[System.Boolean] RefetchOnWindowFocus
+- type ECMAScript.VueQueryQueryFunction`1
+  - Void .ctor(System.Object, IntPtr)
+  - ECMAScript.PromiseResult`1[TData] EndInvoke(System.IAsyncResult)
+  - ECMAScript.PromiseResult`1[TData] Invoke()
+  - System.IAsyncResult BeginInvoke(System.AsyncCallback, System.Object)
+- type ECMAScript.VueQueryQueryOptions`1
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueQueryQueryOptions`1[TData])
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueQueryQueryOptions`1[TData], ECMAScript.VueQueryQueryOptions`1[TData])
+  - Boolean op_Inequality(ECMAScript.VueQueryQueryOptions`1[TData], ECMAScript.VueQueryQueryOptions`1[TData])
+  - ECMAScript.VueQueryKeyPart[] get_QueryKey()
+  - ECMAScript.VueQueryQueryFunction`1[TData] get_QueryFn()
+  - ECMAScript.VueQueryQueryOptions`1[TData] <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_GcTime()
+  - System.Nullable`1[ECMAScript.Number] get_Retry()
+  - System.Nullable`1[ECMAScript.Number] get_StaleTime()
+  - System.Nullable`1[System.Boolean] get_Enabled()
+  - System.Nullable`1[System.Boolean] get_RefetchOnMount()
+  - System.Nullable`1[System.Boolean] get_RefetchOnReconnect()
+  - System.Nullable`1[System.Boolean] get_RefetchOnWindowFocus()
+  - System.String ToString()
+  - TData get_InitialData()
+  - TData get_PlaceholderData()
+  - Void set_Enabled(System.Nullable`1[System.Boolean])
+  - Void set_GcTime(System.Nullable`1[ECMAScript.Number])
+  - Void set_InitialData(TData)
+  - Void set_Meta(VueDictionary)
+  - Void set_PlaceholderData(TData)
+  - Void set_QueryFn(ECMAScript.VueQueryQueryFunction`1[TData])
+  - Void set_QueryKey(ECMAScript.VueQueryKeyPart[])
+  - Void set_RefetchOnMount(System.Nullable`1[System.Boolean])
+  - Void set_RefetchOnReconnect(System.Nullable`1[System.Boolean])
+  - Void set_RefetchOnWindowFocus(System.Nullable`1[System.Boolean])
+  - Void set_Retry(System.Nullable`1[ECMAScript.Number])
+  - Void set_StaleTime(System.Nullable`1[ECMAScript.Number])
+  - VueDictionary get_Meta()
+  - ECMAScript.VueQueryKeyPart[] QueryKey
+  - ECMAScript.VueQueryQueryFunction`1[TData] QueryFn
+  - System.Nullable`1[ECMAScript.Number] GcTime
+  - System.Nullable`1[ECMAScript.Number] Retry
+  - System.Nullable`1[ECMAScript.Number] StaleTime
+  - System.Nullable`1[System.Boolean] Enabled
+  - System.Nullable`1[System.Boolean] RefetchOnMount
+  - System.Nullable`1[System.Boolean] RefetchOnReconnect
+  - System.Nullable`1[System.Boolean] RefetchOnWindowFocus
+  - TData InitialData
+  - TData PlaceholderData
+  - VueDictionary Meta
+- type ECMAScript.VueQueryQueryReturn`1
+  - ECMAScript.PromiseResult Refetch()
+  - VueReadonlyRef`1 get_Data()
+  - VueReadonlyRef`1 get_DataUpdatedAt()
+  - VueReadonlyRef`1 get_Error()
+  - VueReadonlyRef`1 get_FailureCount()
+  - VueReadonlyRef`1 get_IsError()
+  - VueReadonlyRef`1 get_IsFetching()
+  - VueReadonlyRef`1 get_IsLoading()
+  - VueReadonlyRef`1 get_IsPending()
+  - VueReadonlyRef`1 get_IsPlaceholderData()
+  - VueReadonlyRef`1 get_IsStale()
+  - VueReadonlyRef`1 get_IsSuccess()
+  - VueReadonlyRef`1 get_Status()
+  - VueReadonlyRef`1 Data
+  - VueReadonlyRef`1 DataUpdatedAt
+  - VueReadonlyRef`1 Error
+  - VueReadonlyRef`1 FailureCount
+  - VueReadonlyRef`1 IsError
+  - VueReadonlyRef`1 IsFetching
+  - VueReadonlyRef`1 IsLoading
+  - VueReadonlyRef`1 IsPending
+  - VueReadonlyRef`1 IsPlaceholderData
+  - VueReadonlyRef`1 IsStale
+  - VueReadonlyRef`1 IsSuccess
+  - VueReadonlyRef`1 Status
+- enum ECMAScript.VueQueryStatus
+  - ECMAScript.VueQueryStatus Error
+  - ECMAScript.VueQueryStatus Pending
+  - ECMAScript.VueQueryStatus Success
+  - Int32 value__
+
 ## ECMAScript.VueRoute
 - type ECMAScript.AfterNavigationHook
   - Void .ctor(System.Object, IntPtr)
@@ -58449,6 +60899,530 @@
   - Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.RouterViewSlotScope] ChildContent
   - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] AdditionalAttributes
   - System.String Name
+
+## ECMAScript.VueUse
+- type ECMAScript.VueUse
+  - Boolean IsClient()
+  - Boolean IsDef(System.String)
+  - Boolean IsIOS()
+  - Boolean IsWorker()
+  - ECMAScript.VueUseAsyncStateReturn`1[T] UseAsyncState[T](ECMAScript.IPromise`1[T], T, ECMAScript.VueUseAsyncStateOptions)
+  - ECMAScript.VueUseBase64Return UseBase64(System.String, ECMAScript.VueUseBase64Options)
+  - ECMAScript.VueUseBatteryReturn UseBattery()
+  - ECMAScript.VueUseClipboardReturn UseClipboard(ECMAScript.VueUseClipboardOptions)
+  - ECMAScript.VueUseColorModeReturn UseColorMode()
+  - ECMAScript.VueUseCountdownReturn UseCountdown(ECMAScript.Number, ECMAScript.VueUseCountdownOptions)
+  - ECMAScript.VueUseElementBoundingReturn UseElementBounding(ECMAScript.VueUseMaybeElement, ECMAScript.VueUseElementBoundingOptions)
+  - ECMAScript.VueUseElementSizeReturn UseElementSize(ECMAScript.VueUseMaybeElement)
+  - ECMAScript.VueUseEventHook`1[T] CreateEventHook[T]()
+  - ECMAScript.VueUseFullscreenReturn UseFullscreen(System.Nullable`1[ECMAScript.VueUseMaybeElement], ECMAScript.VueUseFullscreenOptions)
+  - ECMAScript.VueUseIdleReturn UseIdle(System.Nullable`1[ECMAScript.Number])
+  - ECMAScript.VueUseIntersectionObserverReturn UseIntersectionObserver(ECMAScript.VueUseMaybeElement, ECMAScript.VueUseIntersectionObserverCallback, ECMAScript.VueUseIntersectionObserverOptions)
+  - ECMAScript.VueUseIntersectionObserverReturn UseResizeObserver(ECMAScript.VueUseMaybeElement, ECMAScript.VueUseResizeObserverCallback)
+  - ECMAScript.VueUseMouseInElementReturn UseMouseInElement(System.Nullable`1[ECMAScript.VueUseMaybeElement], ECMAScript.VueUseMouseInElementOptions)
+  - ECMAScript.VueUseMouseReturn UseMouse(ECMAScript.VueUseMouseOptions)
+  - ECMAScript.VueUseNetworkReturn UseNetwork()
+  - ECMAScript.VueUsePausableControl UseIntervalFn(System.Action, ECMAScript.Number)
+  - ECMAScript.VueUsePausableControl UseRafFn(System.Action)
+  - ECMAScript.VueUsePausableControl UseTimeoutFn(System.Action, ECMAScript.Number)
+  - ECMAScript.VueUseTextSelectionReturn UseTextSelection()
+  - ECMAScript.VueUseWindowScrollReturn UseWindowScroll()
+  - ECMAScript.VueUseWindowSizeReturn UseWindowSize()
+  - IVueRef`1 ComputedEager[T](System.Func`1[T])
+  - IVueRef`1 UseDark()
+  - IVueRef`1 UseFavicon(System.String, ECMAScript.VueUseFaviconOptions)
+  - IVueRef`1 UseLocalStorage(System.String, System.String, ECMAScript.VueUseStorageOptions)
+  - IVueRef`1 UseSessionStorage(System.String, System.String, ECMAScript.VueUseStorageOptions)
+  - IVueRef`1 UseSorted[T](IVueRef`1)
+  - IVueRef`1 UseStorage(System.String, System.String, ECMAScript.VueUseStorageOptions)
+  - IVueRef`1 UseTimeAgo(ECMAScript.Date)
+  - IVueRef`1 UseTitle(System.String, ECMAScript.VueUseTitleOptions)
+  - IVueRef`1 UseToggle(Boolean)
+  - System.Action OnClickOutside(ECMAScript.VueUseMaybeElement, System.Action`1[ECMAScript.PointerEvent])
+  - System.Action OnKeyDown(System.String, System.Action`1[ECMAScript.KeyboardEvent])
+  - System.Action OnKeyStroke(System.String, System.Action`1[ECMAScript.KeyboardEvent])
+  - System.Action OnKeyUp(System.String, System.Action`1[ECMAScript.KeyboardEvent])
+  - System.Action OnLongPress(ECMAScript.VueUseMaybeElement, System.Action`1[ECMAScript.PointerEvent])
+  - System.Action UseDebounceFn(System.Action, ECMAScript.Number)
+  - System.Action UseEventListener(ECMAScript.EventTarget, System.String, System.Action`1[ECMAScript.EventRef])
+  - System.Action UseThrottleFn(System.Action, ECMAScript.Number)
+  - Void OnStartTyping(System.Action`1[ECMAScript.KeyboardEvent])
+  - Void TryOnMounted(System.Action)
+  - Void TryOnScopeDispose(System.Action)
+  - Void TryOnUnmounted(System.Action)
+  - VueComputedRef`1 ComputedAsync[T](System.Func`1[ECMAScript.IPromise`1[T]], T)
+  - VueComputedRef`1 UseMediaQuery(System.String)
+  - VueComputedRef`1 UsePreferredColorScheme()
+  - VueComputedRef`1 UsePreferredDark()
+  - VueComputedRef`1 UsePreferredReducedMotion()
+  - VueComputedRef`1 UseSupported(System.Func`1[System.Boolean])
+  - VueReadonlyRef`1 UseOnline()
+  - VueReadonlyRef`1 UsePrevious(IVueRef`1)
+  - VueShallowRef`1 UseActiveElement()
+  - VueShallowRef`1 UseCssVar(System.String, System.Nullable`1[ECMAScript.VueUseMaybeElement])
+  - VueShallowRef`1 UseDevicePixelRatio()
+  - VueShallowRef`1 UseDocumentVisibility()
+  - VueShallowRef`1 UseElementHover(ECMAScript.VueUseMaybeElement)
+  - VueShallowRef`1 UseElementVisibility(ECMAScript.VueUseMaybeElement)
+  - VueShallowRef`1 UseFps()
+  - VueShallowRef`1 UseKeyModifier(ECMAScript.VueUseKeyModifier)
+  - VueShallowRef`1 UseNow()
+  - VueShallowRef`1 UsePageLeave()
+  - VueShallowRef`1 UsePreferredLanguages()
+  - VueShallowRef`1 UseTimestamp()
+  - VueShallowRef`1 UseWindowFocus()
+- type ECMAScript.VueUseAsyncStateOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseAsyncStateOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseAsyncStateOptions, ECMAScript.VueUseAsyncStateOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseAsyncStateOptions, ECMAScript.VueUseAsyncStateOptions)
+  - ECMAScript.VueUseAsyncStateOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Delay()
+  - System.Nullable`1[System.Boolean] get_Immediate()
+  - System.Nullable`1[System.Boolean] get_ResetOnExecute()
+  - System.Nullable`1[System.Boolean] get_Shallow()
+  - System.String ToString()
+  - Void set_Delay(System.Nullable`1[ECMAScript.Number])
+  - Void set_Immediate(System.Nullable`1[System.Boolean])
+  - Void set_ResetOnExecute(System.Nullable`1[System.Boolean])
+  - Void set_Shallow(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[ECMAScript.Number] Delay
+  - System.Nullable`1[System.Boolean] Immediate
+  - System.Nullable`1[System.Boolean] ResetOnExecute
+  - System.Nullable`1[System.Boolean] Shallow
+- type ECMAScript.VueUseAsyncStateReturn`1
+  - ECMAScript.IPromise`1[T] Execute(System.Nullable`1[ECMAScript.Number])
+  - IVueRef`1 get_Error()
+  - IVueRef`1 get_IsLoading()
+  - IVueRef`1 get_IsReady()
+  - IVueRef`1 get_State()
+  - IVueRef`1 Error
+  - IVueRef`1 IsLoading
+  - IVueRef`1 IsReady
+  - IVueRef`1 State
+- type ECMAScript.VueUseBase64Options
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseBase64Options)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseBase64Options, ECMAScript.VueUseBase64Options)
+  - Boolean op_Inequality(ECMAScript.VueUseBase64Options, ECMAScript.VueUseBase64Options)
+  - ECMAScript.VueUseBase64Options <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_DataUrl()
+  - System.String ToString()
+  - Void set_DataUrl(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] DataUrl
+- type ECMAScript.VueUseBase64Return
+  - ECMAScript.IPromise`1[System.String] Execute()
+  - VueShallowRef`1 get_Base64()
+  - VueShallowRef`1 get_Promise()
+  - VueShallowRef`1 Base64
+  - VueShallowRef`1 Promise
+- type ECMAScript.VueUseBatteryReturn
+  - VueComputedRef`1 get_IsSupported()
+  - VueShallowRef`1 get_Charging()
+  - VueShallowRef`1 get_ChargingTime()
+  - VueShallowRef`1 get_DischargingTime()
+  - VueShallowRef`1 get_Level()
+  - VueComputedRef`1 IsSupported
+  - VueShallowRef`1 Charging
+  - VueShallowRef`1 ChargingTime
+  - VueShallowRef`1 DischargingTime
+  - VueShallowRef`1 Level
+- type ECMAScript.VueUseClipboardOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseClipboardOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseClipboardOptions, ECMAScript.VueUseClipboardOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseClipboardOptions, ECMAScript.VueUseClipboardOptions)
+  - ECMAScript.VueUseClipboardOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_CopiedDuring()
+  - System.Nullable`1[System.Boolean] get_Legacy()
+  - System.Nullable`1[System.Boolean] get_Read()
+  - System.String ToString()
+  - Void set_CopiedDuring(System.Nullable`1[ECMAScript.Number])
+  - Void set_Legacy(System.Nullable`1[System.Boolean])
+  - Void set_Read(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[ECMAScript.Number] CopiedDuring
+  - System.Nullable`1[System.Boolean] Legacy
+  - System.Nullable`1[System.Boolean] Read
+- type ECMAScript.VueUseClipboardReturn
+  - ECMAScript.PromiseResult Copy(System.String)
+  - VueComputedRef`1 get_IsSupported()
+  - VueReadonlyRef`1 get_Copied()
+  - VueReadonlyRef`1 get_CopyPending()
+  - VueReadonlyRef`1 get_Text()
+  - VueComputedRef`1 IsSupported
+  - VueReadonlyRef`1 Copied
+  - VueReadonlyRef`1 CopyPending
+  - VueReadonlyRef`1 Text
+- enum ECMAScript.VueUseColorMode
+  - ECMAScript.VueUseColorMode Auto
+  - ECMAScript.VueUseColorMode Dark
+  - ECMAScript.VueUseColorMode Light
+  - Int32 value__
+- type ECMAScript.VueUseColorModeReturn
+  - ECMAScript.VueUseColorMode get_Value()
+  - IVueRef`1 get_Store()
+  - Void set_Value(ECMAScript.VueUseColorMode)
+  - VueComputedRef`1 get_State()
+  - VueComputedRef`1 get_System()
+  - ECMAScript.VueUseColorMode Value
+  - IVueRef`1 Store
+  - VueComputedRef`1 State
+  - VueComputedRef`1 System
+- enum ECMAScript.VueUseColorScheme
+  - ECMAScript.VueUseColorScheme Dark
+  - ECMAScript.VueUseColorScheme Light
+  - ECMAScript.VueUseColorScheme NoPreference
+  - Int32 value__
+- type ECMAScript.VueUseCountdownOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseCountdownOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseCountdownOptions, ECMAScript.VueUseCountdownOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseCountdownOptions, ECMAScript.VueUseCountdownOptions)
+  - ECMAScript.VueUseCountdownOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Action get_OnComplete()
+  - System.Action get_OnTick()
+  - System.String ToString()
+  - Void set_OnComplete(System.Action)
+  - Void set_OnTick(System.Action)
+  - System.Action OnComplete
+  - System.Action OnTick
+- type ECMAScript.VueUseCountdownReturn
+  - IVueRef`1 get_IsActive()
+  - Void Pause()
+  - Void Reset(System.Nullable`1[ECMAScript.Number])
+  - Void Resume()
+  - Void Start(System.Nullable`1[ECMAScript.Number])
+  - Void Stop()
+  - VueShallowRef`1 get_Remaining()
+  - IVueRef`1 IsActive
+  - VueShallowRef`1 Remaining
+- enum ECMAScript.VueUseDocumentVisibility
+  - ECMAScript.VueUseDocumentVisibility Hidden
+  - ECMAScript.VueUseDocumentVisibility Visible
+  - Int32 value__
+- type ECMAScript.VueUseElementBoundingOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseElementBoundingOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseElementBoundingOptions, ECMAScript.VueUseElementBoundingOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseElementBoundingOptions, ECMAScript.VueUseElementBoundingOptions)
+  - ECMAScript.VueUseElementBoundingOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Immediate()
+  - System.Nullable`1[System.Boolean] get_Reset()
+  - System.Nullable`1[System.Boolean] get_WindowResize()
+  - System.Nullable`1[System.Boolean] get_WindowScroll()
+  - System.String ToString()
+  - Void set_Immediate(System.Nullable`1[System.Boolean])
+  - Void set_Reset(System.Nullable`1[System.Boolean])
+  - Void set_WindowResize(System.Nullable`1[System.Boolean])
+  - Void set_WindowScroll(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] Immediate
+  - System.Nullable`1[System.Boolean] Reset
+  - System.Nullable`1[System.Boolean] WindowResize
+  - System.Nullable`1[System.Boolean] WindowScroll
+- type ECMAScript.VueUseElementBoundingReturn
+  - Void Update()
+  - VueShallowRef`1 get_Bottom()
+  - VueShallowRef`1 get_Height()
+  - VueShallowRef`1 get_Left()
+  - VueShallowRef`1 get_Right()
+  - VueShallowRef`1 get_Top()
+  - VueShallowRef`1 get_Width()
+  - VueShallowRef`1 get_X()
+  - VueShallowRef`1 get_Y()
+  - VueShallowRef`1 Bottom
+  - VueShallowRef`1 Height
+  - VueShallowRef`1 Left
+  - VueShallowRef`1 Right
+  - VueShallowRef`1 Top
+  - VueShallowRef`1 Width
+  - VueShallowRef`1 X
+  - VueShallowRef`1 Y
+- type ECMAScript.VueUseElementSizeReturn
+  - Void Stop()
+  - VueShallowRef`1 get_Height()
+  - VueShallowRef`1 get_Width()
+  - VueShallowRef`1 Height
+  - VueShallowRef`1 Width
+- type ECMAScript.VueUseEventHook`1
+  - System.Action On(System.Action`1[T])
+  - Void Trigger(T)
+- type ECMAScript.VueUseFaviconOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseFaviconOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseFaviconOptions, ECMAScript.VueUseFaviconOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseFaviconOptions, ECMAScript.VueUseFaviconOptions)
+  - ECMAScript.VueUseFaviconOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_BaseUrl()
+  - System.String get_Rel()
+  - Void set_BaseUrl(System.String)
+  - Void set_Rel(System.String)
+  - System.String BaseUrl
+  - System.String Rel
+- type ECMAScript.VueUseFullscreenOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseFullscreenOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseFullscreenOptions, ECMAScript.VueUseFullscreenOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseFullscreenOptions, ECMAScript.VueUseFullscreenOptions)
+  - ECMAScript.VueUseFullscreenOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueUseMaybeElement] get_Target()
+  - System.Nullable`1[System.Boolean] get_AutoExit()
+  - System.String ToString()
+  - Void set_AutoExit(System.Nullable`1[System.Boolean])
+  - Void set_Target(System.Nullable`1[ECMAScript.VueUseMaybeElement])
+  - System.Nullable`1[ECMAScript.VueUseMaybeElement] Target
+  - System.Nullable`1[System.Boolean] AutoExit
+- type ECMAScript.VueUseFullscreenReturn
+  - ECMAScript.PromiseResult Enter()
+  - ECMAScript.PromiseResult Exit()
+  - ECMAScript.PromiseResult Toggle()
+  - VueComputedRef`1 get_IsSupported()
+  - VueShallowRef`1 get_IsFullscreen()
+  - VueComputedRef`1 IsSupported
+  - VueShallowRef`1 IsFullscreen
+- type ECMAScript.VueUseIdleReturn
+  - Void Reset()
+  - VueShallowRef`1 get_Idle()
+  - VueShallowRef`1 get_LastActive()
+  - VueShallowRef`1 Idle
+  - VueShallowRef`1 LastActive
+- type ECMAScript.VueUseIntersectionObserverCallback
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(ECMAScript.Array`1[ECMAScript.IntersectionObserverEntry], ECMAScript.IntersectionObserver, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(ECMAScript.Array`1[ECMAScript.IntersectionObserverEntry], ECMAScript.IntersectionObserver)
+- type ECMAScript.VueUseIntersectionObserverOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseIntersectionObserverOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseIntersectionObserverOptions, ECMAScript.VueUseIntersectionObserverOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseIntersectionObserverOptions, ECMAScript.VueUseIntersectionObserverOptions)
+  - ECMAScript.VueUseIntersectionObserverOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.Number] get_Threshold()
+  - System.Nullable`1[ECMAScript.VueUseMaybeElement] get_Root()
+  - System.Nullable`1[System.Boolean] get_Immediate()
+  - System.String ToString()
+  - System.String get_RootMargin()
+  - Void set_Immediate(System.Nullable`1[System.Boolean])
+  - Void set_Root(System.Nullable`1[ECMAScript.VueUseMaybeElement])
+  - Void set_RootMargin(System.String)
+  - Void set_Threshold(System.Nullable`1[ECMAScript.Number])
+  - System.Nullable`1[ECMAScript.Number] Threshold
+  - System.Nullable`1[ECMAScript.VueUseMaybeElement] Root
+  - System.Nullable`1[System.Boolean] Immediate
+  - System.String RootMargin
+- type ECMAScript.VueUseIntersectionObserverReturn
+  - Void Pause()
+  - Void Resume()
+  - Void Stop()
+  - VueComputedRef`1 get_IsSupported()
+  - VueShallowRef`1 get_IsActive()
+  - VueComputedRef`1 IsSupported
+  - VueShallowRef`1 IsActive
+- enum ECMAScript.VueUseKeyModifier
+  - ECMAScript.VueUseKeyModifier Alt
+  - ECMAScript.VueUseKeyModifier AltGraph
+  - ECMAScript.VueUseKeyModifier CapsLock
+  - ECMAScript.VueUseKeyModifier Control
+  - ECMAScript.VueUseKeyModifier Fn
+  - ECMAScript.VueUseKeyModifier FnLock
+  - ECMAScript.VueUseKeyModifier Meta
+  - ECMAScript.VueUseKeyModifier NumLock
+  - ECMAScript.VueUseKeyModifier ScrollLock
+  - ECMAScript.VueUseKeyModifier Shift
+  - ECMAScript.VueUseKeyModifier Symbol
+  - ECMAScript.VueUseKeyModifier SymbolLock
+  - Int32 value__
+- type ECMAScript.VueUseMaybeElement
+  - Void .ctor(ECMAScript.Element)
+  - Void .ctor(VueComponentPublicInstance)
+  - Void .ctor(VueReadonlyRef`1)
+  - Void .ctor(VueReadonlyRef`1)
+  - System.Object get_Value()
+  - System.Object Value
+- enum ECMAScript.VueUseMouseCoordType
+  - ECMAScript.VueUseMouseCoordType Client
+  - ECMAScript.VueUseMouseCoordType Movement
+  - ECMAScript.VueUseMouseCoordType Page
+  - ECMAScript.VueUseMouseCoordType Screen
+  - Int32 value__
+- type ECMAScript.VueUseMouseInElementOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseMouseInElementOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseMouseInElementOptions, ECMAScript.VueUseMouseInElementOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseMouseInElementOptions, ECMAScript.VueUseMouseInElementOptions)
+  - ECMAScript.VueUseMouseInElementOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueUseMouseCoordType] get_Type()
+  - System.Nullable`1[System.Boolean] get_HandleOutside()
+  - System.Nullable`1[System.Boolean] get_ResetOnTouchEnds()
+  - System.Nullable`1[System.Boolean] get_Scroll()
+  - System.Nullable`1[System.Boolean] get_Touch()
+  - System.String ToString()
+  - Void set_HandleOutside(System.Nullable`1[System.Boolean])
+  - Void set_ResetOnTouchEnds(System.Nullable`1[System.Boolean])
+  - Void set_Scroll(System.Nullable`1[System.Boolean])
+  - Void set_Touch(System.Nullable`1[System.Boolean])
+  - Void set_Type(System.Nullable`1[ECMAScript.VueUseMouseCoordType])
+  - System.Nullable`1[ECMAScript.VueUseMouseCoordType] Type
+  - System.Nullable`1[System.Boolean] HandleOutside
+  - System.Nullable`1[System.Boolean] ResetOnTouchEnds
+  - System.Nullable`1[System.Boolean] Scroll
+  - System.Nullable`1[System.Boolean] Touch
+- type ECMAScript.VueUseMouseInElementReturn
+  - Void Stop()
+  - VueShallowRef`1 get_ElementHeight()
+  - VueShallowRef`1 get_ElementPositionX()
+  - VueShallowRef`1 get_ElementPositionY()
+  - VueShallowRef`1 get_ElementWidth()
+  - VueShallowRef`1 get_ElementX()
+  - VueShallowRef`1 get_ElementY()
+  - VueShallowRef`1 get_IsOutside()
+  - VueShallowRef`1 ElementHeight
+  - VueShallowRef`1 ElementPositionX
+  - VueShallowRef`1 ElementPositionY
+  - VueShallowRef`1 ElementWidth
+  - VueShallowRef`1 ElementX
+  - VueShallowRef`1 ElementY
+  - VueShallowRef`1 IsOutside
+- type ECMAScript.VueUseMouseOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseMouseOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseMouseOptions, ECMAScript.VueUseMouseOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseMouseOptions, ECMAScript.VueUseMouseOptions)
+  - ECMAScript.VueUseMouseOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.VueUseMouseCoordType] get_Type()
+  - System.Nullable`1[System.Boolean] get_ResetOnTouchEnds()
+  - System.Nullable`1[System.Boolean] get_Scroll()
+  - System.Nullable`1[System.Boolean] get_Touch()
+  - System.String ToString()
+  - Void set_ResetOnTouchEnds(System.Nullable`1[System.Boolean])
+  - Void set_Scroll(System.Nullable`1[System.Boolean])
+  - Void set_Touch(System.Nullable`1[System.Boolean])
+  - Void set_Type(System.Nullable`1[ECMAScript.VueUseMouseCoordType])
+  - System.Nullable`1[ECMAScript.VueUseMouseCoordType] Type
+  - System.Nullable`1[System.Boolean] ResetOnTouchEnds
+  - System.Nullable`1[System.Boolean] Scroll
+  - System.Nullable`1[System.Boolean] Touch
+- type ECMAScript.VueUseMouseReturn
+  - VueShallowRef`1 get_SourceType()
+  - VueShallowRef`1 get_X()
+  - VueShallowRef`1 get_Y()
+  - VueShallowRef`1 SourceType
+  - VueShallowRef`1 X
+  - VueShallowRef`1 Y
+- enum ECMAScript.VueUseMouseSourceType
+  - ECMAScript.VueUseMouseSourceType Mouse
+  - ECMAScript.VueUseMouseSourceType Touch
+  - Int32 value__
+- enum ECMAScript.VueUseNetworkEffectiveType
+  - ECMAScript.VueUseNetworkEffectiveType FourG
+  - ECMAScript.VueUseNetworkEffectiveType Slow2G
+  - ECMAScript.VueUseNetworkEffectiveType ThreeG
+  - ECMAScript.VueUseNetworkEffectiveType TwoG
+  - Int32 value__
+- type ECMAScript.VueUseNetworkReturn
+  - VueComputedRef`1 get_IsSupported()
+  - VueReadonlyRef`1 get_Downlink()
+  - VueReadonlyRef`1 get_DownlinkMax()
+  - VueReadonlyRef`1 get_EffectiveType()
+  - VueReadonlyRef`1 get_IsOnline()
+  - VueReadonlyRef`1 get_OfflineAt()
+  - VueReadonlyRef`1 get_OnlineAt()
+  - VueReadonlyRef`1 get_Rtt()
+  - VueReadonlyRef`1 get_Type()
+  - VueComputedRef`1 IsSupported
+  - VueReadonlyRef`1 Downlink
+  - VueReadonlyRef`1 DownlinkMax
+  - VueReadonlyRef`1 EffectiveType
+  - VueReadonlyRef`1 IsOnline
+  - VueReadonlyRef`1 OfflineAt
+  - VueReadonlyRef`1 OnlineAt
+  - VueReadonlyRef`1 Rtt
+  - VueReadonlyRef`1 Type
+- type ECMAScript.VueUsePausableControl
+  - IVueRef`1 get_IsActive()
+  - Void Pause()
+  - Void Resume()
+  - IVueRef`1 IsActive
+- enum ECMAScript.VueUseReducedMotion
+  - ECMAScript.VueUseReducedMotion NoPreference
+  - ECMAScript.VueUseReducedMotion Reduce
+  - Int32 value__
+- type ECMAScript.VueUseResizeObserverCallback
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(ECMAScript.Array`1[ECMAScript.ResizeObserverEntry], ECMAScript.ResizeObserver, System.AsyncCallback, System.Object)
+  - Void EndInvoke(System.IAsyncResult)
+  - Void Invoke(ECMAScript.Array`1[ECMAScript.ResizeObserverEntry], ECMAScript.ResizeObserver)
+- type ECMAScript.VueUseStorageOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseStorageOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseStorageOptions, ECMAScript.VueUseStorageOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseStorageOptions, ECMAScript.VueUseStorageOptions)
+  - ECMAScript.VueUseStorageOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_Deep()
+  - System.Nullable`1[System.Boolean] get_ListenToStorageChanges()
+  - System.Nullable`1[System.Boolean] get_MergeDefaults()
+  - System.Nullable`1[System.Boolean] get_WriteDefaults()
+  - System.String ToString()
+  - Void set_Deep(System.Nullable`1[System.Boolean])
+  - Void set_ListenToStorageChanges(System.Nullable`1[System.Boolean])
+  - Void set_MergeDefaults(System.Nullable`1[System.Boolean])
+  - Void set_WriteDefaults(System.Nullable`1[System.Boolean])
+  - System.Nullable`1[System.Boolean] Deep
+  - System.Nullable`1[System.Boolean] ListenToStorageChanges
+  - System.Nullable`1[System.Boolean] MergeDefaults
+  - System.Nullable`1[System.Boolean] WriteDefaults
+- type ECMAScript.VueUseTextSelectionReturn
+  - VueComputedRef`1 get_Text()
+  - VueShallowRef`1 get_Selection()
+  - VueComputedRef`1 Text
+  - VueShallowRef`1 Selection
+- type ECMAScript.VueUseTitleOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.VueUseTitleOptions)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.VueUseTitleOptions, ECMAScript.VueUseTitleOptions)
+  - Boolean op_Inequality(ECMAScript.VueUseTitleOptions, ECMAScript.VueUseTitleOptions)
+  - ECMAScript.DocumentRef get_Document()
+  - ECMAScript.VueUseTitleOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[System.Boolean] get_RestoreOnUnmount()
+  - System.String ToString()
+  - Void set_Document(ECMAScript.DocumentRef)
+  - Void set_RestoreOnUnmount(System.Nullable`1[System.Boolean])
+  - ECMAScript.DocumentRef Document
+  - System.Nullable`1[System.Boolean] RestoreOnUnmount
+- type ECMAScript.VueUseWindowScrollReturn
+  - VueShallowRef`1 get_X()
+  - VueShallowRef`1 get_Y()
+  - VueShallowRef`1 X
+  - VueShallowRef`1 Y
+- type ECMAScript.VueUseWindowSizeReturn
+  - VueShallowRef`1 get_Height()
+  - VueShallowRef`1 get_Width()
+  - VueShallowRef`1 Height
+  - VueShallowRef`1 Width
 
 ## ECMAScript.Vue
 - type ECMAScript.Dayjs
@@ -74709,6 +77683,91 @@
   - System.Nullable`1[ECMAScript.Vuetify.VuetifyWindowShowArrowsMode] AsMode
   - System.Nullable`1[System.Boolean] AsBool
   - System.Object Value
+
+## ECMAScript.WangEditor
+- type ECMAScript.WangEditor
+- type ECMAScript.WangEditorComponent
+  - Void .ctor()
+  - ECMAScript.WangEditorConfig get_DefaultConfig()
+  - Microsoft.AspNetCore.Components.EventCallback`1[System.String] get_ModelValueChanged()
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] get_AdditionalAttributes()
+  - System.Nullable`1[ECMAScript.WangEditorMode] get_Mode()
+  - System.String get_DefaultHtml()
+  - System.String get_ModelValue()
+  - Void set_AdditionalAttributes(System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object])
+  - Void set_DefaultConfig(ECMAScript.WangEditorConfig)
+  - Void set_DefaultHtml(System.String)
+  - Void set_Mode(System.Nullable`1[ECMAScript.WangEditorMode])
+  - Void set_ModelValue(System.String)
+  - Void set_ModelValueChanged(Microsoft.AspNetCore.Components.EventCallback`1[System.String])
+  - ECMAScript.WangEditorConfig DefaultConfig
+  - Microsoft.AspNetCore.Components.EventCallback`1[System.String] ModelValueChanged
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] AdditionalAttributes
+  - System.Nullable`1[ECMAScript.WangEditorMode] Mode
+  - System.String DefaultHtml
+  - System.String ModelValue
+- type ECMAScript.WangEditorConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.WangEditorConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.WangEditorConfig, ECMAScript.WangEditorConfig)
+  - Boolean op_Inequality(ECMAScript.WangEditorConfig, ECMAScript.WangEditorConfig)
+  - ECMAScript.WangEditorConfig <Clone>$()
+  - Int32 GetHashCode()
+  - System.Action`1[ECMAScript.WangEditorInstance] get_OnBlur()
+  - System.Action`1[ECMAScript.WangEditorInstance] get_OnChange()
+  - System.Action`1[ECMAScript.WangEditorInstance] get_OnCreated()
+  - System.Action`1[ECMAScript.WangEditorInstance] get_OnDestroyed()
+  - System.Action`1[ECMAScript.WangEditorInstance] get_OnFocus()
+  - System.String ToString()
+  - System.String get_Placeholder()
+  - Void set_OnBlur(System.Action`1[ECMAScript.WangEditorInstance])
+  - Void set_OnChange(System.Action`1[ECMAScript.WangEditorInstance])
+  - Void set_OnCreated(System.Action`1[ECMAScript.WangEditorInstance])
+  - Void set_OnDestroyed(System.Action`1[ECMAScript.WangEditorInstance])
+  - Void set_OnFocus(System.Action`1[ECMAScript.WangEditorInstance])
+  - Void set_Placeholder(System.String)
+  - System.Action`1[ECMAScript.WangEditorInstance] OnBlur
+  - System.Action`1[ECMAScript.WangEditorInstance] OnChange
+  - System.Action`1[ECMAScript.WangEditorInstance] OnCreated
+  - System.Action`1[ECMAScript.WangEditorInstance] OnDestroyed
+  - System.Action`1[ECMAScript.WangEditorInstance] OnFocus
+  - System.String Placeholder
+- type ECMAScript.WangEditorInstance
+- enum ECMAScript.WangEditorMode
+  - ECMAScript.WangEditorMode Default
+  - ECMAScript.WangEditorMode Simple
+  - Int32 value__
+- type ECMAScript.WangEditorToolbar
+  - Void .ctor()
+  - ECMAScript.WangEditorInstance get_Editor()
+  - ECMAScript.WangEditorToolbarConfig get_DefaultConfig()
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] get_AdditionalAttributes()
+  - System.Nullable`1[ECMAScript.WangEditorMode] get_Mode()
+  - Void set_AdditionalAttributes(System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object])
+  - Void set_DefaultConfig(ECMAScript.WangEditorToolbarConfig)
+  - Void set_Editor(ECMAScript.WangEditorInstance)
+  - Void set_Mode(System.Nullable`1[ECMAScript.WangEditorMode])
+  - ECMAScript.WangEditorInstance Editor
+  - ECMAScript.WangEditorToolbarConfig DefaultConfig
+  - System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.Object] AdditionalAttributes
+  - System.Nullable`1[ECMAScript.WangEditorMode] Mode
+- type ECMAScript.WangEditorToolbarConfig
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.WangEditorToolbarConfig)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.WangEditorToolbarConfig, ECMAScript.WangEditorToolbarConfig)
+  - Boolean op_Inequality(ECMAScript.WangEditorToolbarConfig, ECMAScript.WangEditorToolbarConfig)
+  - ECMAScript.WangEditorToolbarConfig <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String[] get_ExcludeKeys()
+  - System.String[] get_ToolbarKeys()
+  - Void set_ExcludeKeys(System.String[])
+  - Void set_ToolbarKeys(System.String[])
+  - System.String[] ExcludeKeys
+  - System.String[] ToolbarKeys
+- type ECMAScript.WangEditorToolbarInstance
 
 ## ECMAScript
 - type ECMAScript.ANGLEInstancedArrays

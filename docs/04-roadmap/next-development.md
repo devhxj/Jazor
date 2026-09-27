@@ -57,10 +57,10 @@ P3 的分阶段顺序、每个绑定的固定交付物与验证门槛见 [P3 Vue
 
 | 阶段 | 目标 | 当前状态 |
 | --- | --- | --- |
-| P3-A | `ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi` | 三包均已交付包、测试与主线门禁；browser smoke 与真实 RazorVue consumer 待补 |
-| P3-B | `ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery` | 三包均已交付包、测试与主线门禁；browser smoke 与真实 RazorVue consumer 待补 |
-| P3-C | `ECMAScript.VueDraggable`、`ECMAScript.FilePond`、`ECMAScript.WangEditor` | 三包均已交付包、测试与主线门禁；browser smoke 与真实 RazorVue consumer 待补 |
-| P3-D | `ECMAScript.Monaco` | 未开始 |
+| P3-A | `ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi` | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 |
+| P3-B | `ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery` | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 |
+| P3-C | `ECMAScript.VueDraggable`、`ECMAScript.FilePond`、`ECMAScript.WangEditor` | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 |
+| P3-D | `ECMAScript.Monaco` | 实现、compiler/Emit 回归与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 |
 
 ## 稳定边界
 

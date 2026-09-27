@@ -203,9 +203,10 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 - 标准 JavaScript 项目输出现在直接使用 ESM 路径、Deno lockfile 和项目配置的前端构建工具，支持浏览器开发、HMR 与生产构建。
 - npm/JSR 绑定统一使用上游公开入口、强类型 `[Style]` 副作用导入和单一依赖图；VuIcons 已退役，Lucide 成为受支持的图标绑定。
 - CLR carrier 导入、RazorVue 输出、SSR worker 失效和 ASP.NET Core 代理/HMR 路径统一使用标准项目根，并纳入发版门禁。
+- P3-A/B/C 绑定与 Monaco 已进入主线并接通下一次 tag，但没有随 preview.4 上传；browser smoke 与真实 RazorVue consumer 证据完成前仍保持 Guidance。
 - 当前为预发布版本，稳定版 1.0 尚未发布；支持范围与质量门禁见[当前状态](docs/04-roadmap/current-status.md)。
 
-版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.4`。
+版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有已发布的 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.4`；上方 P3 绑定需等待下一次 tag。
 
 主分支可能包含尚未发布的改动。将主分支示例用于已安装包前，请核对[未发布改动与版本历史](CHANGELOG.md)。
 

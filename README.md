@@ -205,9 +205,10 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 - Standard JavaScript project output now uses direct ESM paths, Deno lockfiles and the configured frontend build tool for browser development, HMR and production output.
 - npm/JSR bindings now use upstream public entrypoints, typed `[Style]` side-effect imports and a single dependency graph; VuIcons is retired and Lucide is the supported icon binding.
 - CLR carrier imports, RazorVue output, SSR worker invalidation and ASP.NET Core proxy/HMR paths now share the standard project root and are covered by the release gates.
+- The P3-A/B/C bindings and Monaco are present on the main branch and wired for the next tag, but were not uploaded with preview.4; browser smoke and real RazorVue consumer evidence remain before Support status.
 - This is a preview release; stable 1.0 has not been published. See [Current Status](docs/04-roadmap/current-status.md) for supported scope and quality gates.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4) and matching Git tag as the version reference. Mirrors may lag behind or show an older stable release when previews are hidden. Keep all Jazor/ECMAScript packages on the same version and explicitly select `1.0.0-preview.4`.
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4) and matching Git tag as the version reference. Mirrors may lag behind or show an older stable release when previews are hidden. Keep all published Jazor/ECMAScript packages on the same version and explicitly select `1.0.0-preview.4`; the P3 bindings listed above require the next tag.
 
 The main branch may contain unreleased changes. Read [Unreleased and version history](CHANGELOG.md) before applying main-branch examples to an installed package.
 

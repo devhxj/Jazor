@@ -1,6 +1,6 @@
 # 当前状态
 
-> 当前已发布版本：[1.0.0-preview.3（2026-09-16）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.3)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.4（2026-09-22）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 
@@ -31,7 +31,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 生态绑定与参考应用服务于同一目标：让已声明的能力能够在真实项目中被自然地组合和验证。
 
-- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；它们以强类型 binding 或资源库形式交付。VuIcons 已停止维护，不属于当前受支持的生态层。
+- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；P3-A/B/C 与 Monaco 的绑定已进入主线并接通下一次发布，但尚未随 preview.4 发布，仍等待 browser smoke 与真实 RazorVue consumer 后再进入 Support 矩阵。VuIcons 已停止维护，不属于当前受支持的生态层。
 - `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 
@@ -50,7 +50,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。`1.0.0-preview.1` 已作为首个冻结候选发布；当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型保持既定命名。`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 提供统一候选验收入口；API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据共同确认正式 `1.0.0` 发布状态。
 
-2026-09-14 本地完整解决方案构建和主线 Release 测试通过，公共 API 快照与 `docs/03-guides/public-api-baseline.snapshot.md` 比较结果为 `76108` 对 `76108`，新增 `0`、删除 `0`。Compiler `10711/10711`、CLR `5089/5089`、Razor SG `4982/4982`、Emit `202/202` 及其余生态测试均已通过。完整 Release Candidate 门禁作为正式冻结复核入口；发布认证扩展、长期多版本矩阵和性能趋势采样归属 1.0 之后的运营质量工作。
+2026-09-27 当前 API 快照覆盖 P3-A/B/C 与 Monaco 绑定程序集，共 `76105` 条；与保留快照比较为 `76105` 对 `76105`，新增 `0`、删除 `0`。Monaco 已接入 solution、主线 lane、Emit 物化回归和发布包 catalog；P3 绑定的 browser smoke 与真实 RazorVue consumer 仍是进入 Support 矩阵的前置条件。核心 Compiler、CLR、Razor SG、Emit 与生态测试继续由完整 Release Candidate 门禁统一执行。
 
 ## 质量门槛与验证
 
@@ -61,7 +61,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | 核心编译器 | 至少 10,000 个通过场景、98% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | Razor-to-Vue | 至少 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 绑定 | 每个目标至少 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
+| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、Monaco、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 
