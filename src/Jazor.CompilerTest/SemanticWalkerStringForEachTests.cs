@@ -42,7 +42,7 @@ public sealed class SemanticWalkerStringForEachTests
         _ = new Parser().ParseModule(module);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-string-foreach-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 

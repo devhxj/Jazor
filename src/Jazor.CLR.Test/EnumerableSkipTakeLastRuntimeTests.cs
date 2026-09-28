@@ -13,7 +13,7 @@ public sealed class EnumerableSkipTakeLastRuntimeTests
     {
         var skipLast = GetExportName("static System.Linq.Enumerable.SkipLast<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
         var takeLast = GetExportName("static System.Linq.Enumerable.TakeLast<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-skip-take-last-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-skip-take-last-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

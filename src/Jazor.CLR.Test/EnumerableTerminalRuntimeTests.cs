@@ -17,7 +17,7 @@ public sealed class EnumerableTerminalRuntimeTests
         var lastWhere = GetExportName("static System.Linq.Enumerable.Last<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)");
         var single = GetExportName("static System.Linq.Enumerable.Single<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
         var singleWhere = GetExportName("static System.Linq.Enumerable.Single<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-terminal-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-terminal-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

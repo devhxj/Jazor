@@ -79,7 +79,7 @@ public sealed class SemanticWalkerEnumerableZipTests
         var module = "export function evaluate(ids, names, enabled, useMethodGroup) " + body;
         _ = new Parser().ParseModule(module);
 
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-zip-three-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-zip-three-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
@@ -242,7 +242,7 @@ public sealed class SemanticWalkerEnumerableZipTests
         var module = "export function evaluate(ids, names, useMethodGroup, useSelector, selector) " + body;
         _ = new Parser().ParseModule(module);
 
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-zip-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-zip-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {

@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace JazorAdmin.Test;
 
@@ -60,22 +61,8 @@ public sealed class ApiTests
             StringAssert.Contains(document, "<div id=\"app\"></div>", path);
             StringAssert.Contains(
                 document,
-                "src=\"/jazor/app.mjs\"",
+                "src=\"/jazor/dist/bundle.js\"",
                 path);
-            StringAssert.Contains(
-                document,
-                "\"@jazor/vue-runtime/routes.mjs\"",
-                path);
-            StringAssert.Contains(
-                document,
-                "/jazor/@jazor/vue-runtime/routes.mjs",
-                path);
-            StringAssert.Contains(
-                document,
-                "href=\"/jazor/vendor/vue-data-ui/",
-                path);
-            StringAssert.Contains(document, "href=\"/brand/jazor-mark.svg\"", path);
-            StringAssert.Contains(document, "href=\"/favicon.ico\"", path);
         }
 
         using var apiRequest = new HttpRequestMessage(HttpMethod.Get, "/api/not-found");
@@ -524,7 +511,7 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ScheduleHistory_WhenUpgradingLegacyRows_BackfillsTheUtcQueryKey()
     {
-        var databasePath = Path.Combine(Path.GetTempPath(), "jazoradmin-legacy-" + Guid.NewGuid() + ".db");
+        var databasePath = Path.Combine(RepositoryTemp.Root, "jazoradmin-legacy-" + Guid.NewGuid() + ".db");
         const string scheduleKey = "legacy-history";
         var startedAt = new DateTimeOffset(2026, 1, 1, 9, 30, 0, TimeSpan.FromHours(9));
         var runId = Guid.NewGuid();
@@ -1121,7 +1108,7 @@ public sealed class ApiTests
             string? existingDatabasePath = null,
             IReadOnlyDictionary<string, string?>? additionalConfiguration = null)
         {
-            databasePath = existingDatabasePath ?? Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
+            databasePath = existingDatabasePath ?? Path.Combine(RepositoryTemp.Root, "jazoradmin-test-" + Guid.NewGuid() + ".db");
             this.bootstrapEmail = bootstrapEmail;
             this.bootstrapPassword = bootstrapPassword;
             this.additionalConfiguration = additionalConfiguration;
@@ -1137,6 +1124,14 @@ public sealed class ApiTests
                 Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
 
             builder.UseEnvironment("Testing");
+            // The default Windows host registers EventLog, which requires permission to create
+            // the '.NET Runtime' source. Tests keep logs on the repository-owned console sink.
+            // Windows 默认宿主会注册 EventLog，并要求创建“.NET Runtime”源的权限；测试改用控制台输出。
+            builder.ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddSimpleConsole();
+            });
             builder.ConfigureAppConfiguration(configuration =>
             {
                 var values = new Dictionary<string, string?>

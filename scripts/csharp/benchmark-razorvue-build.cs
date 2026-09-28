@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 
 var options = BuildBenchmarkOptions.Parse(args);
 var repoRoot = RequireRepositoryRoot();
+ConfigureRepositoryEnvironment(repoRoot);
 var workRoot = ResolveInsideRepository(repoRoot, options.WorkRoot ?? Path.Combine(".tmp", "razorvue-build-benchmark"));
 var reportPath = ResolveInsideRepository(repoRoot, options.Output ?? Path.Combine(workRoot, "report.json"));
 if (Directory.Exists(workRoot))
@@ -160,6 +161,27 @@ static string RequireRepositoryRoot()
         if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
             return directory.FullName;
     throw new InvalidOperationException("Unable to locate Jazor.slnx.");
+}
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    var temp = Path.Combine(repoRoot, ".tmp", "agent-temp");
+    var dotnet = Path.Combine(repoRoot, ".dotnet");
+    var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
+    var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
+    var npm = Path.Combine(repoRoot, ".tmp", "npm-cache");
+    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", temp);
+    Environment.SetEnvironmentVariable("TMP", temp);
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
+    Environment.SetEnvironmentVariable("DENO_DIR", deno);
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
+    Environment.SetEnvironmentVariable("npm_config_cache", npm);
 }
 
 static string ResolveInsideRepository(string repoRoot, string path)

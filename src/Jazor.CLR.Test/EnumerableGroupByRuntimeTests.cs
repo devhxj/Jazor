@@ -27,7 +27,7 @@ public sealed class EnumerableGroupByRuntimeTests
         var groupingKey = GetExportName(
             "System.Linq.IGrouping<TKey, TElement>.Key.get",
             GroupingModulePath);
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-group-by-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-group-by-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

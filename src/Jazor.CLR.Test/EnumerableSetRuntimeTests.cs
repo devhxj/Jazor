@@ -18,7 +18,7 @@ public sealed class EnumerableSetRuntimeTests
         var intersect = GetExportName("static System.Linq.Enumerable.Intersect<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>)");
         var contains = GetExportName("static System.Linq.Enumerable.Contains<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)");
         var spanContains = GetExportName("static System.MemoryExtensions.Contains<T>(System.ReadOnlySpan<T>, T)", MemoryExtensionsModulePath);
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-set-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-set-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

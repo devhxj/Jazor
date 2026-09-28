@@ -12,7 +12,7 @@ public sealed class StandardPackageProjectTests
     [TestMethod]
     public async Task ProjectBuild_UsesAuthoredScriptAndOutputLayout_AndPropagatesFailure()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.ProjectBuildTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.ProjectBuildTest", Guid.NewGuid().ToString("N"));
         var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
             "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
         Directory.CreateDirectory(root);
@@ -42,7 +42,7 @@ public sealed class StandardPackageProjectTests
     [TestMethod]
     public void Regeneration_PreservesAuthoredBuildToolAndUnmanagedDependencies()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
@@ -79,7 +79,7 @@ public sealed class StandardPackageProjectTests
     [TestMethod]
     public async Task NpmAndJsr_DeclaredKeysResolveThroughDenoAndViteWithoutPrivateManifests()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "standard-project", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "standard-project", Guid.NewGuid().ToString("N"));
         var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
             "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
         Assert.IsTrue(File.Exists(deno), "The test must use the Deno runtime from its own build output.");
@@ -161,6 +161,7 @@ public sealed class StandardPackageProjectTests
         };
         foreach (var argument in new[] { "run", "--no-config", "--no-remote", "--frozen-lockfile", "--node-modules-dir=manual", entry })
             start.ArgumentList.Add(argument);
+        RepositoryTemp.ApplyProcessEnvironment(start);
         using var process = Process.Start(start)!;
         var stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
         var stderr = process.StandardError.ReadToEndAsync(cancellationToken);

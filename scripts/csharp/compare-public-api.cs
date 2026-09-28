@@ -10,7 +10,7 @@ var outputPath = GetOption("--output");
 
 if (baselinePath is null || !File.Exists(baselinePath))
 {
-    var missingReport = $"# Public API compatibility report\n\nCurrent: `{currentPath}`\n\n- Current entries: {current.Count}\n- Baseline entries: unavailable\n- Compatibility: not established\n\nThe candidate snapshot must be retained as the next baseline before 1.0 freeze.\n";
+    var missingReport = $"# Public API compatibility report\n\nCurrent: `{currentPath}`\n\n- Current entries: {current.Count}\n- Current top-level entries: {current.TopLevelCount}\n- Current member entries: {current.MemberCount}\n- Baseline entries: unavailable\n- Compatibility: not established\n\nThe candidate snapshot must be retained as the next baseline before 1.0 freeze.\n";
     WriteReport(missingReport, outputPath);
     Console.WriteLine($"Public API baseline missing; current snapshot contains {current.Count} entries.");
     if (!allowMissingBaseline)
@@ -19,8 +19,8 @@ if (baselinePath is null || !File.Exists(baselinePath))
 }
 
 var baseline = ReadSnapshot(baselinePath);
-var removed = baseline.Except(current, StringComparer.Ordinal).OrderBy(static line => line, StringComparer.Ordinal).ToArray();
-var added = current.Except(baseline, StringComparer.Ordinal).OrderBy(static line => line, StringComparer.Ordinal).ToArray();
+var removed = baseline.Entries.Except(current.Entries, StringComparer.Ordinal).OrderBy(static line => line, StringComparer.Ordinal).ToArray();
+var added = current.Entries.Except(baseline.Entries, StringComparer.Ordinal).OrderBy(static line => line, StringComparer.Ordinal).ToArray();
 
 var report = new StringBuilder();
 report.AppendLine("# Public API compatibility report");
@@ -29,7 +29,11 @@ report.AppendLine($"Baseline: `{baselinePath}`");
 report.AppendLine($"Current: `{currentPath}`");
 report.AppendLine();
 report.AppendLine($"- Baseline entries: {baseline.Count}");
+report.AppendLine($"- Baseline top-level entries: {baseline.TopLevelCount}");
+report.AppendLine($"- Baseline member entries: {baseline.MemberCount}");
 report.AppendLine($"- Current entries: {current.Count}");
+report.AppendLine($"- Current top-level entries: {current.TopLevelCount}");
+report.AppendLine($"- Current member entries: {current.MemberCount}");
 report.AppendLine($"- Added entries: {added.Length}");
 report.AppendLine($"- Removed entries: {removed.Length}");
 
@@ -41,10 +45,15 @@ WriteReport(report.ToString(), outputPath);
 if (removed.Length > 0)
     throw new InvalidOperationException($"Public API compatibility check failed: {removed.Length} entries were removed or changed.");
 
-static HashSet<string> ReadSnapshot(string path)
-    => File.ReadLines(path)
+static Snapshot ReadSnapshot(string path)
+{
+    var entries = File.ReadLines(path)
         .Where(static line => line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("  - ", StringComparison.Ordinal))
         .ToHashSet(StringComparer.Ordinal);
+    var topLevelCount = entries.Count(static line => line.StartsWith("- ", StringComparison.Ordinal));
+    var memberCount = entries.Count(static line => line.StartsWith("  - ", StringComparison.Ordinal));
+    return new Snapshot(entries, topLevelCount, memberCount);
+}
 
 static void AppendSection(StringBuilder builder, string title, IReadOnlyCollection<string> entries)
 {
@@ -76,4 +85,9 @@ string? GetOption(string name)
 {
     var index = Array.IndexOf(args, name);
     return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
+}
+
+sealed record Snapshot(HashSet<string> Entries, int TopLevelCount, int MemberCount)
+{
+    public int Count => Entries.Count;
 }

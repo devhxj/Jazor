@@ -4750,7 +4750,7 @@ public sealed class SdkIntegrationTests
         foreach (var argument in arguments)
             startInfo.ArgumentList.Add(argument);
 
-        startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(FindRepoRoot(), ".dotnet");
+        RepositoryTemp.ApplyProcessEnvironment(startInfo);
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
         // SDK integration tests build and pack the same projects repeatedly; disabling
@@ -4785,6 +4785,7 @@ public sealed class SdkIntegrationTests
         startInfo.ArgumentList.Add("--quiet");
         startInfo.ArgumentList.Add("--allow-all");
         startInfo.ArgumentList.Add(testFile);
+        RepositoryTemp.ApplyProcessEnvironment(startInfo);
         // A test-local cache keeps Deno's module resolution independent from a developer cache.
         startInfo.Environment["DENO_DIR"] = Path.Combine(workingDirectory, ".deno-cache");
 
@@ -8021,6 +8022,8 @@ public sealed class SdkIntegrationTests
 
         foreach (var argument in arguments)
             startInfo.ArgumentList.Add(argument);
+
+        RepositoryTemp.ApplyProcessEnvironment(startInfo);
 
         if (environment is not null)
         {

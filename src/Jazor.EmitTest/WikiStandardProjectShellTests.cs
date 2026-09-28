@@ -13,7 +13,7 @@ public sealed class WikiStandardProjectShellTests
     [DataRow("Production", "/jazor/dist/bundle.js", false)]
     public async Task Shell_UsesStandardEntryWithoutRuntimeManifest(string environment, string entry, bool hmr)
     {
-        var root = Path.Combine(Path.GetTempPath(), "jazor-wiki-shell-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-wiki-shell-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "host"));
         Directory.CreateDirectory(Path.Combine(root, "jazor", "dist"));
         // Both source and build output coexist in a standard project. Environment selects the entry.

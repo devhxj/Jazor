@@ -221,6 +221,7 @@ internal static class RazorSdkToolsetProbeResolver
                     CreateNoWindow = true
                 }
             };
+            RazorSgTestHost.ConfigureProcessEnvironment(process.StartInfo);
 
             if (!process.Start())
             {
@@ -268,6 +269,7 @@ internal static class RazorSdkToolsetProbeResolver
                     CreateNoWindow = true
                 }
             };
+            RazorSgTestHost.ConfigureProcessEnvironment(process.StartInfo);
 
             if (!process.Start())
             {

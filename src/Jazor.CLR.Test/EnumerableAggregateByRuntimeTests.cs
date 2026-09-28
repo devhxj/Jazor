@@ -18,7 +18,7 @@ public sealed class EnumerableAggregateByRuntimeTests
         StringAssert.Contains(enumerableModule.Content, "CountBy count exceeds Int32.MaxValue.", StringComparison.Ordinal);
         StringAssert.Contains(enumerableModule.Content, "count === 2147483647", StringComparison.Ordinal);
 
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-aggregate-by-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-aggregate-by-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

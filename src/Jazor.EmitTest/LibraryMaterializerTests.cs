@@ -142,7 +142,7 @@ public sealed class LibraryMaterializerTests
     {
         var tdesignManifest = FindLibraryManifest("ECMAScript.TDesign");
         var vueManifest = FindLibraryManifest("ECMAScript.Vue");
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "external-package-lock", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "external-package-lock", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(outputRoot);
         try
         {
@@ -390,7 +390,7 @@ public sealed class LibraryMaterializerTests
         var vueManifest = FindLibraryManifest("ECMAScript.Vue");
         using var manifest = JsonDocument.Parse(File.ReadAllText(tdesignManifest));
         var version = manifest.RootElement.GetProperty("version").GetString()!;
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "tdesign", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "tdesign", Guid.NewGuid().ToString("N"));
         try
         {
             var result = new LibraryMaterializer().Materialize(
@@ -427,7 +427,7 @@ public sealed class LibraryMaterializerTests
         var dayjsImport = manifest.RootElement.GetProperty("imports").GetProperty("dayjs");
         Assert.AreEqual("dayjs", dayjsImport.GetProperty("path").GetString());
 
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "element-plus", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "element-plus", Guid.NewGuid().ToString("N"));
         try
         {
             var result = new LibraryMaterializer().Materialize(
@@ -458,7 +458,7 @@ public sealed class LibraryMaterializerTests
         var manifestPath = FindLibraryManifest("ECMAScript.DateFns");
         using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var version = manifest.RootElement.GetProperty("version").GetString()!;
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "date-fns", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "date-fns", Guid.NewGuid().ToString("N"));
         try
         {
             var result = new LibraryMaterializer().Materialize(
@@ -489,7 +489,7 @@ public sealed class LibraryMaterializerTests
         var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
         using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var version = manifest.RootElement.GetProperty("version").GetString()!;
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "floating-ui", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "floating-ui", Guid.NewGuid().ToString("N"));
         try
         {
             var result = new LibraryMaterializer().Materialize(
@@ -520,7 +520,7 @@ public sealed class LibraryMaterializerTests
         var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
         using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var version = manifest.RootElement.GetProperty("version").GetString()!;
-        var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "vueuse", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "vueuse", Guid.NewGuid().ToString("N"));
         try
         {
             var result = new LibraryMaterializer().Materialize(
@@ -563,7 +563,7 @@ public sealed class LibraryMaterializerTests
             var manifestPath = FindLibraryManifest(manifestName);
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             var version = manifest.RootElement.GetProperty("version").GetString()!;
-            var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
+            var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
             try
             {
                 var result = new LibraryMaterializer().Materialize(
@@ -609,7 +609,7 @@ public sealed class LibraryMaterializerTests
             var manifestPath = FindLibraryManifest(manifestName);
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             var version = manifest.RootElement.GetProperty("version").GetString()!;
-            var outputRoot = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
+            var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
             try
             {
                 var result = new LibraryMaterializer().Materialize(
@@ -750,7 +750,7 @@ public sealed class LibraryMaterializerTests
 
         manifest.Assets.Add(new AssetEntry("assets/first.txt", "assets/shared.txt", AssetEntry.KindStatic, firstHash));
 
-        var outputRoot = Path.Combine(Path.GetTempPath(), "jazor-invalid-manifest", Guid.NewGuid().ToString("N"));
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "jazor-invalid-manifest", Guid.NewGuid().ToString("N"));
         try
         {
             var exception = Assert.Throws<InvalidOperationException>(() =>
@@ -1601,7 +1601,7 @@ public sealed class LibraryMaterializerTests
     {
         public LibraryWorkspace()
         {
-            Root = Path.Combine(Path.GetTempPath(), "jazor-library-assets", Guid.NewGuid().ToString("N"));
+            Root = Path.Combine(RepositoryTemp.Root, "jazor-library-assets", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(Root);
         }
 

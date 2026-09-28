@@ -34,7 +34,7 @@ public sealed class EnumerableNumericSelectorRuntimeTests
             GetExportName("static System.Linq.Enumerable.Max<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, double>)"),
             GetExportName("static System.Linq.Enumerable.Max<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, decimal>)")
         };
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-numeric-selector-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-numeric-selector-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

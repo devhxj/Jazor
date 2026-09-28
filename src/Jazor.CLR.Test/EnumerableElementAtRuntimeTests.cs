@@ -15,7 +15,7 @@ public sealed class EnumerableElementAtRuntimeTests
         var elementAtIndex = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)");
         var fromStart = GetExportName("static System.Index.FromStart(int)", "./clr/System/IndexModule.js");
         var fromEnd = GetExportName("static System.Index.FromEnd(int)", "./clr/System/IndexModule.js");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-element-at-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-element-at-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

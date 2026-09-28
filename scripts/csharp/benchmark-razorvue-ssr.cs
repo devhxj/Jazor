@@ -18,6 +18,7 @@ if (options.ShowHelp)
     return;
 
 var repoRoot = RequireRepositoryRoot();
+ConfigureRepositoryEnvironment(repoRoot);
 var outputRoot = Path.GetFullPath(
     options.OutputDirectory ?? Path.Combine(repoRoot, ".tmp", "razorvue-ssr-benchmark"));
 var workspace = Path.Combine(outputRoot, "workspace-" + Guid.NewGuid().ToString("N"));
@@ -287,6 +288,27 @@ static string RequireRepositoryRoot()
     }
 
     throw new DirectoryNotFoundException("Could not locate the Jazor repository root.");
+}
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    var temp = Path.Combine(repoRoot, ".tmp", "agent-temp");
+    var dotnet = Path.Combine(repoRoot, ".dotnet");
+    var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
+    var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
+    var npm = Path.Combine(repoRoot, ".tmp", "npm-cache");
+    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", temp);
+    Environment.SetEnvironmentVariable("TMP", temp);
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
+    Environment.SetEnvironmentVariable("DENO_DIR", deno);
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
+    Environment.SetEnvironmentVariable("npm_config_cache", npm);
 }
 
 static void WriteText(string path, string content)

@@ -13,13 +13,15 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
+var repositoryRoot = FindRepositoryRoot();
+RepositoryEnvironment.Configure(repositoryRoot);
 var razorCompilerPath = RazorCompilerPathResolver.Resolve();
 Console.WriteLine("Razor compiler: " + razorCompilerPath);
 var razorAssembly = Assembly.LoadFrom(razorCompilerPath);
 var generatorType = razorAssembly.GetType("Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", throwOnError: true)!;
 var generator = (IIncrementalGenerator)Activator.CreateInstance(generatorType)!;
 
-var projectDirectory = Path.Combine(FindRepositoryRoot(), "test", "fixtures", "razorvue", "inspect");
+var projectDirectory = Path.Combine(repositoryRoot, "test", "fixtures", "razorvue", "inspect");
 var documentPath = Path.Combine(projectDirectory, "Pages", "Counter.razor");
 const string documentText = """
     @page "/counter"
@@ -317,5 +319,26 @@ internal static class RazorCompilerPathResolver
         }
 
         return null;
+    }
+}
+
+internal static class RepositoryEnvironment
+{
+    public static void Configure(string repoRoot)
+    {
+        var temp = Path.Combine(repoRoot, ".tmp", "agent-temp");
+        var dotnet = Path.Combine(repoRoot, ".dotnet");
+        var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
+        var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+        var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
+        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno })
+            Directory.CreateDirectory(directory);
+
+        Environment.SetEnvironmentVariable("TEMP", temp);
+        Environment.SetEnvironmentVariable("TMP", temp);
+        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
+        Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
+        Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
+        Environment.SetEnvironmentVariable("DENO_DIR", deno);
     }
 }

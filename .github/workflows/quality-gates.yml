@@ -23,6 +23,7 @@ on:
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
+      - 'scripts/csharp/verify-binding-documentation.cs'
       - 'docs/04-roadmap/binding-contract-baseline.json'
       - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'scripts/csharp/inspect-razorvue-chain.cs'
@@ -46,6 +47,7 @@ on:
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
+      - 'scripts/csharp/verify-binding-documentation.cs'
       - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'scripts/csharp/inspect-razorvue-chain.cs'
       - 'scripts/csharp/verify-razorvue-diagnostics.cs'
@@ -58,6 +60,16 @@ on:
       - '.github/workflows/quality-gates.yml'
       - '.github/workflows/nuget-publish-ref.yml'
 
+env:
+  TEMP: '${{ github.workspace }}\.tmp\agent-temp'
+  TMP: '${{ github.workspace }}\.tmp\agent-temp'
+  DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
+  NUGET_PACKAGES: '${{ github.workspace }}\.dotnet\.nuget\packages\'
+  NUGET_HTTP_CACHE_PATH: '${{ github.workspace }}\.tmp\nuget-http-cache'
+  DENO_DIR: '${{ github.workspace }}\.tmp\deno-cache'
+  NPM_CONFIG_CACHE: '${{ github.workspace }}\.tmp\npm-cache'
+  npm_config_cache: '${{ github.workspace }}\.tmp\npm-cache'
+
 permissions:
   contents: read
 
@@ -66,8 +78,14 @@ jobs:
     name: Toolchain matrix
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -101,9 +119,14 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
@@ -133,9 +156,14 @@ jobs:
       matrix:
         gate: [compiler, razorvue, vue-bindings]
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout tested ref
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       # Manual publishing may test an older ref without this reporting entrypoint.
@@ -143,6 +171,7 @@ jobs:
       - name: Checkout reporting tool from workflow revision
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ github.workflow_sha }}
           path: .tmp/quality-tools
           sparse-checkout: scripts/csharp/run-quality-gate.cs
@@ -170,9 +199,14 @@ jobs:
     name: Public API snapshot
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout tested ref
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
@@ -205,9 +239,14 @@ jobs:
     name: Typed bootstrap consumer
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout tested ref
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
@@ -237,9 +276,14 @@ jobs:
     name: RazorVue diagnostics protocol
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout tested ref
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
@@ -266,9 +310,14 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 35
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout tested ref
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
@@ -293,9 +342,14 @@ jobs:
     name: Vue binding contract gate
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout tested ref
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
@@ -330,14 +384,78 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  binding-documentation:
+    name: Binding documentation gate
+    runs-on: windows-latest
+    steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache", "${{ github.workspace }}\artifacts\binding-documentation" -Force | Out-Null
+
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          clean: false
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      # A release ref may predate this reporting entrypoint. Keep the source and
+      # generated XML at the tested ref, while taking the verifier from this workflow.
+      - name: Checkout documentation verifier from workflow revision
+        uses: actions/checkout@v4
+        with:
+          clean: false
+          ref: ${{ github.workflow_sha }}
+          path: .tmp/quality-tools
+          sparse-checkout: scripts/csharp/verify-binding-documentation.cs
+          sparse-checkout-cone-mode: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build Release documentation inputs
+        shell: pwsh
+        run: |
+          dotnet build Jazor.slnx --configuration Release --nologo 2>&1 |
+            Tee-Object -FilePath artifacts/binding-documentation/build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify binding documentation
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts/binding-documentation -Force | Out-Null
+          dotnet run --file ./.tmp/quality-tools/scripts/csharp/verify-binding-documentation.cs -- --no-build --configuration Release 2>&1 |
+            Tee-Object -FilePath artifacts/binding-documentation/report.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Ensure binding documentation evidence directory
+        if: ${{ always() }}
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path artifacts/binding-documentation -Force | Out-Null
+
+      - name: Upload binding documentation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: binding-documentation-${{ github.run_attempt }}
+          path: artifacts/binding-documentation/
+          if-no-files-found: error
+          retention-days: 14
+
   mainline:
     name: Main test lane
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET

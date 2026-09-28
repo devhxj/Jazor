@@ -52,7 +52,7 @@ public sealed class SemanticWalkerTranslatedQueryTests
 		}
 
 		var root = Path.Combine(
-			Path.GetTempPath(),
+			RepositoryTemp.Root,
 			"jazor-translated-query-let-" + Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(root);
 

@@ -2441,7 +2441,23 @@ static string ResolvePath(string path, string repoRoot)
 
 static void SetCommonEnvironment(string repoRoot)
 {
-    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    var tempDirectory = Path.Combine(repoRoot, ".tmp", "agent-temp");
+    var dotnetHome = Path.Combine(repoRoot, ".dotnet");
+    var nugetPackages = Path.Combine(dotnetHome, ".nuget", "packages") + Path.DirectorySeparatorChar;
+    var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
+    var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
+    foreach (var directory in new[] { tempDirectory, dotnetHome, nugetPackages, nugetHttpCache, denoCache, npmCache })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", tempDirectory);
+    Environment.SetEnvironmentVariable("TMP", tempDirectory);
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnetHome);
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
+    Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
+    Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
     Environment.SetEnvironmentVariable("MSBUILDDISABLENODEREUSE", "1");
     Environment.SetEnvironmentVariable("UseSharedCompilation", "false");

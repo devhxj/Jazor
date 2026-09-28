@@ -149,7 +149,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         _ = new Parser().ParseModule(module);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-enumerable-element-at-or-default-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
@@ -293,7 +293,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
         _ = new Parser().ParseModule(module);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-enumerable-element-at-or-default-index-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try

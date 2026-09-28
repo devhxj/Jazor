@@ -158,7 +158,7 @@ public sealed class StaticModuleSourceMapTests
     [TestMethod]
     public void ModuleWriter_Write_WithSourceMap_WritesMapAndManifestFields()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var rootAssemblyPath = Path.Combine(root, "Sample.Host.dll");
@@ -215,7 +215,7 @@ public sealed class StaticModuleSourceMapTests
     [TestMethod]
     public void ModuleWriter_Write_ProducesCanonicalSchemaV1ManifestWithoutTimeOrAbsoluteRoot()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var rootAssemblyPath = Path.Combine(root, "bin", "Debug", "net11.0", "Sample.Host.dll");
@@ -276,7 +276,7 @@ public sealed class StaticModuleSourceMapTests
     [TestMethod]
     public void ModuleWriter_Write_WhenSourceMapRemoved_DeletesStaleMapAndClearsManifestFields()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var rootAssemblyPath = Path.Combine(root, "Sample.Host.dll");
@@ -345,7 +345,7 @@ public sealed class StaticModuleSourceMapTests
     [TestMethod]
     public void ModuleWriter_Write_WhenExistingManifestUsesDotSegments_PreservesCurrentModule()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var rootAssemblyPath = Path.Combine(root, "Sample.Host.dll");

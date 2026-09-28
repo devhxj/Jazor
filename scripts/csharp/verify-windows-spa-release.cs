@@ -6,6 +6,7 @@ using System.Xml.Linq;
 
 var options = VerificationOptions.Parse(args);
 var repoRoot = ScriptHelpers.RequireRepoRoot();
+ScriptHelpers.ConfigureRepositoryEnvironment(repoRoot);
 var sourceWikiRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var packageRoot = ScriptHelpers.ResolvePath(repoRoot, options.PackageSource);
 var workRoot = Path.Combine(repoRoot, ".tmp", "windows-spa-release-" + Environment.ProcessId);
@@ -37,12 +38,6 @@ try
                 "Release",
                 "--output-directory",
                 packageRoot,
-                "--package",
-                "jazor",
-                "--package",
-                "jazor-vue",
-                "--package",
-                "style",
                 "--skip-push"
             ],
             repoRoot,
@@ -214,7 +209,35 @@ internal sealed record VerificationOptions(
 
 internal static class PackageVerifier
 {
-    private static readonly string[] RequiredPackageIds = ["Jazor", "Jazor.Vue", "ECMAScript.Style"];
+    // Keep this list aligned with publish-nuget.cs' DefaultPublicPackageIds. The
+    // consumer gate must fail when a package is omitted from the release artifact,
+    // even if the sample itself only exercises the three core references.
+    private static readonly string[] RequiredPackageIds =
+    [
+        "Jazor",
+        "Jazor.Vue",
+        "ECMAScript.Style",
+        "Jazor.Admin",
+        "ECMAScript.Vue.Devtools",
+        "ECMAScript.VueDataUi",
+        "ECMAScript.Lucide",
+        "ECMAScript.Pinia",
+        "ECMAScript.Pinia.Testing",
+        "ECMAScript.VueRoute",
+        "ECMAScript.DateFns",
+        "ECMAScript.VueUse",
+        "ECMAScript.FloatingUi",
+        "ECMAScript.VeeValidate",
+        "ECMAScript.VueI18n",
+        "ECMAScript.VueQuery",
+        "ECMAScript.Monaco",
+        "ECMAScript.VueDraggable",
+        "ECMAScript.FilePond",
+        "ECMAScript.WangEditor",
+        "ECMAScript.Vuetify",
+        "ECMAScript.ElementPlus",
+        "ECMAScript.TDesign"
+    ];
 
     public static string ResolveSharedPackageVersion(string packageRoot)
     {
@@ -263,7 +286,7 @@ internal static class PackageVerifier
             }
             else
             {
-                RequireEntry(archive, "lib/net11.0/ECMAScript.Style.dll", packageId);
+                RequireEntry(archive, "lib/net11.0/" + packageId + ".dll", packageId);
             }
         }
     }
@@ -539,6 +562,11 @@ internal static class ScriptHelpers
         }
 
         startInfo.Environment["DOTNET_CLI_HOME"] = dotnetCliHome;
+        startInfo.Environment["TEMP"] = TempDirectory(workdir);
+        startInfo.Environment["TMP"] = TempDirectory(workdir);
+        startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(workdir);
+        startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(workdir);
+        startInfo.Environment["DENO_DIR"] = DenoCache(workdir);
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
         startInfo.Environment["UseSharedCompilation"] = "false";
@@ -551,6 +579,33 @@ internal static class ScriptHelpers
             throw new InvalidOperationException("Process failed with exit code " + process.ExitCode + ": dotnet " + string.Join(' ', arguments));
         }
     }
+
+    public static void ConfigureRepositoryEnvironment(string repoRoot)
+    {
+        foreach (var directory in new[]
+        {
+            TempDirectory(repoRoot),
+            NuGetPackages(repoRoot),
+            NuGetHttpCache(repoRoot),
+            DenoCache(repoRoot)
+        })
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+        Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+        Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+        Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+        Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    }
+
+    public static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+    public static string NuGetPackages(string repoRoot)
+        => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+    public static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    public static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
     private static bool IsExcluded(string relativePath)
     {

@@ -27,7 +27,7 @@ internal static class EcmaScriptStyleModuleTestHost
 
     public static async Task<ProcessResult> RunDenoAsync(string runnerSource)
     {
-        var root = Path.Combine(Path.GetTempPath(), "ecmascript-style-test-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "ecmascript-style-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
@@ -51,6 +51,7 @@ internal static class EcmaScriptStyleModuleTestHost
             startInfo.ArgumentList.Add("run");
             startInfo.ArgumentList.Add("--no-config");
             startInfo.ArgumentList.Add("runner.mjs");
+            RepositoryTemp.ApplyProcessEnvironment(startInfo);
 
             using var process = Process.Start(startInfo)
                 ?? throw new InvalidOperationException("Deno process could not be started.");

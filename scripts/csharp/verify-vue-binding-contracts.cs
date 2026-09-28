@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 
 var repoRoot = RequireRepositoryRoot();
+ConfigureRepositoryEnvironment(repoRoot);
 var reportPath = GetOption("--report");
 var baselinePath = GetOption("--baseline");
 var failOnBaselineDrift = args.Contains("--fail-on-baseline-drift", StringComparer.Ordinal);
@@ -249,6 +250,47 @@ static void AddString(JsonElement element, string propertyName, ISet<string> val
         values.Add(value.GetString()!);
 }
 
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    foreach (var directory in new[]
+    {
+        TempDirectory(repoRoot),
+        NuGetPackages(repoRoot),
+        NuGetHttpCache(repoRoot),
+        DenoCache(repoRoot),
+        NpmCache(repoRoot),
+        Path.Combine(repoRoot, ".dotnet")
+    })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", NpmCache(repoRoot));
+    Environment.SetEnvironmentVariable("npm_config_cache", NpmCache(repoRoot));
+}
+
+static void ApplyRepositoryEnvironment(ProcessStartInfo startInfo, string repoRoot)
+{
+    startInfo.Environment["TEMP"] = TempDirectory(repoRoot);
+    startInfo.Environment["TMP"] = TempDirectory(repoRoot);
+    startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
+    startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
+    startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
+    startInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
+    startInfo.Environment["NPM_CONFIG_CACHE"] = NpmCache(repoRoot);
+    startInfo.Environment["npm_config_cache"] = NpmCache(repoRoot);
+}
+
+static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
+static string NpmCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "npm-cache");
+
 static async Task RunDotNetAsync(string projectPath, IReadOnlyList<string> commandArguments, string workdir)
 {
     using var process = new Process
@@ -259,6 +301,7 @@ static async Task RunDotNetAsync(string projectPath, IReadOnlyList<string> comma
             RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true
         }
     };
+    ApplyRepositoryEnvironment(process.StartInfo, workdir);
     process.StartInfo.ArgumentList.Add("run");
     process.StartInfo.ArgumentList.Add("--project");
     process.StartInfo.ArgumentList.Add(projectPath);

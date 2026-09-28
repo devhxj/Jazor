@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.FileProviders;
 
 namespace Jazor.EmitTest;
@@ -779,6 +780,10 @@ public sealed class JazorAspNetCoreHostingTests
         {
             ContentRootPath = contentRootPath
         });
+        // Test hosts must not write framework warnings to the machine-wide Windows EventLog.
+        // Keep logging observable in test output while remaining usable without administrator access.
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
         builder.WebHost.UseTestServer();
 
         var app = builder.Build();
@@ -834,7 +839,7 @@ public sealed class JazorAspNetCoreHostingTests
     {
         public AspNetCoreHostTestWorkspace()
         {
-            RootPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+            RootPath = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(RootPath);
         }
 

@@ -744,7 +744,7 @@ public sealed class JazorAspNetCoreReloadTests
     {
         public AspNetCoreHostTestWorkspace()
         {
-            RootPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+            RootPath = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(RootPath);
         }
 

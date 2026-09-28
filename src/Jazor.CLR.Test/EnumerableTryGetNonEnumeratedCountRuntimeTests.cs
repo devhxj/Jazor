@@ -13,7 +13,7 @@ public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
     public async Task TryGetNonEnumeratedCountExport_UsesArrayCarrierLengthWithoutIteratingOnDenoHost()
     {
         var exportName = GetExportName();
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-try-get-count-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-try-get-count-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

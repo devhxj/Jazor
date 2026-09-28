@@ -118,7 +118,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 		_ = new Parser().ParseModule(script);
 
 		var root = Path.Combine(
-			Path.GetTempPath(),
+			RepositoryTemp.Root,
 			"jazor-anonymous-ref-out-" + Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(root);
 
@@ -259,7 +259,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 		_ = new Parser().ParseModule(script);
 
 		var root = Path.Combine(
-			Path.GetTempPath(),
+			RepositoryTemp.Root,
 			"jazor-ref-out-complex-targets-" + Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(root);
 

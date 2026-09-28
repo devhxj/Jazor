@@ -13,7 +13,7 @@ public sealed class EnumerableMinMaxByRuntimeTests
     {
         var minBy = GetExportName("static System.Linq.Enumerable.MinBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
         var maxBy = GetExportName("static System.Linq.Enumerable.MaxBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-min-max-by-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-min-max-by-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

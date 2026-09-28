@@ -8,6 +8,7 @@ var options = VerifyNuGetPackageOptions.Parse(args);
 var repoRoot = ScriptHelpers.RequireRepoRoot();
 var outputDirectory = ScriptHelpers.ResolvePath(repoRoot, options.OutputDirectory);
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
+RepositoryEnvironment.Configure(repoRoot);
 
 ScriptHelpers.DeleteDirectoryIfExists(outputDirectory);
 Directory.CreateDirectory(outputDirectory);
@@ -334,6 +335,11 @@ internal static class ScriptHelpers
             workdir,
             [
                 new KeyValuePair<string, string?>("DOTNET_CLI_HOME", dotnetCliHome),
+                new KeyValuePair<string, string?>("TEMP", RepositoryEnvironment.TempDirectory(workdir)),
+                new KeyValuePair<string, string?>("TMP", RepositoryEnvironment.TempDirectory(workdir)),
+                new KeyValuePair<string, string?>("NUGET_PACKAGES", RepositoryEnvironment.NuGetPackages(workdir)),
+                new KeyValuePair<string, string?>("NUGET_HTTP_CACHE_PATH", RepositoryEnvironment.NuGetHttpCache(workdir)),
+                new KeyValuePair<string, string?>("DENO_DIR", RepositoryEnvironment.DenoCache(workdir)),
                 new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1"),
                 new KeyValuePair<string, string?>("MSBUILDDISABLENODEREUSE", "1"),
                 new KeyValuePair<string, string?>("UseSharedCompilation", "false")
@@ -383,4 +389,34 @@ internal static class ScriptHelpers
         return Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start process: " + fileName);
     }
+}
+
+internal static class RepositoryEnvironment
+{
+    public static void Configure(string repoRoot)
+    {
+        foreach (var directory in new[]
+        {
+            TempDirectory(repoRoot),
+            NuGetPackages(repoRoot),
+            NuGetHttpCache(repoRoot),
+            DenoCache(repoRoot)
+        })
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+        Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+        Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+        Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+        Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    }
+
+    public static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+    public static string NuGetPackages(string repoRoot)
+        => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+    public static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    public static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 }

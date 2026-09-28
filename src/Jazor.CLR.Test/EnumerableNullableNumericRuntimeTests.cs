@@ -27,7 +27,7 @@ public sealed class EnumerableNullableNumericRuntimeTests
             GetExportName("static System.Linq.Enumerable.Average(System.Collections.Generic.IEnumerable<double?>)"),
             GetExportName("static System.Linq.Enumerable.Average(System.Collections.Generic.IEnumerable<decimal?>)")
         };
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-nullable-numeric-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-nullable-numeric-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

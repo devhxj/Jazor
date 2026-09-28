@@ -159,6 +159,8 @@ internal static class BrowserSmokeTestHelper
         foreach (var argument in arguments)
             startInfo.ArgumentList.Add(argument);
 
+        RepositoryTemp.ApplyProcessEnvironment(startInfo);
+
         using var process = new Process { StartInfo = startInfo };
         process.Start();
 

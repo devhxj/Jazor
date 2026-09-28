@@ -102,7 +102,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
             }
             """;
 
-        var sourceRoot = Path.Combine(Path.GetTempPath(), "jazor-esgenerator-source-content");
+        var sourceRoot = Path.Combine(RepositoryTemp.Root, "jazor-esgenerator-source-content");
         var attributePath = Path.Combine(sourceRoot, "Contracts", "ECMAScriptModuleAttribute.cs");
         var alphaPath = Path.Combine(sourceRoot, "Alpha", "SharedModule.cs");
         var betaPath = Path.Combine(sourceRoot, "Beta", "SharedModule.cs");
@@ -175,7 +175,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
             }
             """;
 
-        var sourcePath = Path.Combine(Path.GetTempPath(), "jazor-esgenerator-uri", "UriModule.cs");
+        var sourcePath = Path.Combine(RepositoryTemp.Root, "jazor-esgenerator-uri", "UriModule.cs");
         var compilation = CSharpCompilation.Create(
             assemblyName: "SourceMapCatalog.FileUri.Generated",
             syntaxTrees:

@@ -24,7 +24,7 @@ public sealed class EnumerableMinMaxRuntimeTests
             GetExportName("static System.Linq.Enumerable.Min(System.Collections.Generic.IEnumerable<decimal>)"),
             GetExportName("static System.Linq.Enumerable.Max(System.Collections.Generic.IEnumerable<decimal>)")
         };
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-min-max-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-min-max-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

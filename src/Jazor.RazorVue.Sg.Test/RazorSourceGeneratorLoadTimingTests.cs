@@ -249,6 +249,7 @@ public sealed class RazorSourceGeneratorLoadTimingTests
 
         process.StartInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         process.StartInfo.Environment["JAZOR_RAZOR_SG_TIMING_LOG"] = logPath;
+        RazorSgTestHost.ConfigureProcessEnvironment(process.StartInfo);
 
         Assert.IsTrue(process.Start(), "Failed to start dotnet build for timing probe.");
         var standardOutput = process.StandardOutput.ReadToEnd();

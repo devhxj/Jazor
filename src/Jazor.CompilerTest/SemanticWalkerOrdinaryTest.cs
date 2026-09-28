@@ -5708,7 +5708,7 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.IsNotNull(script);
 
     var root = Path.Combine(
-      Path.GetTempPath(),
+      RepositoryTemp.Root,
       "jazor-compiler-nullable-value-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(root);
 

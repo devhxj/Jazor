@@ -6,10 +6,11 @@ using System.Text.RegularExpressions;
 
 var options = CandidateOptions.Parse(args);
 var repoRoot = RequireRepoRoot();
+RepositoryEnvironment.Configure(repoRoot);
 var version = NormalizeVersion(options.Tag);
 var candidateRoot = ResolveInsideRepository(repoRoot, options.OutputDirectory ?? Path.Combine("artifacts", "release-candidate", SafeName(options.Tag)));
 Directory.CreateDirectory(candidateRoot);
-foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-contracts", "sample-regression", "out", "obj" })
+foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-contracts", "binding-documentation", "sample-regression", "out", "obj" })
 {
     var directory = Path.Combine(candidateRoot, directoryName);
     if (Directory.Exists(directory))
@@ -38,6 +39,7 @@ var stageDefinitions = new (string Name, string[] Arguments)[]
     ("razorvue-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "razorvue", "--output-directory", Path.Combine(candidateRoot, "coverage", "razorvue")]),
     ("vue-binding-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "vue-bindings", "--output-directory", Path.Combine(candidateRoot, "coverage", "vue-bindings")]),
     ("binding-contracts", ["run", "--file", "scripts/csharp/verify-vue-binding-contracts.cs", "--", "--report", Path.Combine(candidateRoot, "binding-contracts", "report.json"), "--baseline", Path.Combine(repoRoot, "docs", "04-roadmap", "binding-contract-baseline.json"), "--fail-on-baseline-drift"]),
+    ("binding-documentation", ["run", "--file", "scripts/csharp/verify-binding-documentation.cs", "--", "--no-build", "--configuration", "Release", "--output-directory", Path.Combine(candidateRoot, "binding-documentation")]),
     ("razorvue-diagnostics", ["run", "--file", "scripts/csharp/verify-razorvue-diagnostics.cs", "--", "--output", Path.Combine(candidateRoot, "diagnostics")]),
     ("typed-bootstrap", ["run", "--file", "scripts/csharp/verify-typed-bootstrap.cs", "--", "--report", Path.Combine(candidateRoot, "typed-bootstrap.md")]),
     ("sample-regression", ["run", "--file", "scripts/csharp/verify-sample-regression-matrix.cs", "--", "--configuration", "Release", "--report", Path.Combine(candidateRoot, "sample-regression", "report.json")]),
@@ -98,6 +100,13 @@ static async Task<CandidateStage> RunStageAsync(IReadOnlyList<string> arguments,
     foreach (var argument in arguments)
         startInfo.ArgumentList.Add(argument);
     startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(workdir, ".dotnet");
+    startInfo.Environment["TEMP"] = RepositoryEnvironment.TempDirectory(workdir);
+    startInfo.Environment["TMP"] = RepositoryEnvironment.TempDirectory(workdir);
+    startInfo.Environment["NUGET_PACKAGES"] = RepositoryEnvironment.NuGetPackages(workdir);
+    startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = RepositoryEnvironment.NuGetHttpCache(workdir);
+    startInfo.Environment["DENO_DIR"] = RepositoryEnvironment.DenoCache(workdir);
+    startInfo.Environment["NPM_CONFIG_CACHE"] = RepositoryEnvironment.NpmCache(workdir);
+    startInfo.Environment["npm_config_cache"] = RepositoryEnvironment.NpmCache(workdir);
     startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
     startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     startInfo.Environment["UseSharedCompilation"] = "false";
@@ -189,6 +198,38 @@ static string ResolveInsideRepository(string repoRoot, string path)
 
 sealed record CandidateStage(string Name, bool Passed, int ExitCode, TimeSpan Elapsed, string LogPath);
 
+static class RepositoryEnvironment
+{
+    public static void Configure(string repoRoot)
+    {
+        foreach (var directory in new[]
+        {
+            TempDirectory(repoRoot),
+            NuGetPackages(repoRoot),
+            NuGetHttpCache(repoRoot),
+            DenoCache(repoRoot),
+            NpmCache(repoRoot)
+        })
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+        Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+        Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+        Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+        Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    }
+
+    public static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+    public static string NuGetPackages(string repoRoot)
+        => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+    public static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    public static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
+    public static string NpmCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "npm-cache");
+}
+
 sealed record CandidateOptions(string Tag, string? OutputDirectory, IReadOnlySet<string>? Only, bool ContinueOnFailure)
 {
     public static CandidateOptions Parse(string[] arguments)
@@ -208,7 +249,7 @@ sealed record CandidateOptions(string Tag, string? OutputDirectory, IReadOnlySet
                     break;
                 case "--continue-on-failure": continueOnFailure = true; break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-rc.1 [--output-directory DIR] [--only stage1,stage2] [--continue-on-failure]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-rc.1 [--output-directory DIR] [--only build,public-api-compatibility] [--continue-on-failure]");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown argument: " + arguments[index]);

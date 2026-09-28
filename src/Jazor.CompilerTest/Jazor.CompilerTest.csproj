@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="..\Jazor.EmitTest\TestSupport\RepositoryTemp.cs" Link="Shared\RepositoryTemp.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />

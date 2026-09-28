@@ -12,7 +12,7 @@ public sealed class EnumerableIndexRuntimeTests
     public async Task IndexExport_PreservesSourceOrderAndNamedTupleShapeOnDenoHost()
     {
         var index = GetExportName("static System.Linq.Enumerable.Index<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-index-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-index-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

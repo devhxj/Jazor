@@ -15,14 +15,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 // --packages DIR also validates the XML inside every shipping binding package.
 // --baseline REF verifies that this documentation-only change preserves C# tokens.
 // --library NAME[,NAME] selects binding or ASP.NET Core libraries for focused checks.
+// --output-directory DIR writes the report and per-library build logs inside the repository.
 var root = Directory.GetCurrentDirectory();
 if (!File.Exists(Path.Combine(root, "Jazor.slnx")))
     throw new InvalidOperationException("Run from the repository root.");
+ConfigureRepositoryEnvironment(root);
 var libraries = new[]
 {
     "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue", "ECMAScript.VueContract",
     "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute",
-    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.VueDraggable", "ECMAScript.FilePond", "ECMAScript.WangEditor", "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi", "ECMAScript.Lucide",
+    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.Monaco", "ECMAScript.VueDraggable", "ECMAScript.FilePond", "ECMAScript.WangEditor", "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi", "ECMAScript.Lucide",
     "ECMAScript.Style", "ECMAScript.ElementPlus", "ECMAScript.Vuetify", "ECMAScript.TDesign",
     "Jazor.AspNetCore", "Jazor.AspNetCore.Dev"
 };
@@ -36,7 +38,7 @@ if (Option("--library") is { } selection)
 var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview)
     .WithDocumentationMode(DocumentationMode.Diagnose);
 var configuration = Option("--configuration") ?? "Debug";
-var output = Path.Combine(root, "artifacts", "binding-documentation");
+var output = ResolveInsideRepository(root, Option("--output-directory") ?? Path.Combine(root, "artifacts", "binding-documentation"));
 Directory.CreateDirectory(output);
 var failures = new List<string>();
 var results = new List<object>();
@@ -185,13 +187,53 @@ static IEnumerable<(int RawKind, string Text)> CodeTokens(string source)
         !line.TrimStart().StartsWith("///", StringComparison.Ordinal) &&
         !line.Contains("[Category(\"optional\")]", StringComparison.Ordinal))), CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview)).GetRoot().DescendantTokens()
         .Select(token => (token.RawKind, token.Text));
+
+static string ResolveInsideRepository(string repoRoot, string path)
+{
+    var full = Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(repoRoot, path));
+    var root = Path.GetFullPath(repoRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+        + Path.DirectorySeparatorChar;
+    if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException("Documentation output must stay inside the repository: " + full);
+    return full;
+}
+
 static async Task<(int Code, string Output)> Run(string executable, params string[] arguments)
 {
     var start = new ProcessStartInfo(executable) { RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
+    foreach (var name in new[] { "TEMP", "TMP", "DOTNET_CLI_HOME", "NUGET_PACKAGES", "NUGET_HTTP_CACHE_PATH", "DENO_DIR", "NPM_CONFIG_CACHE", "npm_config_cache" })
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+        if (!string.IsNullOrWhiteSpace(value))
+            start.Environment[name] = value;
+    }
     foreach (var argument in arguments) start.ArgumentList.Add(argument);
     using var process = Process.Start(start)!;
     var stdout = process.StandardOutput.ReadToEndAsync();
     var stderr = process.StandardError.ReadToEndAsync();
     await process.WaitForExitAsync();
     return (process.ExitCode, await stdout + await stderr);
+}
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    foreach (var directory in new[]
+    {
+        Path.Combine(repoRoot, ".tmp", "agent-temp"),
+        Path.Combine(repoRoot, ".dotnet"),
+        Path.Combine(repoRoot, ".dotnet", ".nuget", "packages"),
+        Path.Combine(repoRoot, ".tmp", "nuget-http-cache"),
+        Path.Combine(repoRoot, ".tmp", "deno-cache"),
+        Path.Combine(repoRoot, ".tmp", "npm-cache")
+    })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", Path.Combine(repoRoot, ".tmp", "agent-temp"));
+    Environment.SetEnvironmentVariable("TMP", Path.Combine(repoRoot, ".tmp", "agent-temp"));
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar);
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", Path.Combine(repoRoot, ".tmp", "nuget-http-cache"));
+    Environment.SetEnvironmentVariable("DENO_DIR", Path.Combine(repoRoot, ".tmp", "deno-cache"));
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", Path.Combine(repoRoot, ".tmp", "npm-cache"));
+    Environment.SetEnvironmentVariable("npm_config_cache", Path.Combine(repoRoot, ".tmp", "npm-cache"));
 }

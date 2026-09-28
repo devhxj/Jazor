@@ -13,7 +13,7 @@ public sealed class EnumerableAppendPrependRuntimeTests
     {
         var append = GetExportName("static System.Linq.Enumerable.Append<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)");
         var prepend = GetExportName("static System.Linq.Enumerable.Prepend<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-append-prepend-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-append-prepend-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

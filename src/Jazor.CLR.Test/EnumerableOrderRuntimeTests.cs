@@ -13,7 +13,7 @@ public sealed class EnumerableOrderRuntimeTests
     {
         var order = GetExportName("static System.Linq.Enumerable.Order<T>(System.Collections.Generic.IEnumerable<T>)");
         var orderDescending = GetExportName("static System.Linq.Enumerable.OrderDescending<T>(System.Collections.Generic.IEnumerable<T>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-order-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-order-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

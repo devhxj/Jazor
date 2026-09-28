@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
+WikiScriptHelpers.ConfigureRepositoryEnvironment(repoRoot);
 var sampleRoot = WikiScriptHelpers.ResolvePath(repoRoot, options.WikiRoot ?? Path.Combine("samples", "Wiki"));
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
 var publishRoot = options.PublishedRoot is null
@@ -635,6 +636,31 @@ internal static class WikiScriptHelpers
 {
     public static readonly StringComparer PathComparer =
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+    public static void ConfigureRepositoryEnvironment(string repoRoot)
+    {
+        var tempDirectory = Path.Combine(repoRoot, ".tmp", "wiki-script-temp");
+        var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+        var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+        var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
+        var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
+
+        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        Environment.SetEnvironmentVariable("TEMP", tempDirectory);
+        Environment.SetEnvironmentVariable("TMP", tempDirectory);
+        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+        Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
+        Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
+        Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+        Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
+        Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
+        Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
+        Environment.SetEnvironmentVariable("MSBUILDDISABLENODEREUSE", "1");
+    }
 
     public static string RequireRepoRoot()
     {

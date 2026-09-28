@@ -108,7 +108,7 @@ public sealed class ProjectEntryWriterTests
     {
         public EntryWorkspace()
         {
-            Root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "entries", Guid.NewGuid().ToString("N"));
+            Root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "entries", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(Root);
         }
 

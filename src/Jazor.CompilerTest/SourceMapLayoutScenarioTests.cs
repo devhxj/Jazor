@@ -288,7 +288,7 @@ public sealed class SourceMapLayoutScenarioTests
 
     private static void AssertSourcePathEqualToRootIsStable(string scenarioId)
     {
-        var sourceRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "jazor-source-root"));
+        var sourceRoot = Path.GetFullPath(Path.Combine(RepositoryTemp.Root, "jazor-source-root"));
         var expression = new Identifier("value")
         {
             UserData = new SourceOrigin(sourceRoot, 1, 0, 1, 5)

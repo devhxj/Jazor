@@ -15,7 +15,7 @@ public sealed class EnumerableWhileRuntimeTests
         var skipWhileAt = GetExportName("static System.Linq.Enumerable.SkipWhile<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)");
         var takeWhile = GetExportName("static System.Linq.Enumerable.TakeWhile<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)");
         var takeWhileAt = GetExportName("static System.Linq.Enumerable.TakeWhile<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-while-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-while-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

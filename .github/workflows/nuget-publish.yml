@@ -8,6 +8,16 @@ on:
         required: false
         type: string
 
+env:
+  TEMP: '${{ github.workspace }}\.tmp\agent-temp'
+  TMP: '${{ github.workspace }}\.tmp\agent-temp'
+  DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
+  NUGET_PACKAGES: '${{ github.workspace }}\.dotnet\.nuget\packages\'
+  NUGET_HTTP_CACHE_PATH: '${{ github.workspace }}\.tmp\nuget-http-cache'
+  DENO_DIR: '${{ github.workspace }}\.tmp\deno-cache'
+  NPM_CONFIG_CACHE: '${{ github.workspace }}\.tmp\npm-cache'
+  npm_config_cache: '${{ github.workspace }}\.tmp\npm-cache'
+
 permissions:
   contents: read
 
@@ -16,9 +26,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          clean: false
           ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
 

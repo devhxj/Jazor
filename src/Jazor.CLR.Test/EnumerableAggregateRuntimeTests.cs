@@ -14,7 +14,7 @@ public sealed class EnumerableAggregateRuntimeTests
         var aggregate = GetExportName("static System.Linq.Enumerable.Aggregate<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TSource, TSource>)");
         var aggregateWithSeed = GetExportName("static System.Linq.Enumerable.Aggregate<TSource, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>)");
         var aggregateWithResult = GetExportName("static System.Linq.Enumerable.Aggregate<TSource, TAccumulate, TResult>(System.Collections.Generic.IEnumerable<TSource>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>, System.Func<TAccumulate, TResult>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-aggregate-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-aggregate-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

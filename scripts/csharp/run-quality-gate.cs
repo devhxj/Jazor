@@ -14,6 +14,7 @@ var outputDirectory = ReadOption(args, "--output-directory");
 var script = gate == "vue-bindings" ? "verify-vue-binding-coverage.cs" : $"verify-{gate}-coverage.cs";
 // The working directory owns the tested sources, even when CI loads this tool from a different revision.
 var repoRoot = Directory.GetCurrentDirectory();
+ConfigureRepositoryEnvironment(repoRoot);
 var resultRoot = outputDirectory is null
     ? Path.Combine(repoRoot, "artifacts", "quality", gate, Guid.NewGuid().ToString("N"))
     : Path.GetFullPath(Path.IsPathRooted(outputDirectory) ? outputDirectory : Path.Combine(repoRoot, outputDirectory));
@@ -31,6 +32,7 @@ try
         RedirectStandardOutput = true,
         RedirectStandardError = true
     };
+    ConfigureProcessEnvironment(startInfo, repoRoot);
     // Debug is the existing coverage baseline; Release consumers have their own publish gates.
     foreach (var argument in new[]
     {
@@ -81,6 +83,36 @@ static string? ReadOption(string[] arguments, string option)
     var index = Array.IndexOf(arguments, option);
     return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null;
 }
+
+static void ConfigureProcessEnvironment(ProcessStartInfo startInfo, string repoRoot)
+{
+    startInfo.Environment["TEMP"] = TempDirectory(repoRoot);
+    startInfo.Environment["TMP"] = TempDirectory(repoRoot);
+    startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
+    startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
+    startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
+    startInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
+    startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+    startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+    startInfo.Environment["UseSharedCompilation"] = "false";
+}
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    foreach (var directory in new[] { TempDirectory(repoRoot), NuGetPackages(repoRoot), NuGetHttpCache(repoRoot), DenoCache(repoRoot) })
+        Directory.CreateDirectory(directory);
+    Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+}
+
+static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
 async Task CopyOutputAsync(StreamReader reader, TextWriter destination)
 {

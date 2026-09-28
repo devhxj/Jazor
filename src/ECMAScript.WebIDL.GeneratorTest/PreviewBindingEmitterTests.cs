@@ -1275,7 +1275,7 @@ public sealed class PreviewBindingEmitterTests
     [TestMethod]
     public async Task EmitAsync_ExcludedNamespaceDoesNotAddGlobalAliasOrPreviewFile()
     {
-        var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
+        var tempDirectory = RepositoryTemp.CreateSubdirectory("webidl-preview-test-");
         try
         {
             var options = new GeneratorOptions(
@@ -1313,7 +1313,7 @@ public sealed class PreviewBindingEmitterTests
 
     private static async Task<string> EmitInterfacesAsync(params WebIdlDeclarationInventory[] declarations)
     {
-        var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
+        var tempDirectory = RepositoryTemp.CreateSubdirectory("webidl-preview-test-");
         try
         {
             var options = new GeneratorOptions(
@@ -1334,7 +1334,7 @@ public sealed class PreviewBindingEmitterTests
 
     private static async Task<IReadOnlyDictionary<string, string>> EmitGeneratedFilesAsync(params WebIdlDeclarationInventory[] declarations)
     {
-        var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
+        var tempDirectory = RepositoryTemp.CreateSubdirectory("webidl-preview-test-");
         try
         {
             var options = new GeneratorOptions(
@@ -1365,7 +1365,7 @@ public sealed class PreviewBindingEmitterTests
 
     private static async Task<string> EmitNamespacesAsync(params WebIdlDeclarationInventory[] declarations)
     {
-        var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
+        var tempDirectory = RepositoryTemp.CreateSubdirectory("webidl-preview-test-");
         try
         {
             var options = new GeneratorOptions(

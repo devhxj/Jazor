@@ -51,6 +51,16 @@ on:
       - 'global.json'
       - 'scripts/csharp/**'
       - 'docs/04-roadmap/**'
+env:
+  TEMP: '${{ github.workspace }}\.tmp\agent-temp'
+  TMP: '${{ github.workspace }}\.tmp\agent-temp'
+  DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
+  NUGET_PACKAGES: '${{ github.workspace }}\.dotnet\.nuget\packages\'
+  NUGET_HTTP_CACHE_PATH: '${{ github.workspace }}\.tmp\nuget-http-cache'
+  DENO_DIR: '${{ github.workspace }}\.tmp\deno-cache'
+  NPM_CONFIG_CACHE: '${{ github.workspace }}\.tmp\npm-cache'
+  npm_config_cache: '${{ github.workspace }}\.tmp\npm-cache'
+
 permissions:
   contents: read
 
@@ -58,8 +68,14 @@ jobs:
   toolchain:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -80,8 +96,14 @@ jobs:
   smoke:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -102,8 +124,14 @@ jobs:
         # verify-browser.mjs uses the WebSocket client exposed by Node 22+.
         node-version: ['22']
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -123,8 +151,14 @@ jobs:
   publish-smoke:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -145,8 +179,14 @@ jobs:
         # verify-browser.mjs uses the WebSocket client exposed by Node 22+.
         node-version: ['22']
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -166,8 +206,14 @@ jobs:
   windows-nuget-release-browser:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -187,8 +233,14 @@ jobs:
   windows-nuget-release-ssr:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

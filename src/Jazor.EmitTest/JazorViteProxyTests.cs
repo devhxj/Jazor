@@ -17,7 +17,7 @@ public sealed class JazorViteProxyTests
     [TestMethod]
     public async Task Proxy_ForwardsRealViteModulesQueriesAndHmrUpdates()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.ViteProxyTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.ViteProxyTest", Guid.NewGuid().ToString("N"));
         var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
             "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -52,6 +52,7 @@ public sealed class JazorViteProxyTests
             };
             foreach (var argument in new[] { "run", "-A", "server.js" })
                 start.ArgumentList.Add(argument);
+            RepositoryTemp.ApplyProcessEnvironment(start);
             vite = Process.Start(start)!;
             errors = vite.StandardError.ReadToEndAsync();
             var address = await vite.StandardOutput.ReadLineAsync(timeout.Token);

@@ -10,7 +10,7 @@ public sealed class RepositoryLayoutTests
     {
         foreach (var solutionFileName in new[] { "Jazor.slnx", "Jazor.sln" })
         {
-            var tempDirectory = Directory.CreateTempSubdirectory("webidl-layout-test-");
+            var tempDirectory = RepositoryTemp.CreateSubdirectory("webidl-layout-test-");
             try
             {
                 var repositoryRoot = Directory.CreateDirectory(Path.Combine(tempDirectory.FullName, "repo"));

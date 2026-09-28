@@ -12,7 +12,7 @@ public sealed class EnumerableConcatRuntimeTests
     public async Task ConcatExport_PreservesFirstThenSecondEnumerationOrderOnDenoHost()
     {
         var concat = GetExportName("static System.Linq.Enumerable.Concat<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-concat-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-concat-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

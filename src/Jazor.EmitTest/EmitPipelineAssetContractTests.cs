@@ -16,7 +16,7 @@ public sealed class EmitPipelineAssetContractTests
         const string moduleContent = "export const app = true;";
         const string expectedAssetContent = "expected";
         const string tamperedAssetContent = "tampered";
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var sourceRoot = Path.Combine(root, "source");
         var outputRoot = Path.Combine(root, "out");
         var assetSource = Path.Combine(sourceRoot, "assets", "logo.txt");
@@ -70,7 +70,7 @@ public sealed class EmitPipelineAssetContractTests
     {
         const string moduleContent = "export const app = true;";
         const string assetContent = "asset";
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var sourceRoot = Path.Combine(root, "source");
         var outputRoot = Path.Combine(root, "out");
         var assetSource = Path.Combine(sourceRoot, "assets", "source.txt");

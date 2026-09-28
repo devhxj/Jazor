@@ -16,7 +16,7 @@ public sealed class EnumerableFactoryRuntimeTests
         var repeat = GetExportName("static System.Linq.Enumerable.Repeat<TResult>(TResult, int)");
         var asEnumerable = GetExportName("static System.Linq.Enumerable.AsEnumerable<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
         var sequence = GetExportName("static System.Linq.Enumerable.Sequence<T>(T, T, T)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-factory-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-factory-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

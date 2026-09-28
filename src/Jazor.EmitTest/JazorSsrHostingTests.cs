@@ -735,7 +735,7 @@ public sealed partial class JazorSsrHostingTests
         private Task<string>? _devServerErrors;
         public SsrHostWorkspace()
         {
-            RootPath = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", "ssr", Guid.NewGuid().ToString("N"));
+            RootPath = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "ssr", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(RootPath);
         }
 
@@ -845,6 +845,7 @@ public sealed partial class JazorSsrHostingTests
             };
             foreach (var argument in new[] { "run", "-A", "test-server.js" })
                 start.ArgumentList.Add(argument);
+            RepositoryTemp.ApplyProcessEnvironment(start);
             _devServer = Process.Start(start)!;
             _devServerErrors = _devServer.StandardError.ReadToEndAsync();
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));

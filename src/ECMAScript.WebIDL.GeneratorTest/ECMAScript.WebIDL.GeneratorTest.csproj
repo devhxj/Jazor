@@ -7,6 +7,7 @@
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Jazor.EmitTest\TestSupport\RepositoryTemp.cs" Link="Shared\RepositoryTemp.cs" />
     <ProjectReference Include="..\ECMAScript.WebIDL.Generator\ECMAScript.WebIDL.Generator.csproj" />
   </ItemGroup>
   <ItemGroup>

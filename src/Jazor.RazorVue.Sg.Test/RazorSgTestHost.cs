@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using Microsoft.CodeAnalysis;
@@ -58,6 +59,31 @@ internal static class RazorSgTestHost
             $"{Environment.ProcessId}-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         return root;
+    }
+
+    public static void ConfigureProcessEnvironment(ProcessStartInfo startInfo)
+    {
+        ArgumentNullException.ThrowIfNull(startInfo);
+
+        var repositoryRoot = FindRepositoryRoot();
+        var processRoot = Path.Combine(repositoryRoot, ".tmp", "test-workspaces", "razor-sg-process");
+        var temp = Path.Combine(processRoot, "temp");
+        var dotnet = Path.Combine(processRoot, "dotnet-home");
+        var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
+        var nugetHttp = Path.Combine(processRoot, "nuget-http-cache");
+        var deno = Path.Combine(processRoot, "deno-cache");
+        var npm = Path.Combine(processRoot, "npm-cache");
+        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+            Directory.CreateDirectory(directory);
+
+        startInfo.Environment["TEMP"] = temp;
+        startInfo.Environment["TMP"] = temp;
+        startInfo.Environment["DOTNET_CLI_HOME"] = dotnet;
+        startInfo.Environment["NUGET_PACKAGES"] = nuget;
+        startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = nugetHttp;
+        startInfo.Environment["DENO_DIR"] = deno;
+        startInfo.Environment["NPM_CONFIG_CACHE"] = npm;
+        startInfo.Environment["npm_config_cache"] = npm;
     }
 
     public static string GetLoadedRazorCompilerAssemblyPath()

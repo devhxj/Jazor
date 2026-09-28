@@ -143,7 +143,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
     [TestMethod]
     public void ToKnRECMAScriptWithSourceMap_AbsolutePathsWithSameFileName_AreNotCollapsed()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.PathCollision");
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.SourceMap.PathCollision");
         var firstPath = Path.Combine(root, "FeatureA", "Shared.cs");
         var secondPath = Path.Combine(root, "FeatureB", "Shared.cs");
 
@@ -200,7 +200,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
     [TestMethod]
     public void ToKnRECMAScriptWithSourceMap_FileUriUnderSourceRoot_NormalizesToRootRelativeSource()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.UriRoot");
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.SourceMap.UriRoot");
         var sourcePath = Path.Combine(root, "FeatureA", "UriCase.cs");
         var fileUri = new Uri(sourcePath).AbsoluteUri;
 
@@ -226,7 +226,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
     [TestMethod]
     public void ToKnRECMAScriptWithSourceMap_AbsolutePathAndFileUriOfSameFile_AreDeduplicated()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.UriDedup");
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.SourceMap.UriDedup");
         var sourcePath = Path.Combine(root, "FeatureA", "Dedup.cs");
         var fileUri = new Uri(sourcePath).AbsoluteUri;
 
@@ -313,7 +313,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
     [TestMethod]
     public void ToKnRECMAScriptWithSourceMap_InvalidSourceRoot_FallsBackToAbsoluteSourcePath()
     {
-        var sourcePath = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.InvalidRoot", "Module.cs");
+        var sourcePath = Path.Combine(RepositoryTemp.Root, "Jazor.SourceMap.InvalidRoot", "Module.cs");
         var expression = new Identifier("value")
         {
             UserData = CreateSourceOrigin(sourcePath, 4, 1, 4, 6)
@@ -333,7 +333,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
     [TestMethod]
     public void ToKnRECMAScriptWithSourceMap_FileSystemRoot_NormalizesToRootRelativeSource()
     {
-        var sourcePath = Path.Combine(Path.GetTempPath(), "Jazor.SourceMap.FileSystemRoot", "Module.cs");
+        var sourcePath = Path.Combine(RepositoryTemp.Root, "Jazor.SourceMap.FileSystemRoot", "Module.cs");
         var root = Path.GetPathRoot(sourcePath);
         Assert.IsFalse(string.IsNullOrWhiteSpace(root));
 

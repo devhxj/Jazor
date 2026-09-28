@@ -18,6 +18,7 @@ var options = GeneratorOptions.Parse(args);
 var root = Directory.GetCurrentDirectory();
 if (!File.Exists(Path.Combine(root, "Jazor.slnx")))
     throw new InvalidOperationException("Run from the repository root.");
+ConfigureRepositoryEnvironment(root);
 
 var projectRoot = Path.Combine(root, "src", "ECMAScript.Monaco");
 var manifestPath = Path.Combine(projectRoot, "manifest.json");
@@ -45,7 +46,7 @@ if (lockedMonaco != version)
 
 if (!options.SkipInstall)
 {
-    await RunAsync("cmd.exe", ["/d", "/c", "npm.cmd", "ci", "--ignore-scripts", "--no-audit", "--no-fund"], buildRoot);
+    await RunAsync("cmd.exe", ["/d", "/c", "npm.cmd", "ci", "--ignore-scripts", "--no-audit", "--no-fund"], buildRoot, root);
 }
 
 var monacoRoot = Path.Combine(buildRoot, "node_modules", "monaco-editor");
@@ -113,7 +114,7 @@ WriteInventory(projectRoot, version, entries.Length);
 Console.WriteLine($"Validated {entries.Length} monaco-editor {version} export entries.");
 Console.WriteLine("Review contract drift for bound editor/model/language APIs before committing.");
 
-static async Task<int> RunAsync(string fileName, IEnumerable<string> arguments, string workingDirectory, bool throwOnFailure = true)
+static async Task<int> RunAsync(string fileName, IEnumerable<string> arguments, string workingDirectory, string environmentRoot, bool throwOnFailure = true)
 {
     var startInfo = new ProcessStartInfo(fileName)
     {
@@ -122,6 +123,7 @@ static async Task<int> RunAsync(string fileName, IEnumerable<string> arguments, 
         RedirectStandardError = true,
         UseShellExecute = false,
     };
+    ApplyRepositoryEnvironment(startInfo, environmentRoot);
     foreach (var argument in arguments)
         startInfo.ArgumentList.Add(argument);
 
@@ -147,6 +149,47 @@ static void ValidateEntry(string path, string specifier)
     if (source.Contains("require(", StringComparison.Ordinal))
         throw new InvalidOperationException($"monaco-editor entry '{specifier}' contains CommonJS require().");
 }
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    foreach (var directory in new[]
+    {
+        TempDirectory(repoRoot),
+        Path.Combine(repoRoot, ".dotnet"),
+        NuGetPackages(repoRoot),
+        NuGetHttpCache(repoRoot),
+        DenoCache(repoRoot),
+        NpmCache(repoRoot)
+    })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", NpmCache(repoRoot));
+    Environment.SetEnvironmentVariable("npm_config_cache", NpmCache(repoRoot));
+}
+
+static void ApplyRepositoryEnvironment(ProcessStartInfo startInfo, string repoRoot)
+{
+    startInfo.Environment["TEMP"] = TempDirectory(repoRoot);
+    startInfo.Environment["TMP"] = TempDirectory(repoRoot);
+    startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
+    startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
+    startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
+    startInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
+    startInfo.Environment["NPM_CONFIG_CACHE"] = NpmCache(repoRoot);
+    startInfo.Environment["npm_config_cache"] = NpmCache(repoRoot);
+}
+
+static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
+static string NpmCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "npm-cache");
 
 static JsonNode BuildManifest(
     string version,

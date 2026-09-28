@@ -16,7 +16,7 @@ public sealed class EnumerableTakeRangeRuntimeTests
         var fromEnd = GetExportName("static System.Index.FromEnd(int)", "./clr/System/IndexModule.js");
         var createRange = GetExportName("System.Range.Range(System.Index, System.Index)", "./clr/System/RangeModule.js");
         var allRange = GetExportName("static System.Range.All.get", "./clr/System/RangeModule.js");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-take-range-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-take-range-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

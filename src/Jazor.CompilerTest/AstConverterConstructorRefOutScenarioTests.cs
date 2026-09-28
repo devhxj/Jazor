@@ -62,7 +62,7 @@ public sealed class AstConverterConstructorRefOutScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-constructor-ref-out-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 

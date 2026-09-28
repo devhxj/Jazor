@@ -210,7 +210,7 @@ public sealed class ModuleCatalogReaderTests
         const string bridgeContent = "export { used } from '../a/used.mjs';";
         const string usedContent = "export const used = true;";
         const string unusedContent = "export const unused = true;";
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
 
         try
         {
@@ -339,7 +339,7 @@ public sealed class ModuleCatalogReaderTests
     public void ModuleCollector_Collect_UsesReferencedCatalogsWhenRootHasNoModule()
     {
         const string upstreamContent = "export const upstream = true;";
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
 
         try
         {
@@ -395,7 +395,7 @@ public sealed class ModuleCatalogReaderTests
     [TestMethod]
     public void ModuleWriter_Write_MaterializesHmrAndModuleCatalogMetadata()
     {
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var output = Path.Combine(root, "out");
         var manifestPath = Path.Combine(output, "jazor-manifest.json");
         const string content = "export default {};";

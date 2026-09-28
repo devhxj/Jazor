@@ -426,7 +426,7 @@ internal static class ESGeneratorScenarioCatalog
 
     private static IReadOnlyList<ESGeneratorSource> RootedSources()
     {
-        var root = Path.Combine(Path.GetTempPath(), "jazor-esgenerator-scenarios");
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-esgenerator-scenarios");
         return
         [
             new ESGeneratorSource(

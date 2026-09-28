@@ -17,7 +17,7 @@ public sealed class EnumerableSelectManyRuntimeTests
             "static System.Linq.Enumerable.SelectMany<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, System.Collections.Generic.IEnumerable<TResult>>)");
         var resultSelector = GetExportName(
             "static System.Linq.Enumerable.SelectMany<TSource, TCollection, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, System.Collections.Generic.IEnumerable<TCollection>>, System.Func<TSource, TCollection, TResult>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-select-many-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-select-many-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

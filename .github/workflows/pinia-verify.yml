@@ -66,6 +66,16 @@ on:
       - 'global.json'
   workflow_dispatch:
 
+env:
+  TEMP: '${{ github.workspace }}\.tmp\agent-temp'
+  TMP: '${{ github.workspace }}\.tmp\agent-temp'
+  DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
+  NUGET_PACKAGES: '${{ github.workspace }}\.dotnet\.nuget\packages\'
+  NUGET_HTTP_CACHE_PATH: '${{ github.workspace }}\.tmp\nuget-http-cache'
+  DENO_DIR: '${{ github.workspace }}\.tmp\deno-cache'
+  NPM_CONFIG_CACHE: '${{ github.workspace }}\.tmp\npm-cache'
+  npm_config_cache: '${{ github.workspace }}\.tmp\npm-cache'
+
 permissions:
   contents: read
 
@@ -73,8 +83,14 @@ jobs:
   dotnet:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -129,8 +145,14 @@ jobs:
   sample-smoke:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -160,36 +182,31 @@ jobs:
   package-dry-run:
     runs-on: windows-latest
     steps:
+      - name: Prepare repository-local toolchain directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
 
-      - name: Pack Jazor
+      - name: Pack default public package set
         shell: pwsh
         run: |
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
             --configuration Release `
             --output-directory artifacts/packages `
             --skip-push `
-            --package jazor `
-            --package jazor-vue `
-            --package devtools `
-            --package dataui `
-            --package lucide `
-            --package pinia `
-            --package pinia-testing `
-            --package vueroute `
-            --package vuetify `
-            --package elementplus `
-            --package tdesign `
             --base-output-path 'artifacts/out/pinia-pack/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
 
-      - name: Pack Jazor (NoBuild fast path)
+      - name: Pack default public package set (NoBuild fast path)
         shell: pwsh
         run: |
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
@@ -197,17 +214,6 @@ jobs:
             --output-directory artifacts/packages-nobuild `
             --skip-push `
             --no-build `
-            --package jazor `
-            --package jazor-vue `
-            --package devtools `
-            --package dataui `
-            --package lucide `
-            --package pinia `
-            --package pinia-testing `
-            --package vueroute `
-            --package vuetify `
-            --package elementplus `
-            --package tdesign `
             --base-output-path 'artifacts/out/pinia-pack/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
 

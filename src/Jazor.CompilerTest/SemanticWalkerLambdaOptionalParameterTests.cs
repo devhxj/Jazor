@@ -72,7 +72,7 @@ public sealed class SemanticWalkerLambdaOptionalParameterTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-optional-lambda-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 

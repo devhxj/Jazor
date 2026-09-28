@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="..\..\src\Jazor.EmitTest\TestSupport\RepositoryTemp.cs" Link="Shared\RepositoryTemp.cs" />
   </ItemGroup>
 
   <ItemGroup>

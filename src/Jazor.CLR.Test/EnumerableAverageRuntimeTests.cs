@@ -19,7 +19,7 @@ public sealed class EnumerableAverageRuntimeTests
             GetExportName("static System.Linq.Enumerable.Average(System.Collections.Generic.IEnumerable<double>)"),
             GetExportName("static System.Linq.Enumerable.Average(System.Collections.Generic.IEnumerable<decimal>)")
         };
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-average-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-average-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

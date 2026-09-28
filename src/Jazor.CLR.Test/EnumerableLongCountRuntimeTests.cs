@@ -17,7 +17,7 @@ public sealed class EnumerableLongCountRuntimeTests
         StringAssert.Contains(enumerableModule.Content, "count === 2147483647", StringComparison.Ordinal);
         StringAssert.Contains(enumerableModule.Content, "9223372036854775807", StringComparison.Ordinal);
 
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-long-count-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-long-count-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

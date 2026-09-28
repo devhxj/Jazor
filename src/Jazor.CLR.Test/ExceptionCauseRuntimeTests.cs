@@ -16,7 +16,7 @@ public sealed class ExceptionCauseRuntimeTests
         var getBase = GetExportName("virtual System.Exception.GetBaseException()");
         var getHelpLink = GetExportName("virtual System.Exception.HelpLink.get");
         var setHelpLink = GetExportName("virtual System.Exception.HelpLink.set");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-exception-cause-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-exception-cause-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

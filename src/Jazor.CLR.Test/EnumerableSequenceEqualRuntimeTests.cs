@@ -12,7 +12,7 @@ public sealed class EnumerableSequenceEqualRuntimeTests
     public async Task SequenceEqualExport_PreservesSynchronousEqualityAndShortCircuitOrderOnDenoHost()
     {
         var sequenceEqual = GetExportName("static System.Linq.Enumerable.SequenceEqual<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-sequence-equal-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-sequence-equal-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

@@ -329,7 +329,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-iterator-artifact-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -418,7 +418,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseScript(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-field-property-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -486,7 +486,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-primary-constructor-defaults-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -549,7 +549,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-local-to-array-helper-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -708,7 +708,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-explicit-base-initializer-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -785,7 +785,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-compound-array-mutation-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -883,7 +883,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-using-declaration-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -984,7 +984,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-await-using-declaration-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1107,7 +1107,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-using-expression-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1209,7 +1209,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-erased-interface-pattern-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1302,7 +1302,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-list-pattern-switch-expression-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1445,7 +1445,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-structural-list-pattern-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1567,7 +1567,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-overloaded-indexers-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1676,7 +1676,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-loop-control-flow-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1787,7 +1787,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-for-captured-control-variable-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1875,7 +1875,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-for-update-await-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -1970,7 +1970,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-conditional-array-index-and-range-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2063,7 +2063,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-nullable-get-value-or-default-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2165,7 +2165,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-nullable-get-value-or-default-with-default-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2262,7 +2262,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-nullable-value-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2395,7 +2395,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-local-function-delegate-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2486,7 +2486,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-method-group-receiver-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2572,7 +2572,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-nested-record-foreach-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -2652,7 +2652,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-field-defaults-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -3077,7 +3077,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-event-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -3394,7 +3394,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-event-local-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -3473,7 +3473,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-event-base-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -3693,7 +3693,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-null-pattern-undefined-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
@@ -3778,7 +3778,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-runtime-class-dictionary-foreach-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 

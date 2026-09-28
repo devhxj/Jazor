@@ -12,7 +12,7 @@ public sealed class EnumerableChunkRuntimeTests
     public async Task ChunkExport_PreservesSourceOrderAndCreatesIndependentChunksOnDenoHost()
     {
         var chunk = GetExportName("static System.Linq.Enumerable.Chunk<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-chunk-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-chunk-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

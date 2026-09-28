@@ -4,10 +4,12 @@ using System.Diagnostics;
 using System.Text.Json;
 
 var repoRoot = RequireRepositoryRoot();
+ConfigureRepositoryEnvironment(repoRoot);
 var outputDirectory = GetOption("--output") ?? Path.Combine(repoRoot, "artifacts", "quality", "razorvue-diagnostics");
 var root = Path.GetFullPath(outputDirectory);
+EnsureInsideRepository(repoRoot, root);
 Directory.CreateDirectory(root);
-var fixtureRoot = Path.Combine(Path.GetTempPath(), "jazor-razorvue-diagnostics-" + Guid.NewGuid().ToString("N"));
+var fixtureRoot = Path.Combine(repoRoot, ".tmp", "razorvue-diagnostics", Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(fixtureRoot);
 
 try
@@ -69,6 +71,12 @@ async Task<InspectionResult> RunInspectorAsync(string name, string source, strin
             RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true
         }
     };
+    process.StartInfo.Environment["TEMP"] = TempDirectory(repoRoot);
+    process.StartInfo.Environment["TMP"] = TempDirectory(repoRoot);
+    process.StartInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
+    process.StartInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
+    process.StartInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
+    process.StartInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
     foreach (var argument in arguments) process.StartInfo.ArgumentList.Add(argument);
     process.Start();
     var stdout = process.StandardOutput.ReadToEndAsync();
@@ -108,6 +116,44 @@ static string RequireRepositoryRoot()
     for (var directory = new DirectoryInfo(Directory.GetCurrentDirectory()); directory is not null; directory = directory.Parent)
         if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx"))) return directory.FullName;
     throw new InvalidOperationException("Unable to locate Jazor.slnx.");
+}
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    foreach (var directory in new[]
+    {
+        TempDirectory(repoRoot),
+        NuGetPackages(repoRoot),
+        NuGetHttpCache(repoRoot),
+        DenoCache(repoRoot)
+    })
+    {
+        Directory.CreateDirectory(directory);
+    }
+
+    Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+}
+
+static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+static string NuGetPackages(string repoRoot)
+    => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
+
+static void EnsureInsideRepository(string repoRoot, string path)
+{
+    var relativePath = Path.GetRelativePath(repoRoot, path);
+    if (Path.IsPathRooted(relativePath) || relativePath == ".." ||
+        relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+        relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException("Diagnostic output must stay inside the repository: " + path);
+    }
 }
 
 string? GetOption(string name)

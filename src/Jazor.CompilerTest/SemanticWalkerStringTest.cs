@@ -2431,7 +2431,7 @@ ${name ?? """"}!`;
 		_ = new Parser().ParseModule(module);
 
 		var root = Path.Combine(
-			Path.GetTempPath(),
+			RepositoryTemp.Root,
 			"jazor-interpolation-" + Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(root);
 

@@ -36,7 +36,7 @@ internal static class ClrRuntimeTestHost
     private static async Task<IReadOnlyDictionary<string, ClrRuntimeExecutionResult>> RunCoreAsync()
     {
         var root = Path.GetFullPath(Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-clr-runtime-" + Guid.NewGuid().ToString("N")));
         Directory.CreateDirectory(root);
 
@@ -106,7 +106,7 @@ internal static class ClrRuntimeTestHost
 
     private static void DeleteOwnedTempDirectory(string root)
     {
-        var tempRoot = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+        var tempRoot = Path.GetFullPath(RepositoryTemp.Root).TrimEnd(Path.DirectorySeparatorChar);
         if (!root.StartsWith(tempRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"Refusing to delete a non-temporary CLR runtime workspace: {root}");
 

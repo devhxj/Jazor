@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
+ConfigureRepositoryEnvironment(repoRoot);
 var options = Options.Parse(args, repoRoot);
 Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath)!);
 
@@ -63,6 +64,11 @@ static async Task<(int ExitCode, string Stdout, string Stderr)> RunAsync(IReadOn
     var start = new ProcessStartInfo("dotnet") { WorkingDirectory = workingDirectory, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
     foreach (var argument in arguments) start.ArgumentList.Add(argument);
     start.Environment["DOTNET_CLI_HOME"] = Path.Combine(workingDirectory, ".dotnet");
+    start.Environment["TEMP"] = TempDirectory(workingDirectory);
+    start.Environment["TMP"] = TempDirectory(workingDirectory);
+    start.Environment["NUGET_PACKAGES"] = NuGetPackages(workingDirectory);
+    start.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(workingDirectory);
+    start.Environment["DENO_DIR"] = DenoCache(workingDirectory);
     start.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
     start.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start dotnet.");
@@ -75,6 +81,23 @@ static async Task<(int ExitCode, string Stdout, string Stderr)> RunAsync(IReadOn
     Console.Error.Write(error);
     return (process.ExitCode, output, error);
 }
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    foreach (var directory in new[] { TempDirectory(repoRoot), NuGetPackages(repoRoot), NuGetHttpCache(repoRoot), DenoCache(repoRoot) })
+        Directory.CreateDirectory(directory);
+    Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
+    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+}
+
+static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
+static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
+static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
 static string ToMarkdown(Report report)
 {

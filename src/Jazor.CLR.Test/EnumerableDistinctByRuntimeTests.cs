@@ -12,7 +12,7 @@ public sealed class EnumerableDistinctByRuntimeTests
     public async Task DistinctByExport_PreservesFirstKeysAndDefaultEqualityOnDenoHost()
     {
         var distinctBy = GetExportName("static System.Linq.Enumerable.DistinctBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-distinct-by-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-distinct-by-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

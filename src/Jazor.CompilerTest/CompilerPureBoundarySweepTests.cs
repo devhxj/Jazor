@@ -100,7 +100,7 @@ public sealed class CompilerPureBoundarySweepTests
             "NormalizeSourcePath",
             BindingFlags.Static | BindingFlags.NonPublic)!;
         Assert.AreEqual("components/Button.cs", normalize.Invoke(null, ["./components\\Button.cs", null]));
-        var root = Path.Combine(Path.GetTempPath(), "Jazor.CompilerPureBoundary", "root");
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.CompilerPureBoundary", "root");
         var nested = Path.Combine(root, "nested", "Button.cs");
         Assert.AreEqual("nested/Button.cs", normalize.Invoke(null, [nested, root]));
 

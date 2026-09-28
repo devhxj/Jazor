@@ -14,7 +14,7 @@ public sealed class EnumerableSetByRuntimeTests
         var unionBy = GetExportName("static System.Linq.Enumerable.UnionBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
         var exceptBy = GetExportName("static System.Linq.Enumerable.ExceptBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TKey>, System.Func<TSource, TKey>)");
         var intersectBy = GetExportName("static System.Linq.Enumerable.IntersectBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TKey>, System.Func<TSource, TKey>)");
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-set-by-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-set-by-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

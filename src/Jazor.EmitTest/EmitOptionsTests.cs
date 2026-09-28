@@ -8,7 +8,7 @@ public sealed class EmitOptionsTests
     [TestMethod]
     public void TryParse_PathLists_PreservePathsAndIgnoreBlankLines()
     {
-        var root = Path.Combine(Path.GetTempPath(), "jazor-emit-options-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-emit-options-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
@@ -49,7 +49,7 @@ public sealed class EmitOptionsTests
         var parsed = EmitOptions.TryParse(
             [
                 "--root", "root.dll",
-                "--assembly-list", Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "missing.txt"),
+                "--assembly-list", Path.Combine(RepositoryTemp.Root, Guid.NewGuid().ToString("N"), "missing.txt"),
                 "--out", "out",
                 "--write-manifest", "state.json"
             ],

@@ -15,7 +15,7 @@ public sealed class EnumerableLookupRuntimeTests
         var lookupContains = GetExportName("System.Linq.ILookup<TKey, TElement>.Contains(TKey)");
         var lookupGet = GetExportName("System.Linq.ILookup<TKey, TElement>.this[TKey].get");
         var groupingKey = ClrRuntimeMappingCatalog.GetImport("System.Linq.IGrouping<TKey, TElement>.Key.get").ExportName;
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-lookup-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-lookup-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

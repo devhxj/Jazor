@@ -4,11 +4,12 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
-var repoRoot = Directory.GetCurrentDirectory();
+var repoRoot = RequireRepositoryRoot();
 var outputPath = args.Length > 0
-    ? Path.GetFullPath(args[0])
+    ? ResolveInsideRepository(repoRoot, args[0])
     : Path.Combine(repoRoot, "artifacts", "quality", "toolchain-matrix.md");
 
+ConfigureRepositoryEnvironment(repoRoot);
 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
 var dotnet = await ReadVersionAsync("dotnet", "--version");
@@ -92,6 +93,48 @@ static string CompareSdk(string requested, string actual)
     return string.Equals(requestedBase, actualBase, StringComparison.OrdinalIgnoreCase)
         ? "PASS"
         : "FAIL";
+}
+
+static string ResolveInsideRepository(string repoRoot, string path)
+{
+    var fullPath = Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(repoRoot, path));
+    var root = Path.GetFullPath(repoRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+        + Path.DirectorySeparatorChar;
+    if (!fullPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException("Toolchain matrix output must stay inside the repository: " + fullPath);
+    return fullPath;
+}
+
+static string RequireRepositoryRoot()
+{
+    for (var directory = new DirectoryInfo(Directory.GetCurrentDirectory()); directory is not null; directory = directory.Parent)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+            return directory.FullName;
+    }
+
+    throw new InvalidOperationException("Unable to locate Jazor.slnx.");
+}
+
+static void ConfigureRepositoryEnvironment(string repoRoot)
+{
+    var temp = Path.Combine(repoRoot, ".tmp", "agent-temp");
+    var dotnet = Path.Combine(repoRoot, ".dotnet");
+    var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
+    var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
+    var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
+    var npm = Path.Combine(repoRoot, ".tmp", "npm-cache");
+    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+        Directory.CreateDirectory(directory);
+
+    Environment.SetEnvironmentVariable("TEMP", temp);
+    Environment.SetEnvironmentVariable("TMP", temp);
+    Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
+    Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
+    Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
+    Environment.SetEnvironmentVariable("DENO_DIR", deno);
+    Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
+    Environment.SetEnvironmentVariable("npm_config_cache", npm);
 }
 
 static string RunGit(string workingDirectory, params string[] arguments)

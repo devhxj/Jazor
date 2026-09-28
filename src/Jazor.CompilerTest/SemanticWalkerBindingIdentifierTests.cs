@@ -40,7 +40,7 @@ public static class BindingScenarios
         _ = new Parser().ParseModule(module);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-binding-identifiers-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 

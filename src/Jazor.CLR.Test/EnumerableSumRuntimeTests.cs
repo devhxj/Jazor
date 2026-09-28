@@ -19,7 +19,7 @@ public sealed class EnumerableSumRuntimeTests
             GetExportName("static System.Linq.Enumerable.Sum(System.Collections.Generic.IEnumerable<double>)"),
             GetExportName("static System.Linq.Enumerable.Sum(System.Collections.Generic.IEnumerable<decimal>)")
         };
-        var root = Path.Combine(Path.GetTempPath(), "jazor-enumerable-sum-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-sum-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

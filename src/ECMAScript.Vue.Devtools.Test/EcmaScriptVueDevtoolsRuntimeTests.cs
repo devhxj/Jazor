@@ -13,7 +13,7 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
         var script = await DevtoolsTestCompiler.ConvertModuleAsync(RuntimeModuleSource, "DevtoolsRuntimeModule");
         Assert.IsNotNull(script);
 
-        var root = Path.Combine(Path.GetTempPath(), "jazor-vue-devtools-runtime-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-vue-devtools-runtime-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 
         try

@@ -124,13 +124,16 @@ public static class HostExtensions
                 // This sample validates the deployment shape locally. Production deployments replace these
                 // development certificates with managed signing and encryption credentials.
                 // 此处验证本地部署形态；生产部署需替换为受管的签名和加密证书。
-                if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
+                if (environment.IsDevelopment())
                 {
                     options.AddDevelopmentEncryptionCertificate()
                         .AddDevelopmentSigningCertificate();
                 }
                 else
                 {
+                    // Test hosts must not depend on permissions to create or open a Windows
+                    // certificate-store entry; ephemeral keys are sufficient for one host.
+                    // 测试宿主不应依赖 Windows 证书存储权限；单个宿主生命周期内使用临时密钥即可。
                     options.AddEphemeralEncryptionKey()
                         .AddEphemeralSigningKey();
                 }

@@ -83,7 +83,7 @@ public sealed class AstConverterBoundArgumentScenarioTests
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
-            Path.GetTempPath(),
+            RepositoryTemp.Root,
             "jazor-bound-arguments-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
 

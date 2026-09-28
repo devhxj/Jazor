@@ -569,6 +569,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             UseShellExecute = false,
             WorkingDirectory = workingDirectory
         };
+        RazorSgTestHost.ConfigureProcessEnvironment(startInfo);
         startInfo.ArgumentList.Add("test");
         startInfo.ArgumentList.Add("--quiet");
         startInfo.ArgumentList.Add("--allow-all");
