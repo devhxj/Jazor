@@ -35,6 +35,8 @@ ECMAScript ecosystem layer:
 | `src/ECMAScript.Vuetify` | Vuetify component wrappers (props, events, slots, value types) |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
 | `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |
+| `src/ECMAScript.Lucide` | Supported tree-shakeable Lucide icon bindings |
+| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `VueDraggable`, `FilePond`, `WangEditor`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real RazorVue consumer evidence |
 
 ASP.NET Core integration layer:
 
@@ -69,7 +71,7 @@ Run from the repository root unless noted:
 
 - `dotnet restore Jazor.slnx` restores NuGet packages for the solution projects.
 - `dotnet build Jazor.slnx` builds the full solution targeting the current `net11.0` preview SDK.
-- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Vu Icons, Pinia, Pinia.Testing, VueRoute, Razor SG, and emit suites.
+- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Lucide, Pinia, Pinia.Testing, VueRoute, P3/Monaco binding, Razor SG, and Emit suites.
 - `dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg` runs the focused Razor SG suite.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` runs the compiler regression suite.
 - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` runs the Razor SG integration suite.

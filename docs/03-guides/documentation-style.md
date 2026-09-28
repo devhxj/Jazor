@@ -42,12 +42,14 @@
 
 ## ECMAScript 与绑定库 API 注释
 
-所有公开的 ECMAScript 基础类型、Web IDL 类型以及 Vue、Pinia、Vue Router、DateFns、VueUse、Floating UI、VeeValidate、VueI18n、Vue Query、Vue Draggable、FilePond、WangEditor、Element Plus、Vuetify、TDesign、Style、Vu Icons、Vue Data UI 和 Devtools 绑定都必须生成 XML 文档。绑定库优先保留对应上游版本的原始 JSDoc、web-types 或 MDN 说明；只有在 C# 投影、联合类型、集合构造器和事件回调等桥接处补充本地说明。补充内容应解释 C# 用法与 JavaScript 行为之间的关系，不能用空泛摘要覆盖上游语义。
+所有公开的 ECMAScript 基础类型、Web IDL 类型以及 Vue、Pinia、Vue Router、DateFns、VueUse、Floating UI、VeeValidate、VueI18n、Vue Query、Vue Draggable、FilePond、WangEditor、Monaco、Lucide、Element Plus、Vuetify、TDesign、Style、Vue Data UI 和 Devtools 绑定都必须生成 XML 文档。已退役的 VuIcons 不属于当前绑定文档覆盖面。绑定库优先保留对应上游版本的原始 JSDoc、web-types 或 MDN 说明；只有在 C# 投影、联合类型、集合构造器和事件回调等桥接处补充本地说明。补充内容应解释 C# 用法与 JavaScript 行为之间的关系，不能用空泛摘要覆盖上游语义。
 
 绑定文档快照必须记录来源仓库、版本、许可证和采集日期。生成器将 XML 随程序集和 NuGet 包交付，维护者可在仓库根目录运行以下门禁，检查公开声明、枚举值、XML 条目、上游快照和 nuspec 文件是否一致：
 
 ```bash
 dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD
 ```
+
+`.github/workflows/quality-gates.yml` 也会在 Release solution build 后运行同一门禁，并上传 `artifacts/binding-documentation/` 下的报告；tag 与手动 NuGet 发布通过该质量工作流复用相同的文档检查。
 
 Web IDL 文档来源使用 MDN 快照，许可证为 `CC-BY-SA-2.5`；Vue 生态绑定使用各上游项目锁定版本的文档快照。修改绑定声明或生成器后，应同时更新快照、生成输出和 XML，并运行对应生成器的 `documentation --check`。

@@ -13,11 +13,13 @@
 
 ## 旧项目迁移
 
+现有项目迁移时，请移除 `ECMAScript.VuIcons`，并改用受支持的 Lucide binding：
+
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.5" />
 </ItemGroup>
 ```
 

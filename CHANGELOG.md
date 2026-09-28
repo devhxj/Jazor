@@ -2,6 +2,36 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-28
+
+### Jazor 1.0.0-preview.5
+
+中文 | English
+
+#### 新增能力
+
+- 首次以 lockstep `1.0.0-preview.5` NuGet 包发布 P3-A/B/C 与 Monaco 绑定：`ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi`、`ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery`、`ECMAScript.Monaco`、`ECMAScript.VueDraggable`、`ECMAScript.FilePond` 和 `ECMAScript.WangEditor`。这些包已进入默认 23 包发布目录；在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。by @devhxj
+- Monaco 现已完整接入 solution、默认测试 lane、compiler/Emit materialization、公共 API 冻结与绑定文档门禁；发布包包含 editor、model、language、marker 以及显式声明的 worker ESM 入口。by @devhxj
+
+#### 问题修复
+
+- 发布候选与正式 tag 工作流统一使用 `publish-nuget.cs` 的默认公共包目录，移除会整体替换默认目录的旧显式选择器；SPA/SSR 发布消费者同时验证全部 23 个包存在且版本一致，避免已实现的生态包再次漏 pack 或漏 push。by @devhxj
+- 公共 API 兼容性门禁扩展到 P3-A/B/C 与 Monaco，当前冻结快照为 76,105 条（8,948 个顶层声明、67,157 个成员声明），基线比较新增 0、删除 0；绑定文档门禁覆盖 26 个程序集并进入 RC 与主线 CI。by @devhxj
+- 仓库自动化、测试宿主和 Windows workflow 将 TEMP、NuGet、Deno 与 npm 缓存统一限定在仓库目录内；TDesign `Icon` 样式入口修正为上游实际提供的 `tdesign-icons-vue-next/esm/style/index.css`。by @devhxj
+- 明确 `ECMAScript.VuIcons` 已退役、`ECMAScript.Lucide` 是受支持的图标绑定；`ECMAScript.VueI18n` 继续维护并随本版本发布。by @devhxj
+
+#### Features
+
+- Publish the P3-A/B/C and Monaco bindings as lockstep `1.0.0-preview.5` NuGet packages for the first time: `ECMAScript.DateFns`, `ECMAScript.VueUse`, `ECMAScript.FloatingUi`, `ECMAScript.VeeValidate`, `ECMAScript.VueI18n`, `ECMAScript.VueQuery`, `ECMAScript.Monaco`, `ECMAScript.VueDraggable`, `ECMAScript.FilePond`, and `ECMAScript.WangEditor`. They now belong to the default 23-package release catalog and remain Guidance until browser-smoke and real RazorVue-consumer evidence is complete. by @devhxj
+- Wire Monaco through the solution, default test lane, compiler/Emit materialization, public-API freeze, and binding-documentation gates. The package carries the editor, model, language, marker, and explicitly declared worker ESM entries. by @devhxj
+
+#### Fixes
+
+- Make release-candidate and official tag workflows consume the default `publish-nuget.cs` catalog instead of explicit selectors that replaced it. SPA and SSR release consumers now require all 23 packages at one lockstep version, preventing implemented ecosystem bindings from being omitted during pack or push. by @devhxj
+- Extend public-API compatibility coverage to P3-A/B/C and Monaco. The frozen snapshot contains 76,105 entries (8,948 top-level declarations and 67,157 members) with zero additions and zero removals, while the binding-documentation gate covers 26 assemblies in RC and mainline CI. by @devhxj
+- Keep TEMP, NuGet, Deno, and npm caches inside the repository across automation, test hosts, and Windows workflows. Correct the TDesign `Icon` stylesheet to the upstream `tdesign-icons-vue-next/esm/style/index.css` entry. by @devhxj
+- Record `ECMAScript.VuIcons` as retired and `ECMAScript.Lucide` as the supported icon binding. `ECMAScript.VueI18n` remains maintained and ships in this release. by @devhxj
+
 ## 2026-09-22
 
 ### Jazor 1.0.0-preview.4

@@ -1,6 +1,6 @@
 # 当前状态
 
-> 当前已发布版本：[1.0.0-preview.4（2026-09-22）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.5（2026-09-28）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 
@@ -31,7 +31,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 生态绑定与参考应用服务于同一目标：让已声明的能力能够在真实项目中被自然地组合和验证。
 
-- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；P3-A/B/C 与 Monaco 的绑定已进入主线并接通下一次发布，但尚未随 preview.4 发布，仍等待 browser smoke 与真实 RazorVue consumer 后再进入 Support 矩阵。VuIcons 已停止维护，不属于当前受支持的生态层。
+- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；P3-A/B/C 与 Monaco 的十个绑定已随 preview.5 发布，但仍等待 browser smoke 与真实 RazorVue consumer 后再进入 Support 矩阵。P3-B 的 `ECMAScript.VueI18n` 仍在维护；已退役的是 `ECMAScript.VuIcons`，新项目使用 `ECMAScript.Lucide`。
 - `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 
@@ -50,7 +50,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。`1.0.0-preview.1` 已作为首个冻结候选发布；当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型保持既定命名。`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 提供统一候选验收入口；API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据共同确认正式 `1.0.0` 发布状态。
 
-2026-09-27 当前 API 快照覆盖 P3-A/B/C 与 Monaco 绑定程序集，共 `76105` 条；与保留快照比较为 `76105` 对 `76105`，新增 `0`、删除 `0`。Monaco 已接入 solution、主线 lane、Emit 物化回归和发布包 catalog；P3 绑定的 browser smoke 与真实 RazorVue consumer 仍是进入 Support 矩阵的前置条件。核心 Compiler、CLR、Razor SG、Emit 与生态测试继续由完整 Release Candidate 门禁统一执行。
+2026-09-28 当前 API 快照覆盖 P3-A/B/C 与 Monaco 绑定程序集，共 `76105` 条（`8948` 个顶层声明、`67157` 个成员声明）；与保留快照比较为 `76105` 对 `76105`，新增 `0`、删除 `0`。本轮权威结论已收录在[历史演进记录](../05-history/evolution.md)；复核工作区的完整比较报告和生成快照位于 `artifacts/quality/review-2026-09-28/`，该目录不属于源码基线。Monaco 已接入 solution、主线 lane、Emit 物化回归和发布包 catalog；P3 绑定的 browser smoke 与真实 RazorVue consumer 仍是进入 Support 矩阵的前置条件。核心 Compiler、CLR、Razor SG、Emit 与生态测试继续由完整 Release Candidate 门禁统一执行。
 
 ## 质量门槛与验证
 
@@ -61,11 +61,11 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | 核心编译器 | 至少 10,000 个通过场景、98% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | Razor-to-Vue | 至少 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 绑定 | 每个目标至少 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、Monaco、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
+| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Lucide、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、Monaco、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 
-核心编译器、Razor-to-Vue 与 Vue 绑定覆盖率门禁由 `.github/workflows/quality-gates.yml` 在相关 pull request 和 main 分支变更中执行，并作为 tag 与手动 NuGet 发布的前置任务。每个门禁保存 TRX、Cobertura（适用时）、文本日志和 Markdown 摘要，关键指标写入 GitHub Actions 摘要。复现方式与报告保留期见[发版与版本规则](../03-guides/release-and-versioning.md#发版门禁)。
+核心编译器、Razor-to-Vue、Vue 绑定覆盖率和绑定 XML 文档门禁由 `.github/workflows/quality-gates.yml` 在相关 pull request 和 main 分支变更中执行，并作为 tag 与手动 NuGet 发布的前置任务。工作流按门禁保存 TRX、Cobertura（适用时）、文本日志及 JSON/Markdown 报告；关键指标写入 GitHub Actions 摘要。复现方式与报告保留期见[发版与版本规则](../03-guides/release-and-versioning.md#发版门禁)。
 
 这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)；本页不固化历史快照。
 

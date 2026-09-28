@@ -11,9 +11,9 @@ RazorVue 模块生成到消费程序集的 `Jazor.Generated.ModuleCatalog`，不
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.5" />
 </ItemGroup>
 ```
 

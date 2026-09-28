@@ -4,7 +4,7 @@
 
 本指南首先验证框架无关的核心能力。Razor-to-Vue 作为后续可选集成提供组件作者入口。
 
-示例使用已发布的 `1.0.0-preview.4`。P3-A/B/C 与 Monaco 的主线实现尚未随该版本发布，安装这些绑定需等待下一次 tag。
+示例使用已发布的 `1.0.0-preview.5`。P3-A/B/C 与 Monaco 绑定已可从同版本 NuGet 包安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。
 
 ## 1. 创建模块库
 
@@ -12,7 +12,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 1.0.0-preview.4
+dotnet add Sample.Modules package Jazor --version 1.0.0-preview.5
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -38,7 +38,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 1.0.0-preview.4
+dotnet add Sample.Host package Jazor --version 1.0.0-preview.5
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
@@ -66,7 +66,7 @@ dotnet build Sample.Host
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
 </ItemGroup>
 ```
 

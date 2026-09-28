@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.4&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.5&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.4 是当前预览版本。
+> Jazor 1.0.0-preview.5 是当前预览版本。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -109,15 +109,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.4
+dotnet add package Jazor --version 1.0.0-preview.5
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.4" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.4" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -198,15 +198,16 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
 ## 发布状态
 
-### Jazor 1.0.0-preview.4 · 2026-09-22
+### Jazor 1.0.0-preview.5 · 2026-09-28
 
-- 标准 JavaScript 项目输出现在直接使用 ESM 路径、Deno lockfile 和项目配置的前端构建工具，支持浏览器开发、HMR 与生产构建。
-- npm/JSR 绑定统一使用上游公开入口、强类型 `[Style]` 副作用导入和单一依赖图；VuIcons 已退役，Lucide 成为受支持的图标绑定。
-- CLR carrier 导入、RazorVue 输出、SSR worker 失效和 ASP.NET Core 代理/HMR 路径统一使用标准项目根，并纳入发版门禁。
-- P3-A/B/C 绑定与 Monaco 已进入主线并接通下一次 tag，但没有随 preview.4 上传；browser smoke 与真实 RazorVue consumer 证据完成前仍保持 Guidance。
+- 十个 P3-A/B/C 与 Monaco 绑定现已提供 lockstep NuGet 包：DateFns、VueUse、Floating UI、VeeValidate、VueI18n、Vue Query、Monaco、Vue Draggable、FilePond 和 WangEditor。
+- 正式发布目录现在从单一来源打包并验证全部 23 个公共包；SPA/SSR 包消费者会拒绝缺包或混用版本的产物。
+- 公共 API 兼容性门禁覆盖 P3/Monaco 程序集，冻结快照为 76,105 条；RC 与主线 CI 同时检查 26 个程序集的绑定文档。
+- 仓库自动化和 Windows 测试 workflow 将临时文件及工具缓存限定在仓库内；TDesign 图标改用上游实际样式入口，VuIcons 继续退役并由 Lucide 替代。
+- 新发布的 P3 绑定在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。
 - 当前为预发布版本，稳定版 1.0 尚未发布；支持范围与质量门禁见[当前状态](docs/04-roadmap/current-status.md)。
 
-版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有已发布的 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.4`；上方 P3 绑定需等待下一次 tag。
+版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有已发布的 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.5`。
 
 主分支可能包含尚未发布的改动。将主分支示例用于已安装包前，请核对[未发布改动与版本历史](CHANGELOG.md)。
 

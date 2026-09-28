@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前已发布版本：[1.0.0-preview.4（2026-09-22）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.5（2026-09-28）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -24,7 +24,7 @@
 2. 当时的全部质量门禁通过，门槛以[当前状态](../04-roadmap/current-status.md)的门槛表为准。
 3. CHANGELOG 完整覆盖全部已发布版本，且本规则已生效。
 
-发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、RazorVue diagnostics、绑定 contract baseline、包形状和 SPA/SSR consumer 证据。绑定报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移时阻断候选。它通过后才进入正式发布工作流。
+发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、绑定 contract 与 XML 文档、RazorVue diagnostics、包形状和 SPA/SSR consumer 证据。绑定 contract 报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移或公开绑定文档缺失时阻断候选。它通过后才进入正式发布工作流。
 
 `1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。本节在 `1.0.0` 发布后归档。
 
@@ -44,10 +44,11 @@
 | 编译器、CLR 白名单 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | RazorVue | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 生态绑定包 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
+| 绑定 XML 文档 | `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --configuration Release` |
 
-相关 PR 与 main 分支变更由 `Quality Gates` 工作流自动执行三项覆盖率门禁。标签发布和 `workflow_dispatch` 手动发布均对指定发布 ref 执行同一工作流，三项全部成功后才进入打包流程；任一失败、取消或跳过都会阻止发布任务。覆盖率使用与本地默认命令一致的 Debug 配置；各门禁在独立 runner 上运行，失败时其他门禁仍继续采集证据。
+相关 PR 与 main 分支变更由 `Quality Gates` 工作流自动执行覆盖率、绑定 contract 和绑定 XML 文档门禁。标签发布和 `workflow_dispatch` 手动发布均对指定发布 ref 执行同一工作流，全部门禁成功后才进入打包流程；任一失败、取消或跳过都会阻止发布任务。覆盖率使用与本地默认命令一致的 Debug 配置，绑定文档门禁在 Release solution build 后检查生成的 XML；各门禁在独立 runner 上运行，失败时其他门禁仍继续采集证据。
 
-每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 Markdown 摘要作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标用于公共契约审计。本地使用上表的三个单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，并从指定发布 ref 读取门禁脚本和被测源码；手动验证旧标签以该 ref 的交付内容为准。
+每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 JSON/Markdown 摘要（适用时）作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标用于公共契约审计。本地使用上表的单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，并从指定发布 ref 读取被测源码；手动验证旧标签以该 ref 的交付内容为准。
 
 SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动执行，本地无需重复运行；工作流门禁失败时不产生公开包。
 

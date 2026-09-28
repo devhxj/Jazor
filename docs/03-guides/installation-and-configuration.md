@@ -6,9 +6,9 @@
 
 ## 前置条件
 
-当前版本为 **1.0.0-preview.4（2026-09-22）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.4)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+当前版本为 **1.0.0-preview.5（2026-09-28）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
 
-preview.4 的 NuGet 发布清单只包含当时已接通的核心与既有生态包。`ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi`、`ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery`、`ECMAScript.Monaco`、`ECMAScript.VueDraggable`、`ECMAScript.FilePond` 和 `ECMAScript.WangEditor` 已在主线完成源码、测试或发布接线，但不会从 preview.4 NuGet 源安装；发布链路已修正，计划随下一次 tag 发布。
+preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前项目目标为 `net11.0`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
@@ -27,6 +27,10 @@ preview.4 的 NuGet 发布清单只包含当时已接通的核心与既有生态
 | Vue Devtools 自定义插件 | `Jazor`、`Jazor.Vue`、`ECMAScript.Vue.Devtools` | `Jazor.Vue` 提供 Vue runtime 闭包 |
 | Vue Data UI 图表 | `Jazor`、`Jazor.Vue`、`ECMAScript.VueDataUi` | 无 |
 | Lucide 图标 | `Jazor`、`Jazor.Vue`、`ECMAScript.Lucide` | 无 |
+| 日期、浏览器工具与浮动定位 | `Jazor`、`Jazor.Vue`、`ECMAScript.DateFns` / `ECMAScript.VueUse` / `ECMAScript.FloatingUi` | 按应用选择 |
+| 表单、国际化与服务端状态 | `Jazor`、`Jazor.Vue`、`ECMAScript.VeeValidate` / `ECMAScript.VueI18n` / `ECMAScript.VueQuery` | 按应用选择 |
+| 拖拽、文件上传与富文本 | `Jazor`、`Jazor.Vue`、`ECMAScript.VueDraggable` / `ECMAScript.FilePond` / `ECMAScript.WangEditor` | 按应用选择 |
+| Monaco 编辑器 | `Jazor`、`Jazor.Vue`、`ECMAScript.Monaco` | bundler/worker 配置按应用提供 |
 | UI 组件库 | `Jazor`、`Jazor.Vue`、对应 `ECMAScript.*` 包 | `ECMAScript.Style` |
 | 管理壳 | `Jazor`、`Jazor.Vue`、`Jazor.Admin` | 路由、样式和应用选择的 UI 绑定 |
 
@@ -34,7 +38,7 @@ preview.4 的 NuGet 发布清单只包含当时已接通的核心与既有生态
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.4" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
 </ItemGroup>
 ```
 
@@ -47,8 +51,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.0.0-preview.4" />
-    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.4" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -57,15 +61,25 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.4" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.4" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.5" />
 </ItemGroup>
 ```
 

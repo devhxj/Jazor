@@ -20,12 +20,13 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | --- | --- |
 | `test-dotnet.cs` | 构建一次并运行当前主测试 lane，支持 `--project <name>` 聚焦项目（例如 `dataui`、`lucide`） |
 | `inspect-public-api.cs` | 从宿主、Jazor.Admin、Jazor/Jazor.Vue 和 ECMAScript 生态公开程序集生成稳定排序的 API 快照；可用 `--configuration` 指定构建位置 |
-| `compare-public-api.cs` | 将当前公开 API 快照与候选基线逐行比较；缺失基线默认失败，只有本地首次建基线可显式传 `--allow-missing-baseline`，删除或签名变化时失败 |
+| `compare-public-api.cs` | 将当前公开 API 快照与候选基线逐行比较，并在报告中分别给出顶层声明与成员声明数量；缺失基线默认失败，只有本地首次建基线可显式传 `--allow-missing-baseline`，删除或签名变化时失败 |
 | `verify-compiler-coverage.cs` | 执行编译器测试和正式覆盖率门槛 |
 | `verify-razorvue-coverage.cs` | 执行 RazorVue 覆盖率门槛 |
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
 | `run-quality-gate.cs` | 执行单项覆盖率门禁；可用 `--output-directory` 将报告归档到发布候选目录 |
 | `verify-vue-binding-contracts.cs` | 统一校验 Element Plus、Vuetify、TDesign 的生成快照、原始文档与资源 manifest；传入 `--report <path>` 会生成 schema `1.0` 的 JSON 报告及同名 Markdown 摘要，记录组件/export/prop/event/slot inventory 与 fingerprint；配合 `--baseline <report.json> --fail-on-baseline-drift` 可阻断检测到的 inventory 漂移，仓库基线位于 `docs/04-roadmap/binding-contract-baseline.json` |
+| `verify-binding-documentation.cs` | 校验绑定库公开声明、枚举值、XML 输出、上游快照和 nuspec 文档文件；支持 `--configuration`、`--no-build`、`--baseline`、`--library` 与仓库内 `--output-directory` |
 | `benchmark-razorvue-build.cs` | 测量 RazorVue clean、incremental、HMR 和 Release 构建时间；clean/incremental 还在 JSON/Markdown 基线中记录生成模块与 `.mjs`/source map 数量、原始与逐文件 gzip 字节数、manifest/完整 Emit 输出体积及增量产物内容变化；不把产物未变化解释为内部缓存命中 |
 | `write-toolchain-matrix.cs` | 记录当前 commit、global.json SDK、.NET CLI、Node.js、Chrome 和操作系统版本到 Markdown，供兼容矩阵与门禁日志引用 |
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
@@ -39,7 +40,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `publish-nuget.cs` | 本地打包 NuGet 验证；正式发布只走 tag 触发的 NuGet 工作流，本地必须 `--skip-push`；脚本不探测环境变量中的 `NUGET_API_KEY` |
 | `release-notes.cs` | 为 tag 输出发布说明：优先取 CHANGELOG 对应版本章节，否则按 tag 区间提交生成 |
 | `verify-release-notes.cs` | 在发布前确认目标 tag 存在带日期的 `CHANGELOG.md` 版本章节和非空双语说明 |
-| `verify-release-candidate.cs` | 按 1.0 冻结规则串联 release notes、Release build、API 兼容性、覆盖率、主线测试、绑定、RazorVue diagnostics、typed bootstrap、NuGet 包和 SPA/SSR consumer，并归档统一报告；支持 `--only` 局部复核 |
+| `verify-release-candidate.cs` | 按 1.0 冻结规则串联 release notes、Release build、API 兼容性、覆盖率、主线测试、绑定 contract、绑定 XML 文档、RazorVue diagnostics、typed bootstrap、NuGet 包和 SPA/SSR consumer，并归档统一报告；支持 `--only` 局部复核 |
 
 覆盖率脚本默认把 TRX、Cobertura 和同轮临时结果写入仓库根目录的
 `test/coverage/<gate>/`；`test/` 是本地生成目录，不应把测试产物写到仓库外的盘符根目录。

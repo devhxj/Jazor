@@ -1,4 +1,4 @@
-# Public API snapshot (2026-09-27)
+# Public API snapshot (2026-09-28)
 
 ## ECMAScript.DateFns
 - type ECMAScript.DateFns

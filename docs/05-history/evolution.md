@@ -57,3 +57,11 @@ CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.j
 | P2 | 单个模块 lowering 失败时，其他成功模块仍进入 `ModuleCatalog`；source map 失败则保留 JavaScript 并告警。 | 保持现有渐进式交付行为，并由现有场景测试锁定；这属于需要消费者明确接受的交付策略，不在本轮改成全量失败。 |
 
 后续候选包括扩大白名单结构匹配的边界测试、统一诊断的源位置锚点、建立 optimizer 基准后再评估纯表达式覆盖，以及继续拆分大型 lowering 文件。每项候选以独立的行为契约作为修改依据。
+
+## 2026-09-28 API 与发布接线复核
+
+本轮复核了 P3/Monaco 发布接线、测试 lane 和 API 基线，并重新生成 Release 程序集快照。`compare-public-api.cs` 按 ordinal 去重统计 `- ` 顶层声明与 `  - ` 成员声明：基线和当前均为 76,105 项，其中顶层 8,948 项、成员 67,157 项，新增和删除均为 0。比较器现在会在报告中直接给出这两个分类计数；本节保留该次兼容性结论，逐行报告、当前快照和原始日志保存在本地 `artifacts/quality/review-2026-09-28/`。
+
+`test-dotnet.cs` 的默认集合和项目选择器实际包含 10 个 P3 lane。复核时全部通过，共 115/115 个测试；先前的 8-lane 摘要漏列 `vue-i18n` 与 `monaco`，并非它们未接线。Release solution build 通过（0 warning、0 error），Emit SSR consumer 定向测试 1/1、Razor SG timing 测试 1/1、Vue binding contract gate 和 `git diff --check` 也通过。逐项命令输出与完整当前 API 快照保留在本地忽略目录 `artifacts/quality/review-2026-09-28/`；这些测试结果不替代 P3/Monaco 进入 Support 矩阵所需的 browser smoke 和真实 RazorVue consumer 证据。
+
+绑定 XML 文档门禁随后纳入 `quality-gates.yml` 与独立 Release Candidate stage；Release 输出中的 26 个绑定库均通过，报告为 0 failures。该门禁验证公开声明、枚举值、XML 产物、上游快照和 nuspec 文档文件，并使用仓库内的临时目录与缓存。

@@ -11,9 +11,9 @@ npm package、入口和依赖元数据；Emit 生成标准 `jazor/package.json`�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.3" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.3" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.3" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.5" />
 </ItemGroup>
 ```
 

@@ -59,7 +59,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 ### P3-D：重量级编辑器
 
-`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；browser smoke 与真实 RazorVue consumer 证据待补，绑定将在下一次 tag 进入默认发布集合。
+`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；该绑定已随 preview.5 进入默认发布集合，browser smoke 与真实 RazorVue consumer 证据仍待补。
 
 退出条件：编辑器可在独立 package consumer 中创建、更新、销毁；model 变更、language、theme、marker 和 layout 的事件/调用顺序有浏览器证据；SSR 明确拒绝直接创建浏览器 editor。
 
@@ -89,7 +89,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 本计划只有在十个包均满足以下条件后才算完成：独立包和测试项目已加入 solution；每个包都有锁定版本、manifest、许可证、README、inventory/fingerprint；核心 C# contract、compiler/SG/Emit 回归和真实 browser/package consumer 证据齐全；公共边界、SSR 约束、选型变更和已知限制已同步到架构文档、作者指南、current status 与 CHANGELOG；全量质量门禁通过。
 
-计划状态：**进行中（P3-A/B/C/D 已完成源码与验证接线，证据补齐中）**。十个包将在下一次 tag 进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
+计划状态：**进行中（P3-A/B/C/D 已完成源码、验证与 preview.5 发布，消费证据补齐中）**。十个包已进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
 
 执行记录：
 
@@ -106,4 +106,11 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 | 2026-09-17 | `ECMAScript.VueDraggable`（vue-draggable-plus 0.6.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueDraggable`（单包闭包、泛型组件代理 `VueDraggableList<TItem>`、MIT）、`ECMAScript.VueDraggable.Test` 12/12、`test-dotnet.cs --project vue-draggable` |
 | 2026-09-17 | `ECMAScript.FilePond`（vue-filepond 8.0.0 + filepond 4.32.12） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FilePond`（核心+适配器双入口闭包、默认导出工厂代理、`filepond.css`）、`ECMAScript.FilePond.Test` 13/13、`test-dotnet.cs --project file-pond` |
 | 2026-09-17 | `ECMAScript.WangEditor`（editor-for-vue 5.1.12 + editor 5.1.23） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.WangEditor`（Vue 3 适配器+核心闭包、Editor/Toolbar 代理、编辑器样式）、`ECMAScript.WangEditor.Test` 11/11、`test-dotnet.cs --project wang-editor` |
+
+### 2026-09-28 当前复核快照
+
+当前源码中的十个 P3 lane 均在默认 `all` 集合中，复核结果为 `115/115`：DateFns 15、VueUse 16、FloatingUi 13、VeeValidate 15、VueI18n 8、VueQuery 9、Monaco 5、VueDraggable 11、FilePond 13、WangEditor 10。复核依据为 `scripts/csharp/test-dotnet.cs` 的 lane 定义与 `artifacts/quality/review-2026-09-28/p3-lanes/summary.md` 中的逐项输出。
+
+十个包已随 `1.0.0-preview.5` 首次进入 lockstep NuGet 发布目录。执行记录表中的旧计数是带日期的历史快照，保留原值以维持发布记录的可追溯性，不回填为本次复核数字。上述发布与当前快照不改变这些绑定在完成 browser smoke 和真实 RazorVue consumer 之前保持 Guidance 的支持边界。
+
 未通过对应测试、资源闭包和真实消费者验证的条目保持 Guidance，不进入当前 Support 矩阵。
