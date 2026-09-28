@@ -349,7 +349,12 @@ internal static class TDesignComponentGenerator
         => $"tdesign-vue-next/es/{binding.Module}/index.mjs";
 
     private static string GetStyleSpecifier(Binding binding)
-        => $"tdesign-vue-next/es/{binding.Module}/style/index.css";
+        => binding.Module == "icon"
+            // TDesign icons are implemented by the transitive tdesign-icons-vue-next package;
+            // its ESM stylesheet is not under tdesign-vue-next/es/icon/style.
+            // TDesign 图标来自传递依赖，样式位于该图标包自己的 ESM 目录。
+            ? "tdesign-icons-vue-next/esm/style/index.css"
+            : $"tdesign-vue-next/es/{binding.Module}/style/index.css";
 
 
     private static string EscapeXml(string value)

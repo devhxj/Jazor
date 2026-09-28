@@ -56095,7 +56095,7 @@ public sealed class THeader : TContentComponentBase
 /// </summary>
 [ECMAScriptName("Icon")]
 [ECMAScript("tdesign-vue-next/es/icon/index.mjs")]
-[Style("tdesign-vue-next/es/icon/style/index.css")]
+[Style("tdesign-icons-vue-next/esm/style/index.css")]
 public sealed class TIcon : TContentComponentBase
 {
     /// <summary>
@@ -67188,7 +67188,7 @@ public static partial class TComponents
     /// 图标（IconSVG）
     /// </summary>
     [ECMAScript("tdesign-vue-next/es/icon/index.mjs")]
-    [Style("tdesign-vue-next/es/icon/style/index.css")]
+    [Style("tdesign-icons-vue-next/esm/style/index.css")]
     [ECMAScriptName("Icon")]
     public extern static ITDesignComponent TIcon { get; }
 
