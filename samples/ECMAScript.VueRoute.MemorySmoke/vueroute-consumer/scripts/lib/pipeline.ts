@@ -25,7 +25,8 @@ const defaultDistRoot = resolve(consumerRoot, "dist");
 
 export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): Promise<PreparedWorkspace> {
   const generatedRoot = resolvePathFromEnvironment("JAZOR_GENERATED_ROOT", defaultGeneratedRoot);
-  const bundleRoot = resolvePathFromEnvironment("JAZOR_BUNDLE_ROOT", defaultBundleRoot);
+  const bundleProjectRoot = resolvePathFromEnvironment("JAZOR_BUNDLE_ROOT", defaultBundleRoot);
+  const bundleRoot = join(bundleProjectRoot, "dist");
   const buildRoot = resolvePathFromEnvironment("VUEROUTE_DENO_BUILD_ROOT", defaultBuildRoot);
   const distRoot = resolvePathFromEnvironment("VUEROUTE_DENO_DIST_ROOT", defaultDistRoot);
   const assetsDirectory = join(distRoot, "assets");
@@ -35,7 +36,8 @@ export async function prepareWorkspace(options: PrepareWorkspaceOptions = {}): P
   await assertPathExists(join(generatedRoot, "host", "app.mjs"), "generated host app module");
   await assertPathExists(join(generatedRoot, "router", "memory-router.mjs"), "generated router module");
   await assertPathExists(join(generatedRoot, "tests", "router-testing.mjs"), "generated testing module");
-  await assertPathExists(join(generatedRoot, "jazor-manifest.json"), "generated manifest");
+  await assertPathExists(join(generatedRoot, "entry.js"), "generated project entry");
+  await assertPathExists(join(generatedRoot, "package.json"), "generated package metadata");
 
   if (options.cleanBuildRoot ?? true) {
     await emptyDirectory(buildRoot);

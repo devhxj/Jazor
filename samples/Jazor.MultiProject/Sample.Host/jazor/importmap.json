@@ -1,9 +1,0 @@
-{
-  "imports": {
-    "style.mjs": "/jazor/style.mjs",
-    "components/": "/jazor/components/",
-    "features/greeter.mjs": "/jazor/features/greeter.mjs",
-    "host/app.mjs": "/jazor/host/app.mjs",
-    "shared/greetings.mjs": "/jazor/shared/greetings.mjs"
-  }
-}

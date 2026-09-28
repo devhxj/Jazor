@@ -305,6 +305,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+samples/**/dist/
 
 # Visual Studio 6 build log
 *.plg
@@ -463,13 +464,6 @@ jazor/
 !.agent/
 !.agent/jazor/
 !.agent/jazor/**
-# Checked-in sample graphs are layout baselines; ordinary project output remains ignored.
-!samples/ECMAScript.Pinia.Counter/Pinia.Counter.Host/jazor/
-!samples/ECMAScript.Pinia.Counter/Pinia.Counter.Host/jazor/**
-!samples/ECMAScript.VueRoute.MemorySmoke/VueRoute.MemorySmoke.Host/jazor/
-!samples/ECMAScript.VueRoute.MemorySmoke/VueRoute.MemorySmoke.Host/jazor/**
-!samples/Jazor.MultiProject/Sample.Host/jazor/
-!samples/Jazor.MultiProject/Sample.Host/jazor/**
 # The TodoList source is a development-host fixture. Keep its generated graph and
 # build output ignored while retaining the authored Host and Library projects.
 !samples/RazorVue.TodoList/

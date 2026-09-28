@@ -31,7 +31,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 生态绑定与参考应用服务于同一目标：让已声明的能力能够在真实项目中被自然地组合和验证。
 
-- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；P3-A/B/C 与 Monaco 的十个绑定已随 preview.5 发布，但仍等待 browser smoke 与真实 RazorVue consumer 后再进入 Support 矩阵。P3-B 的 `ECMAScript.VueI18n` 仍在维护；已退役的是 `ECMAScript.VuIcons`，新项目使用 `ECMAScript.Lucide`。
+- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；P3-A/B/C 与 Monaco 的十个绑定已随 preview.5 发布，但仍等待 browser smoke 与真实 RazorVue consumer 后再进入 Support 矩阵。P3-B 的 `ECMAScript.VueI18n` 仍在维护。
 - `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 

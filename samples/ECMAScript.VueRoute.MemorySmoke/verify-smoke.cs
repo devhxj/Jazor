@@ -258,19 +258,22 @@ internal static class ScriptHelpers
         var componentModulePath = Path.Combine(generatedOutputRoot, "components", "route-shell.mjs");
         var testingModulePath = Path.Combine(generatedOutputRoot, "tests", "router-testing.mjs");
         var hostAppModulePath = Path.Combine(generatedOutputRoot, "host", "app.mjs");
-        var manifestPath = Path.Combine(generatedOutputRoot, "jazor-manifest.json");
+        var entryPath = Path.Combine(generatedOutputRoot, "entry.js");
+        var packagePath = Path.Combine(generatedOutputRoot, "package.json");
 
         AssertPathExists(routerModulePath, "generated router module");
         AssertPathExists(componentModulePath, "generated route-shell component module");
         AssertPathExists(testingModulePath, "generated router testing module");
         AssertPathExists(hostAppModulePath, "generated host app module");
-        AssertPathExists(manifestPath, "generated manifest");
+        AssertPathExists(entryPath, "generated project entry");
+        AssertPathExists(packagePath, "generated package metadata");
 
         var routerModule = File.ReadAllText(routerModulePath);
         var componentModule = File.ReadAllText(componentModulePath);
         var testingModule = File.ReadAllText(testingModulePath);
         var hostAppModule = File.ReadAllText(hostAppModulePath);
-        var manifest = File.ReadAllText(manifestPath);
+        var entry = File.ReadAllText(entryPath);
+        var package = File.ReadAllText(packagePath);
 
         AssertContains(routerModule, "from \"vue-router\"", "vue-router runtime import in router module");
         AssertContains(routerModule, "createMemoryHistory(", "createMemoryHistory lowering in router module");
@@ -293,9 +296,11 @@ internal static class ScriptHelpers
         AssertContains(hostAppModule, "RouterLink", "RouterLink usage in host app module");
         AssertContains(hostAppModule, "RouterView", "RouterView usage in host app module");
 
-        AssertContains(manifest, "\"host/app.mjs\"", "host app entry in manifest");
-        AssertContains(manifest, "\"router/memory-router.mjs\"", "router module entry in manifest");
-        AssertContains(manifest, "\"tests/router-testing.mjs\"", "testing module entry in manifest");
+        AssertContains(entry, "./host/app.mjs", "host app export in project entry");
+        AssertContains(entry, "./router/memory-router.mjs", "router export in project entry");
+        AssertContains(entry, "./tests/router-testing.mjs", "testing export in project entry");
+        AssertContains(package, "\"type\": \"module\"", "ES module package contract");
+        AssertContains(package, "\"vue-router\":", "vue-router package dependency");
     }
 
     public static void AssertPathExists(string path, string description)
@@ -331,8 +336,9 @@ internal static class ScriptHelpers
 
     public static void AssertNetpackBundleArtifacts(string bundleOutputRoot)
     {
-        AssertPathExists(Path.Combine(bundleOutputRoot, "bundle.js"), "Netpack browser bundle");
-        AssertPathExists(Path.Combine(bundleOutputRoot, "bundle.js.map"), "Netpack browser bundle source map");
+        var distRoot = Path.Combine(bundleOutputRoot, "dist");
+        AssertPathExists(Path.Combine(distRoot, "bundle.js"), "Vite browser bundle");
+        AssertPathExists(Path.Combine(distRoot, "bundle.js.map"), "Vite browser bundle source map");
     }
 
     public static async Task RunDotNetAsync(IReadOnlyList<string> arguments, string workdir, CancellationToken cancellationToken = default)

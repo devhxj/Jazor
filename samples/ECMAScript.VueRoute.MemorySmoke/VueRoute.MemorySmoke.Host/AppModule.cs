@@ -10,20 +10,20 @@ public static class AppModule
     public static VueApp CreateConfiguredApp()
     {
         var router = RouteRuntimeModule.CreateRouterRuntime();
-        return CreateConfiguredApp(router);
+        return CreateConfiguredAppCore(router);
     }
 
     public static void Boot(string selector)
     {
         var router = RouteRuntimeModule.CreateRouterRuntime();
-        var app = CreateConfiguredApp(router);
+        var app = CreateConfiguredAppCore(router);
         _ = router.IsReady().Then(() =>
         {
             app.Mount(selector);
         });
     }
 
-    private static VueApp CreateConfiguredApp(Router router)
+    private static VueApp CreateConfiguredAppCore(Router router)
     {
         var app = CreateApp(DefineComponent(new VueComponentOptions
         {
