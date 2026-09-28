@@ -24,7 +24,6 @@ env:
   NUGET_HTTP_CACHE_PATH: '${{ github.workspace }}\.tmp\nuget-http-cache'
   DENO_DIR: '${{ github.workspace }}\.tmp\deno-cache'
   NPM_CONFIG_CACHE: '${{ github.workspace }}\.tmp\npm-cache'
-  npm_config_cache: '${{ github.workspace }}\.tmp\npm-cache'
 
 permissions:
   contents: write
