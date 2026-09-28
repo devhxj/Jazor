@@ -416,6 +416,7 @@ jobs:
       - name: Build Release documentation inputs
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Path artifacts/binding-documentation -Force | Out-Null
           dotnet build Jazor.slnx --configuration Release --nologo 2>&1 |
             Tee-Object -FilePath artifacts/binding-documentation/build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
