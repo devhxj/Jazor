@@ -34,7 +34,7 @@ public sealed class JazorAssetOptions
     public bool ServeArtifacts { get; set; }
 
     /// <summary>Artifact files whose presence makes the generated graph ready to mount.</summary>
-    /// <remarks>默认 entry.js 与一个兼容性 fallback，注册时任意一个存在即可挂载。</remarks>
+    /// <remarks>默认 entry.js 与 dist/bundle.js，注册时任意一个存在即可挂载。</remarks>
     public IList<string> ArtifactProbeRelativePaths { get; }
 
     /// <summary>Request-path prefixes that may receive immutable cache headers.</summary>

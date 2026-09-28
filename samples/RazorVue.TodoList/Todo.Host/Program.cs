@@ -8,8 +8,12 @@ internal static class Program
     private static void Main(string[] args)
     {
         var builder = JazorWebApplication.CreateBuilder(args);
-        builder.Services.AddJazorViteProxy(options =>
-            options.ServerOrigin = new Uri(builder.Configuration["Todo:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
+        builder.AddJazorFrontend(options =>
+        {
+            options.PathBase = builder.Configuration["Todo:PathBase"] ?? string.Empty;
+            options.Vite.ServerOrigin = new Uri(
+                builder.Configuration["Todo:JavaScriptServer"] ?? JazorViteServerOptions.DefaultServerOrigin.AbsoluteUri);
+        });
 
         // SSR is an explicit deployment mode. The release publish must be built with
         // JazorSSR=true so the standard project contains ssr-entry.js; Todo:Ssr switches the fallback
@@ -24,20 +28,8 @@ internal static class Program
             });
 
         var app = builder.Build();
-        var pathBase = builder.Configuration["Todo:PathBase"];
-        if (!string.IsNullOrWhiteSpace(pathBase))
-        {
-            if (!pathBase.StartsWith('/', StringComparison.Ordinal))
-                throw new InvalidOperationException("Todo:PathBase must start with '/'.");
-
-            app.UsePathBase(pathBase.EndsWith('/', StringComparison.Ordinal) && pathBase.Length > 1
-                ? pathBase[..^1]
-                : pathBase);
-        }
-
-        if (app.Environment.IsDevelopment())
-            app.UseJazorViteProxy();
-        app.UseJazorHost(options => options.Assets.ServeArtifacts = true);
+        app.UseJazorPathBase();
+        app.UseJazorFrontend();
         if (useSsr)
         {
             // The module path mirrors TodoApp's explicit [ECMAScriptModule("./components/todo-app.js")].

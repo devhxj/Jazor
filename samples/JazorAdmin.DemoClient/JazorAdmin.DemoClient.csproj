@@ -11,16 +11,59 @@
     <UserSecretsId>JazorAdmin-DemoClient-3ad9af1d-4ed3-4ba3-9bf4-4cc0e0a3c8c1</UserSecretsId>
   </PropertyGroup>
 
+  <Import Project="../../src/Jazor/build/Jazor.props" />
+
   <ItemGroup>
-    <Compile Remove="build-local.cs;verify-smoke.cs" />
+    <Compile Remove="build-local.cs;verify-smoke.cs;jazor/**" />
+    <Content Remove="jazor/**" />
+    <EmbeddedResource Remove="jazor/**" />
+    <None Remove="jazor/**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="11.0.0-rc.1.26425.128" />
-    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
-    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.Lucide" Version="$(JazorPackageVersion)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <JazorLibraryManifest Include="../../src/ECMAScript.Vue/manifest.json" />
+    <JazorLibraryManifest Include="../../src/Jazor.Vue/manifest.json" />
+    <JazorLibraryManifest Include="../../src/ECMAScript.TDesign/manifest.json" />
+    <JazorLibraryManifest Include="../../src/ECMAScript.Lucide/manifest.json" />
+    <ProjectReference Include="../../src/ECMAScript/ECMAScript.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.Vue/ECMAScript.Vue.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.Style/ECMAScript.Style.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.Lucide/ECMAScript.Lucide.csproj" />
+    <ProjectReference Include="../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="../../src/Jazor.CLR/Jazor.CLR.csproj" />
+    <ProjectReference Include="../../src/Jazor.Emit/Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="../../src/Jazor.RazorVue/Jazor.RazorVue.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_DemoRazorVueAnalyzerPath>$(MSBuildProjectDirectory)/../../src/Jazor.RazorVue/bin/$(Configuration)/netstandard2.0/Jazor.RazorVue.dll</_DemoRazorVueAnalyzerPath>
+    <_DemoCompilerAnalyzerPath>$(MSBuildProjectDirectory)/../../src/Jazor.Compiler/bin/$(Configuration)/netstandard2.0/Jazor.Compiler.dll</_DemoCompilerAnalyzerPath>
+    <_DemoCommonAnalyzerPath>$(MSBuildProjectDirectory)/../../src/Jazor.Common/bin/$(Configuration)/netstandard2.0/Jazor.Common.dll</_DemoCommonAnalyzerPath>
+    <_DemoContractAnalyzerPath>$(MSBuildProjectDirectory)/../../src/ECMAScript.Contract/bin/$(Configuration)/netstandard2.0/ECMAScript.Contract.dll</_DemoContractAnalyzerPath>
+  </PropertyGroup>
+
+  <Target Name="AddLocalDemoAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Include="$(_DemoRazorVueAnalyzerPath)" Condition="Exists('$(_DemoRazorVueAnalyzerPath)')" />
+      <Analyzer Include="$(_DemoCompilerAnalyzerPath)" Condition="Exists('$(_DemoCompilerAnalyzerPath)')" />
+      <Analyzer Include="$(_DemoCommonAnalyzerPath)" Condition="Exists('$(_DemoCommonAnalyzerPath)')" />
+      <Analyzer Include="$(_DemoContractAnalyzerPath)" Condition="Exists('$(_DemoContractAnalyzerPath)')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima/$(AcornimaVersion)/lib/netstandard2.0/Acornima.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima/$(AcornimaVersion)/lib/netstandard2.0/Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras/$(AcornimaVersion)/lib/netstandard2.0/Acornima.Extras.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima.extras/$(AcornimaVersion)/lib/netstandard2.0/Acornima.Extras.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)anglesharp/$(AngleSharpVersion)/lib/netstandard2.0/AngleSharp.dll"
+                Condition="Exists('$(NuGetPackageRoot)anglesharp/$(AngleSharpVersion)/lib/netstandard2.0/AngleSharp.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="../../src/Jazor/build/Jazor.targets" />
 </Project>

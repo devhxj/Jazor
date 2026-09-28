@@ -582,8 +582,8 @@ public sealed partial class JazorSsrHostingTests
             artifactRoot,
             app =>
             {
-                app.UsePathBase("/docs");
-                app.UseJazorViteProxy();
+                app.UseJazorPathBase();
+                app.UseJazorFrontend();
                 app.UseJazorSsr(new JazorSsrRequest(
                     "components/hydration.js",
                     new { Title = "SSR hydration" }));
@@ -710,7 +710,13 @@ public sealed partial class JazorSsrHostingTests
             options.RequestPath = "/jazor";
             options.HydrationEntryPath = "hydration.js";
         });
-        builder.Services.AddJazorViteProxy(options => options.ServerOrigin = serverOrigin);
+        builder.AddJazorFrontend(options =>
+        {
+            options.PathBase = "/docs";
+            options.ProjectRootPath = artifactRoot;
+            options.Vite.ServerOrigin = serverOrigin;
+            options.Vite.LaunchServer = false;
+        });
 
         var app = builder.Build();
         configure(app);

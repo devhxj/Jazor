@@ -121,22 +121,13 @@ public static class HostExtensions
                     .SetAccessTokenLifetime(TimeSpan.FromMinutes(20))
                     .SetRefreshTokenLifetime(TimeSpan.FromDays(14));
 
-                // This sample validates the deployment shape locally. Production deployments replace these
-                // development certificates with managed signing and encryption credentials.
-                // 此处验证本地部署形态；生产部署需替换为受管的签名和加密证书。
-                if (environment.IsDevelopment())
-                {
-                    options.AddDevelopmentEncryptionCertificate()
-                        .AddDevelopmentSigningCertificate();
-                }
-                else
-                {
-                    // Test hosts must not depend on permissions to create or open a Windows
-                    // certificate-store entry; ephemeral keys are sufficient for one host.
-                    // 测试宿主不应依赖 Windows 证书存储权限；单个宿主生命周期内使用临时密钥即可。
-                    options.AddEphemeralEncryptionKey()
-                        .AddEphemeralSigningKey();
-                }
+                // The sample must run without access to a machine certificate store. Process-local
+                // keys intentionally invalidate local tokens after restart; deployments replace them
+                // with managed signing and encryption credentials.
+                // 示例不依赖机器证书存储权限；进程重启后本地令牌失效是刻意行为，部署时需替换为
+                // 受管的签名与加密凭据。
+                options.AddEphemeralEncryptionKey()
+                    .AddEphemeralSigningKey();
 
                 var aspNetCore = options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough()

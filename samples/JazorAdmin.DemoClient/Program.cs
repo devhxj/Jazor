@@ -12,7 +12,9 @@ public partial class Program
     public static async Task Main(string[] args)
     {
         var builder = JazorWebApplication.CreateBuilder(args);
-        builder.Services.AddJazorViteProxy(options => options.ServerOrigin = new Uri(builder.Configuration["JazorAdminDemo:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
+        builder.AddJazorFrontend(options =>
+            options.Vite.ServerOrigin = new Uri(
+                builder.Configuration["JazorAdminDemo:JavaScriptServer"] ?? JazorViteServerOptions.DefaultServerOrigin.AbsoluteUri));
         builder.Services.Configure<DemoClientOptions>(
             builder.Configuration.GetSection(DemoClientOptions.SectionName));
         var options = builder.Configuration
@@ -90,11 +92,11 @@ public partial class Program
         builder.Services.AddAuthorization();
 
         var app = builder.Build();
+        app.UseJazorPathBase();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapDemoEndpoints();
-        app.UseJazorViteProxy();
-        app.UseJazorHost();
+        app.UseJazorFrontend();
         app.UseJazorSpaFallback(DemoShell.WriteAsync);
 
         await app.RunAsync();

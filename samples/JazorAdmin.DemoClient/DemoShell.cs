@@ -1,3 +1,5 @@
+using Jazor.AspNetCore.Dev;
+
 namespace JazorAdmin.DemoClient;
 
 internal static class DemoShell
@@ -25,8 +27,10 @@ internal static class DemoShell
             return Task.CompletedTask;
 
         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var viteClient = environment.IsDevelopment() ? "<script type=\"module\" src=\"/jazor/@vite/client\"></script>" : string.Empty;
-        var entry = environment.IsDevelopment() ? "/jazor/entry.js" : "/jazor/dist/bundle.js";
+        var viteClient = environment.IsDevelopment()
+            ? $"<script type=\"module\" src=\"{JazorFrontendUrls.GetDevelopmentClient(context)}\"></script>"
+            : string.Empty;
+        var entry = JazorFrontendUrls.GetBrowserEntry(context);
         return context.Response.WriteAsync(string.Format(Document, viteClient, entry), cancellationToken);
     }
 

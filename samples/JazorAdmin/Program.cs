@@ -11,14 +11,19 @@ public partial class Program
     {
         var builder = JazorWebApplication.CreateBuilder(args);
         builder.Services.AddAdminHost(builder.Configuration, builder.Environment);
-        builder.Services.AddJazorViteProxy(options => options.ServerOrigin = new Uri(builder.Configuration["Jazor:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
+        builder.AddJazorFrontend(options =>
+        {
+            var serverOrigin = builder.Configuration.GetValue<Uri>("Jazor:JavaScriptServer");
+            if (serverOrigin is not null)
+                options.Vite.ServerOrigin = serverOrigin;
+        });
 
         var app = builder.Build();
 
+        app.UseJazorPathBase();
         app.UseAdminHost();
         app.MapAdminEndpoints();
-        app.UseJazorViteProxy();
-        app.UseJazorHost();
+        app.UseJazorFrontend();
         app.UseJazorSpaFallback(Shell.WriteAsync);
 
         await app.RunAsync();

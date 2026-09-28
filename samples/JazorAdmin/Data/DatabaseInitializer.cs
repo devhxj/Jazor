@@ -50,6 +50,7 @@ public sealed class DatabaseInitializer(
         {
             var legacyRuns = await database.ScheduleRuns
                 .Where(run => run.StartedAtUtc == null)
+                .OrderBy(run => run.Id)
                 .Take(BatchSize)
                 .ToArrayAsync(cancellationToken);
             if (legacyRuns.Length == 0)

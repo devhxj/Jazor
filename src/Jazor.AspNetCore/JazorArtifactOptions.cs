@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
+using Jazor.Common;
 
 namespace Jazor.AspNetCore;
 
@@ -7,15 +8,12 @@ namespace Jazor.AspNetCore;
 public sealed class JazorArtifactOptions
 {
     /// <summary>Standard browser entry used to detect a ready generated project.</summary>
-    public const string EntryProbeRelativePath = "entry.js";
+    public const string EntryProbeRelativePath = JazorArtifactDefaults.DevelopmentEntryRelativePath;
 
-    /// <summary>
-    /// Backward-compatible fallback artifact used when a consumer has no entry probe.
-    /// The generated project itself does not require this path; its build tool may choose any output layout.
-    /// </summary>
-    public const string BundleProbeRelativePath = "dist/bundle.js";
+    /// <summary>Standard Release bundle used to detect a built generated project.</summary>
+    public const string BundleProbeRelativePath = JazorArtifactDefaults.ReleaseBundleRelativePath;
 
-    /// <summary>Initializes artifact discovery with the standard entry and a compatibility fallback probe.</summary>
+    /// <summary>Initializes artifact discovery with the standard Development and Release entries.</summary>
     public JazorArtifactOptions()
     {
         ProbeRelativePaths =
@@ -29,7 +27,7 @@ public sealed class JazorArtifactOptions
 
     /// <summary>Browser URL prefix for the generated artifact graph.</summary>
     /// <remarks>默认 /jazor，必须为非根 URL 前缀；不包含 Request.PathBase。自定义时需同步 SSR 与 HMR 映射。</remarks>
-    public PathString RequestPath { get; set; } = new("/jazor");
+    public PathString RequestPath { get; set; } = new(JazorArtifactDefaults.RequestPath);
 
     /// <summary>Overrides the generated artifact root; relative paths resolve from the content root.</summary>
     /// <remarks>默认 null，使用 DirectoryName；显式相对目录基于 IWebHostEnvironment.ContentRootPath。</remarks>
@@ -37,10 +35,10 @@ public sealed class JazorArtifactOptions
 
     /// <summary>Content-root directory used when <see cref="RootPath"/> is not configured.</summary>
     /// <remarks>默认 jazor；RootPath 已配置时不使用此值。</remarks>
-    public string DirectoryName { get; set; } = "jazor";
+    public string DirectoryName { get; set; } = JazorArtifactDefaults.DirectoryName;
 
     /// <summary>Probe files checked once when registering the artifact mount.</summary>
-    /// <remarks>默认包含 entry.js 和一个兼容性 fallback，任意一个存在即通过。仅在注册中间件时探测，不保证整个项目图完整。</remarks>
+    /// <remarks>默认包含 entry.js 和 dist/bundle.js，任意一个存在即通过。仅在注册中间件时探测，不保证整个项目图完整。</remarks>
     public IList<string> ProbeRelativePaths { get; }
 
     /// <summary>Request-path prefixes that may receive immutable cache headers.</summary>

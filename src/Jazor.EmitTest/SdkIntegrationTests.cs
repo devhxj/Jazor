@@ -153,7 +153,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task CreateLocalPackage_DeclaresDenoHostSsrRuntime()
+    public async Task CreateLocalPackage_CarriesDenoHostRuntimeAndFrontendHost()
     {
         var package = await LocalPackage.Value;
         var nuspec = ReadPackageEntryText(package.PackagePath, "Jazor.nuspec");
@@ -164,6 +164,22 @@ public sealed class SdkIntegrationTests
             .ToArray();
 
         StringAssert.Contains(nuspec, "id=\"DenoHost.Core\"", StringComparison.Ordinal);
+        Assert.IsFalse(
+            nuspec.Contains("Microsoft.AspNetCore.SpaProxy", StringComparison.OrdinalIgnoreCase),
+            "The unified frontend host must not restore the ASP.NET Core SpaProxy package.");
+        foreach (var asset in new[]
+                 {
+                     "lib/net11.0/Jazor.AspNetCore.Dev.dll",
+                     "lib/net11.0/Jazor.AspNetCore.Dev.xml"
+                 })
+        {
+            Assert.IsTrue(
+                entryNames.Contains(asset, StringComparer.OrdinalIgnoreCase),
+                $"The core Jazor package must carry the frontend host asset '{asset}'.");
+        }
+        Assert.IsFalse(
+            entryNames.Any(static path => path.EndsWith("spa.proxy.json", StringComparison.OrdinalIgnoreCase)),
+            "The package must not carry SpaProxy hosting-startup configuration.");
         // Emit 的 restore/check/build 经 DenoProcess 执行，DenoHost 只从 AppContext.BaseDirectory
         // 解析 runtime；单平台 pack 机必须无条件声明并携带全部受支持 RID 的签名 runtime。
         foreach (var rid in new[] { "win-x64", "linux-x64", "osx-x64", "osx-arm64" })
@@ -477,7 +493,7 @@ public sealed class SdkIntegrationTests
         using var piniaManifest = JsonDocument.Parse(ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/manifest.json"));
         var piniaEntry = piniaManifest.RootElement.GetProperty("imports").GetProperty("pinia");
         CollectionAssert.AreEquivalent(
-            new[] { "@vue/devtools-api", "nostics", "vue" },
+            new[] { "vue" },
             piniaEntry.GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
 
         using (var piniaArchive = ZipFile.OpenRead(package.PiniaPackagePath))
@@ -3207,7 +3223,7 @@ public sealed class SdkIntegrationTests
             testFile,
             """
             import component from "./components/counter.js";
-            import releaseEditor from "./release-editor.js";
+            import releaseEditor from "./components/release-editor.js";
 
             function assertEqual(actual, expected, message) {
                 if (!Object.is(actual, expected))
@@ -3402,10 +3418,10 @@ public sealed class SdkIntegrationTests
             "components/plain-text.js.map");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "keyed-list-100.js");
+            "components/keyed-list-100.js");
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "keyed-list-100.js.map");
+            "components/keyed-list-100.js.map");
 
         var firstManifestText = await File.ReadAllTextAsync(FindBuildState(outputRoot));
         Assert.IsFalse(firstManifestText.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), firstManifestText);
@@ -3859,7 +3875,7 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "core-dom-events.js");
+        CollectionAssert.Contains(mappedSources, "components/core-dom-events.js");
         var mappedSourceContents = bundleSourceMap.RootElement
             .GetProperty("sourcesContent")
             .EnumerateArray()
@@ -3980,8 +3996,8 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "framework-primitives.js");
-        CollectionAssert.Contains(mappedSources, "parameter-child.js");
+        CollectionAssert.Contains(mappedSources, "components/framework-primitives.js");
+        CollectionAssert.Contains(mappedSources, "components/parameter-child.js");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "framework-primitives-browser-harness");
         CreateReleaseFrameworkPrimitivesBrowserHarness(outputRoot, harnessRoot);
@@ -4079,7 +4095,7 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "navigation-location-changing.js");
+        CollectionAssert.Contains(mappedSources, "components/navigation-location-changing.js");
 
         // ECMAScript 自有源码 carrier 按声明路径写入项目源码树（clr/**），
         // 不再经 node_modules/ 包投影物化。
@@ -4175,11 +4191,11 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "complex-lifecycle.js");
-        CollectionAssert.Contains(mappedSources, "async-initialization-failure.js");
-        CollectionAssert.Contains(mappedSources, "queued-parameter-lifecycle.js");
-        CollectionAssert.Contains(mappedSources, "stale-parameter-failure.js");
-        CollectionAssert.Contains(mappedSources, "async-unmount-race.js");
+        CollectionAssert.Contains(mappedSources, "components/complex-lifecycle.js");
+        CollectionAssert.Contains(mappedSources, "components/async-initialization-failure.js");
+        CollectionAssert.Contains(mappedSources, "components/queued-parameter-lifecycle.js");
+        CollectionAssert.Contains(mappedSources, "components/stale-parameter-failure.js");
+        CollectionAssert.Contains(mappedSources, "components/async-unmount-race.js");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "complex-lifecycle-browser-harness");
         CreateReleaseComplexLifecycleBrowserHarness(outputRoot, harnessRoot);
@@ -4283,7 +4299,7 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
             .ToArray();
-        CollectionAssert.Contains(mappedSources, "extended-dom-events.js");
+        CollectionAssert.Contains(mappedSources, "components/extended-dom-events.js");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "extended-dom-events-browser-harness");
         CreateReleaseExtendedDomEventsBrowserHarness(outputRoot, harnessRoot);
@@ -5389,7 +5405,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalElementReferenceReleaseConsumer;
 
-            [ECMAScript("./element-reference-focus.js")]
+            [ECMAScript("./components/element-reference-focus.js")]
             [Description("@#")]
             internal static class ElementReferenceFocusModule
             {
@@ -5570,7 +5586,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalCoreDomEventsReleaseConsumer;
 
-            [ECMAScript("./core-dom-events.js")]
+            [ECMAScript("./components/core-dom-events.js")]
             [Description("@#")]
             internal static class CoreDomEventsModule
             {
@@ -5878,7 +5894,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalFrameworkPrimitivesReleaseConsumer;
 
-            [ECMAScript("./framework-primitives.js")]
+            [ECMAScript("./components/framework-primitives.js")]
             [Description("@#")]
             internal static class FrameworkPrimitivesModule
             {
@@ -6068,7 +6084,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalNavigationLocationChangingReleaseConsumer;
 
-            [ECMAScript("./navigation-location-changing.js")]
+            [ECMAScript("./components/navigation-location-changing.js")]
             [Description("@#")]
             internal static class NavigationLocationChangingModule
             {
@@ -6420,7 +6436,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalComplexLifecycleReleaseConsumer;
 
-            [ECMAScript("./complex-lifecycle.js")]
+            [ECMAScript("./components/complex-lifecycle.js")]
             [Description("@#")]
             internal static class ComplexLifecycleModule
             {
@@ -6606,7 +6622,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalExtendedDomEventsReleaseConsumer;
 
-            [ECMAScript("./extended-dom-events.js")]
+            [ECMAScript("./components/extended-dom-events.js")]
             [Description("@#")]
             internal static class ExtendedDomEventsModule
             {

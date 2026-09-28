@@ -8,35 +8,20 @@ using Wiki;
 
 // 构建应用 / Build the application
 var builder = JazorWebApplication.CreateBuilder(args);
-// Deno serves the standard project; the public prefix is also the project's Vite base.
-builder.Services.AddJazorViteProxy(options =>
-    options.ServerOrigin = new Uri(builder.Configuration["Wiki:JavaScriptServer"] ?? "http://127.0.0.1:5173"));
+builder.AddJazorFrontend(options =>
+{
+    options.PathBase = builder.Configuration["Wiki:PathBase"] ?? string.Empty;
+    options.Vite.ServerOrigin = new Uri(
+        builder.Configuration["Wiki:JavaScriptServer"] ?? JazorViteServerOptions.DefaultServerOrigin.AbsoluteUri);
+});
 
 // 启动前验证路由目录完整性 / Validate route catalog integrity before startup
 Wiki.WikiCatalogGuard.ValidateOrThrow();
 
 var app = builder.Build();
-
-// 处理子路径部署场景 / Handle sub-path deployment scenarios
-var configuredPathBase = builder.Configuration["Wiki:PathBase"];
-
-if (!string.IsNullOrWhiteSpace(configuredPathBase))
+app.UseJazorPathBase();
+app.UseJazorFrontend(options =>
 {
-    if (!configuredPathBase.StartsWith('/', StringComparison.Ordinal))
-        throw new InvalidOperationException("Wiki:PathBase must start with '/'.");
-
-    if (configuredPathBase.Length > 1 && configuredPathBase.EndsWith('/', StringComparison.Ordinal))
-        configuredPathBase = configuredPathBase[..^1];
-
-    app.UsePathBase(configuredPathBase);
-}
-
-if (app.Environment.IsDevelopment())
-    app.UseJazorViteProxy();
-
-app.UseJazorHost(options =>
-{
-    options.Assets.ServeArtifacts = !app.Environment.IsDevelopment();
     options.SecurityHeaders.PermissionsPolicy =
         "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +
         "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";

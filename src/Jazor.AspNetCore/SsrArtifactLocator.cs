@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Jazor.Common;
 
 namespace Jazor.AspNetCore;
 
@@ -8,7 +9,6 @@ namespace Jazor.AspNetCore;
 internal sealed class SsrArtifactLocator
 {
     private const string SsrEntryFileName = "ssr-entry.js";
-    private const string DefaultRequestPath = "/jazor";
 
     private readonly IWebHostEnvironment _environment;
     private readonly JazorSsrOptions _options;
@@ -89,7 +89,7 @@ internal sealed class SsrArtifactLocator
         }
 
         // SSR and the JavaScript web service consume the same standard project root.
-        yield return Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "jazor"));
+        yield return Path.GetFullPath(Path.Combine(_environment.ContentRootPath, JazorArtifactDefaults.DirectoryName));
     }
 
     private string ResolveConfiguredArtifactRoot(string configuredPath)
@@ -102,7 +102,7 @@ internal sealed class SsrArtifactLocator
 
     private string ResolveRequestPath()
         => string.IsNullOrWhiteSpace(_options.RequestPath)
-            ? DefaultRequestPath
+            ? JazorArtifactDefaults.RequestPath
             : NormalizeRequestPath(_options.RequestPath);
 
     private static string NormalizeRequestPath(string requestPath)

@@ -1,6 +1,8 @@
+using Jazor.AspNetCore.Dev;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Jazor.EmitTest;
@@ -32,6 +34,7 @@ public sealed class WikiStandardProjectShellTests
                 EnvironmentName = environment
             });
             builder.WebHost.UseTestServer();
+            builder.Services.Configure<JazorFrontendOptions>(options => options.PathBase = "/docs");
             await using var app = builder.Build();
             app.UsePathBase("/docs");
             app.Run(context => Wiki.WikiHostShell.WriteHtmlAsync(context));

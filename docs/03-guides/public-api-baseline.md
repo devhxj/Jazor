@@ -6,7 +6,7 @@
 
 | 包 | 稳定程序集/命名空间 |
 | --- | --- |
-| `Jazor` | `Jazor`, `Jazor.AspNetCore` |
+| `Jazor` | `Jazor`, `Jazor.AspNetCore`, `Jazor.AspNetCore.Dev` |
 | `Jazor.Vue` | `Jazor.RazorVue`, `ECMAScript.Vue*` |
 | `Jazor.Admin` | `Jazor.Admin` |
 
@@ -43,12 +43,18 @@
 
 ## `Jazor.AspNetCore.Dev`
 
+- `JazorFrontendExtensions.AddJazorFrontend`
+- `JazorFrontendExtensions.UseJazorPathBase`
+- `JazorFrontendExtensions.UseJazorFrontend`
+- `JazorFrontendOptions`
+- `JazorViteServerOptions`
+- `JazorFrontendUrls`
 - `JazorReloadExtensions.AddJazorReload`
 - `JazorReloadExtensions.UseJazorReload`
 - `JazorReloadOptions`
 - `JazorHmrMapping`
 
-该命名空间只用于 Development reload/HMR。生产应用不应依赖其运行时服务，`UseJazorReload` 在非 Development 环境保持 no-op。
+统一 frontend API 在 Development 通过 DenoHost 管理 Vite 生命周期并代理 HTTP/HMR，在其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。
 
 ## `Jazor.Admin`
 

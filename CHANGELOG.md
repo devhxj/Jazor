@@ -4,6 +4,38 @@
 
 ## 2026-09-28
 
+### Jazor 1.0.0-preview.6
+
+中文 | English
+
+#### 体验优化
+
+- ASP.NET Core 前端宿主统一为 `AddJazorFrontend`、`UseJazorPathBase` 和 `UseJazorFrontend`：Development 由 `Jazor.AspNetCore.Dev` 通过 `DenoHost.Core.DenoProcess` 使用随包 Deno 启动、探测、代理并停止 Vite；其他环境直接托管 Release 产物。Visual Studio F5、Ctrl+F5 和 Folder Publish 不再依赖启动脚本、全局 Deno、`PATH`/`DENO_DIR`、SpaProxy 或 Hosting Startup。项目根、PathBase、请求前缀、Development/Release 入口和 Vite origin/task/timeout 由一份强类型 options 驱动，HTML shell 使用 `JazorFrontendUrls` 生成浏览器 URL。by @devhxj
+
+#### 破坏性变更
+
+- 删除 `AddJazorViteProxy`、`UseJazorViteProxy` 和 `JazorViteOptions`，不提供兼容别名或 fallback。**迁移**：把服务注册改为 `builder.AddJazorFrontend(...)`，在需要的中间件位置调用 `app.UseJazorPathBase()`，再调用 `app.UseJazorFrontend()`；删除 `Microsoft.AspNetCore.SpaProxy`、`SpaRoot`/`SpaProxy*` MSBuild 属性、`ASPNETCORE_HOSTINGSTARTUPASSEMBLIES` 以及手工设置 Deno `PATH`/`DENO_DIR` 的代码。新 API 仍随现有 `Jazor` 包交付，不新增 NuGet 包。by @devhxj
+
+#### 问题修复
+
+- 修复 RazorVue Release consumer 对 `components/` 目录下产物、source map 与 clean build 清单使用旧根路径的问题；DenoHost 执行与真实浏览器加载现在都按最终发射路径解析，删除或重建组件后产物保持确定。by @devhxj
+- 修复 Windows 浏览器 smoke 的临时 HTTP 宿主偶发无效句柄问题，改由进程内 Kestrel 提供隔离静态文件服务，ElementReference、DOM 事件、框架原语、导航取消与异步生命周期场景可稳定验证。by @devhxj
+- 修正 Pinia runtime manifest 的依赖闭包：普通 `pinia` 入口只恢复 `vue`，`nostics` 仅随 `@pinia/testing` 进入闭包，`@vue/devtools-api` 仅在显式选择时恢复。by @devhxj
+
+#### Improvements
+
+- Unify ASP.NET Core frontend hosting around `AddJazorFrontend`, `UseJazorPathBase`, and `UseJazorFrontend`. In Development, `Jazor.AspNetCore.Dev` uses `DenoHost.Core.DenoProcess` and the packaged Deno runtime to start, probe, proxy, and stop Vite; other environments serve Release artifacts directly. Visual Studio F5, Ctrl+F5, and Folder Publish no longer depend on launch scripts, global Deno, `PATH`/`DENO_DIR`, SpaProxy, or Hosting Startup. One strongly typed options graph drives the project root, PathBase, request prefix, Development/Release entries, and Vite origin/task/timeouts, while `JazorFrontendUrls` produces browser URLs for HTML shells. by @devhxj
+
+#### Breaking Changes
+
+- Remove `AddJazorViteProxy`, `UseJazorViteProxy`, and `JazorViteOptions` without compatibility aliases or fallback behavior. **Migration**: replace service registration with `builder.AddJazorFrontend(...)`, call `app.UseJazorPathBase()` at the required middleware position, and then call `app.UseJazorFrontend()`; remove `Microsoft.AspNetCore.SpaProxy`, the `SpaRoot`/`SpaProxy*` MSBuild properties, `ASPNETCORE_HOSTINGSTARTUPASSEMBLIES`, and code that mutates Deno `PATH`/`DENO_DIR`. The new API remains part of the existing `Jazor` package; no NuGet package is added. by @devhxj
+
+#### Bug Fixes
+
+- Fix RazorVue Release consumers that still resolved artifacts, source maps, and clean-build manifests from the old root instead of `components/`. DenoHost execution and real-browser loading now follow the final emitted paths, and component deletion or regeneration remains deterministic. by @devhxj
+- Replace the Windows browser-smoke temporary HTTP host that could fail with an invalid handle with an isolated in-process Kestrel server. Element references, DOM events, framework primitives, navigation cancellation, and asynchronous lifecycle scenarios now verify reliably. by @devhxj
+- Correct the Pinia runtime-manifest closure: the ordinary `pinia` entry restores only `vue`, `nostics` enters through `@pinia/testing`, and `@vue/devtools-api` is restored only when explicitly selected. by @devhxj
+
 ### Jazor 1.0.0-preview.5
 
 中文 | English

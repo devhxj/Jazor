@@ -1,24 +1,69 @@
 # Jazor.AspNetCore.Dev
 
-Development 环境下可将浏览器请求交给标准项目的 Vite 开发服务器。程序集与 XML 文档随 **Jazor** 包交付。Vite/Deno 负责文件服务和 HMR，ASP.NET Core 只做可选 HTTP/WebSocket 代理；`AddJazorReload` 是旧的宿主通知兼容层，不是项目运行所需。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
+统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。Development 环境由 DenoHost 使用随包运行时启动 Vite；其他环境直接托管 Release 产物。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
 
-## Vite 代理
+## 标准前端宿主
 
-标准项目生成 `package.json` 后，先在 `jazor/` 目录运行 `deno task dev`。宿主可以把请求和 Vite 的 HMR WebSocket 透明转发：
+宿主只配置一次项目目录、公开路径和 Vite origin：
 
 ```csharp
-builder.Services.AddJazorViteProxy(options =>
+using Jazor.AspNetCore.Dev;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.AddJazorFrontend(options =>
 {
-    options.ServerOrigin = new Uri("http://127.0.0.1:5173");
-    options.RequestPath = "/jazor";
+    options.PathBase = "/portal";       // 可选
+    options.ProjectRootPath = "jazor";  // 相对 ContentRootPath 或绝对路径
+    options.Vite.ServerOrigin = new Uri("http://127.0.0.1:5173");
 });
+
 var app = builder.Build();
-app.UseJazorViteProxy();
+app.UseJazorPathBase();
+
+// 认证、授权和业务中间件按应用需要放置。
+app.UseJazorFrontend();
+app.Run();
 ```
 
-Vite 的 `base` 配置需匹配完整公开前缀；例如宿主使用 `/portal` PathBase 时设为 `/portal/jazor/`。代理不会改写响应里的 import URL。
+`UseJazorPathBase` 独立存在，让应用决定 PathBase 在转发头、认证和重定向之前的准确位置；`PathBase` 为空时可省略。配置非空 `PathBase` 时必须调用它。`UseJazorFrontend` 负责开发代理或发布产物托管，并组合标准 `UseJazorHost` 资源管线。
 
-该代理不读取 `jazor-manifest.json`，也不监听或静态托管 `jazor/` 目录。生产环境不应注册此代理，生产文件由标准构建输出或 CDN 提供。
+Development 启动顺序如下：
+
+1. 探测配置的 `DevelopmentEntryRelativePath`；已有 Vite 可用时复用它，不接管其生命周期。
+2. 未就绪且 `LaunchServer=true` 时，通过 `DenoHost.Core.DenoProcess` 在项目根运行 `deno task dev --host ... --port ... --strictPort --base ...`。
+3. 等待入口可访问，再开放 ASP.NET Core 宿主；HTTP、query 和 Vite HMR WebSocket 透明转发到同一 origin。
+4. 宿主停止时只停止自己启动的进程树。
+
+非 Development 环境不会探测或启动 Vite，而是从 `ProjectRootPath` 静态提供 `ReleaseEntryRelativePath` 所在的产物图。Visual Studio F5、Ctrl+F5 和 Folder Publish 都直接走该宿主契约；不需要启动脚本、全局 Deno、`PATH`/`DENO_DIR`、SpaProxy 或 Hosting Startup。
+
+## 配置与浏览器 URL
+
+| 选项 | 默认值与含义 |
+| --- | --- |
+| `RequestPath` | `/jazor`，不含应用 PathBase |
+| `PathBase` | 空；配置后由 `UseJazorPathBase` 应用 |
+| `ProjectRootPath` | `jazor`，相对 ContentRootPath 或绝对路径 |
+| `DevelopmentEntryRelativePath` | `entry.js`，启动就绪探针与开发浏览器入口 |
+| `ReleaseEntryRelativePath` | `dist/bundle.js`，非 Development 浏览器入口 |
+| `Vite.ServerOrigin` | `http://127.0.0.1:5173` |
+| `Vite.TaskName` | `dev` |
+| `Vite.LaunchServer` | true；false 表示只使用外部服务器 |
+| `Vite.StartupTimeout` | 2 分钟 |
+| `Vite.ShutdownTimeout` | 5 秒 |
+
+HTML shell 使用 `JazorFrontendUrls.GetDevelopmentClient(context)` 和 `JazorFrontendUrls.GetBrowserEntry(context)` 生成 URL，避免重复拼接 PathBase、`/jazor`、Vite client 和 Release bundle 路径。Vite 的 `base`、启动参数、代理目标和浏览器 URL 均来自同一份 options。
+
+如需连接由其他工具管理的 Vite：
+
+```csharp
+builder.AddJazorFrontend(options =>
+{
+    options.Vite.ServerOrigin = new Uri("http://127.0.0.1:4300");
+    options.Vite.LaunchServer = false;
+});
+```
+
+服务器未就绪时宿主会启动失败并给出明确错误，不会回退到其他端口、全局命令或静态开发文件。
 
 ## 可选宿主 reload
 

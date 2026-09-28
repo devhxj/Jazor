@@ -1,19 +1,19 @@
 # 1.0 公共 API 冻结审查
 
-> 当前已发布版本：[1.0.0-preview.5（2026-09-28）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.6（2026-09-28）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.6)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
-> 状态：核心 API 冻结条件已满足，`1.0.0-preview.1` 已作为首个冻结候选发布；正式 `1.0.0` 仍待在候选 ref 上完成最终复核与完整 RC 门禁。本文是 1.0 发布前的契约基线；任何新增、删除、重命名或签名改变都必须先更新本文、测试和 CHANGELOG。长期发布认证、多版本兼容矩阵和性能趋势属于 1.0 之后的运营质量工作，不作为核心冻结阻塞。
+> 状态：`1.0.0-preview.6` 已完成 ASP.NET Core frontend 候选契约重置，删除旧 Vite proxy API，改为 DenoHost 管理的统一开发/发布入口。正式 `1.0` 尚未冻结；当前机器快照、测试和 CHANGELOG 已按该破坏性迁移后的契约重新通过候选门禁。
 
 ## 审查结论
 
-当前 API 已满足核心冻结审查要求。ECMAScript 绑定已完成浏览器/桥接类型的 `*Ref` 命名统一，公开面清单见[1.0 公共 API 基线清单](./public-api-baseline.md)。机器候选快照已保存在 `public-api-baseline.snapshot.md`；发布前仍需在候选 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁，才能最终放行。
+ECMAScript 绑定与既有宿主面仍沿用 preview.5 审查结论；frontend 宿主面在 preview.6 按新的单一契约重新收敛，公开面清单见[1.0 公共 API 基线清单](./public-api-baseline.md)。机器候选快照保存在 `public-api-baseline.snapshot.md`；正式 1.0 前仍需在候选 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁，才能最终冻结。
 
 本次审查采用以下稳定决策：
 
-2026-09-28 的机器快照比较覆盖 P3-A/B/C 与 Monaco 绑定程序集：基线与当前均为 `76105` 条（`8948` 个顶层声明、`67157` 个成员声明），新增 `0`、删除 `0`。本轮权威结论已收录在[历史演进记录](../05-history/evolution.md)；复核工作区的完整比较报告、快照和原始日志位于 `artifacts/quality/review-2026-09-28/`。该结果支持进入候选冻结复核，不替代候选 ref 上的完整发布门禁。Monaco 的 manifest、compiler boundary 和 Emit 物化回归已通过。
+preview.5 在 2026-09-28 发布时的机器快照为 `76105` 条（`8948` 个顶层声明、`67157` 个成员声明），当时比较新增 `0`、删除 `0`。该结果属于已发布候选的历史证据；当前 frontend API 的删除和新增是明确批准的候选重置。重置后的基线为 `76133` 条（`8950` 个顶层声明、`67183` 个成员声明），对该新基线重新生成的比较报告新增 `0`、删除 `0`。迁移说明和消费者门禁仍必须随下一候选一并保留。
 
 - NuGet 包名保持现状，所有发布包继续 lockstep 版本；`Jazor` 是核心宿主包，`Jazor.Vue` 是 Razor-to-Vue opt-in 包，`Jazor.Admin` 是管理壳包。
-- ASP.NET Core 公共命名空间保持 `Jazor.AspNetCore`；开发期 reload 公共命名空间保持 `Jazor.AspNetCore.Dev`。开发期 API 不混入生产宿主命名空间。
+- ASP.NET Core 底层静态资源与 SSR 位于 `Jazor.AspNetCore`；统一 frontend orchestration 与 reload 位于 `Jazor.AspNetCore.Dev`。两套程序集继续随同一个 `Jazor` 包交付，不新增宿主 NuGet 包。
 - 扩展方法采用 PascalCase 的 `AddJazor*` / `UseJazor*` 形式，缩写按现有语义固定为 `Ssr`；迁移文档使用 `AddJazorSsr`。
 - 配置模型保持 `Jazor*Options` 命名，并以只读集合、强类型路径和显式委托表达扩展点；不新增 `object` 或字符串字典式总配置入口。
 - `JazorWebApplication.CreateBuilder`、`IJazorSsrRenderer`、SSR 请求/结果记录类型属于宿主集成契约，必须纳入 API 兼容性检查，不视为内部实现。
@@ -24,7 +24,7 @@
 | --- | --- | --- | --- |
 | `Jazor` | 编译器、Emit、MSBuild 与 ASP.NET Core 生产宿主集成 | `Jazor.*`、`Jazor.AspNetCore` | 保持 |
 | `Jazor.Vue` | 官方 Razor Source Generator 到 Vue render-function 的 opt-in 集成 | `Jazor.RazorVue`、`ECMAScript.Vue*` | 保持 |
-| `Jazor.AspNetCore.Dev`（随核心发行资产提供） | Development 环境 reload/HMR | `Jazor.AspNetCore.Dev` | 保持独立命名空间 |
+| `Jazor.AspNetCore.Dev`（`Jazor` 包内程序集） | 统一 frontend orchestration 与 Development reload/HMR | `Jazor.AspNetCore.Dev` | 不新增独立 NuGet 包 |
 | `Jazor.Admin` | UI 库无关的管理壳与 RazorVue 组件 | `Jazor.Admin` | 保持 |
 | `ECMAScript.*` | ECMAScript、Vue 生态与样式绑定 | 各包现有命名空间 | 按各自 binding 审查，不在本表重命名 |
 
@@ -45,9 +45,10 @@
 
 | API 家族 | 当前公开入口 | 1.0 决策 |
 | --- | --- | --- |
+| Frontend | `AddJazorFrontend`, `UseJazorPathBase`, `UseJazorFrontend`, `JazorFrontendUrls` | 统一项目目录、PathBase、Vite 启停/代理与 Release 托管；替代已删除的 Vite proxy API |
 | Reload | `AddJazorReload`, `UseJazorReload` | 保持；生产环境必须 no-op，Development 才启用 transport |
 
-扩展方法的返回类型继续使用 ASP.NET Core 的 `IServiceCollection` / `IApplicationBuilder`，以支持标准链式启动代码。空参数、无效路径、未注册服务和错误环境通过显式异常或 no-op 表达处理结果。
+统一 frontend 扩展使用 `WebApplicationBuilder` / `WebApplication`，使注册、环境和中间件顺序共享同一宿主模型；底层 SSR/reload 扩展继续使用现有 ASP.NET Core 链式返回类型。空参数、无效路径、未注册服务和错误环境通过显式异常或 no-op 表达处理结果。
 
 ## 配置模型基线
 
@@ -59,9 +60,11 @@
 - `JazorArtifactOptions`：`RequestPath`、`RootPath`、`DirectoryName`、探针集合、缓存前缀、响应回调和 miss 行为。
 - `JazorSpaFallbackOptions`：排除前缀、允许后缀和 HTML Accept 约束。
 - `JazorSsrOptions`：artifact root、request path、mount element 和 worker 数量。
+- `JazorFrontendOptions`：request path、PathBase、项目根、Development/Release 入口和 `Vite` 子配置。
+- `JazorViteServerOptions`：server origin、Deno task、是否启动、启动与停止超时。
 - `JazorReloadOptions`：client/WebSocket path、观察路径、HMR mapping、节流/轮询/心跳与 HTML 注入开关。
 
-集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`/@jazor/client`、`/@jazor/reload`、安全头、探针文件和缓存策略。
+集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`entry.js`、`dist/bundle.js`、`http://127.0.0.1:5173`、`/@jazor/client`、`/@jazor/reload`、安全头、探针文件和缓存策略。
 
 ## SSR 数据模型
 
@@ -86,12 +89,12 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.5
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.6
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。
 
-当前验证记录：Emit 套件 `202/202` 通过；`emit-consumer` 消费者矩阵 `47/47` 通过。发布候选 ref 分别运行两套验证。
+当前本地验证记录：`Jazor.EmitTest` 套件 `231/231` 通过；SPA/SSR 发布消费者矩阵由 tag workflow 在上传 NuGet 前针对候选 ref 运行。
 
 机器快照可在构建后生成：
 

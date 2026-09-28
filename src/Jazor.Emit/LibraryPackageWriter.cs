@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Jazor.Common;
 
 namespace Jazor.Emit;
 
@@ -61,7 +62,7 @@ internal static class LibraryPackageWriter
             ["devDependencies"] = new JsonObject { ["vite"] = ViteProjectWriter.Version },
             ["scripts"] = new JsonObject
             {
-                ["dev"] = "vite",
+                [JazorArtifactDefaults.DevelopmentTaskName] = "vite",
                 ["build"] = "vite build"
             },
             // npm/Deno ignore this namespace. It keeps the source and digest that produced an

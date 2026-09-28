@@ -12,13 +12,13 @@ JazorAdmin 在一个 ASP.NET Core 宿主中组合 RazorVue UI、Web API、ASP.NE
 
 边界规矩：平台 IAM 只管身份与平台资源；下游应用的业务权限归下游应用，只消费 OIDC claims，不注册为本应用的 resource operations。
 
-## 运行
+## Visual Studio 运行与调试
 
-在仓库根目录执行：
+1. 使用 Visual Studio 打开 `samples/Sample.slnx`。
+2. 将 `JazorAdmin` 设为启动项目，选择 `JazorAdmin` 启动配置和 `Debug` 解决方案配置。
+3. 按 **F5** 调试，或按 **Ctrl+F5** 直接启动。
 
-```bash
-dotnet run --project samples/JazorAdmin/JazorAdmin.csproj
-```
+项目启动时由 `AddJazorFrontend` 注册的 hosted service 通过 DenoHost 随包运行时启动 Vite，ASP.NET Core 同时代理模块和 HMR WebSocket。停止 Visual Studio 调试/启动会话时，宿主只终止自己启动的前端进程树。不要求全局安装 Deno，也不依赖 SpaProxy、Hosting Startup、`PATH` 或 `DENO_DIR`。
 
 访问启动日志输出的 `/login` 地址。空的开发数据存储会创建默认管理员：`admin@jazor.local` / `JazorAdmin123!`。此账户仅用于本地开发初始化；已有账户的密码不会被启动过程重置。
 
@@ -32,13 +32,19 @@ dotnet user-secrets set --project samples/JazorAdmin/JazorAdmin.csproj "JazorAdm
 
 部署时必须从部署环境的 secret store 提供初始管理员和 OpenIddict callback URL；不要使用开发默认值。
 
+## Visual Studio 发布
+
+在解决方案资源管理器中右键 `JazorAdmin`，选择 **发布**，再选择仓库内置的 `FolderProfile` 并
+执行发布。该配置固定使用 `Release`，生成 `jazor/dist/bundle.js` 并将 Jazor 产物复制到发布目录。
+发布后的 ASP.NET Core 宿主直接提供这些静态产物，不启动或依赖 Vite。
+
 ## 下游 OIDC 演示客户端
 
 [`JazorAdmin.DemoClient`](../JazorAdmin.DemoClient/README.md) 是独立宿主的 confidential RazorVue 客户端。它使用授权码 + PKCE，调用 Bearer 保护的平台 API，并通过前端回调完成单点登出。管理员需要和下游应用配置同一个 `JazorAdmin:DemoClient:ClientSecret`；此值绝不能写入 `appsettings*.json` 或提交到仓库。
 
 默认 HTTPS 开发端口为 JazorAdmin `49732` 和 DemoClient `49734`。完整 user-secrets 键、定制 redirect URI 与启动顺序见 DemoClient README；先启动 JazorAdmin，随后启动 DemoClient，并从 `https://localhost:49734` 发起登录。
 
-## 验证
+## 仓库自动化验证（维护者）
 
 ```bash
 dotnet run --no-launch-profile --file samples/JazorAdmin/verify-smoke.cs -- --configuration Release

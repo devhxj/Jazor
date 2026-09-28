@@ -45,8 +45,8 @@ public sealed partial class JazorSsrHostingTests
         var bootstrapSource = string.Empty;
         await using var host = await CreateNetworkHostAsync(workspace.RootPath, artifactRoot, app =>
         {
-            app.UsePathBase("/docs");
-            app.UseJazorViteProxy();
+            app.UseJazorPathBase();
+            app.UseJazorFrontend();
             app.UseJazorSsr(new JazorSsrRequest("components/bootstrap-probe.js", new { Title = "snapshot" }));
             // The bootstrap is host-authored HTML script, not project source for Vite to transform.
             app.MapGet("/bootstrap-entry.js", () => Results.Text(bootstrapSource, "text/javascript"));

@@ -11,12 +11,11 @@ using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.Services.AddJazorViteProxy();
+builder.AddJazorFrontend();
 var app = builder.Build();
 
-// 部署到子路径时在此调用 app.UsePathBase("/portal")。
-app.UseJazorViteProxy(); // 先在 jazor/ 运行 deno task dev。
-app.UseJazorHost();
+app.UseJazorPathBase();
+app.UseJazorFrontend();
 app.MapGet("/api/health", () => new { status = "ok" });
 app.UseJazorSpaFallback("index.html");
 app.Run();
@@ -30,7 +29,10 @@ app.Run();
 
 | 入口 | 职责 |
 | --- | --- |
-| `UseJazorHost` | 依次注册响应头和 `UseJazorAssets` |
+| `AddJazorFrontend` | 注册统一前端 options 与 DenoHost Vite 生命周期 |
+| `UseJazorPathBase` | 在调用方选择的位置应用统一配置的 PathBase |
+| `UseJazorFrontend` | Development 代理 Vite，其他环境组合 `UseJazorHost` 托管 Release 产物 |
+| `UseJazorHost` | 依次注册响应头和 `UseJazorAssets`；供不使用统一前端入口的高级场景调用 |
 | `UseJazorAssets` | 默认仅解析默认文件并托管 web root；产物挂载需显式启用 |
 | `UseJazorArtifacts` | 只挂载生成产物，默认 `/jazor` |
 | `UseJazorStaticFiles` | 托管静态文件，仅补充 `.map` 的 `application/json` 类型 |
@@ -38,7 +40,7 @@ app.Run();
 | `UseJazorSpaFallback` | 下游未处理的 HTML 导航使用静态页或自定义 writer |
 | `AddJazorSsr` / `UseJazorSsr` | 分别注册 SSR 服务 / 将导航 fallback 改为 SSR |
 
-Vite 的 `base` 必须包含完整公开路径，如 `/portal/jazor/`；代理保持该路径不变。生产部署使用项目选择的 Web 服务或标准构建输出。`UsePathBase` 应先于上述入口；开发 reload 位于静态文件、SPA、SSR 之前。`UseJazorHost` 不自动添加 reload、SPA 或 SSR。常规 ASP.NET Core 路由、异常处理等仍由宿主配置。
+统一前端 options 同时驱动 Vite `base`、代理、发布挂载和浏览器 URL。配置 PathBase 时先调用 `UseJazorPathBase`；开发 reload 位于静态文件、SPA、SSR 之前。`UseJazorFrontend` 不自动添加 reload、SPA 或 SSR。常规 ASP.NET Core 路由、异常处理等仍由宿主配置。
 
 SPA fallback 只在下游返回 **404**、响应尚未开始、没有选中 endpoint 时执行，并且只处理 GET/HEAD。默认排除 `/api`、`/assets`、`/health`、`/jazor` 路径段及带扩展名的路径。无 `Accept` 头允许通过；有该头时须包含可接受的 `text/html` 或 `application/xhtml+xml`，仅 `*/*` 不够。已匹配 API endpoint 返回的 404 不会被改成 HTML。
 
@@ -73,7 +75,7 @@ using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.Services.AddJazorViteProxy();
+builder.AddJazorFrontend();
 builder.Services.AddJazorSsr(options =>
 {
     options.WorkerCount = 2;
@@ -81,8 +83,8 @@ builder.Services.AddJazorSsr(options =>
 });
 var app = builder.Build();
 
-app.UseJazorViteProxy();
-app.UseJazorHost();
+app.UseJazorPathBase();
+app.UseJazorFrontend();
 app.UseJazorSsr((context, cancellationToken) =>
     Task.FromResult(new JazorSsrRequest(
         "components/app.js",
@@ -96,7 +98,7 @@ Debug 使用物化模块图；Release 构建应配置 `JazorMode=release` 和 `J
 dotnet publish YourHost.csproj -c Release -p:JazorMode=release -p:JazorSSR=true
 ```
 
-默认查找 `ContentRootPath/jazor`。SSR 根目录必须同时包含 `ssr-entry.js`、`package.json`、`deno.lock` 及其引用的模块/资源；仅浏览器 bundle 不够。默认浏览器前缀为 `/jazor`，由项目 Web 服务提供，ASP.NET Core 通过代理转发。
+默认查找 `ContentRootPath/jazor`。SSR 根目录必须同时包含 `ssr-entry.js`、`package.json`、`deno.lock` 及其引用的模块/资源；仅浏览器 bundle 不够。默认浏览器前缀为 `/jazor`：Development 由统一前端入口代理 Vite，其他环境由同一入口托管 Release 产物。
 
 自定义 SSR 根目录时通过 `AddJazorSsr` 配置 `ArtifactRootPath` 与 `RequestPath`，确保浏览器前缀能访问同一套资源；URL 会自动加上请求 `PathBase`。`MountElementId` 默认 `app`，不得为空或含空白。
 

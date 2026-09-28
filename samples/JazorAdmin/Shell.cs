@@ -1,5 +1,7 @@
 // Provides the host-rendered document shell for the generated RazorVue application.
 // 提供 RazorVue 生成应用的宿主文档壳；库资源由 JazorDebug 物化到本地，不保留 CDN 映射。
+using Jazor.AspNetCore.Dev;
+
 namespace JazorAdmin;
 
 /// <summary>Renders the host document with the standard JavaScript project entry.</summary>
@@ -28,8 +30,10 @@ internal static class Shell
             return Task.CompletedTask;
 
         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var viteClient = environment.IsDevelopment() ? "<script type=\"module\" src=\"/jazor/@vite/client\"></script>" : string.Empty;
-        var entry = environment.IsDevelopment() ? "/jazor/entry.js" : "/jazor/dist/bundle.js";
+        var viteClient = environment.IsDevelopment()
+            ? $"<script type=\"module\" src=\"{JazorFrontendUrls.GetDevelopmentClient(context)}\"></script>"
+            : string.Empty;
+        var entry = JazorFrontendUrls.GetBrowserEntry(context);
         return context.Response.WriteAsync(string.Format(Document, viteClient, entry), cancellationToken);
     }
 

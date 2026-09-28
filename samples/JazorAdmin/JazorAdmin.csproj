@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <JazorMode>debug</JazorMode>
+    <JazorMode Condition="'$(Configuration)' == 'Release'">release</JazorMode>
+    <JazorMode Condition="'$(JazorMode)' == ''">debug</JazorMode>
     <TargetFramework>net11.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -10,13 +11,14 @@
     <UserSecretsId>JazorAdmin-8c736ec8-0462-4f31-b7a6-b85c5d4ea3c4</UserSecretsId>
   </PropertyGroup>
 
+  <Import Project="../../src/Jazor/build/Jazor.props" />
+
   <ItemGroup>
-    <Compile Remove="build-local.cs" />
-    <Compile Remove="verify-smoke.cs" />
-    <Compile Remove="InjectSmoke\**" />
-    <Content Remove="InjectSmoke\**" />
-    <EmbeddedResource Remove="InjectSmoke\**" />
-    <None Remove="InjectSmoke\**" />
+    <Compile Remove="build-local.cs;verify-smoke.cs" />
+    <Compile Remove="InjectSmoke/**;jazor/**" />
+    <Content Remove="InjectSmoke/**;jazor/**" />
+    <EmbeddedResource Remove="InjectSmoke/**;jazor/**" />
+    <None Remove="InjectSmoke/**;jazor/**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,13 +31,58 @@
     <PackageReference Include="OpenIddict.AspNetCore" Version="7.6.0" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.6.0" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.19.1" />
-    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
-    <PackageReference Include="Jazor.Admin" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.VueDataUi" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.Lucide" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="ECMAScript.VueRoute" Version="$(JazorPackageVersion)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <JazorLibraryManifest Include="../../src/ECMAScript.Vue/manifest.json" />
+    <JazorLibraryManifest Include="../../src/Jazor.Vue/manifest.json" />
+    <JazorLibraryManifest Include="../../src/ECMAScript.TDesign/manifest.json" />
+    <JazorLibraryManifest Include="../../src/ECMAScript.VueDataUi/manifest.json" />
+    <JazorLibraryManifest Include="../../src/ECMAScript.Lucide/manifest.json" />
+    <JazorLibraryManifest Include="../../src/ECMAScript.VueRoute/manifest.json" />
+    <ProjectReference Include="../../src/ECMAScript/ECMAScript.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.Vue/ECMAScript.Vue.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.Style/ECMAScript.Style.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.VueDataUi/ECMAScript.VueDataUi.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.Lucide/ECMAScript.Lucide.csproj" />
+    <ProjectReference Include="../../src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
+    <ProjectReference Include="../../src/Jazor.Admin/Jazor.Admin.csproj" />
+    <ProjectReference Include="../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="../../src/Jazor.CLR/Jazor.CLR.csproj" />
+    <ProjectReference Include="../../src/Jazor.Emit/Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="../../src/Jazor.RazorVue/Jazor.RazorVue.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_JazorAdminRazorVueAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)/../../src/Jazor.RazorVue/bin/$(Configuration)/netstandard2.0/Jazor.RazorVue.dll</_JazorAdminRazorVueAnalyzerPath>
+    <_JazorAdminCompilerAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)/../../src/Jazor.Compiler/bin/$(Configuration)/netstandard2.0/Jazor.Compiler.dll</_JazorAdminCompilerAnalyzerPath>
+    <_JazorAdminCommonAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)/../../src/Jazor.Common/bin/$(Configuration)/netstandard2.0/Jazor.Common.dll</_JazorAdminCommonAnalyzerPath>
+    <_JazorAdminContractAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)/../../src/ECMAScript.Contract/bin/$(Configuration)/netstandard2.0/ECMAScript.Contract.dll</_JazorAdminContractAnalyzerPath>
+
+    <_JazorAdminRazorVueAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.RazorVue/bin/$(Configuration)/netstandard2.0/Jazor.RazorVue.dll</_JazorAdminRazorVueAnalyzerPath>
+    <_JazorAdminCompilerAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.Compiler/bin/$(Configuration)/netstandard2.0/Jazor.Compiler.dll</_JazorAdminCompilerAnalyzerPath>
+    <_JazorAdminCommonAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.Common/bin/$(Configuration)/netstandard2.0/Jazor.Common.dll</_JazorAdminCommonAnalyzerPath>
+    <_JazorAdminContractAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))ECMAScript.Contract/bin/$(Configuration)/netstandard2.0/ECMAScript.Contract.dll</_JazorAdminContractAnalyzerPath>
+  </PropertyGroup>
+
+  <Target Name="AddLocalJazorAdminAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Include="$(_JazorAdminRazorVueAnalyzerPath)" Condition="Exists('$(_JazorAdminRazorVueAnalyzerPath)')" />
+      <Analyzer Include="$(_JazorAdminCompilerAnalyzerPath)" Condition="Exists('$(_JazorAdminCompilerAnalyzerPath)')" />
+      <Analyzer Include="$(_JazorAdminCommonAnalyzerPath)" Condition="Exists('$(_JazorAdminCommonAnalyzerPath)')" />
+      <Analyzer Include="$(_JazorAdminContractAnalyzerPath)" Condition="Exists('$(_JazorAdminContractAnalyzerPath)')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima/$(AcornimaVersion)/lib/netstandard2.0/Acornima.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima/$(AcornimaVersion)/lib/netstandard2.0/Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras/$(AcornimaVersion)/lib/netstandard2.0/Acornima.Extras.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima.extras/$(AcornimaVersion)/lib/netstandard2.0/Acornima.Extras.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)anglesharp/$(AngleSharpVersion)/lib/netstandard2.0/AngleSharp.dll"
+                Condition="Exists('$(NuGetPackageRoot)anglesharp/$(AngleSharpVersion)/lib/netstandard2.0/AngleSharp.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="../../src/Jazor/build/Jazor.targets" />
 </Project>

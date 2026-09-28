@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Jazor.Common;
 
 namespace Jazor.AspNetCore;
 
@@ -13,7 +14,7 @@ public sealed class JazorSpaFallbackOptions
             new PathString("/api"),
             new PathString("/assets"),
             new PathString("/health"),
-            new PathString("/jazor")
+            new PathString(JazorArtifactDefaults.RequestPath)
         ];
 
         AllowedPathSuffixes =

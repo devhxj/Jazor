@@ -1,3 +1,4 @@
+using Jazor.AspNetCore.Dev;
 using Microsoft.AspNetCore.Hosting;
 
 namespace BindingsShowcase.Host;
@@ -31,9 +32,9 @@ internal static class ShowcaseHostShell
         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
         var normalizedBase = pathBase.TrimEnd('/');
         var viteClient = environment.IsDevelopment()
-            ? $"<script type=\"module\" src=\"{normalizedBase}/jazor/@vite/client\"></script>"
+            ? $"<script type=\"module\" src=\"{JazorFrontendUrls.GetDevelopmentClient(context)}\"></script>"
             : string.Empty;
-        var entryUrl = normalizedBase + (environment.IsDevelopment() ? "/jazor/entry.js" : "/jazor/dist/bundle.js");
+        var entryUrl = JazorFrontendUrls.GetBrowserEntry(context);
         return context.Response.WriteAsync(
             string.Format(Document, viteClient, entryUrl, normalizedBase),
             cancellationToken);

@@ -18,4 +18,8 @@
     <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
 </Project>

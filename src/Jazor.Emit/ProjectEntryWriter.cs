@@ -6,7 +6,7 @@ namespace Jazor.Emit;
 /// <summary>Writes the visible entries of the generated standard JavaScript project.</summary>
 internal static class ProjectEntryWriter
 {
-    public const string BrowserEntryFileName = "entry.js";
+    public const string BrowserEntryFileName = JazorArtifactDefaults.DevelopmentEntryRelativePath;
     public const string SsrEntryFileName = "ssr-entry.js";
     public const string HydrationEntryFileName = "hydration.js";
     private const string SsrRuntimeResourceName = "Jazor.Emit.tooling.ssr-runner.js";

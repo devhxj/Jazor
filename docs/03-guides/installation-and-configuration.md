@@ -6,7 +6,7 @@
 
 ## 前置条件
 
-当前版本为 **1.0.0-preview.5（2026-09-28）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.5)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+当前版本为 **1.0.0-preview.6（2026-09-28）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.6)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
 
 preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
 
@@ -38,7 +38,7 @@ preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.6" />
 </ItemGroup>
 ```
 
@@ -51,8 +51,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
-    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.6" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.6" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -61,25 +61,25 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.5" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.5" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.6" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.6" />
 </ItemGroup>
 ```
 

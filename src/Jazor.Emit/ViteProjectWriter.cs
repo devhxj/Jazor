@@ -1,3 +1,5 @@
+using Jazor.Common;
+
 namespace Jazor.Emit;
 
 /// <summary>Writes ordinary Vite configuration for the emitted JavaScript project.</summary>
@@ -15,20 +17,29 @@ internal static class ViteProjectWriter
 
         // Entry exports remain callable by host HTML. Shared and dynamically imported modules
         // are evaluated by the bundler's native ESM graph, with no Jazor module registry.
-        ProjectFileWriter.Write(Path.Combine(projectRoot, ConfigFileName), """
+        var defaultBase = JazorArtifactDefaults.RequestPath.TrimEnd('/') + "/";
+        var releasePath = JazorArtifactDefaults.ReleaseBundleRelativePath.Replace('\\', '/');
+        var releaseDirectory = Path.GetDirectoryName(releasePath)?.Replace('\\', '/')
+            ?? throw new InvalidOperationException("The standard release bundle must include an output directory.");
+        var releaseEntryName = Path.GetFileNameWithoutExtension(releasePath);
+        ProjectFileWriter.Write(Path.Combine(projectRoot, ConfigFileName), $$"""
             import { existsSync } from 'node:fs';
             import { defineConfig } from 'vite';
 
             export default defineConfig({
-              base: process.env.JAZOR_VITE_BASE || '/jazor/',
-              server: { host: '127.0.0.1' },
+              base: '{{defaultBase}}',
+              server: {
+                host: '{{JazorArtifactDefaults.DevelopmentServerHost}}',
+                port: {{JazorArtifactDefaults.DevelopmentServerPort}},
+                strictPort: true
+              },
               build: {
                 target: 'esnext',
-                outDir: 'dist',
+                outDir: '{{releaseDirectory}}',
                 sourcemap: true,
                 rolldownOptions: {
                   input: {
-                    bundle: 'entry.js',
+                    '{{releaseEntryName}}': '{{JazorArtifactDefaults.DevelopmentEntryRelativePath}}',
                     ...(existsSync('hydration.js') ? { hydration: 'hydration.js' } : {})
                   },
                   preserveEntrySignatures: 'strict',

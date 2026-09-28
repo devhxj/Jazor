@@ -4,6 +4,7 @@
 
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
+using Jazor.AspNetCore.Dev;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 namespace Wiki;
@@ -33,8 +34,6 @@ internal static class WikiHostShell
     private const string MainModuleUrlToken = "__WIKI_MAIN_MODULE_URL__";
     private const string SoberUrlToken = "__WIKI_SOBER_URL__";
     private const string ViteClientToken = "__WIKI_VITE_CLIENT__";
-    private const string DebugBrowserModulePath = "/jazor/entry.js";
-    private const string ReleaseBrowserModulePath = "/jazor/dist/bundle.js";
     // 缓存策略常量 / Cache policy constants
     private const string HtmlCacheControl = "no-cache, must-revalidate";
     private const string DiscoveryCacheControl = "public, max-age=300, must-revalidate";
@@ -70,9 +69,9 @@ internal static class WikiHostShell
         var documentContentSecurityPolicy = BuildDocumentContentSecurityPolicy(scriptNonce);
         var responseContentSecurityPolicy = BuildResponseContentSecurityPolicy(scriptNonce);
         var pathBase = NormalizePathBase(context.Request.PathBase.Value);
-        var browserModulePath = ResolveBrowserModulePath(context);
+        var browserModuleUrl = JazorFrontendUrls.GetBrowserEntry(context);
         var viteClient = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment()
-            ? "<script type=\"module\" src=\"" + HtmlEncoder.Default.Encode(BuildAssetUrl(pathBase, "/jazor/@vite/client")) + "\"></script>"
+            ? "<script type=\"module\" src=\"" + HtmlEncoder.Default.Encode(JazorFrontendUrls.GetDevelopmentClient(context)) + "\"></script>"
             : string.Empty;
         var template = await LoadIndexTemplateAsync(context, cancellationToken);
         var renderedHtml = RenderIndexTemplate(
@@ -84,7 +83,7 @@ internal static class WikiHostShell
             scriptNonce,
             documentContentSecurityPolicy,
             pathBase,
-            browserModulePath,
+            browserModuleUrl,
             viteClient);
 
         context.Response.ContentType = "text/html; charset=utf-8";
@@ -147,7 +146,7 @@ internal static class WikiHostShell
         string scriptNonce,
         string contentSecurityPolicy,
         string pathBase,
-        string browserModulePath,
+        string browserModuleUrl,
         string viteClient)
     {
         if (template.Contains(MetadataTokenPrefix, StringComparison.Ordinal) == false)
@@ -157,7 +156,6 @@ internal static class WikiHostShell
         var rendered = template;
         var faviconUrl = BuildAssetUrl(pathBase, "/favicon.svg");
         var siteCssUrl = BuildAssetUrl(pathBase, "/site.css");
-        var browserModuleUrl = BuildAssetUrl(pathBase, browserModulePath);
         var soberUrl = BuildAssetUrl(pathBase, "/vendor/sober@1.1.10.min.js");
         rendered = ReplaceRequiredToken(rendered, TitleToken, htmlEncoder.Encode(documentTitle));
         rendered = ReplaceRequiredToken(rendered, DescriptionToken, htmlEncoder.Encode(pageSummary));
@@ -215,17 +213,6 @@ internal static class WikiHostShell
         return pathBase.Length == 0
             ? path
             : pathBase + path;
-    }
-
-    private static string ResolveBrowserModulePath(HttpContext context)
-    {
-        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var isDevelopment = environment.IsDevelopment();
-        var entry = environment.ContentRootFileProvider.GetFileInfo(isDevelopment ? "jazor/entry.js" : "jazor/dist/bundle.js");
-        if (entry.Exists)
-            return isDevelopment ? DebugBrowserModulePath : ReleaseBrowserModulePath;
-
-        throw new InvalidOperationException("Wiki host could not locate the standard browser entry.");
     }
 
     private static string BuildDocumentContentSecurityPolicy(string scriptNonce)

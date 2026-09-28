@@ -129924,6 +129924,32 @@
   - System.String[] ExpandedKeys
 
 ## Jazor.AspNetCore.Dev
+- type Jazor.AspNetCore.Dev.JazorFrontendExtensions
+  - Microsoft.AspNetCore.Builder.WebApplication UseJazorFrontend(Microsoft.AspNetCore.Builder.WebApplication, System.Action`1[Jazor.AspNetCore.JazorHostOptions])
+  - Microsoft.AspNetCore.Builder.WebApplication UseJazorPathBase(Microsoft.AspNetCore.Builder.WebApplication)
+  - Microsoft.AspNetCore.Builder.WebApplicationBuilder AddJazorFrontend(Microsoft.AspNetCore.Builder.WebApplicationBuilder, System.Action`1[Jazor.AspNetCore.Dev.JazorFrontendOptions])
+- type Jazor.AspNetCore.Dev.JazorFrontendOptions
+  - Void .ctor()
+  - Jazor.AspNetCore.Dev.JazorViteServerOptions get_Vite()
+  - Microsoft.AspNetCore.Http.PathString get_PathBase()
+  - Microsoft.AspNetCore.Http.PathString get_RequestPath()
+  - System.String get_DevelopmentEntryRelativePath()
+  - System.String get_ProjectRootPath()
+  - System.String get_ReleaseEntryRelativePath()
+  - Void set_DevelopmentEntryRelativePath(System.String)
+  - Void set_PathBase(Microsoft.AspNetCore.Http.PathString)
+  - Void set_ProjectRootPath(System.String)
+  - Void set_ReleaseEntryRelativePath(System.String)
+  - Void set_RequestPath(Microsoft.AspNetCore.Http.PathString)
+  - Jazor.AspNetCore.Dev.JazorViteServerOptions Vite
+  - Microsoft.AspNetCore.Http.PathString PathBase
+  - Microsoft.AspNetCore.Http.PathString RequestPath
+  - System.String DevelopmentEntryRelativePath
+  - System.String ProjectRootPath
+  - System.String ReleaseEntryRelativePath
+- type Jazor.AspNetCore.Dev.JazorFrontendUrls
+  - System.String GetBrowserEntry(Microsoft.AspNetCore.Http.HttpContext)
+  - System.String GetDevelopmentClient(Microsoft.AspNetCore.Http.HttpContext)
 - type Jazor.AspNetCore.Dev.JazorHmrMapping
   - Void .ctor()
   - Microsoft.AspNetCore.Http.PathString get_RequestPath()
@@ -129966,18 +129992,24 @@
   - System.TimeSpan DebounceInterval
   - System.TimeSpan KeepAliveInterval
   - System.TimeSpan PollingInterval
-- type Jazor.AspNetCore.Dev.JazorViteOptions
+- type Jazor.AspNetCore.Dev.JazorViteServerOptions
   - Void .ctor()
-  - Microsoft.AspNetCore.Http.PathString get_RequestPath()
+  - System.Uri DefaultServerOrigin
+  - Boolean get_LaunchServer()
+  - System.String get_TaskName()
+  - System.TimeSpan get_ShutdownTimeout()
+  - System.TimeSpan get_StartupTimeout()
   - System.Uri get_ServerOrigin()
-  - Void set_RequestPath(Microsoft.AspNetCore.Http.PathString)
+  - Void set_LaunchServer(Boolean)
   - Void set_ServerOrigin(System.Uri)
-  - Microsoft.AspNetCore.Http.PathString RequestPath
+  - Void set_ShutdownTimeout(System.TimeSpan)
+  - Void set_StartupTimeout(System.TimeSpan)
+  - Void set_TaskName(System.String)
+  - Boolean LaunchServer
+  - System.String TaskName
+  - System.TimeSpan ShutdownTimeout
+  - System.TimeSpan StartupTimeout
   - System.Uri ServerOrigin
-- type Jazor.AspNetCore.Dev.JazorViteProxyExtensions
-  - Microsoft.AspNetCore.Builder.IApplicationBuilder UseJazorViteProxy(Microsoft.AspNetCore.Builder.IApplicationBuilder)
-  - Microsoft.Extensions.DependencyInjection.IServiceCollection AddJazorViteProxy(Microsoft.Extensions.DependencyInjection.IServiceCollection)
-  - Microsoft.Extensions.DependencyInjection.IServiceCollection AddJazorViteProxy(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action`1[Jazor.AspNetCore.Dev.JazorViteOptions])
 
 ## Jazor.AspNetCore
 - type Jazor.AspNetCore.IJazorSsrRenderer

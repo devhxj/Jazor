@@ -1,3 +1,5 @@
+using Jazor.AspNetCore.Dev;
+
 namespace Todo.Host;
 
 /// <summary>Writes the document shell for the standard JavaScript project's web server.</summary>
@@ -14,7 +16,7 @@ internal static class TodoHostShell
         <body>
           <div id="app"></div>
           {1}
-          <script type="module" src="{0}/jazor/{2}"></script>
+          <script type="module" src="{0}"></script>
         </body>
         </html>
         """;
@@ -25,10 +27,11 @@ internal static class TodoHostShell
         if (HttpMethods.IsHead(context.Request.Method))
             return Task.CompletedTask;
 
-        var pathBase = context.Request.PathBase.Value ?? string.Empty;
         var development = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
-        var client = development ? $"<script type=\"module\" src=\"{pathBase}/jazor/@vite/client\"></script>" : string.Empty;
+        var client = development
+            ? $"<script type=\"module\" src=\"{JazorFrontendUrls.GetDevelopmentClient(context)}\"></script>"
+            : string.Empty;
         return context.Response.WriteAsync(
-            string.Format(Document, pathBase, client, development ? "entry.js" : "dist/bundle.js"), cancellationToken);
+            string.Format(Document, JazorFrontendUrls.GetBrowserEntry(context), client), cancellationToken);
     }
 }

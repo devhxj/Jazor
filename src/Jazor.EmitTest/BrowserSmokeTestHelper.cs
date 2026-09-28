@@ -3,7 +3,13 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Net.Sockets;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Jazor.EmitTest;
 
@@ -230,78 +236,51 @@ internal static class BrowserSmokeTestHelper
 
     private sealed class StaticFileServer : IAsyncDisposable
     {
-        private readonly HttpListener _listener;
-        private readonly string _root;
-        private readonly CancellationTokenSource _stop = new();
-        private readonly Task _serveTask;
+        private readonly WebApplication _app;
 
-        private StaticFileServer(HttpListener listener, string root, Uri baseUri)
+        private StaticFileServer(WebApplication app, Uri baseUri)
         {
-            _listener = listener;
-            _root = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            _app = app;
             BaseUri = baseUri;
-            _serveTask = ServeAsync();
         }
 
         public Uri BaseUri { get; }
 
-        public static Task<StaticFileServer> StartAsync(string root)
+        public static async Task<StaticFileServer> StartAsync(string root)
         {
-            var port = ReserveLoopbackPort();
-            var listener = new HttpListener();
-            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
-            listener.Start();
-            return Task.FromResult(new StaticFileServer(listener, root, new Uri($"http://127.0.0.1:{port}/", UriKind.Absolute)));
+            var normalizedRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var builder = WebApplication.CreateSlimBuilder();
+            builder.Logging.ClearProviders();
+            builder.WebHost.UseUrls("http://127.0.0.1:0");
+
+            var app = builder.Build();
+            app.Run(context => HandleAsync(context, normalizedRoot));
+            await app.StartAsync();
+
+            var addresses = app.Services.GetRequiredService<IServer>()
+                .Features.Get<IServerAddressesFeature>()?.Addresses;
+            var address = addresses?.SingleOrDefault()
+                ?? throw new InvalidOperationException("Kestrel did not report the browser smoke server address.");
+            return new StaticFileServer(app, new Uri(address, UriKind.Absolute));
         }
 
         public async ValueTask DisposeAsync()
         {
-            _stop.Cancel();
-            _listener.Stop();
             try
             {
-                await _serveTask;
-            }
-            catch (HttpListenerException) when (_stop.IsCancellationRequested)
-            {
-            }
-            catch (ObjectDisposedException) when (_stop.IsCancellationRequested)
-            {
+                await _app.StopAsync();
             }
             finally
             {
-                _listener.Close();
-                _stop.Dispose();
+                await _app.DisposeAsync();
             }
         }
 
-        private async Task ServeAsync()
-        {
-            while (!_stop.IsCancellationRequested)
-            {
-                HttpListenerContext context;
-                try
-                {
-                    context = await _listener.GetContextAsync();
-                }
-                catch (HttpListenerException) when (_stop.IsCancellationRequested)
-                {
-                    return;
-                }
-                catch (ObjectDisposedException) when (_stop.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                _ = HandleAsync(context);
-            }
-        }
-
-        private async Task HandleAsync(HttpListenerContext context)
+        private static async Task HandleAsync(HttpContext context, string root)
         {
             try
             {
-                var requestPath = Uri.UnescapeDataString(context.Request.Url?.AbsolutePath ?? "/");
+                var requestPath = Uri.UnescapeDataString(context.Request.Path.Value ?? "/");
                 var relativePath = requestPath == "/" ? "index.html" : requestPath.TrimStart('/');
                 if (relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries)
                     .Any(static segment => segment is "." or ".."))
@@ -310,8 +289,8 @@ internal static class BrowserSmokeTestHelper
                     return;
                 }
 
-                var filePath = Path.GetFullPath(Path.Combine(_root, relativePath.Replace('/', Path.DirectorySeparatorChar)));
-                if (!filePath.StartsWith(_root, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
+                var filePath = Path.GetFullPath(Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+                if (!filePath.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     return;
@@ -320,24 +299,15 @@ internal static class BrowserSmokeTestHelper
                 var bytes = await File.ReadAllBytesAsync(filePath);
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = ContentType(Path.GetExtension(filePath));
-                context.Response.ContentLength64 = bytes.Length;
-                await context.Response.OutputStream.WriteAsync(bytes);
+                context.Response.ContentLength = bytes.Length;
+                if (!HttpMethods.IsHead(context.Request.Method))
+                    await context.Response.Body.WriteAsync(bytes);
             }
             catch
             {
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                if (!context.Response.HasStarted)
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             }
-            finally
-            {
-                context.Response.Close();
-            }
-        }
-
-        private static int ReserveLoopbackPort()
-        {
-            using var listener = new TcpListener(IPAddress.Loopback, 0);
-            listener.Start();
-            return ((IPEndPoint)listener.LocalEndpoint).Port;
         }
 
         private static string ContentType(string extension)
