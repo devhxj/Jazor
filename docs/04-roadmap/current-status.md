@@ -1,6 +1,6 @@
 # 当前状态
 
-> 当前已发布版本：[1.0.0-preview.6（2026-09-28）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.6)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.7（2026-09-29）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 

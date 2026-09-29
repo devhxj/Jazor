@@ -2,6 +2,40 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-29
+
+### Jazor 1.0.0-preview.7
+
+中文 | English
+
+#### 体验优化
+
+- Development 的 Vite 代理现在经过统一宿主管线，代理响应会应用与 Release 资源和应用路由一致的安全响应头。by @devhxj
+- Element Plus、FilePond、Floating UI 与 Lucide 的运行时依赖闭包现已完整物化；Deno 恢复会投影 npm alias，因此 `Select`、`Tooltip`、`Dropdown` 等 Popper 组件以及其他 Vue peer 依赖无需消费者额外添加 manifest 或 extern 垫片即可完成 Emit 与浏览器打包。by @devhxj
+- JazorAdmin 的 Windows 浏览器 smoke 现在使用隔离的 Vite 动态端口与浏览器 profile；移动端会隐藏重复的桌面 IconBar，避免并行开发服务器、扩展写入和窄屏布局相互干扰。by @devhxj
+
+#### 问题修复
+
+- Emit 的程序集收集现在按真实程序集标识确定性去重 `lib/` 与 `runtimes/` 中的同一副本，优先显式根程序集和非 runtime 资产，并对同名但标识冲突的程序集给出明确错误，避免重复 `ModuleCatalog` 导致 Emit 以退出码 2 终止。by @devhxj
+
+#### 其他变更
+
+- Emit consumer 门禁按隔离 fixture 拆分并行运行，恢复包版本查询前的 MinVer 步骤；Windows SPA/SSR 发布消费者使用稳定一致的 headless Chrome 启动参数，Wiki 开发验证接受 Vite 内联 source map 并保留完整失败报告，同时移除已退役的生成产物快照。by @devhxj
+
+#### Improvements
+
+- Development Vite proxy responses now pass through the unified host pipeline and receive the same configured security headers as Release assets and application routes. by @devhxj
+- Runtime dependency closures are now complete for Element Plus, FilePond, Floating UI, and Lucide. Deno restore materializes npm aliases, so Popper-based components such as `Select`, `Tooltip`, and `Dropdown`, along with the other Vue peer dependencies, emit and bundle without consumer-owned manifest or extern shims. by @devhxj
+- The JazorAdmin Windows browser smoke now uses an isolated Vite dynamic port and browser profile; mobile layouts hide the duplicate desktop IconBar so concurrent dev servers, extension writes, and narrow viewport layout do not interfere. by @devhxj
+
+#### Bug Fixes
+
+- Emit now deduplicates identical assembly identities exposed through `lib/` and `runtimes/` deterministically, preferring explicit roots and non-runtime assets while reporting conflicting identities that share a simple name. This prevents duplicate `ModuleCatalog` discovery from terminating Emit with exit code 2. by @devhxj
+
+#### Chores
+
+- Split and parallelize isolated Emit consumer gates, restore MinVer before package-version lookup, use a stable shared headless Chrome launch contract for Windows SPA/SSR release consumers, accept Vite inline source maps in Wiki development verification while preserving complete failure reports, and remove retired generated-artifact snapshots. by @devhxj
+
 ## 2026-09-28
 
 ### Jazor 1.0.0-preview.6

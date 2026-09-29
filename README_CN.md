@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.6"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.6&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.7&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.6 是当前预览版本。
+> Jazor 1.0.0-preview.7 是当前预览版本。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -109,15 +109,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.6
+dotnet add package Jazor --version 1.0.0-preview.7
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.6" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.6" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.7" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.7" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -198,15 +198,15 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
 ## 发布状态
 
-### Jazor 1.0.0-preview.6 · 2026-09-28
+### Jazor 1.0.0-preview.7 · 2026-09-29
 
-- ASP.NET Core 前端宿主统一使用 `AddJazorFrontend`、`UseJazorPathBase` 和 `UseJazorFrontend`，覆盖 Visual Studio F5、Ctrl+F5 与 Folder Publish。Development 使用随包 Deno 管理 Vite，Release 直接托管发布产物。
-- 已删除退役的 `AddJazorViteProxy`、`UseJazorViteProxy` 和 `JazorViteOptions`。应用应迁移到统一 frontend options 与中间件，并删除 SpaProxy 或启动脚本配置。
-- RazorVue Release consumer 现在按最终 `components/` 路径解析组件产物与 source map，clean build 保持确定，DenoHost 与浏览器执行路径一致。
-- Windows 浏览器验证改用隔离的进程内 Kestrel 宿主；Pinia 只恢复所选入口显式声明的 runtime 依赖。
+- Element Plus 的 Popper 组件以及 FilePond、Floating UI、Lucide 绑定现在会恢复完整运行时依赖闭包；Deno 也会物化 npm alias，消费者无需再维护本地 manifest 或 extern 垫片。
+- Emit 现在会合并 `lib/` 与 `runtimes/` 下标识相同的程序集副本，并对真正的同名标识冲突给出明确错误，不再在后续模块收集阶段崩溃。
+- Development 的 Vite 代理响应会应用与 Release 资源和应用路由一致的安全响应头。
+- Emit consumer 门禁按隔离 fixture 运行，Windows SPA/SSR 发布浏览器 smoke 使用统一稳定的 Chrome 启动契约，Wiki 开发验证可识别 Vite 内联 source map，并保留完整失败报告。
 - 当前为预发布版本，稳定版 1.0 尚未发布；支持范围与质量门禁见[当前状态](docs/04-roadmap/current-status.md)。
 
-版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.6)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有已发布的 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.6`。
+版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有已发布的 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.7`。
 
 主分支可能包含尚未发布的改动。将主分支示例用于已安装包前，请核对[未发布改动与版本历史](CHANGELOG.md)。
 

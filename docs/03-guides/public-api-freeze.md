@@ -1,6 +1,6 @@
 # 1.0 公共 API 冻结审查
 
-> 当前已发布版本：[1.0.0-preview.6（2026-09-28）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.6)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前已发布版本：[1.0.0-preview.7（2026-09-29）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 状态：`1.0.0-preview.6` 已完成 ASP.NET Core frontend 候选契约重置，删除旧 Vite proxy API，改为 DenoHost 管理的统一开发/发布入口。正式 `1.0` 尚未冻结；当前机器快照、测试和 CHANGELOG 已按该破坏性迁移后的契约重新通过候选门禁。
 
@@ -89,7 +89,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.6
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.7
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。
