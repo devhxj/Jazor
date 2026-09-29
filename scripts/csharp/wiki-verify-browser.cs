@@ -252,8 +252,13 @@ try
             [
                 "--headless=new",
                 "--disable-gpu",
+                // Keep the release-consumer browser aligned with the sample smoke launcher.
+                // Windows CI/sandboxed hosts can terminate Chromium before CDP is ready unless
+                // the headless process avoids the platform sandbox and shared-memory transport.
+                "--disable-dev-shm-usage",
                 "--no-first-run",
                 "--no-default-browser-check",
+                "--no-sandbox",
                 "--remote-debugging-port=" + options.CdpPort,
                 "--user-data-dir=" + chromeUserDataRoot,
                 "about:blank"

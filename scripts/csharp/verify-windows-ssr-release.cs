@@ -137,6 +137,10 @@ try
             new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1"),
             new KeyValuePair<string, string?>("ASPNETCORE_ENVIRONMENT", "Production"),
             new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", "Production"),
+            // The default Windows WebApplication host registers EventLog. The isolated
+            // release consumer runs without permission to write the machine-wide
+            // ".NET Runtime" source, so keep diagnostics on redirected process output.
+            new KeyValuePair<string, string?>("Logging__EventLog__LogLevel__Default", "None"),
             new KeyValuePair<string, string?>("Todo__PathBase", options.PathBase),
             new KeyValuePair<string, string?>("Todo__JavaScriptServer", "http://127.0.0.1:" + projectPort),
             new KeyValuePair<string, string?>("Todo__Ssr", "true")
@@ -161,8 +165,12 @@ try
         [
             "--headless=new",
             "--disable-gpu",
+            // Match the other release/browser smoke launchers. Sandboxed Windows hosts can
+            // terminate Chromium before its CDP endpoint is ready without these headless flags.
+            "--disable-dev-shm-usage",
             "--no-first-run",
             "--no-default-browser-check",
+            "--no-sandbox",
             "--remote-debugging-port=" + options.CdpPort,
             "--user-data-dir=" + chromeUserDataRoot,
             "about:blank"

@@ -1331,13 +1331,13 @@ internal static class Styles
         Media(".ja-iconbar--rail", "(max-width: 760px)",
             new CssRule
             {
-                display = none
+                display = important(none)
             });
 
         Media(".ja-iconbar--head", "(max-width: 760px)",
             new CssRule
             {
-                display = none
+                display = important(none)
             });
 
         Media(".ja-tdesign-sidebar-shell__menu", "(max-width: 760px)",

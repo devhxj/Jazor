@@ -431,6 +431,7 @@ static async Task VerifyBrowserSmokeAsync(
     string generatedOutputRoot,
     string injectGeneratedOutputRoot)
 {
+    const string browserPayloadMarker = "__JAZORADMIN_BROWSER_SMOKE__";
     const string bootstrapModulePath = "app.js";
     const string injectAppModulePath = "components/inject/app.js";
     var browserPath = ResolveBrowserExecutable();
@@ -1560,7 +1561,7 @@ static async Task VerifyBrowserSmokeAsync(
         var testPath = Path.Combine(harnessRoot, "jazoradmin-browser-smoke.mjs");
         await File.WriteAllTextAsync(
             testPath,
-            BuildBrowserSmokeTestScript(browserPath),
+            BuildBrowserSmokeTestScript(browserPath, browserPayloadMarker),
             Encoding.UTF8);
         var browser = await RunProcessAsync(
             denoPath,
@@ -1570,14 +1571,31 @@ static async Task VerifyBrowserSmokeAsync(
         if (browser.ExitCode != 0)
             throw new InvalidOperationException("JazorAdmin browser smoke failed." + Environment.NewLine + browser);
 
-        using var payload = ReadJsonLinePayload(browser.StandardOutput, "JazorAdmin browser");
+        using var payload = ReadJsonLinePayload(browser.StandardOutput, browserPayloadMarker, "JazorAdmin browser");
         var root = payload.RootElement;
-        if (!root.GetProperty("ok").GetBoolean())
+        if (!root.TryGetProperty("ok", out var ok) || ok.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+        {
+            throw new InvalidOperationException(
+                "JazorAdmin browser smoke returned a malformed final payload." + Environment.NewLine +
+                root.GetRawText() + Environment.NewLine +
+                browser);
+        }
+        if (!ok.GetBoolean())
             throw new InvalidOperationException(
                 "JazorAdmin browser smoke script failed: " +
                 root.GetProperty("message").GetString() +
                 Environment.NewLine +
                 root.GetRawText());
+        if (!root.TryGetProperty("mode", out var mode) ||
+            mode.GetString() != "app" ||
+            !root.TryGetProperty("pageTitleText", out _) ||
+            !root.TryGetProperty("hasLegacyVueReference", out _))
+        {
+            throw new InvalidOperationException(
+                "JazorAdmin browser smoke did not return the complete app payload." + Environment.NewLine +
+                root.GetRawText() + Environment.NewLine +
+                browser);
+        }
 
         if (root.TryGetProperty("injectSmoke", out var injectSmoke))
         {
@@ -1788,12 +1806,14 @@ static async Task VerifyBrowserSmokeAsync(
     }
 }
 
-static string BuildBrowserSmokeTestScript(string browserPath)
+static string BuildBrowserSmokeTestScript(string browserPath, string payloadMarker)
 {
     var browserPathJson = JsonSerializer.Serialize(browserPath, SmokeJsonContext.Default.String);
+    var payloadMarkerJson = JsonSerializer.Serialize(payloadMarker, SmokeJsonContext.Default.String);
     return $$"""
         const root = new URL("./", import.meta.url);
         const browserPath = {{browserPathJson}};
+        const payloadMarker = {{payloadMarkerJson}};
 
         async function run() {
           const server = await startServer(root);
@@ -1813,10 +1833,10 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 mobile: false
               });
               await page.navigate(`http://127.0.0.1:${server.port}/`);
-              const result = await page.waitForSmoke();
+              const result = await page.waitForSmoke("app");
               result.desktopLayout = await page.readLayout();
               await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
-              const deepLink = await page.waitForSmoke();
+              const deepLink = await page.waitForSmoke("deep-link", "/organizations/structure");
               const starterRoutes = [
                 { path: "/starter/dashboard/base", template: "dashboard-base" },
                 { path: "/starter/dashboard/detail", template: "dashboard-detail" },
@@ -1844,7 +1864,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               const starterPages = [];
               for (const route of starterRoutes) {
                 await page.navigate(`http://127.0.0.1:${server.port}${route.path}`);
-                const starter = await page.waitForSmoke();
+                const starter = await page.waitForSmoke("starter", route.path);
                 if (starter.mode !== "starter" || starter.pathname !== route.path || starter.template !== route.template) {
                   throw new Error(`Starter route mismatch for ${route.path}: ${JSON.stringify(starter)}`);
                 }
@@ -1857,7 +1877,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 starterPages.push({ path: route.path, template: route.template, title: starter.pageTitleText.trim() });
               }
               await page.navigate(`http://127.0.0.1:${server.port}/starter/list/base`);
-              await page.waitForSmoke();
+              await page.waitForSmoke("starter", "/starter/list/base");
               const starterInteractions = await page.evaluate(`(async () => {
                 const waitFor = async (predicate, message) => {
                   for (let attempt = 0; attempt < 120; attempt++) {
@@ -1990,7 +2010,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 };
               })()`);
               await page.navigate(`http://127.0.0.1:${server.port}/`);
-              await page.waitForSmoke();
+              await page.waitForSmoke("app");
               result.routeTabs = await page.evaluate(`(async () => {
                 const waitFor = async (predicate, message) => {
                   for (let attempt = 0; attempt < 100; attempt++) {
@@ -2070,14 +2090,14 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 mobile: false
               });
               await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
-              await page.waitForSmoke();
+              await page.waitForSmoke("deep-link", "/organizations/structure");
               result.mobileLayout = await page.readLayout();
               await page.navigate(`http://127.0.0.1:${server.port}/sso/applications`);
-              result.mobileManagement = await page.waitForSmoke();
+              result.mobileManagement = await page.waitForSmoke("management-layout", "/sso/applications");
               await page.navigate(`http://127.0.0.1:${server.port}/error/500`);
-              const internalError = await page.waitForSmoke();
+              const internalError = await page.waitForSmoke("error", "/error/500");
               await page.navigate(`http://127.0.0.1:${server.port}/missing/admin/page`);
-              const notFound = await page.waitForSmoke();
+              const notFound = await page.waitForSmoke("error", "/missing/admin/page");
               result.deepLink = deepLink;
               result.starterPages = starterPages;
               result.starterInteractions = starterInteractions;
@@ -2086,7 +2106,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               result.notFound = notFound;
               result.diagnostics = page.diagnostics;
               result.serverDiagnostics = server.diagnostics;
-              console.log(JSON.stringify(result));
+              console.log(payloadMarker + JSON.stringify(result));
             } catch (error) {
               const message = error instanceof Error ? error.message : String(error);
               throw new Error(`${message} Browser: ${JSON.stringify(page.diagnostics)} Server: ${JSON.stringify(server.diagnostics)}`);
@@ -2102,8 +2122,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
           const port = await reservePort();
           const process = new Deno.Command(Deno.execPath(), {
             cwd: Deno.cwd(),
-            args: ["task", "dev", "--", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
-            env: { ...Deno.env.toObject(), JAZOR_VITE_BASE: "/" },
+            args: ["task", "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort", "--base", "/"],
             stdin: "null",
             stdout: "piped",
             stderr: "piped"
@@ -2166,7 +2185,10 @@ static string BuildBrowserSmokeTestScript(string browserPath)
 
         async function startBrowser(browserPath) {
           const port = await reservePort();
-          const userDataDir = `${Deno.cwd()}/.browser-profile`;
+          // Keep the Chrome profile outside the Vite root: managed extensions mutate it
+          // during startup, and those writes otherwise trigger dev-server page reloads.
+          // 浏览器 profile 必须位于 Vite root 外，避免扩展写入触发整页 reload。
+          const userDataDir = await Deno.makeTempDir({ prefix: "jazoradmin-browser-profile-" });
           const process = new Deno.Command(browserPath, {
             args: [
               "--headless=new",
@@ -2214,6 +2236,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                       await killBrowserProcessTree(process);
                     }
                     await exitPromise;
+                    await Deno.remove(userDataDir, { recursive: true }).catch(() => {});
                   }
                 };
               }
@@ -2226,6 +2249,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
             await killBrowserProcessTree(process);
             await exitPromise;
           }
+          await Deno.remove(userDataDir, { recursive: true }).catch(() => {});
           throw new Error("Timed out waiting for browser CDP.");
         }
 
@@ -2271,9 +2295,19 @@ static string BuildBrowserSmokeTestScript(string browserPath)
           }
 
           async navigate(url) {
+            this.diagnostics.push(`navigate: ${url}`);
+            // A full navigation can overlap the previous page's final async smoke write.
+            // Clear the marker first so waitForSmoke never accepts a stale route payload.
+            // 全页导航可能与上一页最后一次异步写入重叠；先清空标记，避免误收旧路由结果。
+            await this.evaluate("globalThis.__jazorAdminBrowserSmoke = null");
             const loaded = new Promise((resolvePromise) => this.loadResolvers.push(resolvePromise));
             await this.send("Page.navigate", { url });
-            await loaded;
+            await Promise.race([
+              loaded,
+              delay(20000).then(() => {
+                throw new Error(`Timed out waiting for browser navigation to load: ${url}`);
+              })
+            ]);
           }
 
           async evaluate(expression) {
@@ -2284,8 +2318,9 @@ static string BuildBrowserSmokeTestScript(string browserPath)
             return response.result?.value;
           }
 
-          async waitForSmoke() {
+          async waitForSmoke(expectedMode = null, expectedPathname = null) {
             const deadline = Date.now() + 10000;
+            let lastResult = null;
             while (Date.now() < deadline) {
               const result = await this.evaluate("globalThis.__jazorAdminBrowserSmoke ?? null");
               if (result !== null) {
@@ -2293,13 +2328,16 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                   const href = await this.evaluate("location.href");
                   throw new Error(`JazorAdmin page smoke failed at ${href}: ${result.message ?? "Unknown error"}. Diagnostics: ${JSON.stringify(this.diagnostics)}`);
                 }
-                return result;
+                const modeMatches = expectedMode === null || result.mode === expectedMode;
+                const pathnameMatches = expectedPathname === null || result.pathname === expectedPathname;
+                if (modeMatches && pathnameMatches) return result;
+                lastResult = result;
               }
               await delay(100);
             }
             const body = await this.evaluate("document.body ? document.body.textContent : ''");
             const href = await this.evaluate("location.href");
-            throw new Error(`Timed out waiting for JazorAdmin browser smoke result at ${href}. Diagnostics: ${JSON.stringify(this.diagnostics)} Body: ${body}`);
+            throw new Error(`Timed out waiting for JazorAdmin browser smoke result at ${href}. Expected mode/path: ${expectedMode ?? "*"}/${expectedPathname ?? "*"}. Last result: ${JSON.stringify(lastResult)}. Diagnostics: ${JSON.stringify(this.diagnostics)} Body: ${body}`);
           }
 
           readLayout() {
@@ -2571,6 +2609,11 @@ static async Task<BrowserSmokeProcessResult> RunProcessAsync(
         WorkingDirectory = workingDirectory,
         RedirectStandardOutput = true,
         RedirectStandardError = true,
+        // Deno emits UTF-8 regardless of the Windows console code page. Without explicit
+        // decoding, Chinese smoke text can corrupt the JSON framing itself.
+        // Deno 固定输出 UTF-8；不能沿用 Windows 控制台代码页，否则中文会破坏 JSON 边界。
+        StandardOutputEncoding = Encoding.UTF8,
+        StandardErrorEncoding = Encoding.UTF8,
         UseShellExecute = false,
         CreateNoWindow = true
     };
@@ -2609,66 +2652,74 @@ static async Task<BrowserSmokeProcessResult> RunProcessAsync(
         : new BrowserSmokeProcessResult(process.ExitCode, output, error);
 }
 
-static JsonDocument ReadJsonLinePayload(string output, string markerDescription)
+static JsonDocument ReadJsonLinePayload(string output, string marker, string markerDescription)
 {
-    JsonDocument? fallback = null;
-    JsonDocument? structured = null;
-    foreach (var line in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Reverse())
+    var markerIndex = output.LastIndexOf(marker, StringComparison.Ordinal);
+    if (markerIndex < 0)
     {
-        var trimmed = line.Trim();
-        // Deno may mix diagnostics and several JSON fragments on one line.
-        // Scan balanced object candidates so the final smoke payload remains
-        // observable without assuming JSON occupies the whole line.
-        for (var start = 0; start < trimmed.Length; start++)
-        {
-            if (trimmed[start] != '{')
-                continue;
+        throw new InvalidOperationException(
+            "Process output did not contain the " + markerDescription + " JSON smoke payload marker." +
+            Environment.NewLine + output);
+    }
 
-            var depth = 0;
-            var inString = false;
-            var escaped = false;
-            for (var end = start; end < trimmed.Length; end++)
-            {
-                var ch = trimmed[end];
-                if (inString)
-                {
-                    if (escaped) escaped = false;
-                    else if (ch == '\\') escaped = true;
-                    else if (ch == '"') inString = false;
-                    continue;
-                }
-                if (ch == '"') { inString = true; continue; }
-                if (ch == '{') depth++;
-                else if (ch == '}' && --depth == 0)
-                {
-                    try
-                    {
-                        using var candidate = JsonDocument.Parse(trimmed[start..(end + 1)]);
-                        if (candidate.RootElement.ValueKind == JsonValueKind.Object &&
-                            candidate.RootElement.TryGetProperty("ok", out _))
-                        {
-                            var parsed = JsonDocument.Parse(trimmed[start..(end + 1)]);
-                            if (parsed.RootElement.TryGetProperty("hasLegacyVueReference", out _))
-                                return parsed;
-                            if (parsed.RootElement.TryGetProperty("mode", out _) &&
-                                parsed.RootElement.TryGetProperty("pathname", out _))
-                            {
-                                structured?.Dispose();
-                                structured = parsed;
-                                continue;
-                            }
-                            fallback?.Dispose();
-                            fallback = parsed;
-                        }
-                    }
-                    catch (JsonException) { }
-                    break;
-                }
-            }
+    var payloadStart = markerIndex + marker.Length;
+    while (payloadStart < output.Length && char.IsWhiteSpace(output[payloadStart]))
+        payloadStart++;
+    if (payloadStart >= output.Length || output[payloadStart] != '{')
+    {
+        throw new InvalidOperationException(
+            "Process output contained the " + markerDescription + " marker without an object payload." +
+            Environment.NewLine + output);
+    }
+
+    var depth = 0;
+    var inString = false;
+    var escaped = false;
+    var payloadEnd = -1;
+    for (var index = payloadStart; index < output.Length; index++)
+    {
+        var ch = output[index];
+        if (inString)
+        {
+            if (escaped)
+                escaped = false;
+            else if (ch == '\\')
+                escaped = true;
+            else if (ch == '"')
+                inString = false;
+            continue;
+        }
+
+        if (ch == '"')
+            inString = true;
+        else if (ch == '{')
+            depth++;
+        else if (ch == '}' && --depth == 0)
+        {
+            payloadEnd = index + 1;
+            break;
         }
     }
 
-    return structured ?? fallback ?? throw new InvalidOperationException("Process output did not contain the " + markerDescription + " JSON smoke payload." + Environment.NewLine + output);
+    if (payloadEnd < 0)
+    {
+        throw new InvalidOperationException(
+            "Process output contained an incomplete " + markerDescription + " JSON smoke payload." +
+            Environment.NewLine + output[payloadStart..]);
+    }
+
+    var payloadText = output[payloadStart..payloadEnd];
+    try
+    {
+        return JsonDocument.Parse(payloadText);
+    }
+    catch (JsonException error)
+    {
+        throw new InvalidOperationException(
+            "Process output contained an invalid " + markerDescription + " JSON smoke payload." +
+            Environment.NewLine + payloadText + Environment.NewLine + output,
+            error);
+    }
 }
 
 static Process StartProcess(string fileName, IReadOnlyList<string> arguments, string workdir)

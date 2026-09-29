@@ -59,7 +59,10 @@ packArguments.AddRange(isolation.PublishArguments);
 await ScriptHelpers.RunDotNetAsync(packArguments, repoRoot, dotnetCliHome);
 
 var packageInfo = ScriptHelpers.ResolveLatestPackage(packageOutput);
-var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "nuget-sample-packages", $"{packageInfo.Version}-{packageInfo.Stamp}");
+// NuGetPackageRoot is consumed as an MSBuild directory prefix. Preserve the trailing separator;
+// otherwise package ids can be concatenated directly onto the isolated cache directory on Windows.
+var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "nuget-sample-packages", $"{packageInfo.Version}-{packageInfo.Stamp}")
+    + Path.DirectorySeparatorChar;
 var buildArguments = new List<string>
 {
     "build",
