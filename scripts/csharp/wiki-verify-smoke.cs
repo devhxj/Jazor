@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 var options = ScriptArguments.Parse(args);
@@ -19,6 +18,7 @@ var normalizedPathBase = WikiScriptHelpers.NormalizePathBase(options.PathBase);
 var rootUrl = $"http://localhost:{options.Port}";
 var healthUrl = rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/health");
 var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Release" : options.Configuration;
+var hostEnvironment = options.Publish ? "Production" : "Development";
 
 string hostRoot = sampleRoot;
 string webRoot = Path.Combine(sampleRoot, "wwwroot");
@@ -183,7 +183,6 @@ else
     AssertDebugArtifacts(jazorRoot);
 }
 
-var expectedBrowserImports = new Dictionary<string, string>(StringComparer.Ordinal);
 var stringModuleAssetPath = "/jazor/clr/System/StringModule.js";
 
 // 目录由同一次 Wiki 构建生成，docs 增删页面时无需手工同步验证路由表。
@@ -202,12 +201,20 @@ var browserAssets = options.Publish
     }
     : new List<AssetExpectation>
     {
-        new("/jazor/entry.js", "./main.mjs", null, Array.Empty<string>()),
+        new(
+            "/jazor/entry.js",
+            "export * from \"" + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/jazor/main.mjs") + "\"",
+            null,
+            Array.Empty<string>()),
         new("/jazor/main.mjs.map", "\"file\":\"main.mjs\"", "application/json", new[] { "AppModule.cs", "\"sourcesContent\"" }),
         new("/jazor/components/wiki-home.mjs", "搜索文档页面", null, Array.Empty<string>()),
         new("/jazor/components/wiki-home.mjs.map", "\"file\":\"components/wiki-home.mjs\"", "application/json", new[] { "WikiHomeModule.cs", "WikiHomeModule.DocumentContract.cs", "\"sourcesContent\"" }),
-        // Debug 图中 style() 走 Import：组件模块引用 style.js 运行时，版本标记由运行时携带
-        new("/jazor/components/wiki-styles.mjs", "from \"style.js\"", null, new[] { "background-color" }),
+        // Vite 会把生成模块的相对 import 规范化为包含 PathBase 的浏览器绝对路径。
+        new(
+            "/jazor/components/wiki-styles.mjs",
+            "from \"" + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/jazor/style.js") + "\"",
+            null,
+            new[] { "background-color" }),
         new("/jazor/style.js", "ecmascript-style:v1", null, Array.Empty<string>()),
         new(stringModuleAssetPath, "export", null, Array.Empty<string>()),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
@@ -238,6 +245,8 @@ try
         [
             new KeyValuePair<string, string?>("DOTNET_CLI_HOME", dotnetCliHome),
             new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1"),
+            new KeyValuePair<string, string?>("ASPNETCORE_ENVIRONMENT", hostEnvironment),
+            new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", hostEnvironment),
             new KeyValuePair<string, string?>("ASPNETCORE_URLS", rootUrl),
             new KeyValuePair<string, string?>("Wiki__PathBase", normalizedPathBase)
         ],
@@ -275,10 +284,17 @@ try
         AssertHeaderEquals(response, "X-Content-Type-Options", "nosniff", "X-Content-Type-Options for served browser asset " + asset.Path);
         AssertHeaderEquals(response, "X-Frame-Options", "DENY", "X-Frame-Options for served browser asset " + asset.Path);
 
-        var expectedCacheControl = asset.Path.StartsWith("/vendor/", StringComparison.Ordinal)
-            ? "public, max-age=31536000, immutable"
-            : "no-cache, must-revalidate";
-        AssertHeaderEquals(response, "Cache-Control", expectedCacheControl, "Cache-Control for served browser asset " + asset.Path);
+        if (!options.Publish && asset.Path.StartsWith("/jazor/", StringComparison.Ordinal))
+        {
+            AssertHeaderMatches(response, "Cache-Control", "no-cache", "Cache-Control for Vite-proxied browser asset " + asset.Path);
+        }
+        else
+        {
+            var expectedCacheControl = asset.Path.StartsWith("/vendor/", StringComparison.Ordinal)
+                ? "public, max-age=31536000, immutable"
+                : "no-cache, must-revalidate";
+            AssertHeaderEquals(response, "Cache-Control", expectedCacheControl, "Cache-Control for served browser asset " + asset.Path);
+        }
     }
 
     foreach (var document in discoveryDocuments)
@@ -617,90 +633,6 @@ void AssertReleaseArtifacts(string artifactRoot)
         if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))
         {
             throw new InvalidOperationException("Release publish unexpectedly retained debug artifact: " + unexpectedPath);
-        }
-    }
-}
-
-Dictionary<string, string> ReadBrowserImports(string importMapPath)
-{
-    WikiScriptHelpers.EnsureFileExists(importMapPath, "browser import map");
-    using var document = JsonDocument.Parse(File.ReadAllText(importMapPath, Encoding.UTF8));
-    if (!document.RootElement.TryGetProperty("imports", out var importsElement) ||
-        importsElement.ValueKind != JsonValueKind.Object)
-    {
-        throw new InvalidOperationException("Browser import map must contain an object property named 'imports': " + importMapPath);
-    }
-
-    var imports = new Dictionary<string, string>(StringComparer.Ordinal);
-    foreach (var import in importsElement.EnumerateObject())
-    {
-        if (import.Value.ValueKind != JsonValueKind.String || import.Value.GetString() is not { } target)
-            throw new InvalidOperationException("Browser import map entry '" + import.Name + "' must be a string.");
-
-        imports.Add(import.Name, target);
-    }
-
-    return imports;
-}
-
-string GetRequiredImportTarget(IReadOnlyDictionary<string, string> imports, string specifier)
-{
-    if (!imports.TryGetValue(specifier, out var target))
-        throw new InvalidOperationException("Browser import map is missing entry '" + specifier + "'.");
-
-    const string artifactPrefix = "/jazor/";
-    if (!target.StartsWith(artifactPrefix, StringComparison.Ordinal))
-        throw new InvalidOperationException("Browser import target for '" + specifier + "' is not a Jazor artifact URL: " + target);
-
-    return target;
-}
-
-void AssertBrowserImportMap(
-    string html,
-    IReadOnlyDictionary<string, string> expectedImports,
-    string pathBase,
-    string description)
-{
-    var match = Regex.Match(
-        html,
-        @"<script\s+type=""importmap""[^>]*>(?<json>.*?)</script>",
-        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant);
-    if (!match.Success)
-        throw new InvalidOperationException("Missing browser import map in " + description + ".");
-
-    using var document = JsonDocument.Parse(match.Groups["json"].Value);
-    if (!document.RootElement.TryGetProperty("imports", out var importsElement) ||
-        importsElement.ValueKind != JsonValueKind.Object)
-    {
-        throw new InvalidOperationException("Browser import map must contain an object property named 'imports' in " + description + ".");
-    }
-
-    var actualImports = importsElement.EnumerateObject().ToDictionary(
-        import => import.Name,
-        import => import.Value.ValueKind == JsonValueKind.String
-            ? import.Value.GetString()!
-            : throw new InvalidOperationException("Browser import map entry '" + import.Name + "' must be a string in " + description + "."),
-        StringComparer.Ordinal);
-
-    if (actualImports.Count != expectedImports.Count)
-    {
-        throw new InvalidOperationException(
-            "Unexpected browser import-map entry count in " + description +
-            ": expected " + expectedImports.Count + ", actual " + actualImports.Count + ".");
-    }
-
-    foreach (var (specifier, target) in expectedImports)
-    {
-        var expectedTarget = target.StartsWith("/jazor", StringComparison.Ordinal) &&
-                             (target.Length == "/jazor".Length || target["/jazor".Length] == '/')
-            ? pathBase + target
-            : target;
-        if (!actualImports.TryGetValue(specifier, out var actualTarget) ||
-            !string.Equals(actualTarget, expectedTarget, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException(
-                "Unexpected browser import-map target for '" + specifier + "' in " + description +
-                ": expected '" + expectedTarget + "', actual '" + (actualTarget ?? "<missing>") + "'.");
         }
     }
 }

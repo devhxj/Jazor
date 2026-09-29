@@ -51,13 +51,14 @@ try
         repoRoot,
         dotnetCliHome);
 
-    if (!Directory.Exists(Path.Combine(publishRoot, "jazor")))
-        throw new InvalidOperationException("Release publish did not contain a jazor directory.");
+    var publishedBrowserRoot = Path.Combine(publishRoot, "jazor", "dist");
+    if (!Directory.Exists(publishedBrowserRoot))
+        throw new InvalidOperationException("Release publish did not contain the jazor browser distribution.");
 
     EnsureDirectoryDeletedWithinRepo(repoRoot, outputRoot);
     Directory.CreateDirectory(outputRoot);
     CopyDirectory(Path.Combine(publishRoot, "wwwroot"), outputRoot);
-    CopyDirectory(Path.Combine(publishRoot, "jazor"), Path.Combine(outputRoot, "jazor"));
+    CopyDirectory(publishedBrowserRoot, Path.Combine(outputRoot, "jazor", "dist"));
     File.WriteAllText(Path.Combine(outputRoot, ".nojekyll"), "GitHub Pages static export\n", new UTF8Encoding(false));
 
     hostProcess = StartProcess(
@@ -125,19 +126,21 @@ try
 }
 finally
 {
-    if (hostProcess is not null && !hostProcess.HasExited)
+    if (hostProcess is not null)
     {
-        hostProcess.Kill(entireProcessTree: true);
+        if (!hostProcess.HasExited)
+            hostProcess.Kill(entireProcessTree: true);
         await hostProcess.WaitForExitAsync();
+        hostProcess.Dispose();
     }
 
     if (!options.KeepPublish)
-        RemoveDirectoryWithRetry(publishRoot);
+        await RemoveDirectoryWithRetryAsync(publishRoot);
 
     if (!options.KeepLogs)
     {
-        RemoveFileWithRetry(stdoutLog);
-        RemoveFileWithRetry(stderrLog);
+        await RemoveFileWithRetryAsync(stdoutLog);
+        await RemoveFileWithRetryAsync(stderrLog);
     }
 }
 
@@ -444,16 +447,44 @@ static void EnsureDirectoryDeletedWithinRepo(string repoRoot, string path)
     Directory.Delete(fullPath, true);
 }
 
-static void RemoveDirectoryWithRetry(string path)
+static async Task RemoveDirectoryWithRetryAsync(string path, int attempts = 8, int delayMilliseconds = 250)
 {
-    if (Directory.Exists(path))
-        Directory.Delete(path, true);
+    for (var attempt = 0; attempt < attempts; attempt++)
+    {
+        if (!Directory.Exists(path))
+            return;
+
+        try
+        {
+            Directory.Delete(path, recursive: true);
+            return;
+        }
+        catch when (attempt < attempts - 1)
+        {
+            // Windows can keep DenoHost/runtime assemblies locked briefly after the
+            // host process tree exits. Retry only the teardown boundary, not export work.
+            await Task.Delay(delayMilliseconds);
+        }
+    }
 }
 
-static void RemoveFileWithRetry(string path)
+static async Task RemoveFileWithRetryAsync(string path, int attempts = 8, int delayMilliseconds = 250)
 {
-    if (File.Exists(path))
-        File.Delete(path);
+    for (var attempt = 0; attempt < attempts; attempt++)
+    {
+        if (!File.Exists(path))
+            return;
+
+        try
+        {
+            File.Delete(path);
+            return;
+        }
+        catch when (attempt < attempts - 1)
+        {
+            await Task.Delay(delayMilliseconds);
+        }
+    }
 }
 
 internal sealed record ExportOptions

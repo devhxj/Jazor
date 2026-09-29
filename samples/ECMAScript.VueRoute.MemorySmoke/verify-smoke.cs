@@ -337,8 +337,8 @@ internal static class ScriptHelpers
     public static void AssertNetpackBundleArtifacts(string bundleOutputRoot)
     {
         var distRoot = Path.Combine(bundleOutputRoot, "dist");
-        AssertPathExists(Path.Combine(distRoot, "bundle.js"), "Vite browser bundle");
-        AssertPathExists(Path.Combine(distRoot, "bundle.js.map"), "Vite browser bundle source map");
+        AssertPathExists(Path.Combine(distRoot, "bundle.js"), "Netpack browser bundle");
+        AssertPathExists(Path.Combine(distRoot, "bundle.js.map"), "Netpack browser bundle source map");
     }
 
     public static async Task RunDotNetAsync(IReadOnlyList<string> arguments, string workdir, CancellationToken cancellationToken = default)

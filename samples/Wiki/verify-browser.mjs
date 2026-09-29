@@ -269,6 +269,7 @@ async function main() {
       },
       `Debugger.scriptParsed for ${check.scriptPath}`);
     const resolvedSourceMapUrl = toAbsoluteUrl(script.sourceMapURL, script.url);
+    const inlineSourceMap = resolvedSourceMapUrl.startsWith("data:");
     const response = await fetch(resolvedSourceMapUrl, { cache: "no-store" });
     const responseText = await response.text();
     let sourceMap = null;
@@ -288,9 +289,10 @@ async function main() {
       scriptUrl: script.url,
       isModule: script.isModule,
       scriptId: script.scriptId,
-      sourceMapURL: script.sourceMapURL,
-      resolvedSourceMapUrl,
-      sourceMapPath: toPathAndSearch(resolvedSourceMapUrl),
+      inlineSourceMap,
+      sourceMapURL: inlineSourceMap ? "data:application/json;base64,<inline>" : script.sourceMapURL,
+      resolvedSourceMapUrl: inlineSourceMap ? "<inline>" : resolvedSourceMapUrl,
+      sourceMapPath: inlineSourceMap ? "<inline>" : toPathAndSearch(resolvedSourceMapUrl),
       httpStatus: response.status,
       httpContentType: response.headers.get("content-type") || "",
       parseError,
@@ -413,7 +415,10 @@ async function main() {
     if (!inspectedSourceMap.isModule) {
       failures.push(`Debugger parsed ${check.scriptPath} without module semantics.`);
     }
-    if (inspectedSourceMap.sourceMapPath !== check.sourceMapPath) {
+    if (isDevelopmentVerification && !inspectedSourceMap.inlineSourceMap) {
+      failures.push(`Debugger expected ${check.scriptPath} to expose an inline Vite source map.`);
+    }
+    if (!isDevelopmentVerification && inspectedSourceMap.sourceMapPath !== check.sourceMapPath) {
       failures.push(`Debugger resolved ${check.scriptPath} to unexpected source map path: ${inspectedSourceMap.sourceMapPath}`);
     }
     if (inspectedSourceMap.httpStatus !== 200) {
@@ -1016,6 +1021,7 @@ async function main() {
 
   console.log(JSON.stringify({
     report,
+    failures,
     consoleErrors,
     exceptions,
     networkFailures: actionableNetworkFailures,
@@ -1029,11 +1035,11 @@ async function main() {
     for (const failure of failures) {
       console.error(failure);
     }
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 
 main().catch(error => {
   console.error(error && error.stack ? error.stack : String(error));
-  process.exit(1);
+  process.exitCode = 1;
 });
