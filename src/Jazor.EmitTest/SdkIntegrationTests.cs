@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -21,6 +22,7 @@ public sealed class SdkIntegrationTests
     private static readonly SemaphoreSlim DotNetProcessGate = new(4, 4);
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_SeparatesDirectToolingFromTransitiveResourceLocators()
     {
         var package = await LocalPackage.Value;
@@ -125,6 +127,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_ExcludesJazorToolAssetsFromTransitiveComponentDependencies()
     {
         var package = await LocalPackage.Value;
@@ -155,6 +158,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_CarriesDenoHostRuntimeAndFrontendHost()
     {
         var package = await LocalPackage.Value;
@@ -210,6 +214,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackage_CoreConsumer_ExcludesBlazorAndVuePackages()
     {
         var package = await LocalReleasePackage.Value;
@@ -233,6 +238,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackage_VueConsumer_IncludesRazorVueWithoutBlazorAssembly()
     {
         var package = await LocalReleasePackage.Value;
@@ -257,6 +263,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesVuetifyAuthoringPackage()
     {
         var package = await LocalPackage.Value;
@@ -274,6 +281,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesVueRouteAuthoringPackage()
     {
         var package = await LocalPackage.Value;
@@ -291,6 +299,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesPiniaPackages()
     {
         var package = await LocalPackage.Value;
@@ -328,6 +337,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesTDesignAuthoringPackage()
     {
         var package = await LocalPackage.Value;
@@ -346,6 +356,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_ElementPlusDeclaresPublicAssemblyDependencies()
     {
         var package = await LocalPackage.Value;
@@ -364,6 +375,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesSelfContainedBrowserAssets()
     {
         var package = await LocalPackage.Value;
@@ -456,6 +468,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_VueDevtoolsApi_DeclaresVueRouterAndPiniaDevelopmentImports()
     {
         var package = await LocalPackage.Value;
@@ -500,6 +513,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_TDesignManifest_DeclaresOnlyPackagedAssetsAndVue()
     {
         var package = await LocalPackage.Value;
@@ -527,6 +541,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Style")]
     public async Task CreateLocalPackage_IncludesEcmaScriptStyleAsIndependentOptInPackage()
     {
         var package = await LocalStylePackage.Value;
@@ -548,6 +563,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Style")]
     public async Task Build_LocalEcmaScriptStylePackage_DebugMaterializesAndReleaseBundlesRuntime()
     {
         var package = await LocalStylePackage.Value;
@@ -618,6 +634,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_MultiProjectSample_ReleasePreservesNamedExports()
     {
         var package = await LocalCorePackage.Value;
@@ -670,6 +687,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_ReleaseWithSsrEnabled_MaterializesRawModuleGraph()
     {
         var package = await LocalCorePackage.Value;
@@ -719,6 +737,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Publish_LocalJazorPackage_WebSdkHost_ReleaseWithSsrEnabled_CopiesRawModuleGraph()
     {
         var package = await LocalCorePackage.Value;
@@ -768,6 +787,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_SingleProjectWrapperApis_EmitsMinimalRuntimeImports()
     {
         var package = await LocalCorePackage.Value;
@@ -895,6 +915,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_StoredIndexAndRange_ExecutesMaterializedRuntimeOnDenoHost()
     {
         var package = await LocalCorePackage.Value;
@@ -1096,6 +1117,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_QuerySyntaxWithCapturedLambda_ExecutesOnDenoHost()
     {
         var package = await LocalCorePackage.Value;
@@ -1484,6 +1506,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_StaticHost_UsesProjectJazorByDefault()
     {
         var package = await LocalCorePackage.Value;
@@ -1520,6 +1543,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_ClassLibraryWithGlobalEmitMode_OnlyCarriesModuleCatalog()
     {
         var package = await LocalCorePackage.Value;
@@ -1585,6 +1609,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_IndirectNuGetReferenceDoesNotActivateTooling()
     {
         var package = await LocalCorePackage.Value;
@@ -1717,6 +1742,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_DirectVueAndCoreReferencesRespectToolingBoundary()
     {
         var package = await LocalCorePackage.Value;
@@ -1929,6 +1955,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_ProjectReferenceChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
     {
         var package = await LocalCorePackage.Value;
@@ -2085,6 +2112,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_NuGetLibraryChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
     {
         var package = await LocalCorePackage.Value;
@@ -2294,6 +2322,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Publish_LocalJazorPackage_StaticHost_UsesProjectAndPublishJazorByDefault()
     {
         var package = await LocalCorePackage.Value;
@@ -2336,6 +2365,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Publish_LocalJazorPackage_WebSdkHost_MaterializesJazorAssetsIntoPublishOutput()
     {
         var package = await LocalCorePackage.Value;
@@ -2387,6 +2417,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task Build_LocalJazorPackage_WithVueRouteAuthoring_EmitsVueRouterImportsAndRouteObjects()
     {
         var package = await LocalPackage.Value;
@@ -2504,6 +2535,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task Build_LocalJazorPackage_WithVueRouteInjectionAndReactiveAuthoring_EmitsTypedVueRouterContracts()
     {
         var package = await LocalPackage.Value;
@@ -2659,6 +2691,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Packages")]
     public async Task Build_LocalJazorPackage_WithVueRouteReactiveAuthoring_BundlesThroughProjectScript_AndResolvesVuePackages()
     {
         var package = await LocalPackage.Value;
@@ -2816,6 +2849,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgG0Consumer_ReconcilesFinalDocumentsAcrossIncrementalBuilds()
     {
         var package = await LocalCorePackage.Value;
@@ -2884,6 +2918,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_EmitsVueRenderArtifactsAndManifest()
     {
         var package = await LocalCorePackage.Value;
@@ -2968,6 +3003,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_RazorAuthoringError_DoesNotAddSecondaryRazorVueDiagnostic()
     {
         var package = await LocalCorePackage.Value;
@@ -3024,6 +3060,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnDenoHost()
     {
         var package = await LocalCorePackage.Value;
@@ -3319,6 +3356,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_BuildsStandardProjectInConfiguredDirectory()
     {
         var package = await LocalCorePackage.Value;
@@ -3371,6 +3409,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_CleanBuildsVueRenderArtifactsByteForByte()
     {
         var package = await LocalCorePackage.Value;
@@ -3442,6 +3481,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_CleanEmitRemovesDeletedComponentArtifacts()
     {
         var package = await LocalCorePackage.Value;
@@ -3503,6 +3543,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Core")]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_RunsCounterInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -3578,6 +3619,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalNativeTDesignRazorConsumer_MountsAndInteractsInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -3660,6 +3702,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalNativeElementPlusRazorConsumer_MaterializesAssetsInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -3713,6 +3756,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalElementReferenceRazorConsumer_FocusesAndHandlesUnmountInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -3801,6 +3845,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalCoreDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -3911,6 +3956,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -4024,6 +4070,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -4132,6 +4179,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -4232,6 +4280,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    [TestCategory("Consumer.Release")]
     public async Task Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -4325,49 +4374,27 @@ public sealed class SdkIntegrationTests
 
     private static async Task<LocalStylePackageFixture> CreateLocalStylePackageAsync()
     {
-        var repoRoot = FindRepoRoot();
-        var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-nupkg", Guid.NewGuid().ToString("N"));
-        var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-restore-packages", Guid.NewGuid().ToString("N"));
-        var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-package-out", Guid.NewGuid().ToString("N"));
-        var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "css-package-obj", Guid.NewGuid().ToString("N"));
+        var core = await LocalCorePackage.Value;
+        var packageOutputDirectory = CreateFixtureDirectory(core.RepoRoot, "debug-style-nupkg");
+        CopyPackageFeed(core.PackageOutputDirectory, packageOutputDirectory);
 
-        Directory.CreateDirectory(packageOutputDirectory);
-        Directory.CreateDirectory(restorePackagesPath);
-
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
-                "-c",
+        var result = await core.BuildWorkspace.PackAsync("ECMAScript.Style", packageOutputDirectory);
+        Assert.AreEqual(0, result.ExitCode, result.ToString());
+        Assert.IsTrue(
+            File.Exists(Path.Combine(
+                core.BuildWorkspace.OutputRoot,
+                "ECMAScript.Style",
+                "bin",
                 "Debug",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
-
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.Style", "ECMAScript.Style.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.Style", "bin", "Debug", "net11.0", "ECMAScript.Style.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
+                "net11.0",
+                "ECMAScript.Style.dll")),
+            "ECMAScript.Style package preparation did not build ECMAScript.Style.");
 
         return new LocalStylePackageFixture(
-            repoRoot,
-            packageVersion,
+            core.RepoRoot,
+            core.PackageVersion,
             packageOutputDirectory,
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Style", packageVersion));
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Style", core.PackageVersion));
     }
 
     private static string CreateFixtureDirectory(string repoRoot, string purpose)
@@ -4375,39 +4402,6 @@ public sealed class SdkIntegrationTests
         var path = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", purpose, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
-    }
-
-    private static async Task PackReleaseProjectAsync(
-        string repoRoot,
-        string projectName,
-        string packageVersion,
-        string packageOutputDirectory,
-        string fixturePurpose)
-    {
-        var restorePackagesPath = CreateFixtureDirectory(repoRoot, fixturePurpose + "-restore-packages");
-        var packageBuildOutputRoot = CreateFixtureDirectory(repoRoot, fixturePurpose + "-package-out");
-        var packageBuildIntermediateRoot = CreateFixtureDirectory(repoRoot, fixturePurpose + "-package-obj");
-        var arguments = new List<string>
-        {
-            "pack",
-            Path.Combine(repoRoot, "src", projectName, projectName + ".csproj"),
-            "-c",
-            "Release",
-            "-o",
-            packageOutputDirectory,
-            "/m:1",
-            "/p:BuildInParallel=false",
-            $"-p:RestorePackagesPath={restorePackagesPath}",
-            $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-            $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-            $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-            "/nr:false",
-            "-p:UseSharedCompilation=false",
-            $"-p:PackageVersion={packageVersion}",
-            $"-p:JazorPackageVersion={packageVersion}"
-        };
-
-        await RunDotNetAndAssertAsync(repoRoot, arguments);
     }
 
     private static async Task<string> ResolvePackageVersionAsync(string repoRoot)
@@ -4474,10 +4468,13 @@ public sealed class SdkIntegrationTests
         var repoRoot = FindRepoRoot();
         var packageOutputDirectory = CreateFixtureDirectory(repoRoot, "release-core-nupkg");
         var packageVersion = await ResolvePackageVersionAsync(repoRoot);
+        var buildWorkspace = new PackageBuildWorkspace(repoRoot, "Release", packageVersion, "release-packages");
 
-        await Task.WhenAll(
-            PackReleaseProjectAsync(repoRoot, "Jazor", packageVersion, packageOutputDirectory, "release-core-jazor"),
-            PackReleaseProjectAsync(repoRoot, "Jazor.Vue", packageVersion, packageOutputDirectory, "release-core-vue"));
+        foreach (var projectName in new[] { "Jazor", "Jazor.Vue" })
+        {
+            var result = await buildWorkspace.PackAsync(projectName, packageOutputDirectory);
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+        }
 
         Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor"));
         Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor.Vue"));
@@ -4488,7 +4485,8 @@ public sealed class SdkIntegrationTests
         return new LocalReleasePackageFixture(
             repoRoot,
             packageVersion,
-            packageOutputDirectory);
+            packageOutputDirectory,
+            buildWorkspace);
     }
 
     private static async Task<LocalReleaseBrowserPackageFixture> CreateLocalReleaseBrowserPackageAsync()
@@ -4498,10 +4496,11 @@ public sealed class SdkIntegrationTests
 
         CopyPackageFeed(core.PackageOutputDirectory, packageOutputDirectory);
 
-        await Task.WhenAll(
-            PackReleaseProjectAsync(core.RepoRoot, "ECMAScript.TDesign", core.PackageVersion, packageOutputDirectory, "release-browser-tdesign"),
-            PackReleaseProjectAsync(core.RepoRoot, "ECMAScript.VueRoute", core.PackageVersion, packageOutputDirectory, "release-browser-vueroute"),
-            PackReleaseProjectAsync(core.RepoRoot, "ECMAScript.ElementPlus", core.PackageVersion, packageOutputDirectory, "release-browser-elementplus"));
+        foreach (var projectName in new[] { "ECMAScript.TDesign", "ECMAScript.VueRoute", "ECMAScript.ElementPlus" })
+        {
+            var result = await core.BuildWorkspace.PackAsync(projectName, packageOutputDirectory);
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+        }
 
         var tdesignPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", core.PackageVersion);
         var elementPlusPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", core.PackageVersion);
@@ -4525,37 +4524,20 @@ public sealed class SdkIntegrationTests
         var repoRoot = FindRepoRoot();
         var packageOutputDirectory = CreateFixtureDirectory(repoRoot, "debug-core-nupkg");
         var packageVersion = await ResolvePackageVersionAsync(repoRoot);
-        var jazorOutputRoot = CreateFixtureDirectory(repoRoot, "debug-core-jazor-package-out");
-        var vueOutputRoot = CreateFixtureDirectory(repoRoot, "debug-core-vue-package-out");
+        var buildWorkspace = new PackageBuildWorkspace(repoRoot, "Debug", packageVersion, "debug-packages");
 
-        var jazorPackTask = PackDebugProjectAsync(
-            repoRoot,
-            "Jazor",
-            packageVersion,
-            packageOutputDirectory,
-            "debug-core-jazor",
-            jazorOutputRoot);
-        var vuePackTask = PackDebugProjectAsync(
-            repoRoot,
-            "Jazor.Vue",
-            packageVersion,
-            packageOutputDirectory,
-            "debug-core-vue",
-            vueOutputRoot);
-        await Task.WhenAll(jazorPackTask, vuePackTask);
-
-        var jazorPack = await jazorPackTask;
-        var vuePack = await vuePackTask;
+        var jazorPack = await buildWorkspace.PackAsync("Jazor", packageOutputDirectory);
         Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
         Assert.IsFalse(
             jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
             "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
+        var vuePack = await buildWorkspace.PackAsync("Jazor.Vue", packageOutputDirectory);
         Assert.AreEqual(0, vuePack.ExitCode, vuePack.ToString());
         AssertPackageArtifactOutputs(
-            jazorOutputRoot,
-            Path.Combine(jazorOutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish"));
+            buildWorkspace.OutputRoot,
+            Path.Combine(buildWorkspace.OutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish"));
         Assert.IsTrue(
-            File.Exists(Path.Combine(vueOutputRoot, "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll")),
+            File.Exists(Path.Combine(buildWorkspace.OutputRoot, "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll")),
             "Jazor.Vue package preparation did not build Jazor.RazorVue.");
 
         Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor"));
@@ -4567,7 +4549,8 @@ public sealed class SdkIntegrationTests
             packageOutputDirectory,
             GetPackagePath(packageOutputDirectory, packageVersion),
             GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
-            GetDenoHostRuntimePath());
+            GetDenoHostRuntimePath(),
+            buildWorkspace);
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
@@ -4586,21 +4569,20 @@ public sealed class SdkIntegrationTests
             new DebugPackageProject("ECMAScript.ElementPlus", "ECMAScript.ElementPlus", "net11.0")
         };
 
-        await Task.WhenAll(packages.Select(async package =>
+        foreach (var package in packages)
         {
-            var outputRoot = CreateFixtureDirectory(core.RepoRoot, "debug-bindings-" + package.ProjectName.ToLowerInvariant() + "-package-out");
-            var result = await PackDebugProjectAsync(
-                core.RepoRoot,
-                package.ProjectName,
-                core.PackageVersion,
-                packageOutputDirectory,
-                "debug-bindings-" + package.ProjectName.ToLowerInvariant(),
-                outputRoot);
+            var result = await core.BuildWorkspace.PackAsync(package.ProjectName, packageOutputDirectory);
             Assert.AreEqual(0, result.ExitCode, result.ToString());
             Assert.IsTrue(
-                File.Exists(Path.Combine(outputRoot, package.OutputProjectName, "bin", "Debug", package.TargetFramework, package.OutputProjectName + ".dll")),
+                File.Exists(Path.Combine(
+                    core.BuildWorkspace.OutputRoot,
+                    package.OutputProjectName,
+                    "bin",
+                    "Debug",
+                    package.TargetFramework,
+                    package.OutputProjectName + ".dll")),
                 $"{package.ProjectName} package preparation did not build {package.OutputProjectName}.");
-        }));
+        }
 
         return new LocalPackageFixture(
             core.RepoRoot,
@@ -4614,38 +4596,6 @@ public sealed class SdkIntegrationTests
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", core.PackageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", core.PackageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", core.PackageVersion));
-    }
-
-    private static Task<ProcessResult> PackDebugProjectAsync(
-        string repoRoot,
-        string projectName,
-        string packageVersion,
-        string packageOutputDirectory,
-        string fixturePurpose,
-        string packageBuildOutputRoot)
-    {
-        var restorePackagesPath = CreateFixtureDirectory(repoRoot, fixturePurpose + "-restore-packages");
-        var packageBuildIntermediateRoot = CreateFixtureDirectory(repoRoot, fixturePurpose + "-package-obj");
-        return RunDotNetAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", projectName, projectName + ".csproj"),
-                "-c",
-                "Debug",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:JazorPackageVersion={packageVersion}",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
     }
 
     private static void AssertPackageEntries(string packagePath, params string[] expectedPaths)
@@ -4690,37 +4640,6 @@ public sealed class SdkIntegrationTests
     {
         var result = await RunDotNetAsync(workingDirectory, arguments);
         Assert.AreEqual(0, result.ExitCode, result.ToString());
-    }
-
-    private static async Task PackProjectAndAssertOutputAsync(
-        string repoRoot,
-        string projectPath,
-        string expectedOutputPath,
-        string packageBuildOutputRoot,
-        string packageBuildIntermediateRoot,
-        string packageOutputDirectory,
-        string packageVersion)
-    {
-        // 生产打包验证不能只看 DLL 是否存在；Directory.Build.props 或依赖版本变更时旧产物会污染 nupkg。
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                projectPath,
-                "-c",
-                "Debug",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-
-        Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected build output was not produced: {expectedOutputPath}");
     }
 
     private static string EnsureTrailingDirectorySeparator(string path)
@@ -4879,17 +4798,37 @@ public sealed class SdkIntegrationTests
 
     private static string DiscoverPackageVersion(string packageOutputDirectory, string packageId)
     {
-        var prefix = packageId + ".";
-        var nupkg = Directory.GetFiles(packageOutputDirectory, $"{packageId}.*.nupkg")
-            .Where(static f => !f.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(static f => File.GetLastWriteTimeUtc(f))
+        var package = Directory.EnumerateFiles(packageOutputDirectory, "*.nupkg", SearchOption.TopDirectoryOnly)
+            .Where(static path => !path.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+            .Select(static path => (Path: path, Identity: ReadPackageIdentity(path)))
+            .Where(candidate => string.Equals(candidate.Identity.Id, packageId, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static candidate => File.GetLastWriteTimeUtc(candidate.Path))
             .FirstOrDefault();
 
-        if (nupkg is null)
+        if (package.Path is null)
             throw new FileNotFoundException($"No '{packageId}' nupkg found in '{packageOutputDirectory}'.");
 
-        var fileName = Path.GetFileNameWithoutExtension(nupkg);
-        return fileName[prefix.Length..];
+        return package.Identity.Version;
+    }
+
+    private static (string Id, string Version) ReadPackageIdentity(string packagePath)
+    {
+        using var archive = ZipFile.OpenRead(packagePath);
+        var nuspec = archive.Entries.SingleOrDefault(static entry =>
+            entry.FullName.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidDataException($"Package '{packagePath}' does not contain a nuspec.");
+        using var stream = nuspec.Open();
+        var document = XDocument.Load(stream);
+        var packageNamespace = document.Root?.Name.Namespace ?? XNamespace.None;
+        var metadata = document.Root?.Element(packageNamespace + "metadata")
+            ?? throw new InvalidDataException($"Package '{packagePath}' does not contain nuspec metadata.");
+        var id = metadata.Element(packageNamespace + "id")?.Value;
+        var version = metadata.Element(packageNamespace + "version")?.Value;
+
+        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(version))
+            throw new InvalidDataException($"Package '{packagePath}' does not declare an id and version.");
+
+        return (id, version);
     }
 
     private static string GetPackagePath(string packageOutputDirectory, string packageVersion)
@@ -8760,7 +8699,8 @@ public sealed class SdkIntegrationTests
         string PackageOutputDirectory,
         string PackagePath,
         string VuePackagePath,
-        string DenoHostRuntimePath);
+        string DenoHostRuntimePath,
+        PackageBuildWorkspace BuildWorkspace);
 
     private sealed record LocalPackageFixture(
         string RepoRoot,
@@ -8778,7 +8718,8 @@ public sealed class SdkIntegrationTests
     private sealed record LocalReleasePackageFixture(
         string RepoRoot,
         string PackageVersion,
-        string PackageOutputDirectory);
+        string PackageOutputDirectory,
+        PackageBuildWorkspace BuildWorkspace);
 
     private sealed record LocalReleaseBrowserPackageFixture(
         string RepoRoot,
@@ -8790,6 +8731,71 @@ public sealed class SdkIntegrationTests
         string PackageVersion,
         string PackageOutputDirectory,
         string StylePackagePath);
+
+    private sealed class PackageBuildWorkspace
+    {
+        private readonly SemaphoreSlim _packGate = new(1, 1);
+
+        public PackageBuildWorkspace(
+            string repoRoot,
+            string configuration,
+            string packageVersion,
+            string purpose)
+        {
+            RepoRoot = repoRoot;
+            Configuration = configuration;
+            PackageVersion = packageVersion;
+            RestorePackagesPath = CreateFixtureDirectory(repoRoot, purpose + "-restore-packages");
+            OutputRoot = CreateFixtureDirectory(repoRoot, purpose + "-package-out");
+            IntermediateRoot = CreateFixtureDirectory(repoRoot, purpose + "-package-obj");
+        }
+
+        public string RepoRoot { get; }
+
+        public string Configuration { get; }
+
+        public string PackageVersion { get; }
+
+        public string RestorePackagesPath { get; }
+
+        public string OutputRoot { get; }
+
+        public string IntermediateRoot { get; }
+
+        public async Task<ProcessResult> PackAsync(string projectName, string packageOutputDirectory)
+        {
+            await _packGate.WaitAsync();
+            try
+            {
+                // 同一配置的 package fixture 共享 restore/bin/obj。串行增量 pack 比多个隔离构建
+                // 同时重复编译整张 ProjectReference 图更快，也避免跨进程争抢同一输出文件。
+                return await RunDotNetAsync(
+                    RepoRoot,
+                    [
+                        "pack",
+                        Path.Combine(RepoRoot, "src", projectName, projectName + ".csproj"),
+                        "-c",
+                        Configuration,
+                        "-o",
+                        packageOutputDirectory,
+                        "/m:1",
+                        "/p:BuildInParallel=false",
+                        $"-p:PackageVersion={PackageVersion}",
+                        $"-p:JazorPackageVersion={PackageVersion}",
+                        $"-p:RestorePackagesPath={RestorePackagesPath}",
+                        $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(RestorePackagesPath)}",
+                        $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(OutputRoot)}",
+                        $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(IntermediateRoot)}",
+                        "/nr:false",
+                        "-p:UseSharedCompilation=false"
+                    ]);
+            }
+            finally
+            {
+                _packGate.Release();
+            }
+        }
+    }
 
     private sealed class TestWorkspace : IDisposable
     {

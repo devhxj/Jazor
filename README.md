@@ -193,7 +193,8 @@ Focused suites include:
 ```bash
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 ```
 
 Repository automation uses single-file C# entry points under `scripts/csharp/`. See [Development and Testing](docs/03-guides/development-and-testing.md) for the full workflow.

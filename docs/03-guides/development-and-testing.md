@@ -20,12 +20,22 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | --- | --- |
 | 编译器 | `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` |
 | Razor-to-Vue 集成 | `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` |
-| Emit 与 bundle | `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj` |
+| Emit 与 bundle 快速回归 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit` |
+| Emit 完整 package consumer | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer` |
 | CLR 映射 | `dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj` |
 | Vue Devtools binding | `dotnet test src/ECMAScript.Vue.Devtools.Test/ECMAScript.Vue.Devtools.Test.csproj` |
 | Vue Data UI binding | `dotnet test src/ECMAScript.VueDataUi.Test/ECMAScript.VueDataUi.Test.csproj` |
 | Lucide binding | `dotnet test src/ECMAScript.Lucide.Test/ECMAScript.Lucide.Test.csproj` |
 | 单个编译器类别 | `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` |
+
+`emit-consumer` 包含 48 个真实打包、SDK、Deno 与浏览器场景。日常修改应按 fixture 家族选择对应 lane；CI 也以同样的四条 lane 并行执行，避免一个测试进程串行占用全部门禁时间：
+
+```bash
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-packages
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-style
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-core
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-release
+```
 
 并行运行多个 `dotnet test` lane 时，应使用独立 `BaseOutputPath`；聚焦回归构建成功后优先使用 `--no-build`。测试创建的临时目录、端口、管道和进程标识必须隔离并在结束时清理。
 

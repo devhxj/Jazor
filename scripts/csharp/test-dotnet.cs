@@ -106,6 +106,10 @@ var testTargets = options.Project switch
     "razor-sg" => new[] { razorSgTestProject },
     "emit" => new[] { emitTestProject },
     "emit-consumer" => new[] { emitTestProject },
+    "emit-consumer-packages" => new[] { emitTestProject },
+    "emit-consumer-style" => new[] { emitTestProject },
+    "emit-consumer-core" => new[] { emitTestProject },
+    "emit-consumer-release" => new[] { emitTestProject },
     _ => new[]
     {
         compilerTestProject,
@@ -169,9 +173,15 @@ static string GetTestFilter(ScriptArguments options, string testProject, string 
     if (!string.Equals(testProject, emitTestProject, StringComparison.OrdinalIgnoreCase))
         return options.Filter;
 
-    var categoryFilter = options.Project == "emit-consumer"
-        ? "TestCategory=Consumer"
-        : "TestCategory!=Consumer";
+    var categoryFilter = options.Project switch
+    {
+        "emit-consumer" => "TestCategory=Consumer",
+        "emit-consumer-packages" => "TestCategory=Consumer.Packages",
+        "emit-consumer-style" => "TestCategory=Consumer.Style",
+        "emit-consumer-core" => "TestCategory=Consumer.Core",
+        "emit-consumer-release" => "TestCategory=Consumer.Release",
+        _ => "TestCategory!=Consumer"
+    };
 
     return string.IsNullOrWhiteSpace(options.Filter)
         ? categoryFilter
@@ -241,7 +251,8 @@ internal sealed record ScriptArguments
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
             "all", "compiler", "clr", "style", "devtools", "dataui", "lucide", "pinia", "pinia-testing", "vueroute", "date-fns", "vueuse", "floating-ui", "vee-validate", "vue-i18n", "vue-query", "monaco", "vue-draggable", "file-pond", "wang-editor", "razor-sg",
-            "emit", "emit-consumer", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
+            "emit", "emit-consumer", "emit-consumer-packages", "emit-consumer-style", "emit-consumer-core", "emit-consumer-release",
+            "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
         if (!supported.Contains(normalized))
@@ -267,7 +278,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|razor-sg|emit|emit-consumer|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|razor-sg|emit|emit-consumer|emit-consumer-packages|emit-consumer-style|emit-consumer-core|emit-consumer-release|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

@@ -10,25 +10,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/Jazor.RazorVue/**'
-      - 'src/Jazor.Vue/**'
-      - 'src/Jazor.RazorVue.Sg.Test/**'
-      - 'src/Jazor.Emit/**'
-      - 'src/Jazor.EmitTest/**'
-      - 'src/Jazor.Analyzer/**'
-      - 'src/Jazor.Compiler/**'
-      - 'src/Jazor.Common/**'
-      - 'src/ECMAScript/**'
-      - 'src/ECMAScript.Vue/**'
-      - 'src/ECMAScript.VueContract/**'
-      - 'src/ECMAScript.VueRoute/**'
-      - 'src/ECMAScript.Vuetify/**'
-      - 'src/ECMAScript.TDesign/**'
-      - 'src/Jazor/**'
-      - 'src/Jazor.Admin/**'
+      - 'src/Jazor*/**'
+      - 'src/ECMAScript*/**'
       - 'samples/JazorAdmin/**'
       - 'samples/JazorAdmin.Test/**'
       - 'samples/Sample.slnx'
+      - 'scripts/csharp/test-dotnet.cs'
       - 'Jazor.slnx'
       - 'global.json'
       - 'Directory.Build.props'
@@ -36,25 +23,12 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'src/Jazor.RazorVue/**'
-      - 'src/Jazor.Vue/**'
-      - 'src/Jazor.RazorVue.Sg.Test/**'
-      - 'src/Jazor.Emit/**'
-      - 'src/Jazor.EmitTest/**'
-      - 'src/Jazor.Analyzer/**'
-      - 'src/Jazor.Compiler/**'
-      - 'src/Jazor.Common/**'
-      - 'src/ECMAScript/**'
-      - 'src/ECMAScript.Vue/**'
-      - 'src/ECMAScript.VueContract/**'
-      - 'src/ECMAScript.VueRoute/**'
-      - 'src/ECMAScript.Vuetify/**'
-      - 'src/ECMAScript.TDesign/**'
-      - 'src/Jazor/**'
-      - 'src/Jazor.Admin/**'
+      - 'src/Jazor*/**'
+      - 'src/ECMAScript*/**'
       - 'samples/JazorAdmin/**'
       - 'samples/JazorAdmin.Test/**'
       - 'samples/Sample.slnx'
+      - 'scripts/csharp/test-dotnet.cs'
       - 'Jazor.slnx'
       - 'global.json'
       - 'Directory.Build.props'
@@ -104,11 +78,27 @@ jobs:
         shell: pwsh
         run: dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --no-build -v minimal
 
-  emit-and-browser-smoke:
-    # Jazor.EmitTest contains SDK integration, package-payload guards, and
-    # end-to-end browser smoke coverage for the current RazorVue artifact contract.
-    name: Emit + SDK integration + browser smoke E2E
+  emit-consumer:
+    # Each lane owns one package fixture family. This keeps failures local and lets
+    # GitHub run package, core, style, and release/browser evidence concurrently.
+    name: ${{ matrix.name }}
     runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - name: Emit regression tests
+            project: emit
+          - name: Debug package consumers
+            project: emit-consumer-packages
+          - name: Style package consumers
+            project: emit-consumer-style
+          - name: Core SDK and RazorVue consumers
+            project: emit-consumer-core
+          - name: Release browser consumers
+            project: emit-consumer-release
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
@@ -124,14 +114,6 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Restore
+      - name: Run ${{ matrix.name }}
         shell: pwsh
-        run: dotnet restore Jazor.slnx
-
-      - name: Build
-        shell: pwsh
-        run: dotnet build Jazor.slnx --no-restore -v minimal
-
-      - name: Emit + SDK integration tests (includes browser smoke E2E)
-        shell: pwsh
-        run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-build -v minimal
+        run: dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project ${{ matrix.project }}
