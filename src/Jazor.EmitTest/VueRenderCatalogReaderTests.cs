@@ -393,6 +393,162 @@ public sealed class ModuleCatalogReaderTests
     }
 
     [TestMethod]
+    public void ModuleCollector_Collect_DeduplicatesExactIdentityAndPrefersNonRuntimeAsset()
+    {
+        const string referenceContent = "export const source = 'reference';";
+        const string runtimeContent = "export const source = 'runtime';";
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var hostAssemblyPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "host"),
+                "Canonical.Host",
+                "public static class Host { }");
+            var referenceAssemblyPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "lib", "net11.0"),
+                "Duplicate.Library",
+                CreateSingleModuleCatalogSource("Duplicate.Library", "duplicate/reference.mjs", referenceContent));
+            var runtimeAssemblyPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "runtimes", "win-x64", "lib", "net11.0"),
+                "Duplicate.Library",
+                CreateSingleModuleCatalogSource("Duplicate.Library", "duplicate/runtime.mjs", runtimeContent));
+
+            var collection = CollectCatalogClosure(hostAssemblyPath, runtimeAssemblyPath, referenceAssemblyPath);
+            WaitForUnload(collection.LoadContext);
+
+            Assert.IsTrue(collection.Result.IsSuccess, collection.Result.Error ?? string.Empty);
+            Assert.AreEqual(2, collection.Result.AssemblyCount);
+            var module = collection.Result.Modules.Single();
+            Assert.AreEqual("duplicate/reference.mjs", module.RelativePath);
+            Assert.AreEqual(referenceContent, module.Content);
+        }
+        finally
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ModuleCollector_Collect_PreservesDifferentIdentitiesWithTheSameFileName()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var hostAssemblyPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "host"),
+                "SameFile.Host",
+                "public static class Host { }");
+            var firstPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "first"),
+                "First.Identity",
+                "public static class First { }");
+            var secondPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "second"),
+                "Second.Identity",
+                "public static class Second { }");
+            var firstSharedPath = Path.Combine(Path.GetDirectoryName(firstPath)!, "shared.dll");
+            var secondSharedPath = Path.Combine(Path.GetDirectoryName(secondPath)!, "shared.dll");
+            File.Move(firstPath, firstSharedPath);
+            File.Move(secondPath, secondSharedPath);
+
+            var collection = CollectCatalogClosure(hostAssemblyPath, firstSharedPath, secondSharedPath);
+            WaitForUnload(collection.LoadContext);
+
+            Assert.IsTrue(collection.Result.IsSuccess, collection.Result.Error ?? string.Empty);
+            Assert.AreEqual(3, collection.Result.AssemblyCount);
+        }
+        finally
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ModuleCollector_Collect_IgnoresSatelliteResourceAssembliesAcrossCultures()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var hostAssemblyPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "host"),
+                "SatelliteResources.Host",
+                "public static class Host { }");
+            var frenchPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "fr"),
+                "Localized.Library.resources",
+                "[assembly: System.Reflection.AssemblyCulture(\"fr\")] public static class FrenchResources { }");
+            var germanPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "de"),
+                "Localized.Library.resources",
+                "[assembly: System.Reflection.AssemblyCulture(\"de\")] public static class GermanResources { }");
+
+            var collection = CollectCatalogClosure(hostAssemblyPath, frenchPath, germanPath);
+            WaitForUnload(collection.LoadContext);
+
+            Assert.IsTrue(collection.Result.IsSuccess, collection.Result.Error ?? string.Empty);
+            Assert.AreEqual(1, collection.Result.AssemblyCount);
+        }
+        finally
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ModuleCollector_Collect_ReportsConflictingIdentitiesForOneSimpleName()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var hostAssemblyPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "host"),
+                "VersionConflict.Host",
+                "public static class Host { }");
+            var firstPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "v1"),
+                "Versioned.Library",
+                "[assembly: System.Reflection.AssemblyVersion(\"1.0.0.0\")] public static class First { }");
+            var secondPath = CompileCatalogAssemblyToPath(
+                Path.Combine(root, "v2"),
+                "Versioned.Library",
+                "[assembly: System.Reflection.AssemblyVersion(\"2.0.0.0\")] public static class Second { }");
+
+            var collection = CollectCatalogClosure(hostAssemblyPath, firstPath, secondPath);
+            WaitForUnload(collection.LoadContext);
+
+            Assert.IsFalse(collection.Result.IsSuccess);
+            Assert.AreEqual(2, collection.Result.ExitCode);
+            StringAssert.Contains(collection.Result.Error!, "Versioned.Library");
+            StringAssert.Contains(collection.Result.Error!, "Version=1.0.0.0");
+            StringAssert.Contains(collection.Result.Error!, "Version=2.0.0.0");
+        }
+        finally
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ModuleWriter_Write_MaterializesHmrAndModuleCatalogMetadata()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
@@ -481,6 +637,34 @@ public sealed class ModuleCatalogReaderTests
             string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
         return assemblyPath;
     }
+
+    private static string CreateSingleModuleCatalogSource(string assemblyName, string relativePath, string content)
+        => """
+           namespace Jazor.Generated
+           {
+               internal static class ModuleCatalog
+               {
+                   internal const int SchemaVersion = 2;
+                   internal const string AssemblyName = "{{assemblyName}}";
+                   internal static System.Collections.IEnumerable GetModules() => new object[]
+                   {
+                       new Module("{{assemblyName}}.Module", "{{relativePath}}", {{content}}, {{hash}}, new string[0])
+                   };
+
+                   private sealed class Module
+                   {
+                       public Module(string id, string relativePath, string content, string hash, string[] dependencies)
+                       { Id = id; RelativePath = relativePath; Content = content; Hash = hash; Dependencies = dependencies; }
+                       public string Id { get; } public string TypeName => Id; public string RelativePath { get; }
+                       public string Content { get; } public string Hash { get; } public string[] Dependencies { get; }
+                   }
+               }
+           }
+           """
+            .Replace("{{assemblyName}}", assemblyName, StringComparison.Ordinal)
+            .Replace("{{relativePath}}", relativePath, StringComparison.Ordinal)
+            .Replace("{{content}}", EscapeCSharp(content), StringComparison.Ordinal)
+            .Replace("{{hash}}", EscapeCSharp(Sha256(content)), StringComparison.Ordinal);
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     private static (CollectResult Result, WeakReference LoadContext) CollectCatalogClosure(

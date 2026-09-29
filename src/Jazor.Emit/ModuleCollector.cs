@@ -29,11 +29,93 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             _rootAssemblyPaths.Add(Path.GetFullPath(assemblyPath));
     }
 
+    /// <summary>
+    /// NuGet can expose one managed identity through both <c>lib/</c> and
+    /// <c>runtimes/&lt;rid&gt;/</c>. An AssemblyLoadContext accepts only one assembly for a
+    /// simple name, so exact identity duplicates need one deterministic representative.
+    /// Explicit roots remain authoritative; otherwise prefer the non-runtime reference asset.
+    /// Satellite resource assemblies are not module carriers and are excluded before identity
+    /// comparison. Different neutral identities sharing a simple name are reported instead of
+    /// silently discarded.
+    /// </summary>
+    private bool TrySelectCanonicalAssemblyPaths(
+        string normalizedRootAssemblyPath,
+        out IReadOnlyList<string> selectedPaths,
+        out string? error)
+    {
+        var candidates = new List<AssemblyCandidate>();
+        foreach (var path in _assemblyPaths.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var assemblyName = AssemblyName.GetAssemblyName(path);
+                var simpleName = assemblyName.Name;
+                if (string.IsNullOrWhiteSpace(simpleName))
+                    throw new InvalidOperationException("The assembly does not declare a simple name.");
+
+                // Localized satellite assemblies intentionally reuse the *.resources simple name
+                // across cultures. They cannot contain the neutral ModuleCatalog contract and
+                // must not participate in AssemblyLoadContext identity selection.
+                if (!string.IsNullOrEmpty(assemblyName.CultureName))
+                    continue;
+
+                candidates.Add(new AssemblyCandidate(
+                    path,
+                    simpleName,
+                    assemblyName.FullName ?? simpleName));
+            }
+            catch (Exception exception)
+            {
+                selectedPaths = [];
+                error = $"Failed to inspect assembly identity for '{path}': {exception.Message}";
+                return false;
+            }
+        }
+
+        var selected = new List<string>();
+        foreach (var group in candidates
+                     .GroupBy(static candidate => candidate.SimpleName, StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var identities = group
+                .Select(static candidate => candidate.FullName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static identity => identity, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (identities.Length > 1)
+            {
+                selectedPaths = [];
+                error = $"Assembly simple name '{group.Key}' resolves to conflicting identities: " +
+                        string.Join(", ", identities) + ".";
+                return false;
+            }
+
+            selected.Add(group
+                .OrderByDescending(candidate => SamePath(candidate.Path, normalizedRootAssemblyPath))
+                .ThenByDescending(candidate => _rootAssemblyPaths.Contains(candidate.Path))
+                .ThenBy(static candidate => IsRuntimeAssetPath(candidate.Path))
+                .ThenBy(static candidate => candidate.Path, StringComparer.OrdinalIgnoreCase)
+                .First()
+                .Path);
+        }
+
+        selectedPaths = selected;
+        error = null;
+        return true;
+    }
+
+    private static bool IsRuntimeAssetPath(string path)
+        => path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Any(static segment => string.Equals(segment, "runtimes", StringComparison.OrdinalIgnoreCase));
+
     public CollectResult Collect(string rootAssemblyPath)
     {
         var normalizedRootAssemblyPath = Path.GetFullPath(rootAssemblyPath);
+        if (!TrySelectCanonicalAssemblyPaths(normalizedRootAssemblyPath, out var assemblyPaths, out var selectionError))
+            return CollectResult.Fail(2, selectionError!);
+
         var assemblies = new List<Assembly>();
-        foreach (var assemblyPath in _assemblyPaths.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
+        foreach (var assemblyPath in assemblyPaths)
         {
             try
             {
@@ -230,6 +312,8 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 
     private static bool SamePath(string left, string right)
         => string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
+
+    private sealed record AssemblyCandidate(string Path, string SimpleName, string FullName);
 
     private static bool HasSameContent(ModuleRecord left, ModuleRecord right)
         => StringComparer.Ordinal.Equals(left.Content, right.Content) &&
