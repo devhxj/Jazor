@@ -118,6 +118,9 @@ public sealed class JazorViteProxyTests
             StringAssert.Contains(transformed, "import.meta.hot");
             StringAssert.Contains(transformed, "/docs/jazor/@vite/client");
             Assert.IsNotNull(response.Headers.ETag);
+            Assert.AreEqual("strict-origin-when-cross-origin", response.Headers.GetValues("Referrer-Policy").Single());
+            Assert.AreEqual("nosniff", response.Headers.GetValues("X-Content-Type-Options").Single());
+            Assert.AreEqual("DENY", response.Headers.GetValues("X-Frame-Options").Single());
 
             var raw = await http.GetStringAsync("/docs/jazor/query-probe.txt?raw&import", timeout.Token);
             StringAssert.Contains(raw, "export default");

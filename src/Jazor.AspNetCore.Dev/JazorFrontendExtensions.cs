@@ -73,13 +73,6 @@ public static class JazorFrontendExtensions
         properties[FrontendRegisteredKey] = true;
 
         var options = app.Services.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseWebSockets();
-            app.Map(options.RequestPath, branch =>
-                branch.Run(context => JazorViteProxy.ForwardAsync(context, options)));
-        }
-
         app.UseJazorHost(hostOptions =>
         {
             hostOptions.Assets.ServeArtifacts = !app.Environment.IsDevelopment();
@@ -103,6 +96,16 @@ public static class JazorFrontendExtensions
                 configureArtifacts?.Invoke(artifactOptions);
             };
         });
+
+        if (app.Environment.IsDevelopment())
+        {
+            // Keep the proxy behind the shared host pipeline so development responses receive
+            // the same configured security headers as release assets and application routes.
+            app.UseWebSockets();
+            app.Map(options.RequestPath, branch =>
+                branch.Run(context => JazorViteProxy.ForwardAsync(context, options)));
+        }
+
         return app;
     }
 
