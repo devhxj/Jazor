@@ -345,7 +345,7 @@ DenoHost 的工作目录是 `jazor/`，使用 Emit 已恢复的 `node_modules` �
 | `JazorAspNetCoreReloadTests.WriteHmrManifestAsync:636` | 注释称 "Emit publishes manifests from a transaction directory"，用临时文件 + `File.Move` 重试模拟原子替换 | 改为就地单文件 temp+rename；删除原子替换措辞 |
 | `ToolchainTests.TryParse_*:14`、`BuildAsync_MissingArtifactRoot_ReturnsTypedContractDiagnostic:748` | 四根 CLI（`--artifacts`/`--out-root`/`--source-root`） | 收敛为单项目根 |
 | `LegacyRazorVueContractRetirementTests.SdkTargets_InvokeSingleEmitContractForDebugAndRelease:70` | 钉住 targets 的 flag 列表 | 随 `--clean` 移除同步更新 |
-| `SampleGeneratedArtifactLayoutTests.CheckedInSampleManifests_UsePortableRootIdentityAndExistingArtifacts:16` | 钉住三个已入库 `samples/**/jazor/` 根 | 重新生成或将测试改指新布局 |
+| 动态 manifest 与 source map 契约测试 | 运行时生成的 `obj/jazor-manifest.json`、模块与 source map | 保留 `SdkIntegrationTests` / `StaticModuleSourceMapTests` 动态覆盖；不再提交 sample `jazor/` 生成快照 |
 
 ##### 为什么退役而不是继续维护（现状证据）
 
