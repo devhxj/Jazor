@@ -1,6 +1,5 @@
-// Emit integration tests launch build tools, Deno workers, and browser processes.
-// Running methods from one fixture concurrently lets independent tests rebuild the
-// same repository outputs and can leave testhost waiting on a locked assembly.
-// Keep classes parallel for throughput, but serialize methods within each fixture
-// so a package/build fixture owns its process and temporary-output lifetime.
-[assembly: Parallelize(Scope = ExecutionScope.ClassLevel)]
+// Emit integration tests own isolated workspaces and run child builds with /m:1.
+// Method-level scheduling lets package inspection, consumer builds, Deno, and browser
+// scenarios overlap without creating an unbounded process fan-out. SdkIntegrationTests
+// applies the same four-process limit to child dotnet invocations.
+[assembly: Parallelize(Scope = ExecutionScope.MethodLevel, Workers = 4)]

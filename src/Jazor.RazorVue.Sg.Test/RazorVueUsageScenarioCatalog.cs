@@ -919,7 +919,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.Support,
             "Jazor.CLR.Generator + Jazor.CLR module/doc + Jazor.Compiler.Generator + Jazor.Vue packaging",
             null,
-            "BlazorClrGeneratorOutputTests; BlazorClrWhitelistTests; BlazorClrMappingTests; ProductionRazorCompilerReferenceTests; Jazor.EmitTest.SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary",
+            "BlazorClrGeneratorOutputTests; BlazorClrWhitelistTests; BlazorClrMappingTests; ProductionRazorCompilerReferenceTests; Jazor.EmitTest.SdkIntegrationTests.Build_LocalReleasePackage_CoreConsumer_ExcludesBlazorAndVuePackages; Jazor.EmitTest.SdkIntegrationTests.Build_LocalReleasePackage_VueConsumer_IncludesRazorVueWithoutBlazorAssembly",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.PackageConsumer,

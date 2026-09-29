@@ -13,10 +13,12 @@ namespace Jazor.EmitTest;
 [TestCategory("Consumer")]
 public sealed class SdkIntegrationTests
 {
+    private static readonly Lazy<Task<LocalCorePackageFixture>> LocalCorePackage = new(CreateLocalCorePackageAsync);
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
     private static readonly Lazy<Task<LocalReleasePackageFixture>> LocalReleasePackage = new(CreateLocalReleasePackageAsync);
+    private static readonly Lazy<Task<LocalReleaseBrowserPackageFixture>> LocalReleaseBrowserPackage = new(CreateLocalReleaseBrowserPackageAsync);
     private static readonly Lazy<Task<LocalStylePackageFixture>> LocalStylePackage = new(CreateLocalStylePackageAsync);
-    private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
+    private static readonly SemaphoreSlim DotNetProcessGate = new(4, 4);
 
     [TestMethod]
     public async Task CreateLocalPackage_SeparatesDirectToolingFromTransitiveResourceLocators()
@@ -208,28 +210,15 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary()
+    public async Task Build_LocalReleasePackage_CoreConsumer_ExcludesBlazorAndVuePackages()
     {
         var package = await LocalReleasePackage.Value;
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var commonArguments = new[]
-        {
-            "-c",
-            "Release",
-            "-t:Rebuild",
-            "/m:1",
-            "/p:BuildInParallel=false",
-            $"-p:RestoreSources={package.PackageOutputDirectory}",
-            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={package.RestorePackagesPath}",
-            $"-p:JazorPackageVersion={package.PackageVersion}"
-        };
-
         var coreRoot = Path.Combine(workspace.RootPath, "ReleaseCorePackageConsumer");
         var coreProject = CreateReleaseCorePackageConsumerProject(coreRoot);
-        var coreBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var coreBuild = await RunDotNetAsync(
             package.RepoRoot,
-            ["build", coreProject, .. commonArguments]);
+            ["build", coreProject, .. GetReleaseConsumerBuildArguments(package, workspace.RestorePackagesPath)]);
         Assert.AreEqual(0, coreBuild.ExitCode, coreBuild.ToString());
 
         var coreAssets = ReadProjectAssetsText(coreRoot);
@@ -241,12 +230,18 @@ public sealed class SdkIntegrationTests
             Directory.Exists(coreOutput) &&
             Directory.EnumerateFiles(coreOutput, "ECMAScript.Blazor.dll", SearchOption.AllDirectories).Any(),
             "The core Jazor package consumer must not copy ECMAScript.Blazor.");
+    }
 
+    [TestMethod]
+    public async Task Build_LocalReleasePackage_VueConsumer_IncludesRazorVueWithoutBlazorAssembly()
+    {
+        var package = await LocalReleasePackage.Value;
+        using var workspace = new TestWorkspace(package.RepoRoot);
         var vueRoot = Path.Combine(workspace.RootPath, "ReleaseVuePackageConsumer");
         var vueProject = CreateReleaseVuePackageConsumerProject(vueRoot);
-        var vueBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var vueBuild = await RunDotNetAsync(
             package.RepoRoot,
-            ["build", vueProject, .. commonArguments]);
+            ["build", vueProject, .. GetReleaseConsumerBuildArguments(package, workspace.RestorePackagesPath)]);
         Assert.AreEqual(0, vueBuild.ExitCode, vueBuild.ToString());
 
         var vueAssets = ReadProjectAssetsText(vueRoot);
@@ -567,7 +562,7 @@ public sealed class SdkIntegrationTests
             "/p:BuildInParallel=false",
             $"-p:RestoreSources={package.PackageOutputDirectory}",
             "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+            $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
             $"-p:JazorPackageVersion={package.PackageVersion}"
         };
 
@@ -625,12 +620,12 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_MultiProjectSample_ReleasePreservesNamedExports()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
         CopyDirectory(sourceSampleRoot, workspace.SampleRoot);
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
 
         var hostProjectPath = Path.Combine(workspace.SampleRoot, "Sample.Host", "Sample.Host.csproj");
         var build = await RunDotNetAsync(
@@ -677,7 +672,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_ReleaseWithSsrEnabled_MaterializesRawModuleGraph()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "SsrReleaseSdkSample");
@@ -692,7 +687,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release",
                 "-p:JazorSSR=true"
@@ -726,7 +721,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Publish_LocalJazorPackage_WebSdkHost_ReleaseWithSsrEnabled_CopiesRawModuleGraph()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "SsrPublishSdkSample");
@@ -745,7 +740,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release",
                 "-p:JazorSSR=true"
@@ -775,14 +770,14 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_SingleProjectWrapperApis_EmitsMinimalRuntimeImports()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
         CopyDirectory(sourceSampleRoot, workspace.SampleRoot);
 
         var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
 
         var wwwroot = Path.Combine(hostRoot, "wwwroot");
         if (Directory.Exists(wwwroot))
@@ -902,7 +897,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_StoredIndexAndRange_ExecutesMaterializedRuntimeOnDenoHost()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
@@ -1014,7 +1009,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -1103,7 +1098,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_QuerySyntaxWithCapturedLambda_ExecutesOnDenoHost()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var sourceSampleRoot = Path.Combine(package.RepoRoot, "samples", "Jazor.MultiProject");
@@ -1303,7 +1298,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -1491,11 +1486,11 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_StaticHost_UsesProjectJazorByDefault()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "StaticHostDefaultBuildSample");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
 
         var build = await RunDotNetAsync(
@@ -1527,7 +1522,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_ClassLibraryWithGlobalEmitMode_OnlyCarriesModuleCatalog()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "CatalogOnlyClassLibrary");
@@ -1574,7 +1569,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=debug"
             ]);
@@ -1592,7 +1587,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_IndirectNuGetReferenceDoesNotActivateTooling()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var feedRoot = Path.Combine(workspace.RootPath, "feed");
@@ -1649,7 +1644,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={feedRoot}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:PackageVersion=1.0.0"
             ]);
@@ -1697,7 +1692,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={feedRoot}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -1724,7 +1719,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_DirectVueAndCoreReferencesRespectToolingBoundary()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var feedRoot = Path.Combine(workspace.RootPath, "feed");
@@ -1739,7 +1734,7 @@ public sealed class SdkIntegrationTests
             "/p:BuildInParallel=false",
             $"-p:RestoreSources={feedRoot}",
             "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+            $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
             $"-p:JazorPackageVersion={package.PackageVersion}"
         };
 
@@ -1936,7 +1931,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_ProjectReferenceChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var providerRoot = Path.Combine(workspace.RootPath, "ProviderLibrary");
@@ -2059,7 +2054,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=debug"
             ]);
@@ -2092,7 +2087,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalJazorPackage_NuGetLibraryChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var feedRoot = Path.Combine(workspace.RootPath, "feed");
@@ -2151,7 +2146,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={feedRoot}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:PackageVersion=1.0.0"
             ]);
@@ -2207,7 +2202,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={feedRoot}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 "-p:PackageVersion=1.0.0"
             ]);
         Assert.AreEqual(0, packIntermediary.ExitCode, packIntermediary.ToString());
@@ -2273,7 +2268,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={feedRoot}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=debug"
             ]);
@@ -2301,11 +2296,11 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Publish_LocalJazorPackage_StaticHost_UsesProjectAndPublishJazorByDefault()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "StaticHostDefaultPublishSample");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
 
         var publish = await RunDotNetAsync(
@@ -2343,12 +2338,12 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Publish_LocalJazorPackage_WebSdkHost_MaterializesJazorAssetsIntoPublishOutput()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "WebSdkPublishSample");
         var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var projectPath = CreateDefaultOutputWebHostProject(projectRoot);
 
         var publish = await RunDotNetAsync(
@@ -2398,7 +2393,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "VueRouteSdkSample");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "VueRouteSdkSample.csproj"),
@@ -2515,7 +2510,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "VueRouteReactiveSdkSample");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "VueRouteReactiveSdkSample.csproj"),
@@ -2670,7 +2665,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "VueRouteReactiveBundleSdkSample");
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
 
         WriteFile(
             Path.Combine(projectRoot, "VueRouteReactiveBundleSdkSample.csproj"),
@@ -2823,12 +2818,12 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgG0Consumer_ReconcilesFinalDocumentsAcrossIncrementalBuilds()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgG0Consumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var commonArguments = new[]
         {
             "/m:1",
@@ -2839,12 +2834,12 @@ public sealed class SdkIntegrationTests
             $"-p:JazorPackageVersion={package.PackageVersion}"
         };
 
-        var restore = await RunSourceReferencedRazorVueBuildAsync(
+        var restore = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["restore", projectPath, .. commonArguments]);
         Assert.AreEqual(0, restore.ExitCode, restore.ToString());
 
-        var firstBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var firstBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "--no-restore", .. commonArguments]);
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
@@ -2857,7 +2852,7 @@ public sealed class SdkIntegrationTests
             firstCounterModule.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
             "The generated Vue module must not contain the external consumer's absolute path.");
 
-        var incrementalBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var incrementalBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "--no-restore", .. commonArguments]);
         Assert.AreEqual(0, incrementalBuild.ExitCode, incrementalBuild.ToString());
@@ -2877,7 +2872,7 @@ public sealed class SdkIntegrationTests
             }
             """);
 
-        var changedBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var changedBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "--no-restore", .. commonArguments]);
         Assert.AreEqual(0, changedBuild.ExitCode, changedBuild.ToString());
@@ -2891,13 +2886,13 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_EmitsVueRenderArtifactsAndManifest()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgEmitConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = package.RestorePackagesPath;
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var restorePackagesPath = workspace.RestorePackagesPath;
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -2975,7 +2970,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_RazorAuthoringError_DoesNotAddSecondaryRazorVueDiagnostic()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgInvalidBindingConsumer");
@@ -3009,7 +3004,7 @@ public sealed class SdkIntegrationTests
             }
             """);
 
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3019,7 +3014,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -3031,7 +3026,7 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnDenoHost()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDenoConsumer");
@@ -3127,7 +3122,7 @@ public sealed class SdkIntegrationTests
                 public EventCallback<string> ValueChanged { get; set; }
             }
             """);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3137,7 +3132,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}"
             ]);
 
@@ -3326,15 +3321,15 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_BuildsStandardProjectInConfiguredDirectory()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgProjectConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
 
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var bundleRoot = Path.Combine(projectRoot, "frontend");
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3378,12 +3373,12 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_CleanBuildsVueRenderArtifactsByteForByte()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDeterministicConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var commonArguments = new[]
         {
             "/m:1",
@@ -3394,7 +3389,7 @@ public sealed class SdkIntegrationTests
             $"-p:JazorPackageVersion={package.PackageVersion}"
         };
 
-        var firstBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var firstBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "-t:Rebuild", .. commonArguments]);
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
@@ -3433,7 +3428,7 @@ public sealed class SdkIntegrationTests
 
         Directory.Delete(outputRoot, recursive: true);
 
-        var secondBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var secondBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "-t:Rebuild", .. commonArguments]);
         Assert.AreEqual(0, secondBuild.ExitCode, secondBuild.ToString());
@@ -3449,12 +3444,12 @@ public sealed class SdkIntegrationTests
     [TestMethod]
     public async Task Build_LocalPackages_WithExternalRazorSgConsumer_CleanEmitRemovesDeletedComponentArtifacts()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDeletedComponentConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = package.RestorePackagesPath;
+        var restorePackagesPath = workspace.RestorePackagesPath;
         var commonArguments = new[]
         {
             "/m:1",
@@ -3465,7 +3460,7 @@ public sealed class SdkIntegrationTests
             $"-p:JazorPackageVersion={package.PackageVersion}"
         };
 
-        var firstBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var firstBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "-t:Rebuild", .. commonArguments]);
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
@@ -3484,7 +3479,7 @@ public sealed class SdkIntegrationTests
         File.Delete(Path.Combine(projectRoot, "Counter.razor"));
         File.Delete(Path.Combine(projectRoot, "Counter.razor.cs"));
 
-        var secondBuild = await RunSourceReferencedRazorVueBuildAsync(
+        var secondBuild = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             ["build", projectPath, "--no-restore", .. commonArguments]);
         Assert.AreEqual(0, secondBuild.ExitCode, secondBuild.ToString());
@@ -3519,13 +3514,13 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgBrowserCounterConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = package.RestorePackagesPath;
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var restorePackagesPath = workspace.RestorePackagesPath;
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3559,7 +3554,7 @@ public sealed class SdkIntegrationTests
               rolldownOptions: { input: 'client-entry.mjs', output: { entryFileNames: 'client-entry.js' } }
             }});
             """);
-        var bundle = await RunDenoAsync(package, harnessJazorRoot, ["task", "build"], TimeSpan.FromMinutes(2));
+        var bundle = await RunDenoAsync(package.DenoHostRuntimePath, harnessJazorRoot, ["task", "build"], TimeSpan.FromMinutes(2));
         Assert.AreEqual(0, bundle.ExitCode, bundle.ToString());
         var indexPath = Path.Combine(harnessJazorRoot, "index.html");
         var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath);
@@ -3594,12 +3589,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalNativeTDesignReleaseConsumer");
         var projectPath = CreateExternalNativeTDesignRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3611,7 +3606,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -3676,17 +3671,17 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalNativeElementPlusReleaseConsumer");
         var projectPath = CreateExternalNativeElementPlusRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build", projectPath, "-c", "Release", "-t:Rebuild", "/m:1", "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}", "-p:JazorMode=release"
             ]);
 
@@ -3729,12 +3724,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalElementReferenceReleaseConsumer");
         var projectPath = CreateExternalElementReferenceRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3746,7 +3741,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -3817,12 +3812,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalCoreDomEventsReleaseConsumer");
         var projectPath = CreateExternalCoreDomEventsRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3834,7 +3829,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -3927,12 +3922,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalFrameworkPrimitivesReleaseConsumer");
         var projectPath = CreateExternalFrameworkPrimitivesRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -3944,7 +3939,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -4040,12 +4035,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalNavigationLocationChangingReleaseConsumer");
         var projectPath = CreateExternalNavigationLocationChangingRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -4057,7 +4052,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -4148,12 +4143,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalComplexLifecycleReleaseConsumer");
         var projectPath = CreateExternalComplexLifecycleRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -4165,7 +4160,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -4248,12 +4243,12 @@ public sealed class SdkIntegrationTests
             return;
         }
 
-        var package = await LocalReleasePackage.Value;
+        var package = await LocalReleaseBrowserPackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalExtendedDomEventsReleaseConsumer");
         var projectPath = CreateExternalExtendedDomEventsRazorConsumerProject(projectRoot);
-        var build = await RunSourceReferencedRazorVueBuildAsync(
+        var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
             [
                 "build",
@@ -4265,7 +4260,7 @@ public sealed class SdkIntegrationTests
                 "/p:BuildInParallel=false",
                 $"-p:RestoreSources={package.PackageOutputDirectory}",
                 "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
                 $"-p:JazorPackageVersion={package.PackageVersion}",
                 "-p:JazorMode=release"
             ]);
@@ -4372,133 +4367,93 @@ public sealed class SdkIntegrationTests
             repoRoot,
             packageVersion,
             packageOutputDirectory,
-            restorePackagesPath,
             GetPackagePath(packageOutputDirectory, "ECMAScript.Style", packageVersion));
     }
 
-    private static async Task<LocalReleasePackageFixture> CreateLocalReleasePackageAsync()
+    private static string CreateFixtureDirectory(string repoRoot, string purpose)
     {
-        var repoRoot = FindRepoRoot();
-        var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-nupkg", Guid.NewGuid().ToString("N"));
-        var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-restore-packages", Guid.NewGuid().ToString("N"));
-        var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-package-out", Guid.NewGuid().ToString("N"));
-        var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-package-obj", Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", purpose, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
 
-        Directory.CreateDirectory(packageOutputDirectory);
-        Directory.CreateDirectory(restorePackagesPath);
+    private static async Task PackReleaseProjectAsync(
+        string repoRoot,
+        string projectName,
+        string packageVersion,
+        string packageOutputDirectory,
+        string fixturePurpose)
+    {
+        var restorePackagesPath = CreateFixtureDirectory(repoRoot, fixturePurpose + "-restore-packages");
+        var packageBuildOutputRoot = CreateFixtureDirectory(repoRoot, fixturePurpose + "-package-out");
+        var packageBuildIntermediateRoot = CreateFixtureDirectory(repoRoot, fixturePurpose + "-package-obj");
+        var arguments = new List<string>
+        {
+            "pack",
+            Path.Combine(repoRoot, "src", projectName, projectName + ".csproj"),
+            "-c",
+            "Release",
+            "-o",
+            packageOutputDirectory,
+            "/m:1",
+            "/p:BuildInParallel=false",
+            $"-p:RestorePackagesPath={restorePackagesPath}",
+            $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+            $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+            $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+            "/nr:false",
+            "-p:UseSharedCompilation=false",
+            $"-p:PackageVersion={packageVersion}",
+            $"-p:JazorPackageVersion={packageVersion}"
+        };
 
-        await RunDotNetAndAssertAsync(
+        await RunDotNetAndAssertAsync(repoRoot, arguments);
+    }
+
+    private static async Task<string> ResolvePackageVersionAsync(string repoRoot)
+    {
+        var result = await RunDotNetAsync(
             repoRoot,
             [
-                "pack",
+                "msbuild",
                 Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
-                "-c",
-                "Release",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
+                "-t:MinVer",
+                "-getProperty:PackageVersion",
+                "-nologo",
+                "/nr:false"
             ]);
+        Assert.AreEqual(0, result.ExitCode, result.ToString());
 
-        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
-                "-c",
-                "Release",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:JazorPackageVersion={packageVersion}",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
+        var output = result.StandardOutput.Trim();
+        string? packageVersion;
+        if (output.StartsWith('{'))
+        {
+            using var document = JsonDocument.Parse(output);
+            packageVersion = document.RootElement
+                .GetProperty("Properties")
+                .GetProperty("PackageVersion")
+                .GetString();
+        }
+        else
+        {
+            packageVersion = output;
+        }
 
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
-                "-c",
-                "Release",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:JazorPackageVersion={packageVersion}",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
+        return !string.IsNullOrWhiteSpace(packageVersion)
+            ? packageVersion
+            : throw new InvalidOperationException("MinVer did not return PackageVersion.");
+    }
 
-        // Every external native binding consumer in this fixture restores from the
-        // same isolated feed. Keep Element Plus in the release package lane as well;
-        // otherwise the consumer test silently depends on a published version and
-        // fails whenever the checkout's computed package version is newer.
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
-                "-c",
-                "Release",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:JazorPackageVersion={packageVersion}",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
+    private static void CopyPackageFeed(string sourceDirectory, string destinationDirectory)
+    {
+        foreach (var sourcePath in Directory.EnumerateFiles(sourceDirectory, "*.nupkg", SearchOption.TopDirectoryOnly))
+        {
+            File.Copy(sourcePath, Path.Combine(destinationDirectory, Path.GetFileName(sourcePath)));
+        }
+    }
 
-        await RunDotNetAndAssertAsync(
-            repoRoot,
-            [
-                "pack",
-                Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus", "ECMAScript.ElementPlus.csproj"),
-                "-c",
-                "Release",
-                "-o",
-                packageOutputDirectory,
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:PackageVersion={packageVersion}",
-                $"-p:JazorPackageVersion={packageVersion}",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
-                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
-                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
-                "/nr:false",
-                "-p:UseSharedCompilation=false"
-            ]);
-
-        var jazorPackagePath = GetPackagePath(packageOutputDirectory, packageVersion);
-        var vuePackagePath = GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion);
-        var tdesignPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion);
-        var elementPlusPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", packageVersion);
+    private static void AssertReleaseCorePackages(string jazorPackagePath, string vuePackagePath)
+    {
         AssertPackageEntries(
             jazorPackagePath,
             "lib/net11.0/ECMAScript.dll",
@@ -4512,6 +4467,44 @@ public sealed class SdkIntegrationTests
             vuePackagePath,
             "lib/net11.0/ECMAScript.Blazor.dll",
             "lib/net11.0/ECMAScript.Blazor.pdb");
+    }
+
+    private static async Task<LocalReleasePackageFixture> CreateLocalReleasePackageAsync()
+    {
+        var repoRoot = FindRepoRoot();
+        var packageOutputDirectory = CreateFixtureDirectory(repoRoot, "release-core-nupkg");
+        var packageVersion = await ResolvePackageVersionAsync(repoRoot);
+
+        await Task.WhenAll(
+            PackReleaseProjectAsync(repoRoot, "Jazor", packageVersion, packageOutputDirectory, "release-core-jazor"),
+            PackReleaseProjectAsync(repoRoot, "Jazor.Vue", packageVersion, packageOutputDirectory, "release-core-vue"));
+
+        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor"));
+        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor.Vue"));
+        var jazorPackagePath = GetPackagePath(packageOutputDirectory, packageVersion);
+        var vuePackagePath = GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion);
+        AssertReleaseCorePackages(jazorPackagePath, vuePackagePath);
+
+        return new LocalReleasePackageFixture(
+            repoRoot,
+            packageVersion,
+            packageOutputDirectory);
+    }
+
+    private static async Task<LocalReleaseBrowserPackageFixture> CreateLocalReleaseBrowserPackageAsync()
+    {
+        var core = await LocalReleasePackage.Value;
+        var packageOutputDirectory = CreateFixtureDirectory(core.RepoRoot, "release-browser-nupkg");
+
+        CopyPackageFeed(core.PackageOutputDirectory, packageOutputDirectory);
+
+        await Task.WhenAll(
+            PackReleaseProjectAsync(core.RepoRoot, "ECMAScript.TDesign", core.PackageVersion, packageOutputDirectory, "release-browser-tdesign"),
+            PackReleaseProjectAsync(core.RepoRoot, "ECMAScript.VueRoute", core.PackageVersion, packageOutputDirectory, "release-browser-vueroute"),
+            PackReleaseProjectAsync(core.RepoRoot, "ECMAScript.ElementPlus", core.PackageVersion, packageOutputDirectory, "release-browser-elementplus"));
+
+        var tdesignPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", core.PackageVersion);
+        var elementPlusPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", core.PackageVersion);
         AssertPackageEntries(
             tdesignPackagePath,
             "lib/net11.0/ECMAScript.TDesign.dll",
@@ -4521,40 +4514,131 @@ public sealed class SdkIntegrationTests
             "lib/net11.0/ECMAScript.ElementPlus.dll",
             "jazor/element-plus/manifest.json");
 
-        return new LocalReleasePackageFixture(
+        return new LocalReleaseBrowserPackageFixture(
+            core.RepoRoot,
+            core.PackageVersion,
+            packageOutputDirectory);
+    }
+
+    private static async Task<LocalCorePackageFixture> CreateLocalCorePackageAsync()
+    {
+        var repoRoot = FindRepoRoot();
+        var packageOutputDirectory = CreateFixtureDirectory(repoRoot, "debug-core-nupkg");
+        var packageVersion = await ResolvePackageVersionAsync(repoRoot);
+        var jazorOutputRoot = CreateFixtureDirectory(repoRoot, "debug-core-jazor-package-out");
+        var vueOutputRoot = CreateFixtureDirectory(repoRoot, "debug-core-vue-package-out");
+
+        var jazorPackTask = PackDebugProjectAsync(
+            repoRoot,
+            "Jazor",
+            packageVersion,
+            packageOutputDirectory,
+            "debug-core-jazor",
+            jazorOutputRoot);
+        var vuePackTask = PackDebugProjectAsync(
+            repoRoot,
+            "Jazor.Vue",
+            packageVersion,
+            packageOutputDirectory,
+            "debug-core-vue",
+            vueOutputRoot);
+        await Task.WhenAll(jazorPackTask, vuePackTask);
+
+        var jazorPack = await jazorPackTask;
+        var vuePack = await vuePackTask;
+        Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
+        Assert.IsFalse(
+            jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
+            "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
+        Assert.AreEqual(0, vuePack.ExitCode, vuePack.ToString());
+        AssertPackageArtifactOutputs(
+            jazorOutputRoot,
+            Path.Combine(jazorOutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish"));
+        Assert.IsTrue(
+            File.Exists(Path.Combine(vueOutputRoot, "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll")),
+            "Jazor.Vue package preparation did not build Jazor.RazorVue.");
+
+        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor"));
+        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor.Vue"));
+
+        return new LocalCorePackageFixture(
             repoRoot,
             packageVersion,
             packageOutputDirectory,
-            restorePackagesPath,
-            jazorPackagePath,
-            vuePackagePath,
-            tdesignPackagePath);
+            GetPackagePath(packageOutputDirectory, packageVersion),
+            GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
+            GetDenoHostRuntimePath());
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
     {
-        var repoRoot = FindRepoRoot();
-        var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
-        var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "restore-packages", Guid.NewGuid().ToString("N"));
-        var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-out", Guid.NewGuid().ToString("N"));
-        var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-obj", Guid.NewGuid().ToString("N"));
-        var emitPublishDirectory = Path.Combine(packageBuildOutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish");
+        var core = await LocalCorePackage.Value;
+        var packageOutputDirectory = CreateFixtureDirectory(core.RepoRoot, "debug-bindings-nupkg");
+        CopyPackageFeed(core.PackageOutputDirectory, packageOutputDirectory);
 
-        if (Directory.Exists(packageOutputDirectory))
-            Directory.Delete(packageOutputDirectory, recursive: true);
+        var packages = new[]
+        {
+            new DebugPackageProject("ECMAScript.Vuetify", "ECMAScript.Vuetify", "net11.0"),
+            new DebugPackageProject("ECMAScript.VueRoute", "ECMAScript.VueRoute", "net11.0"),
+            new DebugPackageProject("ECMAScript.Pinia", "ECMAScript.Pinia", "net11.0"),
+            new DebugPackageProject("ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing", "net11.0"),
+            new DebugPackageProject("ECMAScript.TDesign", "ECMAScript.TDesign", "net11.0"),
+            new DebugPackageProject("ECMAScript.ElementPlus", "ECMAScript.ElementPlus", "net11.0")
+        };
 
-        Directory.CreateDirectory(packageOutputDirectory);
-        Directory.CreateDirectory(restorePackagesPath);
+        await Task.WhenAll(packages.Select(async package =>
+        {
+            var outputRoot = CreateFixtureDirectory(core.RepoRoot, "debug-bindings-" + package.ProjectName.ToLowerInvariant() + "-package-out");
+            var result = await PackDebugProjectAsync(
+                core.RepoRoot,
+                package.ProjectName,
+                core.PackageVersion,
+                packageOutputDirectory,
+                "debug-bindings-" + package.ProjectName.ToLowerInvariant(),
+                outputRoot);
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+            Assert.IsTrue(
+                File.Exists(Path.Combine(outputRoot, package.OutputProjectName, "bin", "Debug", package.TargetFramework, package.OutputProjectName + ".dll")),
+                $"{package.ProjectName} package preparation did not build {package.OutputProjectName}.");
+        }));
 
-        var jazorPack = await RunDotNetAsync(
+        return new LocalPackageFixture(
+            core.RepoRoot,
+            core.PackageVersion,
+            packageOutputDirectory,
+            core.PackagePath,
+            core.VuePackagePath,
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", core.PackageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", core.PackageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", core.PackageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", core.PackageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", core.PackageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", core.PackageVersion));
+    }
+
+    private static Task<ProcessResult> PackDebugProjectAsync(
+        string repoRoot,
+        string projectName,
+        string packageVersion,
+        string packageOutputDirectory,
+        string fixturePurpose,
+        string packageBuildOutputRoot)
+    {
+        var restorePackagesPath = CreateFixtureDirectory(repoRoot, fixturePurpose + "-restore-packages");
+        var packageBuildIntermediateRoot = CreateFixtureDirectory(repoRoot, fixturePurpose + "-package-obj");
+        return RunDotNetAsync(
             repoRoot,
             [
                 "pack",
-                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+                Path.Combine(repoRoot, "src", projectName, projectName + ".csproj"),
                 "-c",
                 "Debug",
                 "-o",
                 packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:PackageVersion={packageVersion}",
+                $"-p:JazorPackageVersion={packageVersion}",
                 $"-p:RestorePackagesPath={restorePackagesPath}",
                 $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
                 $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
@@ -4562,84 +4646,6 @@ public sealed class SdkIntegrationTests
                 "/nr:false",
                 "-p:UseSharedCompilation=false"
             ]);
-        Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
-        Assert.IsFalse(
-            jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
-            "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
-        AssertPackageArtifactOutputs(packageBuildOutputRoot, emitPublishDirectory);
-        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
-
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
-            Path.Combine(packageBuildOutputRoot, "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net11.0", "ECMAScript.Vuetify.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.VueRoute", "bin", "Debug", "net11.0", "ECMAScript.VueRoute.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.Pinia", "bin", "Debug", "net11.0", "ECMAScript.Pinia.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.Pinia.Testing", "bin", "Debug", "net11.0", "ECMAScript.Pinia.Testing.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.TDesign", "bin", "Debug", "net11.0", "ECMAScript.TDesign.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-        await PackProjectAndAssertOutputAsync(
-            repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus", "ECMAScript.ElementPlus.csproj"),
-            Path.Combine(packageBuildOutputRoot, "ECMAScript.ElementPlus", "bin", "Debug", "net11.0", "ECMAScript.ElementPlus.dll"),
-            packageBuildOutputRoot,
-            packageBuildIntermediateRoot,
-            packageOutputDirectory,
-            packageVersion);
-
-        return new LocalPackageFixture(
-            repoRoot,
-            packageVersion,
-            packageOutputDirectory,
-            restorePackagesPath,
-            GetPackagePath(packageOutputDirectory, packageVersion),
-            GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", packageVersion),
-            GetDenoHostRuntimePath());
     }
 
     private static void AssertPackageEntries(string packagePath, params string[] expectedPaths)
@@ -4722,35 +4728,33 @@ public sealed class SdkIntegrationTests
             ? path
             : path + Path.DirectorySeparatorChar;
 
-    private static async Task<ProcessResult> RunSourceReferencedRazorVueBuildAsync(
+    private static Task<ProcessResult> RunIsolatedConsumerBuildAsync(
         string workingDirectory,
         IReadOnlyList<string> arguments)
-    {
-        await SourceReferencedRazorVueBuildGate.WaitAsync();
-        try
-        {
-            return await RunDotNetAsync(workingDirectory, arguments);
-        }
-        finally
-        {
-            SourceReferencedRazorVueBuildGate.Release();
-        }
-    }
+        => RunDotNetAsync(workingDirectory, arguments);
 
     private static async Task<ProcessResult> RunDotNetAsync(string workingDirectory, IReadOnlyList<string> arguments)
     {
-        ProcessResult? result = null;
-
-        for (var attempt = 0; attempt < 3; attempt++)
+        await DotNetProcessGate.WaitAsync();
+        try
         {
-            result = await RunDotNetOnceAsync(workingDirectory, arguments);
-            if (result.ExitCode == 0 || !IsTransientBuildRetryCandidate(result) || attempt == 2)
-                return result;
+            ProcessResult? result = null;
 
-            await Task.Delay(250);
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                result = await RunDotNetOnceAsync(workingDirectory, arguments);
+                if (result.ExitCode == 0 || !IsTransientBuildRetryCandidate(result) || attempt == 2)
+                    return result;
+
+                await Task.Delay(250);
+            }
+
+            return result ?? throw new InvalidOperationException("dotnet process did not produce a result.");
         }
-
-        return result ?? throw new InvalidOperationException("dotnet process did not produce a result.");
+        finally
+        {
+            DotNetProcessGate.Release();
+        }
     }
 
     private static async Task<ProcessResult> RunDotNetOnceAsync(string workingDirectory, IReadOnlyList<string> arguments)
@@ -8002,7 +8006,7 @@ public sealed class SdkIntegrationTests
     }
 
     private static async Task<ProcessResult> RunDenoAsync(
-        LocalPackageFixture package,
+        string denoExecutablePath,
         string workingDirectory,
         IReadOnlyList<string> arguments,
         TimeSpan timeout)
@@ -8011,7 +8015,7 @@ public sealed class SdkIntegrationTests
         Directory.CreateDirectory(denoCacheRoot);
 
         return await RunProcessAsync(
-            package.DenoHostRuntimePath,
+            denoExecutablePath,
             workingDirectory,
             arguments,
             timeout,
@@ -8596,6 +8600,22 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
+    private static string[] GetReleaseConsumerBuildArguments(
+        LocalReleasePackageFixture package,
+        string restorePackagesPath)
+        =>
+        [
+            "-c",
+            "Release",
+            "-t:Rebuild",
+            "/m:1",
+            "/p:BuildInParallel=false",
+            $"-p:RestoreSources={package.PackageOutputDirectory}",
+            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+            $"-p:RestorePackagesPath={restorePackagesPath}",
+            $"-p:JazorPackageVersion={package.PackageVersion}"
+        ];
+
     private static string CreateReleaseVuePackageConsumerProject(string projectRoot)
     {
         Directory.CreateDirectory(projectRoot);
@@ -8729,11 +8749,23 @@ public sealed class SdkIntegrationTests
 
     private sealed record ArtifactHash(string RelativePath, string ContentHash);
 
+    private sealed record DebugPackageProject(
+        string ProjectName,
+        string OutputProjectName,
+        string TargetFramework);
+
+    private sealed record LocalCorePackageFixture(
+        string RepoRoot,
+        string PackageVersion,
+        string PackageOutputDirectory,
+        string PackagePath,
+        string VuePackagePath,
+        string DenoHostRuntimePath);
+
     private sealed record LocalPackageFixture(
         string RepoRoot,
         string PackageVersion,
         string PackageOutputDirectory,
-        string RestorePackagesPath,
         string PackagePath,
         string VuePackagePath,
         string VuetifyPackagePath,
@@ -8741,23 +8773,22 @@ public sealed class SdkIntegrationTests
         string PiniaPackagePath,
         string PiniaTestingPackagePath,
         string TDesignPackagePath,
-        string ElementPlusPackagePath,
-        string DenoHostRuntimePath);
+        string ElementPlusPackagePath);
 
     private sealed record LocalReleasePackageFixture(
         string RepoRoot,
         string PackageVersion,
-        string PackageOutputDirectory,
-        string RestorePackagesPath,
-        string PackagePath,
-        string VuePackagePath,
-        string TDesignPackagePath);
+        string PackageOutputDirectory);
+
+    private sealed record LocalReleaseBrowserPackageFixture(
+        string RepoRoot,
+        string PackageVersion,
+        string PackageOutputDirectory);
 
     private sealed record LocalStylePackageFixture(
         string RepoRoot,
         string PackageVersion,
         string PackageOutputDirectory,
-        string RestorePackagesPath,
         string StylePackagePath);
 
     private sealed class TestWorkspace : IDisposable
@@ -8766,7 +8797,9 @@ public sealed class SdkIntegrationTests
         {
             RootPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
             SampleRoot = Path.Combine(RootPath, "Jazor.MultiProject");
+            RestorePackagesPath = Path.Combine(RootPath, "restore-packages");
             Directory.CreateDirectory(SampleRoot);
+            Directory.CreateDirectory(RestorePackagesPath);
 
             // The copied sample imports ../Directory.Build.props; preserve that layout
             // so every parallel test owns a complete, isolated MSBuild tree.
@@ -8778,6 +8811,8 @@ public sealed class SdkIntegrationTests
         public string RootPath { get; }
 
         public string SampleRoot { get; }
+
+        public string RestorePackagesPath { get; }
 
         public void Dispose()
         {
