@@ -4411,6 +4411,7 @@ public sealed class SdkIntegrationTests
             [
                 "msbuild",
                 Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+                "-restore",
                 "-t:MinVer",
                 "-getProperty:PackageVersion",
                 "-nologo",
