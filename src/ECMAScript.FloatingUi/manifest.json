@@ -6,19 +6,23 @@
   "packages": {
     "@floating-ui/core": {
       "source": "npm",
-      "version": "1.7.2"
+      "version": "1.7.3"
     },
     "@floating-ui/dom": {
       "source": "npm",
-      "version": "1.7.2"
+      "version": "1.7.4"
     },
     "@floating-ui/utils": {
       "source": "npm",
-      "version": "0.2.9"
+      "version": "0.2.10"
     },
     "@floating-ui/vue": {
       "source": "npm",
       "version": "1.1.9"
+    },
+    "vue-demi": {
+      "source": "npm",
+      "version": "0.14.10"
     },
     "vue": {
       "source": "npm",
@@ -57,7 +61,15 @@
       "path": "@floating-ui/vue",
       "dependencies": [
         "@floating-ui/dom",
-        "@floating-ui/utils/dom"
+        "@floating-ui/utils/dom",
+        "vue-demi"
+      ]
+    },
+    "vue-demi": {
+      "type": "module",
+      "path": "vue-demi",
+      "dependencies": [
+        "vue"
       ]
     }
   },

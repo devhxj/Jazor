@@ -5187,6 +5187,23 @@ public sealed class SdkIntegrationTests
         WriteFile(Path.Combine(projectRoot, "ElementPlusAdmin.razor"), """
             <ElInput @bind-ModelValue="Value" Name="title" />
             <ElButton Type="ElButtonType.Primary" OnClick="Save">Save value</ElButton>
+            <ElSelect Placeholder="Select value">
+                <ElOption Label="Initial" Value="Initial" />
+                <ElOption Label="Edited" Value="Edited" />
+            </ElSelect>
+            <ElTooltip Content="Element Plus tooltip">
+                <ElButton>Hover target</ElButton>
+            </ElTooltip>
+            <ElDropdown>
+                <ChildContent>
+                    <ElButton>Dropdown target</ElButton>
+                </ChildContent>
+                <Dropdown>
+                    <ElDropdownMenu>
+                        <ElDropdownItem Command="open">Open</ElDropdownItem>
+                    </ElDropdownMenu>
+                </Dropdown>
+            </ElDropdown>
             <span id="element-plus-status">@StatusText</span>
             """);
         WriteFile(Path.Combine(projectRoot, "Bootstrap.cs"), """

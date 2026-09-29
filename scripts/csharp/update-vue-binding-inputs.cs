@@ -4,6 +4,7 @@ using System.Formats.Tar;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -71,8 +72,21 @@ if (HashArchive(cache) != expectedHash)
 var archive = ReadArchiveMetadata(cache, package, version);
 ValidatePackageMetadata(metadata.RootElement, package, version, archive.PackageJson);
 PrepareGeneratorSnapshot(package, previousSnapshot, snapshot, cache, version, archive);
-manifest = UpdateExternalManifest(manifest, package, version, integrity, archive);
-File.WriteAllText(manifestPath, manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");
+var aliasDependencies = package == "element-plus"
+    ? ReadNpmAliasDependencies(
+        archive,
+        Path.Combine(root, "src", "ECMAScript.Vue.Generator", "element-plus-runtime", "package-lock.json"),
+        package,
+        version)
+    : new Dictionary<string, NpmAliasDependency>(StringComparer.Ordinal);
+manifest = UpdateExternalManifest(manifest, package, version, integrity, archive, aliasDependencies);
+File.WriteAllText(
+    manifestPath,
+    manifest.ToJsonString(new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    }) + "\n");
 Console.WriteLine($"Updated {package}: {previousVersion} -> {version}. Run the generators and review contract drift.");
 
 static string HashArchive(string path)
@@ -102,7 +116,8 @@ static NpmArchive ReadArchiveMetadata(string archivePath, string packageName, st
 
         files.Add(relative);
         if (relative == "package.json" ||
-            IsVuetifyIndex(relative))
+            IsVuetifyIndex(relative) ||
+            (packageName == "element-plus" && relative.EndsWith(".mjs", StringComparison.Ordinal)))
         {
             using var buffer = new MemoryStream();
             entry.DataStream.CopyTo(buffer);
@@ -179,6 +194,185 @@ static void ValidatePackageMetadata(
     }
 }
 
+static Dictionary<string, NpmAliasDependency> ReadNpmAliasDependencies(
+    NpmArchive archive,
+    string lockPath,
+    string packageName,
+    string packageVersion)
+{
+    if (!File.Exists(lockPath))
+        throw new FileNotFoundException("The Element Plus runtime package lock is required.", lockPath);
+
+    var authoredAliases = archive.PackageJson["dependencies"] is JsonObject dependencies
+        ? dependencies
+            .Where(pair => pair.Value is JsonValue value &&
+                           value.TryGetValue<string>(out var specifier) &&
+                           specifier.StartsWith("npm:", StringComparison.Ordinal))
+            .ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value!.GetValue<string>(),
+                StringComparer.Ordinal)
+        : new Dictionary<string, string>(StringComparer.Ordinal);
+
+    using var lockDocument = JsonDocument.Parse(File.ReadAllText(lockPath));
+    var lockPackages = lockDocument.RootElement.GetProperty("packages");
+    var lockedOwner = lockPackages.GetProperty("node_modules/" + packageName);
+    if (!string.Equals(lockedOwner.GetProperty("version").GetString(), packageVersion, StringComparison.Ordinal))
+    {
+        throw new InvalidOperationException(
+            $"Runtime lock contains {packageName}@{lockedOwner.GetProperty("version").GetString()}, expected {packageVersion}.");
+    }
+
+    var lockedOwnerDependencies = lockedOwner.GetProperty("dependencies");
+    var result = new Dictionary<string, NpmAliasDependency>(StringComparer.Ordinal);
+    foreach (var alias in authoredAliases.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+    {
+        var lockedRange = lockedOwnerDependencies.GetProperty(alias.Key).GetString();
+        if (!string.Equals(lockedRange, alias.Value, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Runtime lock alias '{alias.Key}' is '{lockedRange}', expected '{alias.Value}'.");
+        }
+
+        var lockedPackage = lockPackages.GetProperty("node_modules/" + alias.Key);
+        var resolvedName = lockedPackage.TryGetProperty("name", out var resolvedNameElement)
+            ? resolvedNameElement.GetString()
+            : alias.Key;
+        var resolvedVersion = lockedPackage.GetProperty("version").GetString();
+        var resolvedIntegrity = lockedPackage.GetProperty("integrity").GetString();
+        if (string.IsNullOrWhiteSpace(resolvedName) ||
+            string.IsNullOrWhiteSpace(resolvedVersion) ||
+            string.IsNullOrWhiteSpace(resolvedIntegrity))
+        {
+            throw new InvalidOperationException($"Runtime lock alias '{alias.Key}' is incomplete.");
+        }
+
+        result.Add(
+            alias.Key,
+            new NpmAliasDependency(
+                alias.Key,
+                $"npm:{resolvedName}@{resolvedVersion}",
+                resolvedIntegrity));
+    }
+
+    return result;
+}
+
+static void RefreshAliasDependencies(
+    JsonObject entry,
+    string externalSpecifier,
+    string packageName,
+    NpmArchive archive,
+    IReadOnlyDictionary<string, NpmAliasDependency> aliasDependencies,
+    IReadOnlySet<string> managedAliasNames)
+{
+    if (aliasDependencies.Count == 0 && managedAliasNames.Count == 0)
+        return;
+
+    var dependencies = new SortedSet<string>(StringComparer.Ordinal);
+    if (entry["dependencies"] is JsonArray declaredDependencies)
+    {
+        foreach (var value in declaredDependencies)
+        {
+            if (value?.GetValue<string>() is { Length: > 0 } dependency &&
+                !managedAliasNames.Contains(dependency))
+            {
+                dependencies.Add(dependency);
+            }
+        }
+    }
+
+    var externalPackages = CollectExternalPackageNames(externalSpecifier, packageName, archive);
+    foreach (var alias in aliasDependencies.Keys)
+    {
+        if (externalPackages.Contains(alias))
+            dependencies.Add(alias);
+    }
+
+    entry["dependencies"] = ToJsonArray(dependencies);
+}
+
+static HashSet<string> CollectExternalPackageNames(
+    string externalSpecifier,
+    string packageName,
+    NpmArchive archive)
+{
+    var prefix = packageName + "/";
+    if (!externalSpecifier.StartsWith(prefix, StringComparison.Ordinal))
+        return new HashSet<string>(StringComparer.Ordinal);
+
+    var externalPackages = new HashSet<string>(StringComparer.Ordinal);
+    var visited = new HashSet<string>(StringComparer.Ordinal);
+    Visit(externalSpecifier[prefix.Length..]);
+    return externalPackages;
+
+    void Visit(string modulePath)
+    {
+        if (!visited.Add(modulePath) || !archive.TextFiles.TryGetValue(modulePath, out var text))
+            return;
+
+        foreach (var specifier in ReadModuleSpecifiers(text))
+        {
+            if (specifier.StartsWith('.', StringComparison.Ordinal))
+            {
+                var relative = ResolveArchiveModulePath(modulePath, specifier, archive.Files);
+                if (relative is not null)
+                    Visit(relative);
+                continue;
+            }
+
+            if (!specifier.StartsWith('/', StringComparison.Ordinal) &&
+                !specifier.StartsWith('#', StringComparison.Ordinal) &&
+                !Uri.TryCreate(specifier, UriKind.Absolute, out _))
+            {
+                externalPackages.Add(GetPackageName(specifier));
+            }
+        }
+    }
+}
+
+static IEnumerable<string> ReadModuleSpecifiers(string text)
+{
+    const string staticPattern = "(?m)^\\s*(?:import|export)\\s+(?:[^\\\"'\\r\\n]*?\\s+from\\s+)?[\\\"'](?<specifier>[^\\\"']+)[\\\"']";
+    const string dynamicPattern = "import\\s*\\(\\s*[\\\"'](?<specifier>[^\\\"']+)[\\\"']\\s*\\)";
+    foreach (Match match in Regex.Matches(text, staticPattern, RegexOptions.CultureInvariant))
+        yield return match.Groups["specifier"].Value;
+    foreach (Match match in Regex.Matches(text, dynamicPattern, RegexOptions.CultureInvariant))
+        yield return match.Groups["specifier"].Value;
+}
+
+static string? ResolveArchiveModulePath(
+    string ownerPath,
+    string specifier,
+    IReadOnlySet<string> files)
+{
+    var baseUri = new Uri("https://jazor.invalid/" + ownerPath, UriKind.Absolute);
+    var resolved = new Uri(baseUri, specifier).AbsolutePath.TrimStart('/');
+    foreach (var candidate in new[]
+             {
+                 resolved,
+                 resolved + ".mjs",
+                 resolved + ".js",
+                 resolved.TrimEnd('/') + "/index.mjs",
+                 resolved.TrimEnd('/') + "/index.js"
+             })
+    {
+        if (files.Contains(candidate))
+            return candidate;
+    }
+
+    return null;
+}
+
+static string GetPackageName(string specifier)
+{
+    var segments = specifier.Split('/', StringSplitOptions.RemoveEmptyEntries);
+    var count = specifier.StartsWith('@') ? 2 : 1;
+    if (segments.Length < count)
+        throw new InvalidOperationException($"Invalid npm package specifier '{specifier}'.");
+    return string.Join('/', segments.Take(count));
+}
+
 static void PrepareGeneratorSnapshot(
     string packageName,
     string previousSnapshot,
@@ -212,11 +406,7 @@ static void PrepareGeneratorSnapshot(
                 ExtractArchiveFiles(
                     archivePath,
                     staging,
-                    static relative => relative == "package.json" ||
-                        relative == "attributes.json" ||
-                        relative == "web-types.json" ||
-                        relative == "es/component.mjs" ||
-                        relative == "es/constants/event.d.ts");
+                    IsElementPlusGeneratorInput);
                 RequireSnapshotFiles(
                     staging,
                     "package.json",
@@ -240,6 +430,22 @@ static void PrepareGeneratorSnapshot(
             Directory.Delete(staging, recursive: true);
     }
 }
+
+static bool IsElementPlusGeneratorInput(string relative)
+    => relative is
+        "package.json" or
+        "attributes.json" or
+        "web-types.json" or
+        "es/component.mjs" or
+        "es/constants/event.d.ts" or
+        "es/components/collapse-transition/src/collapse-transition.vue.d.ts" or
+        "es/components/popper/src/popper.d.ts" or
+        "es/components/popper/src/popper.vue.d.ts" or
+        "es/components/table-v2/src/auto-resizer.d.ts" or
+        "es/components/table-v2/src/components/auto-resizer.mjs.map" or
+        "es/components/tree-select/src/tree-select.vue.d.ts" or
+        "es/components/tree-select/src/tree-select.vue_vue_type_script_lang.mjs.map" or
+        "es/components/tree-select/src/tree.mjs.map";
 
 static void PrepareTDesignSnapshot(
     string previousSnapshot,
@@ -422,7 +628,8 @@ static JsonObject UpdateExternalManifest(
     string packageName,
     string version,
     string integrity,
-    NpmArchive archive)
+    NpmArchive archive,
+    IReadOnlyDictionary<string, NpmAliasDependency> aliasDependencies)
 {
     var manifest = original.DeepClone().AsObject();
     manifest["source"] = "npm";
@@ -449,6 +656,32 @@ static JsonObject UpdateExternalManifest(
     packageMetadata["version"] = version;
     packageMetadata["integrity"] = integrity;
     packages[packageName] = packageMetadata;
+    var managedAliasNames = packages
+        .Where(pair => pair.Value is JsonObject value &&
+                       string.Equals(value["source"]?.GetValue<string>(), "npm", StringComparison.Ordinal) &&
+                       value["version"]?.GetValue<string>().StartsWith("npm:", StringComparison.Ordinal) == true)
+        .Select(static pair => pair.Key)
+        .ToHashSet(StringComparer.Ordinal);
+    managedAliasNames.UnionWith(aliasDependencies.Keys);
+    foreach (var staleAlias in packages
+                 .Where(pair => pair.Value is JsonObject value &&
+                                string.Equals(value["source"]?.GetValue<string>(), "npm", StringComparison.Ordinal) &&
+                                value["version"]?.GetValue<string>().StartsWith("npm:", StringComparison.Ordinal) == true &&
+                                !aliasDependencies.ContainsKey(pair.Key))
+                 .Select(static pair => pair.Key)
+                 .ToArray())
+    {
+        packages.Remove(staleAlias);
+    }
+    foreach (var alias in aliasDependencies.Values.OrderBy(static value => value.Name, StringComparer.Ordinal))
+    {
+        packages[alias.Name] = new JsonObject
+        {
+            ["source"] = "npm",
+            ["version"] = alias.DependencySpecifier,
+            ["integrity"] = alias.Integrity
+        };
+    }
 
     var imports = manifest["imports"]?.AsObject()
         ?? throw new InvalidOperationException("Manifest must contain an imports object.");
@@ -461,7 +694,7 @@ static JsonObject UpdateExternalManifest(
     foreach (var pair in imports.ToArray())
     {
         var logicalSpecifier = pair.Key;
-        var entry = pair.Value?.AsObject()
+        var entry = pair.Value?.DeepClone().AsObject()
             ?? throw new InvalidOperationException($"Manifest import '{logicalSpecifier}' must be an object.");
 
         var isTargetEntry = logicalSpecifier == packageName ||
@@ -487,6 +720,13 @@ static JsonObject UpdateExternalManifest(
         entry["type"] = "module";
         entry["path"] = externalSpecifier;
         RemoveEmbeddedEntryFields(entry);
+        RefreshAliasDependencies(
+            entry,
+            externalSpecifier,
+            packageName,
+            archive,
+            aliasDependencies,
+            managedAliasNames);
         NormalizeDependencyArray(entry, "dependencies");
 
         if (resolved[externalSpecifier] is JsonObject existing)
@@ -610,6 +850,12 @@ static string MapExternalEntry(string logicalSpecifier, string packageName, NpmA
         return logicalSpecifier;
 
     var remainder = logicalSpecifier[prefix.Length..];
+    // The updater must be replayable against a manifest that already contains public upstream
+    // entries. Re-mapping `element-plus/es/...` would incorrectly invent
+    // `element-plus/es/components/es/...` on a same-version refresh.
+    if (packageName == "element-plus" && remainder.StartsWith("es/", StringComparison.Ordinal))
+        return logicalSpecifier;
+
     return packageName switch
     {
         "tdesign-vue-next" => MapTDesignEntry(packageName, remainder),
@@ -864,3 +1110,8 @@ sealed class NpmArchive(
     public HashSet<string> Files { get; } = files;
     public Dictionary<string, string> TextFiles { get; } = textFiles;
 }
+
+sealed record NpmAliasDependency(
+    string Name,
+    string DependencySpecifier,
+    string Integrity);

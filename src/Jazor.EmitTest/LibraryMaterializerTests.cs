@@ -441,7 +441,75 @@ public sealed class LibraryMaterializerTests
             Assert.IsFalse(result.ImportPaths.ContainsKey("element-plus/es/index.mjs"));
             Assert.IsEmpty(result.StylePaths);
             Assert.AreEqual("element-plus/es/components/button/index.mjs", result.ImportPaths["element-plus/es/components/button/index.mjs"]);
+            Assert.IsFalse(
+                result.PackageReferences.ContainsKey("@popperjs/core"),
+                "A non-Popper Element Plus entry must not pull the alias dependency into the root project.");
             Assert.IsFalse(result.MaterializedPaths.Any(path => path.Contains("element-plus", StringComparison.OrdinalIgnoreCase)));
+        }
+        finally
+        {
+            if (Directory.Exists(outputRoot))
+                Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Materialize_ElementPlusPopperEntries_DeclarePinnedAliasClosure()
+    {
+        var elementPlusManifest = FindLibraryManifest("ECMAScript.ElementPlus");
+        var vueManifest = FindLibraryManifest("ECMAScript.Vue");
+        using var manifest = JsonDocument.Parse(File.ReadAllText(elementPlusManifest));
+
+        var popperPackage = manifest.RootElement.GetProperty("packages").GetProperty("@popperjs/core");
+        Assert.AreEqual("npm", popperPackage.GetProperty("source").GetString());
+        Assert.AreEqual("npm:@sxzz/popperjs-es@2.11.8", popperPackage.GetProperty("version").GetString());
+        Assert.AreEqual(
+            "sha512-wOwESXvvED3S8xBmcPWHs2dUuzrE4XiZeFu7e1hROIJkm02a49N120pmOXxY33sBb6hArItm5W5tcg1cBtV+HQ==",
+            popperPackage.GetProperty("integrity").GetString());
+
+        var popperEntries = new[]
+        {
+            "element-plus/es/components/select/index.mjs",
+            "element-plus/es/components/tooltip/index.mjs",
+            "element-plus/es/components/dropdown/index.mjs"
+        };
+        var declaredPopperEntries = manifest.RootElement.GetProperty("imports")
+            .EnumerateObject()
+            .Where(static entry => entry.Value.GetProperty("dependencies")
+                .EnumerateArray()
+                .Any(static dependency => dependency.GetString() == "@popperjs/core"))
+            .Select(static entry => entry.Name)
+            .ToArray();
+        Assert.HasCount(23, declaredPopperEntries, "Every reachable Element Plus Popper entry must carry the alias closure.");
+        foreach (var specifier in popperEntries)
+        {
+            CollectionAssert.Contains(declaredPopperEntries, specifier);
+            var dependencies = manifest.RootElement.GetProperty("imports").GetProperty(specifier)
+                .GetProperty("dependencies")
+                .EnumerateArray()
+                .Select(static value => value.GetString())
+                .ToArray();
+            CollectionAssert.Contains(dependencies, "@popperjs/core", $"'{specifier}' must carry the Popper alias closure.");
+        }
+
+        var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "element-plus-popper", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var result = new LibraryMaterializer().Materialize(
+                [elementPlusManifest, vueManifest],
+                outputRoot,
+                BuildMode.Production,
+                requiredImports: popperEntries);
+
+            var popperReference = result.PackageReferences["@popperjs/core"];
+            Assert.AreEqual("npm", popperReference.Source);
+            Assert.AreEqual("npm:@sxzz/popperjs-es@2.11.8", popperReference.Version);
+
+            LibraryPackageWriter.WritePackageProject(outputRoot, result);
+            using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package.json")));
+            Assert.AreEqual(
+                "npm:@sxzz/popperjs-es@2.11.8",
+                package.RootElement.GetProperty("dependencies").GetProperty("@popperjs/core").GetString());
         }
         finally
         {
@@ -498,11 +566,19 @@ public sealed class LibraryMaterializerTests
                 BuildMode.Production,
                 requiredImports: ["@floating-ui/vue"]);
 
-            foreach (var specifier in new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "@floating-ui/utils/dom" })
+            foreach (var specifier in new[]
+                     {
+                         "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core",
+                         "@floating-ui/utils", "@floating-ui/utils/dom", "vue-demi", "vue"
+                     })
                 Assert.IsTrue(result.ImportPaths.ContainsKey(specifier), $"Sibling closure member '{specifier}' was not selected.");
 
             Assert.AreEqual("@floating-ui/vue", result.ImportPaths["@floating-ui/vue"]);
             Assert.AreEqual("npm", result.PackageReferences["@floating-ui/vue"].Source);
+            Assert.AreEqual("1.7.3", result.PackageReferences["@floating-ui/core"].Version);
+            Assert.AreEqual("1.7.4", result.PackageReferences["@floating-ui/dom"].Version);
+            Assert.AreEqual("0.2.10", result.PackageReferences["@floating-ui/utils"].Version);
+            Assert.AreEqual("0.14.10", result.PackageReferences["vue-demi"].Version);
             Assert.IsEmpty(result.MaterializedPaths);
         }
         finally
@@ -599,7 +675,7 @@ public sealed class LibraryMaterializerTests
         var cases = new[]
         {
             (Manifest: "ECMAScript.VueDraggable", Id: "vue-draggable", Specifier: "vue-draggable-plus"),
-            (Manifest: "ECMAScript.FilePond", Id: "file-pond", Specifier: "filepond"),
+            (Manifest: "ECMAScript.FilePond", Id: "file-pond", Specifier: "vue-filepond"),
             (Manifest: "ECMAScript.WangEditor", Id: "wang-editor", Specifier: "@wangeditor/editor")
         };
         var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
@@ -639,6 +715,28 @@ public sealed class LibraryMaterializerTests
                 Directory.Delete(outputRoot, recursive: true);
             }
         }
+    }
+
+    [TestMethod]
+    public void Materialize_LucideEntry_ResolvesPinnedVuePeer()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.Lucide"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["lucide-vue-next"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "lucide-vue-next", "vue" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.AreEqual("3.5.42", result.PackageReferences["vue"].Version);
+        Assert.IsEmpty(result.MaterializedPaths);
     }
 
     [TestMethod]

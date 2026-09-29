@@ -7,13 +7,19 @@
     "lucide-vue-next": {
       "source": "npm",
       "version": "1.0.0"
+    },
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
     }
   },
   "imports": {
     "lucide-vue-next": {
       "type": "module",
       "path": "lucide-vue-next",
-      "dependencies": []
+      "dependencies": [
+        "vue"
+      ]
     }
   },
   "requires": {

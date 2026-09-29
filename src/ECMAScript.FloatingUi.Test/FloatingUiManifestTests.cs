@@ -21,16 +21,20 @@ public sealed class FloatingUiManifestTests
         Assert.AreEqual(GetInventory().GetProperty("version").GetString(), root.GetProperty("version").GetString());
 
         var packages = root.GetProperty("packages");
-        foreach (var packageName in new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "vue" })
+        foreach (var packageName in new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "vue-demi", "vue" })
             Assert.AreEqual("npm", packages.GetProperty(packageName).GetProperty("source").GetString());
 
         var imports = root.GetProperty("imports");
         CollectionAssert.AreEquivalent(
-            new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "@floating-ui/utils/dom" },
+            new[] { "@floating-ui/vue", "@floating-ui/dom", "@floating-ui/core", "@floating-ui/utils", "@floating-ui/utils/dom", "vue-demi" },
             imports.EnumerateObject().Select(static entry => entry.Name).ToArray());
         CollectionAssert.AreEquivalent(
-            new[] { "@floating-ui/dom", "@floating-ui/utils/dom" },
+            new[] { "@floating-ui/dom", "@floating-ui/utils/dom", "vue-demi" },
             imports.GetProperty("@floating-ui/vue").GetProperty("dependencies")
+                .EnumerateArray().Select(static value => value.GetString()!).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "vue" },
+            imports.GetProperty("vue-demi").GetProperty("dependencies")
                 .EnumerateArray().Select(static value => value.GetString()!).ToArray());
 
         foreach (var entry in imports.EnumerateObject())

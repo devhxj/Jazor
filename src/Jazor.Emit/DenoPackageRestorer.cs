@@ -44,6 +44,7 @@ internal static class DenoPackageRestorer
         }
 
         var deno = ResolveExecutable(executablePath);
+        ClearNpmAliasProjections(workspaceRoot, packagePath);
         ProcessResult restoreResult;
         if (File.Exists(lockPath) && LockMatchesPackageJson(packagePath, lockPath))
         {
@@ -100,7 +101,119 @@ internal static class DenoPackageRestorer
         if (!RequiresRootLock(packagePath))
             DeleteFile(lockPath);
 
+        MaterializeNpmAliasProjections(workspaceRoot, packagePath);
         await CheckAsync(workspaceRoot, deno, entryPaths, libraries, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void ClearNpmAliasProjections(string workspaceRoot, string packagePath)
+    {
+        var nodeModulesRoot = Path.Combine(workspaceRoot, "node_modules");
+        var markerPath = Path.Combine(nodeModulesRoot, ".jazor-npm-aliases.json");
+        var aliases = ReadNpmAliases(packagePath)
+            .Select(static alias => alias.AuthoredName)
+            .ToHashSet(StringComparer.Ordinal);
+        if (File.Exists(markerPath))
+        {
+            try
+            {
+                using var marker = JsonDocument.Parse(File.ReadAllText(markerPath));
+                foreach (var entry in marker.RootElement.EnumerateArray())
+                {
+                    if (entry.ValueKind == JsonValueKind.String && entry.GetString() is { Length: > 0 } name)
+                        aliases.Add(name);
+                }
+            }
+            catch (Exception exception) when (exception is JsonException or InvalidOperationException)
+            {
+                // The marker is generated state. A truncated prior write must not preserve an
+                // unknown alias projection, so rebuild the package-owned directory from Deno.
+                DeleteDirectory(nodeModulesRoot);
+                return;
+            }
+        }
+
+        foreach (var alias in aliases)
+            DeleteDirectory(GetNpmPackageDirectory(nodeModulesRoot, alias));
+        DeleteFile(markerPath);
+    }
+
+    private static void MaterializeNpmAliasProjections(string workspaceRoot, string packagePath)
+    {
+        var aliases = ReadNpmAliases(packagePath);
+        if (aliases.Count == 0)
+            return;
+
+        var nodeModulesRoot = Path.Combine(workspaceRoot, "node_modules");
+        foreach (var alias in aliases)
+        {
+            var source = GetNpmPackageDirectory(nodeModulesRoot, alias.ResolvedName);
+            if (!Directory.Exists(source))
+            {
+                throw new InvalidOperationException(
+                    $"Deno restored npm alias '{alias.AuthoredName}' without materializing its target '{alias.ResolvedName}'.");
+            }
+
+            var destination = GetNpmPackageDirectory(nodeModulesRoot, alias.AuthoredName);
+            CopyDirectory(source, destination);
+        }
+
+        File.WriteAllText(
+            Path.Combine(nodeModulesRoot, ".jazor-npm-aliases.json"),
+            JsonSerializer.Serialize(aliases.Select(static alias => alias.AuthoredName).OrderBy(static name => name, StringComparer.Ordinal)));
+    }
+
+    private static IReadOnlyList<NpmAliasProjection> ReadNpmAliases(string packagePath)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(packagePath));
+        var aliases = new List<NpmAliasProjection>();
+        foreach (var dependency in ReadDependencies(document.RootElement))
+        {
+            if (dependency.Value.ValueKind != JsonValueKind.String ||
+                dependency.Value.GetString() is not { } value ||
+                !value.StartsWith("npm:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var target = value[4..];
+            var separator = target.LastIndexOf('@');
+            if (separator <= 0 || separator == target.Length - 1)
+                throw new InvalidOperationException($"npm alias '{dependency.Name}' must pin an explicit target version.");
+
+            var resolvedName = target[..separator];
+            if (!string.Equals(dependency.Name, resolvedName, StringComparison.Ordinal))
+                aliases.Add(new NpmAliasProjection(dependency.Name, resolvedName));
+        }
+
+        return aliases
+            .Distinct()
+            .OrderBy(static alias => alias.AuthoredName, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string GetNpmPackageDirectory(string nodeModulesRoot, string packageName)
+    {
+        var validated = ECMAScriptModulePath.ValidateExternalImportSpecifier(packageName);
+        var segments = validated.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var packageSegmentCount = validated.StartsWith('@') ? 2 : 1;
+        if (segments.Length != packageSegmentCount)
+            throw new InvalidOperationException($"npm alias package name '{packageName}' must not contain a subpath.");
+
+        return Path.Combine([nodeModulesRoot, .. segments]);
+    }
+
+    private static void CopyDirectory(string source, string destination)
+    {
+        DeleteDirectory(destination);
+        Directory.CreateDirectory(destination);
+        foreach (var directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
+            Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
+        foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        {
+            var target = Path.Combine(destination, Path.GetRelativePath(source, file));
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(file, target, overwrite: true);
+        }
     }
 
     private static async Task CheckAsync(
@@ -336,6 +449,8 @@ internal static class DenoPackageRestorer
     }
 
     internal sealed record ProcessResult(bool Succeeded, int ExitCode, string StandardOutput, string StandardError);
+
+    private sealed record NpmAliasProjection(string AuthoredName, string ResolvedName);
 
     private sealed record DependencyIdentity(string Exact)
     {

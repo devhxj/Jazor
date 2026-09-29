@@ -33,7 +33,7 @@ public sealed class FilePondManifestTests
 
         Assert.AreEqual(0, imports.GetProperty("filepond").GetProperty("dependencies").EnumerateArray().Count());
         CollectionAssert.AreEquivalent(
-            new[] { "filepond" },
+            new[] { "filepond", "vue" },
             imports.GetProperty("vue-filepond").GetProperty("dependencies").EnumerateArray().Select(static value => value.GetString()!).ToArray());
         foreach (var entry in imports.EnumerateObject())
         {
@@ -61,6 +61,7 @@ public sealed class FilePondManifestTests
         var packages = manifest.RootElement.GetProperty("packages");
         Assert.AreEqual("npm", packages.GetProperty("filepond").GetProperty("source").GetString());
         Assert.AreEqual("npm", packages.GetProperty("vue-filepond").GetProperty("source").GetString());
+        Assert.AreEqual("npm", packages.GetProperty("vue").GetProperty("source").GetString());
     }
 
     [TestMethod]

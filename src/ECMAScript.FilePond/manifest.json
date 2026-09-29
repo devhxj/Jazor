@@ -11,6 +11,10 @@
     "vue-filepond": {
       "source": "npm",
       "version": "8.0.0"
+    },
+    "vue": {
+      "source": "npm",
+      "version": "3.5.42"
     }
   },
   "imports": {
@@ -23,7 +27,8 @@
       "type": "module",
       "path": "vue-filepond",
       "dependencies": [
-        "filepond"
+        "filepond",
+        "vue"
       ]
     }
   },

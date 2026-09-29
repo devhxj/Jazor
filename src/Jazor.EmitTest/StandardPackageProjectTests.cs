@@ -77,6 +77,119 @@ public sealed class StandardPackageProjectTests
     }
 
     [TestMethod]
+    public async Task NpmAlias_RestoreProjectsAuthoredPackageNameForDenoAndVite()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "npm-alias", Guid.NewGuid().ToString("N"));
+        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
+            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
+        Assert.IsTrue(File.Exists(deno), "The test must use the Deno runtime from its own build output.");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var appPath = Path.Combine(root, "app.js");
+            await File.WriteAllTextAsync(
+                appPath,
+                "import { placements } from '@popperjs/core'; console.log(placements.includes('bottom'));",
+                timeout.Token);
+            var libraries = new LibraryAssets(
+                new Dictionary<string, string>(), new Dictionary<string, string>(),
+                [], [], [], [], [], [],
+                new Dictionary<string, LibraryPackageReference>
+                {
+                    ["@popperjs/core"] = new(
+                        "@popperjs/core",
+                        "npm:@sxzz/popperjs-es@2.11.8",
+                        "npm")
+                });
+            LibraryPackageWriter.WritePackageProject(root, libraries);
+            var entries = ProjectEntryWriter.Write(root, ["app.js"]);
+
+            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
+
+            var aliasRoot = Path.Combine(root, "node_modules", "@popperjs", "core");
+            Assert.IsTrue(File.Exists(Path.Combine(aliasRoot, "package.json")));
+            using (var aliasPackage = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(aliasRoot, "package.json"), timeout.Token)))
+                Assert.AreEqual("@sxzz/popperjs-es", aliasPackage.RootElement.GetProperty("name").GetString());
+            Assert.AreEqual("true", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
+
+            var result = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
+            Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message);
+            Assert.AreEqual("true", await RunDenoAsync(deno, root, "dist/bundle.js", timeout.Token));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task VueBindingPeerClosures_RestorePinnedVueForDenoAndVite()
+    {
+        var cases = new[]
+        {
+            (
+                Manifest: "ECMAScript.FilePond",
+                Specifier: "vue-filepond",
+                Source: "import vueFilePond from 'vue-filepond'; console.log(Boolean(vueFilePond));"),
+            (
+                Manifest: "ECMAScript.FloatingUi",
+                Specifier: "@floating-ui/vue",
+                Source: "import { useFloating } from '@floating-ui/vue'; console.log(Boolean(useFloating));"),
+            (
+                Manifest: "ECMAScript.Lucide",
+                Specifier: "lucide-vue-next",
+                Source: "import { Circle } from 'lucide-vue-next'; console.log(Boolean(Circle));")
+        };
+        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
+            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
+        Assert.IsTrue(File.Exists(deno), "The test must use the Deno runtime from its own build output.");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+
+        foreach (var testCase in cases)
+        {
+            var root = Path.Combine(
+                RepositoryTemp.Root,
+                "Jazor.EmitTest",
+                "binding-peer",
+                testCase.Manifest,
+                Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            try
+            {
+                var appPath = Path.Combine(root, "app.js");
+                await File.WriteAllTextAsync(appPath, testCase.Source, timeout.Token);
+                var libraries = new LibraryMaterializer().Materialize(
+                    [FindLibraryManifest(testCase.Manifest), FindLibraryManifest("ECMAScript.Vue")],
+                    root,
+                    BuildMode.Production,
+                    [testCase.Specifier]);
+                LibraryPackageWriter.WritePackageProject(root, libraries);
+                var entries = ProjectEntryWriter.Write(root, ["app.js"]);
+
+                await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
+
+                using (var vuePackage = JsonDocument.Parse(await File.ReadAllTextAsync(
+                           Path.Combine(root, "node_modules", "vue", "package.json"),
+                           timeout.Token)))
+                {
+                    Assert.AreEqual(
+                        "3.5.42",
+                        vuePackage.RootElement.GetProperty("version").GetString(),
+                        $"{testCase.Manifest} restored an implicit Vue peer instead of the declared identity.");
+                }
+
+                var result = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
+                Assert.IsTrue(result.IsSuccess, $"{testCase.Manifest}: {result.Diagnostic?.Message}");
+            }
+            finally
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task NpmAndJsr_DeclaredKeysResolveThroughDenoAndViteWithoutPrivateManifests()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "standard-project", Guid.NewGuid().ToString("N"));
@@ -179,5 +292,17 @@ public sealed class StandardPackageProjectTests
                 await process.WaitForExitAsync(CancellationToken.None);
             }
         }
+    }
+
+    private static string FindLibraryManifest(string projectName)
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", projectName, "manifest.json");
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        throw new FileNotFoundException($"Could not locate the manifest for '{projectName}'.");
     }
 }
