@@ -291,7 +291,7 @@ internal static class LibraryComponentConventions
                    StringComparison.Ordinal);
     }
 
-    private static bool IsRenderFragment(ITypeSymbol type)
+    internal static bool IsRenderFragment(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol namedType)
             return false;

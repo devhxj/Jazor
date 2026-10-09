@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Jazor.Common;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -41,6 +42,60 @@ internal static class ComponentSelector
         }
 
         return components.ToImmutable();
+    }
+
+    internal static ImmutableArray<RazorVueDiagnosticInfo> ValidateCurrentComponentContracts(Compilation compilation)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
+
+        var moduleAttribute = compilation.GetTypeByMetadataName(ECMAScriptModuleAttributeMetadataName);
+        var vueComponentMarker = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.VueComponentMarkerMetadataName);
+        var componentBase = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.ComponentBaseMetadataName);
+        if (vueComponentMarker is null || componentBase is null)
+            return ImmutableArray<RazorVueDiagnosticInfo>.Empty;
+
+        var diagnostics = ImmutableArray.CreateBuilder<RazorVueDiagnosticInfo>();
+        foreach (var symbol in EnumerateNamedTypes(compilation.GlobalNamespace)
+                     .Where(symbol => Comparer.Equals(symbol.ContainingAssembly, compilation.Assembly) &&
+                                      HasCurrentCompilationSource(symbol))
+                     .OrderBy(static symbol => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), StringComparer.Ordinal))
+        {
+            // Abstract source bases and external bindings are contracts, not missing output roots.
+            // 只审计当前程序集的具体组件；抽象共用基类不需要自己的模块声明。
+            if (symbol.TypeKind != TypeKind.Class || symbol.IsStatic || symbol.IsAbstract)
+                continue;
+
+            var hasMarker = ComponentSymbolPolicy.Implements(symbol, vueComponentMarker);
+            var inheritsComponentBase = ComponentSymbolPolicy.InheritsFrom(symbol, componentBase);
+            var hasDescriptor = HasComponentImportDescriptor(symbol, moduleAttribute);
+            // A code-behind file may declare helper types too. Its .razor.cs path alone does
+            // not make every type in that tree an authored component candidate.
+            var isRazorAuthored = symbol.GetMembers("BuildRenderTree")
+                .OfType<IMethodSymbol>().Any(HasRazorSourceIdentity) ||
+                symbol.DeclaringSyntaxReferences.Any(reference => string.Equals(
+                    System.IO.Path.GetFileName(reference.SyntaxTree.FilePath),
+                    symbol.Name + ".razor.cs", StringComparison.OrdinalIgnoreCase));
+            if (!hasMarker && !(inheritsComponentBase && (hasDescriptor || isRazorAuthored)))
+                continue;
+
+            string? failure = !inheritsComponentBase
+                ? "must derive from Microsoft.AspNetCore.Components.ComponentBase"
+                : !hasMarker
+                    ? "must implement ECMAScript.Vue.IVueComponent (for example: ComponentBase, IVueComponent)"
+                    : !hasDescriptor
+                        ? "must declare [ECMAScriptModule(\"./components/name\")] for a generated component or [ECMAScript(\"package\")] for an external binding"
+                        : null;
+            if (failure is not null)
+            {
+                diagnostics.Add(RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.ComponentCandidate,
+                    "Component '" + symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat) + "' " + failure + ".",
+                    component: symbol));
+            }
+        }
+
+        return diagnostics.ToImmutable();
     }
 
     public static ImmutableArray<INamedTypeSymbol> DiscoverTailRequiredComponents(Compilation compilation)

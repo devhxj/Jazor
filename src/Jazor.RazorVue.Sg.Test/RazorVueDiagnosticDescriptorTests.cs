@@ -21,7 +21,9 @@ public sealed class RazorVueDiagnosticDescriptorTests
             [RazorVueDiagnosticCategory.ComponentBinding] = ("JAZORVGA023", "#component-binding"),
             [RazorVueDiagnosticCategory.MemberClosure] = ("JAZORVGA024", "#member-closure"),
             [RazorVueDiagnosticCategory.VueInject] = ("JAZORVGA025", "#vue-inject"),
-            [RazorVueDiagnosticCategory.VueModule] = ("JAZORVGA026", "#vue-module")
+            [RazorVueDiagnosticCategory.VueModule] = ("JAZORVGA026", "#vue-module"),
+            [RazorVueDiagnosticCategory.ComponentCandidate] = ("JAZORVGA027", "#component-identity"),
+            [RazorVueDiagnosticCategory.AttributeCollision] = ("JAZORVGA028", "#parameter-runtime-names")
         };
 
         foreach (var (category, contract) in expected)

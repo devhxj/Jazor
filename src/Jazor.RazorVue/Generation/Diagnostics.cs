@@ -53,6 +53,18 @@ internal static class Diagnostics
         "RazorVue Vue module generation failed: {0}",
         "vue-module");
 
+    internal static readonly DiagnosticDescriptor ComponentCandidateInvalid = Create(
+        "JAZORVGA027",
+        "RazorVue component candidate contract is incomplete",
+        "RazorVue component candidate contract is incomplete: {0}",
+        "component-identity");
+
+    internal static readonly DiagnosticDescriptor AttributeRuntimeNameCollision = Create(
+        "JAZORVGA028",
+        "RazorVue attribute conflicts with a declared Vue parameter name",
+        "RazorVue attribute conflicts with a declared Vue parameter name: {0}",
+        "parameter-runtime-names");
+
     internal static Diagnostic Create(RazorVueDiagnosticInfo info)
         => Diagnostic.Create(
             GetDescriptor(info.Category),
@@ -70,6 +82,8 @@ internal static class Diagnostics
             RazorVueDiagnosticCategory.MemberClosure => MemberClosureFailed,
             RazorVueDiagnosticCategory.VueInject => VueInjectDeclarationInvalid,
             RazorVueDiagnosticCategory.VueModule => VueModuleFailed,
+            RazorVueDiagnosticCategory.ComponentCandidate => ComponentCandidateInvalid,
+            RazorVueDiagnosticCategory.AttributeCollision => AttributeRuntimeNameCollision,
             _ => TailOutputFailed
         };
 

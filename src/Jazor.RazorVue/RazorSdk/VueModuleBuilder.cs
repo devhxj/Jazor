@@ -652,7 +652,7 @@ internal static class VueModuleBuilder
         // performed per specifier instead of dropping the whole import declaration on one match.
         var emittedImportBindings = new Dictionary<string, ImportBinding>(StringComparer.Ordinal);
 
-        moduleStatements.Add(BuildVueImportDeclaration(
+        var vueFramingImport = BuildVueImportDeclaration(
             features.UsesMounted,
             features.UsesUnmounted,
             features.UsesUpdated,
@@ -672,7 +672,8 @@ internal static class VueModuleBuilder
                             !phase.ConstructorParameters.IsDefaultOrEmpty),
             usesCascading: !cascadingBindings.IsDefaultOrEmpty,
             usesServerPrefetch: features.UsesParameterViewState ||
-                                features.OnInitializedAsync is not null));
+                                features.OnInitializedAsync is not null);
+        moduleStatements.Add(FilterEmittedImportSpecifiers(vueFramingImport, emittedImportBindings)!);
 
         if (features.UsesState)
         {
@@ -692,8 +693,6 @@ internal static class VueModuleBuilder
 
         foreach (var importDeclaration in parts.ImportDeclarations)
         {
-            if (IsVueFramingImport(importDeclaration))
-                continue;
             if (!IsCompilerImportReferenced(importDeclaration, directRender, parts))
                 continue;
 
@@ -707,11 +706,10 @@ internal static class VueModuleBuilder
 
         foreach (var importDeclaration in directRender.ImportDeclarations)
         {
-            // Vue helpers are framed above as one deterministic import. RenderEmitter's direct
-            // collector contributes mergeProps for the same module, so do not emit a duplicate
-            // local binding after ordinary-member fragments have joined the feature set.
-            if (IsVueFramingImport(importDeclaration))
-                continue;
+            // Compiler imports can carry stable aliases for authored Vue APIs, including
+            // lifecycle hooks. Dedupe by binding, never discard a whole "vue" declaration:
+            // framing helpers alone do not cover every code-behind call.
+            // code-behind 的 Vue API alias 必须保留；只去掉同一 local 的重复绑定。
             var importToEmit = FilterEmittedImportSpecifiers(importDeclaration, emittedImportBindings);
             if (importToEmit is null)
                 continue;

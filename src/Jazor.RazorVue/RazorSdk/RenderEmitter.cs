@@ -457,7 +457,10 @@ internal static class RenderEmitter
             renderExpression.UserData = CreateDirectRenderSourceOrigin(block);
             PruneUnreferencedRenderFragmentDeclarations(_preludeStatements, renderExpression);
             var moduleHoists = PruneUnreferencedModuleHoists(renderExpression, _preludeStatements);
-            var usesFragment = _usesFragment || state.UsesFragment || state.Roots.Count > 1;
+            // Conditional opaque roots can introduce a Fragment during final composition.
+            // Infer its import from the retained AST as well as the traversal flags.
+            var usesFragment = _usesFragment || state.UsesFragment || state.Roots.Count > 1 ||
+                               AstReferenceAnalysis.ReferencesIdentifier(renderExpression, "Fragment");
             // A previous branch can allocate a hoist and later be cleared/replaced. The module
             // import contract must reflect only retained output, otherwise Vue gets an unused
             // helper import and callers observe a false static-vnode capability.
@@ -984,7 +987,7 @@ internal static class RenderEmitter
                 var value = invocation.Arguments.Length == 2
                     ? new BooleanLiteral(true, "true")
                     : LowerExpression(invocation.Arguments[2].Value, context);
-                attributes.Add(new DirectAttribute(frame.NormalizeAttributeName(name), value));
+                attributes.Add(new DirectAttribute(NormalizeAttributeName(frame, name, invocation.Arguments[1].Value), value));
             }
 
             return attributes.ToImmutable();
@@ -2081,12 +2084,21 @@ internal static class RenderEmitter
                         UseWithCtx,
                         UseCreateSlots,
                         slotsAreInStableScope: _nonHoistableRenderScopeDepth == 0,
-                        isCascadingValue: isCascadingValue);
+                        isCascadingValue: isCascadingValue)
+                    {
+                        ComponentType = runtimeComponentType
+                    };
                     state.Stack.Push(componentFrame);
                     return true;
 
                 case "CloseComponent":
                     EnsureSignature(invocation, method.Parameters.Length == 0);
+                    if (state.Stack.Count > 0 &&
+                        state.Stack.Peek() is ComponentFrame { ComponentType: { } closingComponentType } closingComponent &&
+                        closingComponentType.GetAttributes().Any(ECMAScriptComponentMetadata.IsComponentAttribute))
+                    {
+                        AddDefaultParameterValues(closingComponent, context, closingComponentType);
+                    }
                     state.Close<ComponentFrame>(invocation);
                     return true;
 
@@ -2127,11 +2139,11 @@ internal static class RenderEmitter
                             out var staticVNode))
                     {
                         if (staticVNode is not NullLiteral)
-                            state.AddStaticChild(staticVNode);
+                            state.AddStaticMarkupChild(staticVNode);
                     }
                     else
                     {
-                        state.AddOptionalChild(CreateRawMarkupContent(
+                        state.AddOptionalMarkupChild(CreateRawMarkupContent(
                             LowerExpression(invocation.Arguments[1].Value, context)));
                     }
                     return true;
@@ -2361,12 +2373,127 @@ internal static class RenderEmitter
                 value = BuildChangeEventCaptureHandler(value, captureHelper);
             }
             frame.AddAttribute(new DirectAttribute(
-                frame.NormalizeAttributeName(name),
+                NormalizeAttributeName(frame, name, nameOperation),
                 value,
                 DirectBinderValueKind: _directBinderHandlers.TryGetValue(value, out var directBinderValueKind)
                     ? directBinderValueKind
                     : DirectBinderValueKind.None));
         }
+
+        private string NormalizeAttributeName(PropFrame frame, string name, IOperation nameOperation)
+        {
+            if (frame is ComponentFrame { ComponentType: { } componentType })
+            {
+                var parameters = LibraryComponentConventions.GetEffectiveParameterProperties(componentType);
+                // Exact runtime attrs such as `class` remain normal Vue fallthrough. A differently
+                // cased undeclared alias (`Class`) can instead shadow an authored CssClass mapping.
+                // 只诊断 Vue 名称歧义，不重复 Razor SG 的未知参数/类型检查。
+                if (!parameters.Any(property => string.Equals(property.Name, name, StringComparison.Ordinal)))
+                {
+                    foreach (var property in parameters)
+                    {
+                        var runtimeName = LibraryComponentConventions.GetPropRuntimeName(property);
+                        if (string.Equals(runtimeName, name, StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(runtimeName, name, StringComparison.Ordinal))
+                        {
+                            throw new RazorVueDiagnosticException(RazorVueDiagnosticFactory.Create(
+                                RazorVueDiagnosticCategory.AttributeCollision,
+                                "Attribute '" + name + "' on component '" + componentType.ToDisplayString() +
+                                "' conflicts with parameter '" + property.Name + "' mapped to Vue '" + runtimeName +
+                                "'. Use '" + property.Name + "' or the exact Vue attribute name '" + runtimeName + "'.",
+                                nameOperation.Syntax.GetLocation(),
+                                _componentSymbol,
+                                additionalLocations: ImmutableArray.Create(RazorVueDiagnosticFactory.GetSymbolLocation(property))) with
+                            {
+                                PrimaryLocation = GetAttributeAuthorLocation(nameOperation)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return frame.NormalizeAttributeName(name);
+        }
+
+        private Location GetAttributeAuthorLocation(IOperation operation)
+        {
+            var location = operation.Syntax.GetLocation();
+            if (location.GetMappedLineSpan().HasMappedPath)
+                return RazorVueDiagnosticFactory.ToAuthorLocation(location);
+
+            // Static attribute names often have no Razor #line span. Keep navigation on the
+            // owning Razor document rather than directing authors to SG implementation text.
+            var method = operation.Syntax.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+            if (method is not null)
+            {
+                var path = GeneratedCSharpBinder.GetSourceDocumentPath(_componentSymbol, method);
+                if (path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Location.Create(path,
+                        new Microsoft.CodeAnalysis.Text.TextSpan(0, 0),
+                        new Microsoft.CodeAnalysis.Text.LinePositionSpan(default, default));
+                }
+            }
+
+            return location;
+        }
+
+        private void AddDefaultParameterValues(
+            ComponentFrame frame,
+            EmitContext context,
+            INamedTypeSymbol componentType)
+        {
+            foreach (var property in LibraryComponentConventions.GetEffectiveParameterProperties(componentType))
+            {
+                var runtimeName = LibraryComponentConventions.GetPropRuntimeName(property);
+                if (LibraryComponentConventions.IsRenderFragment(property.Type) ||
+                    LibraryComponentConventions.CapturesUnmatchedValues(property) ||
+                    frame.HasExplicitParameterValue(runtimeName))
+                {
+                    continue;
+                }
+
+                foreach (var reference in property.DeclaringSyntaxReferences)
+                {
+                    if (reference.GetSyntax() is not PropertyDeclarationSyntax { Initializer: not null } declaration)
+                        continue;
+
+                    var model = _compilation.GetSemanticModel(declaration.SyntaxTree);
+                    var initializer = ((IPropertyInitializerOperation)model.GetOperation(declaration.Initializer)!).Value;
+                    // External binding classes are never C# runtime instances. Constant defaults
+                    // can be projected faithfully; instance/side-effectful initialization needs an
+                    // authored generated component and must not become repeated render work.
+                    // 不把 binding 的实例初始化伪装成每次 render 的副作用。
+                    if (!IsConstantBindingDefault(initializer))
+                    {
+                        throw Unsupported(initializer,
+                            "External component parameter '" + property.ToDisplayString() +
+                            "' requires a compile-time constant initializer. Use a constant default, " +
+                            "an explicit Razor attribute, or a generated [ECMAScriptModule] component for instance initialization.");
+                    }
+
+                    frame.AddDefaultParameterValue(
+                        runtimeName,
+                        LowerCompilerExpression(initializer, context));
+                    break;
+                }
+            }
+        }
+
+        private static bool IsConstantBindingDefault(IOperation operation)
+            => operation.ConstantValue.HasValue || operation switch
+            {
+                IFieldReferenceOperation field =>
+                    field.Field.ContainingType.SpecialType == SpecialType.System_String &&
+                    field.Field.Name == "Empty",
+                IConversionOperation conversion =>
+                    (conversion.OperatorMethod is null || Util.IsHostErasedUnionType(conversion.Type as INamedTypeSymbol)) &&
+                    IsConstantBindingDefault(conversion.Operand),
+                IObjectCreationOperation creation =>
+                    Util.IsHostErasedUnionType(creation.Type as INamedTypeSymbol) && creation.Initializer is null &&
+                    creation.Arguments.Length == 1 && IsConstantBindingDefault(creation.Arguments[0].Value),
+                _ => false
+            };
 
         private void EmitAddComponentParameter(IInvocationOperation invocation, EmitContext context, RenderState state)
         {
@@ -2399,7 +2526,7 @@ internal static class RenderEmitter
             }
 
             frame.AddAttribute(new DirectAttribute(
-                frame.NormalizeAttributeName(name),
+                NormalizeAttributeName(frame, name, invocation.Arguments[1].Value),
                 LowerExpression(invocation.Arguments[2].Value, context)));
         }
 
@@ -2798,7 +2925,7 @@ internal static class RenderEmitter
                 if (IsNullableMarkupStringOperationValue(invocation.Arguments[1].Value))
                 {
                     _usesRawMarkupRuntime = true;
-                    state.AddOptionalChild(BuildNullableMarkupContent(
+                    state.AddOptionalMarkupChild(BuildNullableMarkupContent(
                         LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
                     return;
                 }
@@ -2809,11 +2936,11 @@ internal static class RenderEmitter
                         out var staticVNode))
                 {
                     if (staticVNode is not NullLiteral)
-                        state.AddStaticChild(staticVNode);
+                        state.AddStaticMarkupChild(staticVNode);
                 }
                 else
                 {
-                    state.AddOptionalChild(CreateRawMarkupContent(
+                    state.AddOptionalMarkupChild(CreateRawMarkupContent(
                         LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
                 }
                 return;
@@ -2952,7 +3079,7 @@ internal static class RenderEmitter
                     throw Unsupported(keyOperation, "Bulk attribute names must be compile-time strings for direct render lowering.");
 
                 frame.AddAttribute(new DirectAttribute(
-                    frame.NormalizeAttributeName(name),
+                    NormalizeAttributeName(frame, name, keyOperation),
                     LowerExpression(valueOperation, context)));
             }
 
@@ -3048,6 +3175,12 @@ internal static class RenderEmitter
         {
             while (operation is IConversionOperation conversion)
                 operation = conversion.Operand;
+
+            return LowerCompilerExpression(operation, context);
+        }
+
+        private Expression LowerCompilerExpression(IOperation operation, EmitContext context)
+        {
 
             if (operation is IParameterReferenceOperation parameterReference &&
                 context.Substitutions.TryGetValue(parameterReference.Parameter, out var substituted))
@@ -5391,17 +5524,20 @@ internal static class RenderEmitter
         };
     }
 
-    private static Expression BuildDirectEventModifierHandler(Expression handlerExpression, DirectEventModifier modifier)
+    private static Expression BuildDirectEventModifierHandler(Expression? handlerExpression, DirectEventModifier modifier)
     {
         var eventParameter = new Identifier("event");
         var args = new Identifier("args");
         var statements = new List<Statement>();
         AddDirectEventModifierStatement(statements, eventParameter, modifier.PreventDefaultCondition, "preventDefault");
         AddDirectEventModifierStatement(statements, eventParameter, modifier.StopPropagationCondition, "stopPropagation");
-        statements.Add(new ReturnStatement(new CallExpression(
-            handlerExpression,
-            NodeList.From<Expression>(eventParameter, new SpreadElement(args)),
-            optional: false)));
+        if (handlerExpression is not null)
+        {
+            statements.Add(new ReturnStatement(new CallExpression(
+                handlerExpression,
+                NodeList.From<Expression>(eventParameter, new SpreadElement(args)),
+                optional: false)));
+        }
         return new ArrowFunctionExpression(
             NodeList.From<Node>(eventParameter, new RestElement(args)),
             new FunctionBody(NodeList.From(statements), strict: true),
@@ -5611,6 +5747,7 @@ internal static class RenderEmitter
     private sealed class RenderState
     {
         private readonly string? _implicitRootKey;
+        private bool _hasRawMarkupRoot;
 
         public RenderState(string? implicitRootKey = null)
         {
@@ -5630,7 +5767,20 @@ internal static class RenderEmitter
         public bool UsesFragment { get; set; }
 
         public Expression ToRenderExpression()
-            => Plan.ToRenderExpression();
+        {
+            // Raw markup has DOM range ownership but cannot receive a props key. Anchor that
+            // branch range explicitly; normal element/component roots already receive a key
+            // when their frame closes, and slot/RenderFragment output keeps its own protocol.
+            if (_implicitRootKey is not null &&
+                (Roots.Count > 1 || _hasRawMarkupRoot))
+            {
+                return CreateFragment(
+                    Roots.Select(static child => child.ToNormalArrayItem()),
+                    _implicitRootKey);
+            }
+
+            return Plan.ToRenderExpression();
+        }
 
         public void StartChildren()
         {
@@ -5643,6 +5793,18 @@ internal static class RenderEmitter
 
         public void AddStaticChild(Expression expression)
             => AddChild(VNodePlan.Static(expression));
+
+        public void AddStaticMarkupChild(Expression expression)
+        {
+            _hasRawMarkupRoot |= Stack.Count == 0;
+            AddStaticChild(expression);
+        }
+
+        public void AddOptionalMarkupChild(Expression expression)
+        {
+            _hasRawMarkupRoot |= Stack.Count == 0;
+            AddOptionalChild(expression);
+        }
 
         public void AddDynamicTextChild(Expression expression)
             => AddChild(VNodePlan.DynamicText(expression));
@@ -5708,6 +5870,7 @@ internal static class RenderEmitter
             PendingPreludeStatements.Clear();
             Guards.Clear();
             UsesFragment = false;
+            _hasRawMarkupRoot = false;
         }
 
         private Expression ApplyGuards(Expression expression)
@@ -6246,6 +6409,15 @@ internal static class RenderEmitter
 
         public override VNodePlan ToVNodePlan()
         {
+            // A standalone @ondragover:preventDefault still needs a DOM listener; merely
+            // recording metadata loses the cancellation that lets the browser deliver drop.
+            foreach (var eventName in _eventModifiers.Keys.OrderBy(static name => name, StringComparer.Ordinal))
+            {
+                if (!Attributes.Any(attribute => string.Equals(attribute.Name, eventName, StringComparison.Ordinal)))
+                    // Keep the framed listener dynamic in patch metadata, including modifier
+                    // expressions that capture a changing loop value or conditional scope.
+                    AddAttribute(new DirectAttribute(eventName, new Identifier("undefined")));
+            }
             var props = FormatPropsExpression();
             var isSingleDynamicTextChild = Children.Count == 1 && Children[0].Kind == VNodePlanKind.DynamicText;
             // A leaf with dynamic props was already a proven G2 block shape. For non-leaf
@@ -6347,7 +6519,7 @@ internal static class RenderEmitter
             }
 
             if (_eventModifiers.TryGetValue(attribute.Name, out var modifier))
-                value = BuildDirectEventModifierHandler(value, modifier);
+                value = BuildDirectEventModifierHandler(value is NullLiteral or Identifier { Name: "undefined" } ? null : value, modifier);
 
             return value;
         }
@@ -6437,6 +6609,7 @@ internal static class RenderEmitter
         private readonly Action? _useCreateSlots;
         private readonly bool _slotsAreInStableScope;
         private readonly bool _isCascadingValue;
+        private readonly List<Node> _defaultParameterValues = new();
         private bool _hasCascadingValueTypeKey;
 
         public ComponentFrame(
@@ -6489,6 +6662,16 @@ internal static class RenderEmitter
 
         public bool IsCascadingValue => _isCascadingValue;
 
+        public INamedTypeSymbol? ComponentType { get; init; }
+
+        // Decide before lowering the initializer: a shadowed default has no render-time
+        // semantics and must not reject an otherwise valid explicit parameter value.
+        public bool HasExplicitParameterValue(string name)
+            => Attributes.Any(attribute => string.Equals(attribute.Name, name, StringComparison.Ordinal));
+
+        public void AddDefaultParameterValue(string name, Expression value)
+            => _defaultParameterValues.Add(CreateObjectProperty(name, value));
+
         public void SetCascadingValueTypeKey(string typeKey)
         {
             if (!_isCascadingValue)
@@ -6532,6 +6715,15 @@ internal static class RenderEmitter
             }
 
             var props = FormatPropsExpression();
+            if (_defaultParameterValues.Count > 0)
+            {
+                // Defaults are weaker than every explicit/splat prop, including class/style.
+                // Object spread preserves replacement; mergeProps would concatenate class defaults.
+                var values = new List<Node>(_defaultParameterValues);
+                if (props is not NullLiteral)
+                    values.Add(new SpreadElement(props));
+                props = new ObjectExpression(NodeList.From(values));
+            }
             Expression? children = null;
             var additionalFlags = 0;
             if (Slots.Count > 0)

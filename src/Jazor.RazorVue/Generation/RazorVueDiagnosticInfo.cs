@@ -17,7 +17,9 @@ internal enum RazorVueDiagnosticCategory
     DirectRender,
     CompilerBridge,
     VueInject,
-    VueModule
+    VueModule,
+    ComponentCandidate,
+    AttributeCollision
 }
 
 /// <summary>

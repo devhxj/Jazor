@@ -493,6 +493,8 @@ internal static partial class DirectRenderCaseCatalog
                         additional = "createStaticVNode";
                         tertiary = "props.Visible";
                         members = "[Parameter] public bool Visible { get; set; }";
+                        // Raw DOM ranges need a keyed Fragment at the conditional boundary.
+                        usesFragment = true;
                         usesProps = true;
                         break;
                     case 4:

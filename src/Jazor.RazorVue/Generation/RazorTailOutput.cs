@@ -33,6 +33,10 @@ internal static class RazorTailOutput
         ImmutableArray<INamedTypeSymbol> components;
         try
         {
+            diagnostics = ComponentSelector.ValidateCurrentComponentContracts(compilation);
+            if (!diagnostics.IsDefaultOrEmpty)
+                return false;
+
             components = ComponentSelector.DiscoverTailOutputComponents(compilation);
         }
         catch (Exception exception)

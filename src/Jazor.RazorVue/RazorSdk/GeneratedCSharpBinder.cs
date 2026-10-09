@@ -193,7 +193,7 @@ internal static class GeneratedCSharpBinder
         return true;
     }
 
-    private static string GetSourceDocumentPath(
+    internal static string GetSourceDocumentPath(
         INamedTypeSymbol componentSymbol,
         MethodDeclarationSyntax declaration)
     {

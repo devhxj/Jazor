@@ -46,6 +46,12 @@ internal static class VueModuleIntegrityValidator
             "location",
             "history",
             "navigator",
+            // Native upload handlers create multipart bodies and may preview browser Files.
+            // These are WebIDL host constructors, not missing generated-module imports.
+            "Blob",
+            "File",
+            "FormData",
+            "URL",
             "Infinity",
             "Int8Array",
             "Int16Array",

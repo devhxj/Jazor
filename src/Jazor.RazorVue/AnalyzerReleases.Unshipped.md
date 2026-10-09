@@ -6,6 +6,8 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 JAZORVGA020 | Jazor.RazorVue | Error | RazorVue Razor SG tail output failed
+JAZORVGA027 | Jazor.RazorVue | Error | Concrete RazorVue candidates must declare their component marker and import/module identity
+JAZORVGA028 | Jazor.RazorVue | Error | Undeclared component attribute aliases must not collide with declared Vue parameter mappings
 JAZORVCA001 | Jazor.RazorVue.Compatibility | Error | Injected DbContext is server-only in a RazorVue browser component
 JAZORVCA002 | Jazor.RazorVue.Compatibility | Error | Injected ASP.NET server-only service is unavailable in a RazorVue browser component
 JAZORVCA003 | Jazor.RazorVue.Compatibility | Error | ParameterView.TryGetValue is not materialized by the browser adapter
