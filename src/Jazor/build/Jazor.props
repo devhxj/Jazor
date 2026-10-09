@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <JazorMode Condition="'$(JazorMode)' == ''">none</JazorMode>
     <!-- Generated modules stay outside wwwroot: the host mounts this directory at /jazor. -->
     <JazorDir Condition="'$(JazorDir)' == ''">$(MSBuildProjectDirectory)\jazor\</JazorDir>
     <!-- Release keeps only the browser bundle unless SSR explicitly needs the raw module graph. -->

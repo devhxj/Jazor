@@ -9,6 +9,8 @@ internal static class ProjectEntryWriter
     public const string BrowserEntryFileName = JazorArtifactDefaults.DevelopmentEntryRelativePath;
     public const string SsrEntryFileName = "ssr-entry.js";
     public const string HydrationEntryFileName = "hydration.js";
+    public const string SsrBundleSourceFileName = "ssr-bundle-entry.js";
+    public const string SsrBundleFileName = "ssr/ssr-entry.js";
     private const string SsrRuntimeResourceName = "Jazor.Emit.tooling.ssr-runner.js";
 
     public static IReadOnlyList<string> Write(
@@ -36,14 +38,32 @@ internal static class ProjectEntryWriter
             var hydrationPath = Path.Combine(root, HydrationEntryFileName);
             if (File.Exists(hydrationPath))
                 File.Delete(hydrationPath);
+            var bundleSourcePath = Path.Combine(root, SsrBundleSourceFileName);
+            if (File.Exists(bundleSourcePath))
+                File.Delete(bundleSourcePath);
         }
         else
         {
             written.Add(WriteSsrEntry(root));
             written.Add(WriteHydrationEntry(root, hydrationRoots ?? browserEntries));
+            written.Add(WriteSsrBundleEntry(root, hydrationRoots ?? browserEntries));
         }
 
         return written;
+    }
+
+    internal static void WriteSsrRuntimePackage(string projectRoot)
+    {
+        var runtimeRoot = Path.Combine(projectRoot, "ssr");
+        if (!File.Exists(Path.Combine(runtimeRoot, SsrEntryFileName)))
+            throw new FileNotFoundException("The SSR build must produce ssr/ssr-entry.js before its runtime package can be written.");
+
+        // SsrArtifactLocator starts the task from this bundled directory. Its entry is
+        // relative to that directory, and all imports are local bundled chunks: no restore
+        // graph or deno.lock is needed on the published host.
+        ProjectFileWriter.Write(Path.Combine(runtimeRoot, "package.json"), """
+            {"private":true,"type":"module","scripts":{"ssr":"deno run --no-remote --no-prompt --allow-env=NODE_ENV --allow-read=. --allow-net=127.0.0.1 ssr-entry.js"}}
+            """ + "\n");
     }
 
     private static string WriteEntry(string projectRoot, string fileName, IEnumerable<string> roots)
@@ -72,6 +92,23 @@ internal static class ProjectEntryWriter
         var content = "const componentLoaders = {\n" + string.Join(",\n", loaders) + "\n};\n" +
                       ReadResource("Jazor.Emit.tooling.hydration.js");
         var destination = Path.Combine(projectRoot, HydrationEntryFileName);
+        ProjectFileWriter.Write(destination, content);
+        return destination;
+    }
+
+    private static string WriteSsrBundleEntry(string projectRoot, IEnumerable<string> roots)
+    {
+        // A URL computed from the request cannot expose the component graph to a bundler.
+        // Literal loaders retain lazy execution while closing the published SSR graph over
+        // the same component roots used for client hydration.
+        var loaders = roots.Distinct(StringComparer.Ordinal).OrderBy(static path => path, StringComparer.Ordinal)
+            .Select(path => $"  {Quote(path)}: () => import({Quote(ECMAScriptModulePath.ResolveRelativeToImporter(SsrBundleSourceFileName, path))})");
+        var runtime = ReadResource(SsrRuntimeResourceName).Replace(
+            "const module = await import(moduleUrl.href);",
+            "const loader = componentLoaders[modulePath];\n  if (!loader) throw new Error(`Jazor SSR root module '${modulePath}' is absent from the published component graph.`);\n  const module = await loader();",
+            StringComparison.Ordinal);
+        var content = "const componentLoaders = {\n" + string.Join(",\n", loaders) + "\n};\n" + runtime;
+        var destination = Path.Combine(projectRoot, SsrBundleSourceFileName);
         ProjectFileWriter.Write(destination, content);
         return destination;
     }

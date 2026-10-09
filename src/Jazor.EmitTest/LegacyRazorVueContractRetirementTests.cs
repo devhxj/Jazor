@@ -54,7 +54,8 @@ public sealed class LegacyRazorVueContractRetirementTests
         var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
         var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.props"));
 
-        StringAssert.Contains(props, "<JazorMode Condition=\"'$(JazorMode)' == ''\">none</JazorMode>", StringComparison.Ordinal);
+        Assert.IsFalse(props.Contains("<JazorMode", StringComparison.Ordinal), "Project-authored conditional settings must run before the default.");
+        StringAssert.Contains(targets, "<JazorMode Condition=\"'$(JazorMode)' == ''\">none</JazorMode>", StringComparison.Ordinal);
         StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\jazor\\</JazorDir>", StringComparison.Ordinal);
         Assert.IsFalse(props.Contains("JazorTool", StringComparison.Ordinal), props);
         Assert.IsFalse(targets.Contains("toolchain build --manifest", StringComparison.Ordinal), targets);
@@ -82,7 +83,7 @@ public sealed class LegacyRazorVueContractRetirementTests
         StringAssert.Contains(targets, "..\\tools\\net11.0\\Jazor.Emit.dll", StringComparison.Ordinal);
         StringAssert.Contains(targets, "<MSBuild Projects=\"@(_JazorEmitToolProjectReference)\"", StringComparison.Ordinal);
         StringAssert.Contains(targets, "Targets=\"GetTargetPath\"", StringComparison.Ordinal);
-        StringAssert.Contains(targets, "DependsOnTargets=\"_ResolveJazorEmitTool;_ResolveJazorDeno\"", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "DependsOnTargets=\"_ResolveJazorEmitTool;_ResolveJazorDeno;_ResolveJazorRuntimeIdentifier\"", StringComparison.Ordinal);
         StringAssert.Contains(targets, "Could not locate Jazor.Emit.", StringComparison.Ordinal);
     }
 

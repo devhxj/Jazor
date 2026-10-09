@@ -7,6 +7,29 @@ internal static class ViteProjectWriter
 {
     public const string Version = "8.3.0";
     public const string ConfigFileName = "vite.config.js";
+    public const string SsrConfigFileName = "ssr.vite.config.js";
+
+    public static void WriteSsr(string projectRoot)
+    {
+        if (File.Exists(Path.Combine(projectRoot, SsrConfigFileName)))
+            return;
+        ProjectFileWriter.Write(Path.Combine(projectRoot, SsrConfigFileName), """
+            import { defineConfig } from 'vite';
+
+            export default defineConfig({
+              ssr: { noExternal: true },
+              build: {
+                target: 'esnext',
+                ssr: 'ssr-bundle-entry.js',
+                outDir: 'ssr',
+                sourcemap: false,
+                rolldownOptions: {
+                  output: { format: 'es', entryFileNames: 'ssr-entry.js', chunkFileNames: 'chunks/[name]-[hash].js' }
+                }
+              }
+            });
+            """ + "\n");
+    }
 
     public static void Write(string projectRoot)
     {

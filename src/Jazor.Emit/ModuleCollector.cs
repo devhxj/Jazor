@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 
 namespace Jazor.Emit;
 
@@ -6,7 +7,10 @@ namespace Jazor.Emit;
 /// Loads the requested managed assembly closure and gathers only ModuleCatalog data.
 /// Package resources are collected separately from manifest locators by LibraryMaterializer.
 /// </summary>
-internal sealed class ModuleCollector(EmitLoadContext loadContext)
+internal sealed class ModuleCollector(
+    EmitLoadContext loadContext,
+    string? runtimeIdentifier = null,
+    string? runtimeIdentifierGraphPath = null)
 {
     private readonly EmitLoadContext _loadContext = loadContext;
     private readonly HashSet<string> _assemblyPaths = new(StringComparer.OrdinalIgnoreCase);
@@ -33,7 +37,9 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
     /// NuGet can expose one managed identity through both <c>lib/</c> and
     /// <c>runtimes/&lt;rid&gt;/</c>. An AssemblyLoadContext accepts only one assembly for a
     /// simple name, so exact identity duplicates need one deterministic representative.
-    /// Explicit roots remain authoritative; otherwise prefer the non-runtime reference asset.
+    /// Target-RID selection precedes identity inspection/deduplication: an incompatible runtime
+    /// assembly may have a different identity or even an unreadable architecture. Without an
+    /// explicit target RID, retain the reference-asset preference used by existing callers.
     /// Satellite resource assemblies are not module carriers and are excluded before identity
     /// comparison. Different neutral identities sharing a simple name are reported instead of
     /// silently discarded.
@@ -43,9 +49,32 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         out IReadOnlyList<string> selectedPaths,
         out string? error)
     {
+        RuntimeAssetSelection? runtimeSelection = null;
+        if (!string.IsNullOrWhiteSpace(runtimeIdentifier))
+        {
+            try
+            {
+                runtimeSelection = RuntimeAssetSelection.Create(runtimeIdentifier, runtimeIdentifierGraphPath);
+            }
+            catch (Exception exception) when (exception is IOException or JsonException or InvalidOperationException or KeyNotFoundException)
+            {
+                selectedPaths = [];
+                error = $"Failed to read runtime graph '{runtimeIdentifierGraphPath}' for target RID '{runtimeIdentifier}': {exception.Message}";
+                return false;
+            }
+        }
+
         var candidates = new List<AssemblyCandidate>();
         foreach (var path in _assemblyPaths.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
         {
+            var asset = RuntimeAssetSelection.GetRuntimeAsset(path);
+            var priority = runtimeSelection?.GetPriority(asset.RuntimeIdentifier) ?? 0;
+            // Native DLLs are never managed catalog inputs. Filter incompatible RIDs before
+            // AssemblyName inspection so a foreign-architecture runtime cannot abort Emit.
+            if (runtimeSelection is not null && (asset.IsNative || priority < 0))
+                continue;
+            var selectionReason = runtimeSelection?.Describe(asset.RuntimeIdentifier, priority)
+                ?? (asset.RuntimeIdentifier is null ? "RID-neutral asset" : $"RID '{asset.RuntimeIdentifier}' (target RID not specified)");
             try
             {
                 var assemblyName = AssemblyName.GetAssemblyName(path);
@@ -62,12 +91,14 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                 candidates.Add(new AssemblyCandidate(
                     path,
                     simpleName,
-                    assemblyName.FullName ?? simpleName));
+                    assemblyName.FullName ?? simpleName,
+                    priority,
+                    selectionReason));
             }
             catch (Exception exception)
             {
                 selectedPaths = [];
-                error = $"Failed to inspect assembly identity for '{path}': {exception.Message}";
+                error = $"Failed to inspect assembly identity for '{path}' [{selectionReason}]: {exception.Message}";
                 return false;
             }
         }
@@ -77,7 +108,11 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                      .GroupBy(static candidate => candidate.SimpleName, StringComparer.OrdinalIgnoreCase)
                      .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase))
         {
-            var identities = group
+            // NuGet runtime assets override their RID-neutral lib counterparts. Among the
+            // compatible runtime candidates, only the nearest graph tier owns this name.
+            var nearestPriority = group.Min(static candidate => candidate.RuntimePriority);
+            var eligible = group.Where(candidate => candidate.RuntimePriority == nearestPriority).ToArray();
+            var identities = eligible
                 .Select(static candidate => candidate.FullName)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(static identity => identity, StringComparer.OrdinalIgnoreCase)
@@ -85,12 +120,15 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             if (identities.Length > 1)
             {
                 selectedPaths = [];
-                error = $"Assembly simple name '{group.Key}' resolves to conflicting identities: " +
-                        string.Join(", ", identities) + ".";
+                error = $"Assembly simple name '{group.Key}' resolves to conflicting identities " +
+                        $"for target RID '{runtimeIdentifier ?? "not specified"}': " +
+                        string.Join("; ", eligible.Select(static candidate =>
+                            $"'{candidate.Path}' => {candidate.FullName} [{candidate.SelectionReason}]")) +
+                        ". Keep one compatible managed identity for this simple name.";
                 return false;
             }
 
-            selected.Add(group
+            selected.Add(eligible
                 .OrderByDescending(candidate => SamePath(candidate.Path, normalizedRootAssemblyPath))
                 .ThenByDescending(candidate => _rootAssemblyPaths.Contains(candidate.Path))
                 .ThenBy(static candidate => IsRuntimeAssetPath(candidate.Path))
@@ -313,7 +351,12 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
     private static bool SamePath(string left, string right)
         => string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
 
-    private sealed record AssemblyCandidate(string Path, string SimpleName, string FullName);
+    private sealed record AssemblyCandidate(
+        string Path,
+        string SimpleName,
+        string FullName,
+        int RuntimePriority,
+        string SelectionReason);
 
     private static bool HasSameContent(ModuleRecord left, ModuleRecord right)
         => StringComparer.Ordinal.Equals(left.Content, right.Content) &&

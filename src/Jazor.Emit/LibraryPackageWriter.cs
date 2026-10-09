@@ -91,7 +91,9 @@ internal static class LibraryPackageWriter
             // SSR, but preserve authored commands and their choice of runtime/watch options.
             scripts["ssr"] ??= "deno run " + ssrArguments;
             scripts["ssr:dev"] ??= "deno run --watch=. --watch-exclude=node_modules,dist --no-clear-screen " + ssrArguments;
+            scripts["build:ssr"] ??= "vite build --config " + ViteProjectWriter.SsrConfigFileName;
             rootPackage["scripts"] = scripts;
+            ViteProjectWriter.WriteSsr(workspaceRoot);
         }
         WriteJson(packagePath, rootPackage);
         if (existing is null)

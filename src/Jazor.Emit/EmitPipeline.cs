@@ -118,6 +118,16 @@ internal sealed class EmitPipeline
                         bundleResult.ExitCode,
                         bundleResult.Diagnostic?.Message ?? "Jazor browser bundle failed.");
 
+                if (options.EnableSsr)
+                {
+                    var ssrBundleResult = await new JavaScriptProjectBuilder().BuildAsync(
+                        outputRoot, options.DenoExecutablePath, cancellationToken, "build:ssr").ConfigureAwait(false);
+                    if (!ssrBundleResult.IsSuccess)
+                        return EmitPipelineResult.Fail(ssrBundleResult.ExitCode,
+                            ssrBundleResult.Diagnostic?.Message ?? "Jazor SSR bundle failed.");
+                    ProjectEntryWriter.WriteSsrRuntimePackage(outputRoot);
+                }
+
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -151,7 +161,7 @@ internal sealed class EmitPipeline
         var loadContext = new EmitLoadContext(options.RootAssemblyPath);
         try
         {
-            var collector = new ModuleCollector(loadContext);
+            var collector = new ModuleCollector(loadContext, options.RuntimeIdentifier, options.RuntimeIdentifierGraphPath);
             collector.AddRootAssembly(options.RootAssemblyPath);
             foreach (var assemblyPath in options.AssemblyPaths)
                 collector.AddAssembly(assemblyPath);
@@ -335,6 +345,8 @@ internal sealed class EmitPipeline
             ProjectEntryWriter.BrowserEntryFileName,
             ProjectEntryWriter.SsrEntryFileName,
             ProjectEntryWriter.HydrationEntryFileName,
+            ProjectEntryWriter.SsrBundleSourceFileName,
+            ViteProjectWriter.SsrConfigFileName,
             "package.json",
             "package-lock.json",
             "deno.lock"

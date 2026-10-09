@@ -357,9 +357,12 @@ static void ValidateOutput(string outputRoot, IReadOnlyList<string> routes, stri
         }
     }
 
-    foreach (var required in new[] { "robots.txt", "sitemap.xml", "404.html", "site.css", "favicon.svg", "jazor/dist/bundle.js", "jazor/dist/bundle.js.map" })
+    foreach (var required in new[] { "robots.txt", "sitemap.xml", "404.html", "site.css", "favicon.svg", "jazor/dist/bundle.js" })
         if (!File.Exists(Path.Combine(outputRoot, required)))
             throw new InvalidOperationException("Static output is missing " + required + ".");
+
+    if (File.Exists(Path.Combine(outputRoot, "jazor", "dist", "bundle.js.map")))
+        throw new InvalidOperationException("Static output included source maps without JazorPublishSourceMaps=true.");
 }
 
 static void CopyDirectory(string source, string destination)

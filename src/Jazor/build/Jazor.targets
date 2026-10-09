@@ -3,6 +3,10 @@
        marker to avoid registering the same shared analyzer closure a second time. -->
   <PropertyGroup>
     <_JazorDirectToolingActive>true</_JazorDirectToolingActive>
+    <!-- Defaults belong after the project body so conditional consumer settings can opt in. -->
+    <JazorMode Condition="'$(JazorMode)' == ''">none</JazorMode>
+    <JazorPublishSourceMaps Condition="'$(JazorPublishSourceMaps)' == ''">false</JazorPublishSourceMaps>
+    <_JazorGeneratedRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(JazorDir)'))</_JazorGeneratedRoot>
   </PropertyGroup>
 
   <!--
@@ -19,15 +23,24 @@
   </ItemGroup>
 
   <!--
-    JazorDir is build output, not authored content. Keep it out of the SDK default
-    items so a generated module cannot become a new dotnet watch input on the next build.
+    Exclude the actual generated root, including relative/custom roots. C# and Razor source
+    remain authored inputs even when a case-insensitive filesystem places them in Jazor/.
   -->
   <ItemGroup Condition="'$(JazorDir)' != ''">
-    <Compile Remove="$(JazorDir)**" />
-    <Content Remove="$(JazorDir)**" />
-    <EmbeddedResource Remove="$(JazorDir)**" />
-    <None Remove="$(JazorDir)**" />
+    <!-- Glob by generated artifact extensions. Keeping source extensions (.cs/.razor/.resx)
+         in the SDK item graph prevents a case-insensitive Jazor/ author directory from vanishing. -->
+    <Content Remove="$(_JazorGeneratedRoot)**\*.js;$(_JazorGeneratedRoot)**\*.mjs;$(_JazorGeneratedRoot)**\*.map;$(_JazorGeneratedRoot)**\*.json;$(_JazorGeneratedRoot)**\*.lock;$(_JazorGeneratedRoot)**\*.css;$(_JazorGeneratedRoot)**\*.html" />
+    <None Remove="$(_JazorGeneratedRoot)**\*.js;$(_JazorGeneratedRoot)**\*.mjs;$(_JazorGeneratedRoot)**\*.map;$(_JazorGeneratedRoot)**\*.json;$(_JazorGeneratedRoot)**\*.lock;$(_JazorGeneratedRoot)**\*.css;$(_JazorGeneratedRoot)**\*.html" />
   </ItemGroup>
+
+  <Target Name="_ResolveJazorRuntimeIdentifier">
+    <PropertyGroup>
+      <_JazorTargetRuntimeIdentifier Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_JazorTargetRuntimeIdentifier>
+      <_JazorTargetRuntimeIdentifier Condition="'$(_JazorTargetRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</_JazorTargetRuntimeIdentifier>
+      <_JazorRuntimeIdentifierArgument Condition="'$(_JazorTargetRuntimeIdentifier)' != ''">--runtime-identifier &quot;$(_JazorTargetRuntimeIdentifier)&quot;</_JazorRuntimeIdentifierArgument>
+      <_JazorRuntimeIdentifierGraphArgument Condition="'$(RuntimeIdentifierGraphPath)' != ''">--runtime-identifier-graph &quot;$(RuntimeIdentifierGraphPath)&quot;</_JazorRuntimeIdentifierGraphArgument>
+    </PropertyGroup>
+  </Target>
 
   <Target Name="_ResolveJazorEmitTool">
     <PropertyGroup>
@@ -85,7 +98,7 @@
 
   <Target Name="JazorDebug"
           AfterTargets="Build"
-          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno"
+          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno;_ResolveJazorRuntimeIdentifier"
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
@@ -112,13 +125,23 @@
     <WriteLinesToFile File="$(_JazorDebugAssemblyListPath)" Lines="@(JazorDebugAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorDebugModuleAssemblyListPath)" Lines="@(JazorAdditionalAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorDebugLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot;" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <Target Name="JazorRelease"
           AfterTargets="Build"
-          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno"
-          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')">
+          DependsOnTargets="_JazorEmitRelease"
+          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')" />
+
+  <!-- Folder Publish always materializes the runtime bundle, even after a Debug build.
+       Both callers share this target so a Release publish emits only once. -->
+  <Target Name="JazorPreparePublish"
+          BeforeTargets="ComputeFilesToPublish"
+          DependsOnTargets="_JazorEmitRelease"
+          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(TargetPath)')" />
+
+  <Target Name="_JazorEmitRelease"
+          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno;_ResolveJazorRuntimeIdentifier">
     <PropertyGroup>
       <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
       <_JazorReleaseManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorReleaseManifestPath>
@@ -142,7 +165,7 @@
     <WriteLinesToFile File="$(_JazorReleaseAssemblyListPath)" Lines="@(JazorReleaseAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorReleaseModuleAssemblyListPath)" Lines="@(JazorAdditionalAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorReleaseLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot;" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <!--
@@ -151,7 +174,7 @@
     /jazor layout without making the build output an authored static-file item.
   -->
   <Target Name="AddJazorArtifactsToPublish"
-          DependsOnTargets="JazorDebug;JazorRelease"
+          DependsOnTargets="JazorPreparePublish"
           AfterTargets="ComputeFilesToPublish"
           BeforeTargets="_HandleFileConflictsForPublish"
           Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(JazorDir)')">
@@ -173,9 +196,17 @@
       -->
       <!-- Remove the SDK's exact item identities; a glob remove does not reliably match its metadata-backed items. -->
       <ResolvedFileToPublish Remove="@(_JazorSdkPublishArtifact)" />
-      <_JazorArtifactFile Include="$(_JazorPublishRoot)\**\*" />
+      <!-- RecursiveDir starts after each glob root. Retain the runtime subtree explicitly
+           so identically named browser/server chunks do not collide during publish. -->
+      <_JazorArtifactFile Include="$(_JazorPublishRoot)\dist\**\*">
+        <JazorRuntimeSubtree>dist/</JazorRuntimeSubtree>
+      </_JazorArtifactFile>
+      <_JazorArtifactFile Include="$(_JazorPublishRoot)\ssr\**\*" Condition="'$(JazorSSR)' == 'true'">
+        <JazorRuntimeSubtree>ssr/</JazorRuntimeSubtree>
+      </_JazorArtifactFile>
+      <_JazorArtifactFile Remove="@(_JazorArtifactFile)" Condition="'$(JazorPublishSourceMaps)' != 'true' and '%(_JazorArtifactFile.Extension)' == '.map'" />
       <ResolvedFileToPublish Include="@(_JazorArtifactFile)">
-        <RelativePath>jazor/%(_JazorArtifactFile.RecursiveDir)%(_JazorArtifactFile.Filename)%(_JazorArtifactFile.Extension)</RelativePath>
+        <RelativePath>jazor/%(_JazorArtifactFile.JazorRuntimeSubtree)%(_JazorArtifactFile.RecursiveDir)%(_JazorArtifactFile.Filename)%(_JazorArtifactFile.Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
     </ItemGroup>

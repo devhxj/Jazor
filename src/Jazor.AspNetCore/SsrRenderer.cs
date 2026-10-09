@@ -467,7 +467,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         string RootPath,
         FileStamp SsrEntry,
         FileStamp Package,
-        FileStamp Lock,
+        FileStamp? Lock,
         FileStamp SourceTree)
     {
         public static SsrArtifactStamp Capture(SsrArtifacts artifacts)
@@ -475,7 +475,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
                 NormalizeRoot(artifacts.RootPath),
                 FileStamp.Capture(artifacts.SsrEntryPath),
                 FileStamp.Capture(Path.Combine(artifacts.RootPath, "package.json")),
-                FileStamp.Capture(Path.Combine(artifacts.RootPath, "deno.lock")),
+                artifacts.IsBundled ? null : FileStamp.Capture(Path.Combine(artifacts.RootPath, "deno.lock")),
                 FileStamp.CaptureSourceTree(artifacts.RootPath));
     }
 
@@ -483,18 +483,20 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         string RootPath,
         string SsrEntryHash,
         string PackageHash,
-        string LockHash,
+        string? LockHash,
         string SourceTreeHash)
     {
         public string Id => SsrEntryHash[..12] + ":" +
-                            PackageHash[..12] + ":" + LockHash[..12] + ":" + SourceTreeHash[..12];
+                            PackageHash[..12] + ":" + (LockHash?[..12] ?? "bundled") + ":" + SourceTreeHash[..12];
 
         public static SsrArtifactGeneration Create(SsrArtifacts artifacts)
             => new(
                 NormalizeRoot(artifacts.RootPath),
                 ComputeFileHash(artifacts.SsrEntryPath),
                 ComputeFileHash(Path.Combine(artifacts.RootPath, "package.json")),
-                ComputeFileHash(Path.Combine(artifacts.RootPath, "deno.lock")),
+                // The locator marks a bundled runtime explicitly. Source projects still
+                // require their restore lock; published local chunks do not have one.
+                artifacts.IsBundled ? null : ComputeFileHash(Path.Combine(artifacts.RootPath, "deno.lock")),
                 ComputeSourceTreeHash(artifacts.RootPath));
     }
 

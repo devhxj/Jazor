@@ -338,11 +338,22 @@ internal static class ReleaseVerifier
     {
         RequireFile(Path.Combine(publishRoot, "Wiki.dll"), "published Wiki host");
         var jazorRoot = Path.Combine(publishRoot, "jazor");
-        RequireFile(Path.Combine(jazorRoot, "entry.js"), "standard browser entry");
-        RequireFile(Path.Combine(jazorRoot, "package.json"), "standard package declaration");
-        RequireFile(Path.Combine(jazorRoot, "deno.lock"), "Deno dependency lock");
         RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js"), "release browser bundle");
-        RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js.map"), "release browser bundle source map");
+
+        // Folder Publish carries the executable browser closure only. The source entry,
+        // package metadata, Deno lock and node_modules remain build-time inputs under the
+        // generated project and must not be required or copied to the deployment root.
+        if (File.Exists(Path.Combine(jazorRoot, "entry.js")) ||
+            File.Exists(Path.Combine(jazorRoot, "package.json")) ||
+            File.Exists(Path.Combine(jazorRoot, "deno.lock")) ||
+            Directory.Exists(Path.Combine(jazorRoot, "node_modules")))
+        {
+            throw new InvalidOperationException("Release publish retained build-time standard-project inputs under jazor/.");
+        }
+        if (File.Exists(Path.Combine(jazorRoot, "dist", "bundle.js.map")))
+        {
+            throw new InvalidOperationException("Release publish included source maps without JazorPublishSourceMaps=true.");
+        }
 
         foreach (var unexpectedPath in new[]
         {
@@ -361,9 +372,6 @@ internal static class ReleaseVerifier
         // Vue descriptor name is observable metadata and proves the page entry stayed reachable.
         RequireContains(bundle, "WikiHome", "Wiki home component marker in release bundle");
 
-        var bundleMap = File.ReadAllText(Path.Combine(jazorRoot, "dist", "bundle.js.map"));
-        RequireContains(bundleMap, "components/wiki-styles.mjs", "Wiki style module source in release source map");
-        RequireContains(bundleMap, "main.mjs", "Wiki entry source in release source map");
     }
 
     private static void RequireFile(string path, string description)

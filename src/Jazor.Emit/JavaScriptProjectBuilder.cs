@@ -8,12 +8,13 @@ internal sealed class JavaScriptProjectBuilder
     public async Task<ToolchainResult> BuildAsync(
         string projectRoot,
         string? denoExecutablePath = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string taskName = "build")
     {
         var result = await DenoPackageRestorer.RunAsync(
             DenoPackageRestorer.ResolveExecutable(denoExecutablePath),
             projectRoot,
-            ["task", "build"],
+            ["task", taskName],
             cancellationToken).ConfigureAwait(false);
         return result.Succeeded
             ? ToolchainResult.Success(0)

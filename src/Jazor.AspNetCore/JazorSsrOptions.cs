@@ -11,7 +11,7 @@ public sealed class JazorSsrOptions
     /// Overrides the generated Jazor artifact root. Relative paths are resolved from the
     /// ASP.NET Core content root. Leave empty to discover the current debug or SSR release output.
     /// </summary>
-    /// <remarks>默认自动发现；标准项目根必须包含 ssr-entry.js、package.json 和 deno.lock。</remarks>
+    /// <remarks>默认自动发现 Jazor 项目根。开发项目包含 ssr-entry.js、package.json 和 deno.lock；发布项目的 ssr/ 子目录包含自足的 bundle 和 package.json，不需要 deno.lock。</remarks>
     public string? ArtifactRootPath { get; set; }
 
     /// <summary>

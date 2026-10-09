@@ -21,16 +21,26 @@ public static class JazorFrontendExtensions
         Action<JazorFrontendOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        builder.Services.AddJazorFrontend(configure);
+        return builder;
+    }
 
-        var options = builder.Services.AddOptions<JazorFrontendOptions>();
+    /// <summary>Registers the generated frontend for hosts that compose services through Startup or a framework.</summary>
+    public static IServiceCollection AddJazorFrontend(
+        this IServiceCollection services,
+        Action<JazorFrontendOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        var options = services.AddOptions<JazorFrontendOptions>();
         if (configure is not null)
             options.Configure(configure);
         options.ValidateOnStart();
 
-        builder.Services.TryAddEnumerable(
+        services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IValidateOptions<JazorFrontendOptions>, JazorFrontendOptionsValidator>());
-        builder.Services.TryAddSingleton<JazorFrontendRegistration>();
-        builder.Services.AddHttpClient(JazorViteDevelopmentServer.HttpClientName, client =>
+        services.TryAddSingleton<JazorFrontendRegistration>();
+        services.AddHttpClient(JazorViteDevelopmentServer.HttpClientName, client =>
             {
                 client.Timeout = Timeout.InfiniteTimeSpan;
             })
@@ -40,21 +50,28 @@ public static class JazorFrontendExtensions
                 UseCookies = false,
                 AutomaticDecompression = DecompressionMethods.None
             });
-        builder.Services.AddHostedService<JazorViteDevelopmentServer>();
-        return builder;
+        services.AddHostedService<JazorViteDevelopmentServer>();
+        return services;
     }
 
     /// <summary>Applies the configured public path base at the caller-selected point in the middleware pipeline.</summary>
     public static WebApplication UseJazorPathBase(this WebApplication app)
     {
+        ((IApplicationBuilder)app).UseJazorPathBase();
+        return app;
+    }
+
+    /// <summary>Applies the configured public path base to the middleware pipeline supplied by the host.</summary>
+    public static IApplicationBuilder UseJazorPathBase(this IApplicationBuilder app)
+    {
         ArgumentNullException.ThrowIfNull(app);
         EnsureRegistered(app);
-        var properties = ((IApplicationBuilder)app).Properties;
+        var properties = app.Properties;
         if (properties.ContainsKey(PathBaseRegisteredKey))
             return app;
         properties[PathBaseRegisteredKey] = true;
 
-        var options = app.Services.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var options = app.ApplicationServices.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
         if (options.PathBase.HasValue)
             app.UsePathBase(options.PathBase);
         return app;
@@ -65,17 +82,28 @@ public static class JazorFrontendExtensions
         this WebApplication app,
         Action<JazorHostOptions>? configure = null)
     {
+        ((IApplicationBuilder)app).UseJazorFrontend(configure);
+        return app;
+    }
+
+    /// <summary>Composes the development proxy or release artifact host in the middleware pipeline supplied by the host.</summary>
+    /// <remarks>Startup and framework integrations must call this on their supplied builder so registration enters the executing pipeline.</remarks>
+    public static IApplicationBuilder UseJazorFrontend(
+        this IApplicationBuilder app,
+        Action<JazorHostOptions>? configure = null)
+    {
         ArgumentNullException.ThrowIfNull(app);
         EnsureRegistered(app);
-        var properties = ((IApplicationBuilder)app).Properties;
+        var properties = app.Properties;
         if (properties.ContainsKey(FrontendRegisteredKey))
             return app;
         properties[FrontendRegisteredKey] = true;
 
-        var options = app.Services.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var options = app.ApplicationServices.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
         app.UseJazorHost(hostOptions =>
         {
-            hostOptions.Assets.ServeArtifacts = !app.Environment.IsDevelopment();
+            hostOptions.Assets.ServeArtifacts = !environment.IsDevelopment();
             hostOptions.Assets.ArtifactProbeRelativePaths.Clear();
             hostOptions.Assets.ArtifactProbeRelativePaths.Add(options.DevelopmentEntryRelativePath);
             if (!string.Equals(
@@ -92,12 +120,12 @@ public static class JazorFrontendExtensions
             hostOptions.Assets.ConfigureArtifacts = artifactOptions =>
             {
                 artifactOptions.RequestPath = options.RequestPath;
-                artifactOptions.RootPath = options.ResolveProjectRoot(app.Environment.ContentRootPath);
+                artifactOptions.RootPath = options.ResolveProjectRoot(environment.ContentRootPath);
                 configureArtifacts?.Invoke(artifactOptions);
             };
         });
 
-        if (app.Environment.IsDevelopment())
+        if (environment.IsDevelopment())
         {
             // Keep the proxy behind the shared host pipeline so development responses receive
             // the same configured security headers as release assets and application routes.
@@ -109,12 +137,12 @@ public static class JazorFrontendExtensions
         return app;
     }
 
-    private static void EnsureRegistered(WebApplication app)
+    private static void EnsureRegistered(IApplicationBuilder app)
     {
-        if (app.Services.GetService<JazorFrontendRegistration>() is null)
+        if (app.ApplicationServices.GetService<JazorFrontendRegistration>() is null)
         {
             throw new InvalidOperationException(
-                "Register the Jazor frontend with builder.AddJazorFrontend(...) before building the application.");
+                "Register the Jazor frontend with builder.AddJazorFrontend(...) or services.AddJazorFrontend(...) before building the application.");
         }
     }
 

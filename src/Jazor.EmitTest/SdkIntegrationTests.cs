@@ -738,7 +738,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Core")]
-    public async Task Publish_LocalJazorPackage_WebSdkHost_ReleaseWithSsrEnabled_CopiesRawModuleGraph()
+    public async Task Publish_LocalJazorPackage_WebSdkHost_ReleaseWithSsrEnabled_CopiesRuntimeBundles()
     {
         var package = await LocalCorePackage.Value;
 
@@ -769,21 +769,18 @@ public sealed class SdkIntegrationTests
 
         var publishedSsrRoot = Path.Combine(publishOutputRoot, "jazor");
         Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "dist", "bundle.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "ssr", "ssr-entry.js")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(publishedSsrRoot, "host")));
         Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
         Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "ssr-importmap.json")));
         Assert.IsTrue(
-            File.Exists(Path.Combine(publishOutputRoot, "jazor", "package.json")),
-            "Publish output must carry the shared standard package project.");
-        Assert.IsTrue(
-            File.Exists(Path.Combine(publishOutputRoot, "jazor", "deno.lock")),
-            "Publish output must carry the frozen Deno package graph.");
-        Assert.IsTrue(
-            File.Exists(Path.Combine(publishOutputRoot, "jazor", "node_modules", "@vue", "server-renderer", "package.json")),
-            "Publish output must carry the restored SSR renderer package.");
-        Assert.IsTrue(
-            File.Exists(Path.Combine(publishOutputRoot, "jazor", "node_modules", "vue", "package.json")),
-            "Publish output must carry the restored Vue package.");
+            File.Exists(Path.Combine(publishedSsrRoot, "ssr", "package.json")),
+            "Publish output must carry the bundled SSR task package.");
+        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "package.json")));
+        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "deno.lock")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(publishedSsrRoot, "node_modules")));
+        Assert.IsFalse(Directory.EnumerateFiles(publishedSsrRoot, "*.map", SearchOption.AllDirectories).Any());
     }
 
     [TestMethod]
@@ -2356,10 +2353,10 @@ public sealed class SdkIntegrationTests
         var publishWebRootJazor = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
         Assert.IsFalse(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
         Assert.IsFalse(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs.map")));
-        var publishedStaticHostModule = await File.ReadAllTextAsync(Path.Combine(publishJazorRoot, "host", "app.mjs"));
-        StringAssert.Contains(publishedStaticHostModule, "sourceMappingURL=app.mjs.map");
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "dist", "bundle.js")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(publishJazorRoot, "host")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(publishJazorRoot, "node_modules")));
+        Assert.IsFalse(Directory.EnumerateFiles(publishJazorRoot, "*.map", SearchOption.AllDirectories).Any());
         Assert.IsFalse(Directory.Exists(projectWebRootJazor), $"Build must not materialize artifacts under '{projectWebRootJazor}'.");
         Assert.IsFalse(Directory.Exists(publishWebRootJazor), $"Publish must not materialize artifacts under '{publishWebRootJazor}'.");
     }
@@ -2404,10 +2401,10 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "host", "app.mjs.map")));
         Assert.IsFalse(File.Exists(Path.Combine(publishedJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs.map")));
-        var publishedWebHostModule = await File.ReadAllTextAsync(Path.Combine(publishedJazorRoot, "host", "app.mjs"));
-        StringAssert.Contains(publishedWebHostModule, "sourceMappingURL=app.mjs.map");
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "dist", "bundle.js")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(publishedJazorRoot, "host")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(publishedJazorRoot, "node_modules")));
+        Assert.IsFalse(Directory.EnumerateFiles(publishedJazorRoot, "*.map", SearchOption.AllDirectories).Any());
         Assert.IsFalse(
             Directory.Exists(sourceWebRootJazor),
             $"Build must not materialize artifacts under '{sourceWebRootJazor}'.");

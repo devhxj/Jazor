@@ -7,8 +7,8 @@ using System.Xml.Linq;
 
 // Windows SSR release consumer gate: packages Jazor locally, publishes the RazorVue TodoList
 // sample as an isolated NuGet consumer with JazorSSR=true, and verifies the published app
-// end to end. Deno renders from the standard project and runs Vite preview for its browser
-// output. ASP.NET Core proxies that service, including a configured public PathBase.
+// end to end. Deno renders from the self-contained SSR bundle and ASP.NET Core serves the
+// published browser closure, including a configured public PathBase.
 var options = VerificationOptions.Parse(args);
 var repoRoot = RequireRepoRoot();
 ConfigureRepositoryEnvironment(repoRoot);
@@ -35,7 +35,6 @@ Console.WriteLine("Starting Windows SSR release consumer verification.");
 
 Process? hostProcess = null;
 Process? chromeProcess = null;
-Process? projectServer = null;
 try
 {
     DeleteDirectoryWithinRepo(repoRoot, workRoot);
@@ -97,35 +96,7 @@ try
         consumerRoot,
         dotnetCliHome);
 
-    var projectRoot = Path.Combine(publishRoot, "jazor");
-    var deno = Path.Combine(publishRoot, "runtimes", System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier,
-        "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
     SsrReleaseVerifier.VerifyPublishLayout(publishRoot);
-
-    using var packageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectRoot, "package.json")));
-    var viteVersion = packageJson.RootElement.GetProperty("devDependencies").GetProperty("vite").GetString();
-    var projectPort = options.Port + 1;
-    projectServer = StartProcess(deno,
-        ["run", "-A", "npm:vite@" + viteVersion, "preview", "--host", "127.0.0.1", "--port", projectPort.ToString(),
-         "--strictPort", "--base", options.PathBase + "/jazor/"],
-        projectRoot, [], Path.Combine(workRoot, "project-server.stdout.log"), Path.Combine(workRoot, "project-server.stderr.log"));
-    using (var projectClient = new HttpClient())
-    {
-        var deadline = DateTime.UtcNow.AddSeconds(options.StartupTimeoutSeconds);
-        var ready = false;
-        while (DateTime.UtcNow < deadline && !projectServer.HasExited)
-        {
-            try
-            {
-                using var response = await projectClient.GetAsync($"http://127.0.0.1:{projectPort}{options.PathBase}/jazor/hydration.js");
-                if (response.IsSuccessStatusCode) { ready = true; break; }
-            }
-            catch (HttpRequestException) { }
-            await Task.Delay(100);
-        }
-        if (!ready)
-            throw new InvalidOperationException("The Deno project web service did not become ready. See project-server logs under " + workRoot);
-    }
 
     var rootUrl = "http://127.0.0.1:" + options.Port;
     hostProcess = StartProcess(
@@ -142,7 +113,6 @@ try
             // ".NET Runtime" source, so keep diagnostics on redirected process output.
             new KeyValuePair<string, string?>("Logging__EventLog__LogLevel__Default", "None"),
             new KeyValuePair<string, string?>("Todo__PathBase", options.PathBase),
-            new KeyValuePair<string, string?>("Todo__JavaScriptServer", "http://127.0.0.1:" + projectPort),
             new KeyValuePair<string, string?>("Todo__Ssr", "true")
         ],
         hostStdoutLog,
@@ -208,12 +178,6 @@ finally
     {
         hostProcess.Kill(entireProcessTree: true);
         await hostProcess.WaitForExitAsync();
-    }
-
-    if (projectServer is not null && !projectServer.HasExited)
-    {
-        projectServer.Kill(entireProcessTree: true);
-        await projectServer.WaitForExitAsync();
     }
 
     if (!options.KeepWorkRoot && Directory.Exists(workRoot))
@@ -923,7 +887,6 @@ internal static class SsrReleaseVerifier
 
         var jazorRoot = Path.Combine(publishRoot, "jazor");
         RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js"), "release browser bundle");
-        RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js.map"), "release browser bundle source map");
         RequireFile(Path.Combine(jazorRoot, "dist", "hydration.js"), "release hydration entry");
 
         // Build state belongs in obj; runtime source and browser output share this project.
@@ -943,28 +906,32 @@ internal static class SsrReleaseVerifier
         var browserSources = string.Join("\n", Directory.EnumerateFiles(Path.Combine(jazorRoot, "dist"), "*.js", SearchOption.AllDirectories).Select(File.ReadAllText));
         RequireContains(browserSources, "todo-template-v1", "TodoApp template marker in release browser output");
 
-        // Browser and SSR consume one standard project graph. The restored packages remain
-        // available to both profiles while the configured build tool selects browser exports.
-        RequireFile(Path.Combine(jazorRoot, "package.json"), "Jazor package project");
-        RequireFile(Path.Combine(jazorRoot, "deno.lock"), "frozen Deno package graph");
-        RequireFile(Path.Combine(jazorRoot, "node_modules", "vue", "package.json"), "restored Vue package");
-        RequireFile(Path.Combine(jazorRoot, "node_modules", "@vue", "server-renderer", "package.json"), "restored Vue server-renderer package");
+        // Folder Publish carries only the runnable browser and SSR closures. The source
+        // package graph and node_modules stay in the build workspace and are intentionally
+        // absent from the deployment root.
+        RequireFile(Path.Combine(jazorRoot, "ssr", "ssr-entry.js"), "bundled SSR entry");
+        RequireFile(Path.Combine(jazorRoot, "ssr", "package.json"), "bundled SSR task package");
+        if (File.Exists(Path.Combine(jazorRoot, "package.json")) ||
+            File.Exists(Path.Combine(jazorRoot, "deno.lock")) ||
+            Directory.Exists(Path.Combine(jazorRoot, "node_modules")))
+        {
+            throw new InvalidOperationException("SSR release publish retained build-time standard-project inputs under jazor/.");
+        }
+        if (Directory.EnumerateFiles(jazorRoot, "*.map", SearchOption.AllDirectories).Any())
+        {
+            throw new InvalidOperationException("SSR release publish included source maps without JazorPublishSourceMaps=true.");
+        }
         if (browserSources.Contains("server-renderer", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("Browser release bundle must not contain the SSR server-renderer entry.");
         }
 
-        var ssrRoot = jazorRoot;
-        RequireFile(Path.Combine(ssrRoot, "entry.js"), "browser project entry");
-        RequireFile(Path.Combine(ssrRoot, "ssr-entry.js"), "SSR project entry");
-        RequireFile(Path.Combine(ssrRoot, "components", "todo-app.js"), "SSR root component module");
-        RequireFile(Path.Combine(ssrRoot, "components", "todo-summary-card.js"), "SSR cascading child module");
-        RequireFile(Path.Combine(ssrRoot, "components", "todo-styles.js"), "SSR style module");
-
-        var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.js"));
-        RequireContains(rootComponent, "runSetParametersAsync", "ParameterView queue in SSR component module");
-        RequireContains(rootComponent, "onServerPrefetch", "SSR wait hook in ParameterView component module");
-        RequireContains(rootComponent, "cascading", "cascading adapter in SSR root component module");
+        var ssrRoot = Path.Combine(jazorRoot, "ssr");
+        var ssrBundle = string.Join("\n", Directory.EnumerateFiles(ssrRoot, "*.js", SearchOption.AllDirectories).Select(File.ReadAllText));
+        RequireContains(ssrBundle, "components/todo-app.js", "SSR root component in bundled runtime");
+        RequireContains(ssrBundle, "runSetParametersAsync", "ParameterView queue in bundled SSR runtime");
+        RequireContains(ssrBundle, "onServerPrefetch", "SSR wait hook in bundled runtime");
+        RequireContains(ssrBundle, "cascading", "cascading adapter in bundled runtime");
     }
 
     public static void VerifySsrDocument(string html, string pathBase)

@@ -193,7 +193,6 @@ var browserAssets = options.Publish
     ? new List<AssetExpectation>
     {
         new("/jazor/dist/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "WikiDocsContent", "RenderDocsPage" }),
-        new("/jazor/dist/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "main.mjs", "components/wiki-home.mjs", "components/wiki-styles.mjs" }),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
         new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>()),
@@ -614,7 +613,10 @@ void AssertDebugArtifacts(string artifactRoot)
 void AssertReleaseArtifacts(string artifactRoot)
 {
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js.map"), "production browser bundle source map");
+    if (File.Exists(Path.Combine(artifactRoot, "dist", "bundle.js.map")))
+    {
+        throw new InvalidOperationException("Release publish included source maps without JazorPublishSourceMaps=true.");
+    }
 
     // A normal browser release must not accidentally publish the debug module graph. SSR has
     // a separate jazor/ssr/ root, so these root-level paths remain an unambiguous check.

@@ -18,7 +18,7 @@ MSBuild 只收集：
 
 - 根程序集和引用程序集路径；
 - JS resource 包传递下来的 package metadata locator；
-- `JazorMode`、`JazorDir`、source root 和 SSR 选项。
+- `JazorMode`、`JazorDir`、source root、SSR 选项、目标 RID 与 SDK runtime graph。
 
 随后每个构建 profile 只调用一次默认 Emit 入口。Emit 在最终项目目录就地完成：
 
@@ -26,7 +26,7 @@ MSBuild 只收集：
 2. 读取并校验显式 package metadata，收集 npm/JSR identity 与 embedded carrier；
 3. 按模块/package/resource 声明解析依赖闭包、版本、路径和 hash；
 4. 生成模块、source map、资源、标准入口与 package project；增量/诊断状态单独写入 `obj`；
-5. Release 时运行项目自己的 `build` script，SSR 时生成同一项目的 SSR 入口；
+5. Release 时运行项目自己的 `build` script；SSR 同时构建自足 `ssr/` 运行闭包；
 6. 工具失败时返回原始错误，由下一次构建继续收敛。
 
 单文件使用原子替换；不做整目录 staging 或回滚。项目文件变动可直接被标准开发服务器观察。
@@ -61,8 +61,10 @@ NetPack 已从默认实现移除。Emit 不生成运行时 import map 或私有�
 Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules` 与 `deno.lock`；Emit
 增量/诊断 manifest 写入 `obj`，不属于运行项目；显式
 `embedded-mjs` carrier 按声明写入 `clr/` 等源码目录。Release 在同一项目运行生产构建，默认 Vite 输出
-`dist/`；启用 `--ssr` 时增加 `ssr-entry.js` 和 `hydration.js`。输出
+`dist/`；启用 `--ssr` 时增加开发用 `ssr-entry.js` 和 `hydration.js`，Release 另构建 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json`。Production Deno 直接执行该 bundle，无需恢复根 lock 或 `node_modules`；Development 优先当前源码图。输出
 文件属于宿主 profile，上游 npm/JSR package 的 exports、sideEffects 和依赖关系保持在共享图中。
+
+Folder Publish 只复制 `dist/**` 和启用 SSR 时的 `ssr/**`，默认排除 source map；需要发布 map 时设置 `JazorPublishSourceMaps=true`。源码、标准项目和恢复后的依赖继续保留在本地 `JazorDir`。
 
 ## 验证
 

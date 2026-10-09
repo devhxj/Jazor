@@ -104,12 +104,11 @@ internal sealed class LibraryMaterializer
                 $"No library manifest provides: {string.Join(", ", missing)}.");
         }
 
-        plan.Commit();
         var packageReferences = plan.ImportPaths.Keys
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToDictionary(
                 static specifier => specifier,
-                specifier => importIndex[specifier][0].Manifest.GetPackageReference(specifier),
+                specifier => ResolvePackageReference(importIndex[specifier][0].Manifest, specifier, manifests),
                 StringComparer.Ordinal);
         foreach (var reference in unresolvedExternalPackages.Values)
         {
@@ -122,6 +121,7 @@ internal sealed class LibraryMaterializer
 
             packageReferences[reference.Name] = reference;
         }
+        plan.Commit();
         return new LibraryAssets(
             new Dictionary<string, string>(plan.ImportPaths, StringComparer.Ordinal),
             new Dictionary<string, string>(plan.BrowserImportPaths, StringComparer.Ordinal),
@@ -132,6 +132,54 @@ internal sealed class LibraryMaterializer
             plan.MaterializedPaths.ToArray(),
             selectedManifests.Select(static manifest => manifest.SourcePath).ToArray(),
             packageReferences);
+    }
+
+    private static LibraryPackageReference ResolvePackageReference(
+        LibraryManifest manifest,
+        string specifier,
+        IReadOnlyList<LibraryManifest> manifests)
+    {
+        var packageName = LibraryPackageIdentity.GetPackageName(specifier);
+        // 只合并显式 import 的子路径身份，不推断任何新 import。Authored package
+        // metadata remains authoritative; embedded carriers keep their local source identity.
+        if (manifest.IsEmbedded || manifest.Packages.ContainsKey(packageName) ||
+            string.Equals(specifier, packageName, StringComparison.Ordinal))
+        {
+            return manifest.GetPackageReference(specifier);
+        }
+
+        var candidates = manifests
+            .Where(provider => !ReferenceEquals(provider, manifest))
+            .Select(provider => (
+                Manifest: provider,
+                Reference: provider.Packages.TryGetValue(packageName, out var reference)
+                    ? reference
+                    : !provider.IsEmbedded && provider.Imports.ContainsKey(packageName)
+                        ? provider.GetPackageReference(packageName)
+                        : null))
+            .Where(static candidate => candidate.Reference?.Source is "npm" or "jsr")
+            .ToArray();
+        var identities = candidates
+            .Select(static candidate => candidate.Reference!)
+            // SRI digests contain case-sensitive Base64. Ordinal tuple equality preserves
+            // distinct package bytes even when their encoded digests differ only by case.
+            .DistinctBy(static reference => (reference.Name, reference.Version, reference.Source, reference.Integrity))
+            .ToArray();
+        if (identities.Length > 1)
+        {
+            throw new LibraryException(
+                "JAZOR_LIBRARY_PACKAGE_CONFLICT",
+                $"Declared subpath import '{specifier}' cannot reuse package '{packageName}' because " +
+                "the supplied manifests provide conflicting identities: " +
+                string.Join("; ", candidates.Select(static candidate =>
+                    $"'{candidate.Manifest.SourcePath}' ({candidate.Reference!.Source}, " +
+                    $"version '{candidate.Reference.Version}', integrity '{candidate.Reference.Integrity ?? "<none>"}')")) +
+                ". Declare the intended package identity explicitly or supply one consistent identity.");
+        }
+
+        // A standalone manifest may already own a package through its manifest version.
+        // Reuse changes that default only when another supplied manifest pins one identity.
+        return identities.Length == 1 ? identities[0] : manifest.GetPackageReference(specifier);
     }
 
     private static void ValidateUniqueLibraries(IReadOnlyList<LibraryManifest> manifests)

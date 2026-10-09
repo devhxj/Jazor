@@ -386,24 +386,7 @@ async function main() {
         ]
       }
     ]
-    : [
-      {
-        label: "bundle",
-        scriptPath: externalPath("/jazor/dist/bundle.js"),
-        sourceMapPath: externalPath("/jazor/dist/bundle.js.map"),
-        moduleFile: "bundle.js",
-        expectedSources: [
-          "../main.mjs",
-          "../components/wiki-home.mjs",
-          "../components/wiki-styles.mjs",
-          "../style.js"
-        ],
-        expectedSourceContentMarkers: [
-          "ecmascript-style:v1",
-          "createApp("
-        ]
-      }
-    ];
+    : [];
 
   report.debugger = {
     sourceMaps: []

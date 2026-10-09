@@ -372,7 +372,10 @@ void AssertDebugArtifacts(string artifactRoot)
 void AssertReleaseArtifacts(string artifactRoot)
 {
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js.map"), "production browser bundle source map");
+    if (File.Exists(Path.Combine(artifactRoot, "dist", "bundle.js.map")))
+    {
+        throw new InvalidOperationException("Release publish included source maps without JazorPublishSourceMaps=true.");
+    }
 
     // The release is still a standard JavaScript project: source modules may remain beside the
     // bundled dist output. Retired manifest/import-map carriers must not be published.

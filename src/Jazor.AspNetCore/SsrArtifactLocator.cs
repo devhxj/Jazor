@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Jazor.Common;
 
 namespace Jazor.AspNetCore;
@@ -26,22 +27,35 @@ internal sealed class SsrArtifactLocator
     {
         foreach (var candidate in GetArtifactRootCandidates())
         {
-            if (!File.Exists(Path.Combine(candidate, SsrEntryFileName)) ||
-                !File.Exists(Path.Combine(candidate, "package.json")) ||
-                !File.Exists(Path.Combine(candidate, "deno.lock")))
+            var sourceEntryPath = Path.Combine(candidate, SsrEntryFileName);
+            var sourceArtifacts = File.Exists(sourceEntryPath) &&
+                                  File.Exists(Path.Combine(candidate, "package.json")) &&
+                                  File.Exists(Path.Combine(candidate, "deno.lock"))
+                ? new SsrArtifacts(candidate, sourceEntryPath, ResolveRequestPath())
+                : null;
+            // Release and Debug share one project root. A previous bundle must not hide
+            // current source edits or disable development worker invalidation/watch.
+            if (_environment.IsDevelopment() && sourceArtifacts is not null)
+                return sourceArtifacts;
+
+            // Release deploys the bundled server graph without the development node_modules
+            // tree. Resolve its task root first; browser URLs still use the /jazor prefix.
+            var bundledRoot = Path.Combine(candidate, "ssr");
+            if (File.Exists(Path.Combine(bundledRoot, SsrEntryFileName)) &&
+                File.Exists(Path.Combine(bundledRoot, "package.json")))
             {
-                continue;
+                // All runtime imports are local bundled chunks. Requiring a Deno restore
+                // lock here would incorrectly reject an independent runtime-only publish.
+                return new SsrArtifacts(bundledRoot, Path.Combine(bundledRoot, SsrEntryFileName), ResolveRequestPath(), IsBundled: true);
             }
 
-            return new SsrArtifacts(
-                candidate,
-                Path.Combine(candidate, SsrEntryFileName),
-                ResolveRequestPath());
+            if (sourceArtifacts is not null)
+                return sourceArtifacts;
         }
 
         throw new InvalidOperationException(
             "Jazor SSR could not find a standard project containing '" + SsrEntryFileName +
-            "', package.json, and deno.lock. Build with Jazor SSR enabled.");
+            "' and package.json in its ssr/ runtime directory, or a development project with deno.lock. Build with Jazor SSR enabled.");
     }
 
     public static string CreateBrowserArtifactUrl(
@@ -127,4 +141,5 @@ internal sealed class SsrArtifactLocator
 internal sealed record SsrArtifacts(
     string RootPath,
     string SsrEntryPath,
-    string RequestPath);
+    string RequestPath,
+    bool IsBundled = false);

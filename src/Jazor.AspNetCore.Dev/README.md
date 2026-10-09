@@ -27,6 +27,24 @@ app.Run();
 
 `UseJazorPathBase` 独立存在，让应用决定 PathBase 在转发头、认证和重定向之前的准确位置；`PathBase` 为空时可省略。配置非空 `PathBase` 时必须调用它。`UseJazorFrontend` 负责开发代理或发布产物托管，并组合标准 `UseJazorHost` 资源管线。
 
+通过 Startup、`IStartupFilter` 或 Furion 等框架组合宿主时，在服务阶段调用 `services.AddJazorFrontend(...)`，在框架传入的 `IApplicationBuilder` 上调用中间件：
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddJazorFrontend(options => options.PathBase = "/portal");
+}
+
+public void Configure(IApplicationBuilder app)
+{
+    app.UseJazorPathBase();
+    app.UseJazorFrontend();
+    // 继续注册业务路由或 SPA/SSR shell。
+}
+```
+
+这些重载与 `WebApplication` 入口共用相同的配置、HTTP/WebSocket 代理和发布产物管线。必须使用框架传入的实际 builder；捕获另一个 `WebApplication` 并在其上注册无法保证中间件进入框架执行的管线。
+
 Development 启动顺序如下：
 
 1. 探测配置的 `DevelopmentEntryRelativePath`；已有 Vite 可用时复用它，不接管其生命周期。
