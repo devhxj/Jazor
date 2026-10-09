@@ -45,13 +45,17 @@ public sealed class RazorSgOfficialNullPatternRuntimeTests
             """
             import assert from "node:assert/strict";
             import test from "node:test";
+            import { Fragment } from "vue";
 
             import component from "./components/optional-label-runtime.js";
 
             test("official Razor optional parameters take the null branch when the host omits the prop", () => {
                 const missing = component.setup({}, { slots: {} })();
-                assert.equal(missing.name, "__static");
-                assert.match(missing.props.html, /data-state="missing"/);
+                assert.equal(missing.name, Fragment);
+                assert.equal(typeof missing.props.key, "string");
+                assert.equal(missing.children.length, 1);
+                assert.equal(missing.children[0].name, "__static");
+                assert.match(missing.children[0].props.html, /data-state="missing"/);
 
                 const present = component.setup({ Label: "release" }, { slots: {} })();
                 assert.equal(present.name, "span");

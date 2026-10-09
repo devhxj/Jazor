@@ -1300,34 +1300,8 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	private bool TryBuildIntrinsicMethodInvocation(IInvocationOperation operation, IMethodSymbol method, Expression? instance, List<Expression> arguments, SenseArgument argument, out Expression? expression)
 	{
 		expression = null;
-		if (TryGetEcmascriptInlineTemplate(method, out var inlineTemplate))
-		{
-			var signature = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-			var inlineArguments = CreateLegacyWhiteListArguments(method, arguments, instance);
-			var importedIdentifierName = default(string);
-			Identifier? importedBinding = null;
-			var modulePath = method.IsStatic
-				? Util.GetECMAScriptModuleImportPath(method) ?? GetModuleImportPath(method.ContainingType)
-				: null;
-			if (!string.IsNullOrWhiteSpace(modulePath))
-			{
-				importedIdentifierName = Util.GetConfigOrSymbolName(method);
-				if (!string.IsNullOrWhiteSpace(importedIdentifierName))
-					importedBinding = BindResolvedModuleImport(
-						argument,
-						method.ContainingType,
-						modulePath!,
-						importedIdentifierName!);
-			}
-
-			expression = InstantiateInlineTemplate(
-				signature,
-				inlineTemplate,
-				inlineArguments,
-				importedIdentifierName,
-				importedBinding);
+		if (TryBuildEcmascriptInlineExpression(method, instance, arguments, argument, out expression))
 			return true;
-		}
 
 		if (TryBuildEnumerableArrayLikeIntrinsic(
 			method,
@@ -1340,6 +1314,30 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			return true;
 
 		return TryBuildIntegerHexToStringIntrinsic(method, instance, arguments, out expression);
+	}
+
+	private bool TryBuildEcmascriptInlineExpression(IMethodSymbol method, Expression? instance, List<Expression> arguments, SenseArgument argument, out Expression? expression)
+	{
+		expression = null;
+		if (!TryGetEcmascriptInlineTemplate(method, out var inlineTemplate))
+			return false;
+
+		var signature = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		var inlineArguments = CreateLegacyWhiteListArguments(method, arguments, instance);
+		var importedIdentifierName = default(string);
+		Identifier? importedBinding = null;
+		var modulePath = method.IsStatic
+			? Util.GetECMAScriptModuleImportPath(method) ?? GetModuleImportPath(method.ContainingType)
+			: null;
+		if (!string.IsNullOrWhiteSpace(modulePath))
+		{
+			importedIdentifierName = Util.GetConfigOrSymbolName(method);
+			if (!string.IsNullOrWhiteSpace(importedIdentifierName))
+				importedBinding = BindResolvedModuleImport(argument, method.ContainingType, modulePath!, importedIdentifierName!);
+		}
+
+		expression = InstantiateInlineTemplate(signature, inlineTemplate, inlineArguments, importedIdentifierName, importedBinding);
+		return true;
 	}
 
 	private static bool TryBuildIntegerHexToStringIntrinsic(
@@ -2261,6 +2259,13 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias, operation);
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
+
+		// Extension getters are accessor symbols, not invocations. Consume their explicit
+		// host template here so a typed projection cannot silently become receiver.Files.
+		if (string.IsNullOrEmpty(alias) &&
+			TryBuildEcmascriptInlineExpression(operation.Property.GetMethod!, instance, arguments, argument, out var inlineGetter) &&
+			inlineGetter is not null)
+			return WithOriginIfMissing(inlineGetter, operation);
 
 		if (TryBuildCurrentModuleIndexerGetterCall(operation.Property, instance, arguments, out var indexerGetterCall) &&
 			indexerGetterCall is not null)

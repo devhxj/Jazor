@@ -10,6 +10,19 @@ namespace ECMAScript.WebIDL.GeneratorTest;
 public sealed class PreviewBindingEmitterTests
 {
     [TestMethod]
+    public async Task EmitAsync_DomTokenListProperties_PreserveLiveHostInterface()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Interface("DOMTokenList", "[]"),
+            Interface("Element", """
+                [{"type":"attribute","name":"classList","idlType":{"idlType":"DOMTokenList"},"readonly":true,"special":""}]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern DOMTokenList ClassList { get; }");
+        Assert.IsFalse(files["Interfaces.cs"].Contains("List<string> ClassList", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public async Task EmitAsync_EnumValues_PreservesWebIdlWireTokens()
     {
         var files = await EmitGeneratedFilesAsync(

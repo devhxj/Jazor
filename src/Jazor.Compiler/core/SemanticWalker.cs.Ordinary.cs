@@ -733,23 +733,8 @@ public partial class SemanticWalker
 	{
 		expression = null;
 
-		switch (operation.WhenNotNull)
-		{
-			case IPropertyReferenceOperation propertyReference when RequiresConditionalAccessNullishGuard(propertyReference):
-				break;
-
-			case IInvocationOperation invocation when invocation.Instance is IConditionalAccessInstanceOperation:
-				break;
-
-			case IImplicitIndexerReferenceOperation implicitIndexer when implicitIndexer.Instance is IConditionalAccessInstanceOperation:
-				break;
-
-			case IArrayElementReferenceOperation arrayElementReference when arrayElementReference.ArrayReference is IConditionalAccessInstanceOperation:
-				break;
-
-			default:
-				return false;
-		}
+		if (!RequiresConditionalAccessNullishGuard(operation.WhenNotNull))
+			return false;
 
 		var tempId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.ConditionalAccessInput()));
 		argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
@@ -763,19 +748,37 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private bool RequiresConditionalAccessNullishGuard(IPropertyReferenceOperation operation)
+	private bool RequiresConditionalAccessNullishGuard(IOperation operation)
 	{
-		// Roslyn only places a readable property reference with a conditional-access instance
-		// in IConditionalAccessOperation.WhenNotNull.
-		var getter = operation.Property.GetMethod!;
-
-		if (TryGetWhiteListValue(_whiteListCompiles, getter, out _, out _))
-			return true;
-
-		if (!TryGetWhiteListValue(WhiteList.Members, getter, out _, out var entry))
-			return false;
-
-		return !(entry.Op == Op.Alias && operation.Arguments.Length == 0);
+		// Inline/CLR getter projections can erase the optional member access entirely.
+		// Walk the receiver chain so a?.Projection.Member/Method() guards the whole chain,
+		// preserving one receiver evaluation and skipping all work when it is nullish.
+		switch (operation)
+		{
+			case IPropertyReferenceOperation property:
+				var getter = property.Property.GetMethod!;
+				if (TryGetEcmascriptInlineTemplate(getter, out _) ||
+					TryGetWhiteListValue(_whiteListCompiles, getter, out _, out _) ||
+					(TryGetWhiteListValue(WhiteList.Members, getter, out _, out var entry) &&
+					 !(entry.Op == Op.Alias && property.Arguments.Length == 0)))
+					return true;
+				return property.Instance is not null && RequiresConditionalAccessNullishGuard(property.Instance);
+			case IInvocationOperation invocation:
+				return invocation.Instance is IConditionalAccessInstanceOperation ||
+					invocation.Instance is not null && RequiresConditionalAccessNullishGuard(invocation.Instance);
+			case IImplicitIndexerReferenceOperation indexer:
+				return indexer.Instance is IConditionalAccessInstanceOperation ||
+					RequiresConditionalAccessNullishGuard(indexer.Instance);
+			case IArrayElementReferenceOperation element:
+				return element.ArrayReference is IConditionalAccessInstanceOperation ||
+					RequiresConditionalAccessNullishGuard(element.ArrayReference);
+			case IFieldReferenceOperation field:
+				return field.Instance is not null && RequiresConditionalAccessNullishGuard(field.Instance);
+			case IConversionOperation conversion:
+				return RequiresConditionalAccessNullishGuard(conversion.Operand);
+			default:
+				return false;
+		}
 	}
 
 	/// <summary>

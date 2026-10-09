@@ -1,5 +1,14 @@
 # DataTransferModule.cs
 
+preview.8 保留 CLR `DataTransfer` 到 WebIDL `ECMAScript.DataTransfer` 的 Alias，
+并在 `Jazor.Vue` 中提供 extension：`NativeDataTransfer` 暴露同一个对象的完整
+WebIDL 契约，`NativeFiles` 返回 `FileList`，`NativeItems` 返回
+`DataTransferItemList`。引入 `ECMAScript` 后即可使用这些属性。
+
+既有 CLR `Files`（`string[]`）和 `Items`（DTO 数组）的 getter/setter 仍不支持；
+原生集合不会冒充这些 CLR 数组。文件和文本 payload 的使用见
+[Browser Interop](../../../docs/03-guides/browser-interop.md)。
+
 > ⚠️ **注意**：签名= _+ SHA256Hash(成员)
 
 **成员**：Microsoft.AspNetCore.Components.Web.DataTransfer.DropEffect.get</br>

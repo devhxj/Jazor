@@ -1,5 +1,10 @@
 # ProgressEventArgsModule.cs
 
+preview.8 修正 `Loaded`/`Total` 的数值域：浏览器 WebIDL 提供 Number，
+CLR getter 通过 `BigInt(...)` 转为 C# `long` carrier，避免加减运算混用
+Number 与 BigInt。`args.NativeEvent.Loaded`/`Total` 保留 WebIDL `double`
+契约。转换无法恢复浏览器 Number 已丢失的整数精度。
+
 > ⚠️ **注意**：签名= _+ SHA256Hash(成员)
 
 **成员**：Microsoft.AspNetCore.Components.Web.ProgressEventArgs.LengthComputable.get</br>

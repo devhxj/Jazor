@@ -102,7 +102,6 @@ internal sealed class WebIdlTypeMapper
         ["any"] = "object",
         ["object"] = "object",
         ["void"] = "void",
-        ["DOMTokenList"] = "List<string>",
         ["BufferSource"] = "IBufferSource",
         ["ArrayBufferView"] = "IArrayBufferView",
         ["Function"] = "Delegate",

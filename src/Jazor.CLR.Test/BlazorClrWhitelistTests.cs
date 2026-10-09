@@ -393,8 +393,8 @@ public sealed class BlazorClrWhitelistTests
             (typeof(ErrorEventArgsModule), "Microsoft.AspNetCore.Components.Web.ErrorEventArgs.Colno.get", "__arg1.colno"),
             (typeof(ErrorEventArgsModule), "Microsoft.AspNetCore.Components.Web.ErrorEventArgs.Type.get", "__arg1.type"),
             (typeof(ProgressEventArgsModule), "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.LengthComputable.get", "__arg1.lengthComputable"),
-            (typeof(ProgressEventArgsModule), "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get", "__arg1.loaded"),
-            (typeof(ProgressEventArgsModule), "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get", "__arg1.total"),
+            (typeof(ProgressEventArgsModule), "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get", "BigInt(__arg1.loaded)"),
+            (typeof(ProgressEventArgsModule), "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get", "BigInt(__arg1.total)"),
             (typeof(ProgressEventArgsModule), "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Type.get", "__arg1.type")
         })
         {

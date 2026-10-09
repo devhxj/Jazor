@@ -24,6 +24,7 @@ internal static partial class WhiteList
 		types["System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>"] = new(Op.Alias, "WeakMap");
 		types["System.Console"] = new(Op.Alias, "console");
 		types["System.Globalization.CultureInfo"] = new(Op.Alias, "String");
+		types["Microsoft.AspNetCore.Components.Web.DataTransferItem"] = new(Op.Alias, "DataTransferItem");
 		types["Microsoft.AspNetCore.Components.Web.DataTransfer"] = new(Op.Alias, "DataTransfer");
 		types["System.DateOnly"] = new(Op.Alias, "Object", null, new("JDateOnly", "./clr/System/RuntimeModule.js"));
 		types["System.DateTime"] = new(Op.Alias, "Object", null, new("JDateTime", "./clr/System/RuntimeModule.js"));
@@ -63,6 +64,7 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.IReadOnlyList<T>"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.ISet<T>"] = new(Op.Alias, "Set");
 		types["System.Index"] = new(Op.Alias, "Object", null, new("JIndex", "./clr/System/RuntimeModule.js"));
+		types["Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs"] = new(Op.Alias, "EventRef");
 		types["System.Int128"] = new(Op.Alias, "BigInt");
 		types["short"] = new(Op.Alias, "Number");
 		types["int"] = new(Op.Alias, "Number");
@@ -634,6 +636,8 @@ internal static partial class WhiteList
 		members["static System.Globalization.CultureInfo.GetCultureInfo(string, string)"] = new(Op.Import, "_e17d240a4c1653be", "./clr/System/Globalization/CultureInfoModule.js");
 		members["static System.Globalization.CultureInfo.GetCultureInfo(string, bool)"] = new(Op.Import, "_a43a2bb07ef29293", "./clr/System/Globalization/CultureInfoModule.js");
 		members["static System.Globalization.CultureInfo.GetCultureInfoByIetfLanguageTag(string)"] = new(Op.Import, "_1d57f4ce6dee8a81", "./clr/System/Globalization/CultureInfoModule.js");
+		members["Microsoft.AspNetCore.Components.Web.DataTransferItem.Kind.get"] = new(Op.Inline, "__arg1.kind");
+		members["Microsoft.AspNetCore.Components.Web.DataTransferItem.Type.get"] = new(Op.Inline, "__arg1.type");
 		members["Microsoft.AspNetCore.Components.Web.DataTransfer.DropEffect.get"] = new(Op.Inline, "__arg1.dropEffect");
 		members["Microsoft.AspNetCore.Components.Web.DataTransfer.EffectAllowed.get"] = new(Op.Inline, "__arg1.effectAllowed");
 		members["Microsoft.AspNetCore.Components.Web.DataTransfer.Types.get"] = new(Op.Inline, "__arg1.types");
@@ -1701,6 +1705,7 @@ internal static partial class WhiteList
 		members["override System.Index.GetHashCode()"] = new(Op.Import, "_1c7f7405a620c971", "./clr/System/IndexModule.js");
 		members["static System.Index.implicit operator System.Index(int)"] = new(Op.Import, "_1e1b56e4e760a5d5", "./clr/System/IndexModule.js");
 		members["override System.Index.ToString()"] = new(Op.Import, "_0fb768c390456f95", "./clr/System/IndexModule.js");
+		members["Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs.FileCount.get"] = new(Op.Inline, "__arg1.target.files.length");
 		members["System.Int128.Int128()"] = new(Op.Inline, "0n");
 		members["System.Int128.Int128(ulong, ulong)"] = new(Op.Inline, "BigInt.asIntN(128, (__arg1 << 64n) | __arg2)");
 		members["System.Int128.CompareTo(object)"] = new(Op.Import, "_b7fcdacf2f88dea3", "./clr/System/Int128Module.js");
@@ -2213,8 +2218,8 @@ internal static partial class WhiteList
 		members["Microsoft.AspNetCore.Components.Web.PointerEventArgs.PointerType.get"] = new(Op.Inline, "__arg1.pointerType");
 		members["Microsoft.AspNetCore.Components.Web.PointerEventArgs.IsPrimary.get"] = new(Op.Inline, "__arg1.isPrimary");
 		members["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.LengthComputable.get"] = new(Op.Inline, "__arg1.lengthComputable");
-		members["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get"] = new(Op.Inline, "__arg1.loaded");
-		members["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get"] = new(Op.Inline, "__arg1.total");
+		members["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get"] = new(Op.Inline, "BigInt(__arg1.loaded)");
+		members["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get"] = new(Op.Inline, "BigInt(__arg1.total)");
 		members["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Type.get"] = new(Op.Inline, "__arg1.type");
 		members["System.Collections.Generic.Queue<T>.Count.get"] = new(Op.Import, "_874ffef6d586566e", "./clr/System/Collections/Generic/QueueT1Module.js");
 		members["System.Collections.Generic.Queue<T>.Clear()"] = new(Op.Import, "_c1380aa32ab3b19e", "./clr/System/Collections/Generic/QueueT1Module.js");

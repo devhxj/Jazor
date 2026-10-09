@@ -21,7 +21,9 @@ public sealed class ClrRuntimeCatalogReaderTests
     public void JsResourceManifest_ReadsClrRuntimeModules_FromEcmascriptPackage()
     {
         using var manifest = JsonDocument.Parse(File.ReadAllText(FindEcmascriptManifest()));
-        Assert.AreEqual("1.0.0-preview.1", manifest.RootElement.GetProperty("version").GetString());
+        // Regeneration/publishing supplies the package version; the resource contract must
+        // remain valid across preview releases rather than pinning an old release snapshot.
+        Assert.IsFalse(string.IsNullOrWhiteSpace(manifest.RootElement.GetProperty("version").GetString()));
 
         var modules = ReadEcmascriptResourceModules();
 

@@ -1,5 +1,6 @@
 using Acornima;
 using Acornima.Ast;
+using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.AspNetCore.Components;
@@ -14,6 +15,59 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class BlazorClrMappingTests
 {
+    [TestMethod]
+    public void SemanticWalker_InputFileEventCount_UsesNativeFileListAndRejectsClrStreams()
+    {
+        const string prefix = "Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs";
+        AssertTypeAlias(prefix, "EventRef");
+        AssertInline(prefix + ".FileCount.get", "__arg1.target.files.length");
+        CollectionAssert.AreEqual(new[] { prefix + ".FileCount.get" },
+            WhiteList.Members.Keys.Where(key => key.StartsWith(prefix + ".", StringComparison.Ordinal)).ToArray());
+
+        var block = GetBlockOperation(
+            """
+            using Microsoft.AspNetCore.Components.Forms;
+            public static class FileEvents {
+                public static int Evaluate(InputFileChangeEventArgs args) { return args.FileCount; }
+            }
+            """);
+        var body = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToJavaScript();
+        StringAssert.Contains(body, "args.target.files.length", StringComparison.Ordinal);
+
+        var stream = GetBlockOperation(
+            """
+            using Microsoft.AspNetCore.Components.Forms;
+            public static class FileEvents {
+                public static object Evaluate(InputFileChangeEventArgs args) { return args.File; }
+            }
+            """);
+        var failure = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(stream, new SenseArgument()));
+        StringAssert.Contains(failure.Message, "InputFileChangeEventArgs.File.get", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void SemanticWalker_InputFileEventExtensions_ProjectFileAndDropPayloadsThroughHostTemplates()
+    {
+        var block = GetBlockOperation(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components.Forms;
+            using Microsoft.AspNetCore.Components.Web;
+            public static class FileEvents {
+                public static FileList? Evaluate(InputFileChangeEventArgs selected, DragEventArgs dropped) {
+                    var inputFiles = selected.Files;
+                    var dropFiles = dropped.Files;
+                    return dropFiles ?? inputFiles;
+                }
+            }
+            """);
+        var body = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToJavaScript();
+        StringAssert.Contains(body, "selected.target.files", StringComparison.Ordinal);
+        StringAssert.Contains(body, "dropped.dataTransfer?.files", StringComparison.Ordinal);
+        Assert.IsFalse(body.Contains(".Files", StringComparison.Ordinal), body);
+    }
+
     [TestMethod]
     public void WhiteList_MapsBlazorDomEventGettersToNativeCarriers()
     {
@@ -104,8 +158,8 @@ public sealed class BlazorClrMappingTests
             ["Microsoft.AspNetCore.Components.Web.ErrorEventArgs.Colno.get"] = "__arg1.colno",
             ["Microsoft.AspNetCore.Components.Web.ErrorEventArgs.Type.get"] = "__arg1.type",
             ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.LengthComputable.get"] = "__arg1.lengthComputable",
-            ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get"] = "__arg1.loaded",
-            ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get"] = "__arg1.total",
+            ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get"] = "BigInt(__arg1.loaded)",
+            ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get"] = "BigInt(__arg1.total)",
             ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Type.get"] = "__arg1.type"
         };
         var expectedImports = new Dictionary<string, (string ExportName, string ModulePath)>(StringComparer.Ordinal)
@@ -340,6 +394,200 @@ public sealed class BlazorClrMappingTests
             StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void SemanticWalker_NativeEventExtensions_KeepPreciseTypesAndInheritedMouseProperties()
+    {
+        var block = GetBlockOperation(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Forms;
+            using Microsoft.AspNetCore.Components.Web;
+
+            public static class NativeEvents {
+                public static EventTarget? Evaluate(
+                    ChangeEventArgs change, InputFileChangeEventArgs input,
+                    MouseEventArgs mouse, KeyboardEventArgs keyboard, FocusEventArgs focus,
+                    PointerEventArgs pointer, WheelEventArgs wheel, DragEventArgs drag,
+                    ClipboardEventArgs clipboard, TouchEventArgs touch,
+                    ErrorEventArgs error, ProgressEventArgs progress) {
+                    EventRef changeNative = change.NativeEvent;
+                    EventRef inputNative = input.NativeEvent;
+                    MouseEvent mouseNative = mouse.NativeEvent;
+                    KeyboardEvent keyboardNative = keyboard.NativeEvent;
+                    FocusEvent focusNative = focus.NativeEvent;
+                    PointerEvent pointerNative = pointer.NativeEvent;
+                    WheelEvent wheelNative = wheel.NativeEvent;
+                    DragEvent dragNative = drag.NativeEvent;
+                    ClipboardEvent clipboardNative = clipboard.NativeEvent;
+                    TouchEvent touchNative = touch.NativeEvent;
+                    ErrorEvent errorNative = error.NativeEvent;
+                    ProgressEvent progressNative = progress.NativeEvent;
+                    var type = change.Type + input.Type;
+                    var first = mouse.Target;
+                    var current = keyboard.CurrentTarget;
+                    var related = focus.RelatedTarget;
+                    var inherited = pointer.RelatedTarget;
+                    var wheelTarget = wheel.Target;
+                    var dragTarget = drag.Target;
+                    var payload = clipboard.ClipboardData;
+                    var view = touch.View;
+                    var defaultPrevented = error.DefaultPrevented;
+                    var stamp = progress.TimeStamp;
+                    var pressure = pointer.TangentialPressure;
+                    var twist = pointer.Twist;
+                    var altitude = pointer.AltitudeAngle;
+                    var azimuth = pointer.AzimuthAngle;
+                    var device = pointer.PersistentDeviceId;
+                    var nullableTransfer = drag.NativeDataTransfer;
+                    mouseNative.PreventDefault();
+                    return dragTarget;
+                }
+            }
+            """);
+        var argument = new SenseArgument();
+        var body = new SemanticWalker(true).Visit(block, argument)!.ToJavaScript();
+        foreach (var parameter in new[] { "change", "input", "mouse", "keyboard", "focus", "pointer", "wheel", "drag", "clipboard", "touch", "error", "progress" })
+            StringAssert.Contains(body, $"{parameter}Native={parameter};", StringComparison.Ordinal);
+        foreach (var member in new[] { "mouse.target", "keyboard.currentTarget", "focus.relatedTarget", "pointer.relatedTarget", "wheel.target", "drag.target", "clipboard.clipboardData", "touch.view", "error.defaultPrevented", "progress.timeStamp", "pointer.tangentialPressure", "pointer.twist", "pointer.altitudeAngle", "pointer.azimuthAngle", "pointer.persistentDeviceId", "drag.dataTransfer", "mouseNative.preventDefault()" })
+            StringAssert.Contains(body, member, StringComparison.Ordinal);
+        Assert.IsFalse(body.Contains(".NativeEvent", StringComparison.Ordinal), body);
+        Assert.HasCount(0, argument.FlushImportSpecifiers(), body);
+    }
+
+    [TestMethod]
+    public void SemanticWalker_NativePayloadExtensions_PreserveBrowserCollectionAndItemContracts()
+    {
+        AssertTypeAlias("Microsoft.AspNetCore.Components.Web.DataTransferItem", "DataTransferItem");
+        AssertInline("Microsoft.AspNetCore.Components.Web.DataTransferItem.Kind.get", "__arg1.kind");
+        AssertInline("Microsoft.AspNetCore.Components.Web.DataTransferItem.Type.get", "__arg1.type");
+        var block = GetBlockOperation(
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Web;
+            using BlazorTransfer = Microsoft.AspNetCore.Components.Web.DataTransfer;
+            using BlazorItem = Microsoft.AspNetCore.Components.Web.DataTransferItem;
+            public static class NativePayloads {
+                public static FileRef? Evaluate(BlazorTransfer transfer, BlazorItem item, TouchPoint point, TouchEventArgs touch, ElementReference element) {
+                    ECMAScript.DataTransfer nativeTransfer = transfer.NativeDataTransfer;
+                    FileList files = transfer.NativeFiles;
+                    DataTransferItemList items = transfer.NativeItems;
+                    ECMAScript.DataTransferItem nativeItem = item.NativeItem;
+                    var kind = item.Kind;
+                    var type = item.Type;
+                    Touch nativeTouch = point.NativeTouch;
+                    var target = point.Target;
+                    var radius = point.RadiusX + point.RadiusY;
+                    var force = point.Force;
+                    var rotation = point.RotationAngle;
+                    var altitude = point.AltitudeAngle;
+                    var azimuth = point.AzimuthAngle;
+                    var touchType = point.TouchType;
+                    TouchList original = touch.NativeTouches;
+                    TouchList targets = touch.NativeTargetTouches;
+                    TouchList changed = touch.NativeChangedTouches;
+                    var copied = touch.Touches;
+                    HTMLElement dom = element.NativeElement;
+                    nativeTransfer.SetData("text/plain", "hello");
+                    dom.Focus();
+                    return nativeItem.GetAsFile();
+                }
+            }
+            """);
+        var argument = new SenseArgument();
+        var body = new SemanticWalker(true).Visit(block, argument)!.ToJavaScript();
+        foreach (var member in new[] { "nativeTransfer=transfer;", "transfer.files", "transfer.items", "nativeItem=item;", "item.kind", "item.type", "nativeTouch=point;", "point.target", "point.radiusX", "point.radiusY", "point.force", "point.rotationAngle", "point.altitudeAngle", "point.azimuthAngle", "point.touchType", "touch.touches", "touch.targetTouches", "touch.changedTouches", "Array.from(touch.touches)", "dom=element;", "nativeTransfer.setData", "dom.focus()", "nativeItem.getAsFile()" })
+            StringAssert.Contains(body, member, StringComparison.Ordinal);
+        Assert.HasCount(0, argument.FlushImportSpecifiers(), body);
+    }
+
+    [TestMethod]
+    public void SemanticWalker_NativeEventExtension_EvaluatesSideEffectReceiverOnce()
+    {
+        var block = GetBlockOperation(
+            """
+            using System;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components.Web;
+            public static class NativeEvents {
+                public static EventTarget? Evaluate(Func<MouseEventArgs> read) {
+                    return read().NativeEvent.Target;
+                }
+            }
+            """);
+        var body = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToJavaScript();
+        Assert.AreEqual(1, body.Split("read()", StringSplitOptions.None).Length - 1, body);
+        StringAssert.Contains(body, "read().target", StringComparison.Ordinal);
+        Assert.IsFalse(body.Contains("NativeEvent", StringComparison.Ordinal), body);
+    }
+
+    [TestMethod]
+    [DataRow("Files", "files")]
+    [DataRow("NativeEvent.Type", "'change'")]
+    [DataRow("NativeEvent.ComposedPath()", "path")]
+    public async Task SemanticWalker_InlineGetterConditionalAccess_ShortCircuitsWholeChainAndEvaluatesOnce(string projection, string expected)
+    {
+        var block = GetBlockOperation(
+            $$"""
+            using System;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components.Forms;
+            public static class NativeEvents {
+                public static object? Evaluate(Func<InputFileChangeEventArgs?> read) {
+                    return read()?.{{projection}};
+                }
+            }
+            """);
+        var body = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToJavaScript();
+        var root = Path.Combine(Path.GetTempPath(), "jazor-inline-getter-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var runner = Path.Combine(root, "getter.test.mjs");
+            await File.WriteAllTextAsync(runner, $$"""
+                import assert from "node:assert/strict";
+                function evaluate(read) {{body}}
+                Deno.test("inline getter keeps the conditional receiver and chain short-circuit", () => {
+                  let reads = 0, calls = 0;
+                  const files = {}, path = [];
+                  const event = { target: { files }, type: 'change', composedPath() { calls++; return path; } };
+                  assert.equal(evaluate(() => { reads++; return null; }), undefined);
+                  assert.equal(evaluate(() => { reads++; return undefined; }), undefined);
+                  assert.equal(reads, 2);
+                  assert.equal(calls, 0);
+                  assert.equal(evaluate(() => { reads++; return event; }), {{expected}});
+                  assert.equal(reads, 3);
+                });
+                """);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", runner], timeout.Token);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Files")]
+    [DataRow("Items")]
+    public void SemanticWalker_NativePayloadExtensions_DoNotOverrideIncompatibleClrMembers(string member)
+    {
+        var block = GetBlockOperation(
+            $$"""
+            using ECMAScript;
+            public static class NativePayloads {
+                public static void Evaluate(Microsoft.AspNetCore.Components.Web.DataTransfer transfer) {
+                    var value = transfer.{{member}};
+                }
+            }
+            """);
+        var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new SenseArgument()));
+        StringAssert.Contains(failure.Message, $"Microsoft.AspNetCore.Components.Web.DataTransfer.{member}.get", StringComparison.Ordinal);
+    }
+
     private static void AssertTypeAlias(string typeName, string runtimeName)
     {
         Assert.IsTrue(WhiteList.Types.TryGetValue(typeName, out var mapping), $"Missing Blazor type mapping: {typeName}");
@@ -368,6 +616,7 @@ public sealed class BlazorClrMappingTests
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(NativeFileEventExtensions).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(EventCallback).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(MouseEventArgs).Assembly.Location));
         var compilation = CSharpCompilation.Create(
@@ -386,4 +635,3 @@ public sealed class BlazorClrMappingTests
         return Assert.IsInstanceOfType<IBlockOperation>(compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
     }
 }
-

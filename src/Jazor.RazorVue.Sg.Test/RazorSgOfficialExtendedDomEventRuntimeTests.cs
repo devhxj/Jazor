@@ -414,8 +414,8 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
                 }));
                 const afterProgress = render();
                 assert.equal(afterProgress.props["data-progress-computable"], true);
-                assert.equal(afterProgress.props["data-progress-loaded"], 42);
-                assert.equal(afterProgress.props["data-progress-total"], 100);
+                assert.equal(afterProgress.props["data-progress-loaded"], 42n);
+                assert.equal(afterProgress.props["data-progress-total"], 100n);
                 assert.equal(afterProgress.props["data-progress-type"], "progress");
             });
             """);

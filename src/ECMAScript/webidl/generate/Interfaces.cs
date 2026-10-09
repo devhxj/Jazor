@@ -550,7 +550,7 @@ public partial class Element : Node
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/part">MDN Web Docs: Element.part</see>
     /// </remarks>
     [Description("@#part")]
-    public extern List<string> Part { get; }
+    public extern DOMTokenList Part { get; }
 
     /// <summary>
     /// Experimental: This is an experimental technologyCheck the Browser compatibility table carefully before using this in production. The startViewTransition() method of the Element interface starts a new same-document (SPA) element-scoped view transition and returns a ViewTransition object to represent it. The sequence of steps followed when startViewTransition() is invoked is explained in the view transition process section.
@@ -866,7 +866,7 @@ public partial class Element : Node
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">MDN Web Docs: Element.classList</see>
     /// </remarks>
     [Description("@#classList")]
-    public extern List<string> ClassList { get; }
+    public extern DOMTokenList ClassList { get; }
 
     /// <summary>
     /// For each slot of signalSet: fire an event named slotchange, with its bubbles attribute set to true, at slot.
@@ -34460,7 +34460,7 @@ public class HTMLFencedFrameElement : HTMLElement
     /// <see href="https://wicg.github.io/fenced-frame/#dom-htmlfencedframeelement-sandbox">Fenced Frame: 2 The fencedframe element</see>
     /// </remarks>
     [Description("@#sandbox")]
-    public extern List<string> Sandbox { get; }
+    public extern DOMTokenList Sandbox { get; }
 
     /// <summary>
     /// The allow property of the HTMLFencedFrameElement gets and sets the value of the corresponding &lt;fencedframe&gt; allow attribute, which represents a Permissions Policy applied to the content when it is first embedded. Not all permissions policies are allowed in fenced frames. The allowed permissions are listed at Permissions policies available to fenced frames — these are required for fenced frame content originating from the specified APIs to load. If you don&apos;t set the allow attribute, those permissions will be allowed by default. If you want to narrow down the permissions set, you need to make sure that all of the required permissions for the APIs you are using are set in the allow attribute.
@@ -77342,7 +77342,7 @@ public extern HTMLAreaElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAreaElement/relList">MDN Web Docs: HTMLAreaElement.relList</see>
     /// </remarks>
     [Description("@#relList")]
-    public extern List<string> RelList { get; }
+    public extern DOMTokenList RelList { get; }
 
     /// <summary>
     /// The IDL attribute referrerPolicy must reflect the referrerpolicy content attribute, limited to only known values.
@@ -78971,7 +78971,7 @@ public extern HTMLScriptElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement/blocking">MDN Web Docs: HTMLScriptElement.blocking</see>
     /// </remarks>
     [Description("@#blocking")]
-    public extern List<string> Blocking { get; }
+    public extern DOMTokenList Blocking { get; }
 
     /// <summary>
     /// The crossOrigin IDL attribute must reflect the crossorigin content attribute, limited to only known values.
@@ -79591,7 +79591,7 @@ public extern HTMLAnchorElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/relList">MDN Web Docs: HTMLAnchorElement.relList</see>
     /// </remarks>
     [Description("@#relList")]
-    public extern List<string> RelList { get; }
+    public extern DOMTokenList RelList { get; }
 
     /// <summary>
     /// The text attribute&apos;s getter must return this element&apos;s descendant text content.
@@ -80745,7 +80745,7 @@ public extern HTMLFormElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/relList">MDN Web Docs: HTMLFormElement.relList</see>
     /// </remarks>
     [Description("@#relList")]
-    public extern List<string> RelList { get; }
+    public extern DOMTokenList RelList { get; }
 
     /// <summary>
     /// The elements IDL attribute must return an HTMLFormControlsCollection rooted at the form element&apos;s root, whose filter matches listed elements whose form owner is the form element, with the exception of input elements whose type attribute is in the Image Button state, which must, for historical reasons, be excluded from this particular collection.
@@ -81043,7 +81043,7 @@ public extern HTMLIFrameElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement/sandbox">MDN Web Docs: HTMLIFrameElement.sandbox</see>
     /// </remarks>
     [Description("@#sandbox")]
-    public extern List<string> Sandbox { get; }
+    public extern DOMTokenList Sandbox { get; }
 
     /// <summary>
     /// The allow property of the HTMLIFrameElement interface indicates the Permissions Policy specified for this &lt;iframe&gt; element. The policy defines what features are available to the &lt;iframe&gt; element (for example, access to the microphone, camera, battery, web-share, etc.) based on the origin of the request. The Permissions Policy specified by the allow attribute implements a further restriction on top of the policy specified in the Permissions-Policy header. It doesn&apos;t replace it. See &lt;iframe&gt;&apos;s Permissions Policy syntax for more details. It reflects the allow attribute of the &lt;iframe&gt; element.
@@ -82288,7 +82288,7 @@ public extern HTMLLinkElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement/relList">MDN Web Docs: HTMLLinkElement.relList</see>
     /// </remarks>
     [Description("@#relList")]
-    public extern List<string> RelList { get; }
+    public extern DOMTokenList RelList { get; }
 
     /// <summary>
     /// The media property of the HTMLLinkElement interface is a string representing a list of one or more media formats to which the resource applies. It reflects the media attribute of the &lt;link&gt; element.
@@ -82333,7 +82333,7 @@ public extern HTMLLinkElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement/sizes">MDN Web Docs: HTMLLinkElement.sizes</see>
     /// </remarks>
     [Description("@#sizes")]
-    public extern List<string> Sizes { get; }
+    public extern DOMTokenList Sizes { get; }
 
     /// <summary>
     /// The imageSrcset property of the HTMLLinkElement interface is a string which identifies one or more comma-separated image candidate strings. This property reflects the value of the &lt;link&gt; element&apos;s imagesrcset attribute. This property can retrieve or set the imagesrcset attribute value. Each image candidate string contains an image URL and an optional width and/or pixel density descriptor indicating the conditions under which that candidate image should be used. &quot;images/team-photo.jpg, images/team-photo-retina.jpg 2x, images/team-photo-large.jpg 1400w&quot; For HTML &lt;link&gt; elements with rel=&quot;preload&quot; and as=&quot;image&quot; set, the imagesrcset attribute has similar syntax and semantics as the &lt;img&gt; element&apos;s srcset attribute, which indicates to preload the appropriate resource used by an &lt;img&gt; element with corresponding values for its srcset and sizes attributes. If the imageSrcset property includes width descriptors, the imageSizes property must be non-null, or the imageSrcset value will be ignored.
@@ -82369,7 +82369,7 @@ public extern HTMLLinkElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement/blocking">MDN Web Docs: HTMLLinkElement.blocking</see>
     /// </remarks>
     [Description("@#blocking")]
-    public extern List<string> Blocking { get; }
+    public extern DOMTokenList Blocking { get; }
 
     /// <summary>
     /// The disabled property of the HTMLLinkElement interface is a boolean value that represents whether the link is disabled. It only has an effect with style sheet links (rel property set to stylesheet). If disabled attribute is specified in the HTML when it is loaded, the stylesheet will not be loaded during page load. Instead, the stylesheet will be loaded only when the disabled property is set to false or removed. Setting the disabled property using JavaScript causes the stylesheet to be removed from the document&apos;s Document.styleSheets list. It reflects the disabled attribute of the &lt;link&gt; element.
@@ -83090,7 +83090,7 @@ public extern HTMLOutputElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLOutputElement/htmlFor">MDN Web Docs: HTMLOutputElement.htmlFor</see>
     /// </remarks>
     [Description("@#htmlFor")]
-    public extern List<string> HtmlFor { get; }
+    public extern DOMTokenList HtmlFor { get; }
 
     /// <summary>
     /// Labelable elements and all input elements have a live NodeList object associated with them that represents the list of label elements, in tree order, whose labeled control is the element in question. The labels IDL attribute of labelable elements that are not form-associated custom elements, and the labels IDL attribute of input elements, on getting, must return that NodeList object, and that same value must always be returned, unless this element is an input element whose type attribute is in the Hidden state, in which case it must instead return null.
@@ -83549,7 +83549,7 @@ public extern HTMLStyleElement();
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLStyleElement/blocking">MDN Web Docs: HTMLStyleElement.blocking</see>
     /// </remarks>
     [Description("@#blocking")]
-    public extern List<string> Blocking { get; }
+    public extern DOMTokenList Blocking { get; }
 
     /// <summary>
     /// The HTMLStyleElement.type property returns the type of the current style. The value mirrors the HTML &lt;style&gt; element&apos;s type attribute. Authors should not use this property or rely on the value.
@@ -99452,7 +99452,7 @@ public partial class SVGAElement : SVGGraphicsElement
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/SVGAElement/relList">MDN Web Docs: SVGAElement.relList</see>
     /// </remarks>
 [Description("@#relList")]
-    public extern List<string> RelList { get; }
+    public extern DOMTokenList RelList { get; }
 
     /// <summary>
     /// The hreflang property of the SVGAElement interface returns a string indicating the language of the linked resource. This property can be set, to change the URL&apos;s hreflang value. It reflects the value of the hreflang attribute.

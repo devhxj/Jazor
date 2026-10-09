@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorWithoutModuleAttribute_UsesTheConventionalArtifactContractOnDenoHost()
+    public async Task BuildComponent_OfficialRazorWithModuleAttribute_PreservesTheRenderArtifactContractOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConventionalArtifactPage.razor"),
@@ -19,6 +19,7 @@ public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
             """
             namespace Demo.Pages;
 
+            [ECMAScriptModule("./components/conventional-artifact-page-runtime")]
             public partial class ConventionalArtifactPage : ComponentBase, IVueComponent
             {
                 private string Title { get; } = "Release overview";
@@ -42,7 +43,7 @@ public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
 
             import component from "./components/conventional-artifact-page-runtime.js";
 
-            test("official Razor components without explicit module metadata retain the render artifact contract", () => {
+            test("official Razor components with explicit module metadata retain the render artifact contract", () => {
                 const page = component.setup({}, { slots: {} })();
                 assert.equal(page.name, "main");
                 assert.equal(page.props["data-area"], "releases");

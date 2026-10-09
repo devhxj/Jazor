@@ -196,19 +196,19 @@ internal static class ClrRuntimeCatalogEmitter
         foreach (var module in modules)
         {
             var path = module.RelativePath;
-            imports[module.RelativePath] = new
+            // Schema v2 has one canonical carrier path/hash and explicit graph edges.
+            // Regeneration must produce the same contract consumed by LibraryManifest.
+            var entry = new Dictionary<string, object>
             {
-                type = "module",
-                development = path,
-                production = path,
-                developmentHash = module.Hash,
-                productionHash = module.Hash,
-                developmentDependencies = module.PackageDependencies,
-                productionDependencies = module.PackageDependencies,
-                developmentModuleDependencies = module.ModuleDependencies,
-                productionModuleDependencies = module.ModuleDependencies,
-                files = Array.Empty<object>()
+                ["type"] = "module",
+                ["files"] = Array.Empty<object>(),
+                ["path"] = path,
+                ["hash"] = module.Hash,
+                ["moduleDependencies"] = module.ModuleDependencies
             };
+            if (module.PackageDependencies.Count > 0)
+                entry["dependencies"] = module.PackageDependencies;
+            imports[module.RelativePath] = entry;
         }
 
         return new

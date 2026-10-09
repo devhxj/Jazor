@@ -93,6 +93,7 @@ var outTypes = new Type[]{
 
 	// DOM-origin event carriers and controlled element operations.
 	typeof(ChangeEventArgs),
+	typeof(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs),
 	typeof(ElementReference),
 	typeof(Microsoft.AspNetCore.Components.ElementReferenceExtensions),
 	typeof(MouseEventArgs),
@@ -208,6 +209,7 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(RenderTreeBuilder),"Object"},
 	{typeof(WebRenderTreeBuilderExtensions),"Object"},
 	{typeof(ChangeEventArgs),"EventRef"},
+	{typeof(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs),"EventRef"},
 	{typeof(ElementReference),"HTMLElement"},
 	{typeof(Microsoft.AspNetCore.Components.ElementReferenceExtensions),"Object"},
 	{typeof(MouseEventArgs),"MouseEvent"},

@@ -94,9 +94,11 @@ public readonly struct Number : IEquatable<Number>, IComparable, IComparable<Num
 	/// <summary>Projects a JavaScript Number to an unsigned 32-bit integer. 将 JavaScript Number 投影为无符号 32 位整数。</summary>
 	public extern static implicit operator uint(Number value);
 
-	//public extern static implicit operator long(Number value);
+	/// <summary>Converts an integral JavaScript Number to the BigInt-backed C# long domain. Fractional values follow JavaScript BigInt conversion and throw; precision already lost in Number cannot be recovered. 将整数 Number 显式转换为 long；小数值按 BigInt 规则抛错，不能恢复 Number 已丢失的精度。</summary>
+	public extern static explicit operator long(Number value);
 
-	//public extern static implicit operator ulong(Number value);
+	/// <summary>Converts an integral JavaScript Number to the BigInt-backed C# ulong domain. Use a decimal string for identifiers larger than 2^53. 将整数 Number 显式转换为 ulong；超过 2^53 的标识应从十进制字符串构造。</summary>
+	public extern static explicit operator ulong(Number value);
 
 	/// <summary>Projects a JavaScript Number to a single-precision value. 将 JavaScript Number 投影为单精度值。</summary>
 	public extern static implicit operator float(Number value);

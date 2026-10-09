@@ -15,6 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- RazorVue event extensions live in its opt-in authoring payload, keeping the core
+         ECMAScript/CLR runtime free from ASP.NET Core authoring dependencies. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
   </ItemGroup>

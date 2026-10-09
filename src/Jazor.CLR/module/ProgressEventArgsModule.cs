@@ -10,15 +10,15 @@ public static class ProgressEventArgsModule
 	[Jazor(Op.Discard, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.LengthComputable.set")]
 	public extern static void _22c2a4d44ec32b04(ProgressEvent instance, bool value);
 
-	// ProgressEvent.loaded/total are WebIDL unsigned long long values, so they
-	// retain the BigInt carrier. This is distinct from WebIDL long/int fields.
-	[Jazor(Op.Inline, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get", "__arg1.loaded")]
+	// WebIDL exposes these counters as JS Number; CLR long arithmetic uses BigInt.
+	// Convert at the mapped getter so assignments and arithmetic keep the CLR carrier.
+	[Jazor(Op.Inline, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get", "BigInt(__arg1.loaded)")]
 	public extern static BigInt _474fa409d12984bc(ProgressEvent instance);
 
 	[Jazor(Op.Discard, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.set")]
 	public extern static void _64d355fb34da54b9(ProgressEvent instance, BigInt value);
 
-	[Jazor(Op.Inline, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get", "__arg1.total")]
+	[Jazor(Op.Inline, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get", "BigInt(__arg1.total)")]
 	public extern static BigInt _e78be307199c1aa7(ProgressEvent instance);
 
 	[Jazor(Op.Discard, "Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.set")]
