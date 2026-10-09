@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- today-verse:start -->
-<p><a href="https://www.jinrishici.com/">人去秋千闲挂月，马停杨柳倦嘶风。</a></p>
+<p><a href="https://www.jinrishici.com/">天上秋期近，人间月影清。</a></p>
 <!-- today-verse:end -->
 
 <h1>Jazor</h1>
