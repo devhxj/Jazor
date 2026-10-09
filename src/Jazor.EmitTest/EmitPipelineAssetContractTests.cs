@@ -38,13 +38,18 @@ public sealed class EmitPipelineAssetContractTests
                     artifactPath: "assets/logo.txt",
                     assetHash: Sha256(expectedAssetContent)));
 
+            using var progress = new StringWriter();
             var result = await ExecuteAsync(
                 assemblyPath,
                 sourceRoot,
-                outputRoot);
+                outputRoot,
+                progress);
 
             Assert.IsFalse(result.IsSuccess);
             StringAssert.Contains(result.Error, "JAZOR_MODULE_ASSET_HASH_MISMATCH", StringComparison.Ordinal);
+            StringAssert.Contains(result.Error, "failed during 'collect modules'", StringComparison.Ordinal);
+            StringAssert.Contains(progress.ToString(), "collect modules: failed", StringComparison.Ordinal);
+            Assert.IsFalse(progress.ToString().Contains("write project: started", StringComparison.Ordinal));
             Assert.AreEqual(expectedAssetContent, await File.ReadAllTextAsync(existingAsset));
             // 写入前校验阶段拒绝：不产生 manifest，既有输出保持原样。
             Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")));
@@ -110,8 +115,9 @@ public sealed class EmitPipelineAssetContractTests
     private static Task<EmitPipelineResult> ExecuteAsync(
         string assemblyPath,
         string sourceRoot,
-        string outputRoot)
-        => new EmitPipeline().ExecuteAsync(
+        string outputRoot,
+        TextWriter? progress = null)
+        => new EmitPipeline(progress).ExecuteAsync(
             new EmitOptions(
                 assemblyPath,
                 [],

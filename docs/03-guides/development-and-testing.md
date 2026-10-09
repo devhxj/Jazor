@@ -53,6 +53,12 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 
 门槛是验证规则，不等同于任一历史报告中的固定通过数量。对当前结果的判断应运行相应脚本或测试命令。
 
+## Emit 阶段输出与取消（未发布源码）
+
+正常构建会显示 `[Jazor Emit]` 阶段的开始、完成和耗时，依次包括模块收集、工程写入、依赖 restore/check、Release 浏览器 bundle，以及启用时的 SSR bundle。Deno 的 stdout/stderr 即时输出；失败的最终诊断仍保留原始输出和退出码，并指出失败阶段与工程目录。
+
+Emit CLI 接收 Ctrl+C 后取消当前工作并终止自身 Deno 进程树。DenoHost 2.9.7 的启动后等待先完成，再处理取消，避免启动过程中丢失已创建进程的所有权。Emit 就地写入，取消可能留下部分产物；再次构建会按现有契约收敛，不承诺回滚。
+
 ## 改动边界
 
 - 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；生成器维护该文件。

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Jazor.Common;
 
 namespace Jazor.Emit;
@@ -13,6 +14,9 @@ internal sealed class EmitPipeline
 {
     private const string SsrVueSpecifier = "vue";
     private const string SsrRendererSpecifier = "@vue/server-renderer";
+    private readonly TextWriter? _progress;
+
+    public EmitPipeline(TextWriter? progress = null) => _progress = progress;
 
     public async Task<EmitPipelineResult> ExecuteAsync(
         EmitOptions options,
@@ -20,16 +24,22 @@ internal sealed class EmitPipeline
     {
         ArgumentNullException.ThrowIfNull(options);
 
+        var outputRoot = options.OutputDirectory;
+        var stage = "validate options";
+        var stageTimer = Stopwatch.StartNew();
         try
         {
+            StartStage(stage);
             ValidateOptions(options);
             cancellationToken.ThrowIfCancellationRequested();
 
-            var outputRoot = Path.GetFullPath(options.OutputDirectory);
+            outputRoot = Path.GetFullPath(options.OutputDirectory);
             var manifestPath = Path.GetFullPath(options.ManifestPath);
+            FinishStage("completed");
+            StartStage("collect modules");
             var collection = CollectModules(options);
             if (!collection.IsSuccess)
-                return EmitPipelineResult.Fail(collection.ExitCode, collection.Error!);
+                return Fail(collection.ExitCode, collection.Error!);
 
             // Write-phase boundary: all pure validation runs first so a rejected request never
             // leaves partial output. Failures after the first write are reported and converge
@@ -39,6 +49,8 @@ internal sealed class EmitPipeline
                 collection.Assets,
                 GetReservedOutputPaths(collection.Modules),
                 cancellationToken);
+            FinishStage("completed");
+            StartStage("write project");
 
             // 就地写入最终 jazor/：不做 staging、备份或回滚。失败显式返回，下一次构建收敛。
             Directory.CreateDirectory(outputRoot);
@@ -49,7 +61,7 @@ internal sealed class EmitPipeline
                 manifestPath,
                 collection.Modules);
             if (!moduleWrite.IsSuccess)
-                return EmitPipelineResult.Fail(moduleWrite.ExitCode, moduleWrite.Error!);
+                return Fail(moduleWrite.ExitCode, moduleWrite.Error!);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -100,37 +112,47 @@ internal sealed class EmitPipeline
             }
             // Standard JavaScript tooling and DenoHost consume this same package.json/node_modules from jazor/.
             LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);
+            FinishStage("completed");
+            StartStage("restore/check packages");
             await DenoPackageRestorer.RestoreAndCheckAsync(
                 outputRoot,
                 options.DenoExecutablePath,
                 entryPaths,
                 packageLibraries,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken,
+                _progress).ConfigureAwait(false);
+            FinishStage("completed");
             if (options.Mode == BuildMode.Production)
             {
+                StartStage("bundle browser");
                 var bundleResult = await BuildBrowserBundleAsync(
                     options,
                     outputRoot,
                     manifestPath,
                     cancellationToken).ConfigureAwait(false);
                 if (!bundleResult.IsSuccess)
-                    return EmitPipelineResult.Fail(
+                    return Fail(
                         bundleResult.ExitCode,
                         bundleResult.Diagnostic?.Message ?? "Jazor browser bundle failed.");
+                FinishStage("completed");
 
                 if (options.EnableSsr)
                 {
+                    StartStage("bundle SSR");
                     var ssrBundleResult = await new JavaScriptProjectBuilder().BuildAsync(
-                        outputRoot, options.DenoExecutablePath, cancellationToken, "build:ssr").ConfigureAwait(false);
+                        outputRoot, options.DenoExecutablePath, cancellationToken, "build:ssr", _progress).ConfigureAwait(false);
                     if (!ssrBundleResult.IsSuccess)
-                        return EmitPipelineResult.Fail(ssrBundleResult.ExitCode,
+                        return Fail(ssrBundleResult.ExitCode,
                             ssrBundleResult.Diagnostic?.Message ?? "Jazor SSR bundle failed.");
                     ProjectEntryWriter.WriteSsrRuntimePackage(outputRoot);
+                    FinishStage("completed");
                 }
 
             }
 
+            StartStage("finalize");
             cancellationToken.ThrowIfCancellationRequested();
+            FinishStage("completed");
 
             return EmitPipelineResult.Success(
                 collection.AssemblyCount,
@@ -144,15 +166,37 @@ internal sealed class EmitPipeline
         }
         catch (LibraryException exception)
         {
-            return EmitPipelineResult.Fail(5, $"{exception.Code}: {exception.Message}");
+            return Fail(5, $"{exception.Code}: {exception.Message}");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return EmitPipelineResult.Fail(6, "Jazor Emit was cancelled before the output was committed.");
+            FinishStage("cancelled");
+            // Emit writes in place; cancellation can leave partial output, never claim rollback.
+            return EmitPipelineResult.Fail(6, $"Jazor Emit was cancelled during '{stage}' (project={outputRoot}). Rebuild to converge the output.");
         }
         catch (Exception exception)
         {
-            return EmitPipelineResult.Fail(5, exception.ToString());
+            return Fail(5, exception.ToString());
+        }
+
+        void StartStage(string name)
+        {
+            stage = name;
+            stageTimer.Restart();
+            _progress?.WriteLine($"[Jazor Emit] {stage}: started (project={outputRoot})");
+            _progress?.Flush();
+        }
+
+        void FinishStage(string status)
+        {
+            _progress?.WriteLine($"[Jazor Emit] {stage}: {status} ({stageTimer.ElapsedMilliseconds} ms)");
+            _progress?.Flush();
+        }
+
+        EmitPipelineResult Fail(int exitCode, string error)
+        {
+            FinishStage("failed");
+            return EmitPipelineResult.Fail(exitCode, $"Jazor Emit failed during '{stage}' (project={outputRoot}).{Environment.NewLine}{error}");
         }
     }
 
@@ -205,7 +249,7 @@ internal sealed class EmitPipeline
         }
     }
 
-    private static async Task<ToolchainResult> BuildBrowserBundleAsync(
+    private async Task<ToolchainResult> BuildBrowserBundleAsync(
         EmitOptions options,
         string projectRoot,
         string manifestPath,
@@ -217,7 +261,8 @@ internal sealed class EmitPipeline
         var result = await new JavaScriptProjectBuilder().BuildAsync(
             projectRoot,
             options.DenoExecutablePath,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            progress: _progress).ConfigureAwait(false);
         return result with { ModuleCount = ManifestModel.TryLoad(manifestPath)?.Modules.Count ?? 0 };
     }
 

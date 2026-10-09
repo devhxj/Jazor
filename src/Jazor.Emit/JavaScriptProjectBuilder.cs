@@ -9,13 +9,15 @@ internal sealed class JavaScriptProjectBuilder
         string projectRoot,
         string? denoExecutablePath = null,
         CancellationToken cancellationToken = default,
-        string taskName = "build")
+        string taskName = "build",
+        TextWriter? progress = null)
     {
         var result = await DenoPackageRestorer.RunAsync(
             DenoPackageRestorer.ResolveExecutable(denoExecutablePath),
             projectRoot,
             ["task", taskName],
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            progress).ConfigureAwait(false);
         return result.Succeeded
             ? ToolchainResult.Success(0)
             : ToolchainResult.Fail(result.ExitCode, "JAZOR_TOOLCHAIN_BUILD_FAILED",

@@ -10,7 +10,22 @@ static async Task<int> RunEmitAsync(string[] args)
         return 1;
     }
 
-    var result = await new EmitPipeline().ExecuteAsync(options).ConfigureAwait(false);
+    using var cancellation = new CancellationTokenSource();
+    ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
+    {
+        eventArgs.Cancel = true;
+        cancellation.Cancel();
+    };
+    Console.CancelKeyPress += cancelHandler;
+    EmitPipelineResult result;
+    try
+    {
+        result = await new EmitPipeline(Console.Out).ExecuteAsync(options, cancellation.Token).ConfigureAwait(false);
+    }
+    finally
+    {
+        Console.CancelKeyPress -= cancelHandler;
+    }
     if (!result.IsSuccess)
     {
         Console.Error.WriteLine(result.Error);

@@ -28,10 +28,14 @@ public sealed class StandardPackageProjectTests
             Assert.IsTrue(File.Exists(Path.Combine(root, "custom-output.js")));
             Assert.IsFalse(Directory.Exists(Path.Combine(root, "dist")));
             File.WriteAllText(Path.Combine(root, "build.js"), "console.error('authored build failed'); Deno.exit(7);");
-            var failed = await builder.BuildAsync(root, deno);
+            using var progress = new StringWriter();
+            var failed = await builder.BuildAsync(root, deno, progress: progress);
             Assert.IsFalse(failed.IsSuccess);
             Assert.AreEqual(7, failed.ExitCode);
             StringAssert.Contains(failed.Diagnostic!.Message, "authored build failed");
+            StringAssert.Contains(progress.ToString(), "deno task build: started");
+            StringAssert.Contains(progress.ToString(), "authored build failed");
+            StringAssert.Contains(progress.ToString(), "failed (exit=7)");
         }
         finally
         {

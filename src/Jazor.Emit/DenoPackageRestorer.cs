@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using DenoHost.Core;
@@ -16,7 +17,8 @@ internal static class DenoPackageRestorer
         string? executablePath,
         IReadOnlyList<string> entryPaths,
         LibraryAssets? libraries,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TextWriter? progress = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workspaceRoot);
         ArgumentNullException.ThrowIfNull(entryPaths);
@@ -39,7 +41,7 @@ internal static class DenoPackageRestorer
             // MSBuild always supplies the packaged runtime, so production builds still run the
             // same generated-module check.
             if (!string.IsNullOrWhiteSpace(executablePath))
-                await CheckAsync(workspaceRoot, ResolveExecutable(executablePath), entryPaths, libraries, cancellationToken).ConfigureAwait(false);
+                await CheckAsync(workspaceRoot, ResolveExecutable(executablePath), entryPaths, libraries, cancellationToken, progress).ConfigureAwait(false);
             return;
         }
 
@@ -58,7 +60,7 @@ internal static class DenoPackageRestorer
                     "--node-modules-linker=hoisted",
                     "--frozen=true"
                 ],
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken, progress).ConfigureAwait(false);
 
             if (!restoreResult.Succeeded)
             {
@@ -83,7 +85,7 @@ internal static class DenoPackageRestorer
                     "--node-modules-linker=hoisted",
                     "--frozen=false"
                 ],
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken, progress).ConfigureAwait(false);
             if (!restoreResult.Succeeded)
             {
                 throw new InvalidOperationException(
@@ -102,7 +104,7 @@ internal static class DenoPackageRestorer
             DeleteFile(lockPath);
 
         MaterializeNpmAliasProjections(workspaceRoot, packagePath);
-        await CheckAsync(workspaceRoot, deno, entryPaths, libraries, cancellationToken).ConfigureAwait(false);
+        await CheckAsync(workspaceRoot, deno, entryPaths, libraries, cancellationToken, progress).ConfigureAwait(false);
     }
 
     private static void ClearNpmAliasProjections(string workspaceRoot, string packagePath)
@@ -221,7 +223,8 @@ internal static class DenoPackageRestorer
         string? executablePath,
         IReadOnlyList<string> entryPaths,
         LibraryAssets? libraries,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TextWriter? progress)
     {
         var deno = ResolveExecutable(executablePath);
         var relativeEntries = entryPaths
@@ -252,7 +255,7 @@ internal static class DenoPackageRestorer
         if (File.Exists(Path.Combine(workspaceRoot, "deno.lock")))
             arguments.Add("--frozen-lockfile");
         arguments.AddRange(relativeEntries);
-        var result = await RunAsync(deno, workspaceRoot, arguments, cancellationToken).ConfigureAwait(false);
+        var result = await RunAsync(deno, workspaceRoot, arguments, cancellationToken, progress).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             throw new InvalidOperationException(
@@ -382,36 +385,51 @@ internal static class DenoPackageRestorer
         string executable,
         string workingDirectory,
         IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TextWriter? progress = null)
     {
         // DenoHost 拥有进程生命周期：它只解析 AppContext.BaseDirectory 下带签名校验的 bundled
         // runtime。`executable` 保留为兼容入口——显式路径（--deno / JAZOR_DENO_PATH）仍由调用方的
         // ResolveExecutable 做存在性校验，并用于诊断消息，但实际启动固定走 DenoProcess。
         var standardOutput = new StringBuilder();
         var standardError = new StringBuilder();
+        var command = "deno " + string.Join(" ", arguments.Take(arguments[0] == "task" ? 2 : 1));
         using var process = new DenoProcess([.. arguments], workingDirectory);
         // DataReceived 事件在读取线程上触发，追加必须串行化；null 表示流关闭哨兵。
         process.OutputDataReceived += (_, eventArgs) => AppendLine(standardOutput, eventArgs.Data);
         process.ErrorDataReceived += (_, eventArgs) => AppendLine(standardError, eventArgs.Data);
 
+        var timer = Stopwatch.StartNew();
+        var status = "failed";
+        WriteProgress($"[Jazor Emit] {command}: started (project={workingDirectory})");
         try
         {
-            await process.StartAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            throw new InvalidOperationException(
-                $"Could not start Deno executable '{executable}'. Install DenoHost 2.9.7 or set JAZOR_DENO_PATH.",
-                exception);
-        }
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                // DenoHost 2.9.7 cancels a 100ms post-launch delay by disposing the process
+                // handle before killing the child. Finish startup, then observe cancellation
+                // through WaitForExitAsync so StopAsync still owns the complete process tree.
+                await process.StartAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                throw new InvalidOperationException(
+                    $"Could not start Deno executable '{executable}'. Install DenoHost 2.9.7 or set JAZOR_DENO_PATH.",
+                    exception);
+            }
 
-        int exitCode;
-        try
-        {
-            exitCode = await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            var exitCode = await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            status = $"{(exitCode == 0 ? "completed" : "failed")} (exit={exitCode})";
+            return new ProcessResult(
+                exitCode == 0,
+                exitCode,
+                standardOutput.ToString(),
+                standardError.ToString());
         }
         catch (OperationCanceledException)
         {
+            status = "cancelled";
             try
             {
                 // 取消必须立即终止整棵进程树；零宽超时即强制 kill。
@@ -425,19 +443,31 @@ internal static class DenoPackageRestorer
 
             throw;
         }
+        finally
+        {
+            WriteProgress($"[Jazor Emit] {command}: {status} ({timer.ElapsedMilliseconds} ms)");
+        }
 
-        return new ProcessResult(
-            exitCode == 0,
-            exitCode,
-            standardOutput.ToString(),
-            standardError.ToString());
-
-        static void AppendLine(StringBuilder builder, string? line)
+        void AppendLine(StringBuilder builder, string? line)
         {
             if (line is null)
                 return;
             lock (builder)
                 builder.AppendLine(line);
+            // Both streams arrive on reader threads. Serialize the shared sink, but retain
+            // the original buffers so live progress never replaces the final failure diagnostic.
+            WriteProgress($"[Jazor Emit] {command}: {line}");
+        }
+
+        void WriteProgress(string message)
+        {
+            if (progress is null)
+                return;
+            lock (progress)
+            {
+                progress.WriteLine(message);
+                progress.Flush();
+            }
         }
     }
 
