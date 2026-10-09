@@ -171,6 +171,16 @@ public sealed class JazorFrontendBuilderTests
         Directory.CreateDirectory(Path.Combine(dist, "chunks"));
         await File.WriteAllTextAsync(Path.Combine(dist, "bundle.js"), "import './chunks/feature.js';", timeout.Token);
         await File.WriteAllTextAsync(Path.Combine(dist, "chunks", "feature.js"), "export const ready = true;", timeout.Token);
+        Directory.CreateDirectory(Path.Combine(dist, "assets"));
+        await File.WriteAllTextAsync(Path.Combine(dist, "assets", "shared.css"), ".shared { color: blue; }", timeout.Token);
+        await File.WriteAllTextAsync(Path.Combine(dist, "manifest.json"), """
+            {
+              "entry.js": { "file": "bundle.js", "imports": ["_shared.js", "_other.js"], "css": ["assets/site.css"], "dynamicImports": ["lazy.js"] },
+              "_shared.js": { "file": "assets/shared.js", "css": ["assets/shared.css"] },
+              "_other.js": { "file": "assets/other.js", "imports": ["_shared.js"] },
+              "lazy.js": { "file": "chunks/feature.js", "css": ["assets/lazy.css"] }
+            }
+            """, timeout.Token);
         // An unreachable origin with LaunchServer=false makes any accidental development probe fail startup.
         using var host = await CreateFrameworkHostAsync(workspace.RootPath, Environments.Production,
             pathBase, new Uri("http://127.0.0.1:1"), timeout.Token);
@@ -184,6 +194,18 @@ public sealed class JazorFrontendBuilderTests
         using var chunk = await client.GetAsync(pathBase + "/frontend/dist/chunks/feature.js", timeout.Token);
         Assert.AreEqual(HttpStatusCode.OK, chunk.StatusCode);
         Assert.AreEqual("export const ready = true;", await chunk.Content.ReadAsStringAsync(timeout.Token));
+        using var urls = await client.GetAsync(pathBase + "/asset-urls", timeout.Token);
+        using var payload = JsonDocument.Parse(await urls.Content.ReadAsStringAsync(timeout.Token));
+        Assert.AreEqual(pathBase + "/frontend/dist/bundle.js", payload.RootElement.GetProperty("entry").GetString());
+        CollectionAssert.AreEqual(new[] { pathBase + "/frontend/dist/assets/shared.css", pathBase + "/frontend/dist/assets/site.css" },
+            payload.RootElement.GetProperty("styles").EnumerateArray().Select(value => value.GetString()).ToArray());
+        foreach (var path in new[] { "/dist/bundle.js", "/dist/chunks/feature.js", "/dist/assets/shared.css" })
+        {
+            using var head = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, pathBase + "/frontend" + path), timeout.Token);
+            Assert.AreEqual(HttpStatusCode.OK, head.StatusCode);
+            Assert.AreEqual(0, (await head.Content.ReadAsByteArrayAsync(timeout.Token)).Length);
+            AssertSharedHeaders(head);
+        }
         using var missing = await client.GetAsync(pathBase + "/frontend/missing.js", timeout.Token);
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
         using var business = await client.GetAsync(pathBase + "/api/missing", timeout.Token);
@@ -228,6 +250,15 @@ public sealed class JazorFrontendBuilderTests
                 })
                 .Configure(app => app.Run(async context =>
                 {
+                    if (context.Request.Path == "/asset-urls")
+                    {
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            entry = JazorFrontendUrls.GetBrowserEntry(context),
+                            styles = JazorFrontendUrls.GetStylesheets(context)
+                        }, cancellationToken);
+                        return;
+                    }
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
                     await context.Response.WriteAsync(context.Request.PathBase + "|" + context.Request.Path, cancellationToken);
                 })))

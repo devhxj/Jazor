@@ -40,6 +40,7 @@ public static class JazorFrontendExtensions
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IValidateOptions<JazorFrontendOptions>, JazorFrontendOptionsValidator>());
         services.TryAddSingleton<JazorFrontendRegistration>();
+        services.TryAddSingleton<JazorFrontendAssets>();
         services.AddHttpClient(JazorViteDevelopmentServer.HttpClientName, client =>
             {
                 client.Timeout = Timeout.InfiniteTimeSpan;

@@ -669,21 +669,25 @@ internal static class ElementPlusGenerator
 
         foreach (var definition in components.SelectMany(component =>
                      GenericComponentParameters.TryGetValue(component.ClassName, out var parameter)
-                         ? new[] { (Component: component, Parameter: (string?)null), (Component: component, Parameter: (string?)parameter) }
-                         : new[] { (Component: component, Parameter: (string?)null) }))
+                         ? new[] { (Component: component, Parameter: (string?)null, StringModel: false), (Component: component, Parameter: (string?)parameter, StringModel: false) }
+                         : component.ClassName == "ElDatePicker"
+                             ? new[] { (Component: component, Parameter: (string?)null, StringModel: false), (Component: component, Parameter: (string?)null, StringModel: true) }
+                             : new[] { (Component: component, Parameter: (string?)null, StringModel: false) }))
         {
             var component = definition.Component;
             var isGeneric = definition.Parameter is not null;
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
+            if (definition.StringModel)
+                builder.AppendLine("/// <remarks>Single date/datetime string model. Set ValueFormat to a string format; use ElDatePicker for Date, numeric or range models. 清空传出 null，不做日期或时区转换。</remarks>");
             if (isGeneric)
                 builder.AppendLine($"/// <typeparam name=\"{definition.Parameter}\">Authored model, row or command type; the runtime value is preserved.</typeparam>");
             builder.AppendLine($"[ECMAScriptName(\"{component.RuntimeExportName}\")]");
             builder.AppendLine($"[ECMAScript(\"{GetComponentImportSpecifier(component, componentModulePaths)}\")]");
             builder.AppendLine($"[Style(\"{GetComponentStyleSpecifier(component, componentModulePaths)}\")]");
 
-            var className = isGeneric ? $"ElTyped{component.ClassName[2..]}<{definition.Parameter}>" : component.ClassName;
+            var className = definition.StringModel ? "ElStringDatePicker" : isGeneric ? $"ElTyped{component.ClassName[2..]}<{definition.Parameter}>" : component.ClassName;
             var scopedColumn = component.ClassName == "ElTableColumn";
             builder.AppendLine($"public sealed class {className} : {(component.HasDefaultSlot && !scopedColumn ? "ElContentComponentBase" : "ElComponentBase")}");
             builder.AppendLine("{");
@@ -698,13 +702,19 @@ internal static class ElementPlusGenerator
 
             foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
             {
-                AppendXmlSummary(builder, Description(component.ClassName, prop.PropertyName, prop.Description));
+                AppendXmlSummary(builder, definition.StringModel && prop.PropertyName == "ModelValue"
+                    ? "Single formatted date/datetime string; clearing emits null."
+                    : Description(component.ClassName, prop.PropertyName, prop.Description));
                 builder.AppendLine("    [Parameter]");
                 if (prop.Required)
                     builder.AppendLine("    [EditorRequired]");
                 if (RequiresExplicitPropName(prop))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(prop.RuntimeName)}\")]");
                 var type = isGeneric ? GetGenericPropType(component.ClassName, prop.PropertyName, prop.Type.SourceText) : prop.Type.SourceText;
+                // This fixed projection keeps the native string contract without opening an arbitrary TValue domain.
+                // ValueFormat owns formatting; no CLR Date/timezone coercion is introduced here.
+                if (definition.StringModel && prop.PropertyName == "ModelValue")
+                    type = "string?";
                 var initializer = isGeneric && type == "TValue" ? " = default!;" : "";
                 builder.AppendLine($"    public {type} {prop.PropertyName} {{ get; set; }}{initializer}");
                 builder.AppendLine();
@@ -727,6 +737,8 @@ internal static class ElementPlusGenerator
                 if (RequiresExplicitListenerName(emit))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(emit.ListenerRuntimeName)}\")]");
                 var type = isGeneric ? GetGenericEventType(component.ClassName, emit.PropertyName, emit.CallbackTypeSourceText) : emit.CallbackTypeSourceText;
+                if (definition.StringModel && emit.PropertyName == "ModelValueChanged")
+                    type = "EventCallback<string?>";
                 builder.AppendLine($"    public {type} {emit.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
@@ -2469,11 +2481,16 @@ internal static class ElementPlusGenerator
                     emitOccupiedNames);
                 emitOccupiedNames.Add(emitPropertyName);
 
+                // web-types omits payloads; these two pagination events carry the native number.
+                // Keep the supplement narrow and aligned with CurrentPage/PageSize authoring.
+                var payload = first.TagName == "el-pagination" && rawEvent.RuntimeName is "current-change" or "size-change"
+                    ? "Number"
+                    : null;
                 emits.Add(new ElementPlusEmitMetadata(
                     rawEvent.RuntimeName,
                     emitPropertyName,
-                    PayloadTypeSourceText: null,
-                    PayloadTypeRuntimeName: null,
+                    PayloadTypeSourceText: payload,
+                    PayloadTypeRuntimeName: payload is null ? null : ResolveRuntimeTypeName(payload),
                     Description: rawEvent.Description));
             }
 

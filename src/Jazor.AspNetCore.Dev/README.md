@@ -71,6 +71,16 @@ Development 启动顺序如下：
 
 HTML shell 使用 `JazorFrontendUrls.GetDevelopmentClient(context)` 和 `JazorFrontendUrls.GetBrowserEntry(context)` 生成 URL，避免重复拼接 PathBase、`/jazor`、Vite client 和 Release bundle 路径。Vite 的 `base`、启动参数、代理目标和浏览器 URL 均来自同一份 options。
 
+### 下一轮 Release 样式契约（尚未公开发布）
+
+当前源码与配套本地候选包的标准 Vite build 使用相对 `base: './'`，分包和资源从入口 URL 所在目录解析。默认入口仍是 `/jazor/dist/bundle.js`，其资源使用 `/jazor/dist/assets/**`；非空 PathBase 或自定义 `RequestPath` 无需再次构建或添加静态别名。Development 继续使用配置的公共 base 与 Vite/HMR 代理。
+
+`JazorFrontendUrls.GetStylesheets(context)` 返回 Release 入口静态依赖的 CSS URL，按依赖优先顺序去重。Development 返回空列表，样式由 Vite 提供。HTML shell 可逐个生成 `<link rel="stylesheet">`，不再扫描 `dist/assets`；dynamic imports 的 CSS 在加载模块时由 Vite 加载，不提前注入。
+
+标准 build 在 Release 入口旁写 `manifest.json`，其中的 `file`、`imports` 与 `css` 是样式 helper 的唯一事实源，随 `dist/**` 一起 publish。元数据每个宿主只读取一次；部署后重启宿主。缺失或格式错误直接传播，不能退回目录扫描。
+
+从 preview.8 升级时，Emit 保留既有作者配置。若 `vite.config.js` 是未修改的旧 SDK 默认文件，先移出生成目录，再由新 SDK 重新生成；若有作者改动，合并相对 build base 和 `build.manifest: 'manifest.json'`，保留自己的配置。替代 bundler 也应输出上述 manifest 契约。删除消费者的旧 `dist` 别名与 CSS 扫描后验证 entry、chunks、CSS、HEAD 和 PathBase。
+
 如需连接由其他工具管理的 Vite：
 
 ```csharp

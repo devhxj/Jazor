@@ -2,6 +2,8 @@
 
 > 当前预览版本：[1.0.0-preview.8（2026-10-09）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
+> 当前源码基线另包含下一轮未发布改进：`ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets` 和 Pagination 的两个 `EventCallback<Number>`。已审阅这些明确的预览 API 变更并更新机器 snapshot；公开 preview.8 保持原有契约，迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+
 > 状态：正式 `1.0` 尚未冻结。preview.6 已完成统一 frontend 候选契约重置；preview.8 的候选快照已按开发者反馈审查新增绑定、原生文件事件 extension 与 `DOMTokenList` 签名修正。preview.8 的 Release 构建、API 比较、完整质量与本地包发布消费者门禁已通过；正式 1.0 冻结仍按下文清单执行。
 
 ## 审查结论

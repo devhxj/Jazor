@@ -49,8 +49,14 @@ internal static class ViteProjectWriter
             import { existsSync } from 'node:fs';
             import { defineConfig } from 'vite';
 
-            export default defineConfig({
-              base: '{{defaultBase}}',
+            export default defineConfig(({ command }) => ({
+              // Release chunks/assets resolve from the entry URL, including its PathBase.
+              base: command === 'build' ? './' : '{{defaultBase}}',
+              define: {
+                __VUE_OPTIONS_API__: true,
+                __VUE_PROD_DEVTOOLS__: false,
+                __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+              },
               server: {
                 host: '{{JazorArtifactDefaults.DevelopmentServerHost}}',
                 port: {{JazorArtifactDefaults.DevelopmentServerPort}},
@@ -59,6 +65,7 @@ internal static class ViteProjectWriter
               build: {
                 target: 'esnext',
                 outDir: '{{releaseDirectory}}',
+                manifest: 'manifest.json',
                 sourcemap: true,
                 rolldownOptions: {
                   input: {
@@ -69,7 +76,7 @@ internal static class ViteProjectWriter
                   output: { entryFileNames: '[name].js' }
                 }
               }
-            });
+            }));
             """ + "\n");
     }
 }

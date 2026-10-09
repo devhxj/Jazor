@@ -2,6 +2,12 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 未发布：下一轮开发体验改进
+
+- 官方 Pagination 的页码/每页数量事件携带 `Number`，固定字符串 `ElStringDatePicker` 支持 date/datetime 的选择与清空；应用可删除对应的本地绑定。**迁移**：`OnCurrentChange` / `OnSizeChange` handler 接受 `Number`，日期组件指定 `ValueFormat`，清空接受 null。
+- 标准 Release 构建生成资源 manifest 并使用相对分包 URL；HTML shell 通过 `JazorFrontendUrls.GetStylesheets` 接入 CSS。**迁移**：更新旧默认 Vite 配置或合并 `base: './'` 与 `build.manifest: 'manifest.json'`，删除应用侧 `dist` 别名与目录扫描，随 `dist/**` 发布 manifest。
+- 标准 Vite 配置明确 Vue feature flags；日期与数值 union 示例说明 C# 类型和字符串格式约束。
+
 ## 2026-10-09
 
 ### Jazor 1.0.0-preview.8

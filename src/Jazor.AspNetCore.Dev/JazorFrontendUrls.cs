@@ -26,4 +26,9 @@ public static class JazorFrontendUrls
             ? options.DevelopmentEntryRelativePath
             : options.ReleaseEntryRelativePath);
     }
+
+    /// <summary>Returns the Release entry's stylesheets in dependency order; Development styles are loaded by Vite.</summary>
+    /// <remarks>Reads the standard build's manifest.json beside the Release entry, once per host. Missing or invalid build metadata is propagated, not replaced by a directory scan.</remarks>
+    public static IReadOnlyList<string> GetStylesheets(HttpContext context)
+        => context.RequestServices.GetRequiredService<JazorFrontendAssets>().Stylesheets;
 }

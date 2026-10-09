@@ -4758,10 +4758,10 @@
   - Void .ctor()
   - ECMAScript.Number[] get_PageSizes()
   - Microsoft.AspNetCore.Components.EventCallback get_OnChange()
-  - Microsoft.AspNetCore.Components.EventCallback get_OnCurrentChange()
   - Microsoft.AspNetCore.Components.EventCallback get_OnNextClick()
   - Microsoft.AspNetCore.Components.EventCallback get_OnPrevClick()
-  - Microsoft.AspNetCore.Components.EventCallback get_OnSizeChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.Number] get_OnCurrentChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.Number] get_OnSizeChange()
   - System.Nullable`1[ECMAScript.ElementPlus.ElComponentSize] get_Size()
   - System.Nullable`1[ECMAScript.Number] get_CurrentPage()
   - System.Nullable`1[ECMAScript.Number] get_DefaultCurrentPage()
@@ -4794,10 +4794,10 @@
   - Void set_NextIcon(System.Nullable`1[ECMAScript.Vue+VueStringComponentValue])
   - Void set_NextText(System.String)
   - Void set_OnChange(Microsoft.AspNetCore.Components.EventCallback)
-  - Void set_OnCurrentChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCurrentChange(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.Number])
   - Void set_OnNextClick(Microsoft.AspNetCore.Components.EventCallback)
   - Void set_OnPrevClick(Microsoft.AspNetCore.Components.EventCallback)
-  - Void set_OnSizeChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnSizeChange(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.Number])
   - Void set_PageCount(System.Nullable`1[ECMAScript.Number])
   - Void set_PageSize(System.Nullable`1[ECMAScript.Number])
   - Void set_PageSizes(ECMAScript.Number[])
@@ -4812,10 +4812,10 @@
   - Void set_Total(System.Nullable`1[ECMAScript.Number])
   - ECMAScript.Number[] PageSizes
   - Microsoft.AspNetCore.Components.EventCallback OnChange
-  - Microsoft.AspNetCore.Components.EventCallback OnCurrentChange
   - Microsoft.AspNetCore.Components.EventCallback OnNextClick
   - Microsoft.AspNetCore.Components.EventCallback OnPrevClick
-  - Microsoft.AspNetCore.Components.EventCallback OnSizeChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.Number] OnCurrentChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.Number] OnSizeChange
   - System.Nullable`1[ECMAScript.ElementPlus.ElComponentSize] Size
   - System.Nullable`1[ECMAScript.Number] CurrentPage
   - System.Nullable`1[ECMAScript.Number] DefaultCurrentPage
@@ -6111,6 +6111,164 @@
   - ECMAScript.ElementPlus.ElStringBooleanMap <Clone>$()
   - Int32 GetHashCode()
   - System.String ToString()
+- type ECMAScript.ElementPlus.ElStringDatePicker
+  - Void .ctor()
+  - ECMAScript.ElementPlus.ElDateLikeCellClassName get_CellClassName()
+  - ECMAScript.ElementPlus.ElDateLikeDisabledDate get_DisabledDate()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnBlur()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCalendarChange()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnChange()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnClear()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnFocus()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnPanelChange()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnVisibleChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[System.String] get_ModelValueChanged()
+  - Microsoft.AspNetCore.Components.RenderFragment get_NextMonth()
+  - Microsoft.AspNetCore.Components.RenderFragment get_NextYear()
+  - Microsoft.AspNetCore.Components.RenderFragment get_PrevMonth()
+  - Microsoft.AspNetCore.Components.RenderFragment get_PrevYear()
+  - Microsoft.AspNetCore.Components.RenderFragment get_RangeSeparatorSlot()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElValueOnClearValue] get_ValueOnClear()
+  - System.Nullable`1[ECMAScript.Vue+VueDateSingleOrRangeValue] get_DefaultTime()
+  - System.Nullable`1[ECMAScript.Vue+VueDateSingleOrRangeValue] get_DefaultValue()
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] get_ClearIcon()
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] get_PrefixIcon()
+  - System.Nullable`1[ECMAScript.Vue+VueStringSingleOrRangeValue] get_Id()
+  - System.Nullable`1[ECMAScript.Vue+VueStringSingleOrRangeValue] get_Name()
+  - System.Nullable`1[ECMAScript.Vue+VueStyleValue] get_PopperStyle()
+  - System.Nullable`1[System.Boolean] get_AutomaticDropdown()
+  - System.Nullable`1[System.Boolean] get_Clearable()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - System.Nullable`1[System.Boolean] get_Editable()
+  - System.Nullable`1[System.Boolean] get_Readonly()
+  - System.Nullable`1[System.Boolean] get_ShowConfirm()
+  - System.Nullable`1[System.Boolean] get_ShowFooter()
+  - System.Nullable`1[System.Boolean] get_ShowWeekNumber()
+  - System.Nullable`1[System.Boolean] get_SinglePanel()
+  - System.Nullable`1[System.Boolean] get_Teleported()
+  - System.Nullable`1[System.Boolean] get_UnlinkPanels()
+  - System.Nullable`1[System.Boolean] get_ValidateEvent()
+  - System.String get_DateFormat()
+  - System.String get_EndPlaceholder()
+  - System.String get_Format()
+  - System.String get_ModelValue()
+  - System.String get_Placeholder()
+  - System.String get_Placement()
+  - System.String get_PopperClass()
+  - System.String get_RangeSeparator()
+  - System.String get_Size()
+  - System.String get_StartPlaceholder()
+  - System.String get_TimeFormat()
+  - System.String get_Type()
+  - System.String get_ValueFormat()
+  - System.String[] get_FallbackPlacements()
+  - Void set_AutomaticDropdown(System.Nullable`1[System.Boolean])
+  - Void set_CellClassName(ECMAScript.ElementPlus.ElDateLikeCellClassName)
+  - Void set_ClearIcon(System.Nullable`1[ECMAScript.Vue+VueStringComponentValue])
+  - Void set_Clearable(System.Nullable`1[System.Boolean])
+  - Void set_DateFormat(System.String)
+  - Void set_DefaultTime(System.Nullable`1[ECMAScript.Vue+VueDateSingleOrRangeValue])
+  - Void set_DefaultValue(System.Nullable`1[ECMAScript.Vue+VueDateSingleOrRangeValue])
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_DisabledDate(ECMAScript.ElementPlus.ElDateLikeDisabledDate)
+  - Void set_Editable(System.Nullable`1[System.Boolean])
+  - Void set_EmptyValues(VueValue[])
+  - Void set_EndPlaceholder(System.String)
+  - Void set_FallbackPlacements(System.String[])
+  - Void set_Format(System.String)
+  - Void set_Id(System.Nullable`1[ECMAScript.Vue+VueStringSingleOrRangeValue])
+  - Void set_ModelValue(System.String)
+  - Void set_ModelValueChanged(Microsoft.AspNetCore.Components.EventCallback`1[System.String])
+  - Void set_Name(System.Nullable`1[ECMAScript.Vue+VueStringSingleOrRangeValue])
+  - Void set_NextMonth(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_NextYear(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_OnBlur(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCalendarChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnClear(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnFocus(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnPanelChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnVisibleChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_Placeholder(System.String)
+  - Void set_Placement(System.String)
+  - Void set_PopperClass(System.String)
+  - Void set_PopperOptions(VueDictionary)
+  - Void set_PopperStyle(System.Nullable`1[ECMAScript.Vue+VueStyleValue])
+  - Void set_PrefixIcon(System.Nullable`1[ECMAScript.Vue+VueStringComponentValue])
+  - Void set_PrevMonth(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_PrevYear(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_RangeSeparator(System.String)
+  - Void set_RangeSeparatorSlot(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_Readonly(System.Nullable`1[System.Boolean])
+  - Void set_Shortcuts(VueValue[])
+  - Void set_ShowConfirm(System.Nullable`1[System.Boolean])
+  - Void set_ShowFooter(System.Nullable`1[System.Boolean])
+  - Void set_ShowWeekNumber(System.Nullable`1[System.Boolean])
+  - Void set_SinglePanel(System.Nullable`1[System.Boolean])
+  - Void set_Size(System.String)
+  - Void set_StartPlaceholder(System.String)
+  - Void set_Teleported(System.Nullable`1[System.Boolean])
+  - Void set_TimeFormat(System.String)
+  - Void set_Type(System.String)
+  - Void set_UnlinkPanels(System.Nullable`1[System.Boolean])
+  - Void set_ValidateEvent(System.Nullable`1[System.Boolean])
+  - Void set_ValueFormat(System.String)
+  - Void set_ValueOnClear(System.Nullable`1[ECMAScript.ElementPlus.ElValueOnClearValue])
+  - VueDictionary get_PopperOptions()
+  - VueValue[] get_EmptyValues()
+  - VueValue[] get_Shortcuts()
+  - ECMAScript.ElementPlus.ElDateLikeCellClassName CellClassName
+  - ECMAScript.ElementPlus.ElDateLikeDisabledDate DisabledDate
+  - Microsoft.AspNetCore.Components.EventCallback OnBlur
+  - Microsoft.AspNetCore.Components.EventCallback OnCalendarChange
+  - Microsoft.AspNetCore.Components.EventCallback OnChange
+  - Microsoft.AspNetCore.Components.EventCallback OnClear
+  - Microsoft.AspNetCore.Components.EventCallback OnFocus
+  - Microsoft.AspNetCore.Components.EventCallback OnPanelChange
+  - Microsoft.AspNetCore.Components.EventCallback OnVisibleChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[System.String] ModelValueChanged
+  - Microsoft.AspNetCore.Components.RenderFragment NextMonth
+  - Microsoft.AspNetCore.Components.RenderFragment NextYear
+  - Microsoft.AspNetCore.Components.RenderFragment PrevMonth
+  - Microsoft.AspNetCore.Components.RenderFragment PrevYear
+  - Microsoft.AspNetCore.Components.RenderFragment RangeSeparatorSlot
+  - System.Nullable`1[ECMAScript.ElementPlus.ElValueOnClearValue] ValueOnClear
+  - System.Nullable`1[ECMAScript.Vue+VueDateSingleOrRangeValue] DefaultTime
+  - System.Nullable`1[ECMAScript.Vue+VueDateSingleOrRangeValue] DefaultValue
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] ClearIcon
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] PrefixIcon
+  - System.Nullable`1[ECMAScript.Vue+VueStringSingleOrRangeValue] Id
+  - System.Nullable`1[ECMAScript.Vue+VueStringSingleOrRangeValue] Name
+  - System.Nullable`1[ECMAScript.Vue+VueStyleValue] PopperStyle
+  - System.Nullable`1[System.Boolean] AutomaticDropdown
+  - System.Nullable`1[System.Boolean] Clearable
+  - System.Nullable`1[System.Boolean] Disabled
+  - System.Nullable`1[System.Boolean] Editable
+  - System.Nullable`1[System.Boolean] Readonly
+  - System.Nullable`1[System.Boolean] ShowConfirm
+  - System.Nullable`1[System.Boolean] ShowFooter
+  - System.Nullable`1[System.Boolean] ShowWeekNumber
+  - System.Nullable`1[System.Boolean] SinglePanel
+  - System.Nullable`1[System.Boolean] Teleported
+  - System.Nullable`1[System.Boolean] UnlinkPanels
+  - System.Nullable`1[System.Boolean] ValidateEvent
+  - System.String DateFormat
+  - System.String EndPlaceholder
+  - System.String Format
+  - System.String ModelValue
+  - System.String Placeholder
+  - System.String Placement
+  - System.String PopperClass
+  - System.String RangeSeparator
+  - System.String Size
+  - System.String StartPlaceholder
+  - System.String TimeFormat
+  - System.String Type
+  - System.String ValueFormat
+  - System.String[] FallbackPlacements
+  - VueDictionary PopperOptions
+  - VueValue[] EmptyValues
+  - VueValue[] Shortcuts
 - type ECMAScript.ElementPlus.ElStyles
   - Void .ctor()
   - Boolean Equals(ECMAScript.ElementPlus.ElStyles)
@@ -131305,6 +131463,7 @@
   - System.String ProjectRootPath
   - System.String ReleaseEntryRelativePath
 - type Jazor.AspNetCore.Dev.JazorFrontendUrls
+  - System.Collections.Generic.IReadOnlyList`1[System.String] GetStylesheets(Microsoft.AspNetCore.Http.HttpContext)
   - System.String GetBrowserEntry(Microsoft.AspNetCore.Http.HttpContext)
   - System.String GetDevelopmentClient(Microsoft.AspNetCore.Http.HttpContext)
 - type Jazor.AspNetCore.Dev.JazorHmrMapping

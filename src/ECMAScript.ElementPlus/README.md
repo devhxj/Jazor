@@ -22,6 +22,27 @@ ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完
 - 管理壳常用组件：config provider、container layout、menu、button、card、link、space 与 divider。
 - 遵循 Element Plus 命名的公开类型，例如 `ElButtonType`、`ElUploadFile` 与 `ElComponents`；根 host 保留 `ElementPlus` 名称。
 
+## 下一轮分页与日期绑定（尚未公开发布）
+
+以下能力适用于当前源码及其同版本本地候选包，公开 preview.8 尚不包含。
+
+`ElPagination.OnCurrentChange` 与 `OnSizeChange` 使用 `EventCallback<Number>`，直接传递上游页码和每页数量。原来接受无参数回调的消费者应改为 `void PageChanged(Number value)` / `void SizeChanged(Number value)`；应用侧可以按原查询逻辑重置页码，无需再声明分页 wrapper。
+
+`ElStringDatePicker` 与 `ElDatePicker` 导入同一个运行时组件和样式。前者的 `ModelValue` / `ModelValueChanged` 固定为 `string?` / `EventCallback<string?>`，用于单值 date/datetime；必须指定输出字符串的 `ValueFormat`，清空传出 null。日期、数值或范围模型继续使用完整 union 的 `ElDatePicker`。
+
+```razor
+<ElPagination CurrentPage="@page" PageSize="@pageSize" Total="@total"
+              OnCurrentChange="@PageChanged" OnSizeChange="@SizeChanged" />
+<ElStringDatePicker @bind-ModelValue="startTime" Type="datetime" Clearable="true"
+                    Format="YYYY-MM-DD HH:mm:ss" ValueFormat="YYYY-MM-DD HH:mm:ss" />
+```
+
+示例的分页字段与 handler 参数为 `ECMAScript.Number`，`startTime` 为 `string?`。`ValueFormat` 使用 Element Plus/Day.js 标记，不使用 CLR 格式标记；格式化字符串直接到业务 API，不引入 Date 或时区转换。业务字段若以空串表示未选择，可保留 `ModelValueChanged="@(value => startTime = value ?? "")"`。
+
+数值 prop 应按实际类型选择写法。例如 `ElAvatar.Size` 的 `VueStringNumberValue` 数值分支是 `double`，写 `Size="@(32d)"`；`Size="32"` 是字符串分支，`Size="small"` 也是字符串分支。它与 Pagination 的 `Number` 参数不是同一个 C# 类型，不能机械地把所有数值都强转为 `Number`。官方 Razor SG 和 Roslyn 负责参数类型检查。
+
+分页的独立状态、page-size 更新与 date/datetime 的真实输入/清空已由官方 SG + Vue + Element Plus + happy-dom 回归覆盖；CSS 加载与真实浏览器消费结果另行记录。
+
 ## 泛型交互
 
 下列 API 保留作者声明的值、行和 command 类型，仍导入对应的 Element Plus 组件及样式：

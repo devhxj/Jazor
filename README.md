@@ -30,6 +30,8 @@
 
 > Jazor 1.0.0-preview.8 is the current preview release.
 
+> Unreleased source improvements add numeric Pagination events, `ElStringDatePicker`, and manifest-based Release CSS URLs with relative chunks. Migration details are in the [Changelog](CHANGELOG.md); these changes are not part of the published preview.8 packages.
+
 The developer-feedback release adds typed Element Plus interactions, native DOM event and browser payload projections, reusable ASP.NET Core hosting, RID-aware Emit assets, and self-contained SSR publishing. See [the feedback scope and validation](docs/04-roadmap/preview8-developer-feedback.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.

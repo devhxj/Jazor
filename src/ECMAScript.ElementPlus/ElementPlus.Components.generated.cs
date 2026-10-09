@@ -3154,6 +3154,381 @@ public sealed class ElDatePicker : ElContentComponentBase
 }
 
 /// <summary>
+/// Use Date Picker for date input.
+/// </summary>
+/// <remarks>Single date/datetime string model. Set ValueFormat to a string format; use ElDatePicker for Date, numeric or range models. 清空传出 null，不做日期或时区转换。</remarks>
+[ECMAScriptName("ElDatePicker")]
+[ECMAScript("element-plus/es/components/date-picker/index.mjs")]
+[Style("element-plus/es/components/date-picker/style/css.mjs")]
+public sealed class ElStringDatePicker : ElContentComponentBase
+{
+    /// <summary>
+    /// Single formatted date/datetime string; clearing emits null.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("modelValue")]
+    public string? ModelValue { get; set; }
+
+    /// <summary>
+    /// whether DatePicker is read only
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("readonly")]
+    public bool? Readonly { get; set; }
+
+    /// <summary>
+    /// whether DatePicker is disabled
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("disabled")]
+    public bool? Disabled { get; set; }
+
+    /// <summary>
+    /// size of Input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("size")]
+    public string? Size { get; set; }
+
+    /// <summary>
+    /// whether the input is editable
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("editable")]
+    public bool? Editable { get; set; }
+
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("clearable")]
+    public bool? Clearable { get; set; }
+
+    /// <summary>
+    /// placeholder in non-range mode
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("placeholder")]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// placeholder for the start date in range mode
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("startPlaceholder")]
+    public string? StartPlaceholder { get; set; }
+
+    /// <summary>
+    /// placeholder for the end date in range mode
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("endPlaceholder")]
+    public string? EndPlaceholder { get; set; }
+
+    /// <summary>
+    /// type of the picker. `quarter`, `quarters`, and `quarterrange` are supported since
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("type")]
+    public string? Type { get; set; }
+
+    /// <summary>
+    /// format of the displayed value in the input box
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("format")]
+    public string? Format { get; set; }
+
+    /// <summary>
+    /// custom class name for DatePicker's dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperClass")]
+    public string? PopperClass { get; set; }
+
+    /// <summary>
+    /// custom style for DatePicker's dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperStyle")]
+    public VueStyleValue? PopperStyle { get; set; }
+
+    /// <summary>
+    /// Customized popper option see more at [popper.js](https://popper.js.org/docs/v2/)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperOptions")]
+    public VueDictionary? PopperOptions { get; set; }
+
+    /// <summary>
+    /// range separator
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("rangeSeparator")]
+    public string? RangeSeparator { get; set; }
+
+    /// <summary>
+    /// optional, default date of the calendar
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("defaultValue")]
+    public VueDateSingleOrRangeValue? DefaultValue { get; set; }
+
+    /// <summary>
+    /// optional, the time value to use when selecting date range
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("defaultTime")]
+    public VueDateSingleOrRangeValue? DefaultTime { get; set; }
+
+    /// <summary>
+    /// optional, format of binding value. If not specified, the binding value will be a Date object
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("valueFormat")]
+    public string? ValueFormat { get; set; }
+
+    /// <summary>
+    /// same as `id` in native input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("id")]
+    public VueStringSingleOrRangeValue? Id { get; set; }
+
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("name")]
+    public VueStringSingleOrRangeValue? Name { get; set; }
+
+    /// <summary>
+    /// unlink two date-panels in range-picker
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("unlinkPanels")]
+    public bool? UnlinkPanels { get; set; }
+
+    /// <summary>
+    /// show only one panel in range-picker
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("singlePanel")]
+    public bool? SinglePanel { get; set; }
+
+    /// <summary>
+    /// custom prefix icon component. By default, if the value of `type` is `TimeLikeType`, the value is `Clock`, else is `Calendar`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("prefixIcon")]
+    public VueStringComponentValue? PrefixIcon { get; set; }
+
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("clearIcon")]
+    public VueStringComponentValue? ClearIcon { get; set; }
+
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("validateEvent")]
+    public bool? ValidateEvent { get; set; }
+
+    /// <summary>
+    /// a function determining if a date is disabled with that date as its parameter. Should return a Boolean
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("disabledDate")]
+    public ElDateLikeDisabledDate? DisabledDate { get; set; }
+
+    /// <summary>
+    /// an object array to set shortcut options
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("shortcuts")]
+    public VueValue[]? Shortcuts { get; set; }
+
+    /// <summary>
+    /// set custom className
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("cellClassName")]
+    public ElDateLikeCellClassName? CellClassName { get; set; }
+
+    /// <summary>
+    /// whether date-picker dropdown is teleported to the body
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("teleported")]
+    public bool? Teleported { get; set; }
+
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("emptyValues")]
+    public VueValue[]? EmptyValues { get; set; }
+
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("valueOnClear")]
+    public ElValueOnClearValue? ValueOnClear { get; set; }
+
+    /// <summary>
+    /// list of possible positions for Tooltip [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
+    public string[]? FallbackPlacements { get; set; }
+
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("placement")]
+    public string? Placement { get; set; }
+
+    /// <summary>
+    /// whether to show footer
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showFooter")]
+    public bool? ShowFooter { get; set; }
+
+    /// <summary>
+    /// whether to show the confirm button
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showConfirm")]
+    public bool? ShowConfirm { get; set; }
+
+    /// <summary>
+    /// show the week number besides the week
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showWeekNumber")]
+    public bool? ShowWeekNumber { get; set; }
+
+    /// <summary>
+    /// this prop decides if the date picker panel pops up when the input is focused. (The default value will be set to false in version 3.0)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("automaticDropdown")]
+    public bool? AutomaticDropdown { get; set; }
+
+    /// <summary>
+    /// 日期输入区域使用的显示格式；不改变 value-format 指定的绑定值格式。
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("dateFormat")]
+    public string? DateFormat { get; set; }
+
+    /// <summary>
+    /// 时间输入区域使用的显示格式；不改变 value-format 指定的绑定值格式。
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("timeFormat")]
+    public string? TimeFormat { get; set; }
+
+    /// <summary>
+    /// custom range separator content
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("range-separator")]
+    public RenderFragment? RangeSeparatorSlot { get; set; }
+
+    /// <summary>
+    /// prev month icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("prev-month")]
+    public RenderFragment? PrevMonth { get; set; }
+
+    /// <summary>
+    /// next month icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("next-month")]
+    public RenderFragment? NextMonth { get; set; }
+
+    /// <summary>
+    /// prev year icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("prev-year")]
+    public RenderFragment? PrevYear { get; set; }
+
+    /// <summary>
+    /// next year icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("next-year")]
+    public RenderFragment? NextYear { get; set; }
+
+    /// <summary>
+    /// triggers when user confirms the value or click outside
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onChange")]
+    public EventCallback OnChange { get; set; }
+
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onBlur")]
+    public EventCallback OnBlur { get; set; }
+
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onFocus")]
+    public EventCallback OnFocus { get; set; }
+
+    /// <summary>
+    /// triggers when a clear button is clicked
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onClear")]
+    public EventCallback OnClear { get; set; }
+
+    /// <summary>
+    /// triggers when the calendar selected date is changed. Only for `range`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCalendarChange")]
+    public EventCallback OnCalendarChange { get; set; }
+
+    /// <summary>
+    /// triggers when the navigation button click.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onPanelChange")]
+    public EventCallback OnPanelChange { get; set; }
+
+    /// <summary>
+    /// triggers when the DatePicker's dropdown appears/disappears
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onVisibleChange")]
+    public EventCallback OnVisibleChange { get; set; }
+
+    /// <summary>
+    /// binding value, if it is an `range` picker, the length of the array should be 2
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
+    public EventCallback<string?> ModelValueChanged { get; set; }
+
+}
+
+/// <summary>
 /// `DatePickerPanel` is the core component of `DatePicker`.
 /// </summary>
 [ECMAScriptName("ElDatePickerPanel")]
@@ -7153,14 +7528,14 @@ public sealed class ElPagination : ElContentComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("onSizeChange")]
-    public EventCallback OnSizeChange { get; set; }
+    public EventCallback<Number> OnSizeChange { get; set; }
 
     /// <summary>
     /// triggers when `current-page` changes
     /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
-    public EventCallback OnCurrentChange { get; set; }
+    public EventCallback<Number> OnCurrentChange { get; set; }
 
     /// <summary>
     /// triggers when `current-page` or `page-size` changes
