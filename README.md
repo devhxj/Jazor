@@ -1,7 +1,6 @@
 <div align="center">
 
-[![Today's Verse](docs/assets/todays-verse.svg)](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
-<!-- Refresh the snapshot: dotnet run --file scripts/csharp/update-readme-verse.cs -->
+![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
 
 <h1>Jazor</h1>
 

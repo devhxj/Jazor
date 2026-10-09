@@ -17,10 +17,6 @@
 - 浏览器绑定补齐 live `DOMTokenList`、`IWindow.LiveLocation`（`WindowProxy` 同样可用）和 `Number` 到 `long`/`ulong` 的显式转换。超出 Number 安全整数范围的标识应保留字符串或 BigInt；结构化 JSON 通过调用方 replacer 将 BigInt 转为十进制字符串。by @devhxj
 - 既有 C# DOM 事件通过 CLR 映射与 extension 访问原生浏览器属性，覆盖 12 种事件的精确 `NativeEvent`、input/drop `Files` 以及 `DataTransfer`、`DataTransferItem`、`TouchPoint`、`ElementReference` 投影。原生接口仍由 WebIDL 生成；`CurrentTarget` 与临时剪贴板/拖放数据应在 callback 中、首次 await 前读取。CLR `DataTransfer.Files`/`Items` 使用独立的 `NativeFiles`/`NativeItems` 入口。by @devhxj
 
-#### 体验优化
-
-- README 诗词横幅改用仓库内 SVG 快照，保留源站链接与刷新命令，避免 GitHub 图片代理失败导致空白。by @devhxj
-
 #### 破坏性变更
 
 - `Element.ClassList`、`Part`、`RelList` 等 token 属性从集合投影改为原生 live `DOMTokenList`。**迁移**：把 `Count` 改为 `Length`，通过 `GetItem(index)` 读取原生 `item(index)`，集合操作改用 `Add`、`Remove`、`Toggle` 等 DOM 方法。by @devhxj
@@ -50,10 +46,6 @@
 - Select compatible assemblies by target RID and SDK runtime graph, and reuse one npm/JSR package identity for declared subpath imports. Release SSR produces an independently runnable `ssr/ssr-entry.js` with local chunks, without restoring `node_modules`. by @devhxj
 - Add live `DOMTokenList`, `IWindow.LiveLocation` (also available on `WindowProxy`), and explicit `Number` to `long`/`ulong` conversions. Keep identifiers outside the safe Number integer range as strings or BigInt; serialize structural JSON with a caller-owned replacer that converts BigInt to decimal strings. by @devhxj
 - Existing C# DOM events gain native browser properties through CLR mappings and extensions, covering precisely typed `NativeEvent` for 12 event families, input/drop `Files`, and `DataTransfer`, `DataTransferItem`, `TouchPoint`, and `ElementReference` projections. WebIDL still generates native interfaces. Read `CurrentTarget` and transient clipboard/drop data in the callback before the first await; use distinct `NativeFiles`/`NativeItems` entries for CLR `DataTransfer.Files`/`Items`. by @devhxj
-
-#### Improvements
-
-- Display the README verse banner from a repository SVG snapshot, retaining the source link and refresh command so GitHub image-proxy failures no longer leave it blank. by @devhxj
 
 #### Breaking Changes
 

@@ -1,7 +1,6 @@
 <div align="center">
 
-[![今日诗词](docs/assets/todays-verse.svg)](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
-<!-- 刷新诗词快照：dotnet run --file scripts/csharp/update-readme-verse.cs -->
+![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
 
 <h1>Jazor</h1>
 
