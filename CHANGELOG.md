@@ -7,6 +7,7 @@
 - 官方 Pagination 的页码/每页数量事件携带 `Number`，固定字符串 `ElStringDatePicker` 支持 date/datetime 的选择与清空；应用可删除对应的本地绑定。**迁移**：`OnCurrentChange` / `OnSizeChange` handler 接受 `Number`，日期组件指定 `ValueFormat`，清空接受 null。
 - 标准 Release 构建生成资源 manifest 并使用相对分包 URL；HTML shell 通过 `JazorFrontendUrls.GetStylesheets` 接入 CSS。**迁移**：更新旧默认 Vite 配置或合并 `base: './'` 与 `build.manifest: 'manifest.json'`，删除应用侧 `dist` 别名与目录扫描，随 `dist/**` 发布 manifest。
 - 标准 Vite 配置明确 Vue feature flags；日期与数值 union 示例说明 C# 类型和字符串格式约束。
+- 已有标准前端工程也可重新生成缺失的 SDK 默认 Vite 配置；作者配置与替代构建工具继续由项目拥有。
 
 ## 2026-10-09
 

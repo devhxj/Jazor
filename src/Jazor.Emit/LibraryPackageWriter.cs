@@ -96,7 +96,9 @@ internal static class LibraryPackageWriter
             ViteProjectWriter.WriteSsr(workspaceRoot);
         }
         WriteJson(packagePath, rootPackage);
-        if (existing is null)
+        // The standard task still owns a missing default config after an SDK upgrade.
+        // Authored config files remain untouched; alternate build tools do not acquire Vite files.
+        if (rootPackage["scripts"]?["build"]?.GetValue<string>() == "vite build")
             ViteProjectWriter.Write(workspaceRoot);
         PreserveCompatibleNpmLock(workspaceRoot, rootPackage);
     }

@@ -97,6 +97,31 @@ public sealed class ProjectEntryWriterTests
         Assert.AreEqual(authored, File.ReadAllText(Path.Combine(workspace.Root, ViteProjectWriter.ConfigFileName)));
     }
 
+    [TestMethod]
+    public void PackageWriter_RecreatesMissingConfigForExistingStandardProject()
+    {
+        using var workspace = new EntryWorkspace();
+        LibraryPackageWriter.WritePackageProject(workspace.Root, CreateEmptyLibraries());
+        var config = Path.Combine(workspace.Root, ViteProjectWriter.ConfigFileName);
+        var expected = File.ReadAllText(config);
+        File.Delete(config);
+
+        LibraryPackageWriter.WritePackageProject(workspace.Root, CreateEmptyLibraries());
+
+        Assert.AreEqual(expected, File.ReadAllText(config));
+    }
+
+    [TestMethod]
+    public void PackageWriter_CustomBuildDoesNotCreateViteConfiguration()
+    {
+        using var workspace = new EntryWorkspace();
+        File.WriteAllText(Path.Combine(workspace.Root, "package.json"), """{"scripts":{"build":"other-tool build"}}""");
+
+        LibraryPackageWriter.WritePackageProject(workspace.Root, CreateEmptyLibraries());
+
+        Assert.IsFalse(File.Exists(Path.Combine(workspace.Root, ViteProjectWriter.ConfigFileName)));
+    }
+
     private static LibraryAssets CreateEmptyLibraries()
         => new(
             new Dictionary<string, string>(),
