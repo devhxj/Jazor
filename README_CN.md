@@ -1,6 +1,8 @@
 <div align="center">
 
-![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+<!-- today-verse:start -->
+<p><a href="https://www.jinrishici.com/">人去秋千闲挂月，马停杨柳倦嘶风。</a></p>
+<!-- today-verse:end -->
 
 <h1>Jazor</h1>
 
