@@ -2,6 +2,80 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-10-09
+
+### Jazor 1.0.0-preview.8
+
+中文 | English
+
+#### 新增功能
+
+- Element Plus Select、Table、Dropdown 新增泛型组件，选项值、行事件、单元格 scoped slot 与 command 保留业务类型；新增强类型消息、通知、确认和 Prompt 服务。by @devhxj
+- 官方 Razor SG 组件新增身份与 Vue 参数名冲突诊断；外部 wrapper 的常量默认 props 支持继承、调用处显式覆盖和 attribute splat 覆盖，错误指向作者源码。by @devhxj
+- ASP.NET Core 前端宿主新增 `IServiceCollection.AddJazorFrontend`、`IApplicationBuilder.UseJazorPathBase` 和 `IApplicationBuilder.UseJazorFrontend`，Startup、`IStartupFilter` 与第三方框架可复用 HTTP、WebSocket、PathBase 和 Release 资源管线。by @devhxj
+- Emit 按目标 RID 与 SDK runtime graph 选择兼容程序集，显式子路径导入复用唯一 npm/JSR 包身份；Release SSR 生成可独立运行的 `ssr/ssr-entry.js` 与本地 chunks，无需恢复 `node_modules`。by @devhxj
+- 浏览器绑定补齐 live `DOMTokenList`、`IWindow.LiveLocation`（`WindowProxy` 同样可用）和 `Number` 到 `long`/`ulong` 的显式转换。超出 Number 安全整数范围的标识应保留字符串或 BigInt；结构化 JSON 通过调用方 replacer 将 BigInt 转为十进制字符串。by @devhxj
+- 既有 C# DOM 事件通过 CLR 映射与 extension 访问原生浏览器属性，覆盖 12 种事件的精确 `NativeEvent`、input/drop `Files` 以及 `DataTransfer`、`DataTransferItem`、`TouchPoint`、`ElementReference` 投影。原生接口仍由 WebIDL 生成；`CurrentTarget` 与临时剪贴板/拖放数据应在 callback 中、首次 await 前读取。CLR `DataTransfer.Files`/`Items` 使用独立的 `NativeFiles`/`NativeItems` 入口。by @devhxj
+
+#### 体验优化
+
+- README 诗词横幅改用仓库内 SVG 快照，保留源站链接与刷新命令，避免 GitHub 图片代理失败导致空白。by @devhxj
+
+#### 破坏性变更
+
+- `Element.ClassList`、`Part`、`RelList` 等 token 属性从集合投影改为原生 live `DOMTokenList`。**迁移**：把 `Count` 改为 `Length`，通过 `GetItem(index)` 读取原生 `item(index)`，集合操作改用 `Add`、`Remove`、`Toggle` 等 DOM 方法。by @devhxj
+- `ElTableColumn.ChildContent` 改为 `RenderFragment<ElTableSlotContext>` scoped slot；新增 `ElTypedTableColumn<TRow>` 使用 `ElTableSlotContext<TRow>` 保留行类型。**迁移**：Razor 自定义单元格通过 `Context="cell"` 访问 `cell.Row`、`cell.Column`、`cell.Index`；手工赋值 `ChildContent` 时改为接收该 context 的 fragment 工厂。by @devhxj
+- Folder Publish 默认只复制 `dist/**` 和启用 SSR 时的 `ssr/**`，不再复制源码、根项目文件、lock 或 `node_modules`，source map 默认不发布。**迁移**：部署脚本托管 `dist/`，SSR 执行 `ssr/ssr-entry.js`；需要部署 source map 时设置 `JazorPublishSourceMaps=true`。by @devhxj
+
+#### 问题修复
+
+- 修复 inline getter 的空条件属性和方法访问丢失整链短路的问题；接收者保持单次求值。by @devhxj
+- 修复 `ProgressEventArgs.Loaded`/`Total` 混用 Number 与 CLR BigInt carrier，原生 `NativeEvent` 继续使用 WebIDL Number。by @devhxj
+- 修复外部组件显式参数仍被已覆盖的动态默认 initializer 拒绝的问题。by @devhxj
+- RazorVue 保留 code-behind 产生的 Vue lifecycle helper import，条件分支使用稳定 Fragment 锚点；重复挂载、卸载及 loading/empty/data 切换保持资源清理与 DOM 范围正确。by @devhxj
+- Development SSR 优先当前源码图，避免误用历史 Release bundle。by @devhxj
+- npm/JSR 子路径包身份精确比较 Base64 完整性摘要，大小写差异在写出前报告冲突。by @devhxj
+- MSBuild `JazorMode` 默认值改在 targets 阶段应用，项目条件属性可以覆盖；自定义或相对 `JazorDir` 只排除生成根，不吞掉 `Jazor/*.cs`、`.razor` 和其他作者输入。by @devhxj
+
+#### 其他变更
+
+- 开发者反馈回归纳入完整主线与覆盖率门禁；Release 包消费者验证运行闭包、PathBase、真实 Chrome 交互、Deno SSR 与 hydration，发布和 Wiki 验收同步新的目录与默认 source map 契约。by @devhxj
+- 更新公共 API 基线并通过 Release 程序集比较、绑定生成与 inventory、XML 文档检查及 23 个 lockstep 包验证；当前指标与复现入口见[反馈验收](docs/04-roadmap/preview8-developer-feedback.md)。by @devhxj
+
+#### New Features
+
+- Add generic Element Plus Select, Table, and Dropdown components that retain business types for option values, row events, scoped cell slots, and commands; add typed message, notification, confirmation, and Prompt services. by @devhxj
+- Add component-identity and Vue parameter-name collision diagnostics to official Razor SG authoring. External wrapper constant defaults support inheritance, explicit parameters, and attribute splats, with errors located in authored source. by @devhxj
+- Add `IServiceCollection.AddJazorFrontend`, `IApplicationBuilder.UseJazorPathBase`, and `IApplicationBuilder.UseJazorFrontend` so Startup, `IStartupFilter`, and framework integrations can reuse the HTTP, WebSocket, PathBase, and Release artifact pipeline. by @devhxj
+- Select compatible assemblies by target RID and SDK runtime graph, and reuse one npm/JSR package identity for declared subpath imports. Release SSR produces an independently runnable `ssr/ssr-entry.js` with local chunks, without restoring `node_modules`. by @devhxj
+- Add live `DOMTokenList`, `IWindow.LiveLocation` (also available on `WindowProxy`), and explicit `Number` to `long`/`ulong` conversions. Keep identifiers outside the safe Number integer range as strings or BigInt; serialize structural JSON with a caller-owned replacer that converts BigInt to decimal strings. by @devhxj
+- Existing C# DOM events gain native browser properties through CLR mappings and extensions, covering precisely typed `NativeEvent` for 12 event families, input/drop `Files`, and `DataTransfer`, `DataTransferItem`, `TouchPoint`, and `ElementReference` projections. WebIDL still generates native interfaces. Read `CurrentTarget` and transient clipboard/drop data in the callback before the first await; use distinct `NativeFiles`/`NativeItems` entries for CLR `DataTransfer.Files`/`Items`. by @devhxj
+
+#### Improvements
+
+- Display the README verse banner from a repository SVG snapshot, retaining the source link and refresh command so GitHub image-proxy failures no longer leave it blank. by @devhxj
+
+#### Breaking Changes
+
+- Change token properties such as `Element.ClassList`, `Part`, and `RelList` from collection projections to native live `DOMTokenList` values. **Migration**: replace `Count` with `Length`, use `GetItem(index)` for native `item(index)`, and use DOM methods such as `Add`, `Remove`, and `Toggle` for mutation. by @devhxj
+- Change `ElTableColumn.ChildContent` to a `RenderFragment<ElTableSlotContext>` scoped slot; the new `ElTypedTableColumn<TRow>` keeps the row type through `ElTableSlotContext<TRow>`. **Migration**: use `Context="cell"` with `cell.Row`, `cell.Column`, and `cell.Index` in Razor cell templates; manual `ChildContent` assignments must accept that context and return a fragment. by @devhxj
+- Folder Publish copies only `dist/**` and optional SSR `ssr/**`, excluding source, root project files, locks, and `node_modules`; source maps are excluded by default. **Migration**: serve `dist/` and run `ssr/ssr-entry.js` for SSR. Set `JazorPublishSourceMaps=true` when deployed maps are needed. by @devhxj
+
+#### Bug Fixes
+
+- Preserve null short-circuiting through entire inline getter property and method chains, with single evaluation of the receiver. by @devhxj
+- Fix Number/CLR BigInt carrier mixing in `ProgressEventArgs.Loaded`/`Total`; native `NativeEvent` retains WebIDL Number values. by @devhxj
+- Stop rejecting explicit external-component parameters because of an overridden dynamic default initializer. by @devhxj
+- Preserve Vue lifecycle helper imports from code-behind and use stable Fragment anchors for conditional branches, keeping resource cleanup and DOM ranges correct across repeated mounting, unmounting, and loading/empty/data transitions. by @devhxj
+- Prefer current source graphs for Development SSR instead of stale Release bundles. by @devhxj
+- Compare npm/JSR subpath Base64 integrity digests exactly and report case-sensitive conflicts before writing output. by @devhxj
+- Apply the `JazorMode` default in targets so project conditions can override it; custom or relative `JazorDir` values exclude only their generated root and keep authored `Jazor/*.cs`, `.razor`, and other inputs. by @devhxj
+
+#### Chores
+
+- Include developer-feedback regressions in the complete mainline and coverage gates. Release consumers verify runnable closures, PathBase, real Chrome interaction, Deno SSR, and hydration; release and Wiki checks follow the current layout and default source-map contract. by @devhxj
+- Update the public API baseline and pass Release assembly comparison, binding generation/inventory, XML documentation, and 23 lockstep package checks. Current metrics and reproduction commands are in the [feedback validation](docs/04-roadmap/preview8-developer-feedback.md). by @devhxj
+
 ## 2026-09-29
 
 ### Jazor 1.0.0-preview.7

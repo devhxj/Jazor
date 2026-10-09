@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前已发布版本：[1.0.0-preview.7（2026-09-29）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前预览版本：[1.0.0-preview.8（2026-10-09）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -35,6 +35,10 @@
 - 不跳号。若发生手工重置或跳号（例如历史上的 `v0.1.48` → `v0.3.0`），必须在 CHANGELOG 中留一句解释。
 
 ## 发版门禁
+
+### preview.8 验收
+
+preview.8 集中处理 Razor SG 开发者反馈、CLR/原生浏览器映射、Element Plus 强类型交互、ASP.NET Core `IApplicationBuilder` 宿主复用、RID-aware Emit 资产选择、子路径包身份、SSR bundle 和 publish closure。完整主线测试、Compiler/RazorVue/Vue binding coverage、绑定 XML 文档、API/绑定基线及本地 23 包的 Windows SPA/SSR 发布消费者门禁均已通过。验证入口与范围见[开发者反馈验收](../04-roadmap/preview8-developer-feedback.md)；公开上传仍由下述官方 tag workflow 执行，并在上传前再次验证发布 ref。
 
 打 tag 前按改动触及面执行对应门禁；覆盖率与场景数量的具体门槛以[当前状态](../04-roadmap/current-status.md)的门槛表为准：
 

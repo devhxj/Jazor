@@ -2,6 +2,8 @@
 
 > 本指南描述当前 RazorVue 的作者面（authoring surface）。Razor SDK/Roslyn 负责 Razor 绑定、C# 类型检查和语法诊断；RazorVue 消费 official Razor Source Generator 完成后的最终 `Compilation`，分别降低 VNode-producing `BuildRenderTree` 和其可达的组件 C# 成员，产出 Vue render-function `.mjs`。
 
+版本边界：本文描述 `1.0.0-preview.8` 的作者面，包括组件身份诊断、Vue 参数名冲突诊断、外部 wrapper 常量默认 props 和 Element Plus typed 交互。安装与升级统一使用对应 lockstep 版本；验收范围见[当前状态](../04-roadmap/current-status.md)。
+
 ## 先判断代码位置
 
 RazorVue 有两个执行域。手写 `RenderTreeBuilder` 与 Razor 标记共同遵循 direct-render 协议。C# 语法的适用规则由其是否产出 VNode 决定。
@@ -33,6 +35,8 @@ RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding ->
 | `JAZORVGA024` | member closure | `#member-closure` | 检查可达成员、constructor activation、lifecycle dispatch 和导出名；按本指南的 Support/Reject 子集调整源码。 |
 | `JAZORVGA025` | `[VueInject]` declaration | `#vue-inject` | 修正 container/implementation contract 和重复声明。 |
 | `JAZORVGA026` | Vue module/import/framing | `#vue-module` | 修正模块路径、导出名、import collision 或 runtime helper contract。 |
+| `JAZORVGA027` | component candidate identity（preview.8） | `#component-identity` | 补齐 `ComponentBase`、`IVueComponent` 和生成模块/外部 binding 描述。 |
+| `JAZORVGA028` | attribute/runtime parameter name collision（preview.8） | `#parameter-runtime-names` | 将 `Class` 改为声明的 `CssClass`，或精确的小写 Vue attribute `class`。 |
 | `JAZORVCA001` | authored `[Inject]`/`@inject` 使用了 `DbContext` | `#browser-services` | 数据访问移到 typed endpoint；组件继续注入 browser client。 |
 | `JAZORVCA002` | authored `[Inject]`/`@inject` 使用了 server-only ASP.NET/Identity service | `#browser-services` | request/identity 操作移到 server endpoint。 |
 | `JAZORVCA003`-`005` | authored `ParameterView` 的未物化枚举/查找操作 | `#parameter-lifecycle` | 使用声明的 typed `[Parameter]` 属性。 |
@@ -121,6 +125,10 @@ Element Plus 组件按普通 Razor 组件使用：`ElButtonType` 等 enum 保持
 
 ### 推荐的复杂逻辑形状
 
+preview.8的原生上传回调可使用 `InputFileChangeEventArgs` + `args.Files`，drop 回调使用 `DragEventArgs` + `args.Files`；这些 extension 由 `Jazor.Vue` 的 opt-in 作者程序集提供。返回值直接是 WebIDL `FileList`/`FileRef`，可读取文件 metadata 并构造 `FormData`。普通 `@onchange` 的标量 `ChangeEventArgs.Value` 不承担文件协议；原生 file input 使用显式 typed `onchange` callback，完整示例见 [Browser Interop](browser-interop.md#native-file-and-drop-events)。
+
+同类扩展覆盖 12 种 DOM 事件及 `DataTransfer`、`DataTransferItem`、`TouchPoint`、`ElementReference`：导入 `ECMAScript` 后可读取 `args.Target`、`args.CurrentTarget`、`args.NativeEvent`，以及剪贴板 `ClipboardData`、焦点/鼠标 `RelatedTarget`、pointer 的缺失属性。`NativeEvent` 保留精确的 WebIDL 事件类型；原生列表通过 `NativeFiles`、`NativeItems`、`NativeTouches` 访问，保留既有 CLR 数组属性的行为与边界。`CurrentTarget` 和 clipboard/drag 载荷应在 callback 内、首次 `await` 前读取。完整类型和属性列表见[原生事件与载荷扩展](browser-interop.md#native-dom-event-and-payload-extensions)。
+
 标记保持为声明 UI，分支、循环和计算放到 `@code` 或 `.razor.cs` 的普通成员中。下面的 handler 属于 component logic，不属于 direct render；其中的 `continue`/`break` 因而合法。
 
 ```razor
@@ -177,6 +185,8 @@ RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，同名普�
 | `StateHasChanged` | 仅当前组件 receiver 的调用有 runtime 支持；unmount 后调用会失败。 |
 | `InvokeAsync(Action)` / `InvokeAsync(Func<Task>)` | 仅当前组件 receiver 的窄调用面有支持；unmount 后返回 rejected Promise。 |
 
+preview.8回归进一步验证了在 `.razor.cs` 的 `OnInitialized` 或受支持 constructor 中注册 `Vue.OnMounted` / `OnUnmounted` 的形状。真实 Vue scheduler/DOM renderer 与 happy-dom 的 3 个用例覆盖重复 mount/unmount 后资源归零，以及每次挂载 90 次 loading/empty/data 切换时 raw markup、条件分支和 DOM range 保持正确。这些用例证明对应 DOM 执行场景；完整发布门禁另已通过真实 Chrome SPA/SSR 与 hydration 消费者验证，具体范围见[反馈验收](../04-roadmap/preview8-developer-feedback.md)。
+
 ### 标准 API 的环境边界
 
 Razor SDK 提供 C# 与 Razor 编译能力；浏览器运行时通过已注册的 client/service adapter 执行服务。数据库上下文、请求上下文和服务器 host/Identity 服务由 `JAZORVCA001`/`JAZORVCA002` 在作者源码处提供诊断，缺少 adapter 的 Blazor host service 由 `JAZORVCA007` 说明。`AuthenticationStateProvider` 通过宿主注册的 typed browser provider 进入组件。`NavigationManager` 的基础属性注入由 browser service adapter 提供；同源内部 `NavigateTo` 覆盖 `ReplaceHistoryEntry`、`HistoryEntryState` 和 `LocationChanged` 订阅，`LocationChanging` 的内部取消子集及已验证的 `popstate`/`hashchange` history 取消恢复可直接使用。`IJSRuntime` 的实际调用或成员访问在使用点通过 compiler/final Compilation diagnostic 说明，JavaScript 能力使用强类型 ECMAScript/WebIDL binding。标准 cascading 和基础 route catalog 属于 framework primitive。TDesign 等组件库的 `TForm<T>`、`TFormItem`、typed `TInput<T>`、`Rules`、`OnValidate`、`OnReset` 和 `OnSubmit` 提供表单与校验 contract；`EditForm`、`Input*`、`ValidationMessage`、SSR/hydration 等形状通过对应 guidance 或 final Compilation 在作者映射位置说明。
@@ -225,6 +235,22 @@ Razor SG 生成的 builder 调用按顺序解释为 Vue VNode；手写 `BuildRen
 
 direct render 中普通 `break`/`continue` 绑定当前 loop 的结构化目标，且 branch 前已关闭 element/component/region frame；branch 在真实 JS loop 作用域中执行。跨 loop、`goto`、labeled branch 和 branch 时仍打开 frame 的形状报告 `JAZORVGA021`。复杂控制流通过 component logic helper 计算，再由 render 消费结果。
 
+### Razor 标记与浏览器值
+
+official Razor SG 支持代码块中的同行 sibling 标签和显式插值表达式；preview.8回归覆盖下列写法，无需为 RazorVue 拆行或移除 interpolation：
+
+```razor
+@if (Show)
+{
+    <span>before</span><strong>@Value</strong>
+    <span>@($"release:{Value}")</span>
+    @: @Value → @Next
+    <text>@Value → @Next</text>
+}
+```
+
+代码块中的裸文本必须使用 `@:` 或 `<text>`。直接写 `@Value → @Next` 会由 Razor/C# 报告 `RZ****` 或 `CS****`；先修正 `.razor` 源码，再检查 lowering。native file input 可通过 `InputFileChangeEventArgs.Files` extension 读取原生 `FileList`；BigInt JSON、DOM null 判断和文件事件示例见 [Browser interop](./browser-interop.md)。syntax/file、BigInt JSON 与增量 source map 回归已纳入通过的完整 RazorVue 套件；发布门禁见[反馈验收](../04-roadmap/preview8-developer-feedback.md)。
+
 ### 常见替代
 
 | 失败写法 | 推荐写法 |
@@ -250,6 +276,91 @@ RazorVue 在 direct-render 层使用 `Jazor.Compiler`/`SemanticWalker` 的 C# �
 组件从 final Compilation 解析可绑定的 `BuildRenderTree(RenderTreeBuilder)` block，并满足 RazorVue 组件身份契约：可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，且声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]` 导入描述。官方 Razor SG 负责 component parameter、required parameter 和参数类型诊断；RazorVue 报告缺少绑定或消费条件的最终形状。
 
 组件模块使用稳定的 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]`。组件引用、parameter 名称和 child content 与编译期 symbol 对齐；组件入口通过 `IVueComponent` marker 和导入描述确定。
+
+<a id="component-identity"></a>
+### 组件身份：JAZORVGA027（preview.8）
+
+当前 compilation 中的具体 RazorVue candidate 在选择输出前检查身份：继承 `ComponentBase`、实现 `ECMAScript.Vue.IVueComponent`，并声明生成模块的 `[ECMAScriptModule]` 或外部 binding 的 `[ECMAScript]`。`.razor` 页面/可复用组件、已声明模块的组件和带 `IVueComponent` marker 的类型都可能成为 candidate；缺失声明会报告 `JAZORVGA027`，即使组件尚未被其他页面引用。`@page` 本身不提供模块身份。
+
+例如，`Orders.razor` 的 code-behind 应包含：
+
+```csharp
+using ECMAScript;
+using Microsoft.AspNetCore.Components;
+using static ECMAScript.Vue;
+
+namespace Demo.Pages;
+
+[ECMAScriptModule("./components/orders")]
+public partial class Orders : ComponentBase, IVueComponent
+{
+}
+```
+
+若消息指出缺少 `IVueComponent`，补齐 marker；若指出缺少导入描述，为本地组件声明稳定的模块路径。抽象源码共用基类不需要单独生成模块；已有 `[ECMAScript("package")]` 的外部 binding 保持其导入身份。
+
+<a id="parameter-runtime-names"></a>
+### 参数与 Vue 名称：JAZORVGA028（preview.8）
+
+binding 的 C# 参数名与 Vue runtime 名称可以不同。例如 Element Plus 的 `CssClass` 映射到 Vue `class`。未声明的 `Class` 与该 runtime 名称只有大小写差异，会报告 `JAZORVGA028`，消息同时给出原属性、目标参数和替代写法，位置映射到 `.razor`：
+
+```razor
+@* Class="panel" 会触发 JAZORVGA028 *@
+<ElCard CssClass="panel">Content</ElCard>
+<ElCard class="panel">Content</ElCard>
+```
+
+优先使用 binding 声明的 `CssClass` 参数；精确的小写 `class` 保留 Vue attribute/fallthrough 语义。普通 HTML 的 `<div class="panel">` 继续按原生 attribute 处理。未知参数、required parameter 和参数类型仍由 official Razor SG/C# 检查。
+
+<a id="external-wrapper-defaults"></a>
+### 外部 wrapper 的常量默认 props（preview.8）
+
+带 `[ECMAScript("...")]` 的 wrapper 是外部 Vue 组件契约。RazorVue 将当前 compilation 可读取的 wrapper 及基类 `[Parameter]` 常量 initializer 投影为默认 props，包括字符串、布尔值、数值和受支持的 erased union 常量。派生 `[Parameter]` 接管同名参数；`RenderFragment` 与 `CaptureUnmatchedValues` 参数不作为默认 prop 投影。
+
+```csharp
+[ECMAScript]
+public readonly union TableHeight(int, string);
+
+public abstract class TableContract : ComponentBase, IVueComponent
+{
+    [Parameter, ECMAScriptName("maxHeight")]
+    public TableHeight MaxHeight { get; set; } = 480;
+
+    [Parameter, ECMAScriptName("class")]
+    public string? CssClass { get; set; } = "default-class";
+
+    [Parameter, ECMAScriptName("enabled")]
+    public bool Enabled { get; set; } = true;
+}
+
+[ECMAScript("my-table"), ECMAScriptName("Table")]
+public sealed class DefaultTable : TableContract { }
+```
+
+```razor
+<DefaultTable />
+<DefaultTable MaxHeight="@((TableHeight)240)" CssClass="explicit" Enabled="false" />
+```
+
+第一处使用 `maxHeight: 480`、`class: "default-class"`、`enabled: true`；第二处使用显式值 `240`、`"explicit"`、`false`。显式参数和 `@attributes` 覆盖默认 props，显式参数与 splat 之间继续遵循 Razor SG 的源码顺序；默认值不会覆盖调用处提供的值。
+
+未被无条件显式参数覆盖的 `MaxHeight = GetHeight()` 等非恒定 initializer 报告 `JAZORVGA021`，位置指向 initializer。可移除动态 initializer，或在调用处显式传入该参数；被覆盖的默认值不会求值或产生诊断。运行时 `@attributes` 不能证明每次都提供该参数，故不能豁免动态默认值；需要每实例初始化时，使用 `[ECMAScriptModule]` 生成组件的普通 state/lifecycle。
+
+### Element Plus typed 交互与 slot 迁移（preview.8）
+
+`ElTypedSelect<TValue>` / `ElTypedOption<TValue>` 保留选中值类型，`ElTypedTable<TRow>` / `ElTypedTableColumn<TRow>` 保留行类型，`ElTypedDropdown<TCommand>` / `ElTypedDropdownItem<TCommand>` 保留 command 类型。使用 Razor 的 `TValue`、`TRow` 或 `TCommand` 参数与对应 typed callbacks，无需把值转成字典。
+
+**迁移要求：`ElTableColumn.ChildContent` 从无上下文 `RenderFragment` 改为 `RenderFragment<ElTableSlotContext>` scoped slot。** 直接声明 fragment 的 C# 属性/委托必须改用该上下文签名。其 `Row` 是 `VueDictionary`，`Column` 是可空 `ElTableColumnContext`，`Index` 映射 Element Plus 的 `$index`。typed column 使用 `RenderFragment<ElTableSlotContext<TRow>>`，其中 `Row` 保留 `TRow`：
+
+```razor
+<ElTypedTable TRow="OrderRow" Data="Rows">
+    <ElTypedTableColumn TRow="OrderRow" Prop="id" Label="ID" Context="cell">
+        <span data-index="@cell.Index">@cell.Row.Id</span>
+    </ElTypedTableColumn>
+</ElTypedTable>
+```
+
+纯标记 child content 可保留；需要单元格数据时声明 `Context="cell"`，通过 `cell.Row`、`cell.Column`、`cell.Index` 读取真实 slot payload。`ElMessage.Service`、`ElMessageBox.Service` 和 `ElNotification.Service` 提供新的 typed 服务入口，完整交互/服务示例与迁移说明见 [Element Plus README](../../src/ECMAScript.ElementPlus/README.md)。
 
 <a id="member-closure"></a>
 ## Member Closure 与 Reactive Class

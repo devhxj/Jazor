@@ -1,6 +1,7 @@
 <div align="center">
 
-![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+[![Today's Verse](docs/assets/todays-verse.svg)](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+<!-- Refresh the snapshot: dotnet run --file scripts/csharp/update-readme-verse.cs -->
 
 <h1>Jazor</h1>
 
@@ -9,7 +10,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.7&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.8&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +27,9 @@
 
 </div>
 
-> Jazor 1.0.0-preview.7 is the current preview release.
+> Jazor 1.0.0-preview.8 is the current preview release.
+
+The developer-feedback release adds typed Element Plus interactions, native DOM event and browser payload projections, reusable ASP.NET Core hosting, RID-aware Emit assets, and self-contained SSR publishing. See [the feedback scope and validation](docs/04-roadmap/preview8-developer-feedback.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -110,7 +113,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.7
+dotnet add package Jazor --version 1.0.0-preview.8
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -118,8 +121,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.7" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.7" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -199,19 +202,17 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 Repository automation uses single-file C# entry points under `scripts/csharp/`. See [Development and Testing](docs/03-guides/development-and-testing.md) for the full workflow.
 
-## Release status
+## Latest release
 
-### Jazor 1.0.0-preview.7 · 2026-09-29
+### Jazor 1.0.0-preview.8 · 2026-10-09
 
-- Element Plus Popper components and the FilePond, Floating UI, and Lucide bindings now restore their complete runtime dependency closures. Deno also materializes npm aliases, so consumers no longer need local manifest or extern shims.
-- Emit now collapses identical assembly identities found under both `lib/` and `runtimes/`, while reporting genuine same-name identity conflicts instead of failing later during module collection.
-- Development Vite proxy responses receive the same configured security headers as Release assets and application routes.
-- Emit consumer gates run as isolated fixtures, Windows SPA/SSR release browser smokes use a stable shared Chrome launch contract, and Wiki development verification recognizes Vite inline source maps while preserving complete failure reports.
-- This is a preview release; stable 1.0 has not been published. See [Current Status](docs/04-roadmap/current-status.md) for supported scope and quality gates.
+- Typed Element Plus Select, Table, Dropdown, and feedback services work with official Razor SG; component diagnostics and wrapper defaults now point back to authored source.
+- Existing CLR event and browser payload types expose native properties through extensions, while WebIDL owns browser interfaces. Capture `CurrentTarget` and clipboard/drop data before the first `await`; see [Browser interop](docs/03-guides/browser-interop.md).
+- Startup and framework hosts can reuse the frontend pipeline. Emit selects target-RID assets, shares declared subpath package identities, and publishes runnable `dist/` and optional `ssr/` output.
+- Migrate token-list `Count` to `Length`/`GetItem`, update `ElTableColumn.ChildContent` to a scoped fragment, and opt in to published maps with `JazorPublishSourceMaps=true`. Details are in the [Changelog](CHANGELOG.md).
+- Mainline tests, coverage, API/binding checks, and packaged Windows SPA/SSR browser consumers passed. Scope and reproducible gates are in [Current Status](docs/04-roadmap/current-status.md).
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7) and matching Git tag as the version reference. Mirrors may lag behind or show an older stable release when previews are hidden. Keep all published Jazor/ECMAScript packages on the same version and explicitly select `1.0.0-preview.7`.
-
-The main branch may contain unreleased changes. Read [Unreleased and version history](CHANGELOG.md) before applying main-branch examples to an installed package.
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8) and matching Git tag as the version reference. Keep all Jazor/ECMAScript packages on `1.0.0-preview.8`. Stable 1.0 remains unreleased; full version history is in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

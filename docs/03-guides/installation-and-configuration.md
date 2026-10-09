@@ -6,9 +6,11 @@
 
 ## 前置条件
 
-当前版本为 **1.0.0-preview.7（2026-09-29）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+当前版本为 **1.0.0-preview.8（2026-10-09）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
 
 preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
+
+preview.8 的 live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前项目目标为 `net11.0`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
@@ -38,7 +40,7 @@ preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.7" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
 </ItemGroup>
 ```
 
@@ -51,8 +53,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.0.0-preview.7" />
-    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.7" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -61,25 +63,25 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.7" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.7" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.8" />
 </ItemGroup>
 ```
 
@@ -98,17 +100,21 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
-| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另执行项目构建脚本；Emit 增量状态写入 `obj` |
-| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；Emit 就地写入并按清单差异清理过期文件 |
-| `JazorSSR` | `false` | 启用受支持 SSR 时生成 SSR 入口，并从同一项目根使用已恢复的依赖 |
+| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另执行项目构建脚本；preview.8 将默认值延后至 targets，允许项目体用空值条件设置模式 |
+| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；preview.8 保留此目录中的作者 `.cs` / `.razor` 输入，只排除生成资源 |
+| `JazorSSR` | `false` | 生成开发 SSR 入口；Release 另构建 `ssr/` 运行闭包 |
+| `JazorPublishSourceMaps` | `false` | preview.8 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |
+| `RuntimeIdentifier` | 未设置 | preview.8 优先传入指定 RID，未设置时使用 SDK 当前 RID；同时传入 SDK runtime graph，先选择兼容 runtime asset 再对程序集身份去重 |
 
 `debug` 与 `release` 是互斥输出模式。`release` 从 `jazor/` 项目入口执行 `package.json` 中的标准构建脚本。默认脚本使用 Vite；应用可以保留或替换自己的 JavaScript 构建工具和配置。
+
+Folder Publish 使用 Release 构建运行闭包，发布后的 `jazor/` 包含 `dist/` 和可选 `ssr/`；源码、根 lock 和 `node_modules` 保留在本地生成项目中。
 
 ## 一次性切换边界
 
 资源契约采用一次性破坏性收敛。最终版本在一次 lockstep 构建中升级所有 Jazor/生态包，并使用清理后的 `JazorDir` 重新构建。历史 API 名称和旧目录说明归档于[历史演进](../05-history/evolution.md)。
 
-开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成目录位于 MSBuild 输入项范围之外；更新缺少安全热替换证据时，服务执行整页刷新。
+开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成资源不参与 MSBuild 作者输入，`JazorDir` 中的作者 `.cs` / `.razor` 文件保留；更新缺少安全热替换证据时，服务执行整页刷新。
 
 `ECMAScript.Style` 的 DSL 使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`，并生成 CSS `background-color`。WebIDL 生成的 DOM 对象按规范使用 `backgroundColor`。两套 C# 表面分别维持既定命名：`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型采用 PascalCase，生成 CSS、`style.js` 与浏览器 HMR 协议。
 
@@ -181,7 +187,7 @@ app.MapPost("/api/editor/commit", async (EditorCommand command, EditorService se
 
 浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider 以 endpoint 响应作为授权结果来源。endpoint 异常通过 `provider.error` 暴露，当前状态保持可观察；并发请求按最新请求生效。该 provider 定义 Jazor 的 browser contract。
 
-ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块，Deno 执行这些模块，项目配置的 JavaScript 构建工具负责浏览器产物。`WorkerCount` 定义单应用实例的 Deno worker 数和 SSR 并发数，取正整数，默认值为 `min(Environment.ProcessorCount, 4)`。Emit 提交后的 runner 保持字节稳定；SSR state 通过 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value，共享业务状态通过 props 或应用自有 payload 传递。
+ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 在开发时使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块。preview.8 Release 使用 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json` 任务，可从独立发布目录启动，无需恢复 `node_modules` 或根 lock。Deno 执行 SSR 模块，项目配置的 JavaScript 构建工具负责浏览器产物。`WorkerCount` 定义单应用实例的 Deno worker 数和 SSR 并发数，取正整数，默认值为 `min(Environment.ProcessorCount, 4)`。SSR state 通过 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value，共享业务状态通过 props 或应用自有 payload 传递。
 
 ## 后续阅读
 

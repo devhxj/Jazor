@@ -1,4 +1,4 @@
-# Public API snapshot (2026-09-28)
+# Public API snapshot (2026-10-09)
 
 ## ECMAScript.DateFns
 - type ECMAScript.DateFns
@@ -3282,6 +3282,12 @@
   - System.Nullable`1[ECMAScript.Number] ImageSize
   - System.String Description
   - System.String Image
+- enum ECMAScript.ElementPlus.ElFeedbackType
+  - ECMAScript.ElementPlus.ElFeedbackType Error
+  - ECMAScript.ElementPlus.ElFeedbackType Info
+  - ECMAScript.ElementPlus.ElFeedbackType Success
+  - ECMAScript.ElementPlus.ElFeedbackType Warning
+  - Int32 value__
 - type ECMAScript.ElementPlus.ElFooter
   - Void .ctor()
   - System.String get_Height()
@@ -4485,6 +4491,81 @@
   - Void set_TitleSlot(Microsoft.AspNetCore.Components.RenderFragment)
   - Microsoft.AspNetCore.Components.RenderFragment TitleSlot
   - System.String Title
+- type ECMAScript.ElementPlus.ElMessage
+  - ECMAScript.ElementPlus.ElMessageService get_Service()
+  - ECMAScript.ElementPlus.ElMessageService Service
+- type ECMAScript.ElementPlus.ElMessageBox
+  - ECMAScript.ElementPlus.ElMessageBoxService get_Service()
+  - ECMAScript.ElementPlus.ElMessageBoxService Service
+- enum ECMAScript.ElementPlus.ElMessageBoxAction
+  - ECMAScript.ElementPlus.ElMessageBoxAction Confirm
+  - Int32 value__
+- type ECMAScript.ElementPlus.ElMessageBoxOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElMessageBoxOptions)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElMessageBoxOptions, ECMAScript.ElementPlus.ElMessageBoxOptions)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElMessageBoxOptions, ECMAScript.ElementPlus.ElMessageBoxOptions)
+  - ECMAScript.ElementPlus.ElMessageBoxOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType] get_Type()
+  - System.Nullable`1[System.Boolean] get_CloseOnClickModal()
+  - System.Nullable`1[System.Boolean] get_CloseOnPressEscape()
+  - System.Nullable`1[System.Boolean] get_ShowCancelButton()
+  - System.String ToString()
+  - System.String get_CancelButtonText()
+  - System.String get_ConfirmButtonText()
+  - System.String get_InputPlaceholder()
+  - System.String get_InputValue()
+  - Void set_CancelButtonText(System.String)
+  - Void set_CloseOnClickModal(System.Nullable`1[System.Boolean])
+  - Void set_CloseOnPressEscape(System.Nullable`1[System.Boolean])
+  - Void set_ConfirmButtonText(System.String)
+  - Void set_InputPlaceholder(System.String)
+  - Void set_InputValue(System.String)
+  - Void set_ShowCancelButton(System.Nullable`1[System.Boolean])
+  - Void set_Type(System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType])
+  - System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType] Type
+  - System.Nullable`1[System.Boolean] CloseOnClickModal
+  - System.Nullable`1[System.Boolean] CloseOnPressEscape
+  - System.Nullable`1[System.Boolean] ShowCancelButton
+  - System.String CancelButtonText
+  - System.String ConfirmButtonText
+  - System.String InputPlaceholder
+  - System.String InputValue
+- type ECMAScript.ElementPlus.ElMessageBoxPromptResult
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElMessageBoxPromptResult)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElMessageBoxPromptResult, ECMAScript.ElementPlus.ElMessageBoxPromptResult)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElMessageBoxPromptResult, ECMAScript.ElementPlus.ElMessageBoxPromptResult)
+  - ECMAScript.ElementPlus.ElMessageBoxAction get_Action()
+  - ECMAScript.ElementPlus.ElMessageBoxPromptResult <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - System.String get_Value()
+  - Void set_Action(ECMAScript.ElementPlus.ElMessageBoxAction)
+  - Void set_Value(System.String)
+  - ECMAScript.ElementPlus.ElMessageBoxAction Action
+  - System.String Value
+- type ECMAScript.ElementPlus.ElMessageBoxService
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElMessageBoxService)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElMessageBoxService, ECMAScript.ElementPlus.ElMessageBoxService)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElMessageBoxService, ECMAScript.ElementPlus.ElMessageBoxService)
+  - ECMAScript.ElementPlus.ElMessageBoxService <Clone>$()
+  - ECMAScript.IPromise`1[ECMAScript.ElementPlus.ElMessageBoxAction] Alert(System.String)
+  - ECMAScript.IPromise`1[ECMAScript.ElementPlus.ElMessageBoxAction] Alert(System.String, System.String, ECMAScript.ElementPlus.ElMessageBoxOptions)
+  - ECMAScript.IPromise`1[ECMAScript.ElementPlus.ElMessageBoxAction] Confirm(System.String)
+  - ECMAScript.IPromise`1[ECMAScript.ElementPlus.ElMessageBoxAction] Confirm(System.String, System.String, ECMAScript.ElementPlus.ElMessageBoxOptions)
+  - ECMAScript.IPromise`1[ECMAScript.ElementPlus.ElMessageBoxPromptResult] Prompt(System.String)
+  - ECMAScript.IPromise`1[ECMAScript.ElementPlus.ElMessageBoxPromptResult] Prompt(System.String, System.String, ECMAScript.ElementPlus.ElMessageBoxOptions)
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void Close()
 - type ECMAScript.ElementPlus.ElMessageConfig
   - Void .ctor()
   - Boolean Equals(ECMAScript.ElementPlus.ElMessageConfig)
@@ -4507,6 +4588,124 @@
   - System.Nullable`1[ECMAScript.Number] Max
   - System.Nullable`1[ECMAScript.Number] Offset
   - System.Nullable`1[System.Boolean] Grouping
+- type ECMAScript.ElementPlus.ElMessageHandle
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElMessageHandle)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElMessageHandle, ECMAScript.ElementPlus.ElMessageHandle)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElMessageHandle, ECMAScript.ElementPlus.ElMessageHandle)
+  - ECMAScript.ElementPlus.ElMessageHandle <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void Close()
+- type ECMAScript.ElementPlus.ElMessageOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElMessageOptions)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElMessageOptions, ECMAScript.ElementPlus.ElMessageOptions)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElMessageOptions, ECMAScript.ElementPlus.ElMessageOptions)
+  - ECMAScript.ElementPlus.ElMessageOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Action get_OnClose()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType] get_Type()
+  - System.Nullable`1[ECMAScript.Number] get_Duration()
+  - System.Nullable`1[System.Boolean] get_Grouping()
+  - System.Nullable`1[System.Boolean] get_ShowClose()
+  - System.String ToString()
+  - System.String get_Message()
+  - Void set_Duration(System.Nullable`1[ECMAScript.Number])
+  - Void set_Grouping(System.Nullable`1[System.Boolean])
+  - Void set_Message(System.String)
+  - Void set_OnClose(System.Action)
+  - Void set_ShowClose(System.Nullable`1[System.Boolean])
+  - Void set_Type(System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType])
+  - System.Action OnClose
+  - System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType] Type
+  - System.Nullable`1[ECMAScript.Number] Duration
+  - System.Nullable`1[System.Boolean] Grouping
+  - System.Nullable`1[System.Boolean] ShowClose
+  - System.String Message
+- type ECMAScript.ElementPlus.ElMessageService
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElMessageService)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElMessageService, ECMAScript.ElementPlus.ElMessageService)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElMessageService, ECMAScript.ElementPlus.ElMessageService)
+  - ECMAScript.ElementPlus.ElMessageHandle Error(ECMAScript.ElementPlus.ElMessageOptions)
+  - ECMAScript.ElementPlus.ElMessageHandle Error(System.String)
+  - ECMAScript.ElementPlus.ElMessageHandle Info(ECMAScript.ElementPlus.ElMessageOptions)
+  - ECMAScript.ElementPlus.ElMessageHandle Info(System.String)
+  - ECMAScript.ElementPlus.ElMessageHandle Success(ECMAScript.ElementPlus.ElMessageOptions)
+  - ECMAScript.ElementPlus.ElMessageHandle Success(System.String)
+  - ECMAScript.ElementPlus.ElMessageHandle Warning(ECMAScript.ElementPlus.ElMessageOptions)
+  - ECMAScript.ElementPlus.ElMessageHandle Warning(System.String)
+  - ECMAScript.ElementPlus.ElMessageService <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void CloseAll()
+- type ECMAScript.ElementPlus.ElNotification
+  - ECMAScript.ElementPlus.ElNotificationService get_Service()
+  - ECMAScript.ElementPlus.ElNotificationService Service
+- type ECMAScript.ElementPlus.ElNotificationHandle
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElNotificationHandle)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElNotificationHandle, ECMAScript.ElementPlus.ElNotificationHandle)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElNotificationHandle, ECMAScript.ElementPlus.ElNotificationHandle)
+  - ECMAScript.ElementPlus.ElNotificationHandle <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void Close()
+- type ECMAScript.ElementPlus.ElNotificationOptions
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElNotificationOptions)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElNotificationOptions, ECMAScript.ElementPlus.ElNotificationOptions)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElNotificationOptions, ECMAScript.ElementPlus.ElNotificationOptions)
+  - ECMAScript.ElementPlus.ElNotificationOptions <Clone>$()
+  - Int32 GetHashCode()
+  - System.Action get_OnClick()
+  - System.Action get_OnClose()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType] get_Type()
+  - System.Nullable`1[ECMAScript.Number] get_Duration()
+  - System.Nullable`1[System.Boolean] get_ShowClose()
+  - System.String ToString()
+  - System.String get_Message()
+  - System.String get_Title()
+  - Void set_Duration(System.Nullable`1[ECMAScript.Number])
+  - Void set_Message(System.String)
+  - Void set_OnClick(System.Action)
+  - Void set_OnClose(System.Action)
+  - Void set_ShowClose(System.Nullable`1[System.Boolean])
+  - Void set_Title(System.String)
+  - Void set_Type(System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType])
+  - System.Action OnClick
+  - System.Action OnClose
+  - System.Nullable`1[ECMAScript.ElementPlus.ElFeedbackType] Type
+  - System.Nullable`1[ECMAScript.Number] Duration
+  - System.Nullable`1[System.Boolean] ShowClose
+  - System.String Message
+  - System.String Title
+- type ECMAScript.ElementPlus.ElNotificationService
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElNotificationService)
+  - Boolean Equals(System.Object)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElNotificationService, ECMAScript.ElementPlus.ElNotificationService)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElNotificationService, ECMAScript.ElementPlus.ElNotificationService)
+  - ECMAScript.ElementPlus.ElNotificationHandle Error(ECMAScript.ElementPlus.ElNotificationOptions)
+  - ECMAScript.ElementPlus.ElNotificationHandle Error(System.String)
+  - ECMAScript.ElementPlus.ElNotificationHandle Info(ECMAScript.ElementPlus.ElNotificationOptions)
+  - ECMAScript.ElementPlus.ElNotificationHandle Info(System.String)
+  - ECMAScript.ElementPlus.ElNotificationHandle Success(ECMAScript.ElementPlus.ElNotificationOptions)
+  - ECMAScript.ElementPlus.ElNotificationHandle Success(System.String)
+  - ECMAScript.ElementPlus.ElNotificationHandle Warning(ECMAScript.ElementPlus.ElNotificationOptions)
+  - ECMAScript.ElementPlus.ElNotificationHandle Warning(System.String)
+  - ECMAScript.ElementPlus.ElNotificationService <Clone>$()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void CloseAll()
 - type ECMAScript.ElementPlus.ElOption
   - Void .ctor()
   - System.Nullable`1[ECMAScript.Vue+VueBooleanStringNumberObjectValue] get_Value()
@@ -6342,6 +6541,7 @@
   - Microsoft.AspNetCore.Components.RenderFragment get_Expand()
   - Microsoft.AspNetCore.Components.RenderFragment get_FilterIcon()
   - Microsoft.AspNetCore.Components.RenderFragment get_Header()
+  - Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.ElementPlus.ElTableSlotContext] get_ChildContent()
   - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnIndexValue] get_Index()
   - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnSortByValue] get_SortBy()
   - System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue] get_ShowOverflowTooltip()
@@ -6365,6 +6565,7 @@
   - System.String get_Type()
   - System.String[] get_FilteredValue()
   - Void set_Align(System.String)
+  - Void set_ChildContent(Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.ElementPlus.ElTableSlotContext])
   - Void set_ClassName(System.String)
   - Void set_ColumnKey(System.String)
   - Void set_Expand(Microsoft.AspNetCore.Components.RenderFragment)
@@ -6406,6 +6607,7 @@
   - Microsoft.AspNetCore.Components.RenderFragment Expand
   - Microsoft.AspNetCore.Components.RenderFragment FilterIcon
   - Microsoft.AspNetCore.Components.RenderFragment Header
+  - Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.ElementPlus.ElTableSlotContext] ChildContent
   - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnIndexValue] Index
   - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnSortByValue] SortBy
   - System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue] ShowOverflowTooltip
@@ -6461,11 +6663,21 @@
   - System.IAsyncResult BeginInvoke(System.String, VueDictionary, ECMAScript.ElementPlus.ElTableColumnContext, System.AsyncCallback, System.Object)
   - Void EndInvoke(System.IAsyncResult)
   - Void Invoke(System.String, VueDictionary, ECMAScript.ElementPlus.ElTableColumnContext)
+- type ECMAScript.ElementPlus.ElTableColumnFilterMethodCallback`1
+  - Void .ctor(System.Object, IntPtr)
+  - Boolean EndInvoke(System.IAsyncResult)
+  - Boolean Invoke(System.String, TRow, ECMAScript.ElementPlus.ElTableColumnContext)
+  - System.IAsyncResult BeginInvoke(System.String, TRow, ECMAScript.ElementPlus.ElTableColumnContext, System.AsyncCallback, System.Object)
 - type ECMAScript.ElementPlus.ElTableColumnFormatterCallback
   - Void .ctor(System.Object, IntPtr)
   - System.IAsyncResult BeginInvoke(VueDictionary, ECMAScript.ElementPlus.ElTableColumnContext, VueValue, ECMAScript.Number, System.AsyncCallback, System.Object)
   - VueStringNumberVNodeValue EndInvoke(System.IAsyncResult)
   - VueStringNumberVNodeValue Invoke(VueDictionary, ECMAScript.ElementPlus.ElTableColumnContext, VueValue, ECMAScript.Number)
+- type ECMAScript.ElementPlus.ElTableColumnFormatterCallback`1
+  - Void .ctor(System.Object, IntPtr)
+  - System.IAsyncResult BeginInvoke(TRow, ECMAScript.ElementPlus.ElTableColumnContext, VueValue, ECMAScript.Number, System.AsyncCallback, System.Object)
+  - VueStringNumberVNodeValue EndInvoke(System.IAsyncResult)
+  - VueStringNumberVNodeValue Invoke(TRow, ECMAScript.ElementPlus.ElTableColumnContext, VueValue, ECMAScript.Number)
 - type ECMAScript.ElementPlus.ElTableColumnHeaderContext
   - Void .ctor()
   - Boolean Equals(ECMAScript.ElementPlus.ElTableColumnHeaderContext)
@@ -6512,6 +6724,11 @@
   - Boolean EndInvoke(System.IAsyncResult)
   - Boolean Invoke(VueDictionary, ECMAScript.Number)
   - System.IAsyncResult BeginInvoke(VueDictionary, ECMAScript.Number, System.AsyncCallback, System.Object)
+- type ECMAScript.ElementPlus.ElTableColumnSelectableCallback`1
+  - Void .ctor(System.Object, IntPtr)
+  - Boolean EndInvoke(System.IAsyncResult)
+  - Boolean Invoke(TRow, ECMAScript.Number)
+  - System.IAsyncResult BeginInvoke(TRow, ECMAScript.Number, System.AsyncCallback, System.Object)
 - type ECMAScript.ElementPlus.ElTableColumnSortByCallback
   - Void .ctor(System.Object, IntPtr)
   - System.IAsyncResult BeginInvoke(VueDictionary, ECMAScript.Number, VueDictionary[], System.AsyncCallback, System.Object)
@@ -6534,6 +6751,11 @@
   - ECMAScript.Number EndInvoke(System.IAsyncResult)
   - ECMAScript.Number Invoke(VueDictionary, VueDictionary)
   - System.IAsyncResult BeginInvoke(VueDictionary, VueDictionary, System.AsyncCallback, System.Object)
+- type ECMAScript.ElementPlus.ElTableColumnSortMethodCallback`1
+  - Void .ctor(System.Object, IntPtr)
+  - ECMAScript.Number EndInvoke(System.IAsyncResult)
+  - ECMAScript.Number Invoke(TRow, TRow)
+  - System.IAsyncResult BeginInvoke(TRow, TRow, System.AsyncCallback, System.Object)
 - type ECMAScript.ElementPlus.ElTableConfig
   - Void .ctor()
   - Boolean Equals(ECMAScript.ElementPlus.ElTableConfig)
@@ -6697,6 +6919,44 @@
   - ECMAScript.ElementPlus.ElTableRowStyleCallback AsCallback
   - System.Nullable`1[ECMAScript.Vue+VueStyleValue] AsStyle
   - System.Object Value
+- type ECMAScript.ElementPlus.ElTableSlotContext
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElTableSlotContext)
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElTableSlotContext, ECMAScript.ElementPlus.ElTableSlotContext)
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElTableSlotContext, ECMAScript.ElementPlus.ElTableSlotContext)
+  - ECMAScript.ElementPlus.ElTableColumnContext get_Column()
+  - ECMAScript.ElementPlus.ElTableSlotContext <Clone>$()
+  - ECMAScript.Number get_Index()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - Void set_Column(ECMAScript.ElementPlus.ElTableColumnContext)
+  - Void set_Index(ECMAScript.Number)
+  - Void set_Row(VueDictionary)
+  - VueDictionary get_Row()
+  - ECMAScript.ElementPlus.ElTableColumnContext Column
+  - ECMAScript.Number Index
+  - VueDictionary Row
+- type ECMAScript.ElementPlus.ElTableSlotContext`1
+  - Void .ctor()
+  - Boolean Equals(ECMAScript.ElementPlus.ElTableSlotContext`1[TRow])
+  - Boolean Equals(System.Object)
+  - Boolean Equals(VueProps)
+  - Boolean op_Equality(ECMAScript.ElementPlus.ElTableSlotContext`1[TRow], ECMAScript.ElementPlus.ElTableSlotContext`1[TRow])
+  - Boolean op_Inequality(ECMAScript.ElementPlus.ElTableSlotContext`1[TRow], ECMAScript.ElementPlus.ElTableSlotContext`1[TRow])
+  - ECMAScript.ElementPlus.ElTableColumnContext get_Column()
+  - ECMAScript.ElementPlus.ElTableSlotContext`1[TRow] <Clone>$()
+  - ECMAScript.Number get_Index()
+  - Int32 GetHashCode()
+  - System.String ToString()
+  - TRow get_Row()
+  - Void set_Column(ECMAScript.ElementPlus.ElTableColumnContext)
+  - Void set_Index(ECMAScript.Number)
+  - Void set_Row(TRow)
+  - ECMAScript.ElementPlus.ElTableColumnContext Column
+  - ECMAScript.Number Index
+  - TRow Row
 - type ECMAScript.ElementPlus.ElTableSort
   - Void .ctor()
   - Boolean Equals(ECMAScript.ElementPlus.ElTableSort)
@@ -8799,6 +9059,630 @@
   - Boolean EndInvoke(System.IAsyncResult)
   - Boolean Invoke(System.String, ECMAScript.ElementPlus.ElTreeNodeData, ECMAScript.ElementPlus.ElTreeNode)
   - System.IAsyncResult BeginInvoke(System.String, ECMAScript.ElementPlus.ElTreeNodeData, ECMAScript.ElementPlus.ElTreeNode, System.AsyncCallback, System.Object)
+- type ECMAScript.ElementPlus.ElTypedDropdownItem`1
+  - Void .ctor()
+  - Microsoft.AspNetCore.Components.RenderFragment get_IconSlot()
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] get_Icon()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - System.Nullable`1[System.Boolean] get_Divided()
+  - TCommand get_Command()
+  - Void set_Command(TCommand)
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_Divided(System.Nullable`1[System.Boolean])
+  - Void set_Icon(System.Nullable`1[ECMAScript.Vue+VueStringComponentValue])
+  - Void set_IconSlot(Microsoft.AspNetCore.Components.RenderFragment)
+  - Microsoft.AspNetCore.Components.RenderFragment IconSlot
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] Icon
+  - System.Nullable`1[System.Boolean] Disabled
+  - System.Nullable`1[System.Boolean] Divided
+  - TCommand Command
+- type ECMAScript.ElementPlus.ElTypedDropdown`1
+  - Void .ctor()
+  - ECMAScript.ElementPlus.ElButtonProps get_ButtonProps()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnClick()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnVisibleChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TCommand] get_OnCommand()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Dropdown()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElButtonType] get_Type()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElDropdownTriggerValue] get_Trigger()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperEffect] get_Effect()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperPlacement] get_Placement()
+  - System.Nullable`1[ECMAScript.Number] get_HideTimeout()
+  - System.Nullable`1[ECMAScript.Number] get_ShowTimeout()
+  - System.Nullable`1[ECMAScript.Vue+VueClassValue] get_PopperClass()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_MaxHeight()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Tabindex()
+  - System.Nullable`1[ECMAScript.Vue+VueStyleValue] get_PopperStyle()
+  - System.Nullable`1[ECMAScript.Vue+VueTeleportTarget] get_AppendTo()
+  - System.Nullable`1[ECMAScript.Vue+VueTeleportTarget] get_VirtualRef()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - System.Nullable`1[System.Boolean] get_HideOnClick()
+  - System.Nullable`1[System.Boolean] get_Persistent()
+  - System.Nullable`1[System.Boolean] get_ShowArrow()
+  - System.Nullable`1[System.Boolean] get_SplitButton()
+  - System.Nullable`1[System.Boolean] get_Teleported()
+  - System.Nullable`1[System.Boolean] get_VirtualTriggering()
+  - System.String get_Role()
+  - System.String get_Size()
+  - System.String[] get_TriggerKeys()
+  - Void set_AppendTo(System.Nullable`1[ECMAScript.Vue+VueTeleportTarget])
+  - Void set_ButtonProps(ECMAScript.ElementPlus.ElButtonProps)
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_Dropdown(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_Effect(System.Nullable`1[ECMAScript.ElementPlus.ElPopperEffect])
+  - Void set_HideOnClick(System.Nullable`1[System.Boolean])
+  - Void set_HideTimeout(System.Nullable`1[ECMAScript.Number])
+  - Void set_MaxHeight(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_OnClick(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCommand(Microsoft.AspNetCore.Components.EventCallback`1[TCommand])
+  - Void set_OnVisibleChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_Persistent(System.Nullable`1[System.Boolean])
+  - Void set_Placement(System.Nullable`1[ECMAScript.ElementPlus.ElPopperPlacement])
+  - Void set_PopperClass(System.Nullable`1[ECMAScript.Vue+VueClassValue])
+  - Void set_PopperOptions(VueDictionary)
+  - Void set_PopperStyle(System.Nullable`1[ECMAScript.Vue+VueStyleValue])
+  - Void set_Role(System.String)
+  - Void set_ShowArrow(System.Nullable`1[System.Boolean])
+  - Void set_ShowTimeout(System.Nullable`1[ECMAScript.Number])
+  - Void set_Size(System.String)
+  - Void set_SplitButton(System.Nullable`1[System.Boolean])
+  - Void set_Tabindex(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_Teleported(System.Nullable`1[System.Boolean])
+  - Void set_Trigger(System.Nullable`1[ECMAScript.ElementPlus.ElDropdownTriggerValue])
+  - Void set_TriggerKeys(System.String[])
+  - Void set_Type(System.Nullable`1[ECMAScript.ElementPlus.ElButtonType])
+  - Void set_VirtualRef(System.Nullable`1[ECMAScript.Vue+VueTeleportTarget])
+  - Void set_VirtualTriggering(System.Nullable`1[System.Boolean])
+  - VueDictionary get_PopperOptions()
+  - ECMAScript.ElementPlus.ElButtonProps ButtonProps
+  - Microsoft.AspNetCore.Components.EventCallback OnClick
+  - Microsoft.AspNetCore.Components.EventCallback OnVisibleChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[TCommand] OnCommand
+  - Microsoft.AspNetCore.Components.RenderFragment Dropdown
+  - System.Nullable`1[ECMAScript.ElementPlus.ElButtonType] Type
+  - System.Nullable`1[ECMAScript.ElementPlus.ElDropdownTriggerValue] Trigger
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperEffect] Effect
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperPlacement] Placement
+  - System.Nullable`1[ECMAScript.Number] HideTimeout
+  - System.Nullable`1[ECMAScript.Number] ShowTimeout
+  - System.Nullable`1[ECMAScript.Vue+VueClassValue] PopperClass
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] MaxHeight
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Tabindex
+  - System.Nullable`1[ECMAScript.Vue+VueStyleValue] PopperStyle
+  - System.Nullable`1[ECMAScript.Vue+VueTeleportTarget] AppendTo
+  - System.Nullable`1[ECMAScript.Vue+VueTeleportTarget] VirtualRef
+  - System.Nullable`1[System.Boolean] Disabled
+  - System.Nullable`1[System.Boolean] HideOnClick
+  - System.Nullable`1[System.Boolean] Persistent
+  - System.Nullable`1[System.Boolean] ShowArrow
+  - System.Nullable`1[System.Boolean] SplitButton
+  - System.Nullable`1[System.Boolean] Teleported
+  - System.Nullable`1[System.Boolean] VirtualTriggering
+  - System.String Role
+  - System.String Size
+  - System.String[] TriggerKeys
+  - VueDictionary PopperOptions
+- type ECMAScript.ElementPlus.ElTypedOption`1
+  - Void .ctor()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Label()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - TValue get_Value()
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_Label(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_Value(TValue)
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Label
+  - System.Nullable`1[System.Boolean] Disabled
+  - TValue Value
+- type ECMAScript.ElementPlus.ElTypedSelect`1
+  - Void .ctor()
+  - ECMAScript.ElementPlus.ElSelectPropsAlias get_Props()
+  - ECMAScript.ElementPlus.ElSelectQueryCallback get_FilterMethod()
+  - ECMAScript.ElementPlus.ElSelectQueryCallback get_RemoteMethod()
+  - ECMAScript.ElementPlus.ElTagTooltipProps get_TagTooltip()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnBlur()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnClear()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnEndReached()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnFocus()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnPopupScroll()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnVisibleChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TValue] get_ModelValueChanged()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TValue] get_OnChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TValue] get_OnRemoveTag()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Empty()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Footer()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Header()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Label()
+  - Microsoft.AspNetCore.Components.RenderFragment get_LoadingSlot()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Prefix()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Tag()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperEffect] get_Effect()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperPlacement] get_Placement()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTagEffect] get_TagEffect()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTagType] get_TagType()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElValueOnClearValue] get_ValueOnClear()
+  - System.Nullable`1[ECMAScript.Number] get_Debounce()
+  - System.Nullable`1[ECMAScript.Number] get_MaxCollapseTags()
+  - System.Nullable`1[ECMAScript.Number] get_MultipleLimit()
+  - System.Nullable`1[ECMAScript.Number] get_Offset()
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] get_ClearIcon()
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] get_SuffixIcon()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Tabindex()
+  - System.Nullable`1[ECMAScript.Vue+VueStyleValue] get_PopperStyle()
+  - System.Nullable`1[ECMAScript.Vue+VueTeleportTarget] get_AppendTo()
+  - System.Nullable`1[System.Boolean] get_AllowCreate()
+  - System.Nullable`1[System.Boolean] get_AutomaticDropdown()
+  - System.Nullable`1[System.Boolean] get_Clearable()
+  - System.Nullable`1[System.Boolean] get_CollapseTags()
+  - System.Nullable`1[System.Boolean] get_CollapseTagsTooltip()
+  - System.Nullable`1[System.Boolean] get_DefaultFirstOption()
+  - System.Nullable`1[System.Boolean] get_Disabled()
+  - System.Nullable`1[System.Boolean] get_Filterable()
+  - System.Nullable`1[System.Boolean] get_FitInputWidth()
+  - System.Nullable`1[System.Boolean] get_Loading()
+  - System.Nullable`1[System.Boolean] get_Multiple()
+  - System.Nullable`1[System.Boolean] get_Persistent()
+  - System.Nullable`1[System.Boolean] get_Remote()
+  - System.Nullable`1[System.Boolean] get_RemoteShowSuffix()
+  - System.Nullable`1[System.Boolean] get_ReserveKeyword()
+  - System.Nullable`1[System.Boolean] get_ShowArrow()
+  - System.Nullable`1[System.Boolean] get_SuffixTransition()
+  - System.Nullable`1[System.Boolean] get_Teleported()
+  - System.Nullable`1[System.Boolean] get_ValidateEvent()
+  - System.String get_AriaLabel()
+  - System.String get_Autocomplete()
+  - System.String get_Id()
+  - System.String get_LoadingText()
+  - System.String get_Name()
+  - System.String get_NoDataText()
+  - System.String get_NoMatchText()
+  - System.String get_Placeholder()
+  - System.String get_PopperClass()
+  - System.String get_Size()
+  - System.String get_ValueKey()
+  - System.String[] get_FallbackPlacements()
+  - TValue get_ModelValue()
+  - Void set_AllowCreate(System.Nullable`1[System.Boolean])
+  - Void set_AppendTo(System.Nullable`1[ECMAScript.Vue+VueTeleportTarget])
+  - Void set_AriaLabel(System.String)
+  - Void set_Autocomplete(System.String)
+  - Void set_AutomaticDropdown(System.Nullable`1[System.Boolean])
+  - Void set_ClearIcon(System.Nullable`1[ECMAScript.Vue+VueStringComponentValue])
+  - Void set_Clearable(System.Nullable`1[System.Boolean])
+  - Void set_CollapseTags(System.Nullable`1[System.Boolean])
+  - Void set_CollapseTagsTooltip(System.Nullable`1[System.Boolean])
+  - Void set_Debounce(System.Nullable`1[ECMAScript.Number])
+  - Void set_DefaultFirstOption(System.Nullable`1[System.Boolean])
+  - Void set_Disabled(System.Nullable`1[System.Boolean])
+  - Void set_Effect(System.Nullable`1[ECMAScript.ElementPlus.ElPopperEffect])
+  - Void set_Empty(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_EmptyValues(VueValue[])
+  - Void set_FallbackPlacements(System.String[])
+  - Void set_FilterMethod(ECMAScript.ElementPlus.ElSelectQueryCallback)
+  - Void set_Filterable(System.Nullable`1[System.Boolean])
+  - Void set_FitInputWidth(System.Nullable`1[System.Boolean])
+  - Void set_Footer(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_Header(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_Id(System.String)
+  - Void set_Label(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_Loading(System.Nullable`1[System.Boolean])
+  - Void set_LoadingSlot(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_LoadingText(System.String)
+  - Void set_MaxCollapseTags(System.Nullable`1[ECMAScript.Number])
+  - Void set_ModelValue(TValue)
+  - Void set_ModelValueChanged(Microsoft.AspNetCore.Components.EventCallback`1[TValue])
+  - Void set_Multiple(System.Nullable`1[System.Boolean])
+  - Void set_MultipleLimit(System.Nullable`1[ECMAScript.Number])
+  - Void set_Name(System.String)
+  - Void set_NoDataText(System.String)
+  - Void set_NoMatchText(System.String)
+  - Void set_Offset(System.Nullable`1[ECMAScript.Number])
+  - Void set_OnBlur(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnChange(Microsoft.AspNetCore.Components.EventCallback`1[TValue])
+  - Void set_OnClear(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnEndReached(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnFocus(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnPopupScroll(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnRemoveTag(Microsoft.AspNetCore.Components.EventCallback`1[TValue])
+  - Void set_OnVisibleChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_Options(VueValue[])
+  - Void set_Persistent(System.Nullable`1[System.Boolean])
+  - Void set_Placeholder(System.String)
+  - Void set_Placement(System.Nullable`1[ECMAScript.ElementPlus.ElPopperPlacement])
+  - Void set_PopperClass(System.String)
+  - Void set_PopperOptions(VueDictionary)
+  - Void set_PopperStyle(System.Nullable`1[ECMAScript.Vue+VueStyleValue])
+  - Void set_Prefix(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_Props(ECMAScript.ElementPlus.ElSelectPropsAlias)
+  - Void set_Remote(System.Nullable`1[System.Boolean])
+  - Void set_RemoteMethod(ECMAScript.ElementPlus.ElSelectQueryCallback)
+  - Void set_RemoteShowSuffix(System.Nullable`1[System.Boolean])
+  - Void set_ReserveKeyword(System.Nullable`1[System.Boolean])
+  - Void set_ShowArrow(System.Nullable`1[System.Boolean])
+  - Void set_Size(System.String)
+  - Void set_SuffixIcon(System.Nullable`1[ECMAScript.Vue+VueStringComponentValue])
+  - Void set_SuffixTransition(System.Nullable`1[System.Boolean])
+  - Void set_Tabindex(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_Tag(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_TagEffect(System.Nullable`1[ECMAScript.ElementPlus.ElTagEffect])
+  - Void set_TagTooltip(ECMAScript.ElementPlus.ElTagTooltipProps)
+  - Void set_TagType(System.Nullable`1[ECMAScript.ElementPlus.ElTagType])
+  - Void set_Teleported(System.Nullable`1[System.Boolean])
+  - Void set_ValidateEvent(System.Nullable`1[System.Boolean])
+  - Void set_ValueKey(System.String)
+  - Void set_ValueOnClear(System.Nullable`1[ECMAScript.ElementPlus.ElValueOnClearValue])
+  - VueDictionary get_PopperOptions()
+  - VueValue[] get_EmptyValues()
+  - VueValue[] get_Options()
+  - ECMAScript.ElementPlus.ElSelectPropsAlias Props
+  - ECMAScript.ElementPlus.ElSelectQueryCallback FilterMethod
+  - ECMAScript.ElementPlus.ElSelectQueryCallback RemoteMethod
+  - ECMAScript.ElementPlus.ElTagTooltipProps TagTooltip
+  - Microsoft.AspNetCore.Components.EventCallback OnBlur
+  - Microsoft.AspNetCore.Components.EventCallback OnClear
+  - Microsoft.AspNetCore.Components.EventCallback OnEndReached
+  - Microsoft.AspNetCore.Components.EventCallback OnFocus
+  - Microsoft.AspNetCore.Components.EventCallback OnPopupScroll
+  - Microsoft.AspNetCore.Components.EventCallback OnVisibleChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[TValue] ModelValueChanged
+  - Microsoft.AspNetCore.Components.EventCallback`1[TValue] OnChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[TValue] OnRemoveTag
+  - Microsoft.AspNetCore.Components.RenderFragment Empty
+  - Microsoft.AspNetCore.Components.RenderFragment Footer
+  - Microsoft.AspNetCore.Components.RenderFragment Header
+  - Microsoft.AspNetCore.Components.RenderFragment Label
+  - Microsoft.AspNetCore.Components.RenderFragment LoadingSlot
+  - Microsoft.AspNetCore.Components.RenderFragment Prefix
+  - Microsoft.AspNetCore.Components.RenderFragment Tag
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperEffect] Effect
+  - System.Nullable`1[ECMAScript.ElementPlus.ElPopperPlacement] Placement
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTagEffect] TagEffect
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTagType] TagType
+  - System.Nullable`1[ECMAScript.ElementPlus.ElValueOnClearValue] ValueOnClear
+  - System.Nullable`1[ECMAScript.Number] Debounce
+  - System.Nullable`1[ECMAScript.Number] MaxCollapseTags
+  - System.Nullable`1[ECMAScript.Number] MultipleLimit
+  - System.Nullable`1[ECMAScript.Number] Offset
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] ClearIcon
+  - System.Nullable`1[ECMAScript.Vue+VueStringComponentValue] SuffixIcon
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Tabindex
+  - System.Nullable`1[ECMAScript.Vue+VueStyleValue] PopperStyle
+  - System.Nullable`1[ECMAScript.Vue+VueTeleportTarget] AppendTo
+  - System.Nullable`1[System.Boolean] AllowCreate
+  - System.Nullable`1[System.Boolean] AutomaticDropdown
+  - System.Nullable`1[System.Boolean] Clearable
+  - System.Nullable`1[System.Boolean] CollapseTags
+  - System.Nullable`1[System.Boolean] CollapseTagsTooltip
+  - System.Nullable`1[System.Boolean] DefaultFirstOption
+  - System.Nullable`1[System.Boolean] Disabled
+  - System.Nullable`1[System.Boolean] Filterable
+  - System.Nullable`1[System.Boolean] FitInputWidth
+  - System.Nullable`1[System.Boolean] Loading
+  - System.Nullable`1[System.Boolean] Multiple
+  - System.Nullable`1[System.Boolean] Persistent
+  - System.Nullable`1[System.Boolean] Remote
+  - System.Nullable`1[System.Boolean] RemoteShowSuffix
+  - System.Nullable`1[System.Boolean] ReserveKeyword
+  - System.Nullable`1[System.Boolean] ShowArrow
+  - System.Nullable`1[System.Boolean] SuffixTransition
+  - System.Nullable`1[System.Boolean] Teleported
+  - System.Nullable`1[System.Boolean] ValidateEvent
+  - System.String AriaLabel
+  - System.String Autocomplete
+  - System.String Id
+  - System.String LoadingText
+  - System.String Name
+  - System.String NoDataText
+  - System.String NoMatchText
+  - System.String Placeholder
+  - System.String PopperClass
+  - System.String Size
+  - System.String ValueKey
+  - System.String[] FallbackPlacements
+  - TValue ModelValue
+  - VueDictionary PopperOptions
+  - VueValue[] EmptyValues
+  - VueValue[] Options
+- type ECMAScript.ElementPlus.ElTypedTableColumn`1
+  - Void .ctor()
+  - ECMAScript.ElementPlus.ElTableColumnFilterMethodCallback`1[TRow] get_FilterMethod()
+  - ECMAScript.ElementPlus.ElTableColumnFormatterCallback`1[TRow] get_Formatter()
+  - ECMAScript.ElementPlus.ElTableColumnRenderHeaderCallback get_RenderHeader()
+  - ECMAScript.ElementPlus.ElTableColumnSelectableCallback`1[TRow] get_Selectable()
+  - ECMAScript.ElementPlus.ElTableColumnSortMethodCallback`1[TRow] get_SortMethod()
+  - ECMAScript.ElementPlus.ElTableFilterItem[] get_Filters()
+  - ECMAScript.ElementPlus.ElTableTooltipFormatter get_TooltipFormatter()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Expand()
+  - Microsoft.AspNetCore.Components.RenderFragment get_FilterIcon()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Header()
+  - Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.ElementPlus.ElTableSlotContext`1[TRow]] get_ChildContent()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnIndexValue] get_Index()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnSortByValue] get_SortBy()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue] get_ShowOverflowTooltip()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableSortOrder][] get_SortOrders()
+  - System.Nullable`1[ECMAScript.Vue+VueBooleanStringValue] get_Fixed()
+  - System.Nullable`1[ECMAScript.Vue+VueBooleanStringValue] get_Sortable()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_MinWidth()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Width()
+  - System.Nullable`1[System.Boolean] get_FilterMultiple()
+  - System.Nullable`1[System.Boolean] get_ReserveSelection()
+  - System.Nullable`1[System.Boolean] get_Resizable()
+  - System.String get_Align()
+  - System.String get_ClassName()
+  - System.String get_ColumnKey()
+  - System.String get_FilterClassName()
+  - System.String get_FilterPlacement()
+  - System.String get_HeaderAlign()
+  - System.String get_Label()
+  - System.String get_LabelClassName()
+  - System.String get_Prop()
+  - System.String get_Type()
+  - System.String[] get_FilteredValue()
+  - Void set_Align(System.String)
+  - Void set_ChildContent(Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.ElementPlus.ElTableSlotContext`1[TRow]])
+  - Void set_ClassName(System.String)
+  - Void set_ColumnKey(System.String)
+  - Void set_Expand(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_FilterClassName(System.String)
+  - Void set_FilterIcon(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_FilterMethod(ECMAScript.ElementPlus.ElTableColumnFilterMethodCallback`1[TRow])
+  - Void set_FilterMultiple(System.Nullable`1[System.Boolean])
+  - Void set_FilterPlacement(System.String)
+  - Void set_FilteredValue(System.String[])
+  - Void set_Filters(ECMAScript.ElementPlus.ElTableFilterItem[])
+  - Void set_Fixed(System.Nullable`1[ECMAScript.Vue+VueBooleanStringValue])
+  - Void set_Formatter(ECMAScript.ElementPlus.ElTableColumnFormatterCallback`1[TRow])
+  - Void set_Header(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_HeaderAlign(System.String)
+  - Void set_Index(System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnIndexValue])
+  - Void set_Label(System.String)
+  - Void set_LabelClassName(System.String)
+  - Void set_MinWidth(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_Prop(System.String)
+  - Void set_RenderHeader(ECMAScript.ElementPlus.ElTableColumnRenderHeaderCallback)
+  - Void set_ReserveSelection(System.Nullable`1[System.Boolean])
+  - Void set_Resizable(System.Nullable`1[System.Boolean])
+  - Void set_Selectable(ECMAScript.ElementPlus.ElTableColumnSelectableCallback`1[TRow])
+  - Void set_ShowOverflowTooltip(System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue])
+  - Void set_SortBy(System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnSortByValue])
+  - Void set_SortMethod(ECMAScript.ElementPlus.ElTableColumnSortMethodCallback`1[TRow])
+  - Void set_SortOrders(System.Nullable`1[ECMAScript.ElementPlus.ElTableSortOrder][])
+  - Void set_Sortable(System.Nullable`1[ECMAScript.Vue+VueBooleanStringValue])
+  - Void set_TooltipFormatter(ECMAScript.ElementPlus.ElTableTooltipFormatter)
+  - Void set_Type(System.String)
+  - Void set_Width(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - ECMAScript.ElementPlus.ElTableColumnFilterMethodCallback`1[TRow] FilterMethod
+  - ECMAScript.ElementPlus.ElTableColumnFormatterCallback`1[TRow] Formatter
+  - ECMAScript.ElementPlus.ElTableColumnRenderHeaderCallback RenderHeader
+  - ECMAScript.ElementPlus.ElTableColumnSelectableCallback`1[TRow] Selectable
+  - ECMAScript.ElementPlus.ElTableColumnSortMethodCallback`1[TRow] SortMethod
+  - ECMAScript.ElementPlus.ElTableFilterItem[] Filters
+  - ECMAScript.ElementPlus.ElTableTooltipFormatter TooltipFormatter
+  - Microsoft.AspNetCore.Components.RenderFragment Expand
+  - Microsoft.AspNetCore.Components.RenderFragment FilterIcon
+  - Microsoft.AspNetCore.Components.RenderFragment Header
+  - Microsoft.AspNetCore.Components.RenderFragment`1[ECMAScript.ElementPlus.ElTableSlotContext`1[TRow]] ChildContent
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnIndexValue] Index
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableColumnSortByValue] SortBy
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue] ShowOverflowTooltip
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableSortOrder][] SortOrders
+  - System.Nullable`1[ECMAScript.Vue+VueBooleanStringValue] Fixed
+  - System.Nullable`1[ECMAScript.Vue+VueBooleanStringValue] Sortable
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] MinWidth
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Width
+  - System.Nullable`1[System.Boolean] FilterMultiple
+  - System.Nullable`1[System.Boolean] ReserveSelection
+  - System.Nullable`1[System.Boolean] Resizable
+  - System.String Align
+  - System.String ClassName
+  - System.String ColumnKey
+  - System.String FilterClassName
+  - System.String FilterPlacement
+  - System.String HeaderAlign
+  - System.String Label
+  - System.String LabelClassName
+  - System.String Prop
+  - System.String Type
+  - System.String[] FilteredValue
+- type ECMAScript.ElementPlus.ElTypedTable`1
+  - Void .ctor()
+  - ECMAScript.ElementPlus.ElTableLoadCallback get_Load()
+  - ECMAScript.ElementPlus.ElTableOverflowTooltipOptions get_TooltipOptions()
+  - ECMAScript.ElementPlus.ElTableRowExpandableCallback get_RowExpandable()
+  - ECMAScript.ElementPlus.ElTableSort get_DefaultSort()
+  - ECMAScript.ElementPlus.ElTableSpanMethodCallback get_SpanMethod()
+  - ECMAScript.ElementPlus.ElTableSummaryMethodCallback get_SummaryMethod()
+  - ECMAScript.ElementPlus.ElTableTooltipFormatter get_TooltipFormatter()
+  - ECMAScript.ElementPlus.ElTableTreeProps get_TreeProps()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCellClick()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCellContextmenu()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCellDblclick()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCellMouseEnter()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCellMouseLeave()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnCurrentChange()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnExpandChange()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnFilterChange()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnHeaderClick()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnHeaderContextmenu()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnHeaderDragend()
+  - Microsoft.AspNetCore.Components.EventCallback get_OnScroll()
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.ElementPlus.ElTableSort] get_OnSortChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow[]] get_OnSelect()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow[]] get_OnSelectAll()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow[]] get_OnSelectionChange()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow] get_OnRowClick()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow] get_OnRowContextmenu()
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow] get_OnRowDblclick()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Append()
+  - Microsoft.AspNetCore.Components.RenderFragment get_Empty()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellClassNameValue] get_CellClassName()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellClassNameValue] get_HeaderCellClassName()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellStyleValue] get_CellStyle()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellStyleValue] get_HeaderCellStyle()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue] get_ShowOverflowTooltip()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowClassNameValue] get_HeaderRowClassName()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowClassNameValue] get_RowClassName()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowKeyValue] get_RowKey()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowStyleValue] get_HeaderRowStyle()
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowStyleValue] get_RowStyle()
+  - System.Nullable`1[ECMAScript.Number] get_Indent()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_CurrentRowKey()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_Height()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_MaxHeight()
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_ScrollbarTabindex()
+  - System.Nullable`1[System.Boolean] get_AllowDragLastColumn()
+  - System.Nullable`1[System.Boolean] get_Border()
+  - System.Nullable`1[System.Boolean] get_DefaultExpandAll()
+  - System.Nullable`1[System.Boolean] get_Fit()
+  - System.Nullable`1[System.Boolean] get_Flexible()
+  - System.Nullable`1[System.Boolean] get_HighlightCurrentRow()
+  - System.Nullable`1[System.Boolean] get_Lazy()
+  - System.Nullable`1[System.Boolean] get_NativeScrollbar()
+  - System.Nullable`1[System.Boolean] get_PreserveExpandedContent()
+  - System.Nullable`1[System.Boolean] get_ScrollbarAlwaysOn()
+  - System.Nullable`1[System.Boolean] get_SelectOnIndeterminate()
+  - System.Nullable`1[System.Boolean] get_ShowHeader()
+  - System.Nullable`1[System.Boolean] get_ShowSummary()
+  - System.Nullable`1[System.Boolean] get_Stripe()
+  - System.String get_AppendFilterPanelTo()
+  - System.String get_EmptyText()
+  - System.String get_Size()
+  - System.String get_SumText()
+  - System.String get_TableLayout()
+  - System.String get_TooltipEffect()
+  - System.String[] get_ExpandRowKeys()
+  - TRow[] get_Data()
+  - Void set_AllowDragLastColumn(System.Nullable`1[System.Boolean])
+  - Void set_Append(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_AppendFilterPanelTo(System.String)
+  - Void set_Border(System.Nullable`1[System.Boolean])
+  - Void set_CellClassName(System.Nullable`1[ECMAScript.ElementPlus.ElTableCellClassNameValue])
+  - Void set_CellStyle(System.Nullable`1[ECMAScript.ElementPlus.ElTableCellStyleValue])
+  - Void set_CurrentRowKey(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_Data(TRow[])
+  - Void set_DefaultExpandAll(System.Nullable`1[System.Boolean])
+  - Void set_DefaultSort(ECMAScript.ElementPlus.ElTableSort)
+  - Void set_Empty(Microsoft.AspNetCore.Components.RenderFragment)
+  - Void set_EmptyText(System.String)
+  - Void set_ExpandRowKeys(System.String[])
+  - Void set_Fit(System.Nullable`1[System.Boolean])
+  - Void set_Flexible(System.Nullable`1[System.Boolean])
+  - Void set_HeaderCellClassName(System.Nullable`1[ECMAScript.ElementPlus.ElTableCellClassNameValue])
+  - Void set_HeaderCellStyle(System.Nullable`1[ECMAScript.ElementPlus.ElTableCellStyleValue])
+  - Void set_HeaderRowClassName(System.Nullable`1[ECMAScript.ElementPlus.ElTableRowClassNameValue])
+  - Void set_HeaderRowStyle(System.Nullable`1[ECMAScript.ElementPlus.ElTableRowStyleValue])
+  - Void set_Height(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_HighlightCurrentRow(System.Nullable`1[System.Boolean])
+  - Void set_Indent(System.Nullable`1[ECMAScript.Number])
+  - Void set_Lazy(System.Nullable`1[System.Boolean])
+  - Void set_Load(ECMAScript.ElementPlus.ElTableLoadCallback)
+  - Void set_MaxHeight(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_NativeScrollbar(System.Nullable`1[System.Boolean])
+  - Void set_OnCellClick(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCellContextmenu(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCellDblclick(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCellMouseEnter(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCellMouseLeave(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnCurrentChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnExpandChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnFilterChange(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnHeaderClick(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnHeaderContextmenu(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnHeaderDragend(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnRowClick(Microsoft.AspNetCore.Components.EventCallback`1[TRow])
+  - Void set_OnRowContextmenu(Microsoft.AspNetCore.Components.EventCallback`1[TRow])
+  - Void set_OnRowDblclick(Microsoft.AspNetCore.Components.EventCallback`1[TRow])
+  - Void set_OnScroll(Microsoft.AspNetCore.Components.EventCallback)
+  - Void set_OnSelect(Microsoft.AspNetCore.Components.EventCallback`1[TRow[]])
+  - Void set_OnSelectAll(Microsoft.AspNetCore.Components.EventCallback`1[TRow[]])
+  - Void set_OnSelectionChange(Microsoft.AspNetCore.Components.EventCallback`1[TRow[]])
+  - Void set_OnSortChange(Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.ElementPlus.ElTableSort])
+  - Void set_PreserveExpandedContent(System.Nullable`1[System.Boolean])
+  - Void set_RowClassName(System.Nullable`1[ECMAScript.ElementPlus.ElTableRowClassNameValue])
+  - Void set_RowExpandable(ECMAScript.ElementPlus.ElTableRowExpandableCallback)
+  - Void set_RowKey(System.Nullable`1[ECMAScript.ElementPlus.ElTableRowKeyValue])
+  - Void set_RowStyle(System.Nullable`1[ECMAScript.ElementPlus.ElTableRowStyleValue])
+  - Void set_ScrollbarAlwaysOn(System.Nullable`1[System.Boolean])
+  - Void set_ScrollbarTabindex(System.Nullable`1[ECMAScript.Vue+VueStringNumberValue])
+  - Void set_SelectOnIndeterminate(System.Nullable`1[System.Boolean])
+  - Void set_ShowHeader(System.Nullable`1[System.Boolean])
+  - Void set_ShowOverflowTooltip(System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue])
+  - Void set_ShowSummary(System.Nullable`1[System.Boolean])
+  - Void set_Size(System.String)
+  - Void set_SpanMethod(ECMAScript.ElementPlus.ElTableSpanMethodCallback)
+  - Void set_Stripe(System.Nullable`1[System.Boolean])
+  - Void set_SumText(System.String)
+  - Void set_SummaryMethod(ECMAScript.ElementPlus.ElTableSummaryMethodCallback)
+  - Void set_TableLayout(System.String)
+  - Void set_TooltipEffect(System.String)
+  - Void set_TooltipFormatter(ECMAScript.ElementPlus.ElTableTooltipFormatter)
+  - Void set_TooltipOptions(ECMAScript.ElementPlus.ElTableOverflowTooltipOptions)
+  - Void set_TreeProps(ECMAScript.ElementPlus.ElTableTreeProps)
+  - ECMAScript.ElementPlus.ElTableLoadCallback Load
+  - ECMAScript.ElementPlus.ElTableOverflowTooltipOptions TooltipOptions
+  - ECMAScript.ElementPlus.ElTableRowExpandableCallback RowExpandable
+  - ECMAScript.ElementPlus.ElTableSort DefaultSort
+  - ECMAScript.ElementPlus.ElTableSpanMethodCallback SpanMethod
+  - ECMAScript.ElementPlus.ElTableSummaryMethodCallback SummaryMethod
+  - ECMAScript.ElementPlus.ElTableTooltipFormatter TooltipFormatter
+  - ECMAScript.ElementPlus.ElTableTreeProps TreeProps
+  - Microsoft.AspNetCore.Components.EventCallback OnCellClick
+  - Microsoft.AspNetCore.Components.EventCallback OnCellContextmenu
+  - Microsoft.AspNetCore.Components.EventCallback OnCellDblclick
+  - Microsoft.AspNetCore.Components.EventCallback OnCellMouseEnter
+  - Microsoft.AspNetCore.Components.EventCallback OnCellMouseLeave
+  - Microsoft.AspNetCore.Components.EventCallback OnCurrentChange
+  - Microsoft.AspNetCore.Components.EventCallback OnExpandChange
+  - Microsoft.AspNetCore.Components.EventCallback OnFilterChange
+  - Microsoft.AspNetCore.Components.EventCallback OnHeaderClick
+  - Microsoft.AspNetCore.Components.EventCallback OnHeaderContextmenu
+  - Microsoft.AspNetCore.Components.EventCallback OnHeaderDragend
+  - Microsoft.AspNetCore.Components.EventCallback OnScroll
+  - Microsoft.AspNetCore.Components.EventCallback`1[ECMAScript.ElementPlus.ElTableSort] OnSortChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow[]] OnSelect
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow[]] OnSelectAll
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow[]] OnSelectionChange
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow] OnRowClick
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow] OnRowContextmenu
+  - Microsoft.AspNetCore.Components.EventCallback`1[TRow] OnRowDblclick
+  - Microsoft.AspNetCore.Components.RenderFragment Append
+  - Microsoft.AspNetCore.Components.RenderFragment Empty
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellClassNameValue] CellClassName
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellClassNameValue] HeaderCellClassName
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellStyleValue] CellStyle
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableCellStyleValue] HeaderCellStyle
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableOverflowTooltipValue] ShowOverflowTooltip
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowClassNameValue] HeaderRowClassName
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowClassNameValue] RowClassName
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowKeyValue] RowKey
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowStyleValue] HeaderRowStyle
+  - System.Nullable`1[ECMAScript.ElementPlus.ElTableRowStyleValue] RowStyle
+  - System.Nullable`1[ECMAScript.Number] Indent
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] CurrentRowKey
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] Height
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] MaxHeight
+  - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] ScrollbarTabindex
+  - System.Nullable`1[System.Boolean] AllowDragLastColumn
+  - System.Nullable`1[System.Boolean] Border
+  - System.Nullable`1[System.Boolean] DefaultExpandAll
+  - System.Nullable`1[System.Boolean] Fit
+  - System.Nullable`1[System.Boolean] Flexible
+  - System.Nullable`1[System.Boolean] HighlightCurrentRow
+  - System.Nullable`1[System.Boolean] Lazy
+  - System.Nullable`1[System.Boolean] NativeScrollbar
+  - System.Nullable`1[System.Boolean] PreserveExpandedContent
+  - System.Nullable`1[System.Boolean] ScrollbarAlwaysOn
+  - System.Nullable`1[System.Boolean] SelectOnIndeterminate
+  - System.Nullable`1[System.Boolean] ShowHeader
+  - System.Nullable`1[System.Boolean] ShowSummary
+  - System.Nullable`1[System.Boolean] Stripe
+  - System.String AppendFilterPanelTo
+  - System.String EmptyText
+  - System.String Size
+  - System.String SumText
+  - System.String TableLayout
+  - System.String TooltipEffect
+  - System.String[] ExpandRowKeys
+  - TRow[] Data
 - type ECMAScript.ElementPlus.ElUpload
   - Void .ctor()
   - ECMAScript.ElementPlus.ElUploadBeforeRemoveCallback get_BeforeRemove()
@@ -61426,6 +62310,468 @@
 
 ## ECMAScript.Vue
 - type ECMAScript.Dayjs
+- type ECMAScript.NativeBrowserPayloadExtensions
+  - ECMAScript.DataTransfer get_NativeDataTransfer(Microsoft.AspNetCore.Components.Web.DataTransfer)
+  - ECMAScript.DataTransferItem get_NativeItem(Microsoft.AspNetCore.Components.Web.DataTransferItem)
+  - ECMAScript.DataTransferItemList get_NativeItems(Microsoft.AspNetCore.Components.Web.DataTransfer)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - ECMAScript.FileList get_NativeFiles(Microsoft.AspNetCore.Components.Web.DataTransfer)
+  - ECMAScript.HTMLElement get_NativeElement(Microsoft.AspNetCore.Components.ElementReference)
+  - ECMAScript.Touch get_NativeTouch(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - ECMAScript.TouchType get_TouchType(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - Single get_AltitudeAngle(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - Single get_AzimuthAngle(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - Single get_Force(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - Single get_RadiusX(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - Single get_RadiusY(Microsoft.AspNetCore.Components.Web.TouchPoint)
+  - Single get_RotationAngle(Microsoft.AspNetCore.Components.Web.TouchPoint)
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$2F2F3B5E678333DC711C30A140E696F2
+  - ECMAScript.DataTransferItem get_NativeItem()
+  - ECMAScript.DataTransferItem NativeItem
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$2F2F3B5E678333DC711C30A140E696F2+<M>$8FB9AFF46AC5DF92D165BD8B515BD1C7
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.DataTransferItem)
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$645C4BDD7B9551ACC845C8E84DF324D6
+  - ECMAScript.EventTarget get_Target()
+  - ECMAScript.Touch get_NativeTouch()
+  - ECMAScript.TouchType get_TouchType()
+  - Single get_AltitudeAngle()
+  - Single get_AzimuthAngle()
+  - Single get_Force()
+  - Single get_RadiusX()
+  - Single get_RadiusY()
+  - Single get_RotationAngle()
+  - ECMAScript.EventTarget Target
+  - ECMAScript.Touch NativeTouch
+  - ECMAScript.TouchType TouchType
+  - Single AltitudeAngle
+  - Single AzimuthAngle
+  - Single Force
+  - Single RadiusX
+  - Single RadiusY
+  - Single RotationAngle
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$645C4BDD7B9551ACC845C8E84DF324D6+<M>$FA84020FDBFDA6645BD9B5776358D8A3
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.TouchPoint)
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$A27112762BED0CB4AAFFA5DD149BB167
+  - ECMAScript.HTMLElement get_NativeElement()
+  - ECMAScript.HTMLElement NativeElement
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$A27112762BED0CB4AAFFA5DD149BB167+<M>$F7600B74E946B043EE05A17D7E4AFB0C
+  - Void <Extension>$(Microsoft.AspNetCore.Components.ElementReference)
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$FA3F90E8FFC0B46E046C55ED197D54EF
+  - ECMAScript.DataTransfer get_NativeDataTransfer()
+  - ECMAScript.DataTransferItemList get_NativeItems()
+  - ECMAScript.FileList get_NativeFiles()
+  - ECMAScript.DataTransfer NativeDataTransfer
+  - ECMAScript.DataTransferItemList NativeItems
+  - ECMAScript.FileList NativeFiles
+- type ECMAScript.NativeBrowserPayloadExtensions+<G>$FA3F90E8FFC0B46E046C55ED197D54EF+<M>$BE1ECAF5CD09A067FB1DD469A3C46E8C
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.DataTransfer)
+- type ECMAScript.NativeDomEventExtensions
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - Boolean get_Bubbles(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - Boolean get_Cancelable(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - Boolean get_Composed(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - Boolean get_DefaultPrevented(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - Boolean get_IsTrusted(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Double get_AltitudeAngle(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+  - Double get_AzimuthAngle(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - Double get_TimeStamp(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Double get_X(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - Double get_Y(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.ClipboardEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - ECMAScript.DataTransfer get_ClipboardData(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - ECMAScript.DataTransfer get_NativeDataTransfer(Microsoft.AspNetCore.Components.Web.DragEventArgs)
+  - ECMAScript.DragEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.DragEventArgs)
+  - ECMAScript.ErrorEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - ECMAScript.EventRef get_NativeEvent(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - ECMAScript.EventRef get_NativeEvent(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - ECMAScript.EventTarget get_CurrentTarget(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.EventTarget get_RelatedTarget(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - ECMAScript.EventTarget get_RelatedTarget(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - ECMAScript.EventTarget get_Target(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.FocusEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.KeyboardEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - ECMAScript.MouseEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.PointerEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+  - ECMAScript.ProgressEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - ECMAScript.TouchEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.TouchList get_NativeChangedTouches(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.TouchList get_NativeTargetTouches(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.TouchList get_NativeTouches(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - ECMAScript.WheelEvent get_NativeEvent(Microsoft.AspNetCore.Components.Web.WheelEventArgs)
+  - ECMAScript.WindowRef get_View(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - ECMAScript.WindowRef get_View(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - ECMAScript.WindowRef get_View(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - ECMAScript.WindowRef get_View(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+  - Int32 get_Detail(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - Int32 get_Detail(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - Int32 get_PersistentDeviceId(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+  - Int32 get_Twist(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+  - Single get_TangentialPressure(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+  - System.String get_Type(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - System.String get_Type(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.ChangeEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+  - UInt16 get_EventPhase(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$0E87BA1B0FB83F367625E26ABC38F3C4
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - Double get_X()
+  - Double get_Y()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_RelatedTarget()
+  - ECMAScript.EventTarget get_Target()
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities()
+  - ECMAScript.MouseEvent get_NativeEvent()
+  - ECMAScript.WindowRef get_View()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - Double X
+  - Double Y
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget RelatedTarget
+  - ECMAScript.EventTarget Target
+  - ECMAScript.InputDeviceCapabilities SourceCapabilities
+  - ECMAScript.MouseEvent NativeEvent
+  - ECMAScript.WindowRef View
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$0E87BA1B0FB83F367625E26ABC38F3C4+<M>$C30C36F39BCC3281E673AB2E8C3EFD68
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.MouseEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$1221436A918F35BADDFB45D02E26A934
+  - Double get_AltitudeAngle()
+  - Double get_AzimuthAngle()
+  - ECMAScript.PointerEvent get_NativeEvent()
+  - Int32 get_PersistentDeviceId()
+  - Int32 get_Twist()
+  - Single get_TangentialPressure()
+  - Double AltitudeAngle
+  - Double AzimuthAngle
+  - ECMAScript.PointerEvent NativeEvent
+  - Int32 PersistentDeviceId
+  - Int32 Twist
+  - Single TangentialPressure
+- type ECMAScript.NativeDomEventExtensions+<G>$1221436A918F35BADDFB45D02E26A934+<M>$DFF796E91A241DB9541AA8F1C84E7917
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.PointerEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$18A3B22D590FDA8D08A918F6D42D2E7E
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities()
+  - ECMAScript.KeyboardEvent get_NativeEvent()
+  - ECMAScript.WindowRef get_View()
+  - Int32 get_Detail()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - ECMAScript.InputDeviceCapabilities SourceCapabilities
+  - ECMAScript.KeyboardEvent NativeEvent
+  - ECMAScript.WindowRef View
+  - Int32 Detail
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$18A3B22D590FDA8D08A918F6D42D2E7E+<M>$A9CAD2054493E7B719C21D7AFDF3510C
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$1FC55076A083447F8FFA52A438794127
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_RelatedTarget()
+  - ECMAScript.EventTarget get_Target()
+  - ECMAScript.FocusEvent get_NativeEvent()
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities()
+  - ECMAScript.WindowRef get_View()
+  - Int32 get_Detail()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget RelatedTarget
+  - ECMAScript.EventTarget Target
+  - ECMAScript.FocusEvent NativeEvent
+  - ECMAScript.InputDeviceCapabilities SourceCapabilities
+  - ECMAScript.WindowRef View
+  - Int32 Detail
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$1FC55076A083447F8FFA52A438794127+<M>$91860F86F903ECF5EF1FF4AE90C2F001
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.FocusEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$7D9D11D7995992D89D8A6606EC889915
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.ErrorEvent get_NativeEvent()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.ErrorEvent NativeEvent
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$7D9D11D7995992D89D8A6606EC889915+<M>$EB291F011D1B959EC4CCA915B7B3DCAB
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.ErrorEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$909C527EB904E7E995B7C8AE68E2D21D
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - ECMAScript.ProgressEvent get_NativeEvent()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - ECMAScript.ProgressEvent NativeEvent
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$909C527EB904E7E995B7C8AE68E2D21D+<M>$2AC361295FBE9431BCFC69F9E9051D15
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.ProgressEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$A977903C142FAD6D0647047AA05A9496
+  - ECMAScript.DataTransfer get_NativeDataTransfer()
+  - ECMAScript.DragEvent get_NativeEvent()
+  - ECMAScript.DataTransfer NativeDataTransfer
+  - ECMAScript.DragEvent NativeEvent
+- type ECMAScript.NativeDomEventExtensions+<G>$A977903C142FAD6D0647047AA05A9496+<M>$0666A374449296AFD1C0CA08BD077136
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.DragEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$BBE2ACCBD83BB1DA27E8FD929936335F
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.ClipboardEvent get_NativeEvent()
+  - ECMAScript.DataTransfer get_ClipboardData()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.ClipboardEvent NativeEvent
+  - ECMAScript.DataTransfer ClipboardData
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$BBE2ACCBD83BB1DA27E8FD929936335F+<M>$CAA606AD5531B0C70BEDD6A1202E5449
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.ClipboardEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$C723BF2FE738EE107586F213DA349147
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.EventRef get_NativeEvent()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - System.String get_Type()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.EventRef NativeEvent
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - System.String Type
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$C723BF2FE738EE107586F213DA349147+<M>$50FB5D804639F6177141922AB3776659
+  - Void <Extension>$(Microsoft.AspNetCore.Components.ChangeEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$C7B97189F045BC8DEC715A9428BC1B70
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - ECMAScript.InputDeviceCapabilities get_SourceCapabilities()
+  - ECMAScript.TouchEvent get_NativeEvent()
+  - ECMAScript.TouchList get_NativeChangedTouches()
+  - ECMAScript.TouchList get_NativeTargetTouches()
+  - ECMAScript.TouchList get_NativeTouches()
+  - ECMAScript.WindowRef get_View()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - ECMAScript.InputDeviceCapabilities SourceCapabilities
+  - ECMAScript.TouchEvent NativeEvent
+  - ECMAScript.TouchList NativeChangedTouches
+  - ECMAScript.TouchList NativeTargetTouches
+  - ECMAScript.TouchList NativeTouches
+  - ECMAScript.WindowRef View
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$C7B97189F045BC8DEC715A9428BC1B70+<M>$5E9BFE45E7ED4F6D99F0C029A798056D
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.TouchEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$D7602E07D5994446EA14F6ECFA02081D
+  - Boolean get_Bubbles()
+  - Boolean get_Cancelable()
+  - Boolean get_Composed()
+  - Boolean get_DefaultPrevented()
+  - Boolean get_IsTrusted()
+  - Double get_TimeStamp()
+  - ECMAScript.EventRef get_NativeEvent()
+  - ECMAScript.EventTarget get_CurrentTarget()
+  - ECMAScript.EventTarget get_Target()
+  - System.String get_Type()
+  - UInt16 get_EventPhase()
+  - Boolean Bubbles
+  - Boolean Cancelable
+  - Boolean Composed
+  - Boolean DefaultPrevented
+  - Boolean IsTrusted
+  - Double TimeStamp
+  - ECMAScript.EventRef NativeEvent
+  - ECMAScript.EventTarget CurrentTarget
+  - ECMAScript.EventTarget Target
+  - System.String Type
+  - UInt16 EventPhase
+- type ECMAScript.NativeDomEventExtensions+<G>$D7602E07D5994446EA14F6ECFA02081D+<M>$677C0B5BB52AFEB0427BC8799D8A6287
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+- type ECMAScript.NativeDomEventExtensions+<G>$F34229D05FD5EDD11BA270185CCBF69E
+  - ECMAScript.WheelEvent get_NativeEvent()
+  - ECMAScript.WheelEvent NativeEvent
+- type ECMAScript.NativeDomEventExtensions+<G>$F34229D05FD5EDD11BA270185CCBF69E+<M>$DB2F30842302B9BB900A02DE40326D2C
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.WheelEventArgs)
+- type ECMAScript.NativeFileEventExtensions
+  - ECMAScript.FileList get_Files(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
+  - ECMAScript.FileList get_Files(Microsoft.AspNetCore.Components.Web.DragEventArgs)
+- type ECMAScript.NativeFileEventExtensions+<G>$A977903C142FAD6D0647047AA05A9496
+  - ECMAScript.FileList get_Files()
+  - ECMAScript.FileList Files
+- type ECMAScript.NativeFileEventExtensions+<G>$A977903C142FAD6D0647047AA05A9496+<M>$0666A374449296AFD1C0CA08BD077136
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Web.DragEventArgs)
+- type ECMAScript.NativeFileEventExtensions+<G>$D7602E07D5994446EA14F6ECFA02081D
+  - ECMAScript.FileList get_Files()
+  - ECMAScript.FileList Files
+- type ECMAScript.NativeFileEventExtensions+<G>$D7602E07D5994446EA14F6ECFA02081D+<M>$677C0B5BB52AFEB0427BC8799D8A6287
+  - Void <Extension>$(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs)
 - type ECMAScript.Vue
   - Boolean HasInjectionContext()
   - Boolean IsProxy[T](T)
@@ -90545,6 +91891,8 @@
   - ECMAScript.DOMQuad[] GetBoxQuads(ECMAScript.BoxQuadOptions)
   - ECMAScript.DOMRect GetBoundingClientRect()
   - ECMAScript.DOMRectList GetClientRects()
+  - ECMAScript.DOMTokenList get_ClassList()
+  - ECMAScript.DOMTokenList get_Part()
   - ECMAScript.Element Closest(System.String)
   - ECMAScript.Element InsertAdjacentElement(System.String, ECMAScript.Element)
   - ECMAScript.Element QuerySelector(System.String)
@@ -90598,8 +91946,6 @@
   - System.Collections.Frozen.FrozenSet`1[ECMAScript.Element] get_AriaFlowToElements()
   - System.Collections.Frozen.FrozenSet`1[ECMAScript.Element] get_AriaLabelledByElements()
   - System.Collections.Frozen.FrozenSet`1[ECMAScript.Element] get_AriaOwnsElements()
-  - System.Collections.Generic.List`1[System.String] get_ClassList()
-  - System.Collections.Generic.List`1[System.String] get_Part()
   - System.String GetAttribute(System.String)
   - System.String GetAttributeNS(System.String, System.String)
   - System.String GetHTML(ECMAScript.GetHTMLOptions)
@@ -90761,6 +92107,8 @@
   - Double ScrollLeft
   - Double ScrollTop
   - ECMAScript.CustomElementRegistry CustomElementRegistry
+  - ECMAScript.DOMTokenList ClassList
+  - ECMAScript.DOMTokenList Part
   - ECMAScript.Element AriaActiveDescendantElement
   - ECMAScript.Element FirstElementChild
   - ECMAScript.Element LastElementChild
@@ -90788,8 +92136,6 @@
   - System.Collections.Frozen.FrozenSet`1[ECMAScript.Element] AriaFlowToElements
   - System.Collections.Frozen.FrozenSet`1[ECMAScript.Element] AriaLabelledByElements
   - System.Collections.Frozen.FrozenSet`1[ECMAScript.Element] AriaOwnsElements
-  - System.Collections.Generic.List`1[System.String] ClassList
-  - System.Collections.Generic.List`1[System.String] Part
   - System.String AriaAtomic
   - System.String AriaAutoComplete
   - System.String AriaBrailleLabel
@@ -95436,6 +96782,7 @@
   - ECMAScript.IObject GetPrototypeOf(System.Object)
   - ECMAScript.IObject GroupBy[T](System.Collections.Generic.IEnumerable`1[T], System.Func`2[T,ECMAScript.PropertyKeyRef])
   - ECMAScript.IObject GroupBy[T](System.Collections.Generic.IEnumerable`1[T], System.Func`3[T,ECMAScript.Number,ECMAScript.PropertyKeyRef])
+  - ECMAScript.LocationRef get_LiveLocation(ECMAScript.IWindow)
   - ECMAScript.Number Absolute(ECMAScript.Number)
   - ECMAScript.Number Arccosh(ECMAScript.Number)
   - ECMAScript.Number Arccosine(ECMAScript.Number)
@@ -95759,6 +97106,11 @@
   - ECMAScript.Number SQRT2
 - type ECMAScript.Global+<G>$853505F4C6E4266CC0CF997A13BEC9E3+<M>$5A54F24DCC9DB8FE1721C7D9EA2B3002
   - Void <Extension>$(System.Math)
+- type ECMAScript.Global+<G>$B707E0C8F361DDCD697E0B1E7D498825
+  - ECMAScript.LocationRef get_LiveLocation()
+  - ECMAScript.LocationRef LiveLocation
+- type ECMAScript.Global+<G>$B707E0C8F361DDCD697E0B1E7D498825+<M>$3854A231FA2C89A061CE938425787CBD
+  - Void <Extension>$(ECMAScript.IWindow)
 - type ECMAScript.Global+<G>$BAD8AF7B4AB3B102ABB1C587EA783F40
   - Void Assert(Boolean, System.Object[])
   - Void Assert(Boolean, System.String, System.Object[])
@@ -96217,7 +97569,7 @@
   - System.Object Value
 - type ECMAScript.HTMLAnchorElement
   - Void .ctor()
-  - System.Collections.Generic.List`1[System.String] get_RelList()
+  - ECMAScript.DOMTokenList get_RelList()
   - System.String get_Charset()
   - System.String get_Coords()
   - System.String get_Download()
@@ -96267,7 +97619,7 @@
   - Void set_Text(System.String)
   - Void set_Type(System.String)
   - Void set_Username(System.String)
-  - System.Collections.Generic.List`1[System.String] RelList
+  - ECMAScript.DOMTokenList RelList
   - System.String Charset
   - System.String Coords
   - System.String Download
@@ -96296,7 +97648,7 @@
 - type ECMAScript.HTMLAreaElement
   - Void .ctor()
   - Boolean get_NoHref()
-  - System.Collections.Generic.List`1[System.String] get_RelList()
+  - ECMAScript.DOMTokenList get_RelList()
   - System.String get_Alt()
   - System.String get_Coords()
   - System.String get_Download()
@@ -96340,7 +97692,7 @@
   - Void set_Type(System.String)
   - Void set_Username(System.String)
   - Boolean NoHref
-  - System.Collections.Generic.List`1[System.String] RelList
+  - ECMAScript.DOMTokenList RelList
   - System.String Alt
   - System.String Coords
   - System.String Download
@@ -97070,8 +98422,8 @@
   - System.String Width
 - type ECMAScript.HTMLFencedFrameElement
   - Void .ctor()
+  - ECMAScript.DOMTokenList get_Sandbox()
   - ECMAScript.FencedFrameConfig get_Config()
-  - System.Collections.Generic.List`1[System.String] get_Sandbox()
   - System.String get_Allow()
   - System.String get_Height()
   - System.String get_Width()
@@ -97079,8 +98431,8 @@
   - Void set_Config(ECMAScript.FencedFrameConfig)
   - Void set_Height(System.String)
   - Void set_Width(System.String)
+  - ECMAScript.DOMTokenList Sandbox
   - ECMAScript.FencedFrameConfig Config
-  - System.Collections.Generic.List`1[System.String] Sandbox
   - System.String Allow
   - System.String Height
   - System.String Width
@@ -97137,10 +98489,10 @@
   - Boolean CheckValidity()
   - Boolean ReportValidity()
   - Boolean get_NoValidate()
+  - ECMAScript.DOMTokenList get_RelList()
   - ECMAScript.Element get_Item(UInt32)
   - ECMAScript.HTMLFormControlsCollection get_Elements()
   - ECMAScript.HTMLFormElementResult get_Item(System.String)
-  - System.Collections.Generic.List`1[System.String] get_RelList()
   - System.String get_AcceptCharset()
   - System.String get_Action()
   - System.String get_Autocomplete()
@@ -97165,10 +98517,10 @@
   - Void set_Rel(System.String)
   - Void set_Target(System.String)
   - Boolean NoValidate
+  - ECMAScript.DOMTokenList RelList
   - ECMAScript.Element Item [UInt32]
   - ECMAScript.HTMLFormControlsCollection Elements
   - ECMAScript.HTMLFormElementResult Item [System.String]
-  - System.Collections.Generic.List`1[System.String] RelList
   - System.String AcceptCharset
   - System.String Action
   - System.String Autocomplete
@@ -97356,12 +98708,12 @@
   - Void .ctor()
   - Boolean get_AllowFullscreen()
   - Boolean get_Credentialless()
+  - ECMAScript.DOMTokenList get_Sandbox()
   - ECMAScript.DocumentRef GetSVGDocument()
   - ECMAScript.DocumentRef get_ContentDocument()
   - ECMAScript.HTMLIFrameElementSrcdoc get_Srcdoc()
   - ECMAScript.PermissionsPolicy get_PermissionsPolicy()
   - ECMAScript.WindowProxy get_ContentWindow()
-  - System.Collections.Generic.List`1[System.String] get_Sandbox()
   - System.String get_Align()
   - System.String get_Allow()
   - System.String get_ConnectionAllowlist()
@@ -97399,11 +98751,11 @@
   - Void set_Width(System.String)
   - Boolean AllowFullscreen
   - Boolean Credentialless
+  - ECMAScript.DOMTokenList Sandbox
   - ECMAScript.DocumentRef ContentDocument
   - ECMAScript.HTMLIFrameElementSrcdoc Srcdoc
   - ECMAScript.PermissionsPolicy PermissionsPolicy
   - ECMAScript.WindowProxy ContentWindow
-  - System.Collections.Generic.List`1[System.String] Sandbox
   - System.String Align
   - System.String Allow
   - System.String ConnectionAllowlist
@@ -97697,9 +99049,9 @@
 - type ECMAScript.HTMLLinkElement
   - Void .ctor()
   - Boolean get_Disabled()
-  - System.Collections.Generic.List`1[System.String] get_Blocking()
-  - System.Collections.Generic.List`1[System.String] get_RelList()
-  - System.Collections.Generic.List`1[System.String] get_Sizes()
+  - ECMAScript.DOMTokenList get_Blocking()
+  - ECMAScript.DOMTokenList get_RelList()
+  - ECMAScript.DOMTokenList get_Sizes()
   - System.String get_As()
   - System.String get_Charset()
   - System.String get_CrossOrigin()
@@ -97732,9 +99084,9 @@
   - Void set_Target(System.String)
   - Void set_Type(System.String)
   - Boolean Disabled
-  - System.Collections.Generic.List`1[System.String] Blocking
-  - System.Collections.Generic.List`1[System.String] RelList
-  - System.Collections.Generic.List`1[System.String] Sizes
+  - ECMAScript.DOMTokenList Blocking
+  - ECMAScript.DOMTokenList RelList
+  - ECMAScript.DOMTokenList Sizes
   - System.String As
   - System.String Charset
   - System.String CrossOrigin
@@ -98175,10 +99527,10 @@
   - Boolean CheckValidity()
   - Boolean ReportValidity()
   - Boolean get_WillValidate()
+  - ECMAScript.DOMTokenList get_HtmlFor()
   - ECMAScript.HTMLFormElement get_Form()
   - ECMAScript.NodeList get_Labels()
   - ECMAScript.ValidityState get_Validity()
-  - System.Collections.Generic.List`1[System.String] get_HtmlFor()
   - System.String get_DefaultValue()
   - System.String get_Name()
   - System.String get_Type()
@@ -98189,10 +99541,10 @@
   - Void set_Name(System.String)
   - Void set_Value(System.String)
   - Boolean WillValidate
+  - ECMAScript.DOMTokenList HtmlFor
   - ECMAScript.HTMLFormElement Form
   - ECMAScript.NodeList Labels
   - ECMAScript.ValidityState Validity
-  - System.Collections.Generic.List`1[System.String] HtmlFor
   - System.String DefaultValue
   - System.String Name
   - System.String Type
@@ -98263,7 +99615,7 @@
   - Boolean get_Async()
   - Boolean get_Defer()
   - Boolean get_NoModule()
-  - System.Collections.Generic.List`1[System.String] get_Blocking()
+  - ECMAScript.DOMTokenList get_Blocking()
   - System.String get_Charset()
   - System.String get_CrossOrigin()
   - System.String get_Event()
@@ -98290,7 +99642,7 @@
   - Boolean Async
   - Boolean Defer
   - Boolean NoModule
-  - System.Collections.Generic.List`1[System.String] Blocking
+  - ECMAScript.DOMTokenList Blocking
   - System.String Charset
   - System.String CrossOrigin
   - System.String Event
@@ -98429,14 +99781,14 @@
 - type ECMAScript.HTMLStyleElement
   - Void .ctor()
   - Boolean get_Disabled()
-  - System.Collections.Generic.List`1[System.String] get_Blocking()
+  - ECMAScript.DOMTokenList get_Blocking()
   - System.String get_Media()
   - System.String get_Type()
   - Void set_Disabled(Boolean)
   - Void set_Media(System.String)
   - Void set_Type(System.String)
   - Boolean Disabled
-  - System.Collections.Generic.List`1[System.String] Blocking
+  - ECMAScript.DOMTokenList Blocking
   - System.String Media
   - System.String Type
 - type ECMAScript.HTMLTableCaptionElement
@@ -108673,6 +110025,7 @@
   - Int16 op_Implicit(ECMAScript.Number)
   - Int32 GetHashCode()
   - Int32 op_Implicit(ECMAScript.Number)
+  - Int64 op_Explicit(ECMAScript.Number)
   - SByte op_Implicit(ECMAScript.Number)
   - Single op_Implicit(ECMAScript.Number)
   - System.Decimal op_Implicit(ECMAScript.Number)
@@ -108686,6 +110039,7 @@
   - System.String ToString(System.Nullable`1[ECMAScript.Number])
   - UInt16 op_Implicit(ECMAScript.Number)
   - UInt32 op_Implicit(ECMAScript.Number)
+  - UInt64 op_Explicit(ECMAScript.Number)
   - ECMAScript.Number EPSILON
   - ECMAScript.Number MAX_SAFE_INTEGER
   - ECMAScript.Number MAX_VALUE
@@ -116235,9 +117589,9 @@
   - Int32 value__
 - type ECMAScript.SVGAElement
   - Void .ctor()
+  - ECMAScript.DOMTokenList get_RelList()
   - ECMAScript.SVGAnimatedString get_Href()
   - ECMAScript.SVGAnimatedString get_Target()
-  - System.Collections.Generic.List`1[System.String] get_RelList()
   - System.String get_Download()
   - System.String get_Hash()
   - System.String get_Host()
@@ -116269,9 +117623,9 @@
   - Void set_Search(System.String)
   - Void set_Type(System.String)
   - Void set_Username(System.String)
+  - ECMAScript.DOMTokenList RelList
   - ECMAScript.SVGAnimatedString Href
   - ECMAScript.SVGAnimatedString Target
-  - System.Collections.Generic.List`1[System.String] RelList
   - System.String Download
   - System.String Hash
   - System.String Host
@@ -129925,9 +131279,12 @@
 
 ## Jazor.AspNetCore.Dev
 - type Jazor.AspNetCore.Dev.JazorFrontendExtensions
+  - Microsoft.AspNetCore.Builder.IApplicationBuilder UseJazorFrontend(Microsoft.AspNetCore.Builder.IApplicationBuilder, System.Action`1[Jazor.AspNetCore.JazorHostOptions])
+  - Microsoft.AspNetCore.Builder.IApplicationBuilder UseJazorPathBase(Microsoft.AspNetCore.Builder.IApplicationBuilder)
   - Microsoft.AspNetCore.Builder.WebApplication UseJazorFrontend(Microsoft.AspNetCore.Builder.WebApplication, System.Action`1[Jazor.AspNetCore.JazorHostOptions])
   - Microsoft.AspNetCore.Builder.WebApplication UseJazorPathBase(Microsoft.AspNetCore.Builder.WebApplication)
   - Microsoft.AspNetCore.Builder.WebApplicationBuilder AddJazorFrontend(Microsoft.AspNetCore.Builder.WebApplicationBuilder, System.Action`1[Jazor.AspNetCore.Dev.JazorFrontendOptions])
+  - Microsoft.Extensions.DependencyInjection.IServiceCollection AddJazorFrontend(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action`1[Jazor.AspNetCore.Dev.JazorFrontendOptions])
 - type Jazor.AspNetCore.Dev.JazorFrontendOptions
   - Void .ctor()
   - Jazor.AspNetCore.Dev.JazorViteServerOptions get_Vite()

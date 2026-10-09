@@ -4,7 +4,7 @@
 
 本指南首先验证框架无关的核心能力。Razor-to-Vue 作为后续可选集成提供组件作者入口。
 
-示例使用已发布的 `1.0.0-preview.7`。P3-A/B/C 与 Monaco 绑定已可从同版本 NuGet 包安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。
+示例使用已发布的 `1.0.0-preview.8`。P3-A/B/C 与 Monaco 绑定已可从同版本 NuGet 包安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。
 
 ## 1. 创建模块库
 
@@ -12,7 +12,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 1.0.0-preview.7
+dotnet add Sample.Modules package Jazor --version 1.0.0-preview.8
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -38,7 +38,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 1.0.0-preview.7
+dotnet add Sample.Host package Jazor --version 1.0.0-preview.8
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
@@ -58,7 +58,7 @@ dotnet add Sample.Host package Jazor --version 1.0.0-preview.7
 dotnet build Sample.Host
 ```
 
-构建完成后，MSBuild 在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，在 `JazorDir` 生成标准 JavaScript 项目。项目包含 `features/greetings.js` 及其 source map、`entry.js`、`package.json`、`deno.lock` 和恢复后的 `node_modules`；release 模式还会执行项目的 `deno task build`，默认由 Vite 写入 `dist/`。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主负责项目目录。生成模块使用标准 ECMAScript 具名导出，跨模块调用由编译器创建稳定 import。`jazor-manifest.json` 只保存在 `obj` 中用于增量状态与诊断，不参与浏览器、SSR 或 Deno 的模块解析；标准项目不生成运行时 import map。发布时 SDK 复制该项目到发布输出的 `jazor/` 位置。
+构建完成后，MSBuild 在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，在 `JazorDir` 生成标准 JavaScript 项目。项目包含 `features/greetings.js` 及其 source map、`entry.js`、`package.json`、`deno.lock` 和恢复后的 `node_modules`；release 模式还会执行项目的 `deno task build`，默认由 Vite 写入 `dist/`。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主负责项目目录。生成模块使用标准 ECMAScript 具名导出，跨模块调用由编译器创建稳定 import。`jazor-manifest.json` 只保存在 `obj` 中用于增量状态与诊断，不参与浏览器、SSR 或 Deno 的模块解析；标准项目不生成运行时 import map。发布时 SDK 只将运行闭包 `dist/**` 和可选 `ssr/**` 复制到发布输出的 `jazor/`；源码、根 lock 与 `node_modules` 留在构建项目中。source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。
 
 ## 4. 可选：加入 Razor-to-Vue
 
@@ -66,7 +66,7 @@ dotnet build Sample.Host
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.7" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
 </ItemGroup>
 ```
 

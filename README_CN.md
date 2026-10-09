@@ -1,6 +1,7 @@
 <div align="center">
 
-![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+[![今日诗词](docs/assets/todays-verse.svg)](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+<!-- 刷新诗词快照：dotnet run --file scripts/csharp/update-readme-verse.cs -->
 
 <h1>Jazor</h1>
 
@@ -9,7 +10,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.7&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.8&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +27,9 @@
 
 </div>
 
-> Jazor 1.0.0-preview.7 是当前预览版本。
+> Jazor 1.0.0-preview.8 是当前预览版本。
+
+本次开发者反馈更新补齐强类型 Element Plus 交互、原生 DOM 事件与浏览器 payload 投影、可复用的 ASP.NET Core 宿主、按 RID 选择 Emit 资产和自足 SSR 发布。范围与验收见[开发者反馈状态](docs/04-roadmap/preview8-developer-feedback.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -109,15 +112,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.7
+dotnet add package Jazor --version 1.0.0-preview.8
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.7" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.7" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -196,19 +199,17 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
 仓库自动化使用 `scripts/csharp/` 下的单文件 C# 入口。完整流程见[开发与测试](docs/03-guides/development-and-testing.md)。
 
-## 发布状态
+## 最新更新
 
-### Jazor 1.0.0-preview.7 · 2026-09-29
+### Jazor 1.0.0-preview.8 · 2026-10-09
 
-- Element Plus 的 Popper 组件以及 FilePond、Floating UI、Lucide 绑定现在会恢复完整运行时依赖闭包；Deno 也会物化 npm alias，消费者无需再维护本地 manifest 或 extern 垫片。
-- Emit 现在会合并 `lib/` 与 `runtimes/` 下标识相同的程序集副本，并对真正的同名标识冲突给出明确错误，不再在后续模块收集阶段崩溃。
-- Development 的 Vite 代理响应会应用与 Release 资源和应用路由一致的安全响应头。
-- Emit consumer 门禁按隔离 fixture 运行，Windows SPA/SSR 发布浏览器 smoke 使用统一稳定的 Chrome 启动契约，Wiki 开发验证可识别 Vite 内联 source map，并保留完整失败报告。
-- 当前为预发布版本，稳定版 1.0 尚未发布；支持范围与质量门禁见[当前状态](docs/04-roadmap/current-status.md)。
+- Element Plus Select、Table、Dropdown 与反馈服务支持强类型交互；官方 Razor SG 的组件诊断、wrapper 默认参数指向作者源码。
+- 既有 CLR 事件与浏览器 payload 通过 extension 访问原生属性，浏览器接口仍由 WebIDL 定义。`CurrentTarget` 和剪贴板/拖放数据应在首次 `await` 前读取，示例见[浏览器互操作](docs/03-guides/browser-interop.md)。
+- Startup 与框架宿主可以复用前端管线；Emit 按目标 RID 选择资产，复用子路径包身份，并只发布可运行的 `dist/` 和可选 `ssr/`。
+- 升级时将 token-list 的 `Count` 改为 `Length`/`GetItem`，将 `ElTableColumn.ChildContent` 改为 scoped fragment；需要发布 source map 时设置 `JazorPublishSourceMaps=true`。迁移详情见[CHANGELOG](CHANGELOG.md)。
+- 主线测试、覆盖率、API/绑定检查与 Windows SPA/SSR 真实浏览器包消费者门禁已通过。支持范围与复现入口见[当前状态](docs/04-roadmap/current-status.md)。
 
-版本以[主仓库发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)及对应 Git tag 为准。镜像可能同步滞后，隐藏预发布版本时也可能只显示旧稳定版。所有已发布的 Jazor/ECMAScript 包保持同版本，安装时显式指定 `1.0.0-preview.7`。
-
-主分支可能包含尚未发布的改动。将主分支示例用于已安装包前，请核对[未发布改动与版本历史](CHANGELOG.md)。
+版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)及对应 Git tag 为准；所有 Jazor/ECMAScript 包统一使用 `1.0.0-preview.8`。稳定版 1.0 尚未发布，完整历史见[CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 

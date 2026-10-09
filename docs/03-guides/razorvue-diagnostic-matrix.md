@@ -2,17 +2,39 @@
 
 本文按作者遇到的场景排列 RazorVue 自有诊断。Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由 SDK 报告；下表只记录 RazorVue compatibility analyzer 和 final Compilation generation boundary 的稳定 ID。
 
+`JAZORVGA027`、`JAZORVGA028` 和外部 wrapper 默认 props 规则随 `1.0.0-preview.8` 交付；完整验证结果见[发布门禁](../04-roadmap/current-status.md)。
+
 ## 组件和生成链
 
 | ID | 触发场景 | 最小替代写法 | 进一步阅读 |
 | --- | --- | --- | --- |
 | `JAZORVGA020` | 未分类的 final Compilation 输出失败 | 保留完整构建日志和最小复现；不要继续消费旧 artifact | [Final Compilation](./razorvue-authoring.md#final-compilation) |
-| `JAZORVGA021` | direct RenderTree frame、内置 Blazor UI 或当前 render shape | 使用普通 Razor 标记、已声明 binding 组件和完整 frame 结构 | [Direct render](./razorvue-authoring.md#direct-render) |
+| `JAZORVGA021` | direct RenderTree frame、内置 Blazor UI、当前 render shape；preview.8还检查外部 wrapper 的非恒定参数 initializer | 使用普通 Razor 标记、已声明 binding 组件和完整 frame 结构；移除 wrapper 的动态默认 initializer，改为调用处显式传值 | [Direct render](./razorvue-authoring.md#direct-render)、[Wrapper defaults](./razorvue-authoring.md#external-wrapper-defaults) |
 | `JAZORVGA022` | 表达式缺少 `Jazor.Compiler`/whitelist lowering | 使用已映射的 ECMAScript/CLR contract，或在 endpoint 预先整理 DTO | [Compiler boundary](./razorvue-authoring.md#compiler-boundary) |
 | `JAZORVGA023` | 组件参数、slot 或事件缺少可绑定形状 | 对照 binding 的具体参数类型、`XxxValue`/`XxxContent` 命名和 `EventCallback` 签名 | [Component binding](./razorvue-authoring.md#component-binding) |
 | `JAZORVGA024` | 可达成员、constructor、lifecycle 或导出成员缺少 module closure 入口 | 在已声明的 `.razor.cs` 成员中组织逻辑，使用显式 import 和可激活的 writable property | [Member closure](./razorvue-authoring.md#member-closure) |
 | `JAZORVGA025` | `[VueInject]` 声明缺少或重复 implementation contract | 修正 container、implementation 和 provider key；不要增加第二套注入协议 | [VueInject](./razorvue-authoring.md#vue-inject) |
 | `JAZORVGA026` | module/export/import 或 Vue framing 缺少生成条件 | 检查 `[ECMAScript]` 模块路径、export 名和 import 冲突 | [Vue module](./razorvue-authoring.md#vue-module) |
+| `JAZORVGA027` | 具体 component candidate 缺少 `ComponentBase`、`IVueComponent` 或模块/外部导入描述（preview.8） | 补齐基类、marker 与本地 `[ECMAScriptModule("./components/name")]` 或外部 `[ECMAScript("package")]` | [Component identity](./razorvue-authoring.md#component-identity) |
+| `JAZORVGA028` | 未声明 attribute `Class` 与 `CssClass` 映射的 Vue `class` 等 runtime 名称发生大小写歧义（preview.8） | 使用声明的 `CssClass` 参数，或精确的小写 `class` attribute | [Parameter runtime names](./razorvue-authoring.md#parameter-runtime-names) |
+
+## preview.8的最小修复示例
+
+`@page` 页面或可复用 `.razor` 组件不会因为尚未被引用而跳过身份检查。若 `JAZORVGA027` 指出缺少 marker/模块，在该组件的 `.razor.cs` 中补齐：
+
+```csharp
+[ECMAScriptModule("./components/orders")]
+public partial class Orders : ComponentBase, ECMAScript.Vue.IVueComponent { }
+```
+
+抽象源码基类无需自己的输出模块；外部 binding 使用其 `[ECMAScript("package")]` 描述。`JAZORVGA028` 给出的 `Class` → `CssClass` 修复可以直接落在 Razor 源码中：
+
+```razor
+@* 原属性 Class="panel" 与 Vue runtime 名称 class 冲突 *@
+<ElCard CssClass="panel">Content</ElCard>
+```
+
+精确的 `class="panel"` 也保留 Vue attribute 语义。组件未知参数与类型错误仍先按 SDK 的 `RZ****` / `CS****` 修复。同行 sibling 标签、`@($"...")` 插值、`@:` 和 `<text>` 受支持；代码块裸文本需要 `@:` / `<text>`，示例及 typed DOM/null/file/BigInt 边界见 [Browser interop](./browser-interop.md)。
 
 ## 浏览器服务和生命周期
 

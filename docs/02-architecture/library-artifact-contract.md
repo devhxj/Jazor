@@ -52,15 +52,22 @@ jazor/
   node_modules/
   entry.js
   ssr-entry.js          # 启用 SSR 时生成
+  ssr-bundle-entry.js   # 启用 SSR 时生成的构建入口
   clr/
   <module-paths>/
   <local-assets>/
   dist/
+  ssr/                  # Release 且启用 SSR 时生成
+    package.json
+    ssr-entry.js
+    chunks/
 ```
 
 根 `package.json` 使用标准的 `name`、`private`、`type`、`main`、`exports` 和 `dependencies` 字段。`exports["."]` 指向浏览器入口；存在 SSR 入口时增加 `exports["./ssr"]`。
 
-`package-lock.json` 仅在消费者已有且与根依赖一致时保留。`deno.lock` 由 Deno 2.9.7 生成，作为 Deno restore、check 与 SSR 的冻结依据。`node_modules` 由 Deno 恢复，标准前端工具与 DenoHost 共用。
+`package-lock.json` 仅在消费者已有且与根依赖一致时保留。`deno.lock` 由 Deno 2.9.7 生成，作为 Deno restore、check 与开发 SSR 的冻结依据。`node_modules` 由 Deno 恢复，标准前端工具与开发 DenoHost 共用。
+
+preview.8 的 Release 发布只复制 `dist/**` 与启用 SSR 时的 `ssr/**`。后者拥有独立 `package.json` 任务和本地 bundled chunks，可在没有源码、根 lock 或 `node_modules` 的目录启动。运行目录中的 source map 默认不发布，可用 `JazorPublishSourceMaps=true` 启用。
 
 ## 源码契约
 
@@ -262,7 +269,7 @@ B：通过 ProjectReference/PackageReference 使用 A
 | `Jazor.Emit` | 生成 `jazor/` 项目、写出源码与入口、生成 `package.json`、调用 Deno install 恢复绑定依赖 |
 | Deno 2.9.7 | restore、`node_modules`、`deno.lock` 与入口检查 |
 | 标准前端工具（当前 Vite） | package resolution、conditions、`sideEffects`、ESM/CSS/asset tree shaking |
-| DenoHost | 从已恢复项目执行 SSR |
+| DenoHost | 开发时从已恢复项目执行 SSR；发布时从 `ssr/` 运行闭包执行 |
 
 Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑定 declaration 变成 `dependencies` 与 bare import。随后使用标准项目语义完成恢复、构建和运行。
 
@@ -272,7 +279,7 @@ Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑
 2. 在最终 `jazor/` 按最终路径写出源码、source map 与本地资源；单文件使用临时文件加 rename。
 3. 生成 `entry.js`、可选 `ssr-entry.js` 和根 `package.json`。
 4. 调用 Deno 2.9.7 恢复依赖、生成或验证 `deno.lock`，并 frozen check 所有入口。
-5. Release 模式让选定的标准前端工具从同一项目根生成 `dist/`。
+5. Release 模式让选定的标准前端工具从同一项目根生成 `dist/`，启用 SSR 时另生成 `ssr/` 运行闭包。
 6. 各步骤就地生效；失败显式返回，由下一次构建收敛。
 
 首次生成或 dependency identity 变化时使用 `deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=false`；lock 一致时使用 `deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=true`；入口检查使用 `deno check --node-modules-dir=manual --no-remote --no-config --frozen-lockfile`。
@@ -283,9 +290,9 @@ Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑
 - 每个 bare import 都能由根 `package.json` 和恢复后的 package 解析。
 - 每个项目内 import 都能按最终相对路径解析。
 - package 内部 import、peer dependency、初始化和 `sideEffects` 由上游 package 保持。
-- Debug、Release、HMR 和 SSR 使用同一项目根、源码树、dependency identity 与恢复结果。
+- Debug、Release、HMR 和 SSR 构建使用同一项目根、源码树、dependency identity 与恢复结果；发布只交付运行闭包。
 - 项目生成、恢复、检查或构建失败时显式返回错误，不做整目录回滚；下一次构建按同一规则收敛。
 - Deno 2.9.7 能在 `jazor/` 直接 restore、check 和 run。
 - 选定的标准前端工具能从 `jazor/entry.js` 解析 `node_modules` 并输出 `jazor/dist/`；NetPack 不是验收前提。
-- DenoHost 能从同一项目根加载 `ssr-entry.js`。
+- DenoHost 能从开发项目根加载 `ssr-entry.js`，并从独立发布目录运行 `ssr/ssr-entry.js`。
 - 单组件或单函数 consumer 只保留入口可达的 ESM 与资源，同时保留组件内部依赖和必要副作用。

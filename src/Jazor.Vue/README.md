@@ -12,8 +12,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.5" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.5" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -30,7 +30,11 @@ RazorVue analyzer 与 `AngleSharp` 位于 `tools/net11.0/analyzers/`，由当前
 `Jazor.Vue` 时通过该包的 `buildTransitive/Jazor.Vue.targets` 条件注册；它们不放入 NuGet
 自动导入的 `analyzers/dotnet/cs`，也不随组件库引用激活。
 
-Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成，再由 `Jazor.CLR` 唯一持有 module、mapping、helper；生成的 runtime JavaScript 进入 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` carrier，用户不需要复制映射源码或手工注册资源。当前 browser-interactive `Support` 覆盖 Mouse/Keyboard/Focus/Change，以及 Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 的 getter-only 原生事件投影；TouchList 在属性访问时惰性转换为数组 carrier。七组扩展事件已由 Blazor `EventHandlers` reference metadata、official Razor SG/Deno、真实 BrowserSmoke 与 isolated Release package consumer 共同验证。统一 Release 包边界和基本 Razor/Vue 消费路径已由 `SdkIntegrationTests.Build_LocalReleasePackage_CoreConsumer_ExcludesBlazorAndVuePackages` 与 `SdkIntegrationTests.Build_LocalReleasePackage_VueConsumer_IncludesRazorVueWithoutBlazorAssembly` 分别验证；file input、合成 `EventArgs` payload、DataTransfer files/items、TouchList 非 getter 操作和 SSR/prerender 仍不支持/不声明。
+Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成，再由 `Jazor.CLR` 唯一持有 module、mapping、helper；生成的 runtime JavaScript 进入 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` carrier，用户不需要复制映射源码或手工注册资源。当前 browser-interactive `Support` 覆盖 Mouse/Keyboard/Focus/Change，以及 Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 的 getter-only 原生事件投影；TouchList 在 CLR 属性访问时惰性转换为数组 carrier。七组扩展事件已由 Blazor `EventHandlers` reference metadata、official Razor SG/Deno、真实 BrowserSmoke 与 isolated Release package consumer 共同验证。统一 Release 包边界和基本 Razor/Vue 消费路径已由 `SdkIntegrationTests.Build_LocalReleasePackage_CoreConsumer_ExcludesBlazorAndVuePackages` 与 `SdkIntegrationTests.Build_LocalReleasePackage_VueConsumer_IncludesRazorVueWithoutBlazorAssembly` 分别验证；合成 `EventArgs` payload、CLR DataTransfer DTO 的 `Files`/`Items` 属性和完整 SSR/prerender identity 仍不支持/不声明。preview.8 的原生集合入口见下述 extension。
+
+preview.8 增加原生 file/drop 切片：`InputFileChangeEventArgs` 的 CLR alias 保留 browser Event carrier，`FileCount` 投影原生 list length；本包的 `ECMAScript.NativeFileEventExtensions` 为现有 `InputFileChangeEventArgs`/`DragEventArgs` 增加 `Files` 属性，直接访问 `FileList`/`FileRef` 和 `FormData`。该 extension 位于 opt-in Vue 作者程序集，核心 `ECMAScript`/`Jazor.CLR` 不引入 ASP.NET Core 引用。官方 Razor SG、compiler 和 Deno 回归覆盖原生文件载荷、清空、多文件、multipart 和 Object URL 回收；`IBrowserFile`/CLR Stream 未进入此切片。写法见 [Browser Interop](../../docs/03-guides/browser-interop.md#native-file-and-drop-events)。
+
+preview.8 同时为 12 种 DOM 事件增加 `NativeEvent` 和缺失的原生属性，剪贴板可直接使用 `ClipboardData`，焦点/鼠标可使用 `RelatedTarget`。`NativeBrowserPayloadExtensions` 补齐 `DataTransfer`、`DataTransferItem`、`TouchPoint`、`ElementReference` 的强类型原生投影；`DataTransferItem.Kind`/`Type` 也已映射。原生 `NativeFiles`/`NativeItems`/`NativeTouches` 保留 browser collection，完整方法继续来自 WebIDL；既有 CLR 数组属性的边界保持。详细列表见[原生事件扩展](../../docs/03-guides/browser-interop.md#native-dom-event-and-payload-extensions)。
 
 ## 产物输出
 
@@ -38,11 +42,11 @@ Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core re
 | --- | --- |
 | `none` | 默认值，不输出产物 |
 | `debug` | 标准 JS 项目中的模块与 source map；Emit 增量状态写入 `obj` |
-| `release` | 生产浏览器 bundle、source map 与所需资源 |
+| `release` | 生产浏览器 bundle、可选 SSR bundle 与所需资源 |
 
 `JazorDir` 默认是 `$(MSBuildProjectDirectory)\jazor\` 的最终输出目录。MSBuild 只在最终
 `Exe`/`WinExe` 构建后调用 Emit；它读取程序集 ModuleCatalog 与资源 manifest，完成校验后直接
-物化到该目录，发布时再由 SDK 复制到 `<publish>\jazor\`。该集成不需要
+物化到该目录，发布时由 SDK 将 `dist/**` 和可选 `ssr/**` 复制到 `<publish>\jazor\`；source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。该集成不需要
 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或二次解析生成 C#；
 `release` 执行标准项目 `package.json` 中的构建脚本；默认脚本使用 Vite，也可以由应用替换。
 
@@ -51,4 +55,3 @@ Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core re
 - [Jazor.RazorVue](../Jazor.RazorVue/README.md)
 - [安装与配置](../../docs/03-guides/installation-and-configuration.md)
 - [Razor-to-Vue](../../docs/02-architecture/razor-to-vue.md)
-

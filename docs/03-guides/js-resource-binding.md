@@ -79,6 +79,30 @@ public static class AddDays
 
 一个 dependency key 只对应一个 identity。冲突在 Deno restore 前由 Emit 报告，便于定位绑定包或项目引用。
 
+上游 named export 本身是对象时，可以用 extern 静态属性取得该对象，再用无参 `[ECMAScript]` 宿主类型映射其成员。例如消费者反馈 G10 使用以下强类型声明绑定 `sm-crypto-v2`：
+
+```csharp
+using System.ComponentModel;
+using ECMAScript;
+
+[ECMAScript("sm-crypto-v2")]
+internal static class SmCrypto
+{
+    [Description("@#sm2")]
+    public extern static Sm2 Sm2 { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+internal sealed record Sm2
+{
+    [Description("@#doEncrypt")]
+    public extern string DoEncrypt(string message, string publicKey, int cipherMode);
+}
+```
+
+`SmCrypto.Sm2.DoEncrypt(message, publicKey, 1)` 对应 `import { sm2 } from "sm-crypto-v2"` 和 `sm2.doEncrypt(message, publicKey, 1)`。绑定 manifest 仍须声明精确包身份与 integrity；这个作者习语不意味着仓库提供完整 SmCrypto 绑定包，密码格式和后端加密协议由应用决定。
+
 ## 样式和其他资源
 
 上游模块已经 import CSS 时，绑定保留该标准边，项目构建工具从包内 ESM 图继续解析。上游要求调用方显式导入样式时，在 binding metadata 中记录与入口对应的 CSS specifier，Emit 生成普通 side-effect import。

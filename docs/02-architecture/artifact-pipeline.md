@@ -43,7 +43,7 @@ Emit 是 MSBuild 阶段的项目适配器。它把 Jazor carrier 转换为标准
 5. **生成入口**：`entry.js` 连接浏览器 roots；启用 SSR 时生成 `ssr-entry.js`，通过渲染请求加载选定组件。SSR 入口不提前执行浏览器启动代码。
 6. **生成项目声明**：合并实际 package imports，写根 `package.json` 的标准字段、`dependencies` 和 `exports`。
 7. **恢复与检查**：调用 Deno 2.9.7 生成或验证 `deno.lock` 和 `node_modules`，再以 frozen lock 检查可见入口。
-8. **消费与交付**：Release 交给选定的标准前端工具构建 `dist/`；SSR 交给 DenoHost 使用同一项目；写入就地生效，失败显式返回并由下一次构建收敛。
+8. **消费与交付**：Release 交给选定的标准前端工具构建 `dist/`，启用 SSR 时同时构建 `ssr/` 运行闭包。发布仅复制这两个运行目录，source map 由 `JazorPublishSourceMaps=true` 显式启用；写入就地生效，失败显式返回并由下一次构建收敛。
 
 ## 源码与入口路径
 
@@ -56,7 +56,7 @@ ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 
 `ModuleCatalog` 中的相对依赖在写出时根据 importer 的最终路径计算。package import 直接由 Deno 恢复的 `node_modules` 解析。入口导出保持 C# binding 声明的 named/default 形式。
 
-应用可以拥有浏览器、SSR 和 HMR 等可见入口；这些入口共享一棵项目源码与 package 依赖图。`obj/.../jazor-manifest.json`和 source map 只属于 Emit 的诊断/增量证据，运行时与开发服务不读取它；package resolution 始终读取根 `package.json`。
+应用可以拥有浏览器、SSR 和 HMR 等可见入口；这些入口共享一棵项目源码与 package 依赖图。`obj/.../jazor-manifest.json` 属于 Emit 的诊断/增量证据；source map 用于调试。开发与构建时 package resolution 读取根 `package.json`；发布后的 SSR 使用 `ssr/package.json` 任务和本地 bundled chunks。
 
 ## Deno 项目恢复
 
@@ -102,9 +102,9 @@ entry.js
 
 ### DenoHost
 
-DenoHost 以 `jazor/` 为工作目录，加载 Emit 生成的 `ssr-entry.js`，复用已恢复的 `node_modules` 与 `deno.lock`。浏览器构建与 SSR 共享 package identity 和源码；条件选择由各自的标准运行目标决定。
+DenoHost 在开发时以 `jazor/` 为工作目录，加载 Emit 生成的 `ssr-entry.js`，复用已恢复的 `node_modules` 与 `deno.lock`。Release 构建从同一依赖图生成 `ssr/ssr-entry.js` 和本地 chunks，DenoHost 改以 `jazor/ssr/` 为工作目录执行其 `package.json` 任务。浏览器构建与 SSR 共享 package identity 和源码；条件选择由各自的标准运行目标决定。
 
-SSR 项目定位要求 `ssr-entry.js`、`package.json` 和 `deno.lock`，不要求 `jazor-manifest.json`、旧的资源 `manifest.json` 或 import map。宿主不再根据样式清单注入 `<link>`。worker 在 SSR 入口、package 声明或 lock 内容变化后轮换；仅时间戳变化时复用现有 worker。入口和 package 文件以单文件临时写入加 rename 发布，内容不变时保留时间戳。
+SSR 在 Development 环境优先使用完整的开发图（根目录 `ssr-entry.js`、`package.json` 和 `deno.lock`），避免前次 Release bundle 遮蔽源码更新。其他环境优先查找 `ssr/ssr-entry.js` 和 `ssr/package.json`；bundled 图无需 `node_modules` 或 `deno.lock`。宿主不读取 Emit 诊断 manifest，也不根据样式清单注入 `<link>`。worker 在 SSR 入口、package 声明或开发 lock 内容变化后轮换；仅时间戳变化时复用现有 worker。入口和 package 文件以单文件临时写入加 rename 发布，内容不变时保留时间戳。
 
 worker 通过标准项目任务启动，`TaskName` 默认 `ssr`；开发可选择 `ssr:dev`，由静态脚本中的 Deno `--watch=.` 更新子模块（排除依赖目录与构建输出）。渲染通过 Deno loopback HTTP 服务处理，重启后的监听地址经 ready 通知更新；宿主不实现文件监听或 import 图扫描。与重启重叠的请求允许失败并传播错误，不自动重放。
 
@@ -131,7 +131,8 @@ Emit 在最终 `jazor/` 中就地完成写入、恢复、检查和构建。写�
 
 - `debug`：保留项目源码、source map 和诊断 manifest，交由标准开发服务提供模块解析与 HMR。
 - `release`：从同一项目根调用 所选构建工具，输出 `dist/` 与 bundle metafile。
-- `JazorSSR=true`：在同一次项目生成与恢复中增加 `ssr-entry.js`，供 DenoHost 直接消费。
+- `JazorSSR=true`：在同一次项目生成与恢复中增加开发 `ssr-entry.js`，Release 另生成 `ssr/` 运行闭包供 DenoHost 消费。
+- `dotnet publish`：交付 `dist/**` 和启用 SSR 时的 `ssr/**`；默认排除 source map，设置 `JazorPublishSourceMaps=true` 可携带运行目录内的 map。
 
 ### 单一项目根（已定）
 
@@ -144,5 +145,5 @@ Emit 在最终 `jazor/` 中就地完成写入、恢复、检查和构建。写�
 - 生成的 `jazor/` 可由 Deno 2.9.7 在 `--no-remote` 与 frozen lock 下检查。
 - `package.json` 的每个 dependency key 都对应一个精确 binding identity，源码中的每个 bare import 都能解析。
 - 所选构建工具 metafile 展示入口可达的 JS、CSS、worker 和 static 资源；组件内部依赖保持完整，共享模块只出现一个实例。
-- DenoHost SSR 使用同一 `node_modules` 与 `deno.lock`，浏览器与 SSR 的 package identity 一致。
+- DenoHost 开发 SSR 使用同一 `node_modules` 与 `deno.lock`；发布 SSR 从独立 `ssr/` 目录启动，浏览器与 SSR 的 package identity 一致。
 - 重复 MSBuild 生成得到稳定项目文件、路径、source map 和 bundle 输出。

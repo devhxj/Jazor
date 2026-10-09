@@ -1,8 +1,10 @@
 # 当前状态
 
-> 当前已发布版本：[1.0.0-preview.7（2026-09-29）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.7)。下文 preview.1 指首次冻结候选里程碑；主分支尚未发布的变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前预览版本：[1.0.0-preview.8（2026-10-09）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
+
+> **preview.8 状态：** 开发者反馈实现已通过完整主线、覆盖率、API/绑定与本地发布包的 SPA/SSR 消费者门禁。具体实现与证据见[开发者反馈验收](./preview8-developer-feedback.md)；DOM 事件扩展的 Happy DOM 回归与真实 Chrome 消费者验收分别限定其证明范围。
 
 审视这里的每项状态，只需要一个问题：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据；愿景、阶段性进展或一次成功的构建，都不足以作为依据。
 
@@ -35,6 +37,8 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 - `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 
+preview.8 增加 12 种 DOM 事件与既有 CLR 浏览器载荷的强类型 extension、可在 Startup/框架传入的 `IApplicationBuilder` 上复用前端宿主、目标 RID 资产选择、显式子路径包身份、独立 SSR bundle 和默认 publish closure 过滤。原生事件与 payload 的详细支持边界见[浏览器互操作](../03-guides/browser-interop.md)。
+
 ## 产品边界
 
 以下内容定义当前产品边界。新增实现与证据通过对应诊断、测试和验收流程更新契约：
@@ -50,7 +54,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。`1.0.0-preview.1` 已作为首个冻结候选发布；当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型保持既定命名。`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 提供统一候选验收入口；API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据共同确认正式 `1.0.0` 发布状态。
 
-2026-09-28 当前 API 快照覆盖 P3-A/B/C、Monaco 与重置后的 ASP.NET Core frontend 宿主面，共 `76133` 条（`8950` 个顶层声明、`67183` 个成员声明）；与保留快照比较为 `76133` 对 `76133`，新增 `0`、删除 `0`。preview.5 的 `76105` 条快照保留为已发布历史证据；preview.6 的迁移说明与新基线见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。Monaco 已接入 solution、主线 lane、Emit 物化回归和发布包 catalog；P3 绑定的 browser smoke 与真实 RazorVue consumer 仍是进入 Support 矩阵的前置条件。核心 Compiler、CLR、Razor SG、Emit 与生态测试继续由完整 Release Candidate 门禁统一执行。
+2026-10-09 的 API 快照覆盖所有 lockstep 作者程序集，共 `76564` 条（`9017` 个顶层声明、`67547` 个成员声明），最终 Release 程序集比较为 `76564` 对 `76564`、新增 `0`、删除 `0`。DOMTokenList 与 TableColumn scoped slot 的迁移见[冻结审查](../03-guides/public-api-freeze.md)和 CHANGELOG。P3-A/B/C 与 Monaco 的 browser smoke 与真实 RazorVue consumer 仍是进入 Support 矩阵的前置条件。
 
 ## 质量门槛与验证
 
