@@ -4316,6 +4316,213 @@ public sealed class ElDropdown : ElContentComponentBase
 }
 
 /// <summary>
+/// Toggleable menu for displaying lists of links and actions.
+/// </summary>
+/// <typeparam name="TCommand">Authored model, row or command type; the runtime value is preserved.</typeparam>
+[ECMAScriptName("ElDropdown")]
+[ECMAScript("element-plus/es/components/dropdown/index.mjs")]
+[Style("element-plus/es/components/dropdown/style/css.mjs")]
+public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
+{
+    /// <summary>
+    /// menu button type, refer to `Button` Component, only works when `split-button` is true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("type")]
+    public ElButtonType? Type { get; set; }
+
+    /// <summary>
+    /// menu size, also works on the split button
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("size")]
+    public string? Size { get; set; }
+
+    /// <summary>
+    /// props for the button component, refer to [Button Attributes](./button.html#button-attributes)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("buttonProps")]
+    public ElButtonProps? ButtonProps { get; set; }
+
+    /// <summary>
+    /// the max height of menu
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("maxHeight")]
+    public VueStringNumberValue? MaxHeight { get; set; }
+
+    /// <summary>
+    /// whether a button group is displayed
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("splitButton")]
+    public bool? SplitButton { get; set; }
+
+    /// <summary>
+    /// whether to disable
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("disabled")]
+    public bool? Disabled { get; set; }
+
+    /// <summary>
+    /// placement of pop menu
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("placement")]
+    public ElPopperPlacement? Placement { get; set; }
+
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("effect")]
+    public ElPopperEffect? Effect { get; set; }
+
+    /// <summary>
+    /// how to trigger
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("trigger")]
+    public ElDropdownTriggerValue? Trigger { get; set; }
+
+    /// <summary>
+    /// specify which keys on the keyboard can trigger when pressed
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("triggerKeys")]
+    public string[]? TriggerKeys { get; set; }
+
+    /// <summary>
+    /// indicates whether virtual triggering is enabled
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("virtualTriggering")]
+    public bool? VirtualTriggering { get; set; }
+
+    /// <summary>
+    /// indicates the reference element to which the dropdown is attached
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("virtualRef")]
+    public VueTeleportTarget? VirtualRef { get; set; }
+
+    /// <summary>
+    /// whether to hide menu after clicking menu-item
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("hideOnClick")]
+    public bool? HideOnClick { get; set; }
+
+    /// <summary>
+    /// whether the tooltip content has an arrow
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showArrow")]
+    public bool? ShowArrow { get; set; }
+
+    /// <summary>
+    /// delay time before show a dropdown (only works when trigger is `hover`)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showTimeout")]
+    public Number? ShowTimeout { get; set; }
+
+    /// <summary>
+    /// delay time before hide a dropdown (only works when trigger is `hover`)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("hideTimeout")]
+    public Number? HideTimeout { get; set; }
+
+    /// <summary>
+    /// the ARIA role attribute for the dropdown menu. Depending on the use case, you may want to change this to 'navigation'
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("role")]
+    public string? Role { get; set; }
+
+    /// <summary>
+    /// [tabindex](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex) of Dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tabindex")]
+    public VueStringNumberValue? Tabindex { get; set; }
+
+    /// <summary>
+    /// custom class name for Dropdown's dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperClass")]
+    public VueClassValue? PopperClass { get; set; }
+
+    /// <summary>
+    /// custom style for Dropdown's dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperStyle")]
+    public VueStyleValue? PopperStyle { get; set; }
+
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperOptions")]
+    public VueDictionary? PopperOptions { get; set; }
+
+    /// <summary>
+    /// whether the dropdown popup is teleported to the body
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("teleported")]
+    public bool? Teleported { get; set; }
+
+    /// <summary>
+    /// which element the dropdown CONTENT appends to
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("appendTo")]
+    public VueTeleportTarget? AppendTo { get; set; }
+
+    /// <summary>
+    /// when dropdown inactive and `persistent` is `false` , dropdown menu will be destroyed
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("persistent")]
+    public bool? Persistent { get; set; }
+
+    /// <summary>
+    /// content of the Dropdown Menu, usually a `&lt;el-dropdown-menu&gt;` element
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("dropdown")]
+    public RenderFragment? Dropdown { get; set; }
+
+    /// <summary>
+    /// if `split-button` is `true`, triggers when left button is clicked
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onClick")]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// triggers when a dropdown item is clicked, the parameters is the command dispatched from the dropdown item
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCommand")]
+    public EventCallback<TCommand> OnCommand { get; set; }
+
+    /// <summary>
+    /// triggers when the dropdown appears/disappears, the param is true when it appears, and false otherwise
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onVisibleChange")]
+    public EventCallback OnVisibleChange { get; set; }
+
+}
+
+/// <summary>
 /// el-dropdown-item
 /// </summary>
 [ECMAScriptName("ElDropdownItem")]
@@ -4329,6 +4536,52 @@ public sealed class ElDropdownItem : ElContentComponentBase
     [Parameter]
     [ECMAScriptName("command")]
     public VueStringNumberObjectValue? Command { get; set; }
+
+    /// <summary>
+    /// whether the item is disabled
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("disabled")]
+    public bool? Disabled { get; set; }
+
+    /// <summary>
+    /// whether a divider is displayed
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("divided")]
+    public bool? Divided { get; set; }
+
+    /// <summary>
+    /// custom icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("icon")]
+    public VueStringComponentValue? Icon { get; set; }
+
+    /// <summary>
+    /// custom icon, it will override the icon prop
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("icon")]
+    public RenderFragment? IconSlot { get; set; }
+
+}
+
+/// <summary>
+/// el-dropdown-item
+/// </summary>
+/// <typeparam name="TCommand">Authored model, row or command type; the runtime value is preserved.</typeparam>
+[ECMAScriptName("ElDropdownItem")]
+[ECMAScript("element-plus/es/components/dropdown/index.mjs")]
+[Style("element-plus/es/components/dropdown/style/css.mjs")]
+public sealed class ElTypedDropdownItem<TCommand> : ElContentComponentBase
+{
+    /// <summary>
+    /// a command to be dispatched to Dropdown's `command` callback
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("command")]
+    public TCommand? Command { get; set; }
 
     /// <summary>
     /// whether the item is disabled
@@ -6605,6 +6858,38 @@ public sealed class ElOption : ElContentComponentBase
 }
 
 /// <summary>
+/// el-option
+/// </summary>
+/// <typeparam name="TValue">Authored model, row or command type; the runtime value is preserved.</typeparam>
+[ECMAScriptName("ElOption")]
+[ECMAScript("element-plus/es/components/select/index.mjs")]
+[Style("element-plus/es/components/select/style/css.mjs")]
+public sealed class ElTypedOption<TValue> : ElContentComponentBase
+{
+    /// <summary>
+    /// value of option
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("value")]
+    public TValue Value { get; set; } = default!;
+
+    /// <summary>
+    /// label of option, same as `value` if omitted
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("label")]
+    public VueStringNumberValue? Label { get; set; }
+
+    /// <summary>
+    /// whether option is disabled
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("disabled")]
+    public bool? Disabled { get; set; }
+
+}
+
+/// <summary>
 /// el-option-group
 /// </summary>
 [ECMAScriptName("ElOptionGroup")]
@@ -8620,6 +8905,500 @@ public sealed class ElSelect : ElContentComponentBase
 }
 
 /// <summary>
+/// When there are plenty of options, use a drop-down menu to display and select desired ones.
+/// </summary>
+/// <typeparam name="TValue">Authored model, row or command type; the runtime value is preserved.</typeparam>
+[ECMAScriptName("ElSelect")]
+[ECMAScript("element-plus/es/components/select/index.mjs")]
+[Style("element-plus/es/components/select/style/css.mjs")]
+public sealed class ElTypedSelect<TValue> : ElContentComponentBase
+{
+    /// <summary>
+    /// binding value
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("modelValue")]
+    public TValue? ModelValue { get; set; }
+
+    /// <summary>
+    /// whether multiple-select is activated
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("multiple")]
+    public bool? Multiple { get; set; }
+
+    /// <summary>
+    /// data of the options, the key of `value` and `label` and `disabled` can be customize by `props`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("options")]
+    public VueValue[]? Options { get; set; }
+
+    /// <summary>
+    /// configuration options
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("props")]
+    public ElSelectPropsAlias? Props { get; set; }
+
+    /// <summary>
+    /// whether Select is disabled
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("disabled")]
+    public bool? Disabled { get; set; }
+
+    /// <summary>
+    /// unique identity key name for value, required when value is an object
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("valueKey")]
+    public string? ValueKey { get; set; }
+
+    /// <summary>
+    /// size of Input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("size")]
+    public string? Size { get; set; }
+
+    /// <summary>
+    /// whether select can be cleared
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("clearable")]
+    public bool? Clearable { get; set; }
+
+    /// <summary>
+    /// whether to collapse tags to a text when multiple selecting
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("collapseTags")]
+    public bool? CollapseTags { get; set; }
+
+    /// <summary>
+    /// whether show all selected tags when mouse hover text of collapse-tags. To use this, `collapse-tags` must be true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("collapseTagsTooltip")]
+    public bool? CollapseTagsTooltip { get; set; }
+
+    /// <summary>
+    /// configuration object for the collapse-tags tooltip. To use this, `collapse-tags` and `collapse-tags-tooltip` must be true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tagTooltip")]
+    public ElTagTooltipProps? TagTooltip { get; set; }
+
+    /// <summary>
+    /// maximum number of options user can select when `multiple` is `true`. No limit when set to 0
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("multipleLimit")]
+    public Number? MultipleLimit { get; set; }
+
+    /// <summary>
+    /// native input id input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("id")]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// the name attribute of select input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("name")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("effect")]
+    public ElPopperEffect? Effect { get; set; }
+
+    /// <summary>
+    /// the autocomplete attribute of select input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("autocomplete")]
+    public string? Autocomplete { get; set; }
+
+    /// <summary>
+    /// placeholder, default is 'Select'
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("placeholder")]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// whether Select is filterable
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filterable")]
+    public bool? Filterable { get; set; }
+
+    /// <summary>
+    /// whether creating new items is allowed. To use this, `filterable` must be true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("allowCreate")]
+    public bool? AllowCreate { get; set; }
+
+    /// <summary>
+    /// custom filter method, the first parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filterMethod")]
+    public ElSelectQueryCallback? FilterMethod { get; set; }
+
+    /// <summary>
+    /// whether options are loaded from server
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("remote")]
+    public bool? Remote { get; set; }
+
+    /// <summary>
+    /// debounce delay during remote search, in milliseconds
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("debounce")]
+    public Number? Debounce { get; set; }
+
+    /// <summary>
+    /// function that gets called when the input value changes. Its parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("remoteMethod")]
+    public ElSelectQueryCallback? RemoteMethod { get; set; }
+
+    /// <summary>
+    /// in remote search method show suffix icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("remoteShowSuffix")]
+    public bool? RemoteShowSuffix { get; set; }
+
+    /// <summary>
+    /// whether Select is loading data from server
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("loading")]
+    public bool? Loading { get; set; }
+
+    /// <summary>
+    /// displayed text while loading data from server, default is 'Loading'
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("loadingText")]
+    public string? LoadingText { get; set; }
+
+    /// <summary>
+    /// displayed text when no data matches the filtering query, you can also use slot `empty`, default is 'No matching data'
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("noMatchText")]
+    public string? NoMatchText { get; set; }
+
+    /// <summary>
+    /// displayed text when there is no options, you can also use slot `empty`, default is 'No data'
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("noDataText")]
+    public string? NoDataText { get; set; }
+
+    /// <summary>
+    /// custom class name for Select's dropdown and tags' tooltip
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperClass")]
+    public string? PopperClass { get; set; }
+
+    /// <summary>
+    /// custom style for Select's dropdown and tags' tooltip
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperStyle")]
+    public VueStyleValue? PopperStyle { get; set; }
+
+    /// <summary>
+    /// when `multiple` and `filterable` is true, whether to reserve current keyword after selecting an option
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("reserveKeyword")]
+    public bool? ReserveKeyword { get; set; }
+
+    /// <summary>
+    /// select first matching option on enter key. Use with `filterable` or `remote`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("defaultFirstOption")]
+    public bool? DefaultFirstOption { get; set; }
+
+    /// <summary>
+    /// whether select dropdown is teleported, if `true` it will be teleported to where `append-to` sets
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("teleported")]
+    public bool? Teleported { get; set; }
+
+    /// <summary>
+    /// which element the select dropdown appends to
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("appendTo")]
+    public VueTeleportTarget? AppendTo { get; set; }
+
+    /// <summary>
+    /// when select dropdown is inactive and `persistent` is `false`, select dropdown will be destroyed
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("persistent")]
+    public bool? Persistent { get; set; }
+
+    /// <summary>
+    /// for non-filterable Select, this prop decides if the option menu pops up when the input is focused
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("automaticDropdown")]
+    public bool? AutomaticDropdown { get; set; }
+
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("clearIcon")]
+    public VueStringComponentValue? ClearIcon { get; set; }
+
+    /// <summary>
+    /// whether the width of the dropdown is the same as the input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("fitInputWidth")]
+    public bool? FitInputWidth { get; set; }
+
+    /// <summary>
+    /// custom suffix icon component
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("suffixIcon")]
+    public VueStringComponentValue? SuffixIcon { get; set; }
+
+    /// <summary>
+    /// tag type
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tagType")]
+    public ElTagType? TagType { get; set; }
+
+    /// <summary>
+    /// tag effect
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tagEffect")]
+    public ElTagEffect? TagEffect { get; set; }
+
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("validateEvent")]
+    public bool? ValidateEvent { get; set; }
+
+    /// <summary>
+    /// offset of the dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("offset")]
+    public Number? Offset { get; set; }
+
+    /// <summary>
+    /// whether the dropdown has an arrow
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showArrow")]
+    public bool? ShowArrow { get; set; }
+
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("placement")]
+    public ElPopperPlacement? Placement { get; set; }
+
+    /// <summary>
+    /// list of possible positions for dropdown [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("fallbackPlacements")]
+    public string[]? FallbackPlacements { get; set; }
+
+    /// <summary>
+    /// the max tags number to be shown. To use this, `collapse-tags` must be true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("maxCollapseTags")]
+    public Number? MaxCollapseTags { get; set; }
+
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("popperOptions")]
+    public VueDictionary? PopperOptions { get; set; }
+
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("ariaLabel")]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("emptyValues")]
+    public VueValue[]? EmptyValues { get; set; }
+
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("valueOnClear")]
+    public ElValueOnClearValue? ValueOnClear { get; set; }
+
+    /// <summary>
+    /// animation when dropdown appears/disappears icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("suffixTransition")]
+    public bool? SuffixTransition { get; set; }
+
+    /// <summary>
+    /// tabindex for input
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tabindex")]
+    public VueStringNumberValue? Tabindex { get; set; }
+
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("header")]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("footer")]
+    public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// content as Select prefix
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("prefix")]
+    public RenderFragment? Prefix { get; set; }
+
+    /// <summary>
+    /// content when there is no options
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("empty")]
+    public RenderFragment? Empty { get; set; }
+
+    /// <summary>
+    /// content as Select tag, subTags `data`, `selectDisabled` and `deleteTag` introduced in
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tag")]
+    public RenderFragment? Tag { get; set; }
+
+    /// <summary>
+    /// content as Select loading
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("loading")]
+    public RenderFragment? LoadingSlot { get; set; }
+
+    /// <summary>
+    /// content as Select label. `index` introduced in
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("label")]
+    public RenderFragment? Label { get; set; }
+
+    /// <summary>
+    /// triggers when the selected value changes
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onChange")]
+    public EventCallback<TValue?> OnChange { get; set; }
+
+    /// <summary>
+    /// triggers when the dropdown appears/disappears
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onVisibleChange")]
+    public EventCallback OnVisibleChange { get; set; }
+
+    /// <summary>
+    /// triggers when a tag is removed in multiple mode
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onRemoveTag")]
+    public EventCallback<TValue> OnRemoveTag { get; set; }
+
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable Select
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onClear")]
+    public EventCallback OnClear { get; set; }
+
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onBlur")]
+    public EventCallback OnBlur { get; set; }
+
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onFocus")]
+    public EventCallback OnFocus { get; set; }
+
+    /// <summary>
+    /// triggers when dropdown scrolls
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onPopupScroll")]
+    public EventCallback OnPopupScroll { get; set; }
+
+    /// <summary>
+    /// triggers when dropdown scroll reaches an end
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onEndReached")]
+    public EventCallback OnEndReached { get; set; }
+
+    /// <summary>
+    /// binding value
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onUpdate:modelValue")]
+    public EventCallback<TValue?> ModelValueChanged { get; set; }
+
+}
+
+/// <summary>
 /// When loading data, and you need a rich experience for visual and interactions for your end users, you can choose `skeleton`.
 /// </summary>
 [ECMAScriptName("ElSkeleton")]
@@ -10080,13 +10859,493 @@ public sealed class ElTable : ElContentComponentBase
 }
 
 /// <summary>
+/// Display multiple data with similar format. You can sort, filter, compare your data in a table.
+/// </summary>
+/// <typeparam name="TRow">Authored model, row or command type; the runtime value is preserved.</typeparam>
+[ECMAScriptName("ElTable")]
+[ECMAScript("element-plus/es/components/table/index.mjs")]
+[Style("element-plus/es/components/table/style/css.mjs")]
+public sealed class ElTypedTable<TRow> : ElContentComponentBase
+{
+    /// <summary>
+    /// table data
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("data")]
+    public TRow[]? Data { get; set; }
+
+    /// <summary>
+    /// table's height. By default it has an `auto` height. If its value is a number, the height is measured in pixels; if its value is a string, the value will be assigned to element's style.height, the height is affected by external styles
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("height")]
+    public VueStringNumberValue? Height { get; set; }
+
+    /// <summary>
+    /// table's max-height. The legal value is a number or the height in px
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("maxHeight")]
+    public VueStringNumberValue? MaxHeight { get; set; }
+
+    /// <summary>
+    /// whether Table is striped
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("stripe")]
+    public bool? Stripe { get; set; }
+
+    /// <summary>
+    /// whether Table has vertical border
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("border")]
+    public bool? Border { get; set; }
+
+    /// <summary>
+    /// size of Table
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("size")]
+    public string? Size { get; set; }
+
+    /// <summary>
+    /// whether width of column automatically fits its container
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("fit")]
+    public bool? Fit { get; set; }
+
+    /// <summary>
+    /// whether Table header is visible
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showHeader")]
+    public bool? ShowHeader { get; set; }
+
+    /// <summary>
+    /// whether current row is highlighted
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("highlightCurrentRow")]
+    public bool? HighlightCurrentRow { get; set; }
+
+    /// <summary>
+    /// key of current row, a set only prop
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("currentRowKey")]
+    public VueStringNumberValue? CurrentRowKey { get; set; }
+
+    /// <summary>
+    /// function that returns custom class names for a row, or a string assigning class names for every row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("rowClassName")]
+    public ElTableRowClassNameValue? RowClassName { get; set; }
+
+    /// <summary>
+    /// function that returns custom style for a row, or an object assigning custom style for every row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("rowStyle")]
+    public ElTableRowStyleValue? RowStyle { get; set; }
+
+    /// <summary>
+    /// function that returns custom class names for a cell, or a string assigning class names for every cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("cellClassName")]
+    public ElTableCellClassNameValue? CellClassName { get; set; }
+
+    /// <summary>
+    /// function that returns custom style for a cell, or an object assigning custom style for every cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("cellStyle")]
+    public ElTableCellStyleValue? CellStyle { get; set; }
+
+    /// <summary>
+    /// function that returns custom class names for a row in table header, or a string assigning class names for every row in table header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("headerRowClassName")]
+    public ElTableRowClassNameValue? HeaderRowClassName { get; set; }
+
+    /// <summary>
+    /// function that returns custom style for a row in table header, or an object assigning custom style for every row in table header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("headerRowStyle")]
+    public ElTableRowStyleValue? HeaderRowStyle { get; set; }
+
+    /// <summary>
+    /// function that returns custom class names for a cell in table header, or a string assigning class names for every cell in table header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("headerCellClassName")]
+    public ElTableCellClassNameValue? HeaderCellClassName { get; set; }
+
+    /// <summary>
+    /// function that returns custom style for a cell in table header, or an object assigning custom style for every cell in table header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("headerCellStyle")]
+    public ElTableCellStyleValue? HeaderCellStyle { get; set; }
+
+    /// <summary>
+    /// key of row data, used for optimizing rendering. Required if `reserve-selection` is on or display tree data. When its type is String, multi-level access is supported, e.g. `user.info.id`, but `user.info[0].id` is not supported, in which case `Function` should be used
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("rowKey")]
+    public ElTableRowKeyValue? RowKey { get; set; }
+
+    /// <summary>
+    /// displayed text when data is empty. You can customize this area with `#empty`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("emptyText")]
+    public string? EmptyText { get; set; }
+
+    /// <summary>
+    /// whether expand all rows by default, works when the table has a column type="expand" or contains tree structure data
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("defaultExpandAll")]
+    public bool? DefaultExpandAll { get; set; }
+
+    /// <summary>
+    /// set expanded rows by this prop, prop's value is the keys of expand rows, you should set row-key before using this prop.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("expandRowKeys")]
+    public string[]? ExpandRowKeys { get; set; }
+
+    /// <summary>
+    /// set the default sort column and order. property `prop` is used to set default sort column, property `order` is used to set default sort order
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("defaultSort")]
+    public ElTableSort? DefaultSort { get; set; }
+
+    /// <summary>
+    /// the `effect` of the overflow tooltip
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tooltipEffect")]
+    public string? TooltipEffect { get; set; }
+
+    /// <summary>
+    /// the options for the overflow tooltip, [see the following tooltip component](tooltip.html#attributes)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tooltipOptions")]
+    public ElTableOverflowTooltipOptions? TooltipOptions { get; set; }
+
+    /// <summary>
+    /// which element the filter panels appends to
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("appendFilterPanelTo")]
+    public string? AppendFilterPanelTo { get; set; }
+
+    /// <summary>
+    /// whether to display a summary row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showSummary")]
+    public bool? ShowSummary { get; set; }
+
+    /// <summary>
+    /// displayed text for the first column of summary row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("sumText")]
+    public string? SumText { get; set; }
+
+    /// <summary>
+    /// custom summary method
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("summaryMethod")]
+    public ElTableSummaryMethodCallback? SummaryMethod { get; set; }
+
+    /// <summary>
+    /// method that returns rowspan and colspan
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("spanMethod")]
+    public ElTableSpanMethodCallback? SpanMethod { get; set; }
+
+    /// <summary>
+    /// controls the behavior of master checkbox in multi-select tables when only some rows are selected (but not all). If true, all rows will be selected, else deselected
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("selectOnIndeterminate")]
+    public bool? SelectOnIndeterminate { get; set; }
+
+    /// <summary>
+    /// horizontal indentation of tree data
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("indent")]
+    public Number? Indent { get; set; }
+
+    /// <summary>
+    /// whether to lazy loading data
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("lazy")]
+    public bool? Lazy { get; set; }
+
+    /// <summary>
+    /// method for loading child row data, only works when `lazy` is true
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("load")]
+    public ElTableLoadCallback? Load { get; set; }
+
+    /// <summary>
+    /// configuration for rendering nested data
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("treeProps")]
+    public ElTableTreeProps? TreeProps { get; set; }
+
+    /// <summary>
+    /// sets the algorithm used to lay out table cells, rows, and columns
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tableLayout")]
+    public string? TableLayout { get; set; }
+
+    /// <summary>
+    /// always show scrollbar
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("scrollbarAlwaysOn")]
+    public bool? ScrollbarAlwaysOn { get; set; }
+
+    /// <summary>
+    /// whether to hide extra content and show them in a tooltip when hovering on the cell.It will affect all the table columns, refer to table [tooltip-options](#table-attributes)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showOverflowTooltip")]
+    public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
+
+    /// <summary>
+    /// ensure main axis minimum-size doesn't follow the content
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("flexible")]
+    public bool? Flexible { get; set; }
+
+    /// <summary>
+    /// body scrollbar's wrap container tabindex
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("scrollbarTabindex")]
+    public VueStringNumberValue? ScrollbarTabindex { get; set; }
+
+    /// <summary>
+    /// whether to allow drag the last column
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("allowDragLastColumn")]
+    public bool? AllowDragLastColumn { get; set; }
+
+    /// <summary>
+    /// customize tooltip content when using `show-overflow-tooltip`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tooltipFormatter")]
+    public ElTableTooltipFormatter? TooltipFormatter { get; set; }
+
+    /// <summary>
+    /// whether to preserve expanded row content in DOM when collapsed
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("preserveExpandedContent")]
+    public bool? PreserveExpandedContent { get; set; }
+
+    /// <summary>
+    /// whether to use native scrollbars
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("nativeScrollbar")]
+    public bool? NativeScrollbar { get; set; }
+
+    /// <summary>
+    /// enable expandable rows, works when the table has a column type="expand"
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("rowExpandable")]
+    public ElTableRowExpandableCallback? RowExpandable { get; set; }
+
+    /// <summary>
+    /// Contents to be inserted after the last row. You may need this slot if you want to implement infinite scroll for the table. This slot will be displayed above the summary row if there is one.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("append")]
+    public RenderFragment? Append { get; set; }
+
+    /// <summary>
+    /// you can customize content when data is empty.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("empty")]
+    public RenderFragment? Empty { get; set; }
+
+    /// <summary>
+    /// triggers when user clicks the checkbox in a row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onSelect")]
+    public EventCallback<TRow[]> OnSelect { get; set; }
+
+    /// <summary>
+    /// triggers when user clicks the checkbox in table header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onSelectAll")]
+    public EventCallback<TRow[]> OnSelectAll { get; set; }
+
+    /// <summary>
+    /// triggers when selection changes
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onSelectionChange")]
+    public EventCallback<TRow[]> OnSelectionChange { get; set; }
+
+    /// <summary>
+    /// triggers when hovering into a cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCellMouseEnter")]
+    public EventCallback OnCellMouseEnter { get; set; }
+
+    /// <summary>
+    /// triggers when hovering out of a cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCellMouseLeave")]
+    public EventCallback OnCellMouseLeave { get; set; }
+
+    /// <summary>
+    /// triggers when clicking a cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCellClick")]
+    public EventCallback OnCellClick { get; set; }
+
+    /// <summary>
+    /// triggers when double clicking a cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCellDblclick")]
+    public EventCallback OnCellDblclick { get; set; }
+
+    /// <summary>
+    /// triggers when user right clicks on a cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCellContextmenu")]
+    public EventCallback OnCellContextmenu { get; set; }
+
+    /// <summary>
+    /// triggers when clicking a row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onRowClick")]
+    public EventCallback<TRow> OnRowClick { get; set; }
+
+    /// <summary>
+    /// triggers when user right clicks on a row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onRowContextmenu")]
+    public EventCallback<TRow> OnRowContextmenu { get; set; }
+
+    /// <summary>
+    /// triggers when double clicking a row
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onRowDblclick")]
+    public EventCallback<TRow> OnRowDblclick { get; set; }
+
+    /// <summary>
+    /// triggers when clicking a column header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onHeaderClick")]
+    public EventCallback OnHeaderClick { get; set; }
+
+    /// <summary>
+    /// triggers when user right clicks on a column header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onHeaderContextmenu")]
+    public EventCallback OnHeaderContextmenu { get; set; }
+
+    /// <summary>
+    /// triggers when Table's sorting changes
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onSortChange")]
+    public EventCallback<ElTableSort> OnSortChange { get; set; }
+
+    /// <summary>
+    /// triggers when the table's filter changes
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onFilterChange")]
+    public EventCallback OnFilterChange { get; set; }
+
+    /// <summary>
+    /// triggers when current row changes
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onCurrentChange")]
+    public EventCallback OnCurrentChange { get; set; }
+
+    /// <summary>
+    /// triggers after changing a column's width by dragging the column header's border
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onHeaderDragend")]
+    public EventCallback OnHeaderDragend { get; set; }
+
+    /// <summary>
+    /// triggers when user expands or collapses a row (for expandable table, second param is expandedRows; for tree Table, second param is expanded)
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onExpandChange")]
+    public EventCallback OnExpandChange { get; set; }
+
+    /// <summary>
+    /// Invoked after scrolled
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onScroll")]
+    public EventCallback OnScroll { get; set; }
+
+}
+
+/// <summary>
 /// el-table-column
 /// </summary>
 [ECMAScriptName("ElTableColumn")]
 [ECMAScript("element-plus/es/components/table/index.mjs")]
 [Style("element-plus/es/components/table/style/css.mjs")]
-public sealed class ElTableColumn : ElContentComponentBase
+public sealed class ElTableColumn : ElComponentBase
 {
+    /// <summary>
+    /// Cell content receives the exact row, column and $index from Element Plus.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("default")]
+    public RenderFragment<ElTableSlotContext>? ChildContent { get; set; }
+
     /// <summary>
     /// type of the column. If set to `selection`, the column will display checkbox. If set to `index`, the column will display index of the row (staring from 1). If set to `expand`, the column will display expand icon
     /// </summary>
@@ -10275,6 +11534,248 @@ public sealed class ElTableColumn : ElContentComponentBase
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElTableColumnFilterMethodCallback? FilterMethod { get; set; }
+
+    /// <summary>
+    /// filter value for selected data, might be useful when table header is rendered with `render-header`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filteredValue")]
+    public string[]? FilteredValue { get; set; }
+
+    /// <summary>
+    /// customize tooltip content when using `show-overflow-tooltip`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("tooltipFormatter")]
+    public ElTableTooltipFormatter? TooltipFormatter { get; set; }
+
+    /// <summary>
+    /// Custom content for table header
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("header")]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// Custom content for filter icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filter-icon")]
+    public RenderFragment? FilterIcon { get; set; }
+
+    /// <summary>
+    /// Custom content for expand columns. The `expandable` property is supported starting from v2.13.2.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("expand")]
+    public RenderFragment? Expand { get; set; }
+
+}
+
+/// <summary>
+/// el-table-column
+/// </summary>
+/// <typeparam name="TRow">Authored model, row or command type; the runtime value is preserved.</typeparam>
+[ECMAScriptName("ElTableColumn")]
+[ECMAScript("element-plus/es/components/table/index.mjs")]
+[Style("element-plus/es/components/table/style/css.mjs")]
+public sealed class ElTypedTableColumn<TRow> : ElComponentBase
+{
+    /// <summary>
+    /// Cell content receives the exact row, column and $index from Element Plus.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("default")]
+    public RenderFragment<ElTableSlotContext<TRow>>? ChildContent { get; set; }
+
+    /// <summary>
+    /// type of the column. If set to `selection`, the column will display checkbox. If set to `index`, the column will display index of the row (staring from 1). If set to `expand`, the column will display expand icon
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("type")]
+    public string? Type { get; set; }
+
+    /// <summary>
+    /// customize indices for each row, works on columns with `type=index`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("index")]
+    public ElTableColumnIndexValue? Index { get; set; }
+
+    /// <summary>
+    /// column label
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("label")]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// column's key. If you need to use the filter-change event, you need this attribute to identify which column is being filtered
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("columnKey")]
+    public string? ColumnKey { get; set; }
+
+    /// <summary>
+    /// field name. You can also use its alias: `property`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("prop")]
+    public string? Prop { get; set; }
+
+    /// <summary>
+    /// column width
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("width")]
+    public VueStringNumberValue? Width { get; set; }
+
+    /// <summary>
+    /// column minimum width. Columns with `width` has a fixed width, while columns with `min-width` has a width that is distributed in proportion
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("minWidth")]
+    public VueStringNumberValue? MinWidth { get; set; }
+
+    /// <summary>
+    /// whether column is fixed at left / right. Will be fixed at left if `true`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("fixed")]
+    public VueBooleanStringValue? Fixed { get; set; }
+
+    /// <summary>
+    /// render function for table header of this column
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("renderHeader")]
+    public ElTableColumnRenderHeaderCallback? RenderHeader { get; set; }
+
+    /// <summary>
+    /// whether column can be sorted. Remote sorting can be done by setting this attribute to 'custom' and listening to the `sort-change` event of Table
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("sortable")]
+    public VueBooleanStringValue? Sortable { get; set; }
+
+    /// <summary>
+    /// sorting method, works when `sortable` is `true`. Should return a number, just like Array.sort
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("sortMethod")]
+    public ElTableColumnSortMethodCallback<TRow>? SortMethod { get; set; }
+
+    /// <summary>
+    /// specify which property to sort by, works when `sortable` is `true` and `sort-method` is `undefined`. If set to an Array, the column will sequentially sort by the next property if the previous one is equal
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("sortBy")]
+    public ElTableColumnSortByValue? SortBy { get; set; }
+
+    /// <summary>
+    /// the order of the sorting strategies used when sorting the data, works when `sortable` is `true`. Accepts an array, as the user clicks on the header, the column is sorted in order of the elements in the array
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("sortOrders")]
+    public ElTableSortOrder?[]? SortOrders { get; set; }
+
+    /// <summary>
+    /// whether column width can be resized, works when `border` of `el-table` is `true`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("resizable")]
+    public bool? Resizable { get; set; }
+
+    /// <summary>
+    /// function that formats cell content
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("formatter")]
+    public ElTableColumnFormatterCallback<TRow>? Formatter { get; set; }
+
+    /// <summary>
+    /// whether to hide extra content and show them in a tooltip when hovering on the cell
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("showOverflowTooltip")]
+    public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
+
+    /// <summary>
+    /// alignment
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("align")]
+    public string? Align { get; set; }
+
+    /// <summary>
+    /// alignment of the table header. If omitted, the value of the above `align` attribute will be applied
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("headerAlign")]
+    public string? HeaderAlign { get; set; }
+
+    /// <summary>
+    /// class name of cells in the column
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("className")]
+    public string? ClassName { get; set; }
+
+    /// <summary>
+    /// class name of the label of this column
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("labelClassName")]
+    public string? LabelClassName { get; set; }
+
+    /// <summary>
+    /// function that determines if a certain row can be selected, works when `type` is 'selection'
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("selectable")]
+    public ElTableColumnSelectableCallback<TRow>? Selectable { get; set; }
+
+    /// <summary>
+    /// whether to reserve selection after data refreshing, works when `type` is 'selection'. Note that `row-key` is required for this to work
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("reserveSelection")]
+    public bool? ReserveSelection { get; set; }
+
+    /// <summary>
+    /// an array of data filtering options. For each element in this array, `text` and `value` are required
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filters")]
+    public ElTableFilterItem[]? Filters { get; set; }
+
+    /// <summary>
+    /// placement for the filter dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filterPlacement")]
+    public string? FilterPlacement { get; set; }
+
+    /// <summary>
+    /// className for the filter dropdown
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filterClassName")]
+    public string? FilterClassName { get; set; }
+
+    /// <summary>
+    /// whether data filtering supports multiple options
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filterMultiple")]
+    public bool? FilterMultiple { get; set; }
+
+    /// <summary>
+    /// data filtering method. If `filter-multiple` is on, this method will be called multiple times for each row, and a row will display if one of the calls returns `true`
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("filterMethod")]
+    public ElTableColumnFilterMethodCallback<TRow>? FilterMethod { get; set; }
 
     /// <summary>
     /// filter value for selected data, might be useful when table header is rendered with `render-header`

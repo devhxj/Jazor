@@ -27,7 +27,10 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         string testFileName,
         string testSource,
         IReadOnlyDictionary<string, string>? supportingModules = null,
-        string? vueRuntimeSource = null)
+        string? vueRuntimeSource = null,
+        string? vueModuleSpecifier = null,
+        bool restoreNpmDependencies = false,
+        IReadOnlyDictionary<string, string>? importSpecifiers = null)
     {
         var root = RazorSgTestHost.CreateTestArtifactDirectory("deno-runtime");
         try
@@ -45,7 +48,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 """{"type":"module"}""");
             WriteFile(
                 Path.Combine(root, "deno.json"),
-                BuildDenoImportMap(supportingModules));
+                BuildDenoImportMap(supportingModules, vueModuleSpecifier, importSpecifiers));
             WriteFile(
                 Path.Combine(root, "node_modules", "vue", "package.json"),
                 """{"type":"module","exports":"./index.mjs"}""");
@@ -223,7 +226,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
 
             var testFile = Path.Combine(root, testFileName);
             WriteFile(testFile, testSource);
-            await RunDenoTestAsync(testFile, root);
+            await RunDenoTestAsync(testFile, root, restoreNpmDependencies);
         }
         finally
         {
@@ -240,7 +243,10 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         File.WriteAllText(path, content);
     }
 
-    private static string BuildDenoImportMap(IReadOnlyDictionary<string, string>? supportingModules)
+    private static string BuildDenoImportMap(
+        IReadOnlyDictionary<string, string>? supportingModules,
+        string? vueModuleSpecifier,
+        IReadOnlyDictionary<string, string>? importSpecifiers)
     {
         var imports = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
@@ -250,7 +256,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             ["Microsoft/"] = "./clr/Microsoft/",
             ["clr/"] = "./clr/",
             ["runtime/vue/"] = "runtime/vue/",
-            ["vue"] = "./node_modules/vue/index.mjs",
+            ["vue"] = vueModuleSpecifier ?? "./node_modules/vue/index.mjs",
         };
 
         if (supportingModules is not null)
@@ -270,6 +276,14 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 var specifier = normalized.Substring(NodeModulesPrefix.Length);
                 imports[specifier] = "./" + normalized;
             }
+        }
+
+        // Real npm fixtures must map at the Deno graph boundary. A facade inside
+        // node_modules is evaluated by Node's ESM loader, which rejects npm: URLs.
+        if (importSpecifiers is not null)
+        {
+            foreach (var import in importSpecifiers)
+                imports[import.Key] = import.Value;
         }
 
         return JsonSerializer.Serialize(new { imports });
@@ -559,7 +573,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         throw new DirectoryNotFoundException("Could not locate the Jazor repository root.");
     }
 
-    private static async Task RunDenoTestAsync(string testFile, string workingDirectory)
+    private static async Task RunDenoTestAsync(string testFile, string workingDirectory, bool restoreNpmDependencies)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -573,6 +587,8 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         startInfo.ArgumentList.Add("test");
         startInfo.ArgumentList.Add("--quiet");
         startInfo.ArgumentList.Add("--allow-all");
+        if (restoreNpmDependencies)
+            startInfo.ArgumentList.Add("--node-modules-dir=auto");
         startInfo.ArgumentList.Add("--config");
         startInfo.ArgumentList.Add(Path.Combine(workingDirectory, "deno.json"));
         startInfo.ArgumentList.Add(testFile);

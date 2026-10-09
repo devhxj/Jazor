@@ -462,6 +462,43 @@ internal static class ElementPlusGenerator
         ]
     };
 
+    // Official Razor SG treats same-named generic/non-generic components as
+    // ambiguous tags. Typed projections therefore have a distinct authored name,
+    // while their ECMAScriptName and import remain the same upstream component.
+    private static readonly Dictionary<string, string> GenericComponentParameters = new(StringComparer.Ordinal)
+    {
+        ["ElSelect"] = "TValue",
+        ["ElOption"] = "TValue",
+        ["ElTable"] = "TRow",
+        ["ElTableColumn"] = "TRow",
+        ["ElDropdown"] = "TCommand",
+        ["ElDropdownItem"] = "TCommand"
+    };
+
+    private static string GetGenericPropType(string component, string name, string original) => (component, name) switch
+    {
+        ("ElSelect", "ModelValue") => "TValue?",
+        ("ElOption", "Value") => "TValue",
+        ("ElTable", "Data") => "TRow[]?",
+        ("ElTableColumn", "Selectable") => "ElTableColumnSelectableCallback<TRow>?",
+        ("ElTableColumn", "SortMethod") => "ElTableColumnSortMethodCallback<TRow>?",
+        ("ElTableColumn", "Formatter") => "ElTableColumnFormatterCallback<TRow>?",
+        ("ElTableColumn", "FilterMethod") => "ElTableColumnFilterMethodCallback<TRow>?",
+        ("ElDropdownItem", "Command") => "TCommand?",
+        _ => original
+    };
+
+    private static string GetGenericEventType(string component, string name, string original) => (component, name) switch
+    {
+        ("ElSelect", "ModelValueChanged" or "OnChange") => "EventCallback<TValue?>",
+        ("ElSelect", "OnRemoveTag") => "EventCallback<TValue>",
+        ("ElTable", "OnRowClick" or "OnRowDblclick" or "OnRowContextmenu") => "EventCallback<TRow>",
+        ("ElTable", "OnSelectionChange" or "OnSelect" or "OnSelectAll") => "EventCallback<TRow[]>",
+        ("ElTable", "OnSortChange") => "EventCallback<ElTableSort>",
+        ("ElDropdown", "OnCommand") => "EventCallback<TCommand>",
+        _ => original
+    };
+
     public static void Run(string[] args)
     {
         _check = args is ["--check"];
@@ -630,17 +667,34 @@ internal static class ElementPlusGenerator
         builder.AppendLine($"// - {GetRepositoryRelativePath(componentsIndexPath)}");
         builder.AppendLine();
 
-        foreach (var component in components)
+        foreach (var definition in components.SelectMany(component =>
+                     GenericComponentParameters.TryGetValue(component.ClassName, out var parameter)
+                         ? new[] { (Component: component, Parameter: (string?)null), (Component: component, Parameter: (string?)parameter) }
+                         : new[] { (Component: component, Parameter: (string?)null) }))
         {
+            var component = definition.Component;
+            var isGeneric = definition.Parameter is not null;
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
+            if (isGeneric)
+                builder.AppendLine($"/// <typeparam name=\"{definition.Parameter}\">Authored model, row or command type; the runtime value is preserved.</typeparam>");
             builder.AppendLine($"[ECMAScriptName(\"{component.RuntimeExportName}\")]");
             builder.AppendLine($"[ECMAScript(\"{GetComponentImportSpecifier(component, componentModulePaths)}\")]");
             builder.AppendLine($"[Style(\"{GetComponentStyleSpecifier(component, componentModulePaths)}\")]");
 
-            builder.AppendLine($"public sealed class {component.ClassName} : {(component.HasDefaultSlot ? "ElContentComponentBase" : "ElComponentBase")}");
+            var className = isGeneric ? $"ElTyped{component.ClassName[2..]}<{definition.Parameter}>" : component.ClassName;
+            var scopedColumn = component.ClassName == "ElTableColumn";
+            builder.AppendLine($"public sealed class {className} : {(component.HasDefaultSlot && !scopedColumn ? "ElContentComponentBase" : "ElComponentBase")}");
             builder.AppendLine("{");
+            if (scopedColumn)
+            {
+                AppendXmlSummary(builder, "Cell content receives the exact row, column and $index from Element Plus.");
+                builder.AppendLine("    [Parameter]");
+                builder.AppendLine("    [ECMAScriptName(\"default\")]");
+                builder.AppendLine($"    public RenderFragment<ElTableSlotContext{(isGeneric ? "<TRow>" : "")}>? ChildContent {{ get; set; }}");
+                builder.AppendLine();
+            }
 
             foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
             {
@@ -650,7 +704,9 @@ internal static class ElementPlusGenerator
                     builder.AppendLine("    [EditorRequired]");
                 if (RequiresExplicitPropName(prop))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(prop.RuntimeName)}\")]");
-                builder.AppendLine($"    public {prop.Type.SourceText} {prop.PropertyName} {{ get; set; }}");
+                var type = isGeneric ? GetGenericPropType(component.ClassName, prop.PropertyName, prop.Type.SourceText) : prop.Type.SourceText;
+                var initializer = isGeneric && type == "TValue" ? " = default!;" : "";
+                builder.AppendLine($"    public {type} {prop.PropertyName} {{ get; set; }}{initializer}");
                 builder.AppendLine();
             }
 
@@ -670,7 +726,8 @@ internal static class ElementPlusGenerator
                 builder.AppendLine("    [Parameter]");
                 if (RequiresExplicitListenerName(emit))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(emit.ListenerRuntimeName)}\")]");
-                builder.AppendLine($"    public {emit.CallbackTypeSourceText} {emit.PropertyName} {{ get; set; }}");
+                var type = isGeneric ? GetGenericEventType(component.ClassName, emit.PropertyName, emit.CallbackTypeSourceText) : emit.CallbackTypeSourceText;
+                builder.AppendLine($"    public {type} {emit.PropertyName} {{ get; set; }}");
                 builder.AppendLine();
             }
 
