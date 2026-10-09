@@ -9,6 +9,7 @@
 - 标准 Vite 配置明确 Vue feature flags；日期与数值 union 示例说明 C# 类型和字符串格式约束。
 - 已有标准前端工程也可重新生成缺失的 SDK 默认 Vite 配置；作者配置与替代构建工具继续由项目拥有。
 - Emit 显示模块收集、工程写入、依赖 restore/check 和 bundle 的阶段耗时及即时 Deno 输出，失败或取消指出当前阶段。启动期间取消仍会终止自身 Deno 进程树，避免残留进程占用输出目录。
+- 现有构建 benchmark 增加 Release manifest 资源报告，分别统计入口、静态依赖、lazy、source map 与其它文件的原始/gzip 体积；`--release-artifacts <dist>` 可只读分析消费者已有产物。报告 schema 升为 `razorvue-build-v3`，记录 SDK/提交/平台；Debug 产物统计排除 `node_modules`，模块数从真实 `obj` manifest 读取。gzip 是逐文件估算，不代表 HTTP 压缩或首屏实测流量。
 
 ## 2026-10-09
 

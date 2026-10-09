@@ -34,6 +34,8 @@
 
 Source builds also report Emit stage timings and live restore/check/bundle output. Cancellation during Deno startup terminates the owned process tree; see [development and testing](docs/03-guides/development-and-testing.md).
 
+The existing build benchmark can analyze a consumer's Release `dist` with `--release-artifacts <directory>`, reporting raw/gzip sizes for the entry, static dependencies, and lazy assets.
+
 The developer-feedback release adds typed Element Plus interactions, native DOM event and browser payload projections, reusable ASP.NET Core hosting, RID-aware Emit assets, and self-contained SSR publishing. See [the feedback scope and validation](docs/04-roadmap/preview8-developer-feedback.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.

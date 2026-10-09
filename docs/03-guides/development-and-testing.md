@@ -59,6 +59,18 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 
 Emit CLI 接收 Ctrl+C 后取消当前工作并终止自身 Deno 进程树。DenoHost 2.9.7 的启动后等待先完成，再处理取消，避免启动过程中丢失已创建进程的所有权。Emit 就地写入，取消可能留下部分产物；再次构建会按现有契约收敛，不承诺回滚。
 
+## Release 资源报告
+
+`benchmark-razorvue-build.cs` 的 Release 采样附带资源报告；也可只读分析已经构建或发布的消费者 `dist`，不会重建消费者或清理 benchmark 工作区：
+
+```powershell
+dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --release-artifacts D:/consumer/publish/jazor/dist --out .tmp/consumer-assets.json
+```
+
+JSON 与 Markdown 分别记录入口、静态依赖、lazy、source map、metadata 和其它文件的逐文件原始/gzip 体积。共享资源只计一次；入口的静态闭包优先于动态引用。manifest 声明的资源缺失会失败，报告输出必须位于输入 `dist` 之外。
+
+schema `razorvue-build-v3` 增加 SDK、源码提交、操作系统、架构及采样参数。Debug 产物不计恢复得到的 `node_modules`，模块数和 manifest 体积从当前样例的真实隔离 `obj` 读取；这一统计口径与旧 v2 不同。gzip 使用 .NET `SmallestSize` 逐文件估算，不能视作 HTTP 压缩或首屏实际请求。`artifact-scan` 的耗时仅表示报告扫描，不能作为构建耗时。
+
 ## 改动边界
 
 - 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；生成器维护该文件。

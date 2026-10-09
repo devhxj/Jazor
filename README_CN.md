@@ -32,6 +32,8 @@
 
 未发布源码已增加分页数值事件、字符串日期绑定及基于 manifest 的 Release 样式接入；Emit 还会显示阶段耗时和即时 restore/check/bundle 输出，启动期间取消会终止自身 Deno 进程树。这些改进尚不属于公开 preview.8 包，详情见[更新日志](CHANGELOG.md)。
 
+现有构建 benchmark 支持 `--release-artifacts <dist目录>`，只读统计消费者 Release 入口、静态依赖及懒加载资源的原始/gzip 体积，详见[开发与测试指南](docs/03-guides/development-and-testing.md)。
+
 本次开发者反馈更新补齐强类型 Element Plus 交互、原生 DOM 事件与浏览器 payload 投影、可复用的 ASP.NET Core 宿主、按 RID 选择 Emit 资产和自足 SSR 发布。范围与验收见[开发者反馈状态](docs/04-roadmap/preview8-developer-feedback.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。

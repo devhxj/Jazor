@@ -4,11 +4,31 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var options = BuildBenchmarkOptions.Parse(args);
 var repoRoot = RequireRepositoryRoot();
+var startedAt = DateTimeOffset.UtcNow;
+var sdkVersion = await ReadCommandAsync("dotnet", ["--version"], repoRoot);
+var gitCommit = await ReadCommandAsync("git", ["rev-parse", "HEAD"], repoRoot);
+if (options.ReleaseArtifacts is not null)
+{
+    // Read-only consumer mode must run before benchmark workspace cleanup/environment changes.
+    // 只统计 dist；不扫描 node_modules 或作者源码，也不把静态闭包当成首屏实测。
+    var distRoot = Path.GetFullPath(options.ReleaseArtifacts);
+    var artifactReportPath = Path.GetFullPath(options.Output ?? Path.Combine(repoRoot, ".tmp", "razorvue-build-benchmark", "release-report.json"));
+    if (artifactReportPath.StartsWith(distRoot.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        throw new InvalidOperationException("Report output must be outside the read-only Release artifact directory.");
+    var timer = Stopwatch.StartNew();
+    var artifact = CaptureReleaseArtifact(distRoot);
+    var artifactReport = CreateReport([new BuildMeasurement("artifact-scan", 1, timer.ElapsedMilliseconds, null, artifact)]);
+    await WriteReportAsync(artifactReportPath, artifactReport);
+    return;
+}
 ConfigureRepositoryEnvironment(repoRoot);
 var workRoot = ResolveInsideRepository(repoRoot, options.WorkRoot ?? Path.Combine(".tmp", "razorvue-build-benchmark"));
 var reportPath = ResolveInsideRepository(repoRoot, options.Output ?? Path.Combine(workRoot, "report.json"));
@@ -22,6 +42,7 @@ var sourceRoot = Path.Combine(workRoot, "source");
 var sourceOutput = Path.Combine(sourceRoot, "bin");
 var sourceIntermediate = Path.Combine(sourceRoot, "obj");
 var projectPath = Path.Combine(repoRoot, "samples", "RazorVue.Authoring", "RazorVue.Authoring.csproj");
+var applicationManifestPath = Path.Combine(sourceIntermediate, "RazorVue.Authoring", "obj", "Debug", "net11.0", "jazor-manifest.json");
 
 for (var sample = 1; sample <= options.Samples; sample++)
 {
@@ -31,7 +52,7 @@ for (var sample = 1; sample <= options.Samples; sample++)
         "-p:JazorIsolatedBaseOutputRoot=" + EnsureTrailingSeparator(sourceOutput),
         "-p:JazorIsolatedBaseIntermediateOutputRoot=" + EnsureTrailingSeparator(sourceIntermediate)
     ], repoRoot);
-    clean = clean with { Artifact = CaptureArtifact(Path.Combine(sourceRoot, "jazor"), previousArtifact) };
+    clean = clean with { Artifact = CaptureArtifact(Path.Combine(sourceRoot, "jazor"), applicationManifestPath, previousArtifact) };
     previousArtifact = clean.Artifact;
     measurements.Add(clean);
 
@@ -41,7 +62,7 @@ for (var sample = 1; sample <= options.Samples; sample++)
         "-p:JazorIsolatedBaseOutputRoot=" + EnsureTrailingSeparator(sourceOutput),
         "-p:JazorIsolatedBaseIntermediateOutputRoot=" + EnsureTrailingSeparator(sourceIntermediate)
     ], repoRoot);
-    incremental = incremental with { Artifact = CaptureArtifact(Path.Combine(sourceRoot, "jazor"), previousArtifact) };
+    incremental = incremental with { Artifact = CaptureArtifact(Path.Combine(sourceRoot, "jazor"), applicationManifestPath, previousArtifact) };
     previousArtifact = incremental.Artifact;
     measurements.Add(incremental);
 }
@@ -52,30 +73,62 @@ if (!options.SkipHmr)
 
 if (!options.SkipRelease)
     for (var sample = 1; sample <= options.Samples; sample++)
-        measurements.Add(await MeasureAsync("release", sample, [
+    {
+        var releaseRoot = Path.Combine(workRoot, "release-" + sample.ToString(CultureInfo.InvariantCulture));
+        var measurement = await MeasureAsync("release", sample, [
             "run", "--file", Path.Combine(repoRoot, "samples", "RazorVue.Authoring", "build-local.cs"), "--",
-            "--configuration", "Release", "--work-root", Path.Combine(workRoot, "release-" + sample.ToString(CultureInfo.InvariantCulture))
-        ], repoRoot));
+            "--configuration", "Release", "--work-root", releaseRoot
+        ], repoRoot);
+        measurements.Add(measurement with { ReleaseArtifact = CaptureReleaseArtifact(Path.Combine(releaseRoot, "release-jazor", "dist")) });
+    }
 
-var report = new BuildBenchmarkReport(
-    "razorvue-build-v2",
-    DateTimeOffset.UtcNow,
-    Environment.Version.ToString(),
-    measurements);
-Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
-await File.WriteAllTextAsync(reportPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
-var markdownPath = Path.ChangeExtension(reportPath, ".md");
-await File.WriteAllTextAsync(markdownPath, ToMarkdown(report));
-Console.WriteLine($"RazorVue build benchmark passed: {reportPath}");
-Console.WriteLine($"RazorVue build benchmark summary: {markdownPath}");
+await WriteReportAsync(reportPath, CreateReport(measurements));
 foreach (var measurement in measurements)
     Console.WriteLine($"  {measurement.Name}#{measurement.Sample}: {measurement.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture)} ms" +
         (measurement.Artifact is null ? string.Empty : $", {measurement.Artifact.GeneratedModuleCount} generated modules, {measurement.Artifact.TotalBytes.ToString(CultureInfo.InvariantCulture)} bytes"));
 foreach (var group in measurements.GroupBy(static measurement => measurement.Name, StringComparer.Ordinal))
     Console.WriteLine($"  {group.Key} median: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
 
+BuildBenchmarkReport CreateReport(IReadOnlyList<BuildMeasurement> values)
+    => new("razorvue-build-v3", startedAt, Environment.Version.ToString(), sdkVersion, gitCommit,
+        RuntimeInformation.OSDescription, RuntimeInformation.ProcessArchitecture.ToString(), options, values);
+
+static async Task WriteReportAsync(string path, BuildBenchmarkReport report)
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+    await File.WriteAllTextAsync(path, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
+    var markdownPath = Path.ChangeExtension(path, ".md");
+    await File.WriteAllTextAsync(markdownPath, ToMarkdown(report));
+    Console.WriteLine($"RazorVue benchmark report: {path}");
+    Console.WriteLine($"RazorVue benchmark summary: {markdownPath}");
+}
+
+static async Task<string> ReadCommandAsync(string command, string[] arguments, string workdir)
+{
+    using var process = new Process
+    {
+        StartInfo = new ProcessStartInfo(command)
+        {
+            WorkingDirectory = workdir, UseShellExecute = false,
+            RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true
+        }
+    };
+    foreach (var argument in arguments)
+        process.StartInfo.ArgumentList.Add(argument);
+    process.Start();
+    var stdout = process.StandardOutput.ReadToEndAsync();
+    var stderr = process.StandardError.ReadToEndAsync();
+    await process.WaitForExitAsync();
+    var output = await stdout;
+    var error = await stderr;
+    if (process.ExitCode != 0)
+        throw new InvalidOperationException($"{command} exited with code {process.ExitCode}: {error}");
+    return output.Trim();
+}
+
 static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadOnlyList<string> arguments, string workdir)
 {
+    Console.WriteLine($"[{name}#{sample}] started");
     var stopwatch = Stopwatch.StartNew();
     using var process = new Process
     {
@@ -88,8 +141,8 @@ static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadO
     foreach (var argument in arguments)
         process.StartInfo.ArgumentList.Add(argument);
     process.Start();
-    var stdout = process.StandardOutput.ReadToEndAsync();
-    var stderr = process.StandardError.ReadToEndAsync();
+    var stdout = ReadStreamAsync(process.StandardOutput);
+    var stderr = ReadStreamAsync(process.StandardError);
     await process.WaitForExitAsync();
     stopwatch.Stop();
     var output = await stdout;
@@ -97,18 +150,105 @@ static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadO
     if (process.ExitCode != 0)
         throw new InvalidOperationException($"{name} benchmark failed (exit {process.ExitCode}).{Environment.NewLine}{output}{Environment.NewLine}{error}");
     return new BuildMeasurement(name, sample, stopwatch.ElapsedMilliseconds, null);
+
+    async Task<string> ReadStreamAsync(StreamReader reader)
+    {
+        var captured = new StringBuilder();
+        while (await reader.ReadLineAsync() is { } line)
+        {
+            captured.AppendLine(line);
+            Console.WriteLine($"[{name}#{sample}] {line}");
+        }
+        return captured.ToString();
+    }
 }
 
-static BuildArtifactSnapshot CaptureArtifact(string outputRoot, BuildArtifactSnapshot? previous)
+static ReleaseArtifactSnapshot CaptureReleaseArtifact(string distRoot)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(distRoot, "manifest.json")));
+    var manifest = document.RootElement;
+    var entries = manifest.EnumerateObject()
+        .Where(static item => item.Value.TryGetProperty("isEntry", out var flag) && flag.GetBoolean())
+        .Select(static item => item.Name).ToArray();
+    if (entries.Length == 0)
+        throw new InvalidOperationException("Release manifest contains no entry.");
+
+    var entryFiles = entries.Select(key => manifest.GetProperty(key).GetProperty("file").GetString()!).ToHashSet(StringComparer.Ordinal);
+    var staticModules = CollectModules(includeDynamic: false);
+    var staticFiles = CollectFiles(staticModules);
+    var reachableFiles = CollectFiles(CollectModules(includeDynamic: true));
+    var files = Directory.EnumerateFiles(distRoot, "*", SearchOption.AllDirectories)
+        .Select(path =>
+        {
+            var relativePath = Path.GetRelativePath(distRoot, path).Replace('\\', '/');
+            var group = entryFiles.Contains(relativePath) ? "entry"
+                : staticFiles.Contains(relativePath) ? "static-dependency"
+                : reachableFiles.Contains(relativePath) ? "lazy"
+                : relativePath.EndsWith(".map", StringComparison.Ordinal) ? "source-map"
+                : relativePath == "manifest.json" ? "metadata" : "other";
+            return new ReleaseFileArtifact(relativePath, group, new FileInfo(path).Length, GzipLength(path));
+        })
+        .OrderBy(static file => file.Path, StringComparer.Ordinal).ToArray();
+
+    // Manifest files must exist; an incomplete publish must fail instead of understating size.
+    var existingFiles = files.Select(static file => file.Path).ToHashSet(StringComparer.Ordinal);
+    foreach (var path in reachableFiles)
+        if (!existingFiles.Contains(path))
+            throw new FileNotFoundException($"Release manifest resource is missing: {path}", Path.Combine(distRoot, path));
+    return new ReleaseArtifactSnapshot(distRoot, files);
+
+    HashSet<string> CollectModules(bool includeDynamic)
+    {
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var entry in entries)
+            Visit(entry);
+        return visited;
+
+        void Visit(string key)
+        {
+            // A shared/cyclic import is counted once; static reachability wins over lazy edges.
+            if (!visited.Add(key))
+                return;
+            var module = manifest.GetProperty(key);
+            foreach (var import in ReadPaths(module, "imports"))
+                Visit(import);
+            if (includeDynamic)
+                foreach (var import in ReadPaths(module, "dynamicImports"))
+                    Visit(import);
+        }
+    }
+
+    HashSet<string> CollectFiles(HashSet<string> modules)
+    {
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var key in modules)
+        {
+            var module = manifest.GetProperty(key);
+            result.Add(module.GetProperty("file").GetString()!);
+            result.UnionWith(ReadPaths(module, "css"));
+            result.UnionWith(ReadPaths(module, "assets"));
+        }
+        return result;
+    }
+
+    static IEnumerable<string> ReadPaths(JsonElement module, string name)
+        => module.TryGetProperty(name, out var paths)
+            ? paths.EnumerateArray().Select(static path => path.GetString()!) : [];
+}
+
+static BuildArtifactSnapshot CaptureArtifact(string outputRoot, string manifestPath, BuildArtifactSnapshot? previous)
 {
     if (!Directory.Exists(outputRoot))
         return new BuildArtifactSnapshot(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, null);
 
-    var files = Directory.EnumerateFiles(outputRoot, "*", SearchOption.AllDirectories)
-        .Select(path => new FileArtifact(Path.GetRelativePath(outputRoot, path).Replace('\\', '/'), new FileInfo(path).Length))
+    // Restored node_modules is an input/cache, not generated output. MSBuild writes the
+    // application manifest into obj; include it explicitly rather than silently counting zero.
+    var files = EnumerateOutputFiles(outputRoot)
+        .Select(path => new FileArtifact(Path.GetRelativePath(outputRoot, path).Replace('\\', '/'), new FileInfo(path).Length, path))
+        .Append(new FileArtifact("jazor-manifest.json", new FileInfo(manifestPath).Length, manifestPath))
         .OrderBy(static file => file.Path, StringComparer.Ordinal)
         .ToArray();
-    var generatedModules = ReadManifestModuleCount(outputRoot);
+    var generatedModules = ReadManifestModuleCount(manifestPath);
     var mjsFiles = files.Where(static file => file.Path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)).ToArray();
     var mapFiles = files.Where(static file => file.Path.EndsWith(".map", StringComparison.OrdinalIgnoreCase)).ToArray();
     var manifestFiles = files.Where(static file => string.Equals(Path.GetFileName(file.Path), "jazor-manifest.json", StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -116,10 +256,10 @@ static BuildArtifactSnapshot CaptureArtifact(string outputRoot, BuildArtifactSna
     var moduleBytes = mjsFiles.Sum(static file => file.Bytes);
     var mapBytes = mapFiles.Sum(static file => file.Bytes);
     var manifestBytes = manifestFiles.Sum(static file => file.Bytes);
-    var moduleGzipBytes = mjsFiles.Sum(file => GzipLength(Path.Combine(outputRoot, file.Path)));
-    var mapGzipBytes = mapFiles.Sum(file => GzipLength(Path.Combine(outputRoot, file.Path)));
-    var manifestGzipBytes = manifestFiles.Sum(file => GzipLength(Path.Combine(outputRoot, file.Path)));
-    var totalGzipBytes = files.Sum(file => GzipLength(Path.Combine(outputRoot, file.Path)));
+    var moduleGzipBytes = mjsFiles.Sum(file => GzipLength(file.FullPath));
+    var mapGzipBytes = mapFiles.Sum(file => GzipLength(file.FullPath));
+    var manifestGzipBytes = manifestFiles.Sum(file => GzipLength(file.FullPath));
+    var totalGzipBytes = files.Sum(file => GzipLength(file.FullPath));
     var previousFiles = previous?.Files?.ToDictionary(static file => file.Path, StringComparer.Ordinal);
     int? changed = previousFiles is null ? null : files.Count(file => !previousFiles.TryGetValue(file.Path, out var old) || old.Bytes != file.Bytes);
     long? changedBytes = previousFiles is null ? null : files.Where(file => !previousFiles.TryGetValue(file.Path, out var old) || old.Bytes != file.Bytes).Sum(static file => file.Bytes);
@@ -127,15 +267,20 @@ static BuildArtifactSnapshot CaptureArtifact(string outputRoot, BuildArtifactSna
         moduleGzipBytes, mapGzipBytes, manifestGzipBytes, totalGzipBytes, files.Sum(static file => file.Bytes), changed, changedBytes, files);
 }
 
-static int ReadManifestModuleCount(string outputRoot)
+static IEnumerable<string> EnumerateOutputFiles(string directory)
 {
-    var path = Path.Combine(outputRoot, "jazor-manifest.json");
-    if (!File.Exists(path))
-        return 0;
+    foreach (var path in Directory.EnumerateFiles(directory))
+        yield return path;
+    foreach (var child in Directory.EnumerateDirectories(directory))
+        if (Path.GetFileName(child) != "node_modules")
+            foreach (var path in EnumerateOutputFiles(child))
+                yield return path;
+}
+
+static int ReadManifestModuleCount(string path)
+{
     using var document = JsonDocument.Parse(File.ReadAllText(path));
-    return document.RootElement.TryGetProperty("modules", out var modules) && modules.ValueKind == JsonValueKind.Array
-        ? modules.GetArrayLength()
-        : 0;
+    return document.RootElement.GetProperty("modules").GetArrayLength();
 }
 
 static long GzipLength(string path)
@@ -205,6 +350,9 @@ static string ToMarkdown(BuildBenchmarkReport report)
         $"- Schema: `{report.SchemaVersion}`",
         $"- Started (UTC): `{report.StartedAt:O}`",
         $"- .NET: `{report.DotnetVersion}`",
+        $"- SDK: `{report.SdkVersion}`",
+        $"- Commit: `{report.GitCommit}`",
+        $"- Platform: `{report.OperatingSystem}` / `{report.Architecture}`",
         "",
         "| Scenario | Sample | Elapsed (ms) | Modules | Source maps | Total bytes | Total gzip bytes | Changed files | Changed bytes |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
@@ -218,20 +366,38 @@ static string ToMarkdown(BuildBenchmarkReport report)
     lines.Add("Median elapsed time by scenario:");
     foreach (var group in report.Measurements.GroupBy(static measurement => measurement.Name, StringComparer.Ordinal))
         lines.Add($"- `{group.Key}`: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
+    foreach (var measurement in report.Measurements.Where(static measurement => measurement.ReleaseArtifact is not null))
+    {
+        var artifact = measurement.ReleaseArtifact!;
+        lines.AddRange(["", $"## Release assets: {measurement.Name}#{measurement.Sample}", "",
+            $"Directory: `{artifact.Root}`", "",
+            "Gzip is estimated per file with .NET SmallestSize; it does not assert HTTP compression or first-screen requests.", "",
+            "| Group | Files | Raw bytes | Estimated gzip bytes |", "| --- | ---: | ---: | ---: |"]);
+        foreach (var group in artifact.Files.GroupBy(static file => file.Group, StringComparer.Ordinal).OrderBy(static group => group.Key, StringComparer.Ordinal))
+            lines.Add($"| {group.Key} | {group.Count()} | {group.Sum(static file => file.Bytes)} | {group.Sum(static file => file.GzipBytes)} |");
+        lines.Add($"| total | {artifact.Files.Count} | {artifact.Files.Sum(static file => file.Bytes)} | {artifact.Files.Sum(static file => file.GzipBytes)} |");
+        lines.AddRange(["", "| File | Group | Raw bytes | Estimated gzip bytes |", "| --- | --- | ---: | ---: |"]);
+        foreach (var file in artifact.Files)
+            lines.Add($"| {file.Path} | {file.Group} | {file.Bytes} | {file.GzipBytes} |");
+    }
     return string.Join(Environment.NewLine, lines) + Environment.NewLine;
 }
 
-sealed record FileArtifact(string Path, long Bytes);
+sealed record FileArtifact(string Path, long Bytes, string FullPath);
 sealed record BuildArtifactSnapshot(int GeneratedModuleCount, int MjsFileCount, int SourceMapCount, long MjsBytes, long SourceMapBytes, long ManifestBytes, long MjsGzipBytes, long SourceMapGzipBytes, long ManifestGzipBytes, long TotalGzipBytes, long TotalBytes, int? ChangedFileCount, long? ChangedBytes, [property: JsonIgnore] IReadOnlyList<FileArtifact>? Files = null);
-sealed record BuildMeasurement(string Name, int Sample, long ElapsedMilliseconds, BuildArtifactSnapshot? Artifact);
-sealed record BuildBenchmarkReport(string SchemaVersion, DateTimeOffset StartedAt, string DotnetVersion, IReadOnlyList<BuildMeasurement> Measurements);
+sealed record ReleaseFileArtifact(string Path, string Group, long Bytes, long GzipBytes);
+sealed record ReleaseArtifactSnapshot(string Root, IReadOnlyList<ReleaseFileArtifact> Files);
+sealed record BuildMeasurement(string Name, int Sample, long ElapsedMilliseconds, BuildArtifactSnapshot? Artifact, ReleaseArtifactSnapshot? ReleaseArtifact = null);
+sealed record BuildBenchmarkReport(string SchemaVersion, DateTimeOffset StartedAt, string DotnetVersion, string SdkVersion, string GitCommit,
+    string OperatingSystem, string Architecture, BuildBenchmarkOptions Options, IReadOnlyList<BuildMeasurement> Measurements);
 
-sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Samples, bool SkipHmr, bool SkipRelease)
+sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Samples, bool SkipHmr, bool SkipRelease, string? ReleaseArtifacts)
 {
     public static BuildBenchmarkOptions Parse(string[] args)
     {
         string? workRoot = null;
         string? output = null;
+        string? releaseArtifacts = null;
         var samples = 3;
         var skipHmr = false;
         var skipRelease = false;
@@ -244,14 +410,15 @@ sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Sample
                 case "--samples": samples = ParsePositiveInt(Next(args, ref index), "--samples"); break;
                 case "--skip-hmr": skipHmr = true; break;
                 case "--skip-release": skipRelease = true; break;
+                case "--release-artifacts": releaseArtifacts = Next(args, ref index); break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- [--work-root DIR] [--out FILE] [--samples N] [--skip-hmr] [--skip-release]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- [--work-root DIR] [--out FILE] [--samples N] [--skip-hmr] [--skip-release] [--release-artifacts DIST_DIR]");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown argument: " + args[index]);
             }
         }
-        return new BuildBenchmarkOptions(workRoot, output, samples, skipHmr, skipRelease);
+        return new BuildBenchmarkOptions(workRoot, output, samples, skipHmr, skipRelease, releaseArtifacts);
     }
 
     private static string Next(string[] args, ref int index)
