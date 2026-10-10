@@ -82,6 +82,50 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_UnchangedAssetHeldForReading_PreservesFile()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/index.mjs", "export const value = 1;");
+        var manifestPath = workspace.WriteManifest("widget", "1.0.0", "widget", "dist/index.mjs", "dist/index.mjs");
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        var materializer = new LibraryMaterializer();
+        materializer.Materialize([manifestPath], outputRoot, BuildMode.Development);
+        var target = Path.Combine(outputRoot, "dist", "index.mjs");
+        File.SetLastWriteTimeUtc(target, new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        var savedWriteTime = File.GetLastWriteTimeUtc(target);
+
+        // Vite may hold a read handle without delete sharing on Windows. Unchanged library
+        // assets must keep their identity/timestamp instead of triggering replace and HMR.
+        using var reader = new FileStream(target, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var result = materializer.Materialize([manifestPath], outputRoot, BuildMode.Development);
+
+        Assert.AreEqual("dist/index.mjs", result.ImportPaths["widget"]);
+        Assert.AreEqual(savedWriteTime, File.GetLastWriteTimeUtc(target));
+        Assert.AreEqual("export const value = 1;", File.ReadAllText(target));
+    }
+
+    [TestMethod]
+    public void Materialize_ChangedOrDamagedAsset_ReplacesContents()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/index.mjs", "export const value = 1;");
+        var manifestPath = workspace.WriteManifest("widget", "1.0.0", "widget", "dist/index.mjs", "dist/index.mjs");
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        var materializer = new LibraryMaterializer();
+        materializer.Materialize([manifestPath], outputRoot, BuildMode.Development);
+        var target = Path.Combine(outputRoot, "dist", "index.mjs");
+
+        workspace.WriteFile("dist/index.mjs", "export const value = 2;");
+        manifestPath = workspace.WriteManifest("widget", "1.0.1", "widget", "dist/index.mjs", "dist/index.mjs");
+        materializer.Materialize([manifestPath], outputRoot, BuildMode.Development);
+        Assert.AreEqual("export const value = 2;", File.ReadAllText(target));
+
+        File.WriteAllText(target, "damaged output");
+        materializer.Materialize([manifestPath], outputRoot, BuildMode.Development);
+        Assert.AreEqual("export const value = 2;", File.ReadAllText(target));
+    }
+
+    [TestMethod]
     public void Materialize_WritesSourceCarrierAsProjectSourceNotPackages()
     {
         // ECMAScript 自有源码 carrier 的声明路径就是项目源码路径。它不是包：

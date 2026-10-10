@@ -85,6 +85,8 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 当前源码的 Emit 会在 `node_modules/.jazor-restore-state` 记录成功 restore/check 的 package/lock 身份。外部依赖图没有变化时只运行 Deno check，避免 HMR 构建覆写运行中的 Vite 原生模块。删除 node_modules 后正常恢复；更改 package 或锁文件会重新安装，file: 包不使用这个根锁复用条件。依赖确有变化时，Windows 上先退出使用该目录的开发宿主再构建。
 
+库资源物化也按 manifest 内容 hash 保留未变化的目标文件和时间戳，不因作者修改而触发无关 Vite 更新或替换 Windows 正在读取的文件。源资源先按既有契约校验；内容更新、缺失或损坏的目标仍走原子写入，错误继续传播。
+
 ## 改动边界
 
 - 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；生成器维护该文件。

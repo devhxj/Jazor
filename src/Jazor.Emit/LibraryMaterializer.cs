@@ -1002,6 +1002,13 @@ internal sealed class LibraryMaterializer
             foreach (var file in _files.Values.OrderBy(static item => item.TargetRelativePath, StringComparer.OrdinalIgnoreCase))
             {
                 var target = GetSafePath(DestinationRoot, file.TargetRelativePath);
+                // Keep unchanged carrier files stable: replacing them triggers unrelated Vite
+                // updates and can fail on Windows while a dev-server read handle is open.
+                // 按内容 hash 判断；依赖更新或输出损坏时仍走原来的校验与原子写入。
+                if (File.Exists(target) &&
+                    string.Equals(ComputeHash(target), file.Hash, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
                 var directory = Path.GetDirectoryName(target);
                 if (!string.IsNullOrWhiteSpace(directory))
                     Directory.CreateDirectory(directory);

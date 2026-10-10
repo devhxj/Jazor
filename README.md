@@ -40,6 +40,8 @@ The unreleased Monaco binding maps editor operations to the upstream named `edit
 
 Source-only rebuilds reuse a successfully restored external dependency graph when package/lock contents are unchanged. Deno still checks authored modules; a running Windows Vite no longer has its native package files overwritten by a redundant install.
 
+Unchanged embedded library assets also keep their files and timestamps during rebuilds, avoiding unrelated Vite updates and Windows read-handle conflicts. Changed or damaged assets still follow the verified atomic-write path.
+
 The developer-feedback release adds typed Element Plus interactions, native DOM event and browser payload projections, reusable ASP.NET Core hosting, RID-aware Emit assets, and self-contained SSR publishing. See [the feedback scope and validation](docs/04-roadmap/preview8-developer-feedback.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
