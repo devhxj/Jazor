@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.8&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.9&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,25 +26,13 @@
 
 </div>
 
-> Jazor 1.0.0-preview.8 is the current preview release.
+> Jazor 1.0.0-preview.9 is the current preview release.
 
-> Unreleased source improvements add numeric Pagination events, `ElStringDatePicker`, and manifest-based Release CSS URLs with relative chunks. Migration details are in the [Changelog](CHANGELOG.md); these changes are not part of the published preview.8 packages.
+Choose browser startup modules with `JazorBrowserEntry` and load RazorVue pages during navigation. Numeric and union authoring supports ordinary integer literals and direct scalar projections such as `value?.AsNumber`; see the [compiled examples](samples/RazorVue.NumericUnion/README.md).
 
-Source builds also report Emit stage timings and live restore/check/bundle output. Cancellation during Deno startup terminates the owned process tree; see [development and testing](docs/03-guides/development-and-testing.md).
+Normal build logs explain Emit and final RazorVue compilation costs. The benchmark keeps every sample and reports both typical and slowest timings, with optional consumer, browser, and Release asset measurements. Source-only rebuilds reuse unchanged dependencies and library assets so Windows Vite can keep running; see [development and testing](docs/03-guides/development-and-testing.md).
 
-Unreleased source compilation also reduces repeated semantic binding for RazorVue code-behind members. Models are reused within each conversion or member closure, with separate state for each compilation; parameter metadata checks retain the same exact type-name contract.
-
-The existing build benchmark can analyze a consumer's Release `dist` with `--release-artifacts <directory>`, reporting raw/gzip sizes for the entry, static dependencies, and lazy assets.
-
-It also measures an actual host with `--consumer-project <csproj> --skip-hmr`, keeping the consumer's package cache and recording its commit separately. Browser first-screen and HMR observations can be attached with `--browser-observations <json>`; see [measurement definitions](docs/03-guides/development-and-testing.md).
-
-The unreleased Monaco binding maps editor operations to the upstream named `editor` namespace, so `Monaco.Create` and model operations use the actual ESM export without a consumer shim.
-
-Source-only rebuilds reuse a successfully restored external dependency graph when package/lock contents are unchanged. Deno still checks authored modules; a running Windows Vite no longer has its native package files overwritten by a redundant install.
-
-Unchanged embedded library assets also keep their files and timestamps during rebuilds, avoiding unrelated Vite updates and Windows read-handle conflicts. Changed or damaged assets still follow the verified atomic-write path.
-
-The developer-feedback release adds typed Element Plus interactions, native DOM event and browser payload projections, reusable ASP.NET Core hosting, RID-aware Emit assets, and self-contained SSR publishing. See [the feedback scope and validation](docs/04-roadmap/preview8-developer-feedback.md).
+Pagination uses `Number` callbacks, `ElStringDatePicker` keeps formatted string values, Release CSS comes from the manifest, and Monaco editor operations use the upstream `editor` namespace. Upgrade guidance is in the [Changelog](CHANGELOG.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -128,7 +116,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.8
+dotnet add package Jazor --version 1.0.0-preview.9
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -136,8 +124,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.9" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.9" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -219,15 +207,15 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
-### Jazor 1.0.0-preview.8 · 2026-10-09
+### Jazor 1.0.0-preview.9 · 2026-10-10
 
-- Typed Element Plus Select, Table, Dropdown, and feedback services work with official Razor SG; component diagnostics and wrapper defaults now point back to authored source.
-- Existing CLR event and browser payload types expose native properties through extensions, while WebIDL owns browser interfaces. Capture `CurrentTarget` and clipboard/drop data before the first `await`; see [Browser interop](docs/03-guides/browser-interop.md).
-- Startup and framework hosts can reuse the frontend pipeline. Emit selects target-RID assets, shares declared subpath package identities, and publishes runnable `dist/` and optional `ssr/` output.
-- Migrate token-list `Count` to `Length`/`GetItem`, update `ElTableColumn.ChildContent` to a scoped fragment, and opt in to published maps with `JazorPublishSourceMaps=true`. Details are in the [Changelog](CHANGELOG.md).
-- Mainline tests, coverage, API/binding checks, and packaged Windows SPA/SSR browser consumers passed. Scope and reproducible gates are in [Current Status](docs/04-roadmap/current-status.md).
+- Select browser startup modules explicitly and load RazorVue route pages on demand.
+- Use `Size="@(32)"`, direct nullable union projections, and strongly typed numeric callbacks; parameter hints follow the declared value domain.
+- Read compilation and Emit stage costs from normal logs, preserve median and slowest build samples, and reuse unchanged dependencies and resources during HMR rebuilds.
+- Use string-formatted date input, manifest-based Release CSS and relative chunks, and Monaco's actual editor export. Migration details are in the [Changelog](CHANGELOG.md).
+- Prepare local candidate packages and their actual package/source identity in one command; official releases continue through the GitHub Actions gates.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8) and matching Git tag as the version reference. Keep all Jazor/ECMAScript packages on `1.0.0-preview.8`. Stable 1.0 remains unreleased; full version history is in the [Changelog](CHANGELOG.md).
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9) and matching Git tag as the version reference. Keep all Jazor/ECMAScript packages on `1.0.0-preview.9`. Stable 1.0 remains unreleased; full version history is in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

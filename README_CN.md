@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.8&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.9&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,21 +26,13 @@
 
 </div>
 
-> Jazor 1.0.0-preview.8 是当前预览版本。
+> Jazor 1.0.0-preview.9 是当前预览版本。
 
-未发布源码已增加分页数值事件、字符串日期绑定及基于 manifest 的 Release 样式接入；Emit 还会显示阶段耗时和即时 restore/check/bundle 输出，启动期间取消会终止自身 Deno 进程树。这些改进尚不属于公开 preview.8 包，详情见[更新日志](CHANGELOG.md)。
+通过 `JazorBrowserEntry` 选择浏览器启动模块，RazorVue 页面随导航加载。数值与 union 支持普通整数字面量和 `value?.AsNumber` 等直接投影；可编译示例见[作者体验样例](samples/RazorVue.NumericUnion/README.md)。
 
-源码编译还减少了 RazorVue 页面成员的重复语义绑定：模型只在单次转换/成员闭包内复用，组件参数识别避免反复格式化类型名；每次编译仍有独立的符号和诊断。
+普通日志说明 Emit 和 RazorVue 最终编译的阶段耗时；采样保留典型与最慢样本，并可关联消费者、浏览器与 Release 资源观测。只改作者代码时复用未变化的依赖和库资源，让 Windows Vite 能持续运行，详见[开发与测试](docs/03-guides/development-and-testing.md)。
 
-现有构建 benchmark 支持 `--release-artifacts <dist目录>`，只读统计消费者 Release 入口、静态依赖及懒加载资源的原始/gzip 体积，详见[开发与测试指南](docs/03-guides/development-and-testing.md)。
-
-工具还可通过 `--consumer-project <csproj> --skip-hmr` 测量真实宿主，保留消费者包缓存并单独记录其提交；`--browser-observations <json>` 接入首屏与 HMR 的浏览器观测，具体统计口径见开发与测试指南。
-
-未发布的 Monaco 绑定将编辑器操作映射到上游命名导出 `editor`；`Monaco.Create` 与模型操作保留原有 C# 调用形式，消费者无需自建 namespace 接线。
-
-只改作者模块时，Emit 在 package/lock 内容未变化的条件下复用已成功恢复的外部依赖，仍执行 Deno check；Windows 下运行中的 Vite 不再因重复 install 覆写原生包文件而阻挡 HMR 构建。
-
-本次开发者反馈更新补齐强类型 Element Plus 交互、原生 DOM 事件与浏览器 payload 投影、可复用的 ASP.NET Core 宿主、按 RID 选择 Emit 资产和自足 SSR 发布。范围与验收见[开发者反馈状态](docs/04-roadmap/preview8-developer-feedback.md)。
+分页使用 `Number` 回调，`ElStringDatePicker` 保留格式化字符串，Release 样式通过 manifest 接入，Monaco 编辑器操作使用上游 `editor` 命名导出。升级路径见[更新日志](CHANGELOG.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -123,15 +115,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.8
+dotnet add package Jazor --version 1.0.0-preview.9
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.9" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.9" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -212,15 +204,15 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 
 ## 最新更新
 
-### Jazor 1.0.0-preview.8 · 2026-10-09
+### Jazor 1.0.0-preview.9 · 2026-10-10
 
-- Element Plus Select、Table、Dropdown 与反馈服务支持强类型交互；官方 Razor SG 的组件诊断、wrapper 默认参数指向作者源码。
-- 既有 CLR 事件与浏览器 payload 通过 extension 访问原生属性，浏览器接口仍由 WebIDL 定义。`CurrentTarget` 和剪贴板/拖放数据应在首次 `await` 前读取，示例见[浏览器互操作](docs/03-guides/browser-interop.md)。
-- Startup 与框架宿主可以复用前端管线；Emit 按目标 RID 选择资产，复用子路径包身份，并只发布可运行的 `dist/` 和可选 `ssr/`。
-- 升级时将 token-list 的 `Count` 改为 `Length`/`GetItem`，将 `ElTableColumn.ChildContent` 改为 scoped fragment；需要发布 source map 时设置 `JazorPublishSourceMaps=true`。迁移详情见[CHANGELOG](CHANGELOG.md)。
-- 主线测试、覆盖率、API/绑定检查与 Windows SPA/SSR 真实浏览器包消费者门禁已通过。支持范围与复现入口见[当前状态](docs/04-roadmap/current-status.md)。
+- 显式选择浏览器启动模块，RazorVue 路由页面按需加载。
+- 使用 `Size="@(32)"`、nullable union 直接投影和强类型数值回调；属性提示展示实际值域。
+- 普通日志显示编译和 Emit 阶段耗时，采样保留中位与最慢样本；HMR 构建复用未变化的依赖和资源。
+- 接入字符串日期、manifest 样式与相对分包，以及 Monaco 的实际编辑器导出；迁移详情见[CHANGELOG](CHANGELOG.md)。
+- 一次准备本地候选包与实际包／源码身份；正式发布继续经过 GitHub Actions 门禁。
 
-版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)及对应 Git tag 为准；所有 Jazor/ECMAScript 包统一使用 `1.0.0-preview.8`。稳定版 1.0 尚未发布，完整历史见[CHANGELOG](CHANGELOG.md)。
+版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)及对应 Git tag 为准；所有 Jazor/ECMAScript 包统一使用 `1.0.0-preview.9`。稳定版 1.0 尚未发布，完整历史见[CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 

@@ -1,8 +1,12 @@
 # 当前状态
 
-> 当前预览版本：[1.0.0-preview.8（2026-10-09）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前预览版本：[1.0.0-preview.9（2026-10-10）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
+
+preview.9 支持显式浏览器入口根、RazorVue 页面按导航加载、普通构建中的最终编译阶段计时，以及由声明生成的数值转换、属性提示和直接 union 标量投影。配置和验证入口分别见[安装与配置](../03-guides/installation-and-configuration.md)、[开发与测试](../03-guides/development-and-testing.md)、[数值/union 示例](../../samples/RazorVue.NumericUnion/README.md)。这些能力随 preview.9 交付；升级时所有 Jazor/ECMAScript 包必须统一到该版本。
+
+本地发布门禁已通过，API 与绑定基线已复核；固定计数和消费者证明范围见[preview.9 验证快照](../05-history/evolution.md#2026-10-10-preview9-作者体验与发布准备)。官方 tag workflow 在上传前重新执行质量与 Windows SPA/SSR 消费者门禁。真实后端保存、插件启用后的业务流程与修改到可见的 HMR 长尾仍需继续验证。
 
 > **preview.8 状态：** 开发者反馈实现已通过完整主线、覆盖率、API/绑定与本地发布包的 SPA/SSR 消费者门禁。具体实现与证据见[开发者反馈验收](./preview8-developer-feedback.md)；DOM 事件扩展的 Happy DOM 回归与真实 Chrome 消费者验收分别限定其证明范围。
 

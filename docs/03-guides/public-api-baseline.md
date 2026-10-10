@@ -134,6 +134,14 @@ Element Plus 新增 `ElTypedSelect<TValue>`、`ElTypedOption<TValue>`、`ElTyped
 
 `ElTableColumn.ChildContent` 现在显式接收 `ElTableSlotContext`；typed column 接收 `ElTableSlotContext<TRow>`。直接给原 `ChildContent` 赋 `RenderFragment` 的 C# 代码需改为接收 context 的 `RenderFragment<ElTableSlotContext>`。Razor 中用 `Context="cell"` 访问 `cell.Row`、`cell.Column` 和 `cell.Index`，使默认单元格 slot 的 payload 与 Element Plus 一致。
 
+## preview.9 数值与 union 作者面
+
+嵌套 union 保留原分支路径，并增加由声明生成的直接标量投影。包含 `Number` 分支的 union 同时提供对应数值类型的强类型隐式转换，使整数变量和 `Size="@(32)"` 能通过普通 C# 与官方 Razor SG 绑定。参数和回调提示来自实际声明，不增加 `object` 或开放泛型兜底。
+
+`ElStringDatePicker` 以字符串格式表达日期；Pagination 的 `OnCurrentChange` / `OnSizeChange` 使用 `EventCallback<Number>`，handler 可通过 `(int)value` 转成业务整数。Release HTML shell 使用 `JazorFrontendUrls.GetStylesheets` 读取 manifest 样式。
+
+Union 投影在不匹配时返回 null，并只求值一次。无法恢复精确标签的可赋值分支、无法区分的结构化对象分支明确失败；原始路由需要已解析路径时使用 `router.Resolve(raw).Path`。完整写法与限制见[作者指南](./razorvue-authoring.md)及 [CHANGELOG](../../CHANGELOG.md)。
+
 ## 冻结规则
 
 本清单的新增、删除或重命名同步更新 [1.0 公共 API 冻结审查](./public-api-freeze.md)、测试和 `CHANGELOG.md`。发布候选从构建后的程序集生成机器可比较的签名快照，其差异作为 1.0 放行证据；机器兼容性检查提供正式比对结果。

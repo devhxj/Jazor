@@ -53,11 +53,31 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 
 门槛是验证规则，不等同于任一历史报告中的固定通过数量。对当前结果的判断应运行相应脚本或测试命令。
 
-## Emit 阶段输出与取消（未发布源码）
+## Emit 阶段输出与取消（preview.9）
 
 正常构建会显示 `[Jazor Emit]` 阶段的开始、完成和耗时，依次包括模块收集、工程写入、依赖 restore/check、Release 浏览器 bundle，以及启用时的 SSR bundle。Deno 的 stdout/stderr 即时输出；失败的最终诊断仍保留原始输出和退出码，并指出失败阶段与工程目录。
 
 Emit CLI 接收 Ctrl+C 后取消当前工作并终止自身 Deno 进程树。DenoHost 2.9.7 的启动后等待先完成，再处理取消，避免启动过程中丢失已创建进程的所有权。Emit 就地写入，取消可能留下部分产物；再次构建会按现有契约收敛，不承诺回滚。
+
+## 最终编译计时与长尾（preview.9）
+
+普通构建日志中的 `[Jazor.RazorVue] compilation timing` 覆盖 generators、generated-compilation、final-validation、component-discovery、render-binding、member-closures、inject-validation、artifact-emission、route-catalog、catalog-serialization 和 catalog-attach。`total` 包含各子阶段，不能与它们重复相加；并行 artifact 记录等待 worker 完成的墙钟时间，不累加 worker CPU。它只覆盖 final-compilation hook，完整 Csc 耗时仍需 MSBuild 诊断。
+
+计时通过编译局部的 obj sidecar 进入 MSBuild 日志，不进入程序集 catalog、JavaScript 或 source map。增量跳过 CoreCompile 时不会复用上次日志。schema `razorvue-build-v5` 保存原始样本日志并同时汇总中位数、最大值及最慢样本；`--diagnostics` 额外记录 analyzer timing、MSBuild performance summary 和 binary log。诊断样本要单独解释，不能与未开启诊断的更新耗时混比。
+
+真实作者修改可保留原命令和每次完整日志，并将样本导入工具：
+
+```json
+[
+  { "Name": "author-edit", "Sample": 1, "ElapsedMilliseconds": 45108, "LogPath": "D:/consumer/output/edit-1.log" }
+]
+```
+
+```text
+dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --build-observations D:/consumer/output/edit-samples.json --out .tmp/edit-summary.json
+```
+
+输入的时间是构建墙钟，浏览器“修改至可见”需要独立观测。至少保留三次真实修改，确认没有与宿主启动或其它构建重叠，再按最慢样本的具体阶段定位；历史长尾没有重现时应继续标记未归因。
 
 ## Release 资源报告
 
@@ -71,7 +91,7 @@ JSON 与 Markdown 分别记录入口、静态依赖、lazy、source map、metada
 
 schema `razorvue-build-v3` 增加 SDK、源码提交、操作系统、架构及采样参数。Debug 产物不计恢复得到的 `node_modules`，模块数和 manifest 体积从当前样例的真实隔离 `obj` 读取；这一统计口径与旧 v2 不同。gzip 使用 .NET `SmallestSize` 逐文件估算，不能视作 HTTP 压缩或首屏实际请求。`artifact-scan` 的耗时仅表示报告扫描，不能作为构建耗时。
 
-当前 schema `razorvue-build-v4` 还支持真实消费者的构建与浏览器观测。消费者保持自己的 NuGet/cache 配置；工具与消费者提交分别记录。先在消费者准备好同版本包并 restore，再从上游执行：
+当前 schema `razorvue-build-v5` 还支持真实消费者的构建与浏览器观测。消费者保持自己的 NuGet/cache 配置；工具与消费者提交分别记录。先在消费者准备好同版本包并 restore，再从上游执行：
 
 ```powershell
 dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-project D:/consumer/src/Host/Host.csproj --skip-hmr --samples 3 --work-root .tmp/consumer-benchmark

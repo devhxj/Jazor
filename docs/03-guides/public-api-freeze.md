@@ -1,20 +1,22 @@
 # 1.0 公共 API 冻结审查
 
-> 当前预览版本：[1.0.0-preview.8（2026-10-09）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前预览版本：[1.0.0-preview.9（2026-10-10）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
-> 当前源码基线另包含下一轮未发布改进：`ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets` 和 Pagination 的两个 `EventCallback<Number>`。已审阅这些明确的预览 API 变更并更新机器 snapshot；公开 preview.8 保持原有契约，迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> preview.9 包含 `ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets`、Pagination 的两个 `EventCallback<Number>`，以及数值转换和直接 union 标量投影。机器 snapshot 按本次预览 API 更新；回调与投影的迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 状态：正式 `1.0` 尚未冻结。preview.6 已完成统一 frontend 候选契约重置；preview.8 的候选快照已按开发者反馈审查新增绑定、原生文件事件 extension 与 `DOMTokenList` 签名修正。preview.8 的 Release 构建、API 比较、完整质量与本地包发布消费者门禁已通过；正式 1.0 冻结仍按下文清单执行。
 
 ## 审查结论
 
-frontend 宿主面在 preview.6 按新的单一契约重新收敛；preview.8 增补 Startup/framework 宿主重载、Element Plus 强类型交互和浏览器绑定修正，公开面与迁移说明见[1.0 公共 API 基线清单](./public-api-baseline.md)。机器候选快照保存在 `public-api-baseline.snapshot.md`；正式 1.0 前仍需在候选 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁，才能最终冻结。
+frontend 宿主面在 preview.6 按新的单一契约重新收敛；preview.8 增补 Startup/framework 宿主重载、Element Plus 强类型交互和浏览器绑定修正，preview.9 补齐数值与 union 作者面，公开面与迁移说明见[1.0 公共 API 基线清单](./public-api-baseline.md)。机器候选快照保存在 `public-api-baseline.snapshot.md`；正式 1.0 前仍需在候选 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁，才能最终冻结。
 
 本次审查采用以下稳定决策：
 
 preview.5 在 2026-09-28 发布时的机器快照为 `76105` 条（`8948` 个顶层声明、`67157` 个成员声明），当时比较新增 `0`、删除 `0`。该结果属于已发布候选的历史证据；当前 frontend API 的删除和新增是明确批准的候选重置。重置后的基线为 `76133` 条（`8950` 个顶层声明、`67183` 个成员声明），对该新基线重新生成的比较报告新增 `0`、删除 `0`。迁移说明和消费者门禁仍必须随下一候选一并保留。
 
 2026-10-09 的 preview.8 API 审查最终基线为 `76564` 条（`9017` 个顶层声明、`67547` 个成员声明），相对原 `76133` 条基线新增 `445` 个去重签名、改变 `14` 个去重签名。新增面来自 Element Plus typed variants/services、Number 转换、IWindow.LiveLocation、三个 frontend 宿主重载和既有 CLR 事件/载荷 extension；14 个改变签名为 WebIDL token 属性修正为 `DOMTokenList`。`DOMTokenList` 和 `ElTableColumn.ChildContent` scoped slot 的迁移已写入基线清单与 CHANGELOG。最终 Release 程序集比较为 `76564` 对 `76564`、新增 `0`、删除 `0`，完整质量与 23 包的 SPA/SSR 消费者门禁通过。
+
+preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审查的 frontend 候选基线只新增强类型数值隐式转换，没有删除既有签名。直接标量投影保留旧路径，投影不匹配返回 null；可赋值重叠或无法区分的结构化对象分支需要准确的显式宿主映射。API 计数与本地门禁快照保留在[演进记录](../05-history/evolution.md#2026-10-10-preview9-作者体验与发布准备)，正式发布 ref 继续由 tag workflow 验证。
 
 文件事件 extension 随 `Jazor.Vue` 的 `ECMAScript.Vue` 程序集交付，属于既有 C# 事件类型的额外宿主映射；`FileList` / `FileRef` 保持 WebIDL 生成。对应 CLR adapter 是编译映射实现，不增加独立公共作者 API。
 
@@ -97,7 +99,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.8
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.9
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。

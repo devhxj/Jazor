@@ -2,21 +2,61 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## 未发布：下一轮开发体验改进
+## 2026-10-10
 
-- 缩减 RazorVue 页面重编译中的重复语义绑定：同一次转换/成员闭包内复用源码树模型，组件参数识别避免反复格式化类型名。复用只在本次不可变编译中生效，保留独立编译的诊断与生成结果。
+### Jazor 1.0.0-preview.9
 
-- 作者代码重建时，内容未变化的库资源保留文件与时间戳，避免无关 Vite 更新以及 Windows 读取期间的文件替换失败；依赖更新或输出损坏时仍按 manifest hash 校验并重新物化。
+中文 | English
 
-- 官方 Pagination 的页码/每页数量事件携带 `Number`，固定字符串 `ElStringDatePicker` 支持 date/datetime 的选择与清空；应用可删除对应的本地绑定。**迁移**：`OnCurrentChange` / `OnSizeChange` handler 接受 `Number`，日期组件指定 `ValueFormat`，清空接受 null。
-- 标准 Release 构建生成资源 manifest 并使用相对分包 URL；HTML shell 通过 `JazorFrontendUrls.GetStylesheets` 接入 CSS。**迁移**：更新旧默认 Vite 配置或合并 `base: './'` 与 `build.manifest: 'manifest.json'`，删除应用侧 `dist` 别名与目录扫描，随 `dist/**` 发布 manifest。
-- 标准 Vite 配置明确 Vue feature flags；日期与数值 union 示例说明 C# 类型和字符串格式约束。
-- 已有标准前端工程也可重新生成缺失的 SDK 默认 Vite 配置；作者配置与替代构建工具继续由项目拥有。
-- Emit 显示模块收集、工程写入、依赖 restore/check 和 bundle 的阶段耗时及即时 Deno 输出，失败或取消指出当前阶段。启动期间取消仍会终止自身 Deno 进程树，避免残留进程占用输出目录。
-- 现有构建 benchmark 增加 Release manifest 资源报告，分别统计入口、静态依赖、lazy、source map 与其它文件的原始/gzip 体积；`--release-artifacts <dist>` 可只读分析消费者已有产物。报告 schema 升为 `razorvue-build-v3`，记录 SDK/提交/平台；Debug 产物统计排除 `node_modules`，模块数从真实 `obj` manifest 读取。gzip 是逐文件估算，不代表 HTTP 压缩或首屏实测流量。
-- benchmark 的 `razorvue-build-v4` 支持真实消费者的 clean/incremental/Release 采样，保留已 restore 的候选包缓存，分别记录工具与消费者提交。可附入首屏及 HMR 的 Resource Timing 浏览器观测；缓存请求的实际 transfer 与产物 gzip 估算分开报告。
-- 修复 Monaco 编辑器操作被错误当作 ESM 根部导出的问题，使用 Monaco 0.56 的命名导出 `editor` 和既有 Inline 映射，C# 静态方法签名不变。消费者可删除自建的 `editor` namespace 接线；编辑器、模型、主题、标记与 worker 继续由原 npm 入口提供。
-- 修复 Windows Vite 运行期间，作者模块修改仍触发 Deno install 覆写正在使用的原生 `.node` 文件的问题。同一 node_modules 内成功 restore/check 的 package/lock 身份未变化时跳过重复外部依赖安装，继续检查作者模块；依赖变化或目录重建仍正常安装，file: 包保留原恢复行为。没有锁错误重试或兼容 fallback。
+#### 新增功能
+
+- 宿主可通过 `JazorBrowserEntry` 或 Emit 的 `--browser-entry` 选择浏览器启动模块，RazorVue 页面随路由导航加载，布局保持静态导入。**接入**：显式配置 `<JazorBrowserEntry Include="app.js" />`，并包含必须在启动时执行的模块；所有作者模块仍生成并检查。by @devhxj
+- 新增固定字符串日期组件 `ElStringDatePicker`，支持 date/datetime 的选择和清空；Release HTML shell 可通过 `JazorFrontendUrls.GetStylesheets` 接入 manifest 中的样式。by @devhxj
+- 数值与 union 绑定支持普通整数、float 和整数变量；嵌套 union 增加直接 `AsNumber`、`AsString`、`AsBool`、`AsDate` 等投影，保留原路径与强类型约束。属性提示由实际值域生成，覆盖现有绑定；可将 `Size="@(32d)"` 简化为 `Size="@(32)"`，将 `value?.AsSingle?.AsNumber` 简化为 `value?.AsNumber`。by @devhxj
+
+#### 体验优化
+
+- 普通日志显示 Emit 与 RazorVue 最终编译子阶段的耗时和即时工具输出，失败或取消说明当前阶段；启动期间取消会清理自身 Deno 进程树。by @devhxj
+- 构建采样保留每个样本与原始日志，同时报告中位数、最大值和最慢样本；支持真实消费者、MSBuild 诊断、浏览器首屏/HMR 观测，以及 Release 入口、静态依赖和按需资源的原始/gzip 体积报告。gzip 为估算值，构建阶段计时不代表修改到可见延迟或长尾已经解决。by @devhxj
+- RazorVue 页面编译减少重复语义绑定，复用仅限当前编译；内容未变化的库资源保持文件与时间戳，减少无关 Vite 更新。by @devhxj
+- 本地候选准备可一次生成默认六包、本地源配置和身份报告，核对实际 nuspec 版本、SHA256、Git HEAD 与未提交源码指纹，并可恢复已选择同版本的消费者。by @devhxj
+
+#### 破坏性变更
+
+- Pagination 的 `OnCurrentChange` / `OnSizeChange` 回调参数改为 `Number`。**迁移**：handler 接收 `Number`，需要业务整数时使用 `(int)value`；日期组件设置 `ValueFormat`，清空接受 null。by @devhxj
+- Union 投影按声明的分支判别，不匹配返回 null，接收者只求值一次；不会再把所有 `AsX` 当作原值。无法恢复精确标签的可赋值重叠分支、无法区分的结构化对象分支现在明确报错。**迁移**：使用可区分的模型或准确的显式宿主映射；读取原始路由的路径时可先调用 `router.Resolve(raw).Path`。by @devhxj
+- 标准 Release 工程生成资源 manifest 并使用相对分包 URL。**迁移**：更新旧默认 Vite 配置或合并 `base: './'` 与 `build.manifest: 'manifest.json'`，随 `dist/**` 发布 manifest，通过 `GetStylesheets` 接入 CSS；可删除应用侧 `dist` 别名与目录扫描。by @devhxj
+
+#### 问题修复
+
+- 修复 Monaco 编辑器操作误用 ESM 根部导出，改为上游命名导出 `editor`；`Monaco.Create` 与模型操作的 C# 调用形式保持，消费者可删除自建 namespace 接线。by @devhxj
+- 修复 Windows Vite 运行期间，作者模块重建重复安装未变化的依赖并覆写正在使用的原生包文件。已成功 restore/check 的 package/lock 身份未变化时复用外部依赖，作者模块继续检查；依赖改变或目录重建仍正常恢复。by @devhxj
+- 标准前端工程可以重新生成缺失的 SDK 默认 Vite 配置，并明确 Vue feature flags；作者配置与替代构建工具继续由项目拥有。by @devhxj
+
+#### New Features
+
+- Select browser startup modules with `JazorBrowserEntry` or Emit's `--browser-entry`; RazorVue pages load during route navigation while layouts stay statically imported. **Setup**: specify `<JazorBrowserEntry Include="app.js" />` and include modules that must execute at startup. All authored modules are still emitted and checked. by @devhxj
+- Add `ElStringDatePicker` for string-formatted date/datetime selection and clearing, and `JazorFrontendUrls.GetStylesheets` for manifest-based Release CSS links. by @devhxj
+- Bind ordinary integers, floats, and integer variables to numeric unions. Nested unions gain direct `AsNumber`, `AsString`, `AsBool`, `AsDate`, and other projections while retaining existing paths and strong typing. Hints follow declared value domains across existing bindings. Simplify `Size="@(32d)"` to `Size="@(32)"` and `value?.AsSingle?.AsNumber` to `value?.AsNumber`. by @devhxj
+
+#### Improvements
+
+- Normal logs show Emit and final RazorVue compilation stages, timings, and live tool output. Failures and cancellation identify the current stage; startup cancellation cleans up the owned Deno process tree. by @devhxj
+- Build measurements preserve every sample and raw log and report the median, maximum, and slowest sample. Measure real consumers, attach MSBuild diagnostics and browser first-screen/HMR observations, and inspect raw/gzip sizes for Release entry, static dependencies, and on-demand assets. Gzip is an estimate; stage timings do not establish edit-to-visible latency or prove that build tails are resolved. by @devhxj
+- Reduce repeated semantic binding during RazorVue page compilation, with reuse confined to one compilation. Unchanged library resources retain their files and timestamps to avoid unrelated Vite updates. by @devhxj
+- Prepare the default six local candidate packages, feed configuration, and identity report in one command. Check actual nuspec versions, SHA256, Git HEAD, and dirty source fingerprints, and optionally restore a consumer that already selects the same version. by @devhxj
+
+#### Breaking Changes
+
+- Pagination's `OnCurrentChange` / `OnSizeChange` callbacks now receive `Number`. **Migration**: accept `Number` and use `(int)value` for business integers. Configure the date component's `ValueFormat` and accept null when cleared. by @devhxj
+- Union projections test their declared branches, return null on a mismatch, and evaluate the receiver once instead of treating every `AsX` as identity. Assignable branches requiring exact tags and indistinguishable structural object branches fail explicitly. **Migration**: use distinguishable models or accurate explicit host mappings; normalize a raw route with `router.Resolve(raw).Path` when a resolved path is needed. by @devhxj
+- Standard Release projects emit an asset manifest and relative chunk URLs. **Migration**: refresh the old default Vite configuration or merge `base: './'` and `build.manifest: 'manifest.json'`, publish the manifest with `dist/**`, and link CSS through `GetStylesheets`; remove consumer-owned `dist` aliases and directory scans. by @devhxj
+
+#### Bug Fixes
+
+- Bind Monaco editor operations to the upstream named `editor` export instead of nonexistent ESM root exports. Keep the C# call forms for `Monaco.Create` and model operations; consumer namespace wiring can be removed. by @devhxj
+- Stop source-only rebuilds from reinstalling unchanged dependencies and overwriting native package files held by Windows Vite. Reuse the external graph when successful restore/check package and lock identities match, continue checking authored modules, and restore normally when dependencies change or the directory is rebuilt. by @devhxj
+- Regenerate missing SDK-default Vite configuration for standard frontend projects and declare Vue feature flags explicitly. Authored configuration and alternative build tools remain project-owned. by @devhxj
 
 ## 2026-10-09
 

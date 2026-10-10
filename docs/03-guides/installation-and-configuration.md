@@ -6,7 +6,7 @@
 
 ## 前置条件
 
-当前版本为 **1.0.0-preview.8（2026-10-09）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.8)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
+当前版本为 **1.0.0-preview.9（2026-10-10）**，属于预发布。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)和对应 tag 为准；镜像同步及预发布筛选可能导致旧版仍显示在顶部。安装时显式指定版本；NuGet UI 需启用“包括预发行版”。主分支新增能力是否已发布，应核对 [CHANGELOG](../../CHANGELOG.md) 中对应版本的记录。
 
 preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
 
@@ -40,7 +40,7 @@ preview.8 的 live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.9" />
 </ItemGroup>
 ```
 
@@ -53,8 +53,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.0.0-preview.8" />
-    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.8" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.9" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.9" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -63,33 +63,43 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.8" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.8" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.DateFns" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VueUse" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.Monaco" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.VueDraggable" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.FilePond" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.WangEditor" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.9" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.9" />
 </ItemGroup>
 ```
 
 ## 配置产物输出
 
+preview.9 允许最终宿主选择浏览器启动根：
+
+```xml
+<ItemGroup>
+  <JazorBrowserEntry Include="app.js" />
+</ItemGroup>
+```
+
+路径必须是生成 `ModuleCatalog` 中的模块路径，可以声明多个启动根。省略时沿用原有入口集合；显式选择仅影响浏览器入口，所有作者模块仍被物化并执行 Deno 检查，SSR/hydration 根独立。RazorVue 路由页面通过 literal `import()` 按导航加载，布局仍静态导入。页面或编辑器若仍被启动模块静态导入，就仍属于首屏闭包；只调整 chunk 名称无法推迟请求。
+
 输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；源码类库通过 `ModuleCatalog` 或源码 locator 传递模块，binding 通过 metadata 传递 npm/JSR identity 与入口。最终宿主的 MSBuild target 调用 Emit 写出源码、入口和 `package.json`，再使用 Deno 2.9.7 恢复 `node_modules` 并生成或验证 `deno.lock`。
 
-多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具��最终宿主直接引用并配置 Emit；工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
+多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具；最终宿主直接引用并配置 Emit。工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
 
 ```xml
 <PropertyGroup>

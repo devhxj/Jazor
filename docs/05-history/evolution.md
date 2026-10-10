@@ -2,6 +2,16 @@
 
 > 本页解释当前分层为何形成；当前实现与路线图以现行架构和状态文档为依据。
 
+## 2026-10-10 preview.9 作者体验与发布准备
+
+本轮将入口分包、最终编译阶段计时和 N4 数值/union 作者体验整理到 `1.0.0-preview.9`。通用 lowering 使用 Roslyn 分支与返回类型；绑定维护生成器按声明提供 1,665 条参数提示和 22 个嵌套 union 的直接标量投影。官方 Razor SG、跨库矩阵、真实 Vue/Element Plus 运行与消费者写法共同验证这些边界。
+
+本地完整主线通过，最终编译器回归为 10,740/10,740，CLR 为 5,092/5,092，RazorVue SG 为 5,047/5,047，Emit 为 239/239。编译器行覆盖率 17,789/17,895（99.41%）、分支覆盖率 6,974/7,189（97.01%）；RazorVue 行覆盖率 14,740/15,115（97.52%）、分支覆盖率 6,353/6,754（94.06%）。Release solution build 为 0 警告、0 错误；Vue binding coverage、绑定 XML 文档、绑定 contract 和发布说明门禁通过。
+
+Release API 快照包含 78,224 个去重签名（9,018 个顶层声明、69,206 个成员声明），相对已审查的 frontend 候选基线 76,566 项新增 1,658 个数值隐式转换签名、删除 0。该候选基线已经包含本轮此前审查的 Number 分页回调与字符串日期组件；它不代表相对公开 preview.8 没有破坏性变化，迁移以 CHANGELOG 为准。刷新机器快照后再比较新增 0、删除 0；上游 binding inventory 未漂移。本地日志与报告位于忽略目录 `.tmp/preview9-release/`、`artifacts/preview9/`，正式发布 ref 由官方 tag workflow 继续验证。
+
+Zero/Jero 的 `.8.12` 本地候选完成 33 个作者文件迁移、0 警告/错误构建、N4 浏览器 4/4 与插件回归 5/5，pageErrors 为 0；业务 API、auth 与 WebSocket 使用 mock。真实后端保存及插件启用后业务仍待联调。本轮不把隔离首次构建、阶段计时或历史 `.8.11` 的 Release 首屏数据当作新的 HMR 或首屏性能样本。
+
 ## 核心方向的确立
 
 Jazor 始终围绕一项核心能力展开：受支持的 C# 语义转换为 ECMAScript。Roslyn 语义模型、`Jazor.Compiler` 的 ESTree lowering、宿主白名单和 `Jazor.Emit` 的产物交付共同构成这条平台主线。当前文档以它为第一层，并以核心语义定义 Jazor。
