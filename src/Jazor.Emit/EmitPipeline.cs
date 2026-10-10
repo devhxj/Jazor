@@ -41,6 +41,10 @@ internal sealed class EmitPipeline
             if (!collection.IsSuccess)
                 return Fail(collection.ExitCode, collection.Error!);
 
+            var browserEntries = ManifestModel.ResolveBrowserEntries(
+                options.BrowserEntries,
+                collection.Modules.Select(static module => module.RelativePath));
+
             // Write-phase boundary: all pure validation runs first so a rejected request never
             // leaves partial output. Failures after the first write are reported and converge
             // on the next build (see artifact-pipeline "写入与确定性").
@@ -59,7 +63,8 @@ internal sealed class EmitPipeline
                 options.RootAssemblyPath,
                 outputRoot,
                 manifestPath,
-                collection.Modules);
+                collection.Modules,
+                browserEntries);
             if (!moduleWrite.IsSuccess)
                 return Fail(moduleWrite.ExitCode, moduleWrite.Error!);
 
@@ -114,10 +119,14 @@ internal sealed class EmitPipeline
             LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);
             FinishStage("completed");
             StartStage("restore/check packages");
+            // Lazy/unreferenced modules still belong to the authored graph. A smaller browser
+            // entry must not hide missing imports or syntax failures until a user opens a page.
+            var checkPaths = entryPaths.Concat(applicationManifest.Modules.Select(module =>
+                Path.Combine(outputRoot, module.RelativePath))).ToArray();
             await DenoPackageRestorer.RestoreAndCheckAsync(
                 outputRoot,
                 options.DenoExecutablePath,
-                entryPaths,
+                checkPaths,
                 packageLibraries,
                 cancellationToken,
                 _progress).ConfigureAwait(false);

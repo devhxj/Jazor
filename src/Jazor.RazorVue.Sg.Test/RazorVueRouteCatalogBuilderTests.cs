@@ -31,9 +31,13 @@ public sealed class RazorVueRouteCatalogBuilderTests
         Assert.AreEqual(RazorVueRouteCatalogBuilder.RelativePath, catalog.RelativePath);
         Assert.AreEqual(VueHmrBoundaryKind.FullReloadRequired, catalog.Hmr.BoundaryKind);
         Assert.AreEqual(catalog.ContentHash, catalog.Hmr.DescriptorHash);
-        Assert.IsEmpty(catalog.PackageImports);
+        CollectionAssert.AreEqual(new[] { "vue" }, catalog.PackageImports.ToArray());
         Assert.IsEmpty(catalog.Assets);
-        StringAssert.Contains(catalog.ModuleText, "import routeComponent0", StringComparison.Ordinal);
+        StringAssert.Contains(catalog.ModuleText, "import { defineAsyncComponent } from \"vue\";", StringComparison.Ordinal);
+        StringAssert.Contains(catalog.ModuleText, "import routeLayout0 from \"../../Layouts/Shell.mjs\";", StringComparison.Ordinal);
+        StringAssert.Contains(catalog.ModuleText, "const routePage0 = defineAsyncComponent({ loader: () => import(\"../../Pages/Orders.mjs\"), suspensible: false });", StringComparison.Ordinal);
+        Assert.AreEqual(1, catalog.ModuleText.Split("defineAsyncComponent({", StringSplitOptions.None).Length - 1);
+        Assert.AreEqual(2, catalog.ModuleText.Split("component: routePage0, layout: routeLayout0", StringSplitOptions.None).Length - 1);
         StringAssert.Contains(catalog.ModuleText, "Orders.mjs", StringComparison.Ordinal);
         StringAssert.Contains(catalog.ModuleText, "Shell.mjs", StringComparison.Ordinal);
         Assert.IsFalse(catalog.ModuleText.Contains("Plain.mjs", StringComparison.Ordinal), catalog.ModuleText);
@@ -51,6 +55,29 @@ public sealed class RazorVueRouteCatalogBuilderTests
         var firstTemplate = catalog.ModuleText.IndexOf("/orders/{id:int}", StringComparison.Ordinal);
         var secondTemplate = catalog.ModuleText.IndexOf("/orders/{id}/{ID}", StringComparison.Ordinal);
         Assert.IsTrue(firstTemplate >= 0 && secondTemplate >= 0 && firstTemplate < secondTemplate, catalog.ModuleText);
+    }
+
+    [TestMethod]
+    public void Build_EmptyRouteCatalogDoesNotImportVueAndArtifactOrderDoesNotChangeOutput()
+    {
+        var fixture = CreateFixture();
+        var noRoutes = fixture.Binding with
+        {
+            Components = ImmutableArray.Create(fixture.GetComponent("Plain"), fixture.GetComponent("Shell"))
+        };
+        var empty = RazorVueRouteCatalogBuilder.Build(noRoutes, ImmutableArray<VueModuleArtifact>.Empty);
+        Assert.IsEmpty(empty.PackageImports);
+        Assert.IsFalse(empty.ModuleText.Contains("import ", StringComparison.Ordinal), empty.ModuleText);
+
+        var artifacts = ImmutableArray.Create(
+            CreateArtifact(fixture.GetComponent("Orders").ComponentSymbol, "Pages/Orders.mjs"),
+            CreateArtifact(fixture.GetComponent("Shell").ComponentSymbol, "Layouts/Shell.mjs"));
+        var ordered = RazorVueRouteCatalogBuilder.Build(fixture.Binding, artifacts);
+        var reversed = RazorVueRouteCatalogBuilder.Build(
+            fixture.Binding with { Components = fixture.Binding.Components.Reverse().ToImmutableArray() },
+            artifacts.Reverse().ToImmutableArray());
+        Assert.AreEqual(ordered.ModuleText, reversed.ModuleText);
+        Assert.AreEqual(ordered.ContentHash, reversed.ContentHash);
     }
 
     [TestMethod]

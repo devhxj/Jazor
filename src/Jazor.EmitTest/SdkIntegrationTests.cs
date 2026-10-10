@@ -33,6 +33,7 @@ public sealed class SdkIntegrationTests
             .ToArray();
         CollectionAssert.Contains(jazorEntryNames, "build/Jazor.props");
         CollectionAssert.Contains(jazorEntryNames, "build/Jazor.targets");
+        CollectionAssert.Contains(jazorEntryNames, "build/Jazor.CompilationTiming.targets");
         CollectionAssert.Contains(jazorEntryNames, "buildTransitive/Jazor.Resources.targets");
         var jazorTransitiveEntries = jazorEntryNames
             .Where(static path => path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase))
@@ -73,9 +74,9 @@ public sealed class SdkIntegrationTests
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         CollectionAssert.AreEqual(
-            new[] { "buildTransitive/Jazor.Vue.targets" },
+            new[] { "buildTransitive/Jazor.CompilationTiming.targets", "buildTransitive/Jazor.Vue.targets" },
             vueBuildEntries,
-            "Jazor.Vue must expose one stable NuGet target; the target itself distinguishes direct tooling from transitive resources.");
+            "Jazor.Vue retains its stable NuGet entry target and imports the shared compilation-local timing target.");
         var vueNuspec = ReadPackageEntryText(package.VuePackagePath, "Jazor.Vue.nuspec");
         StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\" version=\"", StringComparison.Ordinal);
         StringAssert.Contains(vueNuspec, "exclude=\"Build,Analyzers\"", StringComparison.Ordinal);

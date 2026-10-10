@@ -32,7 +32,7 @@ internal sealed record ManifestModel
     {
     }
 
-    public ManifestModel(string RootAssemblyPath, List<ModuleEntry> Modules)
+    public ManifestModel(string RootAssemblyPath, List<ModuleEntry> Modules, IReadOnlyList<string>? BrowserEntries = null)
         : this(
             CurrentSchemaVersion,
             CurrentRuntimeProtocolVersion,
@@ -40,7 +40,7 @@ internal sealed record ManifestModel
             RootAssemblyPath,
             generatedAtUtc: null,
             Modules,
-            entries: null,
+            entries: BrowserEntries?.ToList(),
             assets: null)
     {
     }
@@ -313,12 +313,33 @@ internal sealed record ManifestModel
         if (selectedEntries.Length == 0)
             selectedEntries = modules.Select(static module => module.RelativePath).ToArray();
 
-        return selectedEntries
-            .Where(static entry => !string.IsNullOrWhiteSpace(entry))
-            .Select(NormalizeRelativePath)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(static entry => entry, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return ResolveBrowserEntries(selectedEntries, modules.Select(static module => module.RelativePath))?.ToList() ?? [];
+    }
+
+    internal static IReadOnlyList<string>? ResolveBrowserEntries(
+        IReadOnlyList<string>? entries,
+        IEnumerable<string> modulePaths)
+    {
+        if (entries is null || entries.Count == 0)
+            return null;
+
+        var paths = modulePaths.Select(NormalizeRelativePath)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static path => path, StringComparer.Ordinal)
+            .ToDictionary(static path => path, StringComparer.OrdinalIgnoreCase);
+        var resolved = new List<string>();
+        foreach (var entry in entries)
+        {
+            var path = NormalizeRelativePath(entry);
+            if (!paths.TryGetValue(path, out var catalogPath))
+                throw new InvalidOperationException($"Browser entry '{entry}' does not name a generated ModuleCatalog module.");
+            // 使用 catalog 原始大小写；CLI/MSBuild 的顺序或路径拼写不应改变入口产物。
+            resolved.Add(catalogPath);
+        }
+
+        return resolved.Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static List<AssetEntry> NormalizeAssets(IEnumerable<AssetEntry> assets)

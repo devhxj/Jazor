@@ -13,7 +13,8 @@ internal sealed record EmitOptions(
     string? DenoExecutablePath = null,
     IReadOnlyList<string>? ModuleAssemblyPaths = null,
     string? RuntimeIdentifier = null,
-    string? RuntimeIdentifierGraphPath = null)
+    string? RuntimeIdentifierGraphPath = null,
+    IReadOnlyList<string>? BrowserEntries = null)
 {
     public static bool TryParse(string[] args, out EmitOptions? options, out string? error)
     {
@@ -25,6 +26,7 @@ internal sealed record EmitOptions(
         var manifestPath = string.Empty;
         var assemblyPaths = new List<string>();
         var moduleAssemblyPaths = new List<string>();
+        var browserEntries = new List<string>();
         var mode = BuildMode.Development;
         var sourceRoot = string.Empty;
         var libraryManifests = new List<string>();
@@ -60,6 +62,18 @@ internal sealed record EmitOptions(
                     break;
                 case "--module-assembly-list":
                     if (!TryReadPathList(value, moduleAssemblyPaths, out error))
+                        return false;
+                    break;
+                case "--browser-entry":
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        error = "Browser entry must name a generated module path.";
+                        return false;
+                    }
+                    browserEntries.Add(value);
+                    break;
+                case "--browser-entry-list":
+                    if (!TryReadPathList(value, browserEntries, out error))
                         return false;
                     break;
                 case "--out":
@@ -143,7 +157,8 @@ internal sealed record EmitOptions(
             string.IsNullOrWhiteSpace(denoExecutablePath) ? null : Path.GetFullPath(denoExecutablePath),
             [.. moduleAssemblyPaths.Select(Path.GetFullPath)],
             string.IsNullOrWhiteSpace(runtimeIdentifier) ? null : runtimeIdentifier.Trim(),
-            string.IsNullOrWhiteSpace(runtimeIdentifierGraphPath) ? null : Path.GetFullPath(runtimeIdentifierGraphPath));
+            string.IsNullOrWhiteSpace(runtimeIdentifierGraphPath) ? null : Path.GetFullPath(runtimeIdentifierGraphPath),
+            browserEntries);
         return true;
     }
 

@@ -6,6 +6,42 @@ namespace Jazor.EmitTest;
 public sealed class EmitOptionsTests
 {
     [TestMethod]
+    public void TryParse_BrowserEntries_PreserveRelativeCatalogPaths()
+    {
+        var listPath = Path.Combine(RepositoryTemp.Root, "browser-entries-" + Guid.NewGuid().ToString("N") + ".txt");
+        Directory.CreateDirectory(Path.GetDirectoryName(listPath)!);
+        try
+        {
+            File.WriteAllLines(listPath, ["pages/editor.js", "", "  app.js  "]);
+            var parsed = EmitOptions.TryParse(
+                ["--root", "root.dll", "--out", "out", "--write-manifest", "state.json",
+                    "--browser-entry", "./app.js", "--browser-entry", "shell.js", "--browser-entry-list", listPath],
+                out var options, out var error);
+
+            Assert.IsTrue(parsed, error);
+            Assert.IsNotNull(options);
+            CollectionAssert.AreEqual(new[] { "./app.js", "shell.js", "pages/editor.js", "app.js" }, options.BrowserEntries!.ToArray());
+        }
+        finally
+        {
+            File.Delete(listPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void TryParse_EmptyBrowserEntry_ReportsInputError(string entry)
+    {
+        var parsed = EmitOptions.TryParse(
+            ["--root", "root.dll", "--out", "out", "--write-manifest", "state.json", "--browser-entry", entry],
+            out _, out var error);
+
+        Assert.IsFalse(parsed);
+        StringAssert.Contains(error, "Browser entry must name a generated module path");
+    }
+
+    [TestMethod]
     public void TryParse_PathLists_PreservePathsAndIgnoreBlankLines()
     {
         var root = Path.Combine(RepositoryTemp.Root, "jazor-emit-options-" + Guid.NewGuid().ToString("N"));

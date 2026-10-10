@@ -18,7 +18,8 @@ internal sealed class ModuleWriter
         string rootAssemblyPath,
         string outputDirectory,
         string manifestPath,
-        IReadOnlyList<ModuleRecord> modules)
+        IReadOnlyList<ModuleRecord> modules,
+        IReadOnlyList<string>? browserEntries = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootAssemblyPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
@@ -32,7 +33,7 @@ internal sealed class ModuleWriter
             var preparedModules = PrepareModules(modules);
             var preparedAssets = PrepareAssets(modules);
             var existingManifest = ManifestModel.TryLoad(manifestFile);
-            var nextManifest = BuildManifest(rootAssemblyPath, preparedModules, preparedAssets);
+            var nextManifest = BuildManifest(rootAssemblyPath, preparedModules, preparedAssets, browserEntries);
             var desiredFiles = BuildDesiredFiles(outputRoot, preparedModules);
             ValidateManifestCollision(manifestFile, desiredFiles);
 
@@ -205,7 +206,8 @@ internal sealed class ModuleWriter
     private static ManifestModel BuildManifest(
         string rootAssemblyPath,
         IReadOnlyList<PreparedModule> modules,
-        IReadOnlyList<AssetEntry> assets)
+        IReadOnlyList<AssetEntry> assets,
+        IReadOnlyList<string>? browserEntries)
     {
         var entries = modules
             .Select(static module => new ModuleEntry(
@@ -220,7 +222,7 @@ internal sealed class ModuleWriter
                 module.Hmr,
                 module.Dependencies))
             .ToList();
-        var manifest = new ManifestModel(rootAssemblyPath, entries);
+        var manifest = new ManifestModel(rootAssemblyPath, entries, browserEntries);
         manifest.Assets.AddRange(assets);
         return manifest;
     }
