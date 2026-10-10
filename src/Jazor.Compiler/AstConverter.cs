@@ -87,6 +87,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
+    // GetSemanticModel creates a fresh binder. Partial declarations repeatedly visit the
+    // same code-behind tree; reuse its model only within this converter's fixed Compilation.
+    // 局部树模型不跨 compilation，也不改变主树传入的 SemanticModel/options。
+    private readonly Dictionary<SyntaxTree, SemanticModel> _semanticModels = [];
     private readonly AstConverterOptions _options = options ?? AstConverterOptions.Default;
     private readonly AstConverterModulePolicy _modulePolicy = options?.ModulePolicy ?? AstConverterModulePolicy.Default;
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
@@ -411,9 +415,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 _projectSourceImportKeys);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
-        => syntax.SyntaxTree == _classModel.SyntaxTree
-            ? _classModel
-            : _classModel.Compilation.GetSemanticModel(syntax.SyntaxTree);
+    {
+        if (syntax.SyntaxTree == _classModel.SyntaxTree)
+            return _classModel;
+        if (!_semanticModels.TryGetValue(syntax.SyntaxTree, out var model))
+        {
+            model = _classModel.Compilation.GetSemanticModel(syntax.SyntaxTree);
+            _semanticModels.Add(syntax.SyntaxTree, model);
+        }
+        return model;
+    }
 
     /// <summary>
     /// 

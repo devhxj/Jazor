@@ -13,6 +13,29 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class CurrentComponentMemberClosureTests
 {
     [TestMethod]
+    public void Build_NewCompilationUsesChangedReachableBody()
+    {
+        foreach (var selected in new[] { "First", "Second" })
+        {
+            var fixture = CompileComponent(
+                $$"""
+                public sealed class CounterComponent : ComponentBase
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        => builder.AddContent(0, Read());
+                    private int Read() => {{selected}}();
+                    private int First() => 1;
+                    private int Second() => 2;
+                }
+                """);
+            var closure = CurrentComponentMemberClosure.Build(fixture.ComponentType, fixture.SemanticModel,
+                [fixture.GetMethod("BuildRenderTree")]);
+            Assert.IsTrue(closure.Contains(fixture.GetMethod(selected)));
+            Assert.IsFalse(closure.Contains(fixture.GetMethod(selected == "First" ? "Second" : "First")));
+        }
+    }
+
+    [TestMethod]
     public void Build_FromBuildRenderTreeRoot_IncludesReachableMembersAndExcludesUnreachableMembers()
     {
         var fixture = CompileComponent(

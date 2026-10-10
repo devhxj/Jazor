@@ -21,7 +21,6 @@ namespace Jazor.RazorVue.RazorSdk;
 /// </remarks>
 internal static class LibraryComponentConventions
 {
-    private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string InjectAttributeMetadataName = "Microsoft.AspNetCore.Components.InjectAttribute";
     private const string CascadingParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.CascadingParameterAttribute";
     private const string AuthenticationStateMetadataName = "Jazor.AspNetCore.JazorAuthenticationState";
@@ -51,11 +50,30 @@ internal static class LibraryComponentConventions
     }
 
     public static bool IsParameterProperty(IPropertySymbol property)
-        => property.GetAttributes().Any(static attribute =>
-            string.Equals(
-                attribute.AttributeClass!.ToDisplayString(),
-                ParameterAttributeMetadataName,
-                StringComparison.Ordinal));
+        => property.GetAttributes().Any(IsParameterAttribute);
+
+    // Every rendered prop reaches this hot path. Match the exact metadata name without
+    // allocating a Roslyn display string; namespace, nesting and arity remain significant.
+    // 仍是原来的完整类型名契约，不能只按 ParameterAttribute 短名接受其他 attribute。
+    private static bool IsParameterAttribute(AttributeData attribute)
+        => attribute.AttributeClass is
+        {
+            MetadataName: "ParameterAttribute",
+            ContainingType: null,
+            ContainingNamespace:
+            {
+                Name: "Components",
+                ContainingNamespace:
+                {
+                    Name: "AspNetCore",
+                    ContainingNamespace:
+                    {
+                        Name: "Microsoft",
+                        ContainingNamespace: { IsGlobalNamespace: true }
+                    }
+                }
+            }
+        };
 
     /// <summary>
     /// Returns whether a Razor parameter receives attributes that do not match a declared
@@ -67,11 +85,7 @@ internal static class LibraryComponentConventions
         if (property is null)
             throw new ArgumentNullException(nameof(property));
 
-        var parameter = property.GetAttributes().FirstOrDefault(static attribute =>
-            string.Equals(
-                attribute.AttributeClass?.OriginalDefinition.ToDisplayString(),
-                ParameterAttributeMetadataName,
-                StringComparison.Ordinal));
+        var parameter = property.GetAttributes().FirstOrDefault(IsParameterAttribute);
         if (parameter is null)
             return false;
 

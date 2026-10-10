@@ -32,6 +32,8 @@
 
 Source builds also report Emit stage timings and live restore/check/bundle output. Cancellation during Deno startup terminates the owned process tree; see [development and testing](docs/03-guides/development-and-testing.md).
 
+Unreleased source compilation also reduces repeated semantic binding for RazorVue code-behind members. Models are reused within each conversion or member closure, with separate state for each compilation; parameter metadata checks retain the same exact type-name contract.
+
 The existing build benchmark can analyze a consumer's Release `dist` with `--release-artifacts <directory>`, reporting raw/gzip sizes for the entry, static dependencies, and lazy assets.
 
 It also measures an actual host with `--consumer-project <csproj> --skip-hmr`, keeping the consumer's package cache and recording its commit separately. Browser first-screen and HMR observations can be attached with `--browser-observations <json>`; see [measurement definitions](docs/03-guides/development-and-testing.md).

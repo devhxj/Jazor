@@ -163,6 +163,10 @@ internal sealed class CurrentComponentMemberClosure
     {
         private readonly INamedTypeSymbol _componentType;
         private readonly Compilation _compilation;
+        // One closure owns one immutable Compilation and visits members serially. Reusing
+        // a tree's model avoids rebinding each reachable method; nothing survives this build.
+        // 缓存仅属于本次 closure；不能跨编译复用旧符号或需要全局失效规则。
+        private readonly Dictionary<SyntaxTree, SemanticModel> _semanticModels = new();
         private readonly CancellationToken _cancellationToken;
         private readonly Queue<ISymbol> _pendingSymbols = new();
         private readonly HashSet<ISymbol> _processedSymbols = new(SymbolEqualityComparer.Default);
@@ -381,7 +385,14 @@ internal sealed class CurrentComponentMemberClosure
         }
 
         private SemanticModel GetSemanticModel(SyntaxTree syntaxTree)
-            => _compilation.GetSemanticModel(syntaxTree);
+        {
+            if (!_semanticModels.TryGetValue(syntaxTree, out var model))
+            {
+                model = _compilation.GetSemanticModel(syntaxTree);
+                _semanticModels.Add(syntaxTree, model);
+            }
+            return model;
+        }
 
         private bool IsCurrentComponentMemberReference(ISymbol symbol, IOperation? instance)
         {

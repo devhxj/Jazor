@@ -4,6 +4,8 @@
 
 ## 未发布：下一轮开发体验改进
 
+- 缩减 RazorVue 页面重编译中的重复语义绑定：同一次转换/成员闭包内复用源码树模型，组件参数识别避免反复格式化类型名。复用只在本次不可变编译中生效，保留独立编译的诊断与生成结果。
+
 - 作者代码重建时，内容未变化的库资源保留文件与时间戳，避免无关 Vite 更新以及 Windows 读取期间的文件替换失败；依赖更新或输出损坏时仍按 manifest hash 校验并重新物化。
 
 - 官方 Pagination 的页码/每页数量事件携带 `Number`，固定字符串 `ElStringDatePicker` 支持 date/datetime 的选择与清空；应用可删除对应的本地绑定。**迁移**：`OnCurrentChange` / `OnSizeChange` handler 接受 `Number`，日期组件指定 `ValueFormat`，清空接受 null。

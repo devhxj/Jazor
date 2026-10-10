@@ -30,6 +30,8 @@
 
 未发布源码已增加分页数值事件、字符串日期绑定及基于 manifest 的 Release 样式接入；Emit 还会显示阶段耗时和即时 restore/check/bundle 输出，启动期间取消会终止自身 Deno 进程树。这些改进尚不属于公开 preview.8 包，详情见[更新日志](CHANGELOG.md)。
 
+源码编译还减少了 RazorVue 页面成员的重复语义绑定：模型只在单次转换/成员闭包内复用，组件参数识别避免反复格式化类型名；每次编译仍有独立的符号和诊断。
+
 现有构建 benchmark 支持 `--release-artifacts <dist目录>`，只读统计消费者 Release 入口、静态依赖及懒加载资源的原始/gzip 体积，详见[开发与测试指南](docs/03-guides/development-and-testing.md)。
 
 工具还可通过 `--consumer-project <csproj> --skip-hmr` 测量真实宿主，保留消费者包缓存并单独记录其提交；`--browser-observations <json>` 接入首屏与 HMR 的浏览器观测，具体统计口径见开发与测试指南。

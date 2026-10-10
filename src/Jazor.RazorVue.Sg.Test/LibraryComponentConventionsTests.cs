@@ -9,6 +9,46 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class LibraryComponentConventionsTests
 {
     [TestMethod]
+    public void Parameters_RequireExactMetadataNameAndPreserveCaptureFlag()
+    {
+        var compilation = CreateCompilation(
+            """
+            namespace Other
+            {
+                public sealed class ParameterAttribute : System.Attribute
+                {
+                    public bool CaptureUnmatchedValues { get; set; }
+                }
+            }
+            namespace Microsoft.AspNetCore.Components
+            {
+                public static class Container
+                {
+                    public sealed class ParameterAttribute : System.Attribute { }
+                }
+            }
+            namespace Demo
+            {
+                public sealed class Widget
+                {
+                    [Microsoft.AspNetCore.Components.Parameter(CaptureUnmatchedValues = true)]
+                    public string Actual { get; set; } = "";
+                    [Other.Parameter(CaptureUnmatchedValues = true)]
+                    public string SameName { get; set; } = "";
+                    [Microsoft.AspNetCore.Components.Container.Parameter]
+                    public string Nested { get; set; } = "";
+                }
+            }
+            """);
+        var widget = GetNamedType(compilation, "Demo.Widget");
+        CollectionAssert.AreEqual(new[] { "Actual" },
+            LibraryComponentConventions.GetEffectiveParameterProperties(widget).Select(property => property.Name).ToArray());
+        Assert.IsTrue(LibraryComponentConventions.CapturesUnmatchedValues(GetDeclaredProperty(widget, "Actual")));
+        Assert.IsFalse(LibraryComponentConventions.CapturesUnmatchedValues(GetDeclaredProperty(widget, "SameName")));
+        Assert.IsFalse(LibraryComponentConventions.IsParameterProperty(GetDeclaredProperty(widget, "Nested")));
+    }
+
+    [TestMethod]
     public void Naming_UsesExplicitMemberMetadataWithoutVueInference()
     {
         var compilation = CreateCompilation(
