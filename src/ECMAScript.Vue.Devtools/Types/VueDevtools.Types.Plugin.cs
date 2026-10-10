@@ -153,6 +153,26 @@ public static partial class VueDevtools
         /// <summary>从 decimal 创建 choice 值；helper 在发射时就是 identity expression。</summary>
         [ECMAScriptInline("__arg1")]
         public extern static ChoiceValue From(decimal value);
+        #region Generated union numeric conversions
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(byte value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(decimal value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(double value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(float value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(int value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(sbyte value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(short value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(uint value) => (ChoiceValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ChoiceValue(ushort value) => (ChoiceValue)(ECMAScript.Number)value;
+        #endregion
     }
 
     /// <summary>Choice setting 的一个可选项。</summary>

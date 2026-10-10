@@ -61,6 +61,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 组件的宽度。
     /// Width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -69,6 +70,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 组件的最小宽度。
     /// Minimum width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -77,6 +79,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 组件的最大宽度。
     /// Maximum width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -85,6 +88,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 前置图标。
     /// Prepend icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 PrependIcon="@value"，并保持声明的分支类型。字符串用 PrependIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prependIcon")]
     public VuetifyIconValue? PrependIcon { get; set; }
@@ -93,6 +97,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 后置图标。
     /// Append icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 AppendIcon="@value"，并保持声明的分支类型。字符串用 AppendIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendIcon")]
     public VuetifyIconValue? AppendIcon { get; set; }
@@ -117,6 +122,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 图标的颜色。
     /// Color of the icons.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconColorValue?；值域为 bool | string。变量用 IconColor="@value"，并保持声明的分支类型。字符串用 IconColor="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("iconColor")]
     public VuetifyIconColorValue? IconColor { get; set; }
@@ -165,6 +171,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 显示在输入控件下方的消息列表。
     /// Messages displayed below the input control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
@@ -173,6 +180,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 是否隐藏提示详情区域。
     /// Whether to hide the details area.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyHideDetailsValue?；值域为 bool | VuetifyHideDetailsMode。变量用 HideDetails="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
@@ -197,6 +205,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 是否禁用输入控件。
     /// Whether to disable the input control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Disabled="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public VuetifyNullableBoolean? Disabled { get; set; }
@@ -205,6 +214,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 是否将输入控件设为只读。
     /// Whether to make the input control read-only.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Readonly="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("readonly")]
     public VuetifyNullableBoolean? Readonly { get; set; }
@@ -221,6 +231,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 错误状态下显示的消息列表。
     /// Messages displayed when in an error state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 ErrorMessages="@value"，并保持声明的分支类型。字符串用 ErrorMessages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("errorMessages")]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
@@ -229,6 +240,7 @@ public sealed class VInput : ComponentBase, IVuetifyComponent
     /// 最大显示错误数量。
     /// Maximum number of errors to display.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxErrors="@(32)"；变量用 MaxErrors="@value"，无需 double 后缀。字符串用 MaxErrors="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxErrors")]
     public VueStringNumberValue? MaxErrors { get; set; }

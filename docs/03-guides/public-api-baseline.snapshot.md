@@ -1,4 +1,4 @@
-# Public API snapshot (2026-10-09)
+# Public API snapshot (2026-10-10)
 
 ## ECMAScript.DateFns
 - type ECMAScript.DateFns
@@ -5969,7 +5969,15 @@
   - Void .ctor(ECMAScript.ElementPlus.ElComponentSize)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(VueNumberPair)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(Byte)
   - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(Double)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(Int16)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(Int32)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(SByte)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(Single)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(System.Decimal)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(UInt16)
+  - ECMAScript.ElementPlus.ElSpaceSizeValue op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.ElementPlus.ElComponentSize] get_AsComponentSize()
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Nullable`1[ECMAScript.Vue+VueNumberPair] get_AsPair()
@@ -6684,9 +6692,11 @@
   - ECMAScript.ElementPlus.ElTableCellStyleCallback get_AsCallback()
   - System.Nullable`1[ECMAScript.Vue+VueStyleValue] get_AsStyle()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.ElementPlus.ElTableCellStyleCallback AsCallback
   - System.Nullable`1[ECMAScript.Vue+VueStyleValue] AsStyle
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.ElementPlus.ElTableColumn
   - Void .ctor()
   - ECMAScript.ElementPlus.ElTableColumnFilterMethodCallback get_FilterMethod()
@@ -6867,6 +6877,15 @@
   - Void .ctor(ECMAScript.ElementPlus.ElTableColumnIndexCallback)
   - Void .ctor(ECMAScript.Number)
   - ECMAScript.ElementPlus.ElTableColumnIndexCallback get_AsCallback()
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(Byte)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(Double)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(Int16)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(Int32)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(SByte)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(Single)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(System.Decimal)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(UInt16)
+  - ECMAScript.ElementPlus.ElTableColumnIndexValue op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - ECMAScript.ElementPlus.ElTableColumnIndexCallback AsCallback
@@ -7074,9 +7093,11 @@
   - ECMAScript.ElementPlus.ElTableRowStyleCallback get_AsCallback()
   - System.Nullable`1[ECMAScript.Vue+VueStyleValue] get_AsStyle()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.ElementPlus.ElTableRowStyleCallback AsCallback
   - System.Nullable`1[ECMAScript.Vue+VueStyleValue] AsStyle
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.ElementPlus.ElTableSlotContext
   - Void .ctor()
   - Boolean Equals(ECMAScript.ElementPlus.ElTableSlotContext)
@@ -7984,7 +8005,15 @@
   - Void .ctor(ECMAScript.ElementPlus.ElThrottleRenderOptions)
   - Void .ctor(ECMAScript.Number)
   - ECMAScript.ElementPlus.ElThrottleRenderOptions get_AsOptions()
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(Byte)
   - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(Double)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(Int16)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(Int32)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(SByte)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(Single)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(System.Decimal)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(UInt16)
+  - ECMAScript.ElementPlus.ElThrottleValue op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - ECMAScript.ElementPlus.ElThrottleRenderOptions AsOptions
@@ -20826,6 +20855,15 @@
 - type ECMAScript.TDesign.TBackTopOffsetValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBackTopOffsetValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TBackTopShapeEnum
@@ -20844,6 +20882,15 @@
 - type ECMAScript.TDesign.TBackTopVisibleHeightValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(Double)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(Single)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBackTopVisibleHeightValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBadge
@@ -20884,11 +20931,29 @@
 - type ECMAScript.TDesign.TBadgeCountValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(Double)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(Single)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBadgeCountValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBadgeOffsetValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBadgeOffsetValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TBadgeShapeValue
@@ -21142,11 +21207,29 @@
 - type ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(Double)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(Single)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBaseTableActiveChangeEventActiveRowKeysItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBaseTableActiveRowKeysValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TBaseTableActiveRowTypeValue
@@ -21289,6 +21372,15 @@
 - type ECMAScript.TDesign.TBaseTableColMinWidth`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBaseTableColMinWidth`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBaseTableColParams`1
@@ -21336,6 +21428,15 @@
 - type ECMAScript.TDesign.TBaseTableColWidth`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBaseTableColWidth`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBaseTableCol`1
@@ -21451,6 +21552,15 @@
 - type ECMAScript.TDesign.TBaseTableHeightValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(Double)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(Single)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBaseTableHeightValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBaseTableHorizontalScrollAffixedBottomValue
@@ -21461,6 +21571,15 @@
 - type ECMAScript.TDesign.TBaseTableMaxHeightValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(Double)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(Single)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TBaseTableMaxHeightValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TBaseTablePaginationAffixedBottomValue
@@ -22120,6 +22239,15 @@
 - type ECMAScript.TDesign.TCalendarMonthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCalendarMonthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TCalendarThemeValue
@@ -22152,6 +22280,15 @@
 - type ECMAScript.TDesign.TCalendarYearValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCalendarYearValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCallback
@@ -22282,6 +22419,15 @@
 - type ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(Byte)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(Double)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(Int16)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(Int32)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(SByte)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(Single)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCascaderCascaderOptionDefaultTDefault op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCascaderChangeContext`1
@@ -22371,6 +22517,15 @@
 - type ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(Byte)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(Double)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(Int16)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(Int32)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(SByte)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(Single)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCascaderFilterValueNodeTDefaultTDefault op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCascaderFilterValueResult`1
@@ -22487,6 +22642,15 @@
   - Void .ctor(ECMAScript.TDesign.TCascaderValue`1[T][])
   - Void .ctor(System.String)
   - Void .ctor(T)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCascaderValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCascader`1
@@ -22877,6 +23041,15 @@
 - type ECMAScript.TDesign.TCheckTagChangeContextValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagChangeContextValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckTagClickEventContext
@@ -22896,6 +23069,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
   - Void .ctor(System.String[])
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagContentValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckTagGroup
@@ -22949,6 +23131,15 @@
 - type ECMAScript.TDesign.TCheckTagGroupChangeContextValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagGroupChangeContextValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckTagGroupOption
@@ -23005,6 +23196,15 @@
   - Void .ctor(Microsoft.AspNetCore.Components.RenderFragment)
   - Void .ctor(System.String)
   - Void .ctor(System.String[])
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagGroupOptionContent op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckTagGroupOptionDefault
@@ -23043,16 +23243,43 @@
 - type ECMAScript.TDesign.TCheckTagGroupOptionValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagGroupOptionValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckTagGroupValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagGroupValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckTagValueValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckTagValueValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckbox
@@ -23132,6 +23359,15 @@
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckboxGroupChangeContextCurrent op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckboxGroupChangeContextOption
@@ -23147,6 +23383,15 @@
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckboxGroupValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckboxGroup`1
@@ -23179,6 +23424,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TCheckboxOptionObj)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckboxOption op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckboxOptionObj
@@ -23268,12 +23522,30 @@
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckboxOptionObjValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckboxValueValue
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCheckboxValueValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCheckedOptions
@@ -23358,36 +23630,99 @@
 - type ECMAScript.TDesign.TColFlexValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColFlexValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColLgValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TBaseColProps)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColLgValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColMdValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TBaseColProps)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColMdValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColSmValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TBaseColProps)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColSmValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColXlValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TBaseColProps)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColXlValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColXsValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TBaseColProps)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColXsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColXxlValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TBaseColProps)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(Double)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(Single)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TColXxlValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCollapse
@@ -23464,11 +23799,29 @@
 - type ECMAScript.TDesign.TCollapsePanelValueValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(Double)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(Single)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCollapsePanelValueValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TCollapseValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TCollapseValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TColorObject
@@ -25964,6 +26317,15 @@
   - Void .ctor(ECMAScript.Date)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDateValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TDateValue op_Implicit(Double)
+  - ECMAScript.TDesign.TDateValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TDateValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TDateValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TDateValue op_Implicit(Single)
+  - ECMAScript.TDesign.TDateValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDateValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDateValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TDayjs
@@ -26522,11 +26884,29 @@
 - type ECMAScript.TDesign.TDialogTopValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(Double)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(Single)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDialogTopValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TDialogWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDialogWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TDirection
@@ -27009,6 +27389,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(Double)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(Single)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDropdownClickEventDropdownItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TDropdownDirectionValue
@@ -27061,6 +27450,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(Double)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(Single)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDropdownItemClickEventDropdownItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TDropdownItemTheme
@@ -27073,16 +27471,43 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(Double)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(Single)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDropdownItemValueValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TDropdownMaxColumnWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDropdownMaxColumnWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TDropdownMinColumnWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TDropdownMinColumnWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TDropdownOption
@@ -27265,6 +27690,15 @@
 - type ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TEnhancedTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TEnhancedTableAsyncLoadingClickEventContextStatus
@@ -27333,16 +27767,43 @@
 - type ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TEnhancedTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TEnhancedTableExpandedTreeNodesValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TEnhancedTableScrollEventParams`1
@@ -27387,6 +27848,15 @@
 - type ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TEnhancedTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TEnhancedTableTreeExpandAndFoldIconSlotContextType
@@ -27713,6 +28183,15 @@
 - type ECMAScript.TDesign.TFormItemLabelWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TFormItemLabelWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TFormItemStatusValue
@@ -27728,6 +28207,15 @@
 - type ECMAScript.TDesign.TFormLabelWidthValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(Byte)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(Double)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(Int16)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(Int32)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(SByte)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(Single)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TFormLabelWidthValue`1[FormData] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TFormLayoutValue
@@ -27832,16 +28320,43 @@
 - type ECMAScript.TDesign.TFormRuleLen
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(Byte)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(Double)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(Int16)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(Int32)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(SByte)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(Single)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(UInt16)
+  - ECMAScript.TDesign.TFormRuleLen op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TFormRuleMax
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(Byte)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(Double)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(Int16)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(Int32)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(SByte)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(Single)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(UInt16)
+  - ECMAScript.TDesign.TFormRuleMax op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TFormRuleMin
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(Byte)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(Double)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(Int16)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(Int32)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(SByte)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(Single)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(UInt16)
+  - ECMAScript.TDesign.TFormRuleMin op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TFormRulePattern
@@ -35522,6 +36037,15 @@
 - type ECMAScript.TDesign.TGuideStepOffsetItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(Double)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(Single)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TGuideStepOffsetItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TGuideStepPlacement
@@ -36246,6 +36770,15 @@
 - type ECMAScript.TDesign.TInputMaxlengthValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TInputMaxlengthValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TInputMouseenterEventContext`1
@@ -36295,6 +36828,15 @@
 - type ECMAScript.TDesign.TInputNumberDecimalPlaces
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TInputNumberDecimalPlacesOption2)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(Byte)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(Double)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(Int16)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(Int32)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(SByte)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(Single)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(UInt16)
+  - ECMAScript.TDesign.TInputNumberDecimalPlaces op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TInputNumberDecimalPlacesOption2
@@ -36432,6 +36974,15 @@
 - type ECMAScript.TDesign.TInputNumberValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(Double)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(Single)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TInputNumberValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TInputNumber`1
@@ -36581,6 +37132,15 @@
 - type ECMAScript.TDesign.TInputValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TInputValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TInputValue op_Implicit(Double)
+  - ECMAScript.TDesign.TInputValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TInputValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TInputValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TInputValue op_Implicit(Single)
+  - ECMAScript.TDesign.TInputValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TInputValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TInputValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TInputValueChangeContext
@@ -36918,6 +37478,15 @@
 - type ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(Byte)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(Double)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(Int16)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(Int32)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(SByte)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(Single)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(UInt16)
+  - ECMAScript.TDesign.TIsURLOptionsMaxAllowedLength op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TJsonObject
@@ -36936,6 +37505,15 @@
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(ECMAScript.TDesign.TJsonValue[])
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(Double)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(Single)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TJsonValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TJumperDisabledConfig
@@ -37473,17 +38051,44 @@
 - type ECMAScript.TDesign.TMenuValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(Double)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(Single)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TMenuValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TMenuWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TMenuWidthValueOption3Item[])
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TMenuWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TMenuWidthValueOption3Item
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(Byte)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(Double)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(Int16)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(Int32)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(SByte)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(Single)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(UInt16)
+  - ECMAScript.TDesign.TMenuWidthValueOption3Item op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TMessage
@@ -37630,6 +38235,15 @@
 - type ECMAScript.TDesign.TMessageConfigOffsetItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(Double)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(Single)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TMessageConfigOffsetItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TMessageConfigOnClose
@@ -37843,6 +38457,15 @@
 - type ECMAScript.TDesign.TOptionDataValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(Double)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(Single)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TOptionDataValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TOptionGroup
@@ -37858,6 +38481,15 @@
   - Void .ctor(ECMAScript.BigInt)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(Double)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(Single)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TOptionValueValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPageInfo
@@ -38030,6 +38662,15 @@
 - type ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TPaginationPageSizeOptionsValueItemOption2)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPaginationPageSizeOptionsValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPaginationPageSizeOptionsValueItemOption2
@@ -38337,6 +38978,15 @@
 - type ECMAScript.TDesign.TPopupDelayValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.Number[])
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(Double)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(Single)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPopupDelayValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPopupOverlayClickEventContext
@@ -38535,11 +39185,29 @@
 - type ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableActiveRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TPrimaryTableActiveRowTypeValue
@@ -38890,16 +39558,43 @@
 - type ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableEditableRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableExpandedRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableFilterIconSlotContext`1
@@ -38931,6 +39626,15 @@
 - type ECMAScript.TDesign.TPrimaryTableHeightValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableHeightValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableHorizontalScrollAffixedBottomValue`1
@@ -38941,11 +39645,29 @@
 - type ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableMaxHeightValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableOnEditedContext`1
@@ -39106,11 +39828,29 @@
 - type ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TPrimaryTableSelectedRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TPrimaryTableTableLayoutValue
@@ -39547,6 +40287,15 @@
 - type ECMAScript.TDesign.TProgressSizeValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(Double)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(Single)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TProgressSizeValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TProgressStatus
@@ -39558,6 +40307,15 @@
 - type ECMAScript.TDesign.TProgressStrokeWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TProgressStrokeWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TProgressTheme
@@ -39639,6 +40397,15 @@
 - type ECMAScript.TDesign.TQRCodeIconSizeValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TQRCodeIconSizeValueOption2)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(Double)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(Single)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TQRCodeIconSizeValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TQRCodeIconSizeValueOption2
@@ -39818,6 +40585,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TRadioOptionObj)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(Byte)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(Double)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(Int16)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(Int32)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(SByte)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(Single)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(UInt16)
+  - ECMAScript.TDesign.TRadioOption op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TRadioOptionObj
@@ -39848,12 +40624,30 @@
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(Double)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(Single)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TRadioOptionObjValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TRadioValue
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(Double)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(Single)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TRadioValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TRadio`1
@@ -40319,6 +41113,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TRemoveOptionsValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TRemoveOptions`1
@@ -40527,11 +41330,29 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TGutterObject)
   - Void .ctor(ECMAScript.TDesign.TRowGutterValueOption3Item[])
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(Double)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(Single)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TRowGutterValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TRowGutterValueOption3Item
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TGutterObject)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(Byte)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(Double)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(Int16)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(Int32)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(SByte)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(Single)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(UInt16)
+  - ECMAScript.TDesign.TRowGutterValueOption3Item op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TRowJustifyValue
@@ -40771,6 +41592,15 @@
   - Void .ctor(ECMAScript.BigInt)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSelectCreateEventValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSelectEnterEventContext`1
@@ -41165,6 +41995,15 @@
 - type ECMAScript.TDesign.TSelectInputTagSlotContextValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(Double)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(Single)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSelectInputTagSlotContextValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSelectInputValue
@@ -41175,6 +42014,15 @@
   - Void .ctor(ECMAScript.TDesign.TJsonValue[])
   - Void .ctor(ECMAScript.TDesign.TSelectInputValue[])
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(Double)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(Single)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSelectInputValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSelectInputValueChangeContext
@@ -41316,6 +42164,15 @@
   - Void .ctor(ECMAScript.BigInt)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSelectRemoveContextValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSelectRemoveContext`1
@@ -41404,6 +42261,15 @@
   - Void .ctor(ECMAScript.TDesign.TSelectValue`1[T][])
   - Void .ctor(System.String)
   - Void .ctor(T)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSelectValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSelect`1
@@ -41670,6 +42536,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TSkeletonRowColObj)
   - Void .ctor(ECMAScript.TDesign.TSkeletonRowColObj[])
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(Double)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(Single)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSkeletonRowColItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSkeletonRowColObj
@@ -41841,6 +42716,15 @@
 - type ECMAScript.TDesign.TSliderValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.Number[])
+  - ECMAScript.TDesign.TSliderValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(Double)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(Single)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSliderValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSortInfo
@@ -42214,6 +43098,15 @@
 - type ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(Byte)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(Double)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(Int16)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(Int32)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(SByte)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(Single)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSortableOptionsOnMoveOption1Result op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSortableOptionsOnRemoveOption1
@@ -42311,6 +43204,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TSizeEnum)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(Byte)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(Double)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(Int16)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(Int32)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(SByte)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(Single)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSpaceSize op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSpaceSizeValue
@@ -42453,6 +43355,15 @@
 - type ECMAScript.TDesign.TStepItemValueValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(Double)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(Single)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStepItemValueValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TStepPopupPlacement
@@ -42517,11 +43428,29 @@
 - type ECMAScript.TDesign.TStepsChangeEventCurrent
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(Byte)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(Double)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(Int16)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(Int32)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(SByte)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(Single)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStepsChangeEventCurrent op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TStepsChangeEventPrevious
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(Byte)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(Double)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(Int16)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(Int32)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(SByte)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(Single)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStepsChangeEventPrevious op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TStepsConfig
@@ -42543,6 +43472,15 @@
 - type ECMAScript.TDesign.TStepsCurrentValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(Double)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(Single)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStepsCurrentValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TStepsLayoutValue
@@ -42653,6 +43591,15 @@
 - type ECMAScript.TDesign.TStickyToolOffsetValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStickyToolOffsetValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TStickyToolPlacementValue
@@ -42674,6 +43621,15 @@
 - type ECMAScript.TDesign.TStickyToolWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStickyToolWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TStyles
@@ -42689,6 +43645,15 @@
 - type ECMAScript.TDesign.TStylesIndex
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(Byte)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(Double)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(Int16)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(Int32)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(SByte)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(Single)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(UInt16)
+  - ECMAScript.TDesign.TStylesIndex op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSubmenu
@@ -43033,6 +43998,15 @@
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(Double)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(Single)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TSwitchValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TSwitch`1
@@ -43118,6 +44092,15 @@
 - type ECMAScript.TDesign.TTabValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTabValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTabValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTabValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTabValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTabValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTabValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTabValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTabValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTabValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableAbnormalDragSortContext`1
@@ -43139,11 +44122,29 @@
 - type ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableActiveChangeEventActiveRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableActiveRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableActiveRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTableActiveRowTypeValue
@@ -43362,6 +44363,15 @@
 - type ECMAScript.TDesign.TTableColumnGroupValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableColumnGroupValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableColumnResizeChangeEventContextColumnsWidth`1
@@ -43593,6 +44603,15 @@
 - type ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableEditableCellPropsParamsUpdateEditedCellValueValOption2`1
@@ -43667,6 +44686,15 @@
 - type ECMAScript.TDesign.TTableEditableRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableEditableRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableErrorListMap
@@ -43682,11 +44710,29 @@
 - type ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableExpandChangeEventExpandedRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableExpandedRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableExpandedRowParamsColumns`1
@@ -43764,6 +44810,15 @@
 - type ECMAScript.TDesign.TTableHeightValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableHeightValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableHorizontalScrollAffixedBottomValue`1
@@ -43774,11 +44829,29 @@
 - type ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableIndeterminateSelectedRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableMaxHeightValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableMaxHeightValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTablePaginationAffixedBottomValue`1
@@ -43850,6 +44923,15 @@
 - type ECMAScript.TDesign.TTableRowStateId`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableRowStateId`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableRowState`1
@@ -43964,11 +45046,29 @@
 - type ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableSelectChangeEventSelectedRowKeysItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTableSelectedRowKeysValueItem`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTableSort
@@ -44795,6 +45895,15 @@
 - type ECMAScript.TDesign.TTagInputChangeContextItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(Double)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(Single)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagInputChangeContextItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTagInputClearEventContext
@@ -44894,11 +46003,29 @@
 - type ECMAScript.TDesign.TTagInputDragSortContextCurrent
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(Double)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(Single)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagInputDragSortContextCurrent op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTagInputDragSortContextTarget
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(Double)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(Single)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagInputDragSortContextTarget op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTagInputEnterEventContext
@@ -45012,6 +46139,15 @@
 - type ECMAScript.TDesign.TTagInputRemoveContextItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(Double)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(Single)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagInputRemoveContextItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTagInputRemoveTrigger
@@ -45040,6 +46176,15 @@
 - type ECMAScript.TDesign.TTagInputTagSlotContextValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagInputTagSlotContextValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTagInputTriggerSource
@@ -45072,11 +46217,29 @@
 - type ECMAScript.TDesign.TTagInputValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagInputValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTagMaxWidthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTagMaxWidthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTagShapeValue
@@ -45345,6 +46508,15 @@
 - type ECMAScript.TDesign.TTextareaMaxlengthValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTextareaMaxlengthValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTextareaStatusValue
@@ -45373,6 +46545,15 @@
 - type ECMAScript.TDesign.TTextareaValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTextareaValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTimePicker
@@ -45661,6 +46842,15 @@
 - type ECMAScript.TDesign.TTimePickerStepsValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTimePickerStepsValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTimePickerValueDisplaySlotContext
@@ -45894,6 +47084,15 @@
 - type ECMAScript.TDesign.TTimeRangePickerStepsValueItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(Double)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(Single)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTimeRangePickerStepsValueItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTimeline
@@ -46344,6 +47543,15 @@
 - type ECMAScript.TDesign.TTransferValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTransferValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTransfer`1
@@ -46665,6 +47873,15 @@
 - type ECMAScript.TDesign.TTreeHeightValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeHeightValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTreeKeysType
@@ -46715,6 +47932,15 @@
 - type ECMAScript.TDesign.TTreeMaxHeightValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeMaxHeightValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTreeNodeModelAppendDataData`1
@@ -46810,6 +48036,15 @@
 - type ECMAScript.TDesign.TTreeNodeModelValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeNodeModelValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTreeNodeModel`1
@@ -46915,6 +48150,15 @@
 - type ECMAScript.TDesign.TTreeNodeValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeNodeValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTreeOptionDataChildren`1
@@ -47264,6 +48508,15 @@
 - type ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeSelectDataOptionDefaultTDefault op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTreeSelectFilterValue`2
@@ -47303,6 +48556,15 @@
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(ECMAScript.TDesign.TTreeSelectValue[])
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeSelectValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTreeSelectValueChangeTrigger
@@ -47511,6 +48773,15 @@
 - type ECMAScript.TDesign.TTreeTDefaultTDefault
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(Byte)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(Double)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(Int16)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(Int32)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(SByte)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(Single)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTreeTDefaultTDefault op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TTreeValueModeValue
@@ -47700,6 +48971,15 @@
 - type ECMAScript.TDesign.TTypeTreeOptionDataTDefault
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(Byte)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(Double)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(Int16)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(Int32)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(SByte)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(Single)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(UInt16)
+  - ECMAScript.TDesign.TTypeTreeOptionDataTDefault op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TTypography
@@ -48309,6 +49589,15 @@
 - type ECMAScript.TDesign.TUploadSizeLimitValue`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TSizeLimitObj)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TUploadSizeLimitValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TUploadStatusValue
@@ -48729,16 +50018,43 @@
 - type ECMAScript.TDesign.TValidateResultTypeLen
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(Byte)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(Double)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(Int16)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(Int32)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(SByte)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(Single)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(UInt16)
+  - ECMAScript.TDesign.TValidateResultTypeLen op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TValidateResultTypeMax
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(Byte)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(Double)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(Int16)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(Int32)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(SByte)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(Single)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(UInt16)
+  - ECMAScript.TDesign.TValidateResultTypeMax op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TValidateResultTypeMin
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(Byte)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(Double)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(Int16)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(Int32)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(SByte)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(Single)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(UInt16)
+  - ECMAScript.TDesign.TValidateResultTypeMin op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TValidateResultTypePattern
@@ -49240,6 +50556,15 @@
   - Void .ctor(Microsoft.AspNetCore.Components.RenderFragment)
   - Void .ctor(System.String)
   - Void .ctor(System.String[])
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(Byte)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(Double)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(Int16)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(Int32)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(SByte)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(Single)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdCheckTagPropsContent op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdCheckTagPropsDefault
@@ -49273,6 +50598,15 @@
 - type ECMAScript.TDesign.TdCheckTagPropsValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdCheckTagPropsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdCheckboxGroupPropsOnChange`1
@@ -49404,6 +50738,15 @@
   - Void .ctor(Boolean)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdCheckboxPropsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdDescriptionsItemProps
@@ -49743,11 +51086,29 @@
 - type ECMAScript.TDesign.TdDialogPropsTop
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(Byte)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(Double)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(Int16)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(Int32)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(SByte)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(Single)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdDialogPropsTop op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdDialogPropsWidth
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(Byte)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(Double)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(Int16)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(Int32)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(SByte)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(Single)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdDialogPropsWidth op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdDropdownItemProps
@@ -49811,12 +51172,30 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(Double)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(Single)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdDropdownItemPropsOnClickDropdownItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdDropdownItemPropsValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TJsonObject)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdDropdownItemPropsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdFormItemProps
@@ -49886,6 +51265,15 @@
 - type ECMAScript.TDesign.TdFormItemPropsLabelWidth
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(Byte)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(Double)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(Int16)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(Int32)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(SByte)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(Single)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdFormItemPropsLabelWidth op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TdFormItemPropsStatus
@@ -50557,6 +51945,15 @@
 - type ECMAScript.TDesign.TdInputPropsMaxlength`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdInputPropsMaxlength`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdInputPropsOnBlurContext`1
@@ -51154,6 +52551,15 @@
   - Void .ctor(ECMAScript.BigInt)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdOptionPropsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdPaginationProps
@@ -51257,6 +52663,15 @@
 - type ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItemOption2)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(Double)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(Single)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdPaginationPropsPageSizeOptionsItemOption2
@@ -51383,6 +52798,15 @@
 - type ECMAScript.TDesign.TdPopupPropsDelay
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.Number[])
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(Byte)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(Double)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(Int16)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(Int32)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(SByte)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(Single)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdPopupPropsDelay op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdPopupPropsOnOverlayClick
@@ -52322,6 +53746,15 @@
 - type ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdSelectInputPropsTagOption2ContextValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdSelectInputPropsTips
@@ -52504,6 +53937,15 @@
   - Void .ctor(ECMAScript.BigInt)
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdSelectPropsOnCreateValue`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdSelectPropsOnCreate`1
@@ -52892,6 +54334,15 @@
 - type ECMAScript.TDesign.TdStepItemPropsValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdStepItemPropsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdStickyItemProps
@@ -53391,6 +54842,15 @@
 - type ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(Byte)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(Double)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(Int16)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(Int32)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(SByte)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(Single)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdTagInputPropsTagOption2ContextValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdTagInputPropsTips
@@ -53489,6 +54949,15 @@
 - type ECMAScript.TDesign.TdTagPropsMaxWidth
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(Byte)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(Double)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(Int16)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(Int32)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(SByte)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(Single)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdTagPropsMaxWidth op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdTagPropsOnClick
@@ -53647,6 +55116,15 @@
 - type ECMAScript.TDesign.TdTextareaPropsMaxlength
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(Byte)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(Double)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(Int16)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(Int32)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(SByte)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(Single)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdTextareaPropsMaxlength op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdTextareaPropsOnBlur
@@ -54112,6 +55590,15 @@
 - type ECMAScript.TDesign.TdTimePickerPropsStepsItem
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(Byte)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(Double)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(Int16)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(Int32)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(SByte)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(Single)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdTimePickerPropsStepsItem op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdTimePickerPropsTips
@@ -54438,6 +55925,15 @@
 - type ECMAScript.TDesign.TdTreePropsHeight`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdTreePropsHeight`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.TDesign.TdTreePropsIcon`1
@@ -54464,6 +55960,15 @@
 - type ECMAScript.TDesign.TdTreePropsMaxHeight`1
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(Byte)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(Double)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(Int16)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(Int32)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(SByte)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(Single)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(System.Decimal)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(UInt16)
+  - ECMAScript.TDesign.TdTreePropsMaxHeight`1[T] op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - enum ECMAScript.TDesign.TdTreePropsOnActiveContextTrigger
@@ -55437,6 +56942,15 @@
   - ChoiceValue From(Int32)
   - ChoiceValue From(Int64)
   - ChoiceValue From(System.Decimal)
+  - ChoiceValue op_Implicit(Byte)
+  - ChoiceValue op_Implicit(Double)
+  - ChoiceValue op_Implicit(Int16)
+  - ChoiceValue op_Implicit(Int32)
+  - ChoiceValue op_Implicit(SByte)
+  - ChoiceValue op_Implicit(Single)
+  - ChoiceValue op_Implicit(System.Decimal)
+  - ChoiceValue op_Implicit(UInt16)
+  - ChoiceValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.VueDevtools+ComponentBounds
@@ -55452,6 +56966,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
   - ComponentIdentifier From(Int32)
+  - ComponentIdentifier op_Implicit(Byte)
+  - ComponentIdentifier op_Implicit(Double)
+  - ComponentIdentifier op_Implicit(Int16)
+  - ComponentIdentifier op_Implicit(Int32)
+  - ComponentIdentifier op_Implicit(SByte)
+  - ComponentIdentifier op_Implicit(Single)
+  - ComponentIdentifier op_Implicit(System.Decimal)
+  - ComponentIdentifier op_Implicit(UInt16)
+  - ComponentIdentifier op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.VueDevtools+ComponentInstance
@@ -55734,6 +57257,15 @@
   - DevtoolsValue From(Int32)
   - DevtoolsValue From(Int64)
   - DevtoolsValue From(System.Decimal)
+  - DevtoolsValue op_Implicit(Byte)
+  - DevtoolsValue op_Implicit(Double)
+  - DevtoolsValue op_Implicit(Int16)
+  - DevtoolsValue op_Implicit(Int32)
+  - DevtoolsValue op_Implicit(SByte)
+  - DevtoolsValue op_Implicit(Single)
+  - DevtoolsValue op_Implicit(System.Decimal)
+  - DevtoolsValue op_Implicit(UInt16)
+  - DevtoolsValue op_Implicit(UInt32)
   - System.Object get_Value()
   - System.Object Value
 - type ECMAScript.VueDevtools+EditComponentStatePayload
@@ -56367,6 +57899,15 @@
   - TimelineGroupId From(Double)
   - TimelineGroupId From(Int32)
   - TimelineGroupId From(Int64)
+  - TimelineGroupId op_Implicit(Byte)
+  - TimelineGroupId op_Implicit(Double)
+  - TimelineGroupId op_Implicit(Int16)
+  - TimelineGroupId op_Implicit(Int32)
+  - TimelineGroupId op_Implicit(SByte)
+  - TimelineGroupId op_Implicit(Single)
+  - TimelineGroupId op_Implicit(System.Decimal)
+  - TimelineGroupId op_Implicit(UInt16)
+  - TimelineGroupId op_Implicit(UInt32)
   - System.Object Value
 - type ECMAScript.VueDevtools+TimelineLayerOptionsWithOverlay`2
   - Void .ctor()
@@ -60027,6 +61568,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
   - Void .ctor(VueProps)
+  - ECMAScript.VueQueryKeyPart op_Implicit(Byte)
+  - ECMAScript.VueQueryKeyPart op_Implicit(Double)
+  - ECMAScript.VueQueryKeyPart op_Implicit(Int16)
+  - ECMAScript.VueQueryKeyPart op_Implicit(Int32)
+  - ECMAScript.VueQueryKeyPart op_Implicit(SByte)
+  - ECMAScript.VueQueryKeyPart op_Implicit(Single)
+  - ECMAScript.VueQueryKeyPart op_Implicit(System.Decimal)
+  - ECMAScript.VueQueryKeyPart op_Implicit(UInt16)
+  - ECMAScript.VueQueryKeyPart op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Nullable`1[System.Boolean] get_AsBoolean()
   - System.Object get_Value()
@@ -60292,13 +61842,22 @@
   - ECMAScript.Array`1[System.Nullable`1[ECMAScript.HistoryStateValue]] get_AsArray()
   - ECMAScript.HistoryState get_AsObject()
   - ECMAScript.HistoryStateValue op_Implicit(Boolean[])
+  - ECMAScript.HistoryStateValue op_Implicit(Byte)
+  - ECMAScript.HistoryStateValue op_Implicit(Double)
   - ECMAScript.HistoryStateValue op_Implicit(ECMAScript.Array`1[System.Nullable`1[ECMAScript.HistoryStateValue]])
   - ECMAScript.HistoryStateValue op_Implicit(ECMAScript.HistoryState[])
   - ECMAScript.HistoryStateValue op_Implicit(ECMAScript.Number[])
+  - ECMAScript.HistoryStateValue op_Implicit(Int16)
+  - ECMAScript.HistoryStateValue op_Implicit(Int32)
+  - ECMAScript.HistoryStateValue op_Implicit(SByte)
+  - ECMAScript.HistoryStateValue op_Implicit(Single)
+  - ECMAScript.HistoryStateValue op_Implicit(System.Decimal)
   - ECMAScript.HistoryStateValue op_Implicit(System.Nullable`1[ECMAScript.HistoryStateValue][])
   - ECMAScript.HistoryStateValue op_Implicit(System.Nullable`1[ECMAScript.Number][])
   - ECMAScript.HistoryStateValue op_Implicit(System.Nullable`1[System.Boolean][])
   - ECMAScript.HistoryStateValue op_Implicit(System.String[])
+  - ECMAScript.HistoryStateValue op_Implicit(UInt16)
+  - ECMAScript.HistoryStateValue op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Nullable`1[System.Boolean] get_AsBool()
   - System.Object get_Value()
@@ -60387,9 +61946,18 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
   - ECMAScript.Array`1[System.Nullable`1[ECMAScript.LocationQueryValueRaw]] get_AsArray()
+  - ECMAScript.LocationQueryValueRaw op_Implicit(Byte)
+  - ECMAScript.LocationQueryValueRaw op_Implicit(Double)
   - ECMAScript.LocationQueryValueRaw op_Implicit(ECMAScript.Number[])
+  - ECMAScript.LocationQueryValueRaw op_Implicit(Int16)
+  - ECMAScript.LocationQueryValueRaw op_Implicit(Int32)
+  - ECMAScript.LocationQueryValueRaw op_Implicit(SByte)
+  - ECMAScript.LocationQueryValueRaw op_Implicit(Single)
+  - ECMAScript.LocationQueryValueRaw op_Implicit(System.Decimal)
   - ECMAScript.LocationQueryValueRaw op_Implicit(System.Nullable`1[ECMAScript.LocationQueryValueRaw][])
   - ECMAScript.LocationQueryValueRaw op_Implicit(System.String[])
+  - ECMAScript.LocationQueryValueRaw op_Implicit(UInt16)
+  - ECMAScript.LocationQueryValueRaw op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - System.String get_AsString()
@@ -60531,11 +62099,13 @@
   - System.Nullable`1[ECMAScript.RouteLocationRaw] get_AsLocation()
   - System.Nullable`1[System.Boolean] get_AsBool()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.Error AsError
   - ECMAScript.NavigationGuardNextCallback AsCallback
   - System.Nullable`1[ECMAScript.RouteLocationRaw] AsLocation
   - System.Nullable`1[System.Boolean] AsBool
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.NavigationGuardNextCallback
   - Void .ctor(System.Object, IntPtr)
   - System.IAsyncResult BeginInvoke(VueComponentPublicInstance, System.AsyncCallback, System.Object)
@@ -60580,10 +62150,12 @@
   - System.Nullable`1[ECMAScript.RouteLocationRaw] get_AsLocation()
   - System.Nullable`1[System.Boolean] get_AsBool()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.Error AsError
   - System.Nullable`1[ECMAScript.RouteLocationRaw] AsLocation
   - System.Nullable`1[System.Boolean] AsBool
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.NavigationRedirectError
   - ECMAScript.ErrorTypes get_Type()
   - ECMAScript.RouteLocationNormalized get_From()
@@ -60911,6 +62483,7 @@
   - IVueRef`1 get_AsStringRef()
   - System.Nullable`1[ECMAScript.RouteLocationRaw] get_AsValue()
   - System.Object get_Value()
+  - System.String get_AsString()
   - VueReadonlyRef`1 get_AsReadonlyPathRef()
   - VueReadonlyRef`1 get_AsReadonlyRef()
   - VueReadonlyRef`1 get_AsReadonlyRelativeRef()
@@ -60921,6 +62494,7 @@
   - IVueRef`1 AsStringRef
   - System.Nullable`1[ECMAScript.RouteLocationRaw] AsValue
   - System.Object Value
+  - System.String AsString
   - VueReadonlyRef`1 AsReadonlyPathRef
   - VueReadonlyRef`1 AsReadonlyRef
   - VueReadonlyRef`1 AsReadonlyRelativeRef
@@ -61018,9 +62592,18 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
   - ECMAScript.Array`1[ECMAScript.RouteParamRaw] get_AsArray()
+  - ECMAScript.RouteParamRaw op_Implicit(Byte)
+  - ECMAScript.RouteParamRaw op_Implicit(Double)
   - ECMAScript.RouteParamRaw op_Implicit(ECMAScript.Number[])
   - ECMAScript.RouteParamRaw op_Implicit(ECMAScript.RouteParamRaw[])
+  - ECMAScript.RouteParamRaw op_Implicit(Int16)
+  - ECMAScript.RouteParamRaw op_Implicit(Int32)
+  - ECMAScript.RouteParamRaw op_Implicit(SByte)
+  - ECMAScript.RouteParamRaw op_Implicit(Single)
+  - ECMAScript.RouteParamRaw op_Implicit(System.Decimal)
   - ECMAScript.RouteParamRaw op_Implicit(System.String[])
+  - ECMAScript.RouteParamRaw op_Implicit(UInt16)
+  - ECMAScript.RouteParamRaw op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - System.String get_AsString()
@@ -61305,9 +62888,11 @@
   - ECMAScript.RouteRedirectCallback get_AsCallback()
   - System.Nullable`1[ECMAScript.RouteLocationRaw] get_AsLocation()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.RouteRedirectCallback AsCallback
   - System.Nullable`1[ECMAScript.RouteLocationRaw] AsLocation
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.RouteRecordSingleView
   - Void .ctor()
   - Boolean Equals(ECMAScript.RouteRecordBase)
@@ -61366,9 +62951,11 @@
   - ECMAScript.RouteRedirectOption op_Implicit(System.String)
   - System.Nullable`1[ECMAScript.RouteLocationRaw] get_AsLocation()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.RouteRedirectCallback AsCallback
   - System.Nullable`1[ECMAScript.RouteLocationRaw] AsLocation
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.Router
   - Boolean Equals(ECMAScript.Router)
   - Boolean Equals(System.Object)
@@ -61432,7 +63019,16 @@
   - ECMAScript.Error get_AsError()
   - ECMAScript.IObject get_AsObject()
   - ECMAScript.RouterErrorValue From(ECMAScript.IObject)
+  - ECMAScript.RouterErrorValue op_Implicit(Byte)
+  - ECMAScript.RouterErrorValue op_Implicit(Double)
+  - ECMAScript.RouterErrorValue op_Implicit(Int16)
+  - ECMAScript.RouterErrorValue op_Implicit(Int32)
+  - ECMAScript.RouterErrorValue op_Implicit(SByte)
+  - ECMAScript.RouterErrorValue op_Implicit(Single)
+  - ECMAScript.RouterErrorValue op_Implicit(System.Decimal)
   - ECMAScript.RouterErrorValue op_Implicit(System.Nullable`1[ECMAScript.RouterErrorValue][])
+  - ECMAScript.RouterErrorValue op_Implicit(UInt16)
+  - ECMAScript.RouterErrorValue op_Implicit(UInt32)
   - ECMAScript.Symbol get_AsSymbol()
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Nullable`1[System.Boolean] get_AsBool()
@@ -63357,7 +64953,10 @@
   - Void .ctor(VueBooleanStringNumberObjectValue)
   - Void .ctor(VueBooleanStringNumberObjectValue[])
   - System.Nullable`1[ECMAScript.Vue+VueBooleanStringNumberObjectValue] get_AsSingle()
+  - System.Nullable`1[System.Boolean] get_AsBool()
+  - System.Nullable`1[System.Double] get_AsNumber()
   - System.Object get_Value()
+  - System.String get_AsString()
   - VueBooleanStringNumberObjectArrayableValue op_Implicit(Boolean)
   - VueBooleanStringNumberObjectArrayableValue op_Implicit(Boolean[])
   - VueBooleanStringNumberObjectArrayableValue op_Implicit(Double)
@@ -63371,7 +64970,10 @@
   - VueBooleanStringNumberObjectArrayableValue op_Implicit(VueProps[])
   - VueBooleanStringNumberObjectValue[] get_AsMultiple()
   - System.Nullable`1[ECMAScript.Vue+VueBooleanStringNumberObjectValue] AsSingle
+  - System.Nullable`1[System.Boolean] AsBool
+  - System.Nullable`1[System.Double] AsNumber
   - System.Object Value
+  - System.String AsString
   - VueBooleanStringNumberObjectValue[] AsMultiple
 - type ECMAScript.Vue+VueBooleanStringNumberObjectValue
   - Void .ctor(Boolean)
@@ -64787,7 +66389,9 @@
   - Void .ctor(VueStringNumberValue)
   - Void .ctor(VueStringNumberValue[])
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] get_AsSingle()
+  - System.Nullable`1[System.Double] get_AsNumber()
   - System.Object get_Value()
+  - System.String get_AsString()
   - VueStringNumberArrayableValue op_Implicit(Double)
   - VueStringNumberArrayableValue op_Implicit(Double[])
   - VueStringNumberArrayableValue op_Implicit(System.String)
@@ -64795,17 +66399,22 @@
   - VueStringNumberArrayableValue op_Implicit(VueStringNumberValue[])
   - VueStringNumberValue[] get_AsMultiple()
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberValue] AsSingle
+  - System.Nullable`1[System.Double] AsNumber
   - System.Object Value
+  - System.String AsString
   - VueStringNumberValue[] AsMultiple
 - type ECMAScript.Vue+VueStringNumberDateArrayableValue
   - Void .ctor(ECMAScript.Date[])
   - Void .ctor(ECMAScript.Number[])
   - Void .ctor(System.String[])
   - Void .ctor(VueStringNumberDateValue)
+  - ECMAScript.Date get_AsDate()
   - ECMAScript.Date[] get_AsDates()
   - ECMAScript.Number[] get_AsNumbers()
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberDateValue] get_AsSingle()
+  - System.Nullable`1[System.Double] get_AsNumber()
   - System.Object get_Value()
+  - System.String get_AsString()
   - System.String[] get_AsStrings()
   - VueStringNumberDateArrayableValue op_Implicit(Double)
   - VueStringNumberDateArrayableValue op_Implicit(Double[])
@@ -64814,10 +66423,13 @@
   - VueStringNumberDateArrayableValue op_Implicit(ECMAScript.Number[])
   - VueStringNumberDateArrayableValue op_Implicit(System.String)
   - VueStringNumberDateArrayableValue op_Implicit(System.String[])
+  - ECMAScript.Date AsDate
   - ECMAScript.Date[] AsDates
   - ECMAScript.Number[] AsNumbers
   - System.Nullable`1[ECMAScript.Vue+VueStringNumberDateValue] AsSingle
+  - System.Nullable`1[System.Double] AsNumber
   - System.Object Value
+  - System.String AsString
   - System.String[] AsStrings
 - type ECMAScript.Vue+VueStringNumberDateValue
   - Void .ctor(Double)
@@ -64852,7 +66464,15 @@
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - System.String get_AsString()
+  - VueStringNumberVNodeValue op_Implicit(Byte)
   - VueStringNumberVNodeValue op_Implicit(Double)
+  - VueStringNumberVNodeValue op_Implicit(Int16)
+  - VueStringNumberVNodeValue op_Implicit(Int32)
+  - VueStringNumberVNodeValue op_Implicit(SByte)
+  - VueStringNumberVNodeValue op_Implicit(Single)
+  - VueStringNumberVNodeValue op_Implicit(System.Decimal)
+  - VueStringNumberVNodeValue op_Implicit(UInt16)
+  - VueStringNumberVNodeValue op_Implicit(UInt32)
   - IVNode AsVNode
   - System.Nullable`1[ECMAScript.Number] AsNumber
   - System.Object Value
@@ -65033,6 +66653,15 @@
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - VueTransitionDuration get_AsDuration()
+  - VueTransitionDurationValue op_Implicit(Byte)
+  - VueTransitionDurationValue op_Implicit(Double)
+  - VueTransitionDurationValue op_Implicit(Int16)
+  - VueTransitionDurationValue op_Implicit(Int32)
+  - VueTransitionDurationValue op_Implicit(SByte)
+  - VueTransitionDurationValue op_Implicit(Single)
+  - VueTransitionDurationValue op_Implicit(System.Decimal)
+  - VueTransitionDurationValue op_Implicit(UInt16)
+  - VueTransitionDurationValue op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] AsNumber
   - System.Object Value
   - VueTransitionDuration AsDuration
@@ -76922,8 +78551,17 @@
 - type ECMAScript.Vuetify.VuetifyDisplayBreakpoint
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(Byte)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(Double)
   - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(ECMAScript.Number)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(Int16)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(Int32)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(SByte)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(Single)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(System.Decimal)
   - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(System.String)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(UInt16)
+  - ECMAScript.Vuetify.VuetifyDisplayBreakpoint op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - System.String get_AsString()
@@ -77182,6 +78820,7 @@
   - ECMAScript.Symbol get_AsSymbol()
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Boolean)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Boolean[])
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Byte)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Double)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Double[])
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(ECMAScript.Number)
@@ -77189,10 +78828,16 @@
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(ECMAScript.Symbol)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(ECMAScript.Vuetify.VuetifyGroupModelValue[])
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(ECMAScript.Vuetify.VuetifyGroupModelValues)
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Int16)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Int32)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Int32[])
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(SByte)
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(Single)
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(System.Decimal)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(System.String)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(System.String[])
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(UInt16)
+  - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(UInt32)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(VueDictionary)
   - ECMAScript.Vuetify.VuetifyGroupModelValue op_Implicit(VueProps)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
@@ -77408,12 +79053,19 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.Number[])
   - ECMAScript.Number[] get_AsNumbers()
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Byte)
   - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Double)
   - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Double[])
   - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(ECMAScript.Number)
   - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(ECMAScript.Number[])
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Int16)
   - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Int32)
   - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Int32[])
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(SByte)
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(Single)
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(System.Decimal)
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(UInt16)
+  - ECMAScript.Vuetify.VuetifyIntersectionObserverThreshold op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - ECMAScript.Number[] AsNumbers
@@ -78152,9 +79804,11 @@
   - System.Nullable`1[ECMAScript.Vuetify.VuetifySkeletonLoaderTypeValue] get_AsType()
   - System.Nullable`1[ECMAScript.Vuetify.VuetifySkeletonLoaderTypes] get_AsTypes()
   - System.Object get_Value()
+  - System.String get_AsCustomType()
   - System.Nullable`1[ECMAScript.Vuetify.VuetifySkeletonLoaderTypeValue] AsType
   - System.Nullable`1[ECMAScript.Vuetify.VuetifySkeletonLoaderTypes] AsTypes
   - System.Object Value
+  - System.String AsCustomType
 - type ECMAScript.Vuetify.VuetifySkeletonLoaderTypeValue
   - Void .ctor(ECMAScript.Vuetify.VuetifySkeletonLoaderType)
   - Void .ctor(System.String)
@@ -79075,12 +80729,16 @@
   - ECMAScript.Vuetify.VuetifyValidationRule op_Implicit(System.String)
   - ECMAScript.Vuetify.VuetifyValidationRuleResolver get_AsResolver()
   - System.Nullable`1[ECMAScript.Vuetify.VuetifyValidationResult] get_AsResult()
+  - System.Nullable`1[System.Boolean] get_AsBool()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.IPromise`1[ECMAScript.Vuetify.VuetifyValidationResult] AsPromise
   - ECMAScript.Vuetify.VuetifyAsyncValidationRuleResolver AsAsyncResolver
   - ECMAScript.Vuetify.VuetifyValidationRuleResolver AsResolver
   - System.Nullable`1[ECMAScript.Vuetify.VuetifyValidationResult] AsResult
+  - System.Nullable`1[System.Boolean] AsBool
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.Vuetify.VuetifyValidationRuleResolver
   - Void .ctor(System.Object, IntPtr)
   - ECMAScript.Vuetify.VuetifyValidationResult EndInvoke(System.IAsyncResult)
@@ -82055,9 +83713,11 @@
   - ECMAScript.RequestInfo[] get_AsRequestInfoArray()
   - System.Nullable`1[ECMAScript.RequestInfo] get_AsRequestInfo()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.RequestInfo[] AsRequestInfoArray
   - System.Nullable`1[ECMAScript.RequestInfo] AsRequestInfo
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.BackgroundFetchManagerFetchRequestsCollectionBuilder
   - ECMAScript.BackgroundFetchManagerFetchRequests Create(System.ReadOnlySpan`1[ECMAScript.RequestInfo])
 - type ECMAScript.BackgroundFetchOptions
@@ -83358,10 +85018,14 @@
   - ECMAScript.CSS.CSSColorAngle op_Implicit(ECMAScript.CSS.CSSNumberish)
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] get_AsCSSKeywordish()
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] get_AsCSSNumberish()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
+  - System.String get_AsString()
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] AsCSSKeywordish
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] AsCSSNumberish
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.CSS.CSSColorNumber
   - Void .ctor(ECMAScript.CSS.CSSKeywordish)
   - Void .ctor(ECMAScript.CSS.CSSNumberish)
@@ -83369,10 +85033,14 @@
   - ECMAScript.CSS.CSSColorNumber op_Implicit(ECMAScript.CSS.CSSNumberish)
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] get_AsCSSKeywordish()
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] get_AsCSSNumberish()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
+  - System.String get_AsString()
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] AsCSSKeywordish
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] AsCSSNumberish
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.CSS.CSSColorPercent
   - Void .ctor(ECMAScript.CSS.CSSKeywordish)
   - Void .ctor(ECMAScript.CSS.CSSNumberish)
@@ -83380,10 +85048,14 @@
   - ECMAScript.CSS.CSSColorPercent op_Implicit(ECMAScript.CSS.CSSNumberish)
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] get_AsCSSKeywordish()
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] get_AsCSSNumberish()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
+  - System.String get_AsString()
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] AsCSSKeywordish
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] AsCSSNumberish
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.CSS.CSSColorRGBComp
   - Void .ctor(ECMAScript.CSS.CSSKeywordish)
   - Void .ctor(ECMAScript.CSS.CSSNumberish)
@@ -83391,10 +85063,14 @@
   - ECMAScript.CSS.CSSColorRGBComp op_Implicit(ECMAScript.CSS.CSSNumberish)
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] get_AsCSSKeywordish()
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] get_AsCSSNumberish()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
+  - System.String get_AsString()
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] AsCSSKeywordish
   - System.Nullable`1[ECMAScript.CSS.CSSNumberish] AsCSSNumberish
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.CSS.CSSColorValue
   - Void .ctor()
   - ECMAScript.CSS.CSSColorValueParseResult Parse(System.String)
@@ -83798,9 +85474,11 @@
   - ECMAScript.CSS.CSSPerspectiveValue op_Implicit(ECMAScript.CSS.CSSNumericValue)
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] get_AsCSSKeywordish()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.CSS.CSSNumericValue AsCSSNumericValue
   - System.Nullable`1[ECMAScript.CSS.CSSKeywordish] AsCSSKeywordish
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.CSS.CSSPropertyRule
   - Void .ctor()
   - Boolean get_Inherits()
@@ -90212,6 +91890,15 @@
 - type ECMAScript.DatePrimitive
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
+  - ECMAScript.DatePrimitive op_Implicit(Byte)
+  - ECMAScript.DatePrimitive op_Implicit(Double)
+  - ECMAScript.DatePrimitive op_Implicit(Int16)
+  - ECMAScript.DatePrimitive op_Implicit(Int32)
+  - ECMAScript.DatePrimitive op_Implicit(SByte)
+  - ECMAScript.DatePrimitive op_Implicit(Single)
+  - ECMAScript.DatePrimitive op_Implicit(System.Decimal)
+  - ECMAScript.DatePrimitive op_Implicit(UInt16)
+  - ECMAScript.DatePrimitive op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - System.String get_AsString()
@@ -103521,6 +105208,15 @@
   - Void .ctor(ECMAScript.Date)
   - Void .ctor(ECMAScript.Number)
   - ECMAScript.Date get_AsDate()
+  - ECMAScript.IntlDateTimeInput op_Implicit(Byte)
+  - ECMAScript.IntlDateTimeInput op_Implicit(Double)
+  - ECMAScript.IntlDateTimeInput op_Implicit(Int16)
+  - ECMAScript.IntlDateTimeInput op_Implicit(Int32)
+  - ECMAScript.IntlDateTimeInput op_Implicit(SByte)
+  - ECMAScript.IntlDateTimeInput op_Implicit(Single)
+  - ECMAScript.IntlDateTimeInput op_Implicit(System.Decimal)
+  - ECMAScript.IntlDateTimeInput op_Implicit(UInt16)
+  - ECMAScript.IntlDateTimeInput op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - ECMAScript.Date AsDate
@@ -103558,6 +105254,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(System.String)
   - ECMAScript.BigInt get_AsBigInt()
+  - ECMAScript.IntlNumberInput op_Implicit(Byte)
+  - ECMAScript.IntlNumberInput op_Implicit(Double)
+  - ECMAScript.IntlNumberInput op_Implicit(Int16)
+  - ECMAScript.IntlNumberInput op_Implicit(Int32)
+  - ECMAScript.IntlNumberInput op_Implicit(SByte)
+  - ECMAScript.IntlNumberInput op_Implicit(Single)
+  - ECMAScript.IntlNumberInput op_Implicit(System.Decimal)
+  - ECMAScript.IntlNumberInput op_Implicit(UInt16)
+  - ECMAScript.IntlNumberInput op_Implicit(UInt32)
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
   - System.String get_AsString()
@@ -108220,9 +109925,11 @@
   - ECMAScript.MediaTrackConstraintSetPan op_Implicit(ECMAScript.ConstrainDouble)
   - System.Nullable`1[ECMAScript.ConstrainDouble] get_AsConstrainDouble()
   - System.Nullable`1[System.Boolean] get_AsBool()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
   - System.Nullable`1[ECMAScript.ConstrainDouble] AsConstrainDouble
   - System.Nullable`1[System.Boolean] AsBool
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
 - type ECMAScript.MediaTrackConstraintSetTilt
   - Void .ctor(Boolean)
@@ -108231,9 +109938,11 @@
   - ECMAScript.MediaTrackConstraintSetTilt op_Implicit(ECMAScript.ConstrainDouble)
   - System.Nullable`1[ECMAScript.ConstrainDouble] get_AsConstrainDouble()
   - System.Nullable`1[System.Boolean] get_AsBool()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
   - System.Nullable`1[ECMAScript.ConstrainDouble] AsConstrainDouble
   - System.Nullable`1[System.Boolean] AsBool
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
 - type ECMAScript.MediaTrackConstraintSetZoom
   - Void .ctor(Boolean)
@@ -108242,9 +109951,11 @@
   - ECMAScript.MediaTrackConstraintSetZoom op_Implicit(ECMAScript.ConstrainDouble)
   - System.Nullable`1[ECMAScript.ConstrainDouble] get_AsConstrainDouble()
   - System.Nullable`1[System.Boolean] get_AsBool()
+  - System.Nullable`1[System.Double] get_AsDouble()
   - System.Object get_Value()
   - System.Nullable`1[ECMAScript.ConstrainDouble] AsConstrainDouble
   - System.Nullable`1[System.Boolean] AsBool
+  - System.Nullable`1[System.Double] AsDouble
   - System.Object Value
 - type ECMAScript.MediaTrackConstraints
   - Void .ctor(ECMAScript.MediaTrackConstraintSet[])
@@ -113418,6 +115129,15 @@
   - Void .ctor(ECMAScript.Number)
   - Void .ctor(ECMAScript.Symbol)
   - Void .ctor(System.String)
+  - ECMAScript.PropertyKeyRef op_Implicit(Byte)
+  - ECMAScript.PropertyKeyRef op_Implicit(Double)
+  - ECMAScript.PropertyKeyRef op_Implicit(Int16)
+  - ECMAScript.PropertyKeyRef op_Implicit(Int32)
+  - ECMAScript.PropertyKeyRef op_Implicit(SByte)
+  - ECMAScript.PropertyKeyRef op_Implicit(Single)
+  - ECMAScript.PropertyKeyRef op_Implicit(System.Decimal)
+  - ECMAScript.PropertyKeyRef op_Implicit(UInt16)
+  - ECMAScript.PropertyKeyRef op_Implicit(UInt32)
   - ECMAScript.Symbol get_AsSymbol()
   - System.Nullable`1[ECMAScript.Number] get_AsNumber()
   - System.Object get_Value()
@@ -122299,9 +124019,11 @@
   - ECMAScript.StructuralCacheValue7 op_Implicit(ECMAScript.RequestInfo[])
   - System.Nullable`1[ECMAScript.RequestInfo] get_AsRequestInfo()
   - System.Object get_Value()
+  - System.String get_AsString()
   - ECMAScript.RequestInfo[] AsRequestInfoArray
   - System.Nullable`1[ECMAScript.RequestInfo] AsRequestInfo
   - System.Object Value
+  - System.String AsString
 - type ECMAScript.StructuralCacheValue7CollectionBuilder
   - ECMAScript.StructuralCacheValue7 Create(System.ReadOnlySpan`1[ECMAScript.RequestInfo])
 - type ECMAScript.StructuralCacheValue8

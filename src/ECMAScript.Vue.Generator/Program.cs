@@ -8,6 +8,9 @@ internal static class Program
         {
             switch (args)
             {
+                case ["authoring", .. var commandArgs]:
+                    global::BindingAuthoringDocumentation.Run(commandArgs);
+                    return 0;
                 case ["documentation", "snapshot", .. var snapshotArgs]:
                     global::BindingDocumentationSnapshot.Run(snapshotArgs);
                     return 0;
@@ -33,7 +36,7 @@ internal static class Program
                     global::TDesignDocumentation.Run(commandArgs);
                     return 0;
                 default:
-                    Console.Error.WriteLine("Usage: elementplus|vuetify [--check] | tdesign snapshot|bindings|components [--check|--report] | tdesign documentation <upstream-source.tar.gz>");
+                    Console.Error.WriteLine("Usage: authoring|elementplus|vuetify [--check] | tdesign snapshot|bindings|components [--check|--report] | tdesign documentation <upstream-source.tar.gz>");
                     return 1;
             }
         }

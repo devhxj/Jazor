@@ -15,6 +15,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 组件的模型值。
     /// Model value of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
@@ -23,6 +24,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 模型值变化时触发的事件。
     /// Event fired when model value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyGroupModelValue?；保持与模型相同的强类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
@@ -55,6 +57,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 边框设置。
     /// Border configuration.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBorderValue?；值域为 bool | Number | string。数值用 Border="@(32)"；变量用 Border="@value"，无需 double 后缀。字符串用 Border="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
@@ -103,6 +106,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 组件的阴影高度级别。
     /// Elevation shadow level.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -119,6 +123,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 组件的高度。
     /// Height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -127,6 +132,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 是否强制必须选中一个项。
     /// Requires at least one item to be selected.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMandatoryValue?；值域为 bool | VuetifyMandatoryMode。变量用 Mandatory="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; }
@@ -135,6 +141,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 最大可选数量。
     /// Maximum number of selectable items.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -167,6 +174,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 元素排序顺序。
     /// Element order.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Order="@(32)"；变量用 Order="@value"，无需 double 后缀。字符串用 Order="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("order")]
     public VueStringNumberValue? Order { get; set; }
@@ -175,6 +183,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 组件的圆角大小。
     /// Border radius size.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -191,6 +200,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 自定义 CSS 类。
     /// Custom CSS class(es).
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -199,6 +209,7 @@ public sealed class VBottomNavigation : ComponentBase, IVuetifyComponent
     /// 自定义行内样式。
     /// Custom inline style(s).
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStyleValue?；值域为 string | VueProps | VuetifyStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }

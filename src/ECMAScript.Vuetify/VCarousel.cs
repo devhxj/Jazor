@@ -13,6 +13,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 当前轮播激活项的绑定值。
     /// The bound value of the currently active carousel item.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
@@ -21,6 +22,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 激活项变更时的回调。
     /// Callback invoked when the active item changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyGroupModelValue?；保持与模型相同的强类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
@@ -45,6 +47,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 分隔符图标。
     /// The delimiter icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 DelimiterIcon="@value"，并保持声明的分支类型。字符串用 DelimiterIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("delimiterIcon")]
     public VuetifyIconValue? DelimiterIcon { get; set; }
@@ -53,6 +56,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 轮播高度。
     /// The height of the carousel.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -77,6 +81,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 自动轮播间隔时间。
     /// The interval for automatic carousel cycling.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Interval="@(32)"；变量用 Interval="@value"，无需 double 后缀。字符串用 Interval="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("interval")]
     public VueStringNumberValue? Interval { get; set; }
@@ -85,6 +90,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 进度条显示方式。
     /// The progress indicator display mode.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBooleanStringValue?；值域为 bool | string。变量用 Progress="@value"，并保持声明的分支类型。字符串用 Progress="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("progress")]
     public VuetifyBooleanStringValue? Progress { get; set; }
@@ -93,6 +99,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 垂直分隔符的位置。
     /// The position of vertical delimiters.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyCarouselVerticalDelimiters?；值域为 bool | VuetifyCarouselVerticalDelimiterPosition。变量用 VerticalDelimiters="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsPosition；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("verticalDelimiters")]
     public VuetifyCarouselVerticalDelimiters? VerticalDelimiters { get; set; }
@@ -109,6 +116,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 下一项图标。
     /// The icon for the next control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 NextIcon="@value"，并保持声明的分支类型。字符串用 NextIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("nextIcon")]
     public VuetifyIconValue? NextIcon { get; set; }
@@ -117,6 +125,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 上一项图标。
     /// The icon for the previous control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 PrevIcon="@value"，并保持声明的分支类型。字符串用 PrevIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prevIcon")]
     public VuetifyIconValue? PrevIcon { get; set; }
@@ -133,6 +142,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 是否显示导航箭头。
     /// Whether to show navigation arrows.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyWindowShowArrowsValue?；值域为 bool | VuetifyWindowShowArrowsMode。变量用 ShowArrows="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showArrows")]
     public VuetifyWindowShowArrowsValue? ShowArrows { get; set; } = true;
@@ -141,6 +151,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 触摸交互配置。
     /// The touch interaction configuration.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTouchValue?；值域为 bool | VuetifyTouchHandlers。变量用 Touch="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsHandlers；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("touch")]
     public VuetifyTouchValue? Touch { get; set; }
@@ -173,6 +184,7 @@ public sealed class VCarousel : ComponentBase, IVuetifyComponent
     /// 是否强制选择。
     /// Whether selection is mandatory.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMandatoryValue?；值域为 bool | VuetifyMandatoryMode。变量用 Mandatory="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; } = VuetifyMandatoryMode.Force;

@@ -29,6 +29,7 @@ public sealed class VField : ComponentBase, IVuetifyComponent
     /// 字段的圆角样式。
     /// Border radius style of the field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -45,6 +46,7 @@ public sealed class VField : ComponentBase, IVuetifyComponent
     /// 是否显示加载状态指示器。
     /// Whether to show a loading indicator.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBooleanStringValue?；值域为 bool | string。变量用 Loading="@value"，并保持声明的分支类型。字符串用 Loading="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
@@ -53,6 +55,7 @@ public sealed class VField : ComponentBase, IVuetifyComponent
     /// 字段内部右侧追加的图标。
     /// Icon appended to the inner right side of the field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 AppendInnerIcon="@value"，并保持声明的分支类型。字符串用 AppendInnerIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendInnerIcon")]
     public VuetifyIconValue? AppendInnerIcon { get; set; }
@@ -77,6 +80,7 @@ public sealed class VField : ComponentBase, IVuetifyComponent
     /// 清除按钮使用的图标。
     /// Icon used for the clear button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VuetifyIconValue? ClearIcon { get; set; }
@@ -157,6 +161,7 @@ public sealed class VField : ComponentBase, IVuetifyComponent
     /// 字段图标的颜色。
     /// Color applied to icons within the field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconColorValue?；值域为 bool | string。变量用 IconColor="@value"，并保持声明的分支类型。字符串用 IconColor="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("iconColor")]
     public VuetifyIconColorValue? IconColor { get; set; }
@@ -181,6 +186,7 @@ public sealed class VField : ComponentBase, IVuetifyComponent
     /// 字段内部左侧前置的图标。
     /// Icon prepended to the inner left side of the field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 PrependInnerIcon="@value"，并保持声明的分支类型。字符串用 PrependInnerIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prependInnerIcon")]
     public VuetifyIconValue? PrependInnerIcon { get; set; }

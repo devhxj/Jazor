@@ -39,13 +39,14 @@ internal static class VuetifyCatalogGenerator
         var components = ReadComponents(repositoryRoot, projectRoot);
         (components, var contractsByKey) = ValidateInputs(repositoryRoot, projectRoot, upstreamRoot, schema, components);
         var outputs = new List<GeneratedFile>();
+        var authoring = new global::BindingAuthoringDocumentation(repositoryRoot);
 
         foreach (var component in components)
         {
             var contract = contractsByKey[GetContractKey(component.SourceFile, component.TypeName)];
             outputs.Add(new GeneratedFile(
                 component.SourcePath,
-                RenderComponentSource(component, contract, descriptions)));
+                authoring.Annotate(RenderComponentSource(component, contract, descriptions))));
         }
 
         outputs.Add(new GeneratedFile(

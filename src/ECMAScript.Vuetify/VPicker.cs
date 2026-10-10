@@ -29,6 +29,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 圆角大小。
     /// The border radius size.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -61,6 +62,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的海拔阴影高度。
     /// The elevation shadow of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -69,6 +71,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的高度。
     /// The height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -77,6 +80,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的最大高度。
     /// The maximum height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -85,6 +89,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的最大宽度。
     /// The maximum width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -93,6 +98,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的最小高度。
     /// The minimum height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinHeight="@(32)"；变量用 MinHeight="@value"，无需 double 后缀。字符串用 MinHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
@@ -101,6 +107,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的最小宽度。
     /// The minimum width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -109,6 +116,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 组件的宽度。
     /// The width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -117,6 +125,7 @@ public sealed class VPicker : ComponentBase, IVuetifyComponent
     /// 边框样式。
     /// The border style.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBorderValue?；值域为 bool | Number | string。数值用 Border="@(32)"；变量用 Border="@value"，无需 double 后缀。字符串用 Border="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }

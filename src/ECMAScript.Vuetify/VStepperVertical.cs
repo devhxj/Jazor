@@ -13,6 +13,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 垂直步骤条当前选中的步骤值。
     /// Currently selected step value of the vertical stepper.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
@@ -21,6 +22,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 选中步骤变化时触发的回调。
     /// Callback invoked when the selected step changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyGroupModelValue?；保持与模型相同的强类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
@@ -45,6 +47,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 可同时选中的最大步骤数。
     /// Maximum number of steps that can be selected simultaneously.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public int? Max { get; set; }
@@ -61,6 +64,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 应用于组件的 CSS 类。
     /// CSS classes applied to the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -69,6 +73,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 应用于组件的内联样式。
     /// Inline styles applied to the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStyleValue?；值域为 string | VueProps | VuetifyStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
@@ -125,6 +130,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 是否强制必须选中一个步骤。
     /// Whether to force at least one step to be selected.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMandatoryValue?；值域为 bool | VuetifyMandatoryMode。变量用 Mandatory="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("mandatory")]
     public VuetifyMandatoryValue? Mandatory { get; set; } = VuetifyMandatoryMode.Force;
@@ -133,6 +139,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 垂直步骤条的阴影高度。
     /// Elevation shadow of the vertical stepper.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -149,6 +156,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 垂直步骤条的圆角大小。
     /// Border radius of the vertical stepper.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -181,6 +189,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 是否启用水波纹点击效果。
     /// Whether to enable the ripple click effect.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRippleValue?；值域为 bool | VueProps。变量用 Ripple="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
@@ -189,6 +198,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 步骤折叠时显示的图标。
     /// Icon displayed when a step is collapsed.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 CollapseIcon="@value"，并保持声明的分支类型。字符串用 CollapseIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("collapseIcon")]
     public VuetifyIconValue? CollapseIcon { get; set; }
@@ -197,6 +207,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 步骤展开时显示的图标。
     /// Icon displayed when a step is expanded.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 ExpandIcon="@value"，并保持声明的分支类型。字符串用 ExpandIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public VuetifyIconValue? ExpandIcon { get; set; }
@@ -213,6 +224,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 移动端布局配置。
     /// Mobile layout configuration.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMobileValue?；值域为 bool。变量用 Mobile="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("mobile")]
     public VuetifyMobileValue? Mobile { get; set; }
@@ -221,6 +233,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 触发移动端布局的断点。
     /// Display breakpoint that triggers mobile layout.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDisplayBreakpoint?；值域为 string | Number。数值用 MobileBreakpoint="@(32)"；变量用 MobileBreakpoint="@value"，无需 double 后缀。字符串用 MobileBreakpoint="text"；数字字符串保持 string。投影：value?.AsString、value?.AsNumber；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("mobileBreakpoint")]
     public VuetifyDisplayBreakpoint? MobileBreakpoint { get; set; }
@@ -237,6 +250,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 已完成步骤的图标。
     /// Icon displayed for completed steps.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 CompleteIcon="@value"，并保持声明的分支类型。字符串用 CompleteIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("completeIcon")]
     public VuetifyIconValue? CompleteIcon { get; set; }
@@ -245,6 +259,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 可编辑步骤的图标。
     /// Icon displayed for editable steps.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 EditIcon="@value"，并保持声明的分支类型。字符串用 EditIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("editIcon")]
     public VuetifyIconValue? EditIcon { get; set; }
@@ -261,6 +276,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 错误步骤的图标。
     /// Icon displayed for steps with errors.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 ErrorIcon="@value"，并保持声明的分支类型。字符串用 ErrorIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("errorIcon")]
     public VuetifyIconValue? ErrorIcon { get; set; }
@@ -269,6 +285,7 @@ public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
     /// 垂直步骤条的数据项列表。
     /// Data items for the vertical stepper steps.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStepperItems?；值域为 VuetifyStepperItemValue[]。变量用 Items="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("items")]
     public VuetifyStepperItems? Items { get; set; }

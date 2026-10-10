@@ -70,6 +70,26 @@ public readonly union VueQueryKeyPart(string, Number, bool, Vue.VueProps)
 
     /// <summary>读取对象分支；当前值不属于该分支时返回 null。Reads the object branch; null when the value is not in that branch.</summary>
     public Vue.VueProps? AsProps => Value as Vue.VueProps;
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(byte value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(decimal value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(double value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(float value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(int value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(sbyte value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(short value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(uint value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VueQueryKeyPart(ushort value) => (VueQueryKeyPart)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>

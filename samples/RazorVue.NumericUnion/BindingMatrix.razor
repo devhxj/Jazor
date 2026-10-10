@@ -1,0 +1,14 @@
+@using ECMAScript.ElementPlus
+@using ECMAScript.Vuetify
+@using ECMAScript.TDesign
+
+<ElAvatar Size="@(32)" />
+<ElAvatar Size="@Extent" />
+<VAvatar Size="@(32)" Rounded="@(2)" />
+<VAvatar Size="@Fraction" Rounded="@Extent" />
+<TTag MaxWidth="@(32)">Number</TTag>
+<TTag MaxWidth="@Extent">Variable</TTag>
+<TTag MaxWidth="32">String</TTag>
+<ElPagination CurrentPage="@Extent" PageSize="@(10)" Total="@(100)" />
+
+<span data-value="@(Selection?.AsNumber)" data-text="@(Selection?.AsString)"></span>

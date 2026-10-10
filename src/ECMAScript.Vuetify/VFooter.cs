@@ -23,6 +23,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的边框样式。
     /// Border style of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBorderValue?；值域为 bool | Number | string。数值用 Border="@(32)"；变量用 Border="@value"，无需 double 后缀。字符串用 Border="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
@@ -39,6 +40,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的海拔阴影等级。
     /// Elevation shadow level of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -47,6 +49,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的高度。
     /// Height of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -55,6 +58,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的最大高度。
     /// Maximum height of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -63,6 +67,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的最大宽度。
     /// Maximum width of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -71,6 +76,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的最小高度。
     /// Minimum height of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinHeight="@(32)"；变量用 MinHeight="@value"，无需 double 后缀。字符串用 MinHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
@@ -79,6 +85,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的最小宽度。
     /// Minimum width of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -87,6 +94,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的圆角样式。
     /// Border radius style of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -111,6 +119,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 组件在布局中的排序顺序。
     /// Order of the component in the layout.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Order="@(32)"；变量用 Order="@value"，无需 double 后缀。字符串用 Order="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("order")]
     public VueStringNumberValue? Order { get; set; }
@@ -135,6 +144,7 @@ public sealed class VFooter : ComponentBase, IVuetifyComponent
     /// 页脚的宽度。
     /// Width of the footer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }

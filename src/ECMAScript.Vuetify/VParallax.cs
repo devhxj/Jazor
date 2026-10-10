@@ -13,6 +13,7 @@ public sealed class VParallax : ComponentBase, IVuetifyComponent
     /// 视差滚动缩放比例。
     /// The parallax scroll scale factor.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Scale="@(32)"；变量用 Scale="@value"，无需 double 后缀。字符串用 Scale="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scale")]
     public VueStringNumberValue? Scale { get; set; }

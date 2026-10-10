@@ -2,7 +2,7 @@
 
 > 本指南描述当前 RazorVue 的作者面（authoring surface）。Razor SDK/Roslyn 负责 Razor 绑定、C# 类型检查和语法诊断；RazorVue 消费 official Razor Source Generator 完成后的最终 `Compilation`，分别降低 VNode-producing `BuildRenderTree` 和其可达的组件 C# 成员，产出 Vue render-function `.mjs`。
 
-版本边界：本文描述 `1.0.0-preview.8` 的作者面，包括组件身份诊断、Vue 参数名冲突诊断、外部 wrapper 常量默认 props 和 Element Plus typed 交互。安装与升级统一使用对应 lockstep 版本；验收范围见[当前状态](../04-roadmap/current-status.md)。
+版本边界：本文描述 `1.0.0-preview.9` 的作者面，包括组件身份诊断、Vue 参数名冲突诊断、外部 wrapper 常量默认 props 和 Element Plus typed 交互。安装与升级统一使用对应 lockstep 版本；验收范围见[当前状态](../04-roadmap/current-status.md)。
 
 ## 先判断代码位置
 
@@ -393,6 +393,50 @@ public Vue.VueBooleanStringValue Mode { get; set; } = true;
 ```
 
 union 是 authoring/compile-time contract，运行时按其分支值擦除；保留 `AsX` projection 和正常赋值/隐式构造。官方 Razor SG 绑定使用可编译参数面；需要更窄作者体验时，使用显式 overload 或强类型参数。
+
+<a id="numeric-union-authoring"></a>
+### N4：数值、nullable union 与 typed 选择
+
+当前源码允许普通整数和数值变量直接绑定：`Size="@(32)"`、`CurrentPage="@page"`（`int page = 1`）。`double` 分支使用普通 C# 数值转换；`Number` 分支的 union 由绑定生成器根据 `ECMAScript.Number` 已声明的隐式输入生成强类型转换，解决 C# 不允许连续两次用户转换的问题。`Number` 与 `double` 的声明类型仍有区别，handler 保持组件声明的参数类型。这些改进随 preview.9 交付，所有 Jazor/ECMAScript 包应使用同一版本。
+
+| 作者场景 | 实际参数/回调类型 | 推荐写法与运行时结果 |
+| --- | --- | --- |
+| Element Plus / Vuetify Avatar 固定大小 | `VueStringNumberValue?`，`double` / `string` | `Size="@(32)"` 或 `Size="@size"`（`int size = 32`）；传 JavaScript number。Element Plus 设置 `--el-avatar-size: 32px`。 |
+| 字符串数字 / 命名大小 | 同上 | `Size="32"` / `Size="small"` 保持 string；数字字符串不会转为 number。 |
+| Vuetify Rounded / TDesign Tag MaxWidth | `VuetifyRoundedValue?` / `TTagMaxWidthValue?`，含 `Number` 分支 | `Rounded="@(2)"`、`MaxWidth="@(32)"`，整数变量同样直接绑定。 |
+| Pagination 页码/页大小 | `Number?`；事件为 `EventCallback<Number>` | `CurrentPage="@page"`（int/Number）；handler 保持 `Number value`，业务整数用 `(int)value`。 |
+| Select nullable 单值 number | `VueBooleanStringNumberObjectArrayableValue?`；对应 `EventCallback<...?>` | `ModelValue="@(2)"`；回调读取 `value?.AsNumber`，得到 `double?`。 |
+| Select nullable 单值 string / bool | 同上 | `ModelValue="two"` / `ModelValue="@(false)"`；读取 `value?.AsString` / `value?.AsBool`，保留 `"32"`、0 和 false。 |
+| Select nullable 多值 | 同上，数组分支为 `VueBooleanStringNumberObjectValue[]` | `Multiple="true"`；读取 `value?.AsMultiple ?? []`；空数组与 null 是不同的值。 |
+| Typed Select 单值 string | `ElTypedSelect<string>.ModelValue` 为 `string?`；回调为 `EventCallback<string?>` | `TValue="string"` + typed option + `@bind-ModelValue`，直接使用业务字段。 |
+| Select / Typed Select 清空 | `ValueOnClear` 为 `ElValueOnClearValue?` | Element Plus 2.14.5 单选默认传 `undefined`；确定的 null 用 `ValueOnClear="@ElValueOnClearValue.Null()"`，空串用 `ValueOnClear="@("")"`；多选清空传空数组。 |
+
+嵌套 union 的直接 `AsNumber` / `AsString` / `AsBool` / `AsDate` 等属性由声明生成；既有 `AsSingle?.AsNumber` 路径继续保留。编译器根据 Roslyn 中的分支类型生成投影，分支不匹配返回 null，接收者只求值一次。该机制同样适用于应用自己声明的 `[ECMAScript]` named union，不依赖组件名称或组件库。属性 XML 提示自动显示实际类型、合法输入、分支和投影；参数错误继续由 C#/官方 Razor SG 诊断。
+
+数组元素类型仍为编译期约束；运行时只判断数组，不扫描元素来猜分支。两个无法区分的对象分支，以及 File/Blob 这类可相互赋值、需要精确标签的 fallback 分支，不能从擦除后的 JS 值恢复标签；相关投影在使用点报错，使用明确的宿主映射或非重叠模型。`Value` 保持原值；已声明的 whitelist/Inline 等映射优先于自动投影。
+
+完整可编译示例为 [NumericUnionAuthoring.razor](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor) / [code-behind](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor.cs)，覆盖真实 Element Plus 的分页、单/多选、清空、数值尺寸和原始字符串 ID。跨库示例为 [BindingMatrix.razor](../../samples/RazorVue.NumericUnion/BindingMatrix.razor) / [code-behind](../../samples/RazorVue.NumericUnion/BindingMatrix.razor.cs)，增加 Vuetify 和 TDesign。将文件放入已配置对应绑定的 RazorVue 工程，并对齐 namespace 与包版本；详细接入见[示例说明](../../samples/RazorVue.NumericUnion/README.md)。
+
+```razor
+<ElAvatar Size="@(32)" />
+<ElSelect @bind-ModelValue="Selected" />
+<span data-number="@(Selected?.AsNumber)"></span>
+```
+
+```csharp
+private VueBooleanStringNumberObjectArrayableValue? Selected { get; set; } = 0;
+private void PageChanged(Number value) => BusinessPage = (int)value;
+```
+
+执行作者门禁：
+
+```text
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg --filter "RazorSgOfficialElementPlusNumericUnionTests|RazorSgOfficialNumericUnionMatrixTests"
+dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "ErasedUnionProjectionTests|BindingAuthoringDocumentationTests"
+dotnet run --project src/ECMAScript.Vue.Generator -- authoring --check
+```
+
+Element Plus 回归使用真实 Vue、Element Plus 与 happy-dom 检查值、事件、class 和 inline style。跨库矩阵使用官方 SG 和最终 JS 的 props 断言，组件 runtime 为测试替身，不据此宣称 Vuetify/TDesign 的真实交互或 CSS 已联调。真实浏览器和后端业务验收另行记录。
 
 ## 排查顺序
 

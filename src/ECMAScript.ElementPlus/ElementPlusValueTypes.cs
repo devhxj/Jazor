@@ -2090,6 +2090,24 @@ public readonly union ElSpaceSizeValue(ElComponentSize, Number, VueNumberPair)
     /// <returns>转换后的强类型值。</returns>
     public static implicit operator ElSpaceSizeValue(double value)
         => new((Number)value);
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(byte value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(decimal value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(float value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(int value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(sbyte value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(short value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(uint value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElSpaceSizeValue(ushort value) => (ElSpaceSizeValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -2143,6 +2161,24 @@ public readonly union ElThrottleValue(Number, ElThrottleRenderOptions)
     /// <returns>转换后的强类型值。</returns>
     public static implicit operator ElThrottleValue(double value)
         => new((Number)value);
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(byte value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(decimal value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(float value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(int value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(sbyte value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(short value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(uint value) => (ElThrottleValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElThrottleValue(ushort value) => (ElThrottleValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -5133,6 +5169,10 @@ public readonly union ElTableRowStyleValue(VueStyleValue, ElTableRowStyleCallbac
     /// 读取当前值的 ElTableRowStyleCallback 分支；不属于该分支时返回 null。
     /// </summary>
     public ElTableRowStyleCallback? AsCallback => Value as ElTableRowStyleCallback;
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsStyle?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -5173,6 +5213,10 @@ public readonly union ElTableCellStyleValue(VueStyleValue, ElTableCellStyleCallb
     /// 读取当前值的 ElTableCellStyleCallback 分支；不属于该分支时返回 null。
     /// </summary>
     public ElTableCellStyleCallback? AsCallback => Value as ElTableCellStyleCallback;
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsStyle?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -5330,6 +5374,26 @@ public readonly union ElTableColumnIndexValue(Number, ElTableColumnIndexCallback
     /// 读取当前值的 ElTableColumnIndexCallback 分支；不属于该分支时返回 null。
     /// </summary>
     public ElTableColumnIndexCallback? AsCallback => Value as ElTableColumnIndexCallback;
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(byte value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(decimal value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(double value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(float value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(int value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(sbyte value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(short value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(uint value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator ElTableColumnIndexValue(ushort value) => (ElTableColumnIndexValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>

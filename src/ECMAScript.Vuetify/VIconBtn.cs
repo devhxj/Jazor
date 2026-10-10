@@ -45,6 +45,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的圆角样式。
     /// Border radius style of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -61,6 +62,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的海拔阴影等级。
     /// Elevation shadow level of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -69,6 +71,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的边框样式。
     /// Border style of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBorderValue?；值域为 bool | Number | string。数值用 Border="@(32)"；变量用 Border="@value"，无需 double 后缀。字符串用 Border="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
@@ -101,6 +104,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 激活状态时显示的图标。
     /// Icon displayed when the button is active.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 ActiveIcon="@value"，并保持声明的分支类型。字符串用 ActiveIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("activeIcon")]
     public VuetifyIconValue? ActiveIcon { get; set; }
@@ -133,6 +137,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的高度。
     /// Height of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -141,6 +146,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的宽度。
     /// Width of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -157,6 +163,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮显示的图标。
     /// Icon displayed on the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VuetifyIconValue? Icon { get; set; }
@@ -173,6 +180,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 图标的尺寸。
     /// Size of the icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 IconSize="@(32)"；变量用 IconSize="@value"，无需 double 后缀。字符串用 IconSize="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("iconSize")]
     public VueStringNumberValue? IconSize { get; set; }
@@ -181,6 +189,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 不同尺寸下图标尺寸的映射。
     /// Icon size mapping for different sizes.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VIconBtnSizeMap?；值域为 VIconBtnSizeEntry[]。变量用 IconSizes="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("iconSizes")]
     public VIconBtnSizeMap? IconSizes { get; set; }
@@ -197,6 +206,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的透明度。
     /// Opacity of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Opacity="@(32)"；变量用 Opacity="@value"，无需 double 后缀。字符串用 Opacity="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
@@ -213,6 +223,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 图标的旋转角度。
     /// Rotation angle of the icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Rotate="@(32)"；变量用 Rotate="@value"，无需 double 后缀。字符串用 Rotate="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rotate")]
     public VueStringNumberValue? Rotate { get; set; }
@@ -221,6 +232,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的尺寸。
     /// Size of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -229,6 +241,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 不同尺寸下按钮尺寸的映射。
     /// Button size mapping for different sizes.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VIconBtnSizeMap?；值域为 VIconBtnSizeEntry[]。变量用 Sizes="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sizes")]
     public VIconBtnSizeMap? Sizes { get; set; }
@@ -237,6 +250,7 @@ public sealed class VIconBtn : ComponentBase, IVuetifyComponent
     /// 按钮的文本内容。
     /// Text content of the button.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VIconBtnTextValue?；值域为 bool | Number | string。数值用 Text="@(32)"；变量用 Text="@value"，无需 double 后缀。字符串用 Text="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("text")]
     public VIconBtnTextValue? Text { get; set; }

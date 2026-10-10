@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="..\ECMAScript.Vue.Generator\BindingAuthoringDocumentation.cs" Link="Shared\BindingAuthoringDocumentation.cs" />
     <Compile Include="..\Jazor.EmitTest\TestSupport\RepositoryTemp.cs" Link="Shared\RepositoryTemp.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -85,6 +85,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 是否禁用控件。
     /// Whether the control is disabled.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Disabled="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public VuetifyNullableBoolean? Disabled { get; set; }
@@ -93,6 +94,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 是否为只读状态。
     /// Whether the control is read-only.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Readonly="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("readonly")]
     public VuetifyNullableBoolean? Readonly { get; set; }
@@ -117,6 +119,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 是否支持多选。
     /// Whether to support multiple selections.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Multiple="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("multiple")]
     public VuetifyNullableBoolean? Multiple { get; set; }
@@ -125,6 +128,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 未选中状态下显示的图标。
     /// The icon displayed when unchecked.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 FalseIcon="@value"，并保持声明的分支类型。字符串用 FalseIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseIcon")]
     public VuetifyIconValue? FalseIcon { get; set; }
@@ -133,6 +137,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 选中状态下显示的图标。
     /// The icon displayed when checked.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 TrueIcon="@value"，并保持声明的分支类型。字符串用 TrueIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueIcon")]
     public VuetifyIconValue? TrueIcon { get; set; }
@@ -141,6 +146,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 是否启用涟漪效果。
     /// Whether to enable the ripple effect.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRippleValue?；值域为 bool | VueProps。变量用 Ripple="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
@@ -157,6 +163,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 控件的当前绑定值。
     /// The current bound value of the control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyGroupModelValue? ModelValue { get; set; }
@@ -165,6 +172,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 绑定值变更时触发的回调。
     /// Callback invoked when the bound value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyGroupModelValue?；保持与模型相同的强类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
@@ -173,6 +181,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 控件的提交值。
     /// The submission value of the control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VuetifyGroupModelValue? Value { get; set; }
@@ -181,6 +190,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 选中时对应的值。
     /// The value when the control is checked.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 TrueValue="@(32)"；变量用 TrueValue="@value"，无需 double 后缀。字符串用 TrueValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueValue")]
     public VuetifyGroupModelValue? TrueValue { get; set; }
@@ -189,6 +199,7 @@ public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
     /// 未选中时对应的值。
     /// The value when the control is unchecked.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyGroupModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifyGroupModelValue[]。数值用 FalseValue="@(32)"；变量用 FalseValue="@value"，无需 double 后缀。字符串用 FalseValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseValue")]
     public VuetifyGroupModelValue? FalseValue { get; set; }

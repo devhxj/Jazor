@@ -82,6 +82,7 @@ public abstract class VSelectionControlComponentBase : ComponentBase
     /// 错误状态下显示的消息。
     /// Messages displayed in the error state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 ErrorMessages="@value"，并保持声明的分支类型。字符串用 ErrorMessages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
 
@@ -89,6 +90,7 @@ public abstract class VSelectionControlComponentBase : ComponentBase
     /// 显示的提示消息。
     /// The hint messages to display.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyMessagesValue? Messages { get; set; }
 
@@ -96,6 +98,7 @@ public abstract class VSelectionControlComponentBase : ComponentBase
     /// 是否隐藏提示详细信息。
     /// Whether to hide the details/hints section.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyHideDetailsValue?；值域为 bool | VuetifyHideDetailsMode。变量用 HideDetails="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
@@ -187,6 +190,7 @@ public abstract class VSelectionControlComponentBase : ComponentBase
     /// 未选中状态下显示的图标。
     /// The icon displayed when unchecked.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 FalseIcon="@value"，并保持声明的分支类型。字符串用 FalseIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyIconValue? FalseIcon { get; set; }
 
@@ -194,6 +198,7 @@ public abstract class VSelectionControlComponentBase : ComponentBase
     /// 选中状态下显示的图标。
     /// The icon displayed when checked.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 TrueIcon="@value"，并保持声明的分支类型。字符串用 TrueIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyIconValue? TrueIcon { get; set; }
 
@@ -201,6 +206,7 @@ public abstract class VSelectionControlComponentBase : ComponentBase
     /// 不确定状态下显示的图标。
     /// The icon displayed when indeterminate.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 IndeterminateIcon="@value"，并保持声明的分支类型。字符串用 IndeterminateIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyIconValue? IndeterminateIcon { get; set; }
 

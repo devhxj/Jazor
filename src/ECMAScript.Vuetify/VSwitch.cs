@@ -21,6 +21,7 @@ public sealed class VSwitch : VSelectionControlComponentBase, IVuetifyComponent
     /// 加载状态。
     /// Loading state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBooleanStringValue?；值域为 bool | string。变量用 Loading="@value"，并保持声明的分支类型。字符串用 Loading="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }

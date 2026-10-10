@@ -13,6 +13,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 模型值。
     /// Model value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewValues?；值域为 VueValue[]。变量用 ModelValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyTreeviewValues? ModelValue { get; set; }
@@ -21,6 +22,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 模型值变化事件。
     /// Model value changed event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyTreeviewValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyTreeviewValues?> ModelValueChanged { get; set; }
@@ -29,6 +31,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 项。
     /// Tree items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewItems?；值域为 VuetifyTreeviewItemValue[]。变量用 Items="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("items")]
     public VuetifyTreeviewItems? Items { get; set; }
@@ -37,6 +40,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 项标题字段。
     /// Item title field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemTitle="@value"，并保持声明的分支类型。字符串用 ItemTitle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemTitle")]
     public VuetifySelectItemKey? ItemTitle { get; set; }
@@ -45,6 +49,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 项值字段。
     /// Item value field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemValue="@value"，并保持声明的分支类型。字符串用 ItemValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
@@ -53,6 +58,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 子项字段。
     /// Item children field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemChildren="@value"，并保持声明的分支类型。字符串用 ItemChildren="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemChildren")]
     public VuetifySelectItemKey? ItemChildren { get; set; }
@@ -61,6 +67,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 项属性。
     /// Item props.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemPropsSelector?；值域为 string | string[] | VuetifySelectItemPropsCallback | bool。变量用 ItemProps="@value"，并保持声明的分支类型。字符串用 ItemProps="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsCallback、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemProps")]
     public VuetifySelectItemPropsSelector? ItemProps { get; set; }
@@ -77,6 +84,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 激活项。
     /// Activated items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewValues?；值域为 VueValue[]。变量用 Activated="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("activated")]
     public VuetifyTreeviewValues? Activated { get; set; }
@@ -85,6 +93,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 激活项变化事件。
     /// Activated changed event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyTreeviewValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:activated")]
     public EventCallback<VuetifyTreeviewValues?> ActivatedChanged { get; set; }
@@ -93,6 +102,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 选中项。
     /// Selected items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewValues?；值域为 VueValue[]。变量用 Selected="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("selected")]
     public VuetifyTreeviewValues? Selected { get; set; }
@@ -101,6 +111,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 选中项变化事件。
     /// Selected changed event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyTreeviewValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:selected")]
     public EventCallback<VuetifyTreeviewValues?> SelectedChanged { get; set; }
@@ -109,6 +120,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 已展开项。
     /// Opened items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewValues?；值域为 VueValue[]。变量用 Opened="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("opened")]
     public VuetifyTreeviewValues? Opened { get; set; }
@@ -117,6 +129,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 已展开项变化事件。
     /// Opened changed event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyTreeviewValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:opened")]
     public EventCallback<VuetifyTreeviewValues?> OpenedChanged { get; set; }
@@ -149,6 +162,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 选择策略。
     /// Active strategy.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewActiveStrategyValue?；值域为 VuetifyTreeviewActiveStrategy | VuetifyTreeviewActiveStrategyDefinition | VuetifyTreeviewActiveStrategyFactory。变量用 ActiveStrategy="@value"，并保持声明的分支类型。投影：value?.AsName、value?.AsDefinition、value?.AsFactory；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("activeStrategy")]
     public VuetifyTreeviewActiveStrategyValue? ActiveStrategy { get; set; }
@@ -157,6 +171,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 选择策略。
     /// Select strategy.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTreeviewSelectStrategyValue?；值域为 VuetifyTreeviewSelectStrategy | VuetifyTreeviewSelectStrategyDefinition | VuetifyTreeviewSelectStrategyFactory。变量用 SelectStrategy="@value"，并保持声明的分支类型。投影：value?.AsName、value?.AsDefinition、value?.AsFactory；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("selectStrategy")]
     public VuetifyTreeviewSelectStrategyValue? SelectStrategy { get; set; }
@@ -197,6 +212,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// CSS类。
     /// CSS class.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -205,6 +221,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 行内样式。
     /// Inline style.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStyleValue?；值域为 string | VueProps | VuetifyStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
@@ -229,6 +246,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 过滤键。
     /// Filter keys.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyFilterKeys?；值域为 string | string[]。变量用 FilterKeys="@value"，并保持声明的分支类型。字符串用 FilterKeys="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("filterKeys")]
     public VuetifyFilterKeys? FilterKeys { get; set; }
@@ -253,6 +271,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 折叠图标。
     /// Collapse icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 CollapseIcon="@value"，并保持声明的分支类型。字符串用 CollapseIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("collapseIcon")]
     public VuetifyIconValue? CollapseIcon { get; set; }
@@ -261,6 +280,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 展开图标。
     /// Expand icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 ExpandIcon="@value"，并保持声明的分支类型。字符串用 ExpandIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public VuetifyIconValue? ExpandIcon { get; set; }
@@ -269,6 +289,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 不确定状态图标。
     /// Indeterminate icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 IndeterminateIcon="@value"，并保持声明的分支类型。字符串用 IndeterminateIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("indeterminateIcon")]
     public VuetifyIconValue? IndeterminateIcon { get; set; }
@@ -277,6 +298,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 未选中图标。
     /// False icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 FalseIcon="@value"，并保持声明的分支类型。字符串用 FalseIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseIcon")]
     public VuetifyIconValue? FalseIcon { get; set; }
@@ -285,6 +307,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 已选中图标。
     /// True icon.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 TrueIcon="@value"，并保持声明的分支类型。字符串用 TrueIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueIcon")]
     public VuetifyIconValue? TrueIcon { get; set; }
@@ -365,6 +388,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 线条样式。
     /// Lines style.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyListLines?；值域为 bool | VuetifyListLineMode。变量用 Lines="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lines")]
     public VuetifyListLines? Lines { get; set; }
@@ -413,6 +437,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 圆角。
     /// Border radius.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -429,6 +454,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 边框。
     /// Border.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBorderValue?；值域为 bool | Number | string。数值用 Border="@(32)"；变量用 Border="@value"，无需 double 后缀。字符串用 Border="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
@@ -437,6 +463,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 阴影。
     /// Elevation shadow.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -445,6 +472,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 高。
     /// Height.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -453,6 +481,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 宽。
     /// Width.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -461,6 +490,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 最大高。
     /// Maximum height.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -469,6 +499,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 最大宽。
     /// Maximum width.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -477,6 +508,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 最小高。
     /// Minimum height.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinHeight="@(32)"；变量用 MinHeight="@value"，无需 double 后缀。字符串用 MinHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
@@ -485,6 +517,7 @@ public sealed class VTreeview : ComponentBase, IVuetifyComponent
     /// 最小宽。
     /// Minimum width.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }

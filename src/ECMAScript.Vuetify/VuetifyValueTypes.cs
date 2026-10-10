@@ -2383,6 +2383,12 @@ public readonly union VuetifyValidationRule(
     /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyValidationRule(VuetifyAsyncValidationRuleResolver value)
         => new(value);
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public bool? AsBool => AsResult?.AsBool;
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsResult?.AsString;
+    #endregion
 }
 
 

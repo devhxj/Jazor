@@ -23,6 +23,7 @@ public sealed class VTextarea : VInputComponentBase, IVuetifyComponent
     /// 行数。
     /// Number of visible rows.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Rows="@(32)"；变量用 Rows="@value"，无需 double 后缀。字符串用 Rows="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rows")]
     public VueStringNumberValue? Rows { get; set; }
@@ -31,6 +32,7 @@ public sealed class VTextarea : VInputComponentBase, IVuetifyComponent
     /// 最大行数。
     /// Maximum number of visible rows.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxRows="@(32)"；变量用 MaxRows="@value"，无需 double 后缀。字符串用 MaxRows="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxRows")]
     public VueStringNumberValue? MaxRows { get; set; }

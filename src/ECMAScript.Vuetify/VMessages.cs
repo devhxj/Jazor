@@ -29,6 +29,7 @@ public sealed class VMessages : ComponentBase, IVuetifyComponent
     /// 要显示的消息列表。
     /// List of messages to display.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
@@ -37,6 +38,7 @@ public sealed class VMessages : ComponentBase, IVuetifyComponent
     /// 消息出现/消失时的过渡动画。
     /// Transition animation when messages appear or disappear.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTransitionValue?；值域为 bool | string | VueTransitionProps。变量用 Transition="@value"，并保持声明的分支类型。字符串用 Transition="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }

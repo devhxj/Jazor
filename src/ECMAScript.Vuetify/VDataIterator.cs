@@ -14,6 +14,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 选中项的绑定值。
     /// The bound value of the selected items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataIteratorSelectedValues?；值域为 VueValue[]。变量用 ModelValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyDataIteratorSelectedValues? ModelValue { get; set; }
@@ -22,6 +23,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 选中项变更回调。
     /// Callback invoked when the selected items change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataIteratorSelectedValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyDataIteratorSelectedValues?> ModelValueChanged { get; set; }
@@ -30,6 +32,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 数据项集合。
     /// The collection of data items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataIteratorItems?；值域为 VuetifyDataIteratorItem[]。变量用 Items="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("items")]
     public VuetifyDataIteratorItems? Items { get; set; }
@@ -38,6 +41,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 用于标识项值的字段键。
     /// The key used to identify item values.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemValue="@value"，并保持声明的分支类型。字符串用 ItemValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
@@ -46,6 +50,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 用于标识可选项的字段键。
     /// The key used to identify selectable items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemSelectable="@value"，并保持声明的分支类型。字符串用 ItemSelectable="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemSelectable")]
     public VuetifySelectItemKey? ItemSelectable { get; set; }
@@ -62,6 +67,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 当前页码。
     /// The current page number.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Page="@(32)"；变量用 Page="@value"，无需 double 后缀。字符串用 Page="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("page")]
     public VueStringNumberValue? Page { get; set; }
@@ -70,6 +76,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 页码变更回调。
     /// Callback invoked when the page changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 int；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:page")]
     public EventCallback<int> PageChanged { get; set; }
@@ -78,6 +85,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 每页显示项数。
     /// The number of items displayed per page.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ItemsPerPage="@(32)"；变量用 ItemsPerPage="@value"，无需 double 后缀。字符串用 ItemsPerPage="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemsPerPage")]
     public VueStringNumberValue? ItemsPerPage { get; set; }
@@ -86,6 +94,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 每页项数变更回调。
     /// Callback invoked when the items-per-page count changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 int；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:itemsPerPage")]
     public EventCallback<int> ItemsPerPageChanged { get; set; }
@@ -94,6 +103,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 排序规则。
     /// The sort criteria.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableSortItems?；值域为 VuetifyDataTableSortItem[]。变量用 SortBy="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sortBy")]
     public VuetifyDataTableSortItems? SortBy { get; set; }
@@ -102,6 +112,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 排序规则变更回调。
     /// Callback invoked when the sort criteria change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableSortItems?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:sortBy")]
     public EventCallback<VuetifyDataTableSortItems?> SortByChanged { get; set; }
@@ -110,6 +121,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 分组规则。
     /// The group-by criteria.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableSortItems?；值域为 VuetifyDataTableSortItem[]。变量用 GroupBy="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("groupBy")]
     public VuetifyDataTableSortItems? GroupBy { get; set; }
@@ -118,6 +130,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 分组规则变更回调。
     /// Callback invoked when the group-by criteria change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableSortItems?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:groupBy")]
     public EventCallback<VuetifyDataTableSortItems?> GroupByChanged { get; set; }
@@ -150,6 +163,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 当前显示项变更回调。
     /// Callback invoked when the currently displayed items change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataIteratorItems?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("currentItemsChanged")]
     public EventCallback<VuetifyDataIteratorItems?> CurrentItemsChanged { get; set; }
@@ -254,6 +268,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 用于筛选的字段键。
     /// The keys used for filtering items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyFilterKeys?；值域为 string | string[]。变量用 FilterKeys="@value"，并保持声明的分支类型。字符串用 FilterKeys="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("filterKeys")]
     public VuetifyFilterKeys? FilterKeys { get; set; }
@@ -286,6 +301,7 @@ public sealed class VDataIterator : ComponentBase, IVuetifyComponent
     /// 过渡动画效果。
     /// The transition animation effect.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTransitionValue?；值域为 bool | string | VueTransitionProps。变量用 Transition="@value"，并保持声明的分支类型。字符串用 Transition="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }

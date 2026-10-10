@@ -22,6 +22,7 @@ public sealed class VDivider : ComponentBase, IVuetifyComponent
     /// 分隔线的粗细。
     /// Thickness of the divider.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int?；Razor 数值写 Thickness="@(32)" 或 Thickness="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("thickness")]
     public int? Thickness { get; set; }

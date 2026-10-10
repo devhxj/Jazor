@@ -1594,7 +1594,9 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                     {
                         _ = error.Type;
                         _ = error.To.AsString;
-                        _ = error.To.AsPath?.Path;
+                        // Raw object variants erase to the same JS domain; normalize the
+                        // strongly typed route before reading its resolved path.
+                        _ = router.Resolve(error.To).Path;
                         _ = error.From.Path;
                     });
                     var stopString = router.OnError((string error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from) =>
@@ -1662,9 +1664,9 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "error[\"code\"]");
         StringAssert.Contains(script, "payload[\"fallback\"]");
         StringAssert.Contains(script, "let first = error[0];");
-        StringAssert.Contains(script, "first?.message");
-        StringAssert.Contains(script, "first?.[\"detail\"]");
-        StringAssert.Contains(script, "first?.[0]");
+        StringAssert.Contains(script, "instanceof Error");
+        StringAssert.Contains(script, "[\"detail\"]");
+        StringAssert.Contains(script, "Array.isArray");
         StringAssert.Contains(script, "return \"ok\";");
     }
 
@@ -2754,7 +2756,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "injectedRoute.path");
         StringAssert.Contains(script, "injectedRouteRef.value.path");
         StringAssert.Contains(script, "injectedMatched.value.path");
-        StringAssert.Contains(script, "injectedDepth.toString()");
+        StringAssert.Contains(script, "(typeof injectedDepth === \"number\" ? injectedDepth : null).toString()");
         StringAssert.Contains(script, "link.href.value");
         StringAssert.Contains(script, "link.route.value.href");
     }

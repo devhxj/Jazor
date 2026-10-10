@@ -41,6 +41,26 @@ public static partial class VueDevtools
         /// <summary>从双精度 group id 创建 identity projection。</summary>
         [ECMAScriptInline("__arg1")]
         public extern static TimelineGroupId From(double value);
+        #region Generated union numeric conversions
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(byte value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(decimal value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(double value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(float value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(int value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(sbyte value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(short value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(uint value) => (TimelineGroupId)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator TimelineGroupId(ushort value) => (TimelineGroupId)(ECMAScript.Number)value;
+        #endregion
     }
 
     /// <summary>写入 Devtools timeline 的一个业务 event。</summary>

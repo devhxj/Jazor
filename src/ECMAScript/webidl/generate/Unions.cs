@@ -2921,6 +2921,10 @@ public static implicit operator BackgroundFetchManagerFetchRequests(RequestInfo[
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<RequestInfo>)this).GetEnumerator();
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsRequestInfo?.AsString;
+#endregion
 }
 
 /// <summary>为 BackgroundFetchManagerFetchRequests 的数组分支提供 C# 集合表达式支持；应用可使用 [item1, item2] 构造该联合值。</summary>
@@ -4978,6 +4982,10 @@ public static implicit operator StructuralCacheValue7(RequestInfo[] value)
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<RequestInfo>)this).GetEnumerator();
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsRequestInfo?.AsString;
+#endregion
 }
 
 /// <summary>为 StructuralCacheValue7 的数组分支提供 C# 集合表达式支持；应用可使用 [item1, item2] 构造该联合值。</summary>
@@ -9820,6 +9828,10 @@ public static implicit operator MediaTrackConstraintSetPan(bool value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator MediaTrackConstraintSetPan(ConstrainDouble value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsConstrainDouble?.AsDouble;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：bool、ConstrainDouble。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
@@ -9846,6 +9858,10 @@ public static implicit operator MediaTrackConstraintSetTilt(bool value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator MediaTrackConstraintSetTilt(ConstrainDouble value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsConstrainDouble?.AsDouble;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：bool、ConstrainDouble。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
@@ -9872,6 +9888,10 @@ public static implicit operator MediaTrackConstraintSetZoom(bool value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator MediaTrackConstraintSetZoom(ConstrainDouble value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsConstrainDouble?.AsDouble;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：bool、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>

@@ -14,6 +14,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 列表中显示的选项数据源。
     /// Data source items to display in the list.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItems?；值域为 VuetifySelectItemValue[]。变量用 Items="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("items")]
     public VuetifySelectItems? Items { get; set; }
@@ -22,6 +23,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 用于显示标题的数据项属性名或键。
     /// Property name or key for displaying item titles.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemTitle="@value"，并保持声明的分支类型。字符串用 ItemTitle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemTitle")]
     public VuetifySelectItemKey? ItemTitle { get; set; }
@@ -30,6 +32,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 用于标识值的数据项属性名或键。
     /// Property name or key for identifying item values.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemValue="@value"，并保持声明的分支类型。字符串用 ItemValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
@@ -38,6 +41,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 用于嵌套子项的数据项属性名或键。
     /// Property name or key for nested child items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemChildren="@value"，并保持声明的分支类型。字符串用 ItemChildren="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemChildren")]
     public VuetifySelectItemKey? ItemChildren { get; set; }
@@ -46,6 +50,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 用于传递额外属性的数据项属性选择器。
     /// Property selector for passing extra props to items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemPropsSelector?；值域为 string | string[] | VuetifySelectItemPropsCallback | bool。变量用 ItemProps="@value"，并保持声明的分支类型。字符串用 ItemProps="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsCallback、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemProps")]
     public VuetifySelectItemPropsSelector? ItemProps { get; set; }
@@ -118,6 +123,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 列表项的行间距样式。
     /// Line spacing style for list items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyListLines?；值域为 bool | VuetifyListLineMode。变量用 Lines="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lines")]
     public VuetifyListLines? Lines { get; set; }
@@ -166,6 +172,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的圆角样式。
     /// Border radius style of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -174,6 +181,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的海拔阴影级别。
     /// Elevation shadow level of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -182,6 +190,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的高度。
     /// Height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -190,6 +199,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的宽度。
     /// Width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -198,6 +208,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的最小高度。
     /// Minimum height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinHeight="@(32)"；变量用 MinHeight="@value"，无需 double 后缀。字符串用 MinHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
@@ -206,6 +217,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的最小宽度。
     /// Minimum width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -214,6 +226,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的最大高度。
     /// Maximum height of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -222,6 +235,7 @@ public sealed class VList : ComponentBase, IVuetifyComponent
     /// 组件的最大宽度。
     /// Maximum width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }

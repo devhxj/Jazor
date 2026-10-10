@@ -13,6 +13,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的源地址或源对象。
     /// Image source URL or source object.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VImgSource?；值域为 string | VImgSourceObject。变量用 Src="@value"，并保持声明的分支类型。字符串用 Src="text"；数字字符串保持 string。投影：value?.AsString、value?.AsObject；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("src")]
     public VImgSource? Src { get; set; }
@@ -53,6 +54,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的高度。
     /// Height of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -61,6 +63,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的宽度。
     /// Width of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -69,6 +72,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的最大高度。
     /// Maximum height of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -77,6 +81,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的最大宽度。
     /// Maximum width of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -85,6 +90,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的最小高度。
     /// Minimum height of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinHeight="@(32)"；变量用 MinHeight="@value"，无需 double 后缀。字符串用 MinHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
@@ -93,6 +99,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的最小宽度。
     /// Minimum width of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -101,6 +108,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的宽高比。
     /// Aspect ratio of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 AspectRatio="@(32)"；变量用 AspectRatio="@value"，无需 double 后缀。字符串用 AspectRatio="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("aspectRatio")]
     public VueStringNumberValue? AspectRatio { get; set; }
@@ -109,6 +117,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片加载时的过渡动画。
     /// Transition animation when the image loads.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTransitionValue?；值域为 bool | string | VueTransitionProps。变量用 Transition="@value"，并保持声明的分支类型。字符串用 Transition="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
@@ -157,6 +166,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片的圆角样式。
     /// Border radius style of the image.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -165,6 +175,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 应用于图片根元素的 CSS 类。
     /// CSS classes applied to the image root element.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -173,6 +184,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 应用于图片根元素的行内样式。
     /// Inline styles applied to the image root element.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStyleValue?；值域为 string | VueProps | VuetifyStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
@@ -181,6 +193,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 应用于图片内容区域的 CSS 类。
     /// CSS classes applied to the image content area.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 ContentClass="@value"，并保持声明的分支类型。字符串用 ContentClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("contentClass")]
     public VueClassValue? ContentClass { get; set; }
@@ -221,6 +234,7 @@ public sealed class VImg : ComponentBase, IVuetifyComponent
     /// 图片是否可拖拽。
     /// Whether the image is draggable.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VImgDraggableValue?；值域为 bool | VImgDraggable。变量用 Draggable="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("draggable")]
     public VImgDraggableValue? Draggable { get; set; }

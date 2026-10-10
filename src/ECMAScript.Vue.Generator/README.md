@@ -20,9 +20,18 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign snapshot --check
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings --check
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --report
 dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
+dotnet run --project src/ECMAScript.Vue.Generator -- authoring
+dotnet run --project src/ECMAScript.Vue.Generator -- authoring --check
 ```
 
 ## 输入与边界
+
+`authoring` 扫描当前 `ECMAScript.*` C# 声明，维护数值/union 参数的 XML 提示、嵌套 union
+的直接标量投影，以及 Number 分支缺少的强类型数值转换。转换输入来自 `ECMAScript.Number`
+已有隐式转换；不引入 `object`、开放泛型或组件名名单。生成区域和 `data-authoring="types"`
+说明由该命令维护；重复运行保留原文、换行和既有接口，`--check` 检测漂移。
+Element Plus、Vuetify、TDesign 和 WebIDL 生成器共享相同处理，Lucide 生成脚本最后执行该维护步骤。
+新增 numeric/union 绑定后运行这两个 authoring 命令即可；应用构建期间不扫描或重写源码。
 
 - `upstream/element-plus/2.14.5` 只冻结 Element Plus 生成实际需要的上游文件。
 - `element-plus-runtime/package.json` 与 `package-lock.json` 锁定 Element Plus 的校验输入；更新脚本通过 `npm ci` 验证上游 exports、样式和依赖元数据，不把绑定库自己的 dist 作为运行时 carrier。

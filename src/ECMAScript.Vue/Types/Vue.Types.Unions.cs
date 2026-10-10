@@ -445,6 +445,7 @@ public static partial class Vue
 	/// 接受字符串或数字值的 HTML 属性联合类型（如 <c>min</c>、<c>max</c>、<c>step</c>）。
 	/// Union type for HTML attributes that accept either string or numeric values (e.g. <c>min</c>, <c>max</c>, <c>step</c>).
 	/// </summary>
+	/// <remarks>数字分支的 C# 类型为 double，普通整数可直接赋值：Razor 写 <c>Size="@(32)"</c>；<c>Size="32"</c> 选择字符串分支，投影不会解析数字字符串。</remarks>
 	[ECMAScript]
 	[Description("@#")]
 	public readonly union VueStringNumberValue(double, string)
@@ -453,13 +454,19 @@ public static partial class Vue
 		/// 当值为数字时返回该数字；否则返回 null。
 		/// Returns the number when the value was created from a number; otherwise null.
 		/// </summary>
-		public double? AsNumber => Value is double value ? value : default(double?);
+		public double? AsNumber
+		{
+			get => Value is double value ? value : default(double?);
+		}
 
 		/// <summary>
 		/// 当值为字符串时返回该字符串；否则返回 null。
 		/// Returns the string when the value was created from a string; otherwise null.
 		/// </summary>
-		public string? AsString => Value as string;
+		public string? AsString
+		{
+			get => Value as string;
+		}
 	}
 
 	/// <summary>
@@ -559,6 +566,12 @@ public static partial class Vue
 
 		IEnumerator IEnumerable.GetEnumerator()
 			=> ((IEnumerable<VueStringNumberValue>)this).GetEnumerator();
+		#region Generated union authoring projections
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public double? AsNumber => AsSingle?.AsNumber;
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public string? AsString => AsSingle?.AsString;
+		#endregion
 	}
 
 	/// <summary>
@@ -658,6 +671,14 @@ public static partial class Vue
 		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberDateArrayableValue(Date[] values)
 			=> new(values);
+		#region Generated union authoring projections
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public double? AsNumber => AsSingle?.AsNumber;
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public string? AsString => AsSingle?.AsString;
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public Date? AsDate => AsSingle?.AsDate;
+		#endregion
 	}
 
 	/// <summary>
@@ -762,13 +783,19 @@ public static partial class Vue
 		/// 当值为数字时返回该数字；否则返回 null。
 		/// Returns the number when the value was created from a number; otherwise null.
 		/// </summary>
-		public double? AsNumber => Value is double value ? value : default(double?);
+		public double? AsNumber
+		{
+			get => Value is double value ? value : default(double?);
+		}
 
 		/// <summary>
 		/// 当值为字符串时返回该字符串；否则返回 null。
 		/// Returns the string when the value was created from a string; otherwise null.
 		/// </summary>
-		public string? AsString => Value as string;
+		public string? AsString
+		{
+			get => Value as string;
+		}
 
 		/// <summary>
 		/// 当值为对象时返回该对象；否则返回 null。
@@ -791,6 +818,7 @@ public static partial class Vue
 	/// Common Vue union that accepts either a scalar boolean/string/number/object value or an array of the same domain.
 	/// Use this for public contracts such as select/tree-select model values that officially allow one value or many values.
 	/// </summary>
+	/// <remarks>外层选择 scalar/array，内层选择 bool/double/string/object。对可空模型写 <c>value?.AsSingle?.AsNumber</c> 或 <c>value?.AsMultiple</c>；分支不匹配返回 null，数值 0 与空数组仍是有效值。清空值由宿主组件决定，nullable 不能代替 ValueOnClear 的业务策略。</remarks>
 	[ECMAScript]
 	[Description("@#")]
 	public readonly union VueBooleanStringNumberObjectArrayableValue(
@@ -801,14 +829,22 @@ public static partial class Vue
 		/// 当值为单个布尔/字符串/数字/对象值时返回该值；否则返回 null。
 		/// Returns the scalar boolean/string/number/object value when the union was created from one value; otherwise null.
 		/// </summary>
+		/// <remarks>可空模型的数值读取为 <c>value?.AsSingle?.AsNumber</c>（double?）；字符串读取为 <c>value?.AsSingle?.AsString</c>，不进行字符串到数值转换。</remarks>
 		public VueBooleanStringNumberObjectValue? AsSingle
-			=> Value is VueBooleanStringNumberObjectValue value ? value : default(VueBooleanStringNumberObjectValue?);
+		{
+			// The outer native union erases to either a scalar or an array in JavaScript.
+			get => Value is VueBooleanStringNumberObjectValue value ? value : default(VueBooleanStringNumberObjectValue?);
+		}
 
 		/// <summary>
 		/// 当值为布尔/字符串/数字/对象数组时返回该数组包装；否则返回 null。
 		/// Returns the array when the union was created from multiple values; otherwise null.
 		/// </summary>
-		public VueBooleanStringNumberObjectValue[]? AsMultiple => Value as VueBooleanStringNumberObjectValue[];
+		/// <remarks>空数组表示已清空的多选，与不属于数组分支的 null 不同；可通过 <c>value?.AsMultiple?.Length ?? 0</c> 获取数量。</remarks>
+		public VueBooleanStringNumberObjectValue[]? AsMultiple
+		{
+			get => Value as VueBooleanStringNumberObjectValue[];
+		}
 
 		/// <summary>
 		/// 将 bool 值转换为 VueBooleanStringNumberObjectArrayableValue，保留输入值供 JavaScript API 使用。
@@ -918,6 +954,14 @@ public static partial class Vue
 
 		IEnumerator IEnumerable.GetEnumerator()
 			=> ((IEnumerable<VueBooleanStringNumberObjectValue>)this).GetEnumerator();
+		#region Generated union authoring projections
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public bool? AsBool => AsSingle?.AsBool;
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public double? AsNumber => AsSingle?.AsNumber;
+		/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+		public string? AsString => AsSingle?.AsString;
+		#endregion
 	}
 
 	/// <summary>
@@ -1072,6 +1116,24 @@ public static partial class Vue
 		/// <returns>转换后的强类型值。</returns>
 		public static implicit operator VueStringNumberVNodeValue(double value)
 			=> new((Number)value);
+		#region Generated union numeric conversions
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(byte value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(decimal value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(float value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(int value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(sbyte value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(short value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(uint value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueStringNumberVNodeValue(ushort value) => (VueStringNumberVNodeValue)(ECMAScript.Number)value;
+		#endregion
 	}
 
 	/// <summary>
@@ -1417,6 +1479,26 @@ public static partial class Vue
 		/// Returns the duration object when the value was created from a duration; otherwise null.
 		/// </summary>
 		public VueTransitionDuration? AsDuration => Value as VueTransitionDuration;
+		#region Generated union numeric conversions
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(byte value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(decimal value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(double value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(float value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(int value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(sbyte value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(short value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(uint value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+		public static implicit operator VueTransitionDurationValue(ushort value) => (VueTransitionDurationValue)(ECMAScript.Number)value;
+		#endregion
 	}
 
 	/// <summary>

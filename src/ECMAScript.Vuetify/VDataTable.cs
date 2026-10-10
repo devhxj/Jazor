@@ -14,6 +14,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 选中行的绑定值。
     /// Bound value for selected rows.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableSelectedValues?；值域为 VueValue[]。变量用 ModelValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyDataTableSelectedValues? ModelValue { get; set; }
@@ -22,6 +23,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 选中行变化时的回调。
     /// Callback when selected rows change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableSelectedValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyDataTableSelectedValues?> ModelValueChanged { get; set; }
@@ -30,6 +32,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 表格列头定义。
     /// Column header definitions for the table.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableHeaders?；值域为 VuetifyDataTableHeader[]。变量用 Headers="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headers")]
     public VuetifyDataTableHeaders? Headers { get; set; }
@@ -38,6 +41,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 表格数据行。
     /// Data rows for the table.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableItems?；值域为 VuetifyDataTableItem[]。变量用 Items="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("items")]
     public VuetifyDataTableItems? Items { get; set; }
@@ -46,6 +50,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 用于标识行项值的属性键。
     /// Property key used to identify row item values.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemValue="@value"，并保持声明的分支类型。字符串用 ItemValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemValue")]
     public VuetifySelectItemKey? ItemValue { get; set; }
@@ -54,6 +59,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 用于判断行是否可选的属性键。
     /// Property key used to determine if a row is selectable.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemSelectable="@value"，并保持声明的分支类型。字符串用 ItemSelectable="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemSelectable")]
     public VuetifySelectItemKey? ItemSelectable { get; set; }
@@ -70,6 +76,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 当前页码。
     /// Current page number.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int；Razor 数值写 Page="@(32)" 或 Page="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("page")]
     public int Page { get; set; }
@@ -78,6 +85,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 页码变化时的回调。
     /// Callback when page number changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 int；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:page")]
     public EventCallback<int> PageChanged { get; set; }
@@ -86,6 +94,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 每页显示的行数。
     /// Number of items displayed per page.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int；Razor 数值写 ItemsPerPage="@(32)" 或 ItemsPerPage="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemsPerPage")]
     public int ItemsPerPage { get; set; }
@@ -94,6 +103,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 每页行数变化时的回调。
     /// Callback when items per page changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 int；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:itemsPerPage")]
     public EventCallback<int> ItemsPerPageChanged { get; set; }
@@ -102,6 +112,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 每页行数选项列表。
     /// Options list for items per page selector.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableItemsPerPageOptions?；值域为 VuetifyDataTableItemsPerPageOption[]。变量用 ItemsPerPageOptions="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemsPerPageOptions")]
     public VuetifyDataTableItemsPerPageOptions? ItemsPerPageOptions { get; set; }
@@ -110,6 +121,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 当前排序规则。
     /// Current sort criteria.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableSortItems?；值域为 VuetifyDataTableSortItem[]。变量用 SortBy="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sortBy")]
     public VuetifyDataTableSortItems? SortBy { get; set; }
@@ -118,6 +130,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 排序规则变化时的回调。
     /// Callback when sort criteria change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableSortItems?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:sortBy")]
     public EventCallback<VuetifyDataTableSortItems?> SortByChanged { get; set; }
@@ -126,6 +139,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 当前分组规则。
     /// Current group-by criteria.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableSortItems?；值域为 VuetifyDataTableSortItem[]。变量用 GroupBy="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("groupBy")]
     public VuetifyDataTableSortItems? GroupBy { get; set; }
@@ -134,6 +148,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 分组规则变化时的回调。
     /// Callback when group-by criteria change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableSortItems?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:groupBy")]
     public EventCallback<VuetifyDataTableSortItems?> GroupByChanged { get; set; }
@@ -142,6 +157,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 展开行的绑定值。
     /// Bound value for expanded rows.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableSelectedValues?；值域为 VueValue[]。变量用 Expanded="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("expanded")]
     public VuetifyDataTableSelectedValues? Expanded { get; set; }
@@ -150,6 +166,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 展开行变化时的回调。
     /// Callback when expanded rows change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableSelectedValues?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:expanded")]
     public EventCallback<VuetifyDataTableSelectedValues?> ExpandedChanged { get; set; }
@@ -166,6 +183,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 当前可见行变化时的回调。
     /// Callback when currently visible items change.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyDataTableItems?；保持与模型相同的强类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("currentItemsChanged")]
     public EventCallback<VuetifyDataTableItems?> CurrentItemsChanged { get; set; }
@@ -254,6 +272,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 加载状态或加载文本。
     /// Loading state or loading text.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBooleanStringValue?；值域为 bool | string。变量用 Loading="@value"，并保持声明的分支类型。字符串用 Loading="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }
@@ -358,6 +377,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 表格高度。
     /// Table height.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -366,6 +386,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 表格宽度。
     /// Table width.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -390,6 +411,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 行属性配置。
     /// Row props configuration.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableRowProps?；值域为 VueProps | VuetifyDataTableRowPropsCallback。变量用 RowProps="@value"，并保持声明的分支类型。投影：value?.AsProps、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowProps")]
     public VuetifyDataTableRowProps? RowProps { get; set; }
@@ -398,6 +420,7 @@ public sealed class VDataTable : ComponentBase, IVuetifyComponent
     /// 单元格属性配置。
     /// Cell props configuration.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyDataTableCellProps?；值域为 VueProps | VuetifyDataTableCellPropsCallback。变量用 CellProps="@value"，并保持声明的分支类型。投影：value?.AsProps、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cellProps")]
     public VuetifyDataTableCellProps? CellProps { get; set; }

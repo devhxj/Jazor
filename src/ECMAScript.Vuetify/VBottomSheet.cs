@@ -47,6 +47,7 @@ public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
     /// 组件的最大宽度。
     /// Max width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -55,6 +56,7 @@ public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
     /// 组件的宽度。
     /// Width of the component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -71,6 +73,7 @@ public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
     /// 过渡动画。
     /// Transition animation.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTransitionValue?；值域为 bool | string | VueTransitionProps。变量用 Transition="@value"，并保持声明的分支类型。字符串用 Transition="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
@@ -111,6 +114,7 @@ public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
     /// 遮罩层设置。
     /// Scrim overlay setting.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyScrimValue?；值域为 bool | string。变量用 Scrim="@value"，并保持声明的分支类型。字符串用 Scrim="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }

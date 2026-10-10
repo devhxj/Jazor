@@ -21,6 +21,7 @@ public sealed class VPullToRefresh : ComponentBase, IVuetifyComponent
     /// 触发下拉刷新的阈值距离。
     /// The threshold distance to trigger a pull-to-refresh.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PullDownThreshold="@(32)" 或 PullDownThreshold="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pullDownThreshold")]
     public Number? PullDownThreshold { get; set; }

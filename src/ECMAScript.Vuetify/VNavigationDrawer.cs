@@ -126,6 +126,7 @@ public sealed class VNavigationDrawer : ComponentBase, IVuetifyComponent
     /// 导航抽屉的宽度。
     /// Width of the navigation drawer.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -134,6 +135,7 @@ public sealed class VNavigationDrawer : ComponentBase, IVuetifyComponent
     /// 轨道模式下抽屉的宽度。
     /// Width of the drawer in rail mode.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 RailWidth="@(32)"；变量用 RailWidth="@value"，无需 double 后缀。字符串用 RailWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("railWidth")]
     public VueStringNumberValue? RailWidth { get; set; }
@@ -142,6 +144,7 @@ public sealed class VNavigationDrawer : ComponentBase, IVuetifyComponent
     /// 抽屉打开时的遮罩层配置。
     /// Scrim configuration when the drawer is open.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyScrimValue?；值域为 bool | string。变量用 Scrim="@value"，并保持声明的分支类型。字符串用 Scrim="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }

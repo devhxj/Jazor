@@ -248,6 +248,12 @@ public static implicit operator CSSColorAngle(CSSNumberish value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator CSSColorAngle(CSSKeywordish value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsCSSNumberish?.AsDouble;
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsCSSKeywordish?.AsString;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
@@ -274,6 +280,12 @@ public static implicit operator CSSColorNumber(CSSNumberish value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator CSSColorNumber(CSSKeywordish value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsCSSNumberish?.AsDouble;
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsCSSKeywordish?.AsString;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
@@ -300,6 +312,12 @@ public static implicit operator CSSColorPercent(CSSNumberish value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator CSSColorPercent(CSSKeywordish value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsCSSNumberish?.AsDouble;
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsCSSKeywordish?.AsString;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
@@ -326,6 +344,12 @@ public static implicit operator CSSColorRGBComp(CSSNumberish value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator CSSColorRGBComp(CSSKeywordish value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public double? AsDouble => AsCSSNumberish?.AsDouble;
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsCSSKeywordish?.AsString;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：string、CSSKeywordValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
@@ -404,6 +428,10 @@ public static implicit operator CSSPerspectiveValue(CSSNumericValue value)
     /// <returns>保存该分支值的联合值。</returns>
 public static implicit operator CSSPerspectiveValue(CSSKeywordish value)
         => new(value);
+#region Generated union authoring projections
+/// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+public string? AsString => AsCSSKeywordish?.AsString;
+#endregion
 }
 
 /// <summary>WebIDL 联合值：string、ReadableStream。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>

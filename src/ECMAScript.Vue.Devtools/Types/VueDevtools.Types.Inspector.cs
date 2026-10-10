@@ -32,6 +32,26 @@ public static partial class VueDevtools
         /// <summary>从 decimal 创建 Devtools value。</summary>
         [ECMAScriptInline("__arg1")]
         public extern static DevtoolsValue From(decimal value);
+        #region Generated union numeric conversions
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(byte value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(decimal value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(double value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(float value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(int value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(sbyte value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(short value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(uint value) => (DevtoolsValue)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator DevtoolsValue(ushort value) => (DevtoolsValue)(ECMAScript.Number)value;
+        #endregion
     }
 
     /// <summary>custom inspector 节点 tag 的显示样式。</summary>

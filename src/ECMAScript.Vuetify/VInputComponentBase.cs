@@ -131,6 +131,7 @@ public abstract class VInputComponentBase : ComponentBase
     /// 输入框的错误消息。
     /// Error messages for the input field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 ErrorMessages="@value"，并保持声明的分支类型。字符串用 ErrorMessages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
 
@@ -138,6 +139,7 @@ public abstract class VInputComponentBase : ComponentBase
     /// 输入框的提示消息。
     /// Hint messages for the input field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyMessagesValue? Messages { get; set; }
 
@@ -145,6 +147,7 @@ public abstract class VInputComponentBase : ComponentBase
     /// 是否隐藏输入框的详情区域。
     /// Whether to hide the details area of the input field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyHideDetailsValue?；值域为 bool | VuetifyHideDetailsMode。变量用 HideDetails="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
@@ -229,6 +232,7 @@ public abstract class VInputComponentBase : ComponentBase
     /// 输入框的圆角样式。
     /// Border radius style of the input field.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyRoundedValue? Rounded { get; set; }
 
@@ -236,6 +240,7 @@ public abstract class VInputComponentBase : ComponentBase
     /// 是否显示字符计数器。
     /// Whether to show a character counter.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyCounterValue?；值域为 bool | Number | string。数值用 Counter="@(32)"；变量用 Counter="@value"，无需 double 后缀。字符串用 Counter="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyCounterValue? Counter { get; set; }
 
@@ -243,6 +248,7 @@ public abstract class VInputComponentBase : ComponentBase
     /// 字符计数器的自定义值来源。
     /// Custom value source for the character counter.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyCounterValueSource?；值域为 Number | VuetifyCounterValueResolver。数值用 CounterValue="@(32)"；变量用 CounterValue="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsResolver；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyCounterValueSource? CounterValue { get; set; }
 

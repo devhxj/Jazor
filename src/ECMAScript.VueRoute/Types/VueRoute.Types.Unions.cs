@@ -275,6 +275,10 @@ public readonly union RouteLocationRawMaybeRef(
     /// <returns>包含该引用的联合值。The union value containing the readonly ref.</returns>
     [ECMAScriptInline("__arg1")]
     public extern static RouteLocationRawMaybeRef From(Vue.VueReadonlyRef<RouteLocationAsRelative> value);
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsValue?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -614,6 +618,26 @@ public readonly union HistoryStateValue(string, Number, bool, HistoryState, Arra
     /// <param name="value">要转换的可空 HistoryStateValue 数组。The nullable HistoryStateValue array to convert.</param>
     public static implicit operator HistoryStateValue(HistoryStateValue?[] value)
         => new((Array<HistoryStateValue?>)value);
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(byte value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(decimal value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(double value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(float value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(int value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(sbyte value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(short value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(uint value) => (HistoryStateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator HistoryStateValue(ushort value) => (HistoryStateValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -688,6 +712,26 @@ public readonly union RouterErrorValue(
     /// <returns>包含该对象的联合值。The union value containing the object.</returns>
     [ECMAScriptInline("__arg1")]
     public extern static RouterErrorValue From(IObject value);
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(byte value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(decimal value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(double value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(float value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(int value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(sbyte value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(short value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(uint value) => (RouterErrorValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouterErrorValue(ushort value) => (RouterErrorValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -936,6 +980,10 @@ public readonly union NavigationGuardNextArgument(bool, RouteLocationRaw, Naviga
     [ECMAScriptInline("__arg1")]
     [Obsolete("next(vm => ...) is only meaningful for beforeRouteEnter-style component guards. This VueRoute surface does not expose that guard as a recommended authoring path.")]
     public extern static NavigationGuardNextArgument From(NavigationGuardNextCallback value);
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsLocation?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -988,6 +1036,10 @@ public readonly union NavigationGuardReturn(bool, RouteLocationRaw, Error)
     public static implicit operator NavigationGuardReturn(RouteLocationAsRelative value)
         => new(value);
 
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsLocation?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -1292,6 +1344,10 @@ public readonly union RouteRedirectOption(RouteLocationRaw, RouteRedirectCallbac
     /// <returns>包含提取值的联合值。The union value containing the extracted value.</returns>
     [ECMAScriptInline("__arg1")]
     public extern static RouteRedirectOption From(RouteRecordRedirectOption value);
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsLocation?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -1371,6 +1427,10 @@ public readonly union RouteRecordRedirectOption(RouteLocationRaw, RouteRedirectC
     /// <returns>包含该回调的联合值。The union value containing the callback.</returns>
     [ECMAScriptInline("__arg1")]
     public extern static RouteRecordRedirectOption From(RouteRedirectCallback value);
+    #region Generated union authoring projections
+    /// <summary>Reads the scalar branch directly; other branches return null. 直接读取标量分支，不匹配时返回 null。</summary>
+    public string? AsString => AsLocation?.AsString;
+    #endregion
 }
 
 /// <summary>
@@ -1514,6 +1574,26 @@ public readonly union RouteParamRaw(string, Array<RouteParamRaw>, Number)
     /// <param name="value">要转换的 Number 数组。The Number array to convert.</param>
     public static implicit operator RouteParamRaw(Number[] value)
         => new((Array<RouteParamRaw>)value.Select(static item => (RouteParamRaw)item).ToArray());
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(byte value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(decimal value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(double value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(float value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(int value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(sbyte value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(short value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(uint value) => (RouteParamRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator RouteParamRaw(ushort value) => (RouteParamRaw)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -1595,4 +1675,24 @@ public readonly union LocationQueryValueRaw(string, Array<LocationQueryValueRaw?
     /// <param name="value">要转换的 Number 数组。The Number array to convert.</param>
     public static implicit operator LocationQueryValueRaw(Number[] value)
         => new((Array<LocationQueryValueRaw?>)value.Select(static item => (LocationQueryValueRaw?)item).ToArray());
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(byte value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(decimal value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(double value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(float value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(int value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(sbyte value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(short value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(uint value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator LocationQueryValueRaw(ushort value) => (LocationQueryValueRaw)(ECMAScript.Number)value;
+    #endregion
 }

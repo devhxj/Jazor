@@ -29,6 +29,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号相对于锚点的偏移量。
     /// Offset of the speed dial relative to its anchor.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyOverlayOffsetValue?；值域为 string | Number | Number[]。数值用 Offset="@(32)"；变量用 Offset="@value"，无需 double 后缀。字符串用 Offset="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public VuetifyOverlayOffsetValue? Offset { get; set; }
@@ -45,6 +46,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号动画的变换原点。
     /// Transform origin of the speed dial animation.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyOriginValue?；值域为 VuetifyLocation | VuetifyOriginMode | string。变量用 Origin="@value"，并保持声明的分支类型。字符串用 Origin="text"；数字字符串保持 string。投影：value?.AsLocation、value?.AsMode、value?.AsCustom；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("origin")]
     public VuetifyOriginValue? Origin { get; set; }
@@ -53,6 +55,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的高度。
     /// Height of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -61,6 +64,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的宽度。
     /// Width of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -69,6 +73,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的最大高度。
     /// Maximum height of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -77,6 +82,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的最大宽度。
     /// Maximum width of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public VueStringNumberValue? MaxWidth { get; set; }
@@ -85,6 +91,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的最小高度。
     /// Minimum height of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinHeight="@(32)"；变量用 MinHeight="@value"，无需 double 后缀。字符串用 MinHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minHeight")]
     public VueStringNumberValue? MinHeight { get; set; }
@@ -93,6 +100,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的最小宽度。
     /// Minimum width of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -101,6 +109,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 遮罩层的不透明度。
     /// Opacity of the overlay.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Opacity="@(32)"；变量用 Opacity="@value"，无需 double 后缀。字符串用 Opacity="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }
@@ -109,6 +118,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的过渡动画。
     /// Transition animation of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTransitionValue?；值域为 bool | string | VueTransitionProps。变量用 Transition="@value"，并保持声明的分支类型。字符串用 Transition="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("transition")]
     public VuetifyTransitionValue? Transition { get; set; }
@@ -117,6 +127,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号的 z-index 层级。
     /// Z-index level of the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ZIndex="@(32)"；变量用 ZIndex="@value"，无需 double 后缀。字符串用 ZIndex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
@@ -173,6 +184,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 关闭快速拨号的延迟毫秒数。
     /// Delay in milliseconds before closing the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CloseDelay="@(32)"；变量用 CloseDelay="@value"，无需 double 后缀。字符串用 CloseDelay="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }
@@ -181,6 +193,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 打开快速拨号的延迟毫秒数。
     /// Delay in milliseconds before opening the speed dial.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 OpenDelay="@(32)"；变量用 OpenDelay="@value"，无需 double 后缀。字符串用 OpenDelay="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
@@ -261,6 +274,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 遮罩层的蒙版配置。
     /// Scrim configuration of the overlay.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyScrimValue?；值域为 bool | string。变量用 Scrim="@value"，并保持声明的分支类型。字符串用 Scrim="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrim")]
     public VuetifyScrimValue? Scrim { get; set; }
@@ -269,6 +283,7 @@ public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
     /// 快速拨号挂载的容器目标。
     /// Container target where the speed dial is attached.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyAttachTarget?；值域为 bool | string | Element。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsSelector、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public VuetifyAttachTarget? Attach { get; set; }

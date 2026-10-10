@@ -59,7 +59,7 @@ internal static class TDesignComponentGenerator
             .Select(static attempt => attempt.Generated!)
             .ToArray();
 
-        var source = Render(components);
+        var source = new BindingAuthoringDocumentation(repoRoot).Annotate(Render(components));
         if (check)
         {
             if (!File.Exists(outputPath) || !string.Equals(NormalizeGeneratedText(File.ReadAllText(outputPath)), NormalizeGeneratedText(source), StringComparison.Ordinal))

@@ -47,6 +47,7 @@ public sealed class VExpansionPanel : ComponentBase, IVuetifyComponent
     /// 面板的阴影高度。
     /// Elevation shadow level of the panel.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -79,6 +80,7 @@ public sealed class VExpansionPanel : ComponentBase, IVuetifyComponent
     /// 面板的圆角样式。
     /// Border radius style of the panel.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -87,6 +89,7 @@ public sealed class VExpansionPanel : ComponentBase, IVuetifyComponent
     /// 面板的正文文本内容。
     /// Text content of the panel body.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTextValue?；值域为 string | Number | bool。数值用 Text="@(32)"；变量用 Text="@value"，无需 double 后缀。字符串用 Text="text"；数字字符串保持 string。投影：value?.AsString、value?.AsNumber、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("text")]
     public VuetifyTextValue? Text { get; set; }
@@ -95,6 +98,7 @@ public sealed class VExpansionPanel : ComponentBase, IVuetifyComponent
     /// 面板的标题文本。
     /// Title text of the panel.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTextValue?；值域为 string | Number | bool。数值用 Title="@(32)"；变量用 Title="@value"，无需 double 后缀。字符串用 Title="text"；数字字符串保持 string。投影：value?.AsString、value?.AsNumber、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("title")]
     public VuetifyTextValue? Title { get; set; }

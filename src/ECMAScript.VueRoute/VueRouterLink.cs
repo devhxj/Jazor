@@ -15,6 +15,7 @@ public sealed class VueRouterLink : ComponentBase, IVueComponent
     /// <summary>
     /// 链接元素的 CSS 类名，可使用字符串、条件映射或它们的数组。
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -22,6 +23,7 @@ public sealed class VueRouterLink : ComponentBase, IVueComponent
     /// <summary>
     /// 链接元素的内联 CSS 样式，可使用字符串或强类型样式对象。
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VueStyleValue? CssStyle { get; set; }
@@ -30,6 +32,7 @@ public sealed class VueRouterLink : ComponentBase, IVueComponent
     /// 链接的目标路由位置。
     /// The target route location for the link.
     /// </summary>
+    /// <remarks data-authoring="types">C# union RouteLocationRaw；值域为 string | RouteLocationAsPath | RouteLocationAsRelative。变量用 To="@value"，并保持声明的分支类型。字符串用 To="text"；数字字符串保持 string。投影：value.AsString、value.AsPath、value.AsRelative；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [EditorRequired]
     public RouteLocationRaw To { get; set; }

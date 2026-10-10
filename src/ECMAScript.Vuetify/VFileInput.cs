@@ -45,6 +45,7 @@ public sealed class VFileInput : ComponentBase, IVuetifyComponent
     /// 是否显示文件大小及显示方式。
     /// Whether and how to show file sizes.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyFileShowSizeValue?；值域为 bool | VuetifyFileSizeBase。变量用 ShowSize="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsBase；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showSize")]
     public VuetifyFileShowSizeValue? ShowSize { get; set; }
@@ -125,6 +126,7 @@ public sealed class VFileInput : ComponentBase, IVuetifyComponent
     /// 是否隐藏验证提示及隐藏方式。
     /// Whether and how to hide validation details.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyHideDetailsValue?；值域为 bool | VuetifyHideDetailsMode。变量用 HideDetails="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
@@ -133,6 +135,7 @@ public sealed class VFileInput : ComponentBase, IVuetifyComponent
     /// 显示在输入框下方的消息。
     /// Messages displayed below the input.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
@@ -141,6 +144,7 @@ public sealed class VFileInput : ComponentBase, IVuetifyComponent
     /// 文件输入的绑定值。
     /// Bound value of the file input.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyFileModelValue?；值域为 FileRef | FileRef[]。变量用 ModelValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsFile、value?.AsFiles；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifyFileModelValue? ModelValue { get; set; }
@@ -149,6 +153,7 @@ public sealed class VFileInput : ComponentBase, IVuetifyComponent
     /// 文件输入绑定值变化时的回调。
     /// Callback when the file input value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifyFileModelValue?；保持与模型相同的强类型。投影：value?.AsFile、value?.AsFiles；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifyFileModelValue?> ModelValueChanged { get; set; }

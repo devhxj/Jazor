@@ -2233,9 +2233,6 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 		// 处理属性调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		if (instance is not null && IsErasedUnionProjectionProperty(operation.Property))
-			return WithOriginIfMissing(instance, operation);
-
 		if (operation.Property.IsIndexer &&
 			operation.Property.Parameters.Length == 1 &&
 			IsSystemRangeType(operation.Property.Parameters[0].Type) &&
@@ -2266,6 +2263,11 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			TryBuildEcmascriptInlineExpression(operation.Property.GetMethod!, instance, arguments, argument, out var inlineGetter) &&
 			inlineGetter is not null)
 			return WithOriginIfMissing(inlineGetter, operation);
+
+		// Explicit host/whitelist mappings own their semantics. Type-derived union
+		// projections are the ordinary path after those mappings, including Inline.
+		if (instance is not null && string.IsNullOrEmpty(alias) && IsErasedUnionProjectionProperty(operation.Property))
+			return WithOriginIfMissing(BuildErasedUnionProjection(operation, instance, argument), operation);
 
 		if (TryBuildCurrentModuleIndexerGetterCall(operation.Property, instance, arguments, out var indexerGetterCall) &&
 			indexerGetterCall is not null)

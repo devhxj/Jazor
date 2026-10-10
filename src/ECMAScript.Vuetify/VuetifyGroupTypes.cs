@@ -411,4 +411,20 @@ public readonly union VuetifyGroupModelValue(
     /// <returns>转换后的强类型值。</returns>
     public static implicit operator VuetifyGroupModelValue(double[] value)
         => new((VuetifyGroupModelValues)value);
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(byte value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(decimal value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(float value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(sbyte value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(short value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(uint value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyGroupModelValue(ushort value) => (VuetifyGroupModelValue)(ECMAScript.Number)value;
+    #endregion
 }

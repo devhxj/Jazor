@@ -53,6 +53,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 允许输入的最小值。
     /// Minimum allowed value.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Min="@(32)" 或 Min="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
@@ -61,6 +62,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 允许输入的最大值。
     /// Maximum allowed value.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -69,6 +71,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 每次增减的步长值。
     /// Step increment/decrement value.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Step="@(32)" 或 Step="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("step")]
     public Number? Step { get; set; }
@@ -77,6 +80,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 数值的小数精度位数。
     /// Decimal precision of the numeric value.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Precision="@(32)" 或 Precision="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("precision")]
     public Number? Precision { get; set; }
@@ -149,6 +153,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 是否隐藏提示详情区域。
     /// Whether to hide the details area.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyHideDetailsValue?；值域为 bool | VuetifyHideDetailsMode。变量用 HideDetails="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("hideDetails")]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
@@ -157,6 +162,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 显示在输入控件下方的消息列表。
     /// Messages displayed below the input control.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("messages")]
     public VuetifyMessagesValue? Messages { get; set; }
@@ -165,6 +171,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 数字输入控件的双向绑定值。
     /// Two-way bound value of the number input control.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ModelValue="@(32)" 或 ModelValue="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
@@ -173,6 +180,7 @@ public sealed class VNumberInput : ComponentBase, IVuetifyComponent
     /// 绑定值变更时触发的回调。
     /// Callback invoked when the bound value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number?；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }

@@ -53,6 +53,7 @@ public sealed class VConfirmEdit : ComponentBase, IVuetifyComponent
     /// 禁用配置。
     /// The disabled configuration.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyConfirmEditDisabled?；值域为 bool | VuetifyConfirmEditAction[]。变量用 Disabled="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsBool、value?.AsActions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public VuetifyConfirmEditDisabled? Disabled { get; set; }

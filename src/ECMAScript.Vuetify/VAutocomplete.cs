@@ -30,6 +30,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase, IVuetifyComponent
     /// 选中的值。
     /// Selected value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectModelValue?；值域为 string | Number | bool | Symbol | VueProps | VuetifySelectModelValue[]。数值用 SelectedValue="@(32)"；变量用 SelectedValue="@value"，无需 double 后缀。字符串用 SelectedValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VuetifySelectModelValue? SelectedValue { get; set; }
@@ -38,6 +39,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase, IVuetifyComponent
     /// 选中值变化时触发的事件。
     /// Event fired when selected value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VuetifySelectModelValue?；保持与模型相同的强类型。投影：value?.AsString、value?.AsNumber、value?.AsBool、value?.AsSymbol、value?.AsObject、value?.AsValues；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VuetifySelectModelValue?> SelectedValueChanged { get; set; }
@@ -62,6 +64,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase, IVuetifyComponent
     /// 是否自动选中第一个匹配项。
     /// Auto-selects the first matching item.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyAutoSelectFirstValue?；值域为 bool | VuetifyAutoSelectFirstMode。变量用 AutoSelectFirst="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("autoSelectFirst")]
     public VuetifyAutoSelectFirstValue? AutoSelectFirst { get; set; }
@@ -94,6 +97,7 @@ public sealed class VAutocomplete : VSelectLikeComponentBase, IVuetifyComponent
     /// 用于过滤的键。
     /// Keys used for filtering.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyFilterKeys?；值域为 string | string[]。变量用 FilterKeys="@value"，并保持声明的分支类型。字符串用 FilterKeys="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("filterKeys")]
     public VuetifyFilterKeys? FilterKeys { get; set; }

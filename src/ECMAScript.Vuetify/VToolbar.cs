@@ -30,6 +30,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 圆角。
     /// Border radius.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -46,6 +47,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 阴影。
     /// Elevation shadow.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Elevation="@(32)"；变量用 Elevation="@value"，无需 double 后缀。字符串用 Elevation="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("elevation")]
     public VueStringNumberValue? Elevation { get; set; }
@@ -54,6 +56,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// CSS类。
     /// CSS class.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -62,6 +65,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 行内样式。
     /// Inline style.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStyleValue?；值域为 string | VueProps | VuetifyStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
@@ -70,6 +74,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 边框。
     /// Border.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBorderValue?；值域为 bool | Number | string。数值用 Border="@(32)"；变量用 Border="@value"，无需 double 后缀。字符串用 Border="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("border")]
     public VuetifyBorderValue? Border { get; set; }
@@ -102,6 +107,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 工具栏紧凑度。
     /// Toolbar density.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyToolbarDensityValue?；值域为 VuetifyToolbarDensity | VuetifyDensity。变量用 Density="@value"，并保持声明的分支类型。投影：value?.AsToolbarDensity、value?.AsDensity；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("density")]
     public VuetifyToolbarDensityValue? Density { get; set; }
@@ -118,6 +124,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 扩展高度。
     /// Extension height.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ExtensionHeight="@(32)"；变量用 ExtensionHeight="@value"，无需 double 后缀。字符串用 ExtensionHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("extensionHeight")]
     public VueStringNumberValue? ExtensionHeight { get; set; }
@@ -142,6 +149,7 @@ public sealed class VToolbar : ComponentBase, IVuetifyComponent
     /// 高。
     /// Height.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }

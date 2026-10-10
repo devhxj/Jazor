@@ -29,6 +29,7 @@ public sealed class VValidation : ComponentBase, IVuetifyComponent
     /// 禁用。
     /// Disables validation.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Disabled="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public VuetifyNullableBoolean? Disabled { get; set; }
@@ -45,6 +46,7 @@ public sealed class VValidation : ComponentBase, IVuetifyComponent
     /// 错误消息。
     /// Error messages.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 ErrorMessages="@value"，并保持声明的分支类型。字符串用 ErrorMessages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("errorMessages")]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
@@ -53,6 +55,7 @@ public sealed class VValidation : ComponentBase, IVuetifyComponent
     /// 最大错误数。
     /// Maximum number of errors to display.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxErrors="@(32)"；变量用 MaxErrors="@value"，无需 double 后缀。字符串用 MaxErrors="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxErrors")]
     public VueStringNumberValue? MaxErrors { get; set; }
@@ -77,6 +80,7 @@ public sealed class VValidation : ComponentBase, IVuetifyComponent
     /// 只读。
     /// Readonly state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyNullableBoolean?；值域为 bool。变量用 Readonly="@value"，并保持声明的分支类型。投影：value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("readonly")]
     public VuetifyNullableBoolean? Readonly { get; set; }

@@ -37,6 +37,7 @@ public sealed class VHover : ComponentBase, IVuetifyComponent
     /// 打开悬停状态的延迟时间（毫秒）。
     /// Delay in milliseconds before activating the hover state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 OpenDelay="@(32)"；变量用 OpenDelay="@value"，无需 double 后缀。字符串用 OpenDelay="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("openDelay")]
     public VueStringNumberValue? OpenDelay { get; set; }
@@ -45,6 +46,7 @@ public sealed class VHover : ComponentBase, IVuetifyComponent
     /// 关闭悬停状态的延迟时间（毫秒）。
     /// Delay in milliseconds before deactivating the hover state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CloseDelay="@(32)"；变量用 CloseDelay="@value"，无需 double 后缀。字符串用 CloseDelay="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeDelay")]
     public VueStringNumberValue? CloseDelay { get; set; }

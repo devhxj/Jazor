@@ -47,6 +47,7 @@ public sealed class VCardItem : ComponentBase, IVuetifyComponent
     /// 卡片项的副标题文本。
     /// Subtitle text of the card item.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTextValue?；值域为 string | Number | bool。数值用 Subtitle="@(32)"；变量用 Subtitle="@value"，无需 double 后缀。字符串用 Subtitle="text"；数字字符串保持 string。投影：value?.AsString、value?.AsNumber、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("subtitle")]
     public VuetifyTextValue? Subtitle { get; set; }
@@ -55,6 +56,7 @@ public sealed class VCardItem : ComponentBase, IVuetifyComponent
     /// 卡片项的标题文本。
     /// Title text of the card item.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyTextValue?；值域为 string | Number | bool。数值用 Title="@(32)"；变量用 Title="@value"，无需 double 后缀。字符串用 Title="text"；数字字符串保持 string。投影：value?.AsString、value?.AsNumber、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("title")]
     public VuetifyTextValue? Title { get; set; }

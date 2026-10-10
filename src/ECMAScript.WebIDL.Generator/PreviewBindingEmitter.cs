@@ -460,6 +460,14 @@ internal sealed class PreviewBindingEmitter
         IReadOnlyDictionary<string, List<string>> grouped,
         CancellationToken cancellationToken)
     {
+        // Embed the current declaration rather than requiring a consumer/test checkout
+        // to contain the generator repository's Number.cs at runtime.
+        using var numberSource = new StreamReader(typeof(PreviewBindingEmitter).Assembly.GetManifestResourceStream("BindingAuthoring.Number.cs")!);
+        var authoring = fileName == "Unions.cs"
+            ? new global::BindingAuthoringDocumentation(grouped.Select(pair =>
+                (string.IsNullOrWhiteSpace(pair.Key) ? "namespace ECMAScript;" : $"namespace ECMAScript.{WebIdlNaming.ToPascalCase(pair.Key)};") +
+                "\n" + string.Join("\n", pair.Value)).Append(numberSource.ReadToEnd()))
+            : null;
         foreach (var pair in grouped)
         {
             var directory = string.IsNullOrWhiteSpace(pair.Key)
@@ -478,7 +486,7 @@ internal sealed class PreviewBindingEmitter
                 + string.Join(Environment.NewLine + Environment.NewLine, pair.Value.OrderBy(static item =>
                     string.Join("\n", item.Split('\n').Where(line => !line.TrimStart().StartsWith("///", StringComparison.Ordinal))), StringComparer.Ordinal))
                 + Environment.NewLine;
-            await File.WriteAllTextAsync(Path.Combine(directory, fileName), NormalizeLineEndings(content), cancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(directory, fileName), NormalizeLineEndings(authoring?.Annotate(content) ?? content), cancellationToken);
         }
     }
 

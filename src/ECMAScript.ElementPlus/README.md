@@ -2,7 +2,7 @@
 
 > 定位：`element-plus` 的强类型 C# host binding 与 Razor-to-Vue authoring 接口。
 
-该包提供 Element Plus runtime 导入、组件代理和强类型 props/slot 契约。本文描述 `1.0.0-preview.8`；完整质量与发布消费者门禁见[当前状态](../../docs/04-roadmap/current-status.md)，具体交互/服务的验证范围见下文。
+该包提供 Element Plus runtime 导入、组件代理和强类型 props/slot 契约。本文描述 `1.0.0-preview.9`；完整质量与发布消费者门禁见[当前状态](../../docs/04-roadmap/current-status.md)，具体交互/服务的验证范围见下文。
 
 本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Element Plus
 npm package、入口、样式和依赖元数据；Emit 生成标准 `jazor/package.json`，Deno 将运行时恢复
@@ -24,7 +24,7 @@ ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完
 
 ## 下一轮分页与日期绑定（尚未公开发布）
 
-以下能力适用于当前源码及其同版本本地候选包，公开 preview.8 尚不包含。
+以下能力随 preview.9 交付。
 
 `ElPagination.OnCurrentChange` 与 `OnSizeChange` 使用 `EventCallback<Number>`，直接传递上游页码和每页数量。原来接受无参数回调的消费者应改为 `void PageChanged(Number value)` / `void SizeChanged(Number value)`；应用侧可以按原查询逻辑重置页码，无需再声明分页 wrapper。
 
@@ -39,9 +39,25 @@ ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完
 
 示例的分页字段与 handler 参数为 `ECMAScript.Number`，`startTime` 为 `string?`。`ValueFormat` 使用 Element Plus/Day.js 标记，不使用 CLR 格式标记；格式化字符串直接到业务 API，不引入 Date 或时区转换。业务字段若以空串表示未选择，可保留 `ModelValueChanged="@(value => startTime = value ?? "")"`。
 
-数值 prop 应按实际类型选择写法。例如 `ElAvatar.Size` 的 `VueStringNumberValue` 数值分支是 `double`，写 `Size="@(32d)"`；`Size="32"` 是字符串分支，`Size="small"` 也是字符串分支。它与 Pagination 的 `Number` 参数不是同一个 C# 类型，不能机械地把所有数值都强转为 `Number`。官方 Razor SG 和 Roslyn 负责参数类型检查。
+数值 prop 应按实际类型选择写法。例如 `ElAvatar.Size` 的 `VueStringNumberValue` 数值分支是 `double`，写 `Size="@(32)"`；`Size="32"` 是字符串分支，`Size="small"` 也是字符串分支。它与 Pagination 的 `Number` 参数不是同一个 C# 类型，不能机械地把所有数值都强转为 `Number`。官方 Razor SG 和 Roslyn 负责参数类型检查。
+
+业务分页字段为 `int` 时，在带值 handler 中显式用 `(int)value` 转换；不要改变 host callback 的 `Number` 签名。`Size="32"` 不会生成数值 Avatar 的 32px 样式，命名字符串尺寸应使用 `small` / `default` / `large`。
 
 分页的独立状态、page-size 更新与 date/datetime 的真实输入/清空已由官方 SG + Vue + Element Plus + happy-dom 回归覆盖；CSS 加载与真实浏览器消费结果另行记录。
+
+## N4 数值与 union 作者体验
+
+[RazorVue 作者指南的 N4 矩阵与完整示例](../../docs/03-guides/razorvue-authoring.md#numeric-union-authoring) 对应 [NumericUnionAuthoring.razor](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor) / [NumericUnionAuthoring.razor.cs](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor.cs)，涵盖 Avatar 数值/字符串尺寸、分页带值回调、nullable 单/多值选择与 typed string 选择。
+
+`ElSelect.ModelValue` / `ModelValueChanged` 的实际类型是 `VueBooleanStringNumberObjectArrayableValue?` / `EventCallback<VueBooleanStringNumberObjectArrayableValue?>`。数值单选读取 `value?.AsNumber`（`double?`），字符串单选读取 `value?.AsString`（`string?`）；多选读取 `value?.AsMultiple ?? []`（`VueBooleanStringNumberObjectValue[]`）。类型同时允许 bool 和 `VueProps`，并不是 `VueStringNumberArrayableValue`。
+
+只使用单值字符串时，优先 `ElTypedSelect TValue="string"` + `ElTypedOption TValue="string"` + `@bind-ModelValue`。Element Plus 2.14.5 单选默认清空值为 `undefined`；业务读取可用 `value ?? ""`，需要确定的 null 时指定 `ValueOnClear="@ElValueOnClearValue.Null()"`。多选清空传空数组；外部 nullable 值可在业务边界归一化为空数组。`ElConfigProvider` 的空值配置可能覆盖默认单选清空值。
+
+示例的 union 单选保留默认清空值，typed string 单选设置 `ValueOnClear="@("")"`，并保留超过 JavaScript safe integer 范围的原始字符串 ID。focused regression 命令：
+
+```text
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg --filter RazorSgOfficialElementPlusNumericUnionTests
+```
 
 ## 泛型交互
 

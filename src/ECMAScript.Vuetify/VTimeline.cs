@@ -37,6 +37,7 @@ public sealed class VTimeline : ComponentBase, IVuetifyComponent
     /// 尺寸。
     /// Size.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -77,6 +78,7 @@ public sealed class VTimeline : ComponentBase, IVuetifyComponent
     /// 线条内缩。
     /// Line inset.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LineInset="@(32)"；变量用 LineInset="@value"，无需 double 后缀。字符串用 LineInset="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lineInset")]
     public VueStringNumberValue? LineInset { get; set; }
@@ -117,6 +119,7 @@ public sealed class VTimeline : ComponentBase, IVuetifyComponent
     /// 线条粗细。
     /// Line thickness.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LineThickness="@(32)"；变量用 LineThickness="@value"，无需 double 后缀。字符串用 LineThickness="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lineThickness")]
     public VueStringNumberValue? LineThickness { get; set; }

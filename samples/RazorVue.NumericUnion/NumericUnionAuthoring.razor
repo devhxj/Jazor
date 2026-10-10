@@ -1,0 +1,33 @@
+@using ECMAScript.ElementPlus
+
+<ElAvatar Size="@(32)" data-size="numeric">N</ElAvatar>
+<ElAvatar Size="32" data-size="text">T</ElAvatar>
+<ElAvatar Size="small" data-size="small">S</ElAvatar>
+<ElAvatar data-size="default">D</ElAvatar>
+
+<div class="pagination">
+    <ElPagination CurrentPage="@Page" PageSize="@(10)" Total="@(100)" OnCurrentChange="@PageChanged" />
+</div>
+<div class="single">
+    <ElSelect @bind-ModelValue="Selected" Clearable="true" Teleported="false">
+        <ElOption Value="@(0)" Label="Zero" />
+        <ElOption Value="@(32)" Label="Number" />
+        <ElOption Value="32" Label="Text" />
+    </ElSelect>
+</div>
+<div class="multiple">
+    <ElSelect @bind-ModelValue="SelectedMany" Multiple="true" Clearable="true" Teleported="false">
+        <ElOption Value="@(32)" Label="Number" />
+        <ElOption Value="32" Label="Text" />
+    </ElSelect>
+</div>
+<div class="typed">
+    <ElTypedSelect TValue="string" @bind-ModelValue="Id" Clearable="true" ValueOnClear="@("")" Teleported="false">
+        <ElTypedOption TValue="string" Value="@("9007199254740993")" Label="Exact string ID" />
+    </ElTypedSelect>
+</div>
+<span data-state="true" data-page="@BusinessPage"
+      data-number="@(Selected?.AsNumber)"
+      data-string="@(Selected?.AsString)"
+      data-count="@(SelectedMany?.AsMultiple?.Length ?? 0)"
+      data-id="@Id"></span>

@@ -7603,10 +7603,10 @@ export function CreateFacingMode() {
 
         AssertScriptEqual(
 @"export function ReadValue(value) {
-  return value;
+  return typeof value === ""string"" ? value : null;
 }
 export function ReadFile(value) {
-  return value;
+  return value instanceof File ? value : null;
 }
 ", script);
     }
@@ -7679,7 +7679,7 @@ export function ReadFile(value) {
 
         AssertScriptEqual(
 @"export function ReadString(value) {
-  return value;
+  return typeof value === ""string"" ? value : null;
 }
 export function ReadValue(value) {
   return value;
@@ -7731,7 +7731,7 @@ export function ReadValue(value) {
 
         AssertScriptEqual(
 @"export function ReadArray(values) {
-  return values;
+  return Array.isArray(values) ? values : null;
 }
 ", script);
     }
@@ -7760,9 +7760,6 @@ export function ReadValue(value) {
 
                     public static ElUploadBeforeUploadResult CreateUploadPromise(IPromise<VueValue?> value) => new(value);
 
-                    public static FileRef? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
-
-                    public static Blob? ReadUploadBlob(ElUploadBeforeUploadResult value) => value.AsBlob;
                 }
             }
             """;
@@ -7803,13 +7800,31 @@ export function CreateUploadBlob(value) {
 export function CreateUploadPromise(value) {
   return value;
 }
-export function ReadUploadFile(value) {
-  return value;
-}
-export function ReadUploadBlob(value) {
-  return value;
-}
 ", script);
+    }
+
+    [TestMethod]
+    [DataRow("AsFile")]
+    [DataRow("AsBlob")]
+    public async Task Convert_TaggedUnionProjectionWithAssignableBranches_ReportsLostTag(string projection)
+    {
+        var code = $$"""
+            using ECMAScript;
+            using ECMAScript.ElementPlus;
+            [ECMAScriptModule("components/tagged-projection.mjs")]
+            public static class TaggedProjectionModule
+            {
+                public static {{(projection == "AsFile" ? "FileRef" : "Blob")}}? Read(ElUploadBeforeUploadResult value)
+                    => value.{{projection}};
+            }
+            """;
+        var (symbol, model) = CompileAndGetSymbol(code, "TaggedProjectionModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ElementPlus.ElementPlus).Assembly.Location));
+        var converter = new AstConverter(symbol, model);
+        var error = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+        StringAssert.Contains(error.Message, "exact branch tag", StringComparison.Ordinal);
     }
 
     [TestMethod]

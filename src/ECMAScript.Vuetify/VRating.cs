@@ -15,6 +15,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 当前评分值。
     /// The current rating value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -23,6 +24,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 评分值变更时触发的回调。
     /// Callback invoked when the rating value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberValue?；保持与模型相同的强类型。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
@@ -79,6 +81,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 各评分项的标签文本。
     /// The label text for each rating item.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 ItemLabels="@value"，并保持声明的分支类型。字符串用 ItemLabels="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("itemLabels")]
     public VuetifyMessagesValue? ItemLabels { get; set; }
@@ -103,6 +106,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 未选中时显示的图标。
     /// The icon displayed for empty items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 EmptyIcon="@value"，并保持声明的分支类型。字符串用 EmptyIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("emptyIcon")]
     public VuetifyIconValue? EmptyIcon { get; set; }
@@ -111,6 +115,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 选中时显示的图标。
     /// The icon displayed for full items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 FullIcon="@value"，并保持声明的分支类型。字符串用 FullIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("fullIcon")]
     public VuetifyIconValue? FullIcon { get; set; }
@@ -119,6 +124,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 半选时显示的图标。
     /// The icon displayed for half-filled items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyIconValue?；值域为 bool | string | Symbol | VueProps。变量用 HalfIcon="@value"，并保持声明的分支类型。字符串用 HalfIcon="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString、value?.AsSymbol、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("halfIcon")]
     public VuetifyIconValue? HalfIcon { get; set; }
@@ -127,6 +133,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 评分项的数量。
     /// The number of rating items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Length="@(32)"；变量用 Length="@value"，无需 double 后缀。字符串用 Length="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("length")]
     public VueStringNumberValue? Length { get; set; }
@@ -159,6 +166,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 是否启用涟漪效果。
     /// Whether to enable the ripple effect.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRippleValue?；值域为 bool | VueProps。变量用 Ripple="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ripple")]
     public VuetifyRippleValue? Ripple { get; set; }
@@ -167,6 +175,7 @@ public sealed class VRating : ComponentBase, IVuetifyComponent
     /// 评分图标的大小。
     /// The size of the rating icons.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }

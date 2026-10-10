@@ -1,6 +1,7 @@
 #!/usr/bin/env dotnet run
 
 using System.Formats.Tar;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
@@ -80,6 +81,17 @@ var manifest = new JsonObject
 };
 File.WriteAllText(Path.Combine(projectRoot, "manifest.json"), manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n", new UTF8Encoding(false));
 Console.WriteLine($"Generated {names.Length} Lucide components from lucide-vue-next {version}.");
+
+// Keep Razor numeric/union hints owned by the same declaration-driven maintenance
+// command as other bindings; regenerating icons must not silently remove them.
+var authoringStart = new ProcessStartInfo("dotnet") { WorkingDirectory = repoRoot, UseShellExecute = false };
+foreach (var argument in new[] { "run", "--project", Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator"),
+    "-p:JazorIsolatedBaseOutputRoot=" + Path.Combine(repoRoot, ".tmp", "lucide-authoring-bin") + Path.DirectorySeparatorChar,
+    "-p:JazorIsolatedBaseIntermediateOutputRoot=" + Path.Combine(repoRoot, ".tmp", "lucide-authoring-obj") + Path.DirectorySeparatorChar,
+    "--", "authoring" }) authoringStart.ArgumentList.Add(argument);
+using var authoringProcess = Process.Start(authoringStart)!;
+await authoringProcess.WaitForExitAsync();
+return authoringProcess.ExitCode;
 
 static string EscapeXml(string value)
     => value.Replace("&", "&amp;", StringComparison.Ordinal)

@@ -30,6 +30,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 圆角大小。
     /// The border radius size.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyRoundedValue?；值域为 bool | Number | string。数值用 Rounded="@(32)"；变量用 Rounded="@value"，无需 double 后缀。字符串用 Rounded="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rounded")]
     public VuetifyRoundedValue? Rounded { get; set; }
@@ -54,6 +55,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 应用于根元素的 CSS 类。
     /// CSS classes applied to the root element.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 CssClass="@value"，并保持声明的分支类型。字符串用 CssClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("class")]
     public VueClassValue? CssClass { get; set; }
@@ -62,6 +64,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 应用于根元素的内联样式。
     /// Inline styles applied to the root element.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyStyleValue?；值域为 string | VueProps | VuetifyStyleValue[]。变量用 CssStyle="@value"，并保持声明的分支类型。字符串用 CssStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("style")]
     public VuetifyStyleValue? CssStyle { get; set; }
@@ -102,6 +105,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 背景透明度。
     /// The background opacity.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 BgOpacity="@(32)"；变量用 BgOpacity="@value"，无需 double 后缀。字符串用 BgOpacity="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("bgOpacity")]
     public VueStringNumberValue? BgOpacity { get; set; }
@@ -110,6 +114,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 缓冲区的进度值。
     /// The buffer progress value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 BufferValue="@(32)"；变量用 BufferValue="@value"，无需 double 后缀。字符串用 BufferValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("bufferValue")]
     public VueStringNumberValue? BufferValue { get; set; }
@@ -126,6 +131,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 缓冲区的透明度。
     /// The opacity of the buffer track.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 BufferOpacity="@(32)"；变量用 BufferOpacity="@value"，无需 double 后缀。字符串用 BufferOpacity="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("bufferOpacity")]
     public VueStringNumberValue? BufferOpacity { get; set; }
@@ -142,6 +148,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 进度条的高度。
     /// The height of the progress bar.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -158,6 +165,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 进度的最大值。
     /// The maximum value of the progress.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Max="@(32)"；变量用 Max="@value"，无需 double 后缀。字符串用 Max="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
@@ -166,6 +174,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 当前进度值。
     /// The current progress value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -174,6 +183,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 进度值变更时触发的回调。
     /// Callback invoked when the progress value changes.
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number> ModelValueChanged { get; set; }
@@ -182,6 +192,7 @@ public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
     /// 进度条的透明度。
     /// The opacity of the progress bar.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Opacity="@(32)"；变量用 Opacity="@value"，无需 double 后缀。字符串用 Opacity="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("opacity")]
     public VueStringNumberValue? Opacity { get; set; }

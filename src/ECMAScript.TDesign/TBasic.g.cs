@@ -808,6 +808,26 @@ public record TBackTopClickEventContext : VueProps
 [ECMAScript]
 public readonly union TBackTopOffsetValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(byte value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(decimal value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(double value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(float value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(int value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(sbyte value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(short value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(uint value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopOffsetValueItem(ushort value) => (TBackTopOffsetValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -881,6 +901,26 @@ public enum TBackTopThemeValue
 [ECMAScript]
 public readonly union TBackTopVisibleHeightValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(byte value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(decimal value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(double value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(float value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(int value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(sbyte value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(short value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(uint value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBackTopVisibleHeightValue(ushort value) => (TBackTopVisibleHeightValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -890,6 +930,26 @@ public readonly union TBackTopVisibleHeightValue(string, Number)
 [ECMAScript]
 public readonly union TBadgeCountValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(byte value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(decimal value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(double value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(float value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(int value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(sbyte value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(short value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(uint value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeCountValue(ushort value) => (TBadgeCountValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -898,6 +958,26 @@ public readonly union TBadgeCountValue(string, Number)
 [ECMAScript]
 public readonly union TBadgeOffsetValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(byte value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(decimal value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(double value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(float value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(int value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(sbyte value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(short value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(uint value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBadgeOffsetValueItem(ushort value) => (TBadgeOffsetValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -983,6 +1063,26 @@ public record TBaseColProps : VueProps
 [ECMAScript]
 public readonly union TBaseTableActiveChangeEventActiveRowKeysItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(byte value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(decimal value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(double value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(float value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(int value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(sbyte value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(short value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(uint value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveChangeEventActiveRowKeysItem(ushort value) => (TBaseTableActiveChangeEventActiveRowKeysItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -992,6 +1092,26 @@ public readonly union TBaseTableActiveChangeEventActiveRowKeysItem(string, Numbe
 [ECMAScript]
 public readonly union TBaseTableActiveRowKeysValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(byte value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(decimal value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(double value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(float value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(int value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(sbyte value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(short value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(uint value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableActiveRowKeysValueItem(ushort value) => (TBaseTableActiveRowKeysValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -1395,6 +1515,26 @@ public record TBaseTableColFootOption2Context<T> : VueProps
 [ECMAScript]
 public readonly union TBaseTableColMinWidth<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(byte value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(decimal value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(double value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(float value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(int value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(sbyte value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(short value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(uint value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColMinWidth<T>(ushort value) => (TBaseTableColMinWidth<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -1459,6 +1599,26 @@ public record TBaseTableColTitleOption2Context<T> : VueProps
 [ECMAScript]
 public readonly union TBaseTableColWidth<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(byte value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(decimal value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(double value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(float value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(int value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(sbyte value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(short value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(uint value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableColWidth<T>(ushort value) => (TBaseTableColWidth<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -1523,6 +1683,26 @@ public readonly union TBaseTableHeaderAffixedTopValue(bool, TdAffixProps)
 [ECMAScript]
 public readonly union TBaseTableHeightValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(byte value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(decimal value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(double value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(float value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(int value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(sbyte value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(short value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(uint value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableHeightValue(ushort value) => (TBaseTableHeightValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -1539,6 +1719,26 @@ public readonly union TBaseTableHorizontalScrollAffixedBottomValue(bool, TdAffix
 [ECMAScript]
 public readonly union TBaseTableMaxHeightValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(byte value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(decimal value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(double value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(float value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(int value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(sbyte value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(short value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(uint value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TBaseTableMaxHeightValue(ushort value) => (TBaseTableMaxHeightValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -2381,6 +2581,26 @@ public record TCalendarMonthChangeEventOptions : VueProps
 [ECMAScript]
 public readonly union TCalendarMonthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(byte value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(decimal value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(double value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(float value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(int value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(sbyte value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(short value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(uint value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarMonthValue(ushort value) => (TCalendarMonthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -2438,6 +2658,26 @@ public record TCalendarWeek : VueProps
 [ECMAScript]
 public readonly union TCalendarYearValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(byte value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(decimal value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(double value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(float value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(int value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(sbyte value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(short value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(uint value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCalendarYearValue(ushort value) => (TCalendarYearValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -2535,6 +2775,26 @@ public record TCascaderBlurEventContext<CascaderOption> : VueProps
 [ECMAScript]
 public readonly union TCascaderCascaderOptionDefaultTDefault(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(byte value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(decimal value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(double value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(float value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(int value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(sbyte value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(short value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(uint value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderCascaderOptionDefaultTDefault(ushort value) => (TCascaderCascaderOptionDefaultTDefault)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -2688,6 +2948,26 @@ public delegate TCascaderFilterValueResult<CascaderOption> TCascaderFilterValue<
 [ECMAScript]
 public readonly union TCascaderFilterValueNodeTDefaultTDefault(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(byte value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(decimal value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(double value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(float value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(int value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(sbyte value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(short value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(uint value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderFilterValueNodeTDefaultTDefault(ushort value) => (TCascaderFilterValueNodeTDefaultTDefault)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -2827,6 +3107,26 @@ public enum TCascaderTriggerValue
 [ECMAScript]
 public readonly union TCascaderValue<T>(string, Number, T, TCascaderValue<T>[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(byte value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(decimal value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(double value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(float value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(int value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(sbyte value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(short value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(uint value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCascaderValue<T>(ushort value) => (TCascaderValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3263,6 +3563,26 @@ public readonly union TCheckTagChangeContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TCheckTagChangeContextValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(byte value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(decimal value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(double value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(float value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(int value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(sbyte value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(short value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(uint value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagChangeContextValue(ushort value) => (TCheckTagChangeContextValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3285,6 +3605,26 @@ public record TCheckTagClickEventContext : VueProps
 [ECMAScript]
 public readonly union TCheckTagContentValue(string, Number, string[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(byte value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(decimal value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(double value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(float value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(int value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(sbyte value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(short value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(uint value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagContentValue(ushort value) => (TCheckTagContentValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3345,6 +3685,26 @@ public enum TCheckTagGroupChangeContextType
 [ECMAScript]
 public readonly union TCheckTagGroupChangeContextValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(byte value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(decimal value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(double value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(float value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(int value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(sbyte value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(short value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(uint value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupChangeContextValue(ushort value) => (TCheckTagGroupChangeContextValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3440,6 +3800,26 @@ public record TCheckTagGroupOption : VueProps
 [ECMAScript]
 public readonly union TCheckTagGroupOptionContent(string, Number, string[], RenderFragment)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(byte value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(decimal value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(double value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(float value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(int value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(sbyte value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(short value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(uint value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionContent(ushort value) => (TCheckTagGroupOptionContent)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3493,6 +3873,26 @@ public record TCheckTagGroupOptionOnClickContext : VueProps
 [ECMAScript]
 public readonly union TCheckTagGroupOptionValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(byte value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(decimal value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(double value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(float value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(int value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(sbyte value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(short value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(uint value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupOptionValue(ushort value) => (TCheckTagGroupOptionValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3501,6 +3901,26 @@ public readonly union TCheckTagGroupOptionValue(string, Number)
 [ECMAScript]
 public readonly union TCheckTagGroupValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(byte value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(decimal value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(double value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(float value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(int value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(sbyte value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(short value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(uint value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagGroupValueItem(ushort value) => (TCheckTagGroupValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3509,6 +3929,26 @@ public readonly union TCheckTagGroupValueItem(string, Number)
 [ECMAScript]
 public readonly union TCheckTagValueValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(byte value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(decimal value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(double value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(float value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(int value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(sbyte value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(short value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(uint value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckTagValueValue(ushort value) => (TCheckTagValueValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3563,6 +4003,26 @@ public record TCheckboxGroupChangeContext : VueProps
 [ECMAScript]
 public readonly union TCheckboxGroupChangeContextCurrent(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(byte value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(decimal value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(double value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(float value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(int value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(sbyte value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(short value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(uint value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupChangeContextCurrent(ushort value) => (TCheckboxGroupChangeContextCurrent)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3598,6 +4058,26 @@ public enum TCheckboxGroupChangeContextType
 [ECMAScript]
 public readonly union TCheckboxGroupValueItem(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(byte value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(decimal value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(double value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(float value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(int value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(sbyte value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(short value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(uint value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxGroupValueItem(ushort value) => (TCheckboxGroupValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3606,6 +4086,26 @@ public readonly union TCheckboxGroupValueItem(string, Number, bool)
 [ECMAScript]
 public readonly union TCheckboxOption(string, Number, TCheckboxOptionObj)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(byte value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(decimal value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(double value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(float value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(int value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(sbyte value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(short value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(uint value) => (TCheckboxOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOption(ushort value) => (TCheckboxOption)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3757,6 +4257,26 @@ public record TCheckboxOptionObjOnChangeContext : VueProps
 [ECMAScript]
 public readonly union TCheckboxOptionObjValue(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(byte value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(decimal value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(double value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(float value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(int value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(sbyte value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(short value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(uint value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxOptionObjValue(ushort value) => (TCheckboxOptionObjValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3765,6 +4285,26 @@ public readonly union TCheckboxOptionObjValue(string, Number, bool)
 [ECMAScript]
 public readonly union TCheckboxValueValue(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(byte value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(decimal value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(double value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(float value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(int value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(sbyte value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(short value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(uint value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCheckboxValueValue(ushort value) => (TCheckboxValueValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3823,6 +4363,26 @@ public sealed record TClassNameDictionary : VueDictionary<bool>
 [ECMAScript]
 public readonly union TColFlexValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(byte value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(decimal value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(double value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(float value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(int value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(sbyte value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(short value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(uint value) => (TColFlexValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColFlexValue(ushort value) => (TColFlexValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3831,6 +4391,26 @@ public readonly union TColFlexValue(string, Number)
 [ECMAScript]
 public readonly union TColLgValue(Number, TBaseColProps)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(byte value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(decimal value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(double value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(float value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(int value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(sbyte value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(short value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(uint value) => (TColLgValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColLgValue(ushort value) => (TColLgValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3839,6 +4419,26 @@ public readonly union TColLgValue(Number, TBaseColProps)
 [ECMAScript]
 public readonly union TColMdValue(Number, TBaseColProps)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(byte value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(decimal value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(double value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(float value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(int value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(sbyte value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(short value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(uint value) => (TColMdValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColMdValue(ushort value) => (TColMdValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3847,6 +4447,26 @@ public readonly union TColMdValue(Number, TBaseColProps)
 [ECMAScript]
 public readonly union TColSmValue(Number, TBaseColProps)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(byte value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(decimal value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(double value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(float value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(int value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(sbyte value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(short value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(uint value) => (TColSmValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColSmValue(ushort value) => (TColSmValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3855,6 +4475,26 @@ public readonly union TColSmValue(Number, TBaseColProps)
 [ECMAScript]
 public readonly union TColXlValue(Number, TBaseColProps)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(byte value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(decimal value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(double value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(float value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(int value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(sbyte value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(short value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(uint value) => (TColXlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXlValue(ushort value) => (TColXlValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3863,6 +4503,26 @@ public readonly union TColXlValue(Number, TBaseColProps)
 [ECMAScript]
 public readonly union TColXsValue(Number, TBaseColProps)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(byte value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(decimal value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(double value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(float value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(int value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(sbyte value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(short value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(uint value) => (TColXsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXsValue(ushort value) => (TColXsValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3871,6 +4531,26 @@ public readonly union TColXsValue(Number, TBaseColProps)
 [ECMAScript]
 public readonly union TColXxlValue(Number, TBaseColProps)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(byte value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(decimal value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(double value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(float value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(int value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(sbyte value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(short value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(uint value) => (TColXxlValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TColXxlValue(ushort value) => (TColXxlValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3899,6 +4579,26 @@ public enum TCollapseExpandIconPlacementValue
 [ECMAScript]
 public readonly union TCollapsePanelValueValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(byte value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(decimal value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(double value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(float value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(int value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(sbyte value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(short value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(uint value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapsePanelValueValue(ushort value) => (TCollapsePanelValueValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -3907,6 +4607,26 @@ public readonly union TCollapsePanelValueValue(string, Number)
 [ECMAScript]
 public readonly union TCollapseValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(byte value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(decimal value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(double value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(float value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(int value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(sbyte value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(short value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(uint value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TCollapseValueItem(ushort value) => (TCollapseValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -6429,6 +7149,26 @@ public record TDateRangePickerYearChangeEventContext : VueProps
 [ECMAScript]
 public readonly union TDateValue(string, Number, Date)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(byte value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(decimal value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(double value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(float value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(int value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(sbyte value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(short value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(uint value) => (TDateValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDateValue(ushort value) => (TDateValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7019,6 +7759,26 @@ public enum TDialogThemeValue
 [ECMAScript]
 public readonly union TDialogTopValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(byte value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(decimal value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(double value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(float value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(int value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(sbyte value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(short value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(uint value) => (TDialogTopValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogTopValue(ushort value) => (TDialogTopValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7027,6 +7787,26 @@ public readonly union TDialogTopValue(string, Number)
 [ECMAScript]
 public readonly union TDialogWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(byte value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(decimal value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(double value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(float value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(int value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(sbyte value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(short value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(uint value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDialogWidthValue(ushort value) => (TDialogWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7580,6 +8360,26 @@ public record TDropdownClickEventContext : VueProps
 [ECMAScript]
 public readonly union TDropdownClickEventDropdownItem(string, Number, TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(byte value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(decimal value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(double value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(float value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(int value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(sbyte value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(short value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(uint value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownClickEventDropdownItem(ushort value) => (TDropdownClickEventDropdownItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7622,6 +8422,26 @@ public record TDropdownItemClickEventContext : VueProps
 [ECMAScript]
 public readonly union TDropdownItemClickEventDropdownItem(string, Number, TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(byte value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(decimal value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(double value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(float value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(int value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(sbyte value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(short value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(uint value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemClickEventDropdownItem(ushort value) => (TDropdownItemClickEventDropdownItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7659,6 +8479,26 @@ public enum TDropdownItemTheme
 [ECMAScript]
 public readonly union TDropdownItemValueValue(string, Number, TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(byte value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(decimal value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(double value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(float value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(int value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(sbyte value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(short value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(uint value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownItemValueValue(ushort value) => (TDropdownItemValueValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7668,6 +8508,26 @@ public readonly union TDropdownItemValueValue(string, Number, TJsonObject)
 [ECMAScript]
 public readonly union TDropdownMaxColumnWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(byte value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(decimal value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(double value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(float value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(int value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(sbyte value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(short value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(uint value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMaxColumnWidthValue(ushort value) => (TDropdownMaxColumnWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -7677,6 +8537,26 @@ public readonly union TDropdownMaxColumnWidthValue(string, Number)
 [ECMAScript]
 public readonly union TDropdownMinColumnWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(byte value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(decimal value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(double value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(float value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(int value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(sbyte value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(short value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(uint value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TDropdownMinColumnWidthValue(ushort value) => (TDropdownMinColumnWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8013,6 +8893,26 @@ public enum TEmptyTypeValue
 [ECMAScript]
 public readonly union TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(byte value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(decimal value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(double value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(float value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(int value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(sbyte value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(short value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(uint value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(ushort value) => (TEnhancedTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8120,6 +9020,26 @@ public record TEnhancedTableColumnResizeChangeEventContextColumnsWidth<T> : VueD
 [ECMAScript]
 public readonly union TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(byte value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(decimal value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(double value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(float value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(int value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(sbyte value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(short value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(uint value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(ushort value) => (TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8128,6 +9048,26 @@ public readonly union TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>(stri
 [ECMAScript]
 public readonly union TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(byte value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(decimal value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(double value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(float value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(int value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(sbyte value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(short value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(uint value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>(ushort value) => (TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8137,6 +9077,26 @@ public readonly union TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNode
 [ECMAScript]
 public readonly union TEnhancedTableExpandedTreeNodesValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(byte value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(decimal value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(double value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(float value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(int value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(sbyte value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(short value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(uint value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableExpandedTreeNodesValueItem<T>(ushort value) => (TEnhancedTableExpandedTreeNodesValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8189,6 +9149,26 @@ public record TEnhancedTableScrollYEventParams<T> : VueProps
 [ECMAScript]
 public readonly union TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(byte value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(decimal value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(double value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(float value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(int value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(sbyte value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(short value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(uint value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(ushort value) => (TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8497,6 +9477,26 @@ public enum TFormItemLabelAlignValue
 [ECMAScript]
 public readonly union TFormItemLabelWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(byte value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(decimal value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(double value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(float value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(int value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(sbyte value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(short value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(uint value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormItemLabelWidthValue(ushort value) => (TFormItemLabelWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8556,6 +9556,26 @@ public enum TFormLabelAlignValue
 [ECMAScript]
 public readonly union TFormLabelWidthValue<FormData>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(byte value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(decimal value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(double value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(float value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(int value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(sbyte value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(short value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(uint value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormLabelWidthValue<FormData>(ushort value) => (TFormLabelWidthValue<FormData>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8776,6 +9796,26 @@ public readonly union TFormRuleEmail(bool, TIsEmailOptions)
 [ECMAScript]
 public readonly union TFormRuleLen(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(byte value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(decimal value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(double value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(float value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(int value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(sbyte value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(short value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(uint value) => (TFormRuleLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleLen(ushort value) => (TFormRuleLen)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8786,6 +9826,26 @@ public readonly union TFormRuleLen(Number, bool)
 [ECMAScript]
 public readonly union TFormRuleMax(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(byte value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(decimal value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(double value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(float value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(int value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(sbyte value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(short value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(uint value) => (TFormRuleMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMax(ushort value) => (TFormRuleMax)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -8796,6 +9856,26 @@ public readonly union TFormRuleMax(Number, bool)
 [ECMAScript]
 public readonly union TFormRuleMin(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(byte value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(decimal value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(double value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(float value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(int value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(sbyte value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(short value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(uint value) => (TFormRuleMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TFormRuleMin(ushort value) => (TFormRuleMin)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -21393,6 +22473,26 @@ public enum TGuideStepMode
 [ECMAScript]
 public readonly union TGuideStepOffsetItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(byte value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(decimal value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(double value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(float value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(int value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(sbyte value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(short value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(uint value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TGuideStepOffsetItem(ushort value) => (TGuideStepOffsetItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -22303,6 +23403,26 @@ public record TInputKeyupEventContext<T> : VueProps
 [ECMAScript]
 public readonly union TInputMaxlengthValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(byte value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(decimal value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(double value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(float value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(int value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(sbyte value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(short value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(uint value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputMaxlengthValue<T>(ushort value) => (TInputMaxlengthValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -22377,6 +23497,26 @@ public record TInputNumberBlurEventContext<T> : VueProps
 [ECMAScript]
 public readonly union TInputNumberDecimalPlaces(Number, TInputNumberDecimalPlacesOption2)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(byte value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(decimal value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(double value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(float value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(int value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(sbyte value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(short value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(uint value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberDecimalPlaces(ushort value) => (TInputNumberDecimalPlaces)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -22608,6 +23748,26 @@ public enum TInputNumberValidateEventContextError
 [ECMAScript]
 public readonly union TInputNumberValue(Number, string)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(byte value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(decimal value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(double value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(float value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(int value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(sbyte value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(short value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(uint value) => (TInputNumberValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputNumberValue(ushort value) => (TInputNumberValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -22749,6 +23909,26 @@ public enum TInputValidateEventContextError
 [ECMAScript]
 public readonly union TInputValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(byte value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(decimal value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(double value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(float value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(int value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(sbyte value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(short value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(uint value) => (TInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TInputValue(ushort value) => (TInputValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -23089,6 +24269,26 @@ public readonly union TIsURLOptionsHostWhitelistOption1Item(string, RegExp)
 [ECMAScript]
 public readonly union TIsURLOptionsMaxAllowedLength(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(byte value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(decimal value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(double value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(float value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(int value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(sbyte value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(short value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(uint value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TIsURLOptionsMaxAllowedLength(ushort value) => (TIsURLOptionsMaxAllowedLength)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -23105,6 +24305,26 @@ public sealed record TJsonObject : VueDictionary<TJsonValue>
 [ECMAScript]
 public readonly union TJsonValue(bool, Number, string, TJsonValue[], TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(byte value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(decimal value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(double value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(float value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(int value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(sbyte value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(short value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(uint value) => (TJsonValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TJsonValue(ushort value) => (TJsonValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -23715,6 +24935,26 @@ public enum TMenuThemeValue
 [ECMAScript]
 public readonly union TMenuValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(byte value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(decimal value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(double value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(float value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(int value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(sbyte value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(short value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(uint value) => (TMenuValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuValue(ushort value) => (TMenuValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -23724,6 +24964,26 @@ public readonly union TMenuValue(string, Number)
 [ECMAScript]
 public readonly union TMenuWidthValue(string, Number, TMenuWidthValueOption3Item[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(byte value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(decimal value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(double value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(float value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(int value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(sbyte value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(short value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(uint value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValue(ushort value) => (TMenuWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -23733,6 +24993,26 @@ public readonly union TMenuWidthValue(string, Number, TMenuWidthValueOption3Item
 [ECMAScript]
 public readonly union TMenuWidthValueOption3Item(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(byte value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(decimal value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(double value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(float value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(int value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(sbyte value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(short value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(uint value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMenuWidthValueOption3Item(ushort value) => (TMenuWidthValueOption3Item)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -23924,6 +25204,26 @@ public readonly union TMessageConfigIcon(bool, RenderFragment)
 [ECMAScript]
 public readonly union TMessageConfigOffsetItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(byte value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(decimal value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(double value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(float value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(int value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(sbyte value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(short value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(uint value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TMessageConfigOffsetItem(ushort value) => (TMessageConfigOffsetItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -24222,6 +25522,26 @@ public record TOptionData : VueProps
 [ECMAScript]
 public readonly union TOptionDataValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(byte value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(decimal value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(double value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(float value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(int value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(sbyte value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(short value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(uint value) => (TOptionDataValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionDataValue(ushort value) => (TOptionDataValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -24230,6 +25550,26 @@ public readonly union TOptionDataValue(string, Number)
 [ECMAScript]
 public readonly union TOptionValueValue(string, Number, bool, BigInt)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(byte value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(decimal value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(double value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(float value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(int value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(sbyte value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(short value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(uint value) => (TOptionValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TOptionValueValue(ushort value) => (TOptionValueValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -24395,6 +25735,26 @@ public enum TPaginationPageEllipsisModeValue
 [ECMAScript]
 public readonly union TPaginationPageSizeOptionsValueItem(Number, TPaginationPageSizeOptionsValueItemOption2)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(byte value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(decimal value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(double value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(float value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(int value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(sbyte value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(short value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(uint value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPaginationPageSizeOptionsValueItem(ushort value) => (TPaginationPageSizeOptionsValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -24722,6 +26082,26 @@ public record TPopconfirmVisibleChangeContext : VueProps
 [ECMAScript]
 public readonly union TPopupDelayValue(Number, Number[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(byte value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(decimal value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(double value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(float value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(int value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(sbyte value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(short value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(uint value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPopupDelayValue(ushort value) => (TPopupDelayValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25076,6 +26456,26 @@ public delegate string[] TPresetTimeRangeIndexOption2();
 [ECMAScript]
 public readonly union TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(byte value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(decimal value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(double value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(float value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(int value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(sbyte value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(short value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(uint value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(ushort value) => (TPrimaryTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25085,6 +26485,26 @@ public readonly union TPrimaryTableActiveChangeEventActiveRowKeysItem<T>(string,
 [ECMAScript]
 public readonly union TPrimaryTableActiveRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(byte value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(decimal value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(double value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(float value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(int value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(sbyte value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(short value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(uint value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableActiveRowKeysValueItem<T>(ushort value) => (TPrimaryTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25761,6 +27181,26 @@ public enum TPrimaryTableDragSortValue
 [ECMAScript]
 public readonly union TPrimaryTableEditableRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(byte value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(decimal value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(double value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(float value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(int value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(sbyte value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(short value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(uint value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableEditableRowKeysValueItem<T>(ushort value) => (TPrimaryTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25769,6 +27209,26 @@ public readonly union TPrimaryTableEditableRowKeysValueItem<T>(string, Number)
 [ECMAScript]
 public readonly union TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(byte value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(decimal value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(double value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(float value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(int value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(sbyte value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(short value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(uint value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(ushort value) => (TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25778,6 +27238,26 @@ public readonly union TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>(strin
 [ECMAScript]
 public readonly union TPrimaryTableExpandedRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(byte value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(decimal value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(double value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(float value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(int value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(sbyte value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(short value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(uint value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableExpandedRowKeysValueItem<T>(ushort value) => (TPrimaryTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25824,6 +27304,26 @@ public readonly union TPrimaryTableHeaderAffixedTopValue<T>(bool, TdAffixProps)
 [ECMAScript]
 public readonly union TPrimaryTableHeightValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(byte value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(decimal value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(double value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(float value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(int value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(sbyte value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(short value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(uint value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableHeightValue<T>(ushort value) => (TPrimaryTableHeightValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25840,6 +27340,26 @@ public readonly union TPrimaryTableHorizontalScrollAffixedBottomValue<T>(bool, T
 [ECMAScript]
 public readonly union TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(byte value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(decimal value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(double value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(float value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(int value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(sbyte value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(short value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(uint value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(ushort value) => (TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -25848,6 +27368,26 @@ public readonly union TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>(stri
 [ECMAScript]
 public readonly union TPrimaryTableMaxHeightValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(byte value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(decimal value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(double value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(float value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(int value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(sbyte value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(short value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(uint value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableMaxHeightValue<T>(ushort value) => (TPrimaryTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26090,6 +27630,26 @@ public record TPrimaryTableScrollYEventParams<T> : VueProps
 [ECMAScript]
 public readonly union TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(byte value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(decimal value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(double value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(float value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(int value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(sbyte value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(short value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(uint value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(ushort value) => (TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26099,6 +27659,26 @@ public readonly union TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>(strin
 [ECMAScript]
 public readonly union TPrimaryTableSelectedRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(byte value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(decimal value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(double value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(float value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(int value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(sbyte value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(short value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(uint value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TPrimaryTableSelectedRowKeysValueItem<T>(ushort value) => (TPrimaryTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26228,6 +27808,26 @@ public readonly union TProgressLabelValue(string, bool)
 [ECMAScript]
 public readonly union TProgressSizeValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(byte value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(decimal value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(double value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(float value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(int value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(sbyte value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(short value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(uint value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressSizeValue(ushort value) => (TProgressSizeValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26265,6 +27865,26 @@ public enum TProgressStatus
 [ECMAScript]
 public readonly union TProgressStrokeWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(byte value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(decimal value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(double value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(float value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(int value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(sbyte value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(short value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(uint value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TProgressStrokeWidthValue(ushort value) => (TProgressStrokeWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26356,6 +27976,26 @@ public record TQRCodeConfig : VueProps
 [ECMAScript]
 public readonly union TQRCodeIconSizeValue(Number, TQRCodeIconSizeValueOption2)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(byte value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(decimal value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(double value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(float value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(int value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(sbyte value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(short value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(uint value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TQRCodeIconSizeValue(ushort value) => (TQRCodeIconSizeValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26584,6 +28224,26 @@ public enum TRadioGroupVariantValue
 [ECMAScript]
 public readonly union TRadioOption(string, Number, TRadioOptionObj)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(byte value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(decimal value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(double value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(float value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(int value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(sbyte value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(short value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(uint value) => (TRadioOption)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOption(ushort value) => (TRadioOption)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26625,6 +28285,26 @@ public readonly union TRadioOptionObjLabel(string, RenderFragment)
 [ECMAScript]
 public readonly union TRadioOptionObjValue(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(byte value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(decimal value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(double value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(float value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(int value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(sbyte value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(short value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(uint value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioOptionObjValue(ushort value) => (TRadioOptionObjValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -26633,6 +28313,26 @@ public readonly union TRadioOptionObjValue(string, Number, bool)
 [ECMAScript]
 public readonly union TRadioValue(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(byte value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(decimal value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(double value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(float value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(int value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(sbyte value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(short value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(uint value) => (TRadioValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRadioValue(ushort value) => (TRadioValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -27092,6 +28792,26 @@ public record TRemoveOptions<T> : VueProps
 [ECMAScript]
 public readonly union TRemoveOptionsValue<T>(string, Number, TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(byte value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(decimal value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(double value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(float value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(int value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(sbyte value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(short value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(uint value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRemoveOptionsValue<T>(ushort value) => (TRemoveOptionsValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -27420,6 +29140,26 @@ public readonly union TRowEventContextE<T>(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TRowGutterValue(Number, TGutterObject, TRowGutterValueOption3Item[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(byte value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(decimal value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(double value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(float value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(int value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(sbyte value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(short value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(uint value) => (TRowGutterValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValue(ushort value) => (TRowGutterValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -27429,6 +29169,26 @@ public readonly union TRowGutterValue(Number, TGutterObject, TRowGutterValueOpti
 [ECMAScript]
 public readonly union TRowGutterValueOption3Item(TGutterObject, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(byte value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(decimal value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(double value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(float value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(int value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(sbyte value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(short value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(uint value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TRowGutterValueOption3Item(ushort value) => (TRowGutterValueOption3Item)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -27826,6 +29586,26 @@ public record TSelectConfig : VueProps
 [ECMAScript]
 public readonly union TSelectCreateEventValue<T>(string, Number, bool, BigInt)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(byte value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(decimal value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(double value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(float value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(int value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(sbyte value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(short value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(uint value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectCreateEventValue<T>(ushort value) => (TSelectCreateEventValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -28180,6 +29960,26 @@ public record TSelectInputTagSlotContext : VueProps
 [ECMAScript]
 public readonly union TSelectInputTagSlotContextValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(byte value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(decimal value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(double value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(float value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(int value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(sbyte value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(short value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(uint value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputTagSlotContextValue(ushort value) => (TSelectInputTagSlotContextValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -28188,6 +29988,26 @@ public readonly union TSelectInputTagSlotContextValue(string, Number)
 [ECMAScript]
 public readonly union TSelectInputValue(string, Number, bool, Date, TJsonObject, TJsonValue[], TSelectInputValue[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(byte value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(decimal value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(double value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(float value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(int value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(sbyte value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(short value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(uint value) => (TSelectInputValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectInputValue(ushort value) => (TSelectInputValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -28627,6 +30447,26 @@ public readonly union TSelectRemoveContextE<T>(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TSelectRemoveContextValue<T>(string, Number, BigInt)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(byte value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(decimal value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(double value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(float value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(int value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(sbyte value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(short value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(uint value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectRemoveContextValue<T>(ushort value) => (TSelectRemoveContextValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -28679,6 +30519,26 @@ public enum TSelectStatusValue
 [ECMAScript]
 public readonly union TSelectValue<T>(string, Number, bool, BigInt, T, TSelectValue<T>[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(byte value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(decimal value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(double value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(float value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(int value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(sbyte value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(short value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(uint value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSelectValue<T>(ushort value) => (TSelectValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -28928,6 +30788,26 @@ public enum TSkeletonAnimationValue
 [ECMAScript]
 public readonly union TSkeletonRowColItem(Number, TSkeletonRowColObj, TSkeletonRowColObj[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(byte value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(decimal value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(double value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(float value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(int value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(sbyte value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(short value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(uint value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSkeletonRowColItem(ushort value) => (TSkeletonRowColItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -29179,6 +31059,26 @@ public readonly union TSliderMarksValue(Number[], TSliderMarks)
 [ECMAScript]
 public readonly union TSliderValue(Number, Number[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(byte value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(decimal value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(double value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(float value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(int value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(sbyte value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(short value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(uint value) => (TSliderValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSliderValue(ushort value) => (TSliderValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -29923,6 +31823,26 @@ public delegate TSortableOptionsOnMoveOption1Result? TSortableOptionsOnMoveOptio
 [ECMAScript]
 public readonly union TSortableOptionsOnMoveOption1Result(bool, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(byte value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(decimal value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(double value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(float value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(int value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(sbyte value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(short value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(uint value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSortableOptionsOnMoveOption1Result(ushort value) => (TSortableOptionsOnMoveOption1Result)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30068,6 +31988,26 @@ public enum TSpaceDirectionValue
 [ECMAScript]
 public readonly union TSpaceSize(Number, string, TSizeEnum)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(byte value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(decimal value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(double value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(float value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(int value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(sbyte value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(short value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(uint value) => (TSpaceSize)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSpaceSize(ushort value) => (TSpaceSize)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30176,6 +32116,26 @@ public enum TStepDialogPlacement
 [ECMAScript]
 public readonly union TStepItemValueValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(byte value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(decimal value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(double value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(float value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(int value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(sbyte value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(short value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(uint value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepItemValueValue(ushort value) => (TStepItemValueValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30295,6 +32255,26 @@ public record TStepsChangeEventContext : VueProps
 [ECMAScript]
 public readonly union TStepsChangeEventCurrent(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(byte value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(decimal value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(double value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(float value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(int value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(sbyte value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(short value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(uint value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventCurrent(ushort value) => (TStepsChangeEventCurrent)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30303,6 +32283,26 @@ public readonly union TStepsChangeEventCurrent(string, Number)
 [ECMAScript]
 public readonly union TStepsChangeEventPrevious(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(byte value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(decimal value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(double value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(float value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(int value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(sbyte value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(short value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(uint value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsChangeEventPrevious(ushort value) => (TStepsChangeEventPrevious)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30330,6 +32330,26 @@ public record TStepsConfig : VueProps
 [ECMAScript]
 public readonly union TStepsCurrentValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(byte value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(decimal value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(double value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(float value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(int value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(sbyte value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(short value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(uint value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStepsCurrentValue(ushort value) => (TStepsCurrentValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30485,6 +32505,26 @@ public record TStickyToolHoverEventContext : VueProps
 [ECMAScript]
 public readonly union TStickyToolOffsetValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(byte value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(decimal value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(double value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(float value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(int value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(sbyte value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(short value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(uint value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolOffsetValueItem(ushort value) => (TStickyToolOffsetValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30573,6 +32613,26 @@ public enum TStickyToolTypeValue
 [ECMAScript]
 public readonly union TStickyToolWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(byte value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(decimal value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(double value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(float value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(int value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(sbyte value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(short value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(uint value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStickyToolWidthValue(ushort value) => (TStickyToolWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -30589,6 +32649,26 @@ public record TStyles : VueDictionary<TStylesIndex>
 [ECMAScript]
 public readonly union TStylesIndex(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(byte value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(decimal value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(double value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(float value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(int value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(sbyte value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(short value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(uint value) => (TStylesIndex)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TStylesIndex(ushort value) => (TStylesIndex)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -31134,6 +33214,26 @@ public enum TSwitchSizeValue
 [ECMAScript]
 public readonly union TSwitchValue(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(byte value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(decimal value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(double value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(float value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(int value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(sbyte value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(short value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(uint value) => (TSwitchValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TSwitchValue(ushort value) => (TSwitchValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -31162,6 +33262,26 @@ public record TTabPanelRemoveEventOptions : VueProps
 [ECMAScript]
 public readonly union TTabValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(byte value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(decimal value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(double value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(float value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(int value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(sbyte value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(short value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(uint value) => (TTabValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTabValue(ushort value) => (TTabValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -31190,6 +33310,26 @@ public record TTableAbnormalDragSortContext<T> : VueProps
 [ECMAScript]
 public readonly union TTableActiveChangeEventActiveRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(byte value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(decimal value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(double value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(float value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(int value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(sbyte value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(short value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(uint value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveChangeEventActiveRowKeysItem<T>(ushort value) => (TTableActiveChangeEventActiveRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -31199,6 +33339,26 @@ public readonly union TTableActiveChangeEventActiveRowKeysItem<T>(string, Number
 [ECMAScript]
 public readonly union TTableActiveRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(byte value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(decimal value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(double value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(float value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(int value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(sbyte value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(short value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(uint value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableActiveRowKeysValueItem<T>(ushort value) => (TTableActiveRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -31636,6 +33796,26 @@ public record TTableColumnGroup : VueProps
 [ECMAScript]
 public readonly union TTableColumnGroupValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(byte value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(decimal value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(double value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(float value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(int value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(sbyte value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(short value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(uint value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableColumnGroupValue(ushort value) => (TTableColumnGroupValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32153,6 +34333,26 @@ public record TTableEditableCellPropsParamsUpdateEditedCellValueValOption2<T> : 
 [ECMAScript]
 public readonly union TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(byte value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(decimal value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(double value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(float value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(int value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(sbyte value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(short value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(uint value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>(ushort value) => (TTableEditableCellPropsParamsUpdateEditedCellValueValOption2RowValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32177,6 +34377,26 @@ public delegate TFormRule[] TTableEditableCellRulesOption2<T>(TPrimaryTableCellP
 [ECMAScript]
 public readonly union TTableEditableRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(byte value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(decimal value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(double value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(float value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(int value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(sbyte value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(short value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(uint value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableEditableRowKeysValueItem<T>(ushort value) => (TTableEditableRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32193,6 +34413,26 @@ public record TTableErrorListMap : VueDictionary<TAllValidateResult[]>
 [ECMAScript]
 public readonly union TTableExpandChangeEventExpandedRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(byte value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(decimal value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(double value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(float value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(int value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(sbyte value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(short value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(uint value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandChangeEventExpandedRowKeysItem<T>(ushort value) => (TTableExpandChangeEventExpandedRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32202,6 +34442,26 @@ public readonly union TTableExpandChangeEventExpandedRowKeysItem<T>(string, Numb
 [ECMAScript]
 public readonly union TTableExpandedRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(byte value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(decimal value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(double value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(float value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(int value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(sbyte value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(short value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(uint value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableExpandedRowKeysValueItem<T>(ushort value) => (TTableExpandedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32329,6 +34589,26 @@ public readonly union TTableHeaderAffixedTopValue<T>(bool, TdAffixProps)
 [ECMAScript]
 public readonly union TTableHeightValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(byte value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(decimal value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(double value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(float value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(int value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(sbyte value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(short value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(uint value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableHeightValue<T>(ushort value) => (TTableHeightValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32345,6 +34625,26 @@ public readonly union TTableHorizontalScrollAffixedBottomValue<T>(bool, TdAffixP
 [ECMAScript]
 public readonly union TTableIndeterminateSelectedRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(byte value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(decimal value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(double value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(float value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(int value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(sbyte value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(short value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(uint value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableIndeterminateSelectedRowKeysValueItem<T>(ushort value) => (TTableIndeterminateSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32353,6 +34653,26 @@ public readonly union TTableIndeterminateSelectedRowKeysValueItem<T>(string, Num
 [ECMAScript]
 public readonly union TTableMaxHeightValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(byte value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(decimal value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(double value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(float value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(int value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(sbyte value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(short value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(uint value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableMaxHeightValue<T>(ushort value) => (TTableMaxHeightValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32540,6 +34860,26 @@ public record TTableRowState<T> : VueProps
 [ECMAScript]
 public readonly union TTableRowStateId<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(byte value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(decimal value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(double value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(float value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(int value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(sbyte value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(short value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(uint value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableRowStateId<T>(ushort value) => (TTableRowStateId<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32645,6 +34985,26 @@ public record TTableScrollYEventParams<T> : VueProps
 [ECMAScript]
 public readonly union TTableSelectChangeEventSelectedRowKeysItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(byte value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(decimal value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(double value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(float value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(int value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(sbyte value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(short value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(uint value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectChangeEventSelectedRowKeysItem<T>(ushort value) => (TTableSelectChangeEventSelectedRowKeysItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -32654,6 +35014,26 @@ public readonly union TTableSelectChangeEventSelectedRowKeysItem<T>(string, Numb
 [ECMAScript]
 public readonly union TTableSelectedRowKeysValueItem<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(byte value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(decimal value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(double value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(float value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(int value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(sbyte value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(short value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(uint value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTableSelectedRowKeysValueItem<T>(ushort value) => (TTableSelectedRowKeysValueItem<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33197,6 +35577,26 @@ public readonly union TTagInputChangeContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TTagInputChangeContextItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(byte value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(decimal value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(double value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(float value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(int value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(sbyte value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(short value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(uint value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputChangeContextItem(ushort value) => (TTagInputChangeContextItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33331,6 +35731,26 @@ public record TTagInputDragSortContext : VueProps
 [ECMAScript]
 public readonly union TTagInputDragSortContextCurrent(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(byte value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(decimal value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(double value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(float value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(int value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(sbyte value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(short value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(uint value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextCurrent(ushort value) => (TTagInputDragSortContextCurrent)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33339,6 +35759,26 @@ public readonly union TTagInputDragSortContextCurrent(string, Number)
 [ECMAScript]
 public readonly union TTagInputDragSortContextTarget(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(byte value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(decimal value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(double value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(float value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(int value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(sbyte value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(short value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(uint value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputDragSortContextTarget(ushort value) => (TTagInputDragSortContextTarget)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33504,6 +35944,26 @@ public readonly union TTagInputRemoveContextE(MouseEvent, KeyboardEvent)
 [ECMAScript]
 public readonly union TTagInputRemoveContextItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(byte value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(decimal value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(double value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(float value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(int value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(sbyte value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(short value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(uint value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputRemoveContextItem(ushort value) => (TTagInputRemoveContextItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33573,6 +36033,26 @@ public record TTagInputTagSlotContext : VueProps
 [ECMAScript]
 public readonly union TTagInputTagSlotContextValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(byte value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(decimal value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(double value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(float value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(int value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(sbyte value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(short value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(uint value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputTagSlotContextValue(ushort value) => (TTagInputTagSlotContextValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33639,6 +36119,26 @@ public delegate void TTagInputValueDisplaySlotContextOnClose(Number index, TJson
 [ECMAScript]
 public readonly union TTagInputValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(byte value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(decimal value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(double value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(float value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(int value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(sbyte value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(short value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(uint value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagInputValueItem(ushort value) => (TTagInputValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33647,6 +36147,26 @@ public readonly union TTagInputValueItem(string, Number)
 [ECMAScript]
 public readonly union TTagMaxWidthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(byte value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(decimal value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(double value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(float value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(int value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(sbyte value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(short value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(uint value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTagMaxWidthValue(ushort value) => (TTagMaxWidthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -33946,6 +36466,26 @@ public record TTextareaKeyupEventContext : VueProps
 [ECMAScript]
 public readonly union TTextareaMaxlengthValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(byte value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(decimal value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(double value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(float value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(int value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(sbyte value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(short value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(uint value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaMaxlengthValue(ushort value) => (TTextareaMaxlengthValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -34016,6 +36556,26 @@ public enum TTextareaValidateEventContextError
 [ECMAScript]
 public readonly union TTextareaValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(byte value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(decimal value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(double value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(float value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(int value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(sbyte value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(short value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(uint value) => (TTextareaValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTextareaValue(ushort value) => (TTextareaValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -34319,6 +36879,26 @@ public enum TTimePickerStatusValue
 [ECMAScript]
 public readonly union TTimePickerStepsValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(byte value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(decimal value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(double value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(float value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(int value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(sbyte value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(short value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(uint value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimePickerStepsValueItem(ushort value) => (TTimePickerStepsValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -34583,6 +37163,26 @@ public enum TTimeRangePickerStatusValue
 [ECMAScript]
 public readonly union TTimeRangePickerStepsValueItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(byte value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(decimal value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(double value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(float value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(int value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(sbyte value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(short value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(uint value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTimeRangePickerStepsValueItem(ushort value) => (TTimeRangePickerStepsValueItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -35255,6 +37855,26 @@ public delegate RenderFragment TTransferTreeValue<T>(TTreeProps<TTreeOptionData<
 [ECMAScript]
 public readonly union TTransferValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(byte value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(decimal value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(double value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(float value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(int value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(sbyte value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(short value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(uint value) => (TTransferValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTransferValue(ushort value) => (TTransferValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -35630,6 +38250,26 @@ public delegate bool TTreeFilterValue<T>(TTreeNodeModel<T> node);
 [ECMAScript]
 public readonly union TTreeHeightValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(byte value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(decimal value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(double value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(float value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(int value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(sbyte value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(short value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(uint value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeHeightValue<T>(ushort value) => (TTreeHeightValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -35701,6 +38341,26 @@ public delegate IPromise<T[]> TTreeLoadValue<T>(TTreeNodeModel<T> node);
 [ECMAScript]
 public readonly union TTreeMaxHeightValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(byte value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(decimal value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(double value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(float value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(int value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(sbyte value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(short value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(uint value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeMaxHeightValue<T>(ushort value) => (TTreeMaxHeightValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -36047,6 +38707,26 @@ public delegate void TTreeNodeModelSetData<T>(T data);
 [ECMAScript]
 public readonly union TTreeNodeModelValue<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(byte value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(decimal value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(double value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(float value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(int value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(sbyte value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(short value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(uint value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeModelValue<T>(ushort value) => (TTreeNodeModelValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -36055,6 +38735,26 @@ public readonly union TTreeNodeModelValue<T>(string, Number)
 [ECMAScript]
 public readonly union TTreeNodeValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(byte value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(decimal value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(double value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(float value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(int value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(sbyte value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(short value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(uint value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeNodeValue(ushort value) => (TTreeNodeValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -36729,6 +39429,26 @@ public record TTreeSelectConfig : VueProps
 [ECMAScript]
 public readonly union TTreeSelectDataOptionDefaultTDefault(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(byte value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(decimal value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(double value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(float value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(int value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(sbyte value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(short value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(uint value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectDataOptionDefaultTDefault(ushort value) => (TTreeSelectDataOptionDefaultTDefault)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -36820,6 +39540,26 @@ public enum TTreeSelectStatusValue
 [ECMAScript]
 public readonly union TTreeSelectValue(string, Number, TJsonObject, TTreeSelectValue[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(byte value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(decimal value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(double value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(float value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(int value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(sbyte value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(short value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(uint value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeSelectValue(ushort value) => (TTreeSelectValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -36917,6 +39657,26 @@ public sealed record TTreeStore : VueProps
 [ECMAScript]
 public readonly union TTreeTDefaultTDefault(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(byte value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(decimal value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(double value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(float value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(int value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(sbyte value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(short value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(uint value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTreeTDefaultTDefault(ushort value) => (TTreeTDefaultTDefault)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -37012,6 +39772,26 @@ public enum TTriggerSource
 [ECMAScript]
 public readonly union TTypeTreeOptionDataTDefault(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(byte value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(decimal value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(double value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(float value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(int value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(sbyte value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(short value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(uint value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TTypeTreeOptionDataTDefault(ushort value) => (TTypeTreeOptionDataTDefault)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -38013,6 +40793,26 @@ public record TUploadSelectChangeContext : VueProps
 [ECMAScript]
 public readonly union TUploadSizeLimitValue<T>(Number, TSizeLimitObj)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(byte value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(decimal value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(double value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(float value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(int value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(sbyte value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(short value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(uint value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TUploadSizeLimitValue<T>(ushort value) => (TUploadSizeLimitValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -38459,6 +41259,26 @@ public readonly union TValidateResultTypeEmail(bool, TIsEmailOptions)
 [ECMAScript]
 public readonly union TValidateResultTypeLen(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(byte value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(decimal value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(double value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(float value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(int value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(sbyte value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(short value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(uint value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeLen(ushort value) => (TValidateResultTypeLen)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -38469,6 +41289,26 @@ public readonly union TValidateResultTypeLen(Number, bool)
 [ECMAScript]
 public readonly union TValidateResultTypeMax(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(byte value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(decimal value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(double value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(float value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(int value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(sbyte value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(short value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(uint value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMax(ushort value) => (TValidateResultTypeMax)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -38479,6 +41319,26 @@ public readonly union TValidateResultTypeMax(Number, bool)
 [ECMAScript]
 public readonly union TValidateResultTypeMin(Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(byte value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(decimal value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(double value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(float value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(int value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(sbyte value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(short value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(uint value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TValidateResultTypeMin(ushort value) => (TValidateResultTypeMin)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -39385,6 +42245,26 @@ public record TdCheckTagProps : VueProps
 [ECMAScript]
 public readonly union TdCheckTagPropsContent(string, Number, string[], RenderFragment)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(byte value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(decimal value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(double value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(float value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(int value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(sbyte value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(short value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(uint value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsContent(ushort value) => (TdCheckTagPropsContent)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -39430,6 +42310,26 @@ public record TdCheckTagPropsOnClickContext : VueProps
 [ECMAScript]
 public readonly union TdCheckTagPropsValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(byte value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(decimal value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(double value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(float value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(int value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(sbyte value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(short value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(uint value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckTagPropsValue(ushort value) => (TdCheckTagPropsValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -39655,6 +42555,26 @@ public record TdCheckboxPropsOnChangeContext : VueProps
 [ECMAScript]
 public readonly union TdCheckboxPropsValue(string, Number, bool)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(byte value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(decimal value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(double value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(float value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(int value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(sbyte value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(short value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(uint value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdCheckboxPropsValue(ushort value) => (TdCheckboxPropsValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -40248,6 +43168,26 @@ public enum TdDialogPropsTheme
 [ECMAScript]
 public readonly union TdDialogPropsTop(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(byte value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(decimal value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(double value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(float value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(int value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(sbyte value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(short value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(uint value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsTop(ushort value) => (TdDialogPropsTop)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -40256,6 +43196,26 @@ public readonly union TdDialogPropsTop(string, Number)
 [ECMAScript]
 public readonly union TdDialogPropsWidth(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(byte value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(decimal value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(double value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(float value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(int value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(sbyte value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(short value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(uint value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDialogPropsWidth(ushort value) => (TdDialogPropsWidth)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -40355,6 +43315,26 @@ public record TdDropdownItemPropsOnClickContext : VueProps
 [ECMAScript]
 public readonly union TdDropdownItemPropsOnClickDropdownItem(string, Number, TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(byte value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(decimal value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(double value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(float value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(int value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(sbyte value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(short value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(uint value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsOnClickDropdownItem(ushort value) => (TdDropdownItemPropsOnClickDropdownItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -40363,6 +43343,26 @@ public readonly union TdDropdownItemPropsOnClickDropdownItem(string, Number, TJs
 [ECMAScript]
 public readonly union TdDropdownItemPropsValue(string, Number, TJsonObject)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(byte value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(decimal value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(double value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(float value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(int value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(sbyte value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(short value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(uint value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdDropdownItemPropsValue(ushort value) => (TdDropdownItemPropsValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -40502,6 +43502,26 @@ public enum TdFormItemPropsLabelAlign
 [ECMAScript]
 public readonly union TdFormItemPropsLabelWidth(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(byte value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(decimal value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(double value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(float value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(int value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(sbyte value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(short value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(uint value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdFormItemPropsLabelWidth(ushort value) => (TdFormItemPropsLabelWidth)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -42143,6 +45163,26 @@ public readonly union TdInputPropsLabel<T>(string, RenderFragment)
 [ECMAScript]
 public readonly union TdInputPropsMaxlength<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(byte value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(decimal value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(double value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(float value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(int value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(sbyte value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(short value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(uint value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdInputPropsMaxlength<T>(ushort value) => (TdInputPropsMaxlength<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -42850,6 +45890,26 @@ public readonly union TdOptionPropsDefault(string, RenderFragment)
 [ECMAScript]
 public readonly union TdOptionPropsValue(string, Number, bool, BigInt)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(byte value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(decimal value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(double value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(float value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(int value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(sbyte value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(short value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(uint value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdOptionPropsValue(ushort value) => (TdOptionPropsValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -43065,6 +46125,26 @@ public enum TdPaginationPropsPageEllipsisMode
 [ECMAScript]
 public readonly union TdPaginationPropsPageSizeOptionsItem(Number, TdPaginationPropsPageSizeOptionsItemOption2)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(byte value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(decimal value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(double value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(float value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(int value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(sbyte value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(short value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(uint value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPaginationPropsPageSizeOptionsItem(ushort value) => (TdPaginationPropsPageSizeOptionsItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -43316,6 +46396,26 @@ public readonly union TdPopupPropsDefault(string, RenderFragment)
 [ECMAScript]
 public readonly union TdPopupPropsDelay(Number, Number[])
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(byte value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(decimal value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(double value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(float value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(int value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(sbyte value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(short value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(uint value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdPopupPropsDelay(ushort value) => (TdPopupPropsDelay)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -44922,6 +48022,26 @@ public record TdSelectInputPropsTagOption2Context : VueProps
 [ECMAScript]
 public readonly union TdSelectInputPropsTagOption2ContextValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(byte value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(decimal value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(double value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(float value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(int value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(sbyte value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(short value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(uint value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectInputPropsTagOption2ContextValue(ushort value) => (TdSelectInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -45537,6 +48657,26 @@ public delegate void TdSelectPropsOnCreate<T>(TdSelectPropsOnCreateValue<T> @val
 [ECMAScript]
 public readonly union TdSelectPropsOnCreateValue<T>(string, Number, bool, BigInt)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(byte value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(decimal value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(double value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(float value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(int value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(sbyte value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(short value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(uint value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdSelectPropsOnCreateValue<T>(ushort value) => (TdSelectPropsOnCreateValue<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -45885,6 +49025,26 @@ public readonly union TdStepItemPropsTitle(string, RenderFragment)
 [ECMAScript]
 public readonly union TdStepItemPropsValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(byte value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(decimal value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(double value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(float value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(int value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(sbyte value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(short value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(uint value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdStepItemPropsValue(ushort value) => (TdStepItemPropsValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -46710,6 +49870,26 @@ public record TdTagInputPropsTagOption2Context : VueProps
 [ECMAScript]
 public readonly union TdTagInputPropsTagOption2ContextValue(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(byte value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(decimal value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(double value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(float value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(int value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(sbyte value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(short value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(uint value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagInputPropsTagOption2ContextValue(ushort value) => (TdTagInputPropsTagOption2ContextValue)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -46877,6 +50057,26 @@ public readonly union TdTagPropsDefault(string, RenderFragment)
 [ECMAScript]
 public readonly union TdTagPropsMaxWidth(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(byte value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(decimal value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(double value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(float value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(int value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(sbyte value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(short value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(uint value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTagPropsMaxWidth(ushort value) => (TdTagPropsMaxWidth)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -47192,6 +50392,26 @@ public record TdTextareaPropsAutosizeOption2 : VueProps
 [ECMAScript]
 public readonly union TdTextareaPropsMaxlength(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(byte value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(decimal value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(double value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(float value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(int value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(sbyte value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(short value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(uint value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTextareaPropsMaxlength(ushort value) => (TdTextareaPropsMaxlength)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -47949,6 +51169,26 @@ public enum TdTimePickerPropsStatus
 [ECMAScript]
 public readonly union TdTimePickerPropsStepsItem(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(byte value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(decimal value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(double value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(float value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(int value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(sbyte value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(short value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(uint value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTimePickerPropsStepsItem(ushort value) => (TdTimePickerPropsStepsItem)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -48897,6 +52137,26 @@ public delegate bool TdTreePropsFilter<T>(TTreeNodeModel<T> node);
 [ECMAScript]
 public readonly union TdTreePropsHeight<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(byte value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(decimal value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(double value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(float value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(int value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(sbyte value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(short value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(uint value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsHeight<T>(ushort value) => (TdTreePropsHeight<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -48941,6 +52201,26 @@ public delegate IPromise<T[]> TdTreePropsLoad<T>(TTreeNodeModel<T> node);
 [ECMAScript]
 public readonly union TdTreePropsMaxHeight<T>(string, Number)
 {
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(byte value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(decimal value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(double value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(float value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(int value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(sbyte value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(short value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(uint value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator TdTreePropsMaxHeight<T>(ushort value) => (TdTreePropsMaxHeight<T>)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>
@@ -49369,6 +52649,7 @@ public sealed class TAffix : TContentComponentBase
     /// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：() =&gt; (() =&gt; window)
     /// </summary>
+    /// <remarks data-authoring="types">C# union TScrollContainer?；值域为 TScrollContainerOption1 | string。变量用 Container="@value"，并保持声明的分支类型。字符串用 Container="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("container")]
     public TScrollContainer? Container { get; set; }
@@ -49384,6 +52665,7 @@ public sealed class TAffix : TContentComponentBase
     /// 距离容器底部达到指定距离后触发固定
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 OffsetBottom="@(32)" 或 OffsetBottom="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offsetBottom")]
     public Number? OffsetBottom { get; set; }
@@ -49392,6 +52674,7 @@ public sealed class TAffix : TContentComponentBase
     /// 距离容器顶部达到指定距离后触发固定
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 OffsetTop="@(32)" 或 OffsetTop="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offsetTop")]
     public Number? OffsetTop { get; set; }
@@ -49399,6 +52682,7 @@ public sealed class TAffix : TContentComponentBase
     /// <summary>
     /// 固钉定位层级，样式默认为 500
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -49432,6 +52716,7 @@ public sealed class TAlert : TContentComponentBase
     /// 即将废弃，请使用 closeBtn 属性。关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAlertCloseValue?；值域为 string | bool。变量用 CloseValue="@value"，并保持声明的分支类型。字符串用 CloseValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("close")]
     public TAlertCloseValue? CloseValue { get; set; }
@@ -49440,6 +52725,7 @@ public sealed class TAlert : TContentComponentBase
     /// 关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAlertCloseBtnValue?；值域为 string | bool。变量用 CloseBtnValue="@value"，并保持声明的分支类型。字符串用 CloseBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TAlertCloseBtnValue? CloseBtnValue { get; set; }
@@ -49448,6 +52734,7 @@ public sealed class TAlert : TContentComponentBase
     /// 内容显示最大行数，超出的内容会折叠收起，用户点击后再展开。值为 0 表示不折叠
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxLine="@(32)" 或 MaxLine="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxLine")]
     public Number? MaxLine { get; set; }
@@ -49554,6 +52841,7 @@ public sealed class TAnchor : TContentComponentBase
     /// 锚点区域边界
     /// 默认值：5
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Bounds="@(32)" 或 Bounds="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("bounds")]
     public Number? Bounds { get; set; }
@@ -49562,6 +52850,7 @@ public sealed class TAnchor : TContentComponentBase
     /// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：() =&gt; (() =&gt; window)
     /// </summary>
+    /// <remarks data-authoring="types">C# union TScrollContainer?；值域为 TScrollContainerOption1 | string。变量用 Container="@value"，并保持声明的分支类型。字符串用 Container="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("container")]
     public TScrollContainer? Container { get; set; }
@@ -49587,6 +52876,7 @@ public sealed class TAnchor : TContentComponentBase
     /// 锚点滚动偏移量
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 TargetOffset="@(32)" 或 TargetOffset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("targetOffset")]
     public Number? TargetOffset { get; set; }
@@ -50088,6 +53378,7 @@ public sealed class TAvatarGroup : TContentComponentBase
     /// <summary>
     /// 能够同时显示的最多头像数量
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -50138,6 +53429,7 @@ public sealed class TBackTop : TContentComponentBase
     /// 监听滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：'body'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Container="@value"，并保持声明的分支类型。字符串用 Container="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("container")]
     public TAttachNode? Container { get; set; }
@@ -50153,6 +53445,7 @@ public sealed class TBackTop : TContentComponentBase
     /// 回到顶部的耗时单位：毫秒
     /// 默认值：200
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -50185,6 +53478,7 @@ public sealed class TBackTop : TContentComponentBase
     /// 指定回到该对象。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：'body'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Target="@value"，并保持声明的分支类型。字符串用 Target="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("target")]
     public TAttachNode? Target { get; set; }
@@ -50201,6 +53495,7 @@ public sealed class TBackTop : TContentComponentBase
     /// 滚动高度达到此参数值才出现
     /// 默认值：'200px'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBackTopVisibleHeightValue?；值域为 string | Number。数值用 VisibleHeight="@(32)"；变量用 VisibleHeight="@value"，无需 double 后缀。字符串用 VisibleHeight="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("visibleHeight")]
     public TBackTopVisibleHeightValue? VisibleHeight { get; set; }
@@ -50249,6 +53544,7 @@ public sealed class TBadge : TContentComponentBase
     /// 徽标右上角内容。可以是数字，也可以是文字。如：'new'/3/99+
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBadgeCountValue?；值域为 string | Number。数值用 CountValue="@(32)"；变量用 CountValue="@value"，无需 double 后缀。字符串用 CountValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("count")]
     public TBadgeCountValue? CountValue { get; set; }
@@ -50265,6 +53561,7 @@ public sealed class TBadge : TContentComponentBase
     /// 封顶的数字值
     /// 默认值：99
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCount="@(32)" 或 MaxCount="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCount")]
     public Number? MaxCount { get; set; }
@@ -50353,6 +53650,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// <summary>
     /// 超出省略等所有浮层元素统一绑定到 `attach`，可根据实际情况调整挂载元素
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -50452,6 +53750,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTableFooterAffixedBottomValue?；值域为 bool | TdAffixProps。变量用 FooterAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("footerAffixedBottom")]
     public TBaseTableFooterAffixedBottomValue? FooterAffixedBottom { get; set; }
@@ -50475,6 +53774,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性。
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTableHeaderAffixedTopValue?；值域为 bool | TdAffixProps。变量用 HeaderAffixedTop="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerAffixedTop")]
     public TBaseTableHeaderAffixedTopValue? HeaderAffixedTop { get; set; }
@@ -50482,6 +53782,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// <summary>
     /// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTableHeightValue?；值域为 string | Number。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public TBaseTableHeightValue? Height { get; set; }
@@ -50489,6 +53790,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// <summary>
     /// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTableHorizontalScrollAffixedBottomValue?；值域为 bool | TdAffixProps。变量用 HorizontalScrollAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TBaseTableHorizontalScrollAffixedBottomValue? HorizontalScrollAffixedBottom { get; set; }
@@ -50548,6 +53850,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// <summary>
     /// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTableMaxHeightValue?；值域为 string | Number。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TBaseTableMaxHeightValue? MaxHeight { get; set; }
@@ -50562,6 +53865,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// <summary>
     /// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTablePaginationAffixedBottomValue?；值域为 bool | TdAffixProps。变量用 PaginationAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("paginationAffixedBottom")]
     public TBaseTablePaginationAffixedBottomValue? PaginationAffixedBottom { get; set; }
@@ -50581,6 +53885,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// 示例二：[{ draggable: true }, { title: '超出省略显示' }]。
     /// 示例三：() =&gt; [{ draggable: true }]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableRowAttributes&lt;TTableRowData&gt;?；值域为 THTMLElementAttributes | TTableRowAttributesOption2&lt;TTableRowData&gt; | TTableRowAttributes&lt;TTableRowData&gt;[]。变量用 RowAttributes="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<TTableRowData>? RowAttributes { get; set; }
@@ -50588,6 +53893,7 @@ public sealed class TBaseTable : TContentComponentBase
     /// <summary>
     /// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBaseTableRowClassNameValue?；值域为 TClassNameDictionary | TClassName[] | string | TBaseTableRowClassNameValueOption2。变量用 RowClassName="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public TBaseTableRowClassNameValue? RowClassName { get; set; }
@@ -50875,6 +54181,7 @@ public sealed class TBreadcrumb : TContentComponentBase
     /// <summary>
     /// 超过面包屑最大显示数量时，省略号后显示几项。`maxItems &gt; 0`时有效
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemsAfterCollapse="@(32)" 或 ItemsAfterCollapse="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemsAfterCollapse")]
     public Number? ItemsAfterCollapse { get; set; }
@@ -50882,6 +54189,7 @@ public sealed class TBreadcrumb : TContentComponentBase
     /// <summary>
     /// 超过面包屑最大显示数量时，省略号前显示几项。`maxItems &gt; 0`时有效
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemsBeforeCollapse="@(32)" 或 ItemsBeforeCollapse="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemsBeforeCollapse")]
     public Number? ItemsBeforeCollapse { get; set; }
@@ -50896,6 +54204,7 @@ public sealed class TBreadcrumb : TContentComponentBase
     /// <summary>
     /// 显示的面包屑的最大数量，超出该值后中间的面包屑内容将会显示为省略号。值`&lt;= 0`代表不限制
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxItems="@(32)" 或 MaxItems="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxItems")]
     public Number? MaxItems { get; set; }
@@ -50987,6 +54296,7 @@ public sealed class TBreadcrumbItem : TContentComponentBase
     /// <summary>
     /// 路由对象。如果项目存在 Router，则默认使用 Router
     /// </summary>
+    /// <remarks data-authoring="types">C# union TJsonValue?；值域为 bool | Number | string | TJsonValue[] | TJsonObject。数值用 Router="@(32)"；变量用 Router="@value"，无需 double 后缀。字符串用 Router="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("router")]
     public TJsonValue? Router { get; set; }
@@ -51002,6 +54312,7 @@ public sealed class TBreadcrumbItem : TContentComponentBase
     /// <summary>
     /// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
     /// </summary>
+    /// <remarks data-authoring="types">C# union TBreadcrumbItemToValue?；值域为 string | TRoute。变量用 To="@value"，并保持声明的分支类型。字符串用 To="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("to")]
     public TBreadcrumbItemToValue? To { get; set; }
@@ -51200,6 +54511,7 @@ public sealed class TCalendar : TContentComponentBase
     /// <summary>
     /// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCalendarControllerConfigValue?；值域为 bool | TCalendarController。变量用 ControllerConfig="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("controllerConfig")]
     public TCalendarControllerConfigValue? ControllerConfig { get; set; }
@@ -51214,6 +54526,7 @@ public sealed class TCalendar : TContentComponentBase
     /// <summary>
     /// 第一天从星期几开始，仅在日历展示维度为月份时（mode = month）有效。默认为 1
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FirstDayOfWeek="@(32)" 或 FirstDayOfWeek="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
@@ -51252,6 +54565,7 @@ public sealed class TCalendar : TContentComponentBase
     /// <summary>
     /// 控制当前面板展示月份，优先级高于 `controllerConfig.month`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCalendarMonthValue?；值域为 string | Number。数值用 Month="@(32)"；变量用 Month="@value"，无需 double 后缀。字符串用 Month="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("month")]
     public TCalendarMonthValue? Month { get; set; }
@@ -51289,6 +54603,7 @@ public sealed class TCalendar : TContentComponentBase
     /// <summary>
     /// 当前高亮的日期
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCalendarValueValue?；值域为 string | Date | TCalendarValue[]。变量用 Value="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TCalendarValueValue? Value { get; set; }
@@ -51303,6 +54618,7 @@ public sealed class TCalendar : TContentComponentBase
     /// <summary>
     /// 控制当前面板展示年份，优先级高于 `controllerConfig.year`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCalendarYearValue?；值域为 string | Number。数值用 Year="@(32)"；变量用 Year="@value"，无需 double 后缀。字符串用 Year="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("year")]
     public TCalendarYearValue? Year { get; set; }
@@ -51719,6 +55035,7 @@ public class TCascader<CascaderOption> : TContentComponentBase
     /// 用于控制多选数量，值为 0 则不限制
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -51727,6 +55044,7 @@ public class TCascader<CascaderOption> : TContentComponentBase
     /// 最小折叠数量，用于多选情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinCollapsedNum="@(32)" 或 MinCollapsedNum="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
@@ -51868,6 +55186,7 @@ public class TCascader<CascaderOption> : TContentComponentBase
     /// 选中项的值
     /// 默认值：[]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCascaderValue&lt;CascaderOption&gt;?；值域为 string | Number | CascaderOption | TCascaderValue&lt;CascaderOption&gt;[]。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TCascaderValue<CascaderOption>? Value { get; set; }
@@ -51989,6 +55308,7 @@ public class TCascader<CascaderOption> : TContentComponentBase
     /// <summary>
     /// 选中值发生变化时触发。TreeNodeModel 从树组件中导出。`context.node` 表示触发事件的节点，`context.source` 表示触发事件的来源
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TCascaderValue&lt;CascaderOption&gt;；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TCascaderValue<CascaderOption>> OnChange { get; set; }
@@ -52049,6 +55369,7 @@ public sealed class TCheckTag : TContentComponentBase
     /// <summary>
     /// 组件子元素；传入数组时：[选中内容，非选中内容]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCheckTagContentValue?；值域为 string | Number | string[]。数值用 ContentValue="@(32)"；变量用 ContentValue="@value"，无需 double 后缀。字符串用 ContentValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("content")]
     public TCheckTagContentValue? ContentValue { get; set; }
@@ -52079,6 +55400,7 @@ public sealed class TCheckTag : TContentComponentBase
     /// <summary>
     /// 标签唯一标识，一般用于标签组场景，单个可选择标签无需设置
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCheckTagValueValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TCheckTagValueValue? Value { get; set; }
@@ -52242,6 +55564,7 @@ public sealed class TCheckbox : TContentComponentBase
     /// <summary>
     /// 多选框的值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCheckboxValueValue?；值域为 string | Number | bool。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TCheckboxValueValue? Value { get; set; }
@@ -52289,6 +55612,7 @@ public class TCheckboxGroup<T> : TContentComponentBase
     /// <summary>
     /// 支持最多选中的数量
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -52351,6 +55675,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// flex 布局填充。CSS 属性 flex 值。示例：2 / 3 / '100px' / 'auto' / '1 1 200px'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColFlexValue?；值域为 string | Number。数值用 Flex="@(32)"；变量用 Flex="@value"，无需 double 后缀。字符串用 Flex="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("flex")]
     public TColFlexValue? Flex { get; set; }
@@ -52358,6 +55683,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// ≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象（小尺寸电脑）
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColLgValue?；值域为 Number | TBaseColProps。数值用 Lg="@(32)"；变量用 Lg="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lg")]
     public TColLgValue? Lg { get; set; }
@@ -52365,6 +55691,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// ≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象（超小尺寸电脑）
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColMdValue?；值域为 Number | TBaseColProps。数值用 Md="@(32)"；变量用 Md="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("md")]
     public TColMdValue? Md { get; set; }
@@ -52373,6 +55700,7 @@ public sealed class TCol : TContentComponentBase
     /// 栅格左侧的间隔格数，间隔内不可以有栅格
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -52381,6 +55709,7 @@ public sealed class TCol : TContentComponentBase
     /// 栅格顺序，flex 布局模式下有效
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Order="@(32)" 或 Order="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("order")]
     public Number? Order { get; set; }
@@ -52389,6 +55718,7 @@ public sealed class TCol : TContentComponentBase
     /// 栅格向左移动格数
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Pull="@(32)" 或 Pull="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pull")]
     public Number? Pull { get; set; }
@@ -52397,6 +55727,7 @@ public sealed class TCol : TContentComponentBase
     /// 栅格向右移动格数
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Push="@(32)" 或 Push="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("push")]
     public Number? Push { get; set; }
@@ -52404,6 +55735,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// ≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象（平板）
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColSmValue?；值域为 Number | TBaseColProps。数值用 Sm="@(32)"；变量用 Sm="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sm")]
     public TColSmValue? Sm { get; set; }
@@ -52411,6 +55743,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// 栅格占位格数，为 0 时相当于 display: none
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Span="@(32)" 或 Span="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
@@ -52426,6 +55759,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// ≥1400px 响应式栅格，可为栅格数或一个包含其他属性的对象（中尺寸电脑）
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColXlValue?；值域为 Number | TBaseColProps。数值用 Xl="@(32)"；变量用 Xl="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("xl")]
     public TColXlValue? Xl { get; set; }
@@ -52433,6 +55767,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// &lt;768px 响应式栅格，可为栅格数或一个包含其他属性的对象（手机）
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColXsValue?；值域为 Number | TBaseColProps。数值用 Xs="@(32)"；变量用 Xs="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("xs")]
     public TColXsValue? Xs { get; set; }
@@ -52440,6 +55775,7 @@ public sealed class TCol : TContentComponentBase
     /// <summary>
     /// ≥1880px 响应式栅格，可为栅格数或一个包含其他属性的对象（大尺寸电脑）
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColXxlValue?；值域为 Number | TBaseColProps。数值用 Xxl="@(32)"；变量用 Xxl="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("xxl")]
     public TColXxlValue? Xxl { get; set; }
@@ -52589,6 +55925,7 @@ public sealed class TCollapsePanel : TContentComponentBase
     /// <summary>
     /// 当前面板唯一标识，如果值为空则取当前面下标兜底作为唯一标识
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCollapsePanelValueValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TCollapsePanelValueValue? Value { get; set; }
@@ -52705,6 +56042,7 @@ public sealed class TColorPicker : TContentComponentBase
     /// 最近使用的颜色。值为 [] 表示以组件内部的“最近使用颜色”为准，值长度大于 0 则以该值为准显示“最近使用颜色”。值为 false 或 null 则完全不显示“最近使用颜色”
     /// 默认值：[]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColorPickerRecentColorsValue?；值域为 string[] | bool。变量用 RecentColors="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("recentColors")]
     public TColorPickerRecentColorsValue? RecentColors { get; set; }
@@ -52829,6 +56167,7 @@ public sealed class TColorPickerPanel : TContentComponentBase
     /// 最近使用的颜色。值为 [] 表示以组件内部的“最近使用颜色”为准，值长度大于 0 则以该值为准显示“最近使用颜色”。值为 false 或 null 则完全不显示“最近使用颜色”
     /// 默认值：[]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TColorPickerPanelRecentColorsValue?；值域为 string[] | bool。变量用 RecentColors="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("recentColors")]
     public TColorPickerPanelRecentColorsValue? RecentColors { get; set; }
@@ -52912,6 +56251,7 @@ public sealed class TComment : TContentComponentBase
     /// <summary>
     /// 头像
     /// </summary>
+    /// <remarks data-authoring="types">C# union TCommentAvatarValue?；值域为 string | TdAvatarProps。变量用 AvatarValue="@value"，并保持声明的分支类型。字符串用 AvatarValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("avatar")]
     public TCommentAvatarValue? AvatarValue { get; set; }
@@ -53082,6 +56422,7 @@ public sealed class TDatePicker : TContentComponentBase
     /// <summary>
     /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDisableDate?；值域为 TDateValue[] | TDisableDateObj | TDisableDateOption3。变量用 DisableDate="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableDate? DisableDate { get; set; }
@@ -53111,6 +56452,7 @@ public sealed class TDatePicker : TContentComponentBase
     /// <summary>
     /// 第一天从星期几开始
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FirstDayOfWeek="@(32)" 或 FirstDayOfWeek="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
@@ -53237,6 +56579,7 @@ public sealed class TDatePicker : TContentComponentBase
     /// 选中值
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDatePickerValueValue?；值域为 string | Number | Date | TDateValue[]。变量用 Value="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TDatePickerValueValue? Value { get; set; }
@@ -53308,6 +56651,7 @@ public sealed class TDatePicker : TContentComponentBase
     /// <summary>
     /// 选中值发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TDatePickerChangeEventValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TDatePickerChangeEventValue> OnChange { get; set; }
@@ -53343,6 +56687,7 @@ public sealed class TDatePicker : TContentComponentBase
     /// <summary>
     /// 面板选中值后触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TDateValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onPick")]
     public EventCallback<TDateValue> OnPick { get; set; }
@@ -53383,6 +56728,7 @@ public sealed class TDatePickerPanel : TContentComponentBase
     /// <summary>
     /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDisableDate?；值域为 TDateValue[] | TDisableDateObj | TDisableDateOption3。变量用 DisableDate="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableDate? DisableDate { get; set; }
@@ -53405,6 +56751,7 @@ public sealed class TDatePickerPanel : TContentComponentBase
     /// <summary>
     /// 第一天从星期几开始
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FirstDayOfWeek="@(32)" 或 FirstDayOfWeek="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
@@ -53458,6 +56805,7 @@ public sealed class TDatePickerPanel : TContentComponentBase
     /// 选中值
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDatePickerPanelValueValue?；值域为 string | Number | Date | TDateValue[]。变量用 Value="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TDatePickerPanelValueValue? Value { get; set; }
@@ -53479,6 +56827,7 @@ public sealed class TDatePickerPanel : TContentComponentBase
     /// <summary>
     /// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TDateValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TDateValue> OnChange { get; set; }
@@ -53579,6 +56928,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     /// <summary>
     /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDisableRangeDate?；值域为 TDateValue[] | TDisableDateObj | TDisableRangeDateOption3。变量用 DisableDate="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableRangeDate? DisableDate { get; set; }
@@ -53593,6 +56943,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     /// <summary>
     /// 是否禁用组件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDateRangePickerDisabledValue?；值域为 bool | bool[]。变量用 Disabled="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TDateRangePickerDisabledValue? Disabled { get; set; }
@@ -53608,6 +56959,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     /// <summary>
     /// 第一天从星期几开始
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FirstDayOfWeek="@(32)" 或 FirstDayOfWeek="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
@@ -53654,6 +57006,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     /// <summary>
     /// 占位符，值为数组表示可分别为开始日期和结束日期设置占位符
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDateRangePickerPlaceholderValue?；值域为 string | string[]。变量用 Placeholder="@value"，并保持声明的分支类型。字符串用 Placeholder="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public TDateRangePickerPlaceholderValue? Placeholder { get; set; }
@@ -53827,6 +57180,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     /// <summary>
     /// 选中日期时触发，可能是开始日期，也可能是结束日期，第二个参数可以区分是开始日期或是结束日期
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TDateValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onPick")]
     public EventCallback<TDateValue> OnPick { get; set; }
@@ -53867,6 +57221,7 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     /// <summary>
     /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDisableRangeDate?；值域为 TDateValue[] | TDisableDateObj | TDisableRangeDateOption3。变量用 DisableDate="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableRangeDate? DisableDate { get; set; }
@@ -53882,6 +57237,7 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     /// <summary>
     /// 第一天从星期几开始
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FirstDayOfWeek="@(32)" 或 FirstDayOfWeek="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
@@ -54033,6 +57389,7 @@ public sealed class TDescriptions : TContentComponentBase
     /// 一行 `DescriptionsItem` 的数量
     /// 默认值：2
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Column="@(32)" 或 Column="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("column")]
     public Number? Column { get; set; }
@@ -54133,6 +57490,7 @@ public sealed class TDescriptionsItem : TContentComponentBase
     /// 占用的宽度数量
     /// 默认值：1
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Span="@(32)" 或 Span="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
@@ -54165,6 +57523,7 @@ public sealed class TDialog : TContentComponentBase
     /// <summary>
     /// 对话框挂载的节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -54179,6 +57538,7 @@ public sealed class TDialog : TContentComponentBase
     /// <summary>
     /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogCancelBtnValue?；值域为 string | TdButtonProps。变量用 CancelBtnValue="@value"，并保持声明的分支类型。字符串用 CancelBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TDialogCancelBtnValue? CancelBtnValue { get; set; }
@@ -54187,6 +57547,7 @@ public sealed class TDialog : TContentComponentBase
     /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogCloseBtnValue?；值域为 string | bool。变量用 CloseBtnValue="@value"，并保持声明的分支类型。字符串用 CloseBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TDialogCloseBtnValue? CloseBtnValue { get; set; }
@@ -54208,6 +57569,7 @@ public sealed class TDialog : TContentComponentBase
     /// <summary>
     /// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogConfirmBtnValue?；值域为 string | TdButtonProps。变量用 ConfirmBtnValue="@value"，并保持声明的分支类型。字符串用 ConfirmBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TDialogConfirmBtnValue? ConfirmBtnValue { get; set; }
@@ -54269,6 +57631,7 @@ public sealed class TDialog : TContentComponentBase
     /// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogHeaderValue?；值域为 string | bool。变量用 HeaderValue="@value"，并保持声明的分支类型。字符串用 HeaderValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("header")]
     public TDialogHeaderValue? HeaderValue { get; set; }
@@ -54332,6 +57695,7 @@ public sealed class TDialog : TContentComponentBase
     /// <summary>
     /// 用于弹框具体窗口顶部的距离，优先级大于 placement
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogTopValue?；值域为 string | Number。数值用 Top="@(32)"；变量用 Top="@value"，无需 double 后缀。字符串用 Top="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("top")]
     public TDialogTopValue? Top { get; set; }
@@ -54346,6 +57710,7 @@ public sealed class TDialog : TContentComponentBase
     /// <summary>
     /// 对话框宽度，示例：320, '500px', '80%'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogWidthValue?；值域为 string | Number。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public TDialogWidthValue? Width { get; set; }
@@ -54353,6 +57718,7 @@ public sealed class TDialog : TContentComponentBase
     /// <summary>
     /// 对话框层级，Web 侧样式默认为 2500，移动端和小程序样式默认为 1500
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -54493,6 +57859,7 @@ public sealed class TDialogCard : TContentComponentBase
     /// <summary>
     /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogCardCancelBtnValue?；值域为 string | TdButtonProps。变量用 CancelBtnValue="@value"，并保持声明的分支类型。字符串用 CancelBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TDialogCardCancelBtnValue? CancelBtnValue { get; set; }
@@ -54501,6 +57868,7 @@ public sealed class TDialogCard : TContentComponentBase
     /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogCardCloseBtnValue?；值域为 string | bool。变量用 CloseBtnValue="@value"，并保持声明的分支类型。字符串用 CloseBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TDialogCardCloseBtnValue? CloseBtnValue { get; set; }
@@ -54508,6 +57876,7 @@ public sealed class TDialogCard : TContentComponentBase
     /// <summary>
     /// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogCardConfirmBtnValue?；值域为 string | TdButtonProps。变量用 ConfirmBtnValue="@value"，并保持声明的分支类型。字符串用 ConfirmBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TDialogCardConfirmBtnValue? ConfirmBtnValue { get; set; }
@@ -54531,6 +57900,7 @@ public sealed class TDialogCard : TContentComponentBase
     /// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDialogCardHeaderValue?；值域为 string | bool。变量用 HeaderValue="@value"，并保持声明的分支类型。字符串用 HeaderValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("header")]
     public TDialogCardHeaderValue? HeaderValue { get; set; }
@@ -54679,6 +58049,7 @@ public sealed class TDrawer : TContentComponentBase
     /// <summary>
     /// 抽屉挂载的节点，默认挂在组件本身的位置。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -54693,6 +58064,7 @@ public sealed class TDrawer : TContentComponentBase
     /// <summary>
     /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TFooterButton?；值域为 string | TdButtonProps | RenderFragment。变量用 CancelBtnValue="@value"，并保持声明的分支类型。字符串用 CancelBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TFooterButton? CancelBtnValue { get; set; }
@@ -54700,6 +58072,7 @@ public sealed class TDrawer : TContentComponentBase
     /// <summary>
     /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDrawerCloseBtnValue?；值域为 string | bool。变量用 CloseBtnValue="@value"，并保持声明的分支类型。字符串用 CloseBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TDrawerCloseBtnValue? CloseBtnValue { get; set; }
@@ -54721,6 +58094,7 @@ public sealed class TDrawer : TContentComponentBase
     /// <summary>
     /// 确认按钮，可自定义。值为 null 则不显示确认按钮。类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TFooterButton?；值域为 string | TdButtonProps | RenderFragment。变量用 ConfirmBtnValue="@value"，并保持声明的分支类型。字符串用 ConfirmBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TFooterButton? ConfirmBtnValue { get; set; }
@@ -54753,6 +58127,7 @@ public sealed class TDrawer : TContentComponentBase
     /// 头部内容。值为 true 显示空白头部，值为 false 不显示头部，值类型为 string 则直接显示值，值类型为 TNode 表示自定义头部内容
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDrawerHeaderValue?；值域为 string | bool。变量用 HeaderValue="@value"，并保持声明的分支类型。字符串用 HeaderValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("header")]
     public TDrawerHeaderValue? HeaderValue { get; set; }
@@ -54816,6 +58191,7 @@ public sealed class TDrawer : TContentComponentBase
     /// 抽屉大小可拖拽调整，横向抽屉调整宽度，纵向抽屉调整高度。`sizeDraggable.max` 和 `sizeDraggable.min` 用于控制拖拽尺寸大小限制
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDrawerSizeDraggableValue?；值域为 bool | TSizeDragLimit。变量用 SizeDraggable="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sizeDraggable")]
     public TDrawerSizeDraggableValue? SizeDraggable { get; set; }
@@ -54831,6 +58207,7 @@ public sealed class TDrawer : TContentComponentBase
     /// <summary>
     /// 抽屉层级，样式默认为 1500
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -54981,6 +58358,7 @@ public sealed class TDropdown : TContentComponentBase
     /// 选项最大宽度，内容超出时，显示为省略号。值为字符串时，值就是最大宽度；值为数字时，单位：px
     /// 默认值：100
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDropdownMaxColumnWidthValue?；值域为 string | Number。数值用 MaxColumnWidth="@(32)"；变量用 MaxColumnWidth="@value"，无需 double 后缀。字符串用 MaxColumnWidth="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxColumnWidth")]
     public TDropdownMaxColumnWidthValue? MaxColumnWidth { get; set; }
@@ -54989,6 +58367,7 @@ public sealed class TDropdown : TContentComponentBase
     /// 弹窗最大高度，单位：px 。统一控制每一列的高度
     /// 默认值：300
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxHeight="@(32)" 或 MaxHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public Number? MaxHeight { get; set; }
@@ -54997,6 +58376,7 @@ public sealed class TDropdown : TContentComponentBase
     /// 选项最小宽度。值为字符串时，值就是最小宽度；值为数字时，单位：px
     /// 默认值：10
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDropdownMinColumnWidthValue?；值域为 string | Number。数值用 MinColumnWidth="@(32)"；变量用 MinColumnWidth="@value"，无需 double 后缀。字符串用 MinColumnWidth="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minColumnWidth")]
     public TDropdownMinColumnWidthValue? MinColumnWidth { get; set; }
@@ -55063,6 +58443,7 @@ public sealed class TDropdown : TContentComponentBase
     /// <summary>
     /// 下拉操作项点击时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TDropdownClickEventDropdownItem；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TDropdownClickEventDropdownItem> OnClick { get; set; }
@@ -55121,6 +58502,7 @@ public sealed class TDropdownItem : TContentComponentBase
     /// <summary>
     /// 下拉操作项唯一标识
     /// </summary>
+    /// <remarks data-authoring="types">C# union TDropdownItemValueValue?；值域为 string | Number | TJsonObject。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TDropdownItemValueValue? Value { get; set; }
@@ -55143,6 +58525,7 @@ public sealed class TDropdownItem : TContentComponentBase
     /// <summary>
     /// 点击时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TDropdownItemClickEventDropdownItem；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TDropdownItemClickEventDropdownItem> OnClick { get; set; }
@@ -55168,6 +58551,7 @@ public sealed class TEmpty : TContentComponentBase
     /// <summary>
     /// 组件图片，可以完全自定义内容。值类型为字符串时，表示图片地址；值类型为对象时，则表示透传全部属性到图片组件，示例：`&lt;Empty image={{ src: '', shape: 'round' }} /&gt;`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TEmptyImageValue?；值域为 string | TdImageProps。变量用 ImageValue="@value"，并保持声明的分支类型。字符串用 ImageValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("image")]
     public TEmptyImageValue? ImageValue { get; set; }
@@ -55478,6 +58862,7 @@ public class TEnhancedTable<T> : TContentComponentBase
     /// <summary>
     /// 排序发生变化时触发。其中 sortBy 表示当前排序的字段，sortType 表示排序的方式，currentDataSource 表示 sorter 排序后的结果，col 表示列配置。sort 值类型为数组时表示多字段排序
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTableSort；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
@@ -55590,6 +58975,7 @@ public class TForm<FormData> : TContentComponentBase
     /// 可以整体设置label标签宽度，默认为100px
     /// 默认值：'100px'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TFormLabelWidthValue&lt;FormData&gt;?；值域为 string | Number。数值用 LabelWidth="@(32)"；变量用 LabelWidth="@value"，无需 double 后缀。字符串用 LabelWidth="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public TFormLabelWidthValue<FormData>? LabelWidth { get; set; }
@@ -55756,6 +59142,7 @@ public sealed class TFormItem : TContentComponentBase
     /// <summary>
     /// 可以整体设置标签宽度，优先级高于 Form.labelWidth
     /// </summary>
+    /// <remarks data-authoring="types">C# union TFormItemLabelWidthValue?；值域为 string | Number。数值用 LabelWidth="@(32)"；变量用 LabelWidth="@value"，无需 double 后缀。字符串用 LabelWidth="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public TFormItemLabelWidthValue? LabelWidth { get; set; }
@@ -55862,6 +59249,7 @@ public sealed class TGuide : TContentComponentBase
     /// <summary>
     /// 当前步骤，即整个引导的进度。-1 则不展示，用于需要中断展示的场景
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Current="@(32)" 或 Current="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
@@ -55901,6 +59289,7 @@ public sealed class TGuide : TContentComponentBase
     /// 高亮框的内边距
     /// 默认值：8
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HighlightPadding="@(32)" 或 HighlightPadding="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("highlightPadding")]
     public Number? HighlightPadding { get; set; }
@@ -55953,6 +59342,7 @@ public sealed class TGuide : TContentComponentBase
     /// 提示框的层级
     /// 默认值：999999
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -55967,6 +59357,7 @@ public sealed class TGuide : TContentComponentBase
     /// <summary>
     /// 当前步骤发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
@@ -56036,6 +59427,7 @@ public sealed class THeadMenu : TContentComponentBase
     /// <summary>
     /// 激活菜单项
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMenuValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
@@ -56057,6 +59449,7 @@ public sealed class THeadMenu : TContentComponentBase
     /// <summary>
     /// 激活菜单项发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TMenuValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TMenuValue> OnChange { get; set; }
@@ -56132,6 +59525,7 @@ public sealed class TIcon : TContentComponentBase
     /// <summary>
     /// 图标地址，地址内容参考[组件内部默认加载图标](https://tdesign.gtimg.com/icon/web/index.js)
     /// </summary>
+    /// <remarks data-authoring="types">C# union TIconUrlValue?；值域为 string | string[]。变量用 Url="@value"，并保持声明的分支类型。字符串用 Url="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("url")]
     public TIconUrlValue? Url { get; set; }
@@ -56257,6 +59651,7 @@ public sealed class TImage : TContentComponentBase
     /// <summary>
     /// 用于显示图片的链接或原始图片文件对象
     /// </summary>
+    /// <remarks data-authoring="types">C# union TImageSrcValue?；值域为 string | FileRef。变量用 Src="@value"，并保持声明的分支类型。字符串用 Src="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("src")]
     public TImageSrcValue? Src { get; set; }
@@ -56325,6 +59720,7 @@ public sealed class TImageViewer : TContentComponentBase
     /// 指定挂载节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：'body'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -56385,6 +59781,7 @@ public sealed class TImageViewer : TContentComponentBase
     /// 当前预览图片所在的下标
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Index="@(32)" 或 Index="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("index")]
     public Number? Index { get; set; }
@@ -56437,6 +59834,7 @@ public sealed class TImageViewer : TContentComponentBase
     /// <summary>
     /// 层级，默认为 3000
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -56481,6 +59879,7 @@ public sealed class TImageViewer : TContentComponentBase
     /// <summary>
     /// 自定义预览图片下载操作，url为图片链接
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TImageViewerDownloadEventUrl；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onDownload")]
     public EventCallback<TImageViewerDownloadEventUrl> OnDownload { get; set; }
@@ -56488,6 +59887,7 @@ public sealed class TImageViewer : TContentComponentBase
     /// <summary>
     /// 预览图片切换时触发，`context.prev` 切换到上一张图片，`context.next` 切换到下一张图片
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onIndexChange")]
     public EventCallback<Number> OnIndexChange { get; set; }
@@ -56575,6 +59975,7 @@ public class TInput<T> : TContentComponentBase
     /// <summary>
     /// t-input 同级类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TClassName?；值域为 TClassNameDictionary | TClassName[] | string。变量用 InputClass="@value"，并保持声明的分支类型。字符串用 InputClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inputClass")]
     public TClassName? InputClass { get; set; }
@@ -56589,6 +59990,7 @@ public class TInput<T> : TContentComponentBase
     /// <summary>
     /// 用户最多可以输入的字符个数，一个中文汉字表示两个字符长度。`maxcharacter` 和 `maxlength` 二选一使用
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Maxcharacter="@(32)" 或 Maxcharacter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; set; }
@@ -56596,6 +59998,7 @@ public class TInput<T> : TContentComponentBase
     /// <summary>
     /// 用户最多可以输入的文本长度，一个中文等于一个计数长度。默认为空，不限制输入长度。`maxcharacter` 和 `maxlength` 二选一使用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TInputMaxlengthValue&lt;T&gt;?；值域为 string | Number。数值用 Maxlength="@(32)"；变量用 Maxlength="@value"，无需 double 后缀。字符串用 Maxlength="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public TInputMaxlengthValue<T>? Maxlength { get; set; }
@@ -56939,6 +60342,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// [小数位数](https://en.wiktionary.org/wiki/decimal_place)
     /// </summary>
+    /// <remarks data-authoring="types">C# union TInputNumberDecimalPlaces?；值域为 Number | TInputNumberDecimalPlacesOption2。数值用 DecimalPlaces="@(32)"；变量用 DecimalPlaces="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("decimalPlaces")]
     public TInputNumberDecimalPlaces? DecimalPlaces { get; set; }
@@ -56983,6 +60387,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// 最大值。如果是大数，请传入字符串
     /// 默认值：Infinity
     /// </summary>
+    /// <remarks data-authoring="types">C# union TInputNumberValue?；值域为 Number | string。数值用 Max="@(32)"；变量用 Max="@value"，无需 double 后缀。字符串用 Max="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public TInputNumberValue? Max { get; set; }
@@ -56991,6 +60396,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// 最小值。如果是大数，请传入字符串
     /// 默认值：-Infinity
     /// </summary>
+    /// <remarks data-authoring="types">C# union TInputNumberValue?；值域为 Number | string。数值用 Min="@(32)"；变量用 Min="@value"，无需 double 后缀。字符串用 Min="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public TInputNumberValue? Min { get; set; }
@@ -57029,6 +60435,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// 数值改变步数，可以是小数。如果是大数，请保证数据类型为字符串
     /// 默认值：1
     /// </summary>
+    /// <remarks data-authoring="types">C# union TInputNumberValue?；值域为 Number | string。数值用 Step="@(32)"；变量用 Step="@value"，无需 double 后缀。字符串用 Step="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("step")]
     public TInputNumberValue? Step { get; set; }
@@ -57086,6 +60493,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// 失去焦点时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TInputNumberValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TInputNumberValue> OnBlur { get; set; }
@@ -57100,6 +60508,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// 回车键按下时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TInputNumberValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TInputNumberValue> OnEnter { get; set; }
@@ -57107,6 +60516,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// 获取焦点时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TInputNumberValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TInputNumberValue> OnFocus { get; set; }
@@ -57114,6 +60524,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// 键盘按下时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TInputNumberValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onKeydown")]
     public EventCallback<TInputNumberValue> OnKeydown { get; set; }
@@ -57121,6 +60532,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TInputNumberValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onKeypress")]
     public EventCallback<TInputNumberValue> OnKeypress { get; set; }
@@ -57128,6 +60540,7 @@ public class TInputNumber<T> : TContentComponentBase
     /// <summary>
     /// 释放键盘时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TInputNumberValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onKeyup")]
     public EventCallback<TInputNumberValue> OnKeyup { get; set; }
@@ -57192,6 +60605,7 @@ public sealed class TLink : TContentComponentBase
     /// <summary>
     /// 使得浏览器将链接的 URL 视为可下载资源
     /// </summary>
+    /// <remarks data-authoring="types">C# union TLinkDownloadValue?；值域为 string | bool。变量用 Download="@value"，并保持声明的分支类型。字符串用 Download="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("download")]
     public TLinkDownloadValue? Download { get; set; }
@@ -57500,6 +60914,7 @@ public sealed class TLoading : TContentComponentBase
     /// 挂载元素，默认挂载到组件本身所在的位置。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -57515,6 +60930,7 @@ public sealed class TLoading : TContentComponentBase
     /// 延迟显示加载效果的时间，用于防止请求速度过快引起的加载闪烁，单位：毫秒
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Delay="@(32)" 或 Delay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
@@ -57585,6 +61001,7 @@ public sealed class TLoading : TContentComponentBase
     /// <summary>
     /// 消息通知层级，样式默认为 3500
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -57664,6 +61081,7 @@ public sealed class TMenu : TContentComponentBase
     /// <summary>
     /// 激活菜单项
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMenuValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
@@ -57672,6 +61090,7 @@ public sealed class TMenu : TContentComponentBase
     /// 菜单宽度。值类型为数组时，分别表示菜单展开和折叠的宽度。[ 展开时的宽度, 折叠时的宽度 ]，示例：['200px', '80px']
     /// 默认值：'232px'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMenuWidthValue?；值域为 string | Number | TMenuWidthValueOption3Item[]。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public TMenuWidthValue? Width { get; set; }
@@ -57693,6 +61112,7 @@ public sealed class TMenu : TContentComponentBase
     /// <summary>
     /// 激活菜单项发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TMenuValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TMenuValue> OnChange { get; set; }
@@ -57794,6 +61214,7 @@ public sealed class TMenuItem : TContentComponentBase
     /// <summary>
     /// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMenuItemToValue?；值域为 string | TMenuRoute。变量用 To="@value"，并保持声明的分支类型。字符串用 To="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("to")]
     public TMenuItemToValue? To { get; set; }
@@ -57810,6 +61231,7 @@ public sealed class TMenuItem : TContentComponentBase
     /// <summary>
     /// 菜单项唯一标识
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMenuValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
@@ -57849,6 +61271,7 @@ public sealed class TMessage : TContentComponentBase
     /// <summary>
     /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。也可以完全自定义按钮
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMessageCloseBtnValue?；值域为 string | bool。变量用 CloseBtnValue="@value"，并保持声明的分支类型。字符串用 CloseBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TMessageCloseBtnValue? CloseBtnValue { get; set; }
@@ -57864,6 +61287,7 @@ public sealed class TMessage : TContentComponentBase
     /// 消息内置计时器，计时到达时会触发 duration-end 事件。单位：毫秒。值为 0 则表示没有计时器
     /// 默认值：3000
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -57941,6 +61365,7 @@ public sealed class TNotification : TContentComponentBase
     /// <summary>
     /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
     /// </summary>
+    /// <remarks data-authoring="types">C# union TNotificationCloseBtnValue?；值域为 string | bool。变量用 CloseBtnValue="@value"，并保持声明的分支类型。字符串用 CloseBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TNotificationCloseBtnValue? CloseBtnValue { get; set; }
@@ -57956,6 +61381,7 @@ public sealed class TNotification : TContentComponentBase
     /// 消息显示时长，单位：毫秒。值为 0 表示永久显示
     /// 默认值：3000
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -58100,6 +61526,7 @@ public sealed class TOption : TContentComponentBase
     /// <summary>
     /// 选项值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TOptionValueValue?；值域为 string | Number | bool | BigInt。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TOptionValueValue? Value { get; set; }
@@ -58153,6 +61580,7 @@ public sealed class TPagination : TContentComponentBase
     /// 当前页
     /// 默认值：1
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Current="@(32)" 或 Current="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
@@ -58168,6 +61596,7 @@ public sealed class TPagination : TContentComponentBase
     /// 折叠时最多显示页码按钮数
     /// 默认值：5
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FoldedMaxPageBtn="@(32)" 或 FoldedMaxPageBtn="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("foldedMaxPageBtn")]
     public Number? FoldedMaxPageBtn { get; set; }
@@ -58176,6 +61605,7 @@ public sealed class TPagination : TContentComponentBase
     /// 最多显示页码按钮数
     /// 默认值：10
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxPageBtn="@(32)" 或 MaxPageBtn="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxPageBtn")]
     public Number? MaxPageBtn { get; set; }
@@ -58192,6 +61622,7 @@ public sealed class TPagination : TContentComponentBase
     /// 每一页的数据量
     /// 默认值：10
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PageSize="@(32)" 或 PageSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pageSize")]
     public Number? PageSize { get; set; }
@@ -58271,6 +61702,7 @@ public sealed class TPagination : TContentComponentBase
     /// 数据总条数
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Total="@(32)" 或 Total="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("total")]
     public Number? Total { get; set; }
@@ -58301,6 +61733,7 @@ public sealed class TPagination : TContentComponentBase
     /// <summary>
     /// 当前页发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback<Number> OnCurrentChange { get; set; }
@@ -58308,6 +61741,7 @@ public sealed class TPagination : TContentComponentBase
     /// <summary>
     /// 分页大小发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onPageSizeChange")]
     public EventCallback<Number> OnPageSizeChange { get; set; }
@@ -58326,6 +61760,7 @@ public sealed class TPaginationMini : TContentComponentBase
     /// <summary>
     /// 按钮禁用配置
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPaginationMiniDisabledValue?；值域为 bool | TJumperDisabledConfig。变量用 Disabled="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TPaginationMiniDisabledValue? Disabled { get; set; }
@@ -58357,6 +61792,7 @@ public sealed class TPaginationMini : TContentComponentBase
     /// <summary>
     /// 提示文案配置，值为 `true` 显示默认文案；值为 `false` 不显示提示文案；值类型为对象则单独配置文案内容
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPaginationMiniTipsValue?；值域为 bool | TJumperTipsConfig。变量用 Tips="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tips")]
     public TPaginationMiniTipsValue? Tips { get; set; }
@@ -58398,6 +61834,7 @@ public sealed class TParagraph : TContentComponentBase
     /// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TParagraphEllipsisValue?；值域为 bool | TTypographyEllipsis。变量用 Ellipsis="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public TParagraphEllipsisValue? Ellipsis { get; set; }
@@ -58424,6 +61861,7 @@ public sealed class TPopconfirm : TContentComponentBase
     /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPopconfirmCancelBtnValue?；值域为 string | TdButtonProps。变量用 CancelBtnValue="@value"，并保持声明的分支类型。字符串用 CancelBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TPopconfirmCancelBtnValue? CancelBtnValue { get; set; }
@@ -58432,6 +61870,7 @@ public sealed class TPopconfirm : TContentComponentBase
     /// 确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPopconfirmConfirmBtnValue?；值域为 string | TdButtonProps。变量用 ConfirmBtnValue="@value"，并保持声明的分支类型。字符串用 ConfirmBtnValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TPopconfirmConfirmBtnValue? ConfirmBtnValue { get; set; }
@@ -58548,6 +61987,7 @@ public sealed class TPopup : TContentComponentBase
     /// 指定挂载节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：'body'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -58562,6 +62002,7 @@ public sealed class TPopup : TContentComponentBase
     /// <summary>
     /// 延时显示或隐藏浮层，[延迟显示的时间，延迟隐藏的时间]，单位：毫秒。如果只有一个时间，则表示显示和隐藏的延迟时间相同。示例 `'300'` 或者 `[200, 200]`。默认为：[250, 150]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPopupDelayValue?；值域为 Number | Number[]。数值用 Delay="@(32)"；变量用 Delay="@value"，无需 double 后缀。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("delay")]
     public TPopupDelayValue? Delay { get; set; }
@@ -58592,6 +62033,7 @@ public sealed class TPopup : TContentComponentBase
     /// <summary>
     /// 浮层类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TClassName?；值域为 TClassNameDictionary | TClassName[] | string。变量用 OverlayClassName="@value"，并保持声明的分支类型。字符串用 OverlayClassName="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; set; }
@@ -58599,6 +62041,7 @@ public sealed class TPopup : TContentComponentBase
     /// <summary>
     /// 浮层内容部分类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TClassName?；值域为 TClassNameDictionary | TClassName[] | string。变量用 OverlayInnerClassName="@value"，并保持声明的分支类型。字符串用 OverlayInnerClassName="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; set; }
@@ -58606,6 +62049,7 @@ public sealed class TPopup : TContentComponentBase
     /// <summary>
     /// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPopupOverlayInnerStyleValue?；值域为 TStyles | TPopupOverlayInnerStyleValueOption2。变量用 OverlayInnerStyle="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayInnerStyle")]
     public TPopupOverlayInnerStyleValue? OverlayInnerStyle { get; set; }
@@ -58613,6 +62057,7 @@ public sealed class TPopup : TContentComponentBase
     /// <summary>
     /// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPopupOverlayStyleValue?；值域为 TStyles | TPopupOverlayStyleValueOption2。变量用 OverlayStyle="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayStyle")]
     public TPopupOverlayStyleValue? OverlayStyle { get; set; }
@@ -58665,6 +62110,7 @@ public sealed class TPopup : TContentComponentBase
     /// <summary>
     /// 组件层级，Web 侧样式默认为 5500，移动端和小程序样式默认为 1500
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -58756,6 +62202,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 超出省略等所有浮层元素统一绑定到 `attach`，可根据实际情况调整挂载元素
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -58941,6 +62388,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTableFooterAffixedBottomValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 FooterAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("footerAffixedBottom")]
     public TPrimaryTableFooterAffixedBottomValue<T>? FooterAffixedBottom { get; set; }
@@ -58964,6 +62412,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性。
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTableHeaderAffixedTopValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 HeaderAffixedTop="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerAffixedTop")]
     public TPrimaryTableHeaderAffixedTopValue<T>? HeaderAffixedTop { get; set; }
@@ -58971,6 +62420,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTableHeightValue&lt;T&gt;?；值域为 string | Number。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public TPrimaryTableHeightValue<T>? Height { get; set; }
@@ -58985,6 +62435,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTableHorizontalScrollAffixedBottomValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 HorizontalScrollAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TPrimaryTableHorizontalScrollAffixedBottomValue<T>? HorizontalScrollAffixedBottom { get; set; }
@@ -59051,6 +62502,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTableMaxHeightValue&lt;T&gt;?；值域为 string | Number。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TPrimaryTableMaxHeightValue<T>? MaxHeight { get; set; }
@@ -59073,6 +62525,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTablePaginationAffixedBottomValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 PaginationAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("paginationAffixedBottom")]
     public TPrimaryTablePaginationAffixedBottomValue<T>? PaginationAffixedBottom { get; set; }
@@ -59100,6 +62553,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// 示例二：[{ draggable: true }, { title: '超出省略显示' }]。
     /// 示例三：() =&gt; [{ draggable: true }]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableRowAttributes&lt;T&gt;?；值域为 THTMLElementAttributes | TTableRowAttributesOption2&lt;T&gt; | TTableRowAttributes&lt;T&gt;[]。变量用 RowAttributes="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<T>? RowAttributes { get; set; }
@@ -59107,6 +62561,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
     /// </summary>
+    /// <remarks data-authoring="types">C# union TPrimaryTableRowClassNameValue&lt;T&gt;?；值域为 TClassNameDictionary | TClassName[] | string | TPrimaryTableRowClassNameValueOption2&lt;T&gt;。变量用 RowClassName="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public TPrimaryTableRowClassNameValue<T>? RowClassName { get; set; }
@@ -59196,6 +62651,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 排序控制。sortBy 排序字段；descending 是否进行降序排列。值为数组时，表示正进行多字段排序
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableSort?；值域为 TSortInfo | TSortInfo[]。变量用 Sort="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sort")]
     public TTableSort? Sort { get; set; }
@@ -59542,6 +62998,7 @@ public class TPrimaryTable<T> : TContentComponentBase
     /// <summary>
     /// 排序发生变化时触发。其中 sortBy 表示当前排序的字段，sortType 表示排序的方式，currentDataSource 表示 sorter 排序后的结果，col 表示列配置。sort 值类型为数组时表示多字段排序
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTableSort；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
@@ -59575,6 +63032,7 @@ public sealed class TProgress : TContentComponentBase
     /// 进度条颜色。示例：'#ED7B2F' 或 'orange' 或 `['#f00', '#0ff', '#f0f']` 或 `{ '0%': '#f00', '100%': '#0ff' }` 或  `{ from: '#000', to: '#000' }` 等
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TProgressColorValue?；值域为 string | string[] | VueDictionary&lt;string&gt;。变量用 Color="@value"，并保持声明的分支类型。字符串用 Color="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("color")]
     public TProgressColorValue? Color { get; set; }
@@ -59583,6 +63041,7 @@ public sealed class TProgress : TContentComponentBase
     /// 进度百分比，可自定义
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TProgressLabelValue?；值域为 string | bool。变量用 LabelValue="@value"，并保持声明的分支类型。字符串用 LabelValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public TProgressLabelValue? LabelValue { get; set; }
@@ -59591,6 +63050,7 @@ public sealed class TProgress : TContentComponentBase
     /// 进度条百分比
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Percentage="@(32)" 或 Percentage="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("percentage")]
     public Number? Percentage { get; set; }
@@ -59599,6 +63059,7 @@ public sealed class TProgress : TContentComponentBase
     /// 进度条尺寸，示例：small/medium/large/240。line 和 plump 主题只支持 small/medium。circle 主题尺寸映射 small(72)、medium(112)、large(160)并支持自定义数值
     /// 默认值：'medium'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TProgressSizeValue?；值域为 string | Number。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public TProgressSizeValue? Size { get; set; }
@@ -59613,6 +63074,7 @@ public sealed class TProgress : TContentComponentBase
     /// <summary>
     /// 进度条线宽。宽度数值不能超过 size 的一半，否则不能输出环形进度
     /// </summary>
+    /// <remarks data-authoring="types">C# union TProgressStrokeWidthValue?；值域为 string | Number。数值用 StrokeWidth="@(32)"；变量用 StrokeWidth="@value"，无需 double 后缀。字符串用 StrokeWidth="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public TProgressStrokeWidthValue? StrokeWidth { get; set; }
@@ -59688,6 +63150,7 @@ public sealed class TQRCode : TContentComponentBase
     /// 二维码中图片的大小
     /// 默认值：40
     /// </summary>
+    /// <remarks data-authoring="types">C# union TQRCodeIconSizeValue?；值域为 Number | TQRCodeIconSizeValueOption2。数值用 IconSize="@(32)"；变量用 IconSize="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("iconSize")]
     public TQRCodeIconSizeValue? IconSize { get; set; }
@@ -59704,6 +63167,7 @@ public sealed class TQRCode : TContentComponentBase
     /// 二维码大小
     /// 默认值：160
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Size="@(32)" 或 Size="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public Number? Size { get; set; }
@@ -60035,6 +63499,7 @@ public sealed class TRangeInput : TContentComponentBase
     /// <summary>
     /// 输入框高亮状态序号
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ActiveIndex="@(32)" 或 ActiveIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("activeIndex")]
     public Number? ActiveIndex { get; set; }
@@ -60058,6 +63523,7 @@ public sealed class TRangeInput : TContentComponentBase
     /// <summary>
     /// 是否禁用范围输入框
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRangeInputDisabledValue?；值域为 bool | bool[]。变量用 Disabled="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TRangeInputDisabledValue? Disabled { get; set; }
@@ -60065,6 +63531,7 @@ public sealed class TRangeInput : TContentComponentBase
     /// <summary>
     /// 指定输入框展示值的格式
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRangeInputFormatValue?；值域为 TInputFormatType | TInputFormatType[]。变量用 Format="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("format")]
     public TRangeInputFormatValue? Format { get; set; }
@@ -60072,6 +63539,7 @@ public sealed class TRangeInput : TContentComponentBase
     /// <summary>
     /// 透传 Input 输入框组件全部属性，数组第一项表示第一个输入框属性，第二项表示第二个输入框属性。示例：`[{ label: 'A', name: 'A-name' }, { label: 'B',  name: 'B-name' }]`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRangeInputInputPropsValue?；值域为 TdInputProps&lt;TInputValue&gt; | TdInputProps&lt;TInputValue&gt;[]。变量用 InputProps="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TRangeInputInputPropsValue? InputProps { get; set; }
@@ -60086,6 +63554,7 @@ public sealed class TRangeInput : TContentComponentBase
     /// <summary>
     /// 占位符，示例：'请输入' 或者 ['开始日期', '结束日期']
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRangeInputPlaceholderValue?；值域为 string | string[]。变量用 Placeholder="@value"，并保持声明的分支类型。字符串用 Placeholder="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public TRangeInputPlaceholderValue? Placeholder { get; set; }
@@ -60272,6 +63741,7 @@ public sealed class TRangeInputPopup : TContentComponentBase
     /// <summary>
     /// 是否禁用范围输入框，值为数组表示可分别控制某一个输入框是否禁用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRangeInputPopupDisabledValue?；值域为 bool | bool[]。变量用 Disabled="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TRangeInputPopupDisabledValue? Disabled { get; set; }
@@ -60406,6 +63876,7 @@ public sealed class TRate : TContentComponentBase
     /// 评分图标的颜色，样式中默认为 #ED7B2F。一个值表示设置选中高亮的五角星颜色，示例：[选中颜色]。数组则表示分别设置 选中高亮的五角星颜色 和 未选中暗灰的五角星颜色，[选中颜色，未选中颜色]。示例：['#ED7B2F', '#E3E6EB']
     /// 默认值：'#ED7B2F'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRateColorValue?；值域为 string | string[]。变量用 Color="@value"，并保持声明的分支类型。字符串用 Color="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("color")]
     public TRateColorValue? Color { get; set; }
@@ -60414,6 +63885,7 @@ public sealed class TRate : TContentComponentBase
     /// 评分的数量
     /// 默认值：5
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Count="@(32)" 或 Count="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("count")]
     public Number? Count { get; set; }
@@ -60429,6 +63901,7 @@ public sealed class TRate : TContentComponentBase
     /// 评分图标的间距
     /// 默认值：4
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Gap="@(32)" 或 Gap="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("gap")]
     public Number? Gap { get; set; }
@@ -60461,6 +63934,7 @@ public sealed class TRate : TContentComponentBase
     /// 选择评分的值
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Value="@(32)" 或 Value="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public Number? Value { get; set; }
@@ -60475,6 +63949,7 @@ public sealed class TRate : TContentComponentBase
     /// <summary>
     /// 评分数改变时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
@@ -60502,6 +63977,7 @@ public sealed class TRow : TContentComponentBase
     /// 栅格间隔，示例：`{ xs: 8, sm: 16, md: 24, lg: 32, xl: 32, xxl: 40 }`。当数据类型为 Number 和 Object 时，用于指定横向间隔。当数据类型为数组时，第一个参数为横向间隔，第二个参数为纵向间隔， [水平间隔, 垂直间隔]
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# union TRowGutterValue?；值域为 Number | TGutterObject | TRowGutterValueOption3Item[]。数值用 Gutter="@(32)"；变量用 Gutter="@value"，无需 double 后缀。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("gutter")]
     public TRowGutterValue? Gutter { get; set; }
@@ -60648,6 +64124,7 @@ public class TSelect<T> : TContentComponentBase
     /// 用于控制多选数量，值为 0 则不限制
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -60656,6 +64133,7 @@ public class TSelect<T> : TContentComponentBase
     /// 最小折叠数量，用于多选情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinCollapsedNum="@(32)" 或 MinCollapsedNum="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
@@ -60803,6 +64281,7 @@ public class TSelect<T> : TContentComponentBase
     /// <summary>
     /// 选中值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSelectValue&lt;TSelectOption&gt;?；值域为 string | Number | bool | BigInt | TdOptionProps | TSelectOptionGroup | TJsonObject | TSelectValue&lt;TSelectOption&gt;[]。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TSelectValue<TSelectOption>? Value { get; set; }
@@ -60810,6 +64289,7 @@ public class TSelect<T> : TContentComponentBase
     /// <summary>
     /// 自定义选中项呈现的内容
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSelectValueDisplayValue&lt;T&gt;?；值域为 string | Number | bool | BigInt | TdOptionProps | TSelectOptionGroup | TJsonObject | TSelectValue&lt;TSelectOption&gt;[]。变量用 ValueDisplayValue="@value"，并保持声明的分支类型。字符串用 ValueDisplayValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public TSelectValueDisplayValue<T>? ValueDisplayValue { get; set; }
@@ -60909,6 +64389,7 @@ public class TSelect<T> : TContentComponentBase
     /// <summary>
     /// 选中值变化时触发。`context.trigger` 表示触发变化的来源；`context.selectedOptions` 表示选中值的完整对象，数组长度一定和 `value` 相同；`context.option` 表示当前操作的选项，不一定存在
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSelectValue&lt;TSelectOption&gt;；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TSelectValue<TSelectOption>> OnChange { get; set; }
@@ -60923,6 +64404,7 @@ public class TSelect<T> : TContentComponentBase
     /// <summary>
     /// 当选择新创建的条目时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSelectCreateEventValue&lt;T&gt;；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onCreate")]
     public EventCallback<TSelectCreateEventValue<T>> OnCreate { get; set; }
@@ -61074,6 +64556,7 @@ public sealed class TSelectInput : TContentComponentBase
     /// 最小折叠数量，用于标签数量过多的情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinCollapsedNum="@(32)" 或 MinCollapsedNum="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
@@ -61184,6 +64667,7 @@ public sealed class TSelectInput : TContentComponentBase
     /// <summary>
     /// 全部标签值。值为数组表示多个标签，值为非数组表示单个数值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSelectInputValue?；值域为 string | Number | bool | Date | TJsonObject | TJsonValue[] | TSelectInputValue[]。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TSelectInputValue? Value { get; set; }
@@ -61261,6 +64745,7 @@ public sealed class TSelectInput : TContentComponentBase
     /// <summary>
     /// 失去焦点时触发，`context.inputValue` 表示输入框的值；`context.tagInputValue` 表示标签输入框的值
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSelectInputValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TSelectInputValue> OnBlur { get; set; }
@@ -61275,6 +64760,7 @@ public sealed class TSelectInput : TContentComponentBase
     /// <summary>
     /// 按键按下 Enter 时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSelectInputValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TSelectInputValue> OnEnter { get; set; }
@@ -61282,6 +64768,7 @@ public sealed class TSelectInput : TContentComponentBase
     /// <summary>
     /// 聚焦时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSelectInputValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TSelectInputValue> OnFocus { get; set; }
@@ -61358,6 +64845,7 @@ public sealed class TSkeleton : TContentComponentBase
     /// 延迟显示加载效果的时间，用于防止请求速度过快引起的加载闪烁，单位：毫秒
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Delay="@(32)" 或 Delay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
@@ -61415,6 +64903,7 @@ public sealed class TSlider : TContentComponentBase
     /// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSliderInputNumberPropsValue?；值域为 bool | TdInputNumberProps&lt;TInputNumberValue&gt;。变量用 InputNumberProps="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inputNumberProps")]
     public TSliderInputNumberPropsValue? InputNumberProps { get; set; }
@@ -61426,6 +64915,7 @@ public sealed class TSlider : TContentComponentBase
     /// 值类型为函数时，参数 `value` 标识滑块值，参数 `position=start` 表示范围滑块的起始值，参数 `position=end` 表示范围滑块的终点值
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSliderLabelValue?；值域为 string | bool。变量用 LabelValue="@value"，并保持声明的分支类型。字符串用 LabelValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public TSliderLabelValue? LabelValue { get; set; }
@@ -61441,6 +64931,7 @@ public sealed class TSlider : TContentComponentBase
     /// <summary>
     /// 刻度标记，示例：[0, 10, 40, 200] 或者 `{ 10: (val) =&gt; val + '%', 50: (h) =&gt; &lt;button&gt;50&lt;/button&gt; }`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSliderMarksValue?；值域为 Number[] | TSliderMarks。变量用 Marks="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("marks")]
     public TSliderMarksValue? Marks { get; set; }
@@ -61449,6 +64940,7 @@ public sealed class TSlider : TContentComponentBase
     /// 滑块范围最大值
     /// 默认值：100
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -61457,6 +64949,7 @@ public sealed class TSlider : TContentComponentBase
     /// 滑块范围最小值
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Min="@(32)" 或 Min="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
@@ -61481,6 +64974,7 @@ public sealed class TSlider : TContentComponentBase
     /// 步长
     /// 默认值：1
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Step="@(32)" 或 Step="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("step")]
     public Number? Step { get; set; }
@@ -61496,6 +64990,7 @@ public sealed class TSlider : TContentComponentBase
     /// 滑块值
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSliderValue?；值域为 Number | Number[]。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TSliderValue? Value { get; set; }
@@ -61514,6 +65009,7 @@ public sealed class TSlider : TContentComponentBase
     /// <summary>
     /// 滑块值变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSliderValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TSliderValue> OnChange { get; set; }
@@ -61521,6 +65017,7 @@ public sealed class TSlider : TContentComponentBase
     /// <summary>
     /// 松开拖动`mouseup` 或点击滑块条时触发，适合不希望在拖动滑块过程频繁触发回调的场景实用
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TSliderValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChangeEnd")]
     public EventCallback<TSliderValue> OnChangeEnd { get; set; }
@@ -61570,6 +65067,7 @@ public sealed class TSpace : TContentComponentBase
     /// 间距大小
     /// 默认值：'medium'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TSpaceSizeValue?；值域为 Number | string | TSizeEnum | TSpaceSize[]。变量用 Size="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public TSpaceSizeValue? Size { get; set; }
@@ -61618,6 +65116,7 @@ public sealed class TStatistic : TContentComponentBase
     /// <summary>
     /// 小数保留位数
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 DecimalPlaces="@(32)" 或 DecimalPlaces="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("decimalPlaces")]
     public Number? DecimalPlaces { get; set; }
@@ -61698,6 +65197,7 @@ public sealed class TStatistic : TContentComponentBase
     /// <summary>
     /// 数值显示的值
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Value="@(32)" 或 Value="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public Number? Value { get; set; }
@@ -61790,6 +65290,7 @@ public sealed class TStepItem : TContentComponentBase
     /// <summary>
     /// 当前步骤标识
     /// </summary>
+    /// <remarks data-authoring="types">C# union TStepItemValueValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TStepItemValueValue? Value { get; set; }
@@ -61839,6 +65340,7 @@ public sealed class TSteps : TContentComponentBase
     /// <summary>
     /// 当前步骤，即整个步骤条进度。默认根据步骤下标判断步骤的完成状态，当前步骤为进行中，当前步骤之前的步骤为已完成，当前步骤之后的步骤为未开始。如果每个步骤没有设置 value，current 值为步骤长度则表示所有步骤已完成。如果每个步骤设置了自定义 value，则 current = 'FINISH' 表示所有状态完成
     /// </summary>
+    /// <remarks data-authoring="types">C# union TStepsCurrentValue?；值域为 string | Number。数值用 Current="@(32)"；变量用 Current="@value"，无需 double 后缀。字符串用 Current="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("current")]
     public TStepsCurrentValue? Current { get; set; }
@@ -61892,6 +65394,7 @@ public sealed class TSteps : TContentComponentBase
     /// <summary>
     /// 当前步骤发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TStepsChangeEventCurrent；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TStepsChangeEventCurrent> OnChange { get; set; }
@@ -62017,6 +65520,7 @@ public sealed class TStickyTool : TContentComponentBase
     /// <summary>
     /// 宽度
     /// </summary>
+    /// <remarks data-authoring="types">C# union TStickyToolWidthValue?；值域为 string | Number。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public TStickyToolWidthValue? Width { get; set; }
@@ -62077,6 +65581,7 @@ public sealed class TSubmenu : TContentComponentBase
     /// <summary>
     /// 菜单项唯一标识
     /// </summary>
+    /// <remarks data-authoring="types">C# union TMenuValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
@@ -62133,6 +65638,7 @@ public sealed class TSwiper : TContentComponentBase
     /// 卡片模式下非当前展示轮播图的缩放比例
     /// 默认值：210/332
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 CardScale="@(32)" 或 CardScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
@@ -62141,6 +65647,7 @@ public sealed class TSwiper : TContentComponentBase
     /// 当前轮播在哪一项（下标）
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Current="@(32)" 或 Current="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
@@ -62157,6 +65664,7 @@ public sealed class TSwiper : TContentComponentBase
     /// 滑动动画时长
     /// 默认值：300
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -62164,6 +65672,7 @@ public sealed class TSwiper : TContentComponentBase
     /// <summary>
     /// 当使用垂直方向滚动时的高度
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -62172,6 +65681,7 @@ public sealed class TSwiper : TContentComponentBase
     /// 轮播间隔时间
     /// 默认值：5000
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Interval="@(32)" 或 Interval="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
@@ -62232,6 +65742,7 @@ public sealed class TSwiper : TContentComponentBase
     /// <summary>
     /// 轮播切换时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
@@ -62267,6 +65778,7 @@ public sealed class TSwiperItem : TContentComponentBase
     /// 卡片模式下非当前展示轮播图的缩放比例
     /// 默认值：210/332
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 CardScale="@(32)" 或 CardScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
@@ -62275,6 +65787,7 @@ public sealed class TSwiperItem : TContentComponentBase
     /// 当前轮播在哪一项（下标）
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Current="@(32)" 或 Current="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
@@ -62291,6 +65804,7 @@ public sealed class TSwiperItem : TContentComponentBase
     /// 滑动动画时长
     /// 默认值：300
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -62298,6 +65812,7 @@ public sealed class TSwiperItem : TContentComponentBase
     /// <summary>
     /// 当使用垂直方向滚动时的高度
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -62306,6 +65821,7 @@ public sealed class TSwiperItem : TContentComponentBase
     /// 轮播间隔时间
     /// 默认值：5000
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Interval="@(32)" 或 Interval="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
@@ -62366,6 +65882,7 @@ public sealed class TSwiperItem : TContentComponentBase
     /// <summary>
     /// 轮播切换时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
@@ -62523,6 +66040,7 @@ public sealed class TTabPanel : TContentComponentBase
     /// <summary>
     /// 选项卡的值，唯一标识
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTabValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TTabValue? Value { get; set; }
@@ -62593,6 +66111,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 超出省略等所有浮层元素统一绑定到 `attach`，可根据实际情况调整挂载元素
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -62778,6 +66297,7 @@ public class TTable<T> : TContentComponentBase
     /// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableFooterAffixedBottomValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 FooterAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("footerAffixedBottom")]
     public TTableFooterAffixedBottomValue<T>? FooterAffixedBottom { get; set; }
@@ -62801,6 +66321,7 @@ public class TTable<T> : TContentComponentBase
     /// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性。
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableHeaderAffixedTopValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 HeaderAffixedTop="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerAffixedTop")]
     public TTableHeaderAffixedTopValue<T>? HeaderAffixedTop { get; set; }
@@ -62808,6 +66329,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableHeightValue&lt;T&gt;?；值域为 string | Number。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public TTableHeightValue<T>? Height { get; set; }
@@ -62822,6 +66344,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableHorizontalScrollAffixedBottomValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 HorizontalScrollAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TTableHorizontalScrollAffixedBottomValue<T>? HorizontalScrollAffixedBottom { get; set; }
@@ -62888,6 +66411,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableMaxHeightValue&lt;T&gt;?；值域为 string | Number。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TTableMaxHeightValue<T>? MaxHeight { get; set; }
@@ -62910,6 +66434,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTablePaginationAffixedBottomValue&lt;T&gt;?；值域为 bool | TdAffixProps。变量用 PaginationAffixedBottom="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("paginationAffixedBottom")]
     public TTablePaginationAffixedBottomValue<T>? PaginationAffixedBottom { get; set; }
@@ -62937,6 +66462,7 @@ public class TTable<T> : TContentComponentBase
     /// 示例二：[{ draggable: true }, { title: '超出省略显示' }]。
     /// 示例三：() =&gt; [{ draggable: true }]
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableRowAttributes&lt;T&gt;?；值域为 THTMLElementAttributes | TTableRowAttributesOption2&lt;T&gt; | TTableRowAttributes&lt;T&gt;[]。变量用 RowAttributes="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<T>? RowAttributes { get; set; }
@@ -62944,6 +66470,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableRowClassNameValue&lt;T&gt;?；值域为 TClassNameDictionary | TClassName[] | string | TTableRowClassNameValueOption2&lt;T&gt;。变量用 RowClassName="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public TTableRowClassNameValue<T>? RowClassName { get; set; }
@@ -63033,6 +66560,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 排序控制。sortBy 排序字段；descending 是否进行降序排列。值为数组时，表示正进行多字段排序
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTableSort?；值域为 TSortInfo | TSortInfo[]。变量用 Sort="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sort")]
     public TTableSort? Sort { get; set; }
@@ -63379,6 +66907,7 @@ public class TTable<T> : TContentComponentBase
     /// <summary>
     /// 排序发生变化时触发。其中 sortBy 表示当前排序的字段，sortType 表示排序的方式，currentDataSource 表示 sorter 排序后的结果，col 表示列配置。sort 值类型为数组时表示多字段排序
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTableSort；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
@@ -63481,6 +67010,7 @@ public sealed class TTabs : TContentComponentBase
     /// <summary>
     /// 激活的选项卡值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTabValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TTabValue? Value { get; set; }
@@ -63502,6 +67032,7 @@ public sealed class TTabs : TContentComponentBase
     /// <summary>
     /// 激活的选项卡发生变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTabValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTabValue> OnChange { get; set; }
@@ -63565,6 +67096,7 @@ public sealed class TTag : TContentComponentBase
     /// <summary>
     /// 标签最大宽度，宽度超出后会出现省略号。示例：'50px' / 80
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTagMaxWidthValue?；值域为 string | Number。数值用 MaxWidth="@(32)"；变量用 MaxWidth="@value"，无需 double 后缀。字符串用 MaxWidth="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public TTagMaxWidthValue? MaxWidth { get; set; }
@@ -63596,6 +67128,7 @@ public sealed class TTag : TContentComponentBase
     /// <summary>
     /// 标签标题，在标签hover时展示，默认为标签内容
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTagTitleValue?；值域为 string | bool。变量用 Title="@value"，并保持声明的分支类型。字符串用 Title="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("title")]
     public TTagTitleValue? Title { get; set; }
@@ -63719,6 +67252,7 @@ public sealed class TTagInput : TContentComponentBase
     /// <summary>
     /// 最大允许输入的标签数量
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -63727,6 +67261,7 @@ public sealed class TTagInput : TContentComponentBase
     /// 最小折叠数量，用于标签数量过多的情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinCollapsedNum="@(32)" 或 MinCollapsedNum="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
@@ -63973,6 +67508,7 @@ public sealed class TText : TContentComponentBase
     /// 是否可复制，可通过配置参数自定义复制操作的具体功能和样式
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTextCopyableValue?；值域为 bool | TTypographyCopyable。变量用 Copyable="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("copyable")]
     public TTextCopyableValue? Copyable { get; set; }
@@ -63997,6 +67533,7 @@ public sealed class TText : TContentComponentBase
     /// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTextEllipsisValue?；值域为 bool | TTypographyEllipsis。变量用 Ellipsis="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public TTextEllipsisValue? Ellipsis { get; set; }
@@ -64021,6 +67558,7 @@ public sealed class TText : TContentComponentBase
     /// 是否添加标记样式，默认为黄色，可通过配置颜色修改标记样式，如#0052D9
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTextMarkValue?；值域为 string | bool。变量用 Mark="@value"，并保持声明的分支类型。字符串用 Mark="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("mark")]
     public TTextMarkValue? Mark { get; set; }
@@ -64086,6 +67624,7 @@ public sealed class TTextarea : TContentComponentBase
     /// 高度自动撑开。 autosize = true 表示组件高度自动撑开，同时，依旧允许手动拖高度。如果设置了 autosize.maxRows 或者 autosize.minRows 则不允许手动调整高度
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTextareaAutosizeValue?；值域为 bool | TTextareaAutosizeValueOption2。变量用 Autosize="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("autosize")]
     public TTextareaAutosizeValue? Autosize { get; set; }
@@ -64100,6 +67639,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 用户最多可以输入的字符个数，一个中文汉字表示两个字符长度
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Maxcharacter="@(32)" 或 Maxcharacter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; set; }
@@ -64107,6 +67647,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 用户最多可以输入的字符个数
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTextareaMaxlengthValue?；值域为 string | Number。数值用 Maxlength="@(32)"；变量用 Maxlength="@value"，无需 double 后缀。字符串用 Maxlength="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public TTextareaMaxlengthValue? Maxlength { get; set; }
@@ -64151,6 +67692,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 文本框值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTextareaValue?；值域为 string | Number。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TTextareaValue? Value { get; set; }
@@ -64165,6 +67707,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 失去焦点时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTextareaValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TTextareaValue> OnBlur { get; set; }
@@ -64172,6 +67715,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 输入内容变化时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTextareaValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTextareaValue> OnChange { get; set; }
@@ -64179,6 +67723,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 获得焦点时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTextareaValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TTextareaValue> OnFocus { get; set; }
@@ -64186,6 +67731,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 键盘按下时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTextareaValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onKeydown")]
     public EventCallback<TTextareaValue> OnKeydown { get; set; }
@@ -64193,6 +67739,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTextareaValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onKeypress")]
     public EventCallback<TTextareaValue> OnKeypress { get; set; }
@@ -64200,6 +67747,7 @@ public sealed class TTextarea : TContentComponentBase
     /// <summary>
     /// 释放键盘时触发
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTextareaValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onKeyup")]
     public EventCallback<TTextareaValue> OnKeyup { get; set; }
@@ -64508,6 +68056,7 @@ public sealed class TTimeRangePicker : TContentComponentBase
     /// <summary>
     /// 是否禁用组件，值为数组表示可分别控制开始日期和结束日期是否禁用
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTimeRangePickerDisabledValue?；值域为 bool | bool[]。变量用 Disabled="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TTimeRangePickerDisabledValue? Disabled { get; set; }
@@ -64538,6 +68087,7 @@ public sealed class TTimeRangePicker : TContentComponentBase
     /// <summary>
     /// 占位符，值为数组表示可分别为开始日期和结束日期设置占位符
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTimeRangePickerPlaceholderValue?；值域为 string | string[]。变量用 Placeholder="@value"，并保持声明的分支类型。字符串用 Placeholder="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public TTimeRangePickerPlaceholderValue? Placeholder { get; set; }
@@ -64805,6 +68355,7 @@ public sealed class TTitle : TContentComponentBase
     /// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTitleEllipsisValue?；值域为 bool | TTypographyEllipsis。变量用 Ellipsis="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public TTitleEllipsisValue? Ellipsis { get; set; }
@@ -64839,6 +68390,7 @@ public sealed class TTooltip : TContentComponentBase
     /// 指定挂载节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
     /// 默认值：'body'
     /// </summary>
+    /// <remarks data-authoring="types">C# union TAttachNode?；值域为 string | TAttachNodeOption2。变量用 Attach="@value"，并保持声明的分支类型。字符串用 Attach="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
@@ -64853,6 +68405,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 【议案讨论中】延迟出现提示，用于异步加载提示信息需要延迟显示的业务场景下
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Delay="@(32)" 或 Delay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
@@ -64875,6 +68428,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 用于设置提示默认显示多长时间之后消失，初始第一次有效，单位：毫秒
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -64890,6 +68444,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 浮层类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TClassName?；值域为 TClassNameDictionary | TClassName[] | string。变量用 OverlayClassName="@value"，并保持声明的分支类型。字符串用 OverlayClassName="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; set; }
@@ -64897,6 +68452,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 浮层内容部分类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TClassName?；值域为 TClassNameDictionary | TClassName[] | string。变量用 OverlayInnerClassName="@value"，并保持声明的分支类型。字符串用 OverlayInnerClassName="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; set; }
@@ -64904,6 +68460,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTooltipOverlayInnerStyleValue?；值域为 TStyles | TTooltipOverlayInnerStyleValueOption2。变量用 OverlayInnerStyle="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayInnerStyle")]
     public TTooltipOverlayInnerStyleValue? OverlayInnerStyle { get; set; }
@@ -64911,6 +68468,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTooltipOverlayStyleValue?；值域为 TStyles | TTooltipOverlayStyleValueOption2。变量用 OverlayStyle="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("overlayStyle")]
     public TTooltipOverlayStyleValue? OverlayStyle { get; set; }
@@ -64919,6 +68477,7 @@ public sealed class TTooltip : TContentComponentBase
     /// 浮层出现位置
     /// 默认值：top
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTooltipPlacementValue?；值域为 TTooltipPlacementValueOption1 | TPopupPlacement。变量用 Placement="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("placement")]
     public TTooltipPlacementValue? Placement { get; set; }
@@ -64971,6 +68530,7 @@ public sealed class TTooltip : TContentComponentBase
     /// <summary>
     /// 组件层级，Web 侧样式默认为 5500，移动端和小程序样式默认为 1500
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -65062,6 +68622,7 @@ public class TTransfer<T> : TContentComponentBase
     /// <summary>
     /// 禁用全部操作：搜索、选中、移动、分页等。[源列表, 目标列表]，示例：[true, false] 或者 true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTransferDisabledValue&lt;T&gt;?；值域为 bool | bool[]。变量用 Disabled="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TTransferDisabledValue<T>? Disabled { get; set; }
@@ -65070,6 +68631,7 @@ public class TTransfer<T> : TContentComponentBase
     /// 列表为空时呈现的内容。值类型为数组，则表示分别控制源列表和目标列表数据为空的呈现内容
     /// 默认值：''
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTransferEmptyValue&lt;T&gt;?；值域为 string | RenderFragment | TEmptyType[]。变量用 EmptyValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("empty")]
     public TTransferEmptyValue<T>? EmptyValue { get; set; }
@@ -65098,6 +68660,7 @@ public class TTransfer<T> : TContentComponentBase
     /// <summary>
     /// 分页配置，值为空则不显示。具体 API 参考分页组件。值类型为数组，表示可分别控制源列表和目标列表分页组件
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTransferPaginationValue&lt;T&gt;?；值域为 TdPaginationProps | TdPaginationProps[]。变量用 Pagination="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("pagination")]
     public TTransferPaginationValue<T>? Pagination { get; set; }
@@ -65106,6 +68669,7 @@ public class TTransfer<T> : TContentComponentBase
     /// 搜索框配置，值为 false 表示不显示搜索框；值为 true 表示显示默认搜索框；值类型为对象，用于透传 Props 到 Input 组件；值类型为数组，则分别表示控制两侧搜索框
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTransferSearchValue&lt;T&gt;?；值域为 bool | TdInputProps&lt;TInputValue&gt; | TSearchOption[]。变量用 Search="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("search")]
     public TTransferSearchValue<T>? Search { get; set; }
@@ -65114,6 +68678,7 @@ public class TTransfer<T> : TContentComponentBase
     /// 是否显示全选，值类型为数组则表示分别控制源列表和目标列表
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTransferShowCheckAllValue&lt;T&gt;?；值域为 bool | bool[]。变量用 ShowCheckAll="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showCheckAll")]
     public TTransferShowCheckAllValue<T>? ShowCheckAll { get; set; }
@@ -65329,6 +68894,7 @@ public class TTree<T> : TContentComponentBase
     /// 禁用复选框，可支持禁用不同的行
     /// 默认值：false
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTreeDisableCheckValue&lt;T&gt;?；值域为 bool | TTreeDisableCheckValueOption2&lt;T&gt;。变量用 DisableCheck="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disableCheck")]
     public TTreeDisableCheckValue<T>? DisableCheck { get; set; }
@@ -65367,6 +68933,7 @@ public class TTree<T> : TContentComponentBase
     /// 默认展开的级别，第一层为 0
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ExpandLevel="@(32)" 或 ExpandLevel="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("expandLevel")]
     public Number? ExpandLevel { get; set; }
@@ -65413,6 +68980,7 @@ public class TTree<T> : TContentComponentBase
     /// <summary>
     /// 树的高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定树的高度，建议使用 `maxHeight`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTreeHeightValue&lt;T&gt;?；值域为 string | Number。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public TTreeHeightValue<T>? Height { get; set; }
@@ -65444,6 +69012,7 @@ public class TTree<T> : TContentComponentBase
     /// 如果期望只有点击复选框才选中，而点击节点不选中，可以使用 `label` 自定义节点，然后加上点击事件 `e.preventDefault()`，通过调整自定义节点的宽度和高度决定禁止点击选中的范围
     /// 默认值：true
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTreeLabelValue&lt;T&gt;?；值域为 string | bool。变量用 LabelValue="@value"，并保持声明的分支类型。字符串用 LabelValue="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public TTreeLabelValue<T>? LabelValue { get; set; }
@@ -65474,6 +69043,7 @@ public class TTree<T> : TContentComponentBase
     /// <summary>
     /// 树的最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTreeMaxHeightValue&lt;T&gt;?；值域为 string | Number。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TTreeMaxHeightValue<T>? MaxHeight { get; set; }
@@ -65761,6 +69331,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     /// 用于控制多选数量，值为 0 则不限制
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -65769,6 +69340,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     /// 最小折叠数量，用于多选情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinCollapsedNum="@(32)" 或 MinCollapsedNum="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
@@ -65883,6 +69455,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     /// <summary>
     /// 选中值
     /// </summary>
+    /// <remarks data-authoring="types">C# union TTreeSelectValue?；值域为 string | Number | TJsonObject | TTreeSelectValue[]。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public TTreeSelectValue? Value { get; set; }
@@ -65984,6 +69557,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     /// <summary>
     /// 节点选中状态变化时触发，`context.node` 表示当前变化的选项，`context. trigger` 表示触发变化的来源
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 TTreeSelectValue；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTreeSelectValue> OnChange { get; set; }
@@ -66125,6 +69699,7 @@ public class TUpload<T> : TContentComponentBase
     /// <summary>
     /// 上传请求所需的额外字段，默认字段有 `file`，表示文件信息。可以添加额外的文件名字段，如：`{file_name: &quot;custom-file-name.txt&quot;}`。`autoUpload=true` 时有效。也可以使用 `formatRequest` 完全自定义上传请求的字段
     /// </summary>
+    /// <remarks data-authoring="types">C# union TUploadDataValue&lt;T&gt;?；值域为 VueDictionary&lt;TJsonValue&gt; | TUploadDataValueOption2&lt;T&gt;。变量用 Data="@value"，并保持声明的分支类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("data")]
     public TUploadDataValue<T>? Data { get; set; }
@@ -66227,6 +69802,7 @@ public class TUpload<T> : TContentComponentBase
     /// 用于控制文件上传数量，值为 0 则不限制。注意，单文件上传场景，请勿设置 `max` 属性
     /// 默认值：0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -66242,6 +69818,7 @@ public class TUpload<T> : TContentComponentBase
     /// <summary>
     /// 模拟进度间隔时间，单位：毫秒，默认：300。由于原始的上传请求，小文件上传进度只有 0 和 100，故而新增模拟进度，每间隔 `mockProgressDuration` 毫秒刷新一次模拟进度。小文件设置小一点，大文件设置大一点。注意：当 `useMockProgress` 为真时，当前设置有效
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MockProgressDuration="@(32)" 或 MockProgressDuration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("mockProgressDuration")]
     public Number? MockProgressDuration { get; set; }
@@ -66308,6 +69885,7 @@ public class TUpload<T> : TContentComponentBase
     /// <summary>
     /// 图片文件大小限制，默认单位 KB。可选单位有：`'B' | 'KB' | 'MB' | 'GB'`。示例一：`1000`。示例二：`{ size: 2, unit: 'MB', message: '图片大小不超过 {sizeLimit} MB' }`
     /// </summary>
+    /// <remarks data-authoring="types">C# union TUploadSizeLimitValue&lt;T&gt;?；值域为 Number | TSizeLimitObj。数值用 SizeLimit="@(32)"；变量用 SizeLimit="@value"，无需 double 后缀。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sizeLimit")]
     public TUploadSizeLimitValue<T>? SizeLimit { get; set; }
@@ -66564,6 +70142,7 @@ public sealed class TWatermark : TContentComponentBase
     /// 水印整体透明度，取值范围 [0-1]
     /// 默认值：1
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Alpha="@(32)" 或 Alpha="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("alpha")]
     public Number? Alpha { get; set; }
@@ -66578,6 +70157,7 @@ public sealed class TWatermark : TContentComponentBase
     /// <summary>
     /// 水印高度
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -66594,6 +70174,7 @@ public sealed class TWatermark : TContentComponentBase
     /// 行间距，只作用在多行（`content` 配置为数组）情况下
     /// 默认值：16
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 LineSpace="@(32)" 或 LineSpace="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("lineSpace")]
     public Number? LineSpace { get; set; }
@@ -66610,6 +70191,7 @@ public sealed class TWatermark : TContentComponentBase
     /// 水印发生运动位移的间隙，单位：毫秒
     /// 默认值：3000
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MoveInterval="@(32)" 或 MoveInterval="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("moveInterval")]
     public Number? MoveInterval { get; set; }
@@ -66633,6 +70215,7 @@ public sealed class TWatermark : TContentComponentBase
     /// 水印旋转的角度，单位 °
     /// 默认值：-22
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Rotate="@(32)" 或 Rotate="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("rotate")]
     public Number? Rotate { get; set; }
@@ -66640,6 +70223,7 @@ public sealed class TWatermark : TContentComponentBase
     /// <summary>
     /// 水印内容，需要显示多行情况下可配置为数组
     /// </summary>
+    /// <remarks data-authoring="types">C# union TWatermarkWatermarkContentValue?；值域为 TWatermarkText | TWatermarkImage | TWatermarkWatermarkContentValueOption3Item[]。变量用 WatermarkContent="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("watermarkContent")]
     public TWatermarkWatermarkContentValue? WatermarkContent { get; set; }
@@ -66647,6 +70231,7 @@ public sealed class TWatermark : TContentComponentBase
     /// <summary>
     /// 水印宽度
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Width="@(32)" 或 Width="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
@@ -66654,6 +70239,7 @@ public sealed class TWatermark : TContentComponentBase
     /// <summary>
     /// 水印之间的水平间距
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 X="@(32)" 或 X="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("x")]
     public Number? X { get; set; }
@@ -66661,6 +70247,7 @@ public sealed class TWatermark : TContentComponentBase
     /// <summary>
     /// 水印之间的垂直间距
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Y="@(32)" 或 Y="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("y")]
     public Number? Y { get; set; }
@@ -66668,6 +70255,7 @@ public sealed class TWatermark : TContentComponentBase
     /// <summary>
     /// 水印元素的 `z-index`，默认值写在 CSS 中
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }

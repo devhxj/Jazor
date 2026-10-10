@@ -131,6 +131,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 错误状态下显示的消息。
     /// Messages displayed in the error state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 ErrorMessages="@value"，并保持声明的分支类型。字符串用 ErrorMessages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyMessagesValue? ErrorMessages { get; set; }
 
@@ -138,6 +139,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 显示的提示消息。
     /// The hint messages to display.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyMessagesValue?；值域为 string | string[]。变量用 Messages="@value"，并保持声明的分支类型。字符串用 Messages="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyMessagesValue? Messages { get; set; }
 
@@ -145,6 +147,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 是否隐藏提示详细信息。
     /// Whether to hide the details/hints section.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyHideDetailsValue?；值域为 bool | VuetifyHideDetailsMode。变量用 HideDetails="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsMode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifyHideDetailsValue? HideDetails { get; set; }
 
@@ -208,6 +211,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 下拉选项的数据源。
     /// The data source for the dropdown items.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItems?；值域为 VuetifySelectItemValue[]。变量用 Items="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifySelectItems? Items { get; set; }
 
@@ -215,6 +219,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 指定选项对象中用作标题的字段名。
     /// The property name used as the item title.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemTitle="@value"，并保持声明的分支类型。字符串用 ItemTitle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifySelectItemKey? ItemTitle { get; set; }
 
@@ -222,6 +227,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 指定选项对象中用作值的字段名。
     /// The property name used as the item value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemValue="@value"，并保持声明的分支类型。字符串用 ItemValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifySelectItemKey? ItemValue { get; set; }
 
@@ -229,6 +235,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 指定选项对象中用作子级的字段名。
     /// The property name used as the item children.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemKey?；值域为 string | string[] | VuetifySelectItemKeySelector | bool。变量用 ItemChildren="@value"，并保持声明的分支类型。字符串用 ItemChildren="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsSelector、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifySelectItemKey? ItemChildren { get; set; }
 
@@ -236,6 +243,7 @@ public abstract class VSelectLikeComponentBase : ComponentBase
     /// 指定传递给每个选项的额外属性。
     /// The selector for additional props passed to each item.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifySelectItemPropsSelector?；值域为 string | string[] | VuetifySelectItemPropsCallback | bool。变量用 ItemProps="@value"，并保持声明的分支类型。字符串用 ItemProps="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsPath、value?.AsCallback、value?.AsBool；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     public VuetifySelectItemPropsSelector? ItemProps { get; set; }
 

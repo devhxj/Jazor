@@ -21,6 +21,7 @@ public sealed class ElAffix : ElContentComponentBase
     /// <summary>
     /// offset distance
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -42,6 +43,7 @@ public sealed class ElAffix : ElContentComponentBase
     /// <summary>
     /// `z-index` of affix
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -56,6 +58,7 @@ public sealed class ElAffix : ElContentComponentBase
     /// <summary>
     /// which element the affix element appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -298,6 +301,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
     /// <summary>
     /// debounce delay when typing, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Debounce="@(32)" 或 Debounce="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
@@ -312,6 +316,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
     /// <summary>
     /// a method to fetch input suggestions. When suggestions are ready, invoke `callback(data:[])` to return them to Autocomplete
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElAutocompleteFetchSuggestionsValue?；值域为 ElAutocompleteSuggestionItem[] | ElAutocompleteFetchSuggestionsCallbackOnly | ElAutocompleteFetchSuggestionsAsyncCallback。变量用 FetchSuggestions="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSuggestions、value?.AsCallback、value?.AsAsyncCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("fetchSuggestions")]
     public ElAutocompleteFetchSuggestionsValue? FetchSuggestions { get; set; }
@@ -354,6 +359,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
     /// <summary>
     /// custom class name for autocomplete's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 PopperClass="@value"，并保持声明的分支类型。字符串用 PopperClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
@@ -361,6 +367,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
     /// <summary>
     /// custom style for autocomplete's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -389,6 +396,7 @@ public sealed class ElAutocomplete : ElContentComponentBase
     /// <summary>
     /// which select dropdown appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -532,6 +540,7 @@ public sealed class ElAvatar : ElContentComponentBase
     /// <summary>
     /// representation type to icon, more info on icon component.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -539,6 +548,7 @@ public sealed class ElAvatar : ElContentComponentBase
     /// <summary>
     /// avatar size.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -598,6 +608,7 @@ public sealed class ElAvatarGroup : ElComponentBase
     /// <summary>
     /// control the size of avatars in this avatar-group
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -626,6 +637,7 @@ public sealed class ElAvatarGroup : ElComponentBase
     /// <summary>
     /// the max avatars number to be shown. To use this, `collapse-avatars` must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseAvatars="@(32)" 或 MaxCollapseAvatars="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseAvatars")]
     public Number? MaxCollapseAvatars { get; set; }
@@ -654,6 +666,7 @@ public sealed class ElAvatarGroup : ElComponentBase
     /// <summary>
     /// custom style for tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -668,6 +681,7 @@ public sealed class ElAvatarGroup : ElComponentBase
     /// <summary>
     /// custom style for the collapse-avatar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 CollapseStyle="@value"，并保持声明的分支类型。字符串用 CollapseStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("collapseStyle")]
     public VueStyleValue? CollapseStyle { get; set; }
@@ -692,6 +706,7 @@ public sealed class ElBacktop : ElContentComponentBase
     /// <summary>
     /// the button will not show until the scroll height reaches this value.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 VisibilityHeight="@(32)" 或 VisibilityHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("visibilityHeight")]
     public Number? VisibilityHeight { get; set; }
@@ -699,6 +714,7 @@ public sealed class ElBacktop : ElContentComponentBase
     /// <summary>
     /// right distance.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Right="@(32)" 或 Right="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("right")]
     public Number? Right { get; set; }
@@ -706,6 +722,7 @@ public sealed class ElBacktop : ElContentComponentBase
     /// <summary>
     /// bottom distance.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Bottom="@(32)" 或 Bottom="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("bottom")]
     public Number? Bottom { get; set; }
@@ -730,6 +747,7 @@ public sealed class ElBadge : ElContentComponentBase
     /// <summary>
     /// display value.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VueStringNumberValue? Value { get; set; }
@@ -737,6 +755,7 @@ public sealed class ElBadge : ElContentComponentBase
     /// <summary>
     /// maximum value, shows `{max}+` when exceeded. Only works if value is a number.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -779,6 +798,7 @@ public sealed class ElBadge : ElContentComponentBase
     /// <summary>
     /// offset of badge
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueNumberPair?；值域为 Number[]。变量用 Offset="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsValues；不匹配返回 null，0/false 保留。带标签的重叠分支不能从擦除后的 JS 值恢复精确标签；这类投影需要明确的宿主映射。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public VueNumberPair? Offset { get; set; }
@@ -786,6 +806,7 @@ public sealed class ElBadge : ElContentComponentBase
     /// <summary>
     /// custom style of badge
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 BadgeStyle="@value"，并保持声明的分支类型。字符串用 BadgeStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("badgeStyle")]
     public VueStyleValue? BadgeStyle { get; set; }
@@ -824,6 +845,7 @@ public sealed class ElBreadcrumb : ElContentComponentBase
     /// <summary>
     /// icon component of icon separator
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 SeparatorIcon="@value"，并保持声明的分支类型。字符串用 SeparatorIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("separatorIcon")]
     public VueStringComponentValue? SeparatorIcon { get; set; }
@@ -841,6 +863,7 @@ public sealed class ElBreadcrumbItem : ElContentComponentBase
     /// <summary>
     /// target route of the link, same as `to` of `vue-router`
     /// </summary>
+    /// <remarks data-authoring="types">C# union RouteLocationRaw?；值域为 string | RouteLocationAsPath | RouteLocationAsRelative。变量用 To="@value"，并保持声明的分支类型。字符串用 To="text"；数字字符串保持 string。投影：value?.AsString、value?.AsPath、value?.AsRelative；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("to")]
     public RouteLocationRaw? To { get; set; }
@@ -935,6 +958,7 @@ public sealed class ElButton : ElContentComponentBase
     /// <summary>
     /// customize loading icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 LoadingIcon="@value"，并保持声明的分支类型。字符串用 LoadingIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("loadingIcon")]
     public VueStringComponentValue? LoadingIcon { get; set; }
@@ -949,6 +973,7 @@ public sealed class ElButton : ElContentComponentBase
     /// <summary>
     /// icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -991,6 +1016,7 @@ public sealed class ElButton : ElContentComponentBase
     /// <summary>
     /// custom element tag
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Tag="@value"，并保持声明的分支类型。字符串用 Tag="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tag")]
     public VueStringComponentValue? Tag { get; set; }
@@ -1067,6 +1093,7 @@ public sealed class ElCalendar : ElComponentBase
     /// <summary>
     /// time range, including start time and end time. Start time must be start day of week, end time must be end day of week, the time span cannot exceed two months.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDatePair?；值域为 Date[]。变量用 Range="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsValues；不匹配返回 null，0/false 保留。带标签的重叠分支不能从擦除后的 JS 值恢复精确标签；这类投影需要明确的宿主映射。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("range")]
     public VueDatePair? Range { get; set; }
@@ -1133,6 +1160,7 @@ public sealed class ElCard : ElContentComponentBase
     /// <summary>
     /// CSS style of card body
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 BodyStyle="@value"，并保持声明的分支类型。字符串用 BodyStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("bodyStyle")]
     public VueStyleValue? BodyStyle { get; set; }
@@ -1199,6 +1227,7 @@ public sealed class ElCarousel : ElContentComponentBase
     /// <summary>
     /// index of the initially active slide (starting from 0)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 InitialIndex="@(32)" 或 InitialIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
@@ -1220,6 +1249,7 @@ public sealed class ElCarousel : ElContentComponentBase
     /// <summary>
     /// interval of the auto loop, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Interval="@(32)" 或 Interval="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
@@ -1248,6 +1278,7 @@ public sealed class ElCarousel : ElContentComponentBase
     /// <summary>
     /// when type is card, scaled size of secondary cards
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 CardScale="@(32)" 或 CardScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
@@ -1307,6 +1338,7 @@ public sealed class ElCarouselItem : ElContentComponentBase
     /// <summary>
     /// text content for the corresponding indicator
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
@@ -1324,6 +1356,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectArrayableValue?；值域为 bool | double | string | VueProps | VueBooleanStringNumberObjectValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -1373,6 +1406,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -1401,6 +1435,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// max height of collapse-tags tooltip.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxCollapseTagsTooltipHeight="@(32)"；变量用 MaxCollapseTagsTooltipHeight="@value"，无需 double 后缀。字符串用 MaxCollapseTagsTooltipHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTagsTooltipHeight")]
     public VueStringNumberValue? MaxCollapseTagsTooltipHeight { get; set; }
@@ -1429,6 +1464,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// debounce delay when typing filter keyword, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Debounce="@(32)" 或 Debounce="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
@@ -1450,6 +1486,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// custom style for Cascader's dropdown and tags' tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -1492,6 +1529,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// The max tags number to be shown. To use this, `collapse-tags` must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseTags="@(32)" 或 MaxCollapseTags="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
@@ -1506,6 +1544,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -1555,6 +1594,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// whether the width of the suggestion panel is the same as the input, if the value is `number`, then the width is fixed
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanNumberValue?；值域为 bool | double。数值用 FitInputWidth="@(32)"；变量用 FitInputWidth="@value"，无需 double 后缀。投影：value?.AsBool、value?.AsNumber；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public VueBooleanNumberValue? FitInputWidth { get; set; }
@@ -1562,6 +1602,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// node height for virtual scrolling (px)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemSize="@(32)" 或 ItemSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
@@ -1569,6 +1610,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// menu height for virtual scrolling (px)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -1667,6 +1709,7 @@ public sealed class ElCascader : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberObjectArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
@@ -1684,6 +1727,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectArrayableValue?；值域为 bool | double | string | VueProps | VueBooleanStringNumberObjectValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -1712,6 +1756,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
     /// <summary>
     /// node height for virtual scrolling (px)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemSize="@(32)" 或 ItemSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
@@ -1719,6 +1764,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
     /// <summary>
     /// menu height for virtual scrolling (px)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -1740,6 +1786,7 @@ public sealed class ElCascaderPanel : ElContentComponentBase
     /// <summary>
     /// triggers when the binding value changes
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberObjectArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
@@ -1809,6 +1856,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -1816,6 +1864,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// value of the Checkbox when used inside a `checkbox-group`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectValue?；值域为 bool | double | string | VueProps。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
@@ -1823,6 +1872,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// label of the Checkbox when used inside a `checkbox-group`. If there's no value, `label` will act as `value`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectValue?；值域为 bool | double | string | VueProps。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberObjectValue? Label { get; set; }
@@ -1830,6 +1880,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// value of the Checkbox if it's checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 TrueValue="@(32)"；变量用 TrueValue="@value"，无需 double 后缀。字符串用 TrueValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueValue")]
     public VueStringNumberValue? TrueValue { get; set; }
@@ -1837,6 +1888,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// value of the Checkbox if it's not checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 FalseValue="@(32)"；变量用 FalseValue="@value"，无需 double 后缀。字符串用 FalseValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseValue")]
     public VueStringNumberValue? FalseValue { get; set; }
@@ -1893,6 +1945,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// input tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -1921,6 +1974,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// value of the Checkbox if it's checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 TrueLabel="@(32)"；变量用 TrueLabel="@value"，无需 double 后缀。字符串用 TrueLabel="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueLabel")]
     public VueStringNumberValue? TrueLabel { get; set; }
@@ -1928,6 +1982,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// value of the Checkbox if it's not checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 FalseLabel="@(32)"；变量用 FalseLabel="@value"，无需 double 后缀。字符串用 FalseLabel="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseLabel")]
     public VueStringNumberValue? FalseLabel { get; set; }
@@ -1949,6 +2004,7 @@ public sealed class ElCheckbox : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberValue?；保持与模型相同的强类型。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -1966,6 +2022,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
     /// <summary>
     /// value of the checkbox when used inside a `checkbox-group`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectValue?；值域为 bool | double | string | VueProps。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
@@ -1973,6 +2030,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
     /// <summary>
     /// label of the checkbox when used inside a `checkbox-group`. If there's no value, `label` will act as `value`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectValue?；值域为 bool | double | string | VueProps。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberObjectValue? Label { get; set; }
@@ -1980,6 +2038,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
     /// <summary>
     /// value of the checkbox if it's checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 TrueValue="@(32)"；变量用 TrueValue="@value"，无需 double 后缀。字符串用 TrueValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueValue")]
     public VueStringNumberValue? TrueValue { get; set; }
@@ -1987,6 +2046,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
     /// <summary>
     /// value of the checkbox if it's not checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 FalseValue="@(32)"；变量用 FalseValue="@value"，无需 double 后缀。字符串用 FalseValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseValue")]
     public VueStringNumberValue? FalseValue { get; set; }
@@ -2015,6 +2075,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
     /// <summary>
     /// value of the checkbox if it's checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 TrueLabel="@(32)"；变量用 TrueLabel="@value"，无需 double 后缀。字符串用 TrueLabel="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trueLabel")]
     public VueStringNumberValue? TrueLabel { get; set; }
@@ -2022,6 +2083,7 @@ public sealed class ElCheckboxButton : ElContentComponentBase
     /// <summary>
     /// value of the checkbox if it's not checked
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 FalseLabel="@(32)"；变量用 FalseLabel="@value"，无需 double 后缀。字符串用 FalseLabel="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("falseLabel")]
     public VueStringNumberValue? FalseLabel { get; set; }
@@ -2060,6 +2122,7 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
     /// <summary>
     /// minimum number of checkbox checked
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Min="@(32)" 或 Min="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
@@ -2067,6 +2130,7 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
     /// <summary>
     /// maximum number of checkbox checked
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -2161,6 +2225,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// number of column the grid spans
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Span="@(32)" 或 Span="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
@@ -2168,6 +2233,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// number of spacing on the left side of the grid
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -2175,6 +2241,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// number of columns that grid moves to the right
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Push="@(32)" 或 Push="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("push")]
     public Number? Push { get; set; }
@@ -2182,6 +2249,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// number of columns that grid moves to the left
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Pull="@(32)" 或 Pull="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pull")]
     public Number? Pull { get; set; }
@@ -2189,6 +2257,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// `&lt;768px` Responsive columns or column props object
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElColSizeValue?；值域为 double | ElColSizeProps。数值用 Xs="@(32)"；变量用 Xs="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("xs")]
     public ElColSizeValue? Xs { get; set; }
@@ -2196,6 +2265,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// `≥768px` Responsive columns or column props object
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElColSizeValue?；值域为 double | ElColSizeProps。数值用 Sm="@(32)"；变量用 Sm="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sm")]
     public ElColSizeValue? Sm { get; set; }
@@ -2203,6 +2273,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// `≥992px` Responsive columns or column props object
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElColSizeValue?；值域为 double | ElColSizeProps。数值用 Md="@(32)"；变量用 Md="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("md")]
     public ElColSizeValue? Md { get; set; }
@@ -2210,6 +2281,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// `≥1200px` Responsive columns or column props object
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElColSizeValue?；值域为 double | ElColSizeProps。数值用 Lg="@(32)"；变量用 Lg="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lg")]
     public ElColSizeValue? Lg { get; set; }
@@ -2217,6 +2289,7 @@ public sealed class ElCol : ElContentComponentBase
     /// <summary>
     /// `≥1920px` Responsive columns or column props object
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElColSizeValue?；值域为 double | ElColSizeProps。数值用 Xl="@(32)"；变量用 Xl="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("xl")]
     public ElColSizeValue? Xl { get; set; }
@@ -2241,6 +2314,7 @@ public sealed class ElCollapse : ElContentComponentBase
     /// <summary>
     /// currently active panel, the type is `string` in accordion mode, otherwise it is `array`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberArrayableValue?；值域为 double | string | VueStringNumberValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberArrayableValue? ModelValue { get; set; }
@@ -2276,6 +2350,7 @@ public sealed class ElCollapse : ElContentComponentBase
     /// <summary>
     /// currently active panel, the type is `string` in accordion mode, otherwise it is `array`
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberArrayableValue?> ModelValueChanged { get; set; }
@@ -2293,6 +2368,7 @@ public sealed class ElCollapseItem : ElComponentBase
     /// <summary>
     /// unique identification of the panel
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Name="@(32)"；变量用 Name="@value"，无需 double 后缀。字符串用 Name="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringNumberValue? Name { get; set; }
@@ -2307,6 +2383,7 @@ public sealed class ElCollapseItem : ElComponentBase
     /// <summary>
     /// icon of the collapse item
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -2383,6 +2460,7 @@ public sealed class ElColorPicker : ElComponentBase
     /// <summary>
     /// custom class name for ColorPicker's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 PopperClass="@value"，并保持声明的分支类型。字符串用 PopperClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
@@ -2390,6 +2468,7 @@ public sealed class ElColorPicker : ElComponentBase
     /// <summary>
     /// custom style for ColorPicker's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -2411,6 +2490,7 @@ public sealed class ElColorPicker : ElComponentBase
     /// <summary>
     /// ColorPicker tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -2432,6 +2512,7 @@ public sealed class ElColorPicker : ElComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -2467,6 +2548,7 @@ public sealed class ElColorPicker : ElComponentBase
     /// <summary>
     /// which element the color-picker panel appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -2575,6 +2657,7 @@ public sealed class ElColorPickerPanel : ElComponentBase
     /// <summary>
     /// class names will be passed to hue-slider
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 HueSliderClass="@value"，并保持声明的分支类型。字符串用 HueSliderClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("hueSliderClass")]
     public VueClassValue? HueSliderClass { get; set; }
@@ -2582,6 +2665,7 @@ public sealed class ElColorPickerPanel : ElComponentBase
     /// <summary>
     /// styles will be passed to hue-slider
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 HueSliderStyle="@value"，并保持声明的分支类型。字符串用 HueSliderStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("hueSliderStyle")]
     public VueStyleValue? HueSliderStyle { get; set; }
@@ -2627,6 +2711,7 @@ public sealed class ElConfigProvider : ElContentComponentBase
     /// <summary>
     /// global Initial zIndex
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -2683,6 +2768,7 @@ public sealed class ElConfigProvider : ElContentComponentBase
     /// <summary>
     /// global clear return value
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -2790,6 +2876,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// binding value, if it is an `range` picker, the length of the array should be 2
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberDateArrayableValue?；值域为 double | string | Date | Number[] | string[] | Date[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsNumbers、value?.AsStrings、value?.AsDates、value?.AsNumber、value?.AsString、value?.AsDate；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
@@ -2874,6 +2961,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// custom style for DatePicker's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -2895,6 +2983,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// optional, default date of the calendar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
@@ -2902,6 +2991,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// optional, the time value to use when selecting date range
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultTime="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
@@ -2916,6 +3006,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// same as `id` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringSingleOrRangeValue?；值域为 string | string[]。变量用 Id="@value"，并保持声明的分支类型。字符串用 Id="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
@@ -2923,6 +3014,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// same as `name` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringSingleOrRangeValue?；值域为 string | string[]。变量用 Name="@value"，并保持声明的分支类型。字符串用 Name="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
@@ -2944,6 +3036,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// custom prefix icon component. By default, if the value of `type` is `TimeLikeType`, the value is `Clock`, else is `Calendar`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 PrefixIcon="@value"，并保持声明的分支类型。字符串用 PrefixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
@@ -2951,6 +3044,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -3000,6 +3094,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -3147,6 +3242,7 @@ public sealed class ElDatePicker : ElContentComponentBase
     /// <summary>
     /// binding value, if it is an `range` picker, the length of the array should be 2
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberDateArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsNumbers、value?.AsStrings、value?.AsDates、value?.AsNumber、value?.AsString、value?.AsDate；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
@@ -3249,6 +3345,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// custom style for DatePicker's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -3270,6 +3367,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// optional, default date of the calendar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
@@ -3277,6 +3375,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// optional, the time value to use when selecting date range
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultTime="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
@@ -3291,6 +3390,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// same as `id` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringSingleOrRangeValue?；值域为 string | string[]。变量用 Id="@value"，并保持声明的分支类型。字符串用 Id="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
@@ -3298,6 +3398,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// same as `name` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringSingleOrRangeValue?；值域为 string | string[]。变量用 Name="@value"，并保持声明的分支类型。字符串用 Name="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
@@ -3319,6 +3420,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// custom prefix icon component. By default, if the value of `type` is `TimeLikeType`, the value is `Clock`, else is `Calendar`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 PrefixIcon="@value"，并保持声明的分支类型。字符串用 PrefixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
@@ -3326,6 +3428,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -3375,6 +3478,7 @@ public sealed class ElStringDatePicker : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -3539,6 +3643,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
     /// <summary>
     /// binding value, if it is an `range` picker, the length of the array should be 2
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberDateArrayableValue?；值域为 double | string | Date | Number[] | string[] | Date[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsNumbers、value?.AsStrings、value?.AsDates、value?.AsNumber、value?.AsString、value?.AsDate；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
@@ -3581,6 +3686,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
     /// <summary>
     /// optional, default date of the calendar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
@@ -3588,6 +3694,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
     /// <summary>
     /// optional, the time value to use when selecting date range
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultTime="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
@@ -3721,6 +3828,7 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
     /// <summary>
     /// binding value, if it is an `range` picker, the length of the array should be 2
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberDateArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsNumbers、value?.AsStrings、value?.AsDates、value?.AsNumber、value?.AsString、value?.AsDate；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
@@ -3745,6 +3853,7 @@ public sealed class ElDescriptions : ElContentComponentBase
     /// <summary>
     /// numbers of `Descriptions Item` in one line
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Column="@(32)" 或 Column="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("column")]
     public Number? Column { get; set; }
@@ -3780,6 +3889,7 @@ public sealed class ElDescriptions : ElContentComponentBase
     /// <summary>
     /// label width of every column
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LabelWidth="@(32)"；变量用 LabelWidth="@value"，无需 double 后缀。字符串用 LabelWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
@@ -3818,6 +3928,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
     /// <summary>
     /// colspan of column
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Span="@(32)" 或 Span="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
@@ -3825,6 +3936,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
     /// <summary>
     /// the number of rows a cell should span
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Rowspan="@(32)" 或 Rowspan="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("rowspan")]
     public Number? Rowspan { get; set; }
@@ -3832,6 +3944,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
     /// <summary>
     /// column width, the width of the same column in different rows is set by the max value (If no `border`, width contains label and content)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -3839,6 +3952,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
     /// <summary>
     /// column minimum width, columns with `width` has a fixed width, while columns with `min-width` has a width that is distributed in proportion (If no`border`, width contains label and content)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -3846,6 +3960,7 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
     /// <summary>
     /// column label width, if not set, it will be the same as the width of the column. Higher priority than the `label-width` of `Descriptions`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LabelWidth="@(32)"；变量用 LabelWidth="@value"，无需 double 后缀。字符串用 LabelWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
@@ -3912,6 +4027,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// width of Dialog, default is 50%
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -3982,6 +4098,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// which element the Dialog appends to. Will override `append-to-body`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -3996,6 +4113,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// the Time(milliseconds) before open
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 OpenDelay="@(32)" 或 OpenDelay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("openDelay")]
     public Number? OpenDelay { get; set; }
@@ -4003,6 +4121,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// the Time(milliseconds) before close
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 CloseDelay="@(32)" 或 CloseDelay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("closeDelay")]
     public Number? CloseDelay { get; set; }
@@ -4073,6 +4192,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// custom close icon, default is Close
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 CloseIcon="@value"，并保持声明的分支类型。字符串用 CloseIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("closeIcon")]
     public VueStringComponentValue? CloseIcon { get; set; }
@@ -4080,6 +4200,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// same as z-index in native CSS, z-order of dialog
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -4094,6 +4215,7 @@ public sealed class ElDialog : ElContentComponentBase
     /// <summary>
     /// custom transition configuration for dialog animation. Can be a string (transition name) or an object with Vue transition props
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTransitionValue?；值域为 string | VueTransitionProps。变量用 Transition="@value"，并保持声明的分支类型。字符串用 Transition="text"；数字字符串保持 string。投影：value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("transition")]
     public VueTransitionValue? Transition { get; set; }
@@ -4233,6 +4355,7 @@ public sealed class ElDrawer : ElContentComponentBase
     /// <summary>
     /// which element the Drawer appends to. Will override `append-to-body`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -4268,6 +4391,7 @@ public sealed class ElDrawer : ElContentComponentBase
     /// <summary>
     /// Time(milliseconds) before open
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 OpenDelay="@(32)" 或 OpenDelay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("openDelay")]
     public Number? OpenDelay { get; set; }
@@ -4275,6 +4399,7 @@ public sealed class ElDrawer : ElContentComponentBase
     /// <summary>
     /// Time(milliseconds) before close
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 CloseDelay="@(32)" 或 CloseDelay="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("closeDelay")]
     public Number? CloseDelay { get; set; }
@@ -4324,6 +4449,7 @@ public sealed class ElDrawer : ElContentComponentBase
     /// <summary>
     /// Drawer's size, if Drawer is horizontal mode, it effects the width property, otherwise it effects the height property, when size is `number` type, it describes the size by unit of pixels; when size is `string` type, it should be used with `x%` notation, other wise it will be interpreted to pixel unit
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -4373,6 +4499,7 @@ public sealed class ElDrawer : ElContentComponentBase
     /// <summary>
     /// set z-index
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -4516,6 +4643,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// the max height of menu
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -4551,6 +4679,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// how to trigger
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElDropdownTriggerValue?；值域为 ElDropdownTriggerType | ElDropdownTriggerType[]。变量用 Trigger="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElDropdownTriggerValue? Trigger { get; set; }
@@ -4572,6 +4701,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// indicates the reference element to which the dropdown is attached
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 VirtualRef="@value"，并保持声明的分支类型。字符串用 VirtualRef="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
@@ -4593,6 +4723,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// delay time before show a dropdown (only works when trigger is `hover`)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ShowTimeout="@(32)" 或 ShowTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
@@ -4600,6 +4731,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// delay time before hide a dropdown (only works when trigger is `hover`)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideTimeout="@(32)" 或 HideTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
@@ -4614,6 +4746,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// [tabindex](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex) of Dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -4621,6 +4754,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// custom class name for Dropdown's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 PopperClass="@value"，并保持声明的分支类型。字符串用 PopperClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
@@ -4628,6 +4762,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// custom style for Dropdown's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -4649,6 +4784,7 @@ public sealed class ElDropdown : ElContentComponentBase
     /// <summary>
     /// which element the dropdown CONTENT appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -4723,6 +4859,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// the max height of menu
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -4758,6 +4895,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// how to trigger
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElDropdownTriggerValue?；值域为 ElDropdownTriggerType | ElDropdownTriggerType[]。变量用 Trigger="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElDropdownTriggerValue? Trigger { get; set; }
@@ -4779,6 +4917,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// indicates the reference element to which the dropdown is attached
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 VirtualRef="@value"，并保持声明的分支类型。字符串用 VirtualRef="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
@@ -4800,6 +4939,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// delay time before show a dropdown (only works when trigger is `hover`)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ShowTimeout="@(32)" 或 ShowTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
@@ -4807,6 +4947,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// delay time before hide a dropdown (only works when trigger is `hover`)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideTimeout="@(32)" 或 HideTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
@@ -4821,6 +4962,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// [tabindex](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex) of Dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -4828,6 +4970,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// custom class name for Dropdown's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 PopperClass="@value"，并保持声明的分支类型。字符串用 PopperClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
@@ -4835,6 +4978,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// custom style for Dropdown's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -4856,6 +5000,7 @@ public sealed class ElTypedDropdown<TCommand> : ElContentComponentBase
     /// <summary>
     /// which element the dropdown CONTENT appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -4908,6 +5053,7 @@ public sealed class ElDropdownItem : ElContentComponentBase
     /// <summary>
     /// a command to be dispatched to Dropdown's `command` callback
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberObjectValue?；值域为 double | string | VueProps。数值用 Command="@(32)"；变量用 Command="@value"，无需 double 后缀。字符串用 Command="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("command")]
     public VueStringNumberObjectValue? Command { get; set; }
@@ -4929,6 +5075,7 @@ public sealed class ElDropdownItem : ElContentComponentBase
     /// <summary>
     /// custom icon
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -4975,6 +5122,7 @@ public sealed class ElTypedDropdownItem<TCommand> : ElContentComponentBase
     /// <summary>
     /// custom icon
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -5016,6 +5164,7 @@ public sealed class ElEmpty : ElContentComponentBase
     /// <summary>
     /// image size (width) of empty
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ImageSize="@(32)" 或 ImageSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("imageSize")]
     public Number? ImageSize { get; set; }
@@ -5099,6 +5248,7 @@ public sealed class ElForm : ElContentComponentBase
     /// <summary>
     /// Width of label, e.g. `'50px'`. All its direct child form items will inherit this value. `auto` is supported.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LabelWidth="@(32)"；变量用 LabelWidth="@value"，无需 double 后缀。字符串用 LabelWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
@@ -5176,6 +5326,7 @@ public sealed class ElForm : ElContentComponentBase
     /// <summary>
     /// When validation fails, it scrolls to the first error item based on the scrollIntoView option. [scrollIntoView](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView).
     /// </summary>
+    /// <remarks data-authoring="types">C# union ScrollIntoViewArg?；值域为 bool | ScrollIntoViewOptions。变量用 ScrollIntoViewOptions="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsScrollIntoViewOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrollIntoViewOptions")]
     public ScrollIntoViewArg? ScrollIntoViewOptions { get; set; }
@@ -5200,6 +5351,7 @@ public sealed class ElFormItem : ElContentComponentBase
     /// <summary>
     /// A key of `model`. It could be a path of the property (e.g `a.b.0` or `['a', 'b', '0']`). In the use of `validate` and `resetFields` method, the attribute is required.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringOrStringsValue?；值域为 string | string[]。变量用 Prop="@value"，并保持声明的分支类型。字符串用 Prop="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prop")]
     public VueStringOrStringsValue? Prop { get; set; }
@@ -5221,6 +5373,7 @@ public sealed class ElFormItem : ElContentComponentBase
     /// <summary>
     /// Width of label, e.g. `'50px'`. `'auto'` is supported.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LabelWidth="@(32)"；变量用 LabelWidth="@value"，无需 double 后缀。字符串用 LabelWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
@@ -5235,6 +5388,7 @@ public sealed class ElFormItem : ElContentComponentBase
     /// <summary>
     /// Validation rules of form, see the [following table](#formitemrule), more advanced usage at [async-validator](https://github.com/yiminghe/async-validator).
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElFormItemRules?；值域为 ElFormItemRule | ElFormItemRule[]。变量用 Rules="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rules")]
     public ElFormItemRules? Rules { get; set; }
@@ -5332,6 +5486,7 @@ public sealed class ElIcon : ElContentComponentBase
     /// <summary>
     /// SVG icon size, size x size
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -5384,6 +5539,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// the container to add scroll listener when using lazy load. By default, the container to add scroll listener when using lazy load.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringHtmlElementValue?；值域为 string | HTMLElement。变量用 ScrollContainer="@value"，并保持声明的分支类型。字符串用 ScrollContainer="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrollContainer")]
     public VueStringHtmlElementValue? ScrollContainer { get; set; }
@@ -5419,6 +5575,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// set image preview z-index.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -5426,6 +5583,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// initial preview image index, less than the length of `url-list`.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 InitialIndex="@(32)" 或 InitialIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
@@ -5454,6 +5612,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// the zoom rate of the image viewer zoom event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZoomRate="@(32)" 或 ZoomRate="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zoomRate")]
     public Number? ZoomRate { get; set; }
@@ -5461,6 +5620,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// the preview image scale.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Scale="@(32)" 或 Scale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("scale")]
     public Number? Scale { get; set; }
@@ -5468,6 +5628,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// the min scale of the image viewer zoom event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinScale="@(32)" 或 MinScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minScale")]
     public Number? MinScale { get; set; }
@@ -5475,6 +5636,7 @@ public sealed class ElImage : ElComponentBase
     /// <summary>
     /// the max scale of the image viewer zoom event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxScale="@(32)" 或 MaxScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxScale")]
     public Number? MaxScale { get; set; }
@@ -5555,6 +5717,7 @@ public sealed class ElImageViewer : ElComponentBase
     /// <summary>
     /// preview backdrop z-index.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ZIndex="@(32)"；变量用 ZIndex="@value"，无需 double 后缀。字符串用 ZIndex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
@@ -5562,6 +5725,7 @@ public sealed class ElImageViewer : ElComponentBase
     /// <summary>
     /// the initial preview image index, less than or equal to the length of `url-list`.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 InitialIndex="@(32)" 或 InitialIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
@@ -5590,6 +5754,7 @@ public sealed class ElImageViewer : ElComponentBase
     /// <summary>
     /// the zoom rate of the image viewer zoom event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZoomRate="@(32)" 或 ZoomRate="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zoomRate")]
     public Number? ZoomRate { get; set; }
@@ -5597,6 +5762,7 @@ public sealed class ElImageViewer : ElComponentBase
     /// <summary>
     /// the preview image scale.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Scale="@(32)" 或 Scale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("scale")]
     public Number? Scale { get; set; }
@@ -5604,6 +5770,7 @@ public sealed class ElImageViewer : ElComponentBase
     /// <summary>
     /// the min scale of the image viewer zoom event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinScale="@(32)" 或 MinScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minScale")]
     public Number? MinScale { get; set; }
@@ -5611,6 +5778,7 @@ public sealed class ElImageViewer : ElComponentBase
     /// <summary>
     /// the max scale of the image viewer zoom event.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxScale="@(32)" 或 MaxScale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxScale")]
     public Number? MaxScale { get; set; }
@@ -5705,6 +5873,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -5719,6 +5888,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// same as `maxlength` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Maxlength="@(32)"；变量用 Maxlength="@value"，无需 double 后缀。字符串用 Maxlength="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public VueStringNumberValue? Maxlength { get; set; }
@@ -5726,6 +5896,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// same as `minlength` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Minlength="@(32)"；变量用 Minlength="@value"，无需 double 后缀。字符串用 Minlength="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minlength")]
     public VueStringNumberValue? Minlength { get; set; }
@@ -5761,6 +5932,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -5803,6 +5975,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// prefix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 PrefixIcon="@value"，并保持声明的分支类型。字符串用 PrefixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
@@ -5810,6 +5983,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// suffix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 SuffixIcon="@value"，并保持声明的分支类型。字符串用 SuffixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
@@ -5817,6 +5991,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// number of rows of textarea, only works when `type` is 'textarea'
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Rows="@(32)" 或 Rows="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("rows")]
     public Number? Rows { get; set; }
@@ -5824,6 +5999,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// whether textarea has an adaptive height, only works when `type` is 'textarea'. Can accept an object, e.g. `{ minRows: 2, maxRows: 6 }`
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElInputAutoSize?；值域为 bool | ElInputAutoSizeOptions。变量用 Autosize="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("autosize")]
     public ElInputAutoSize? Autosize { get; set; }
@@ -5852,6 +6028,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// same as `max` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Max="@(32)"；变量用 Max="@value"，无需 double 后缀。字符串用 Max="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
@@ -5859,6 +6036,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// same as `min` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Min="@(32)"；变量用 Min="@value"，无需 double 后缀。字符串用 Min="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
@@ -5866,6 +6044,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// same as `step` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Step="@(32)"；变量用 Step="@value"，无需 double 后缀。字符串用 Step="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("step")]
     public VueStringNumberValue? Step { get; set; }
@@ -5901,6 +6080,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// input tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -5915,6 +6095,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// the style of the input element or textarea element
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 InputStyle="@value"，并保持声明的分支类型。字符串用 InputStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inputStyle")]
     public VueStyleValue? InputStyle { get; set; }
@@ -6055,6 +6236,7 @@ public sealed class ElInput : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberValue?；保持与模型相同的强类型。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
@@ -6072,6 +6254,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ModelValue="@(32)" 或 ModelValue="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
@@ -6079,6 +6262,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// the minimum allowed value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Min="@(32)" 或 Min="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
@@ -6086,6 +6270,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// the maximum allowed value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -6093,6 +6278,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// incremental step
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Step="@(32)" 或 Step="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("step")]
     public Number? Step { get; set; }
@@ -6107,6 +6293,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// precision of input value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Precision="@(32)" 或 Precision="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("precision")]
     public Number? Precision { get; set; }
@@ -6177,6 +6364,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// value should be set when input box is cleared
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -6219,6 +6407,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// same as `tabindex` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -6289,6 +6478,7 @@ public sealed class ElInputNumber : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number?；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
@@ -6306,6 +6496,7 @@ public sealed class ElInputOtp : ElComponentBase
     /// <summary>
     /// The value of the OTP fields. Since numbers must not have leading zeros, `modelValue` is allowed to be a number only during initialization.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -6313,6 +6504,7 @@ public sealed class ElInputOtp : ElComponentBase
     /// <summary>
     /// The OTP fields length
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Length="@(32)" 或 Length="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("length")]
     public Number? Length { get; set; }
@@ -6362,6 +6554,7 @@ public sealed class ElInputOtp : ElComponentBase
     /// <summary>
     /// The separator between OTP fields
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElInputOtpSeparatorValue?；值域为 string | IVNode | ElInputOtpSeparatorRenderer。变量用 Separator="@value"，并保持声明的分支类型。字符串用 Separator="text"；数字字符串保持 string。投影：value?.AsString、value?.AsVNode、value?.AsRenderer；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("separator")]
     public ElInputOtpSeparatorValue? Separator { get; set; }
@@ -6404,6 +6597,7 @@ public sealed class ElInputOtp : ElComponentBase
     /// <summary>
     /// Triggers when value updates
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberValue?；保持与模型相同的强类型。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
@@ -6456,6 +6650,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// max number tags that can be enter
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -6498,6 +6693,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// add a tag when a delimiter is matched
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringRegExpValue?；值域为 string | RegExp。变量用 Delimiter="@value"，并保持声明的分支类型。字符串用 Delimiter="text"；数字字符串保持 string。投影：value?.AsString、value?.AsRegExp；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("delimiter")]
     public VueStringRegExpValue? Delimiter { get; set; }
@@ -6540,6 +6736,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -6582,6 +6779,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// same as `tabindex` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -6589,6 +6787,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// the max tags number to be shown. To use this, collapse-tags must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseTags="@(32)" 或 MaxCollapseTags="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
@@ -6596,6 +6795,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// same as `maxlength` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Maxlength="@(32)"；变量用 Maxlength="@value"，无需 double 后缀。字符串用 Maxlength="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public VueStringNumberValue? Maxlength { get; set; }
@@ -6603,6 +6803,7 @@ public sealed class ElInputTag : ElComponentBase
     /// <summary>
     /// same as `minlength` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Minlength="@(32)"；变量用 Minlength="@value"，无需 double 后缀。字符串用 Minlength="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minlength")]
     public VueStringNumberValue? Minlength { get; set; }
@@ -6732,6 +6933,7 @@ public sealed class ElLink : ElContentComponentBase
     /// <summary>
     /// when underlines should appear
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringValue?；值域为 bool | string。变量用 Underline="@value"，并保持声明的分支类型。字符串用 Underline="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("underline")]
     public VueBooleanStringValue? Underline { get; set; }
@@ -6760,6 +6962,7 @@ public sealed class ElLink : ElContentComponentBase
     /// <summary>
     /// icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -6808,6 +7011,7 @@ public sealed class ElMention : ElComponentBase
     /// <summary>
     /// prefix character to trigger mentions. The string length must be exactly 1
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringOrStringsValue?；值域为 string | string[]。变量用 Prefix="@value"，并保持声明的分支类型。字符串用 Prefix="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prefix")]
     public VueStringOrStringsValue? Prefix { get; set; }
@@ -6822,6 +7026,7 @@ public sealed class ElMention : ElComponentBase
     /// <summary>
     /// customize filter option logic
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElMentionFilterOptionValue?；值域为 bool | ElMentionFilterOption。变量用 FilterOption="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("filterOption")]
     public ElMentionFilterOptionValue? FilterOption { get; set; }
@@ -6843,6 +7048,7 @@ public sealed class ElMention : ElComponentBase
     /// <summary>
     /// offset of the dropdown panel
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -6878,6 +7084,7 @@ public sealed class ElMention : ElComponentBase
     /// <summary>
     /// custom class name for dropdown panel
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 PopperClass="@value"，并保持声明的分支类型。字符串用 PopperClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
@@ -6885,6 +7092,7 @@ public sealed class ElMention : ElComponentBase
     /// <summary>
     /// custom style for dropdown panel
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -6986,6 +7194,7 @@ public sealed class ElMenu : ElContentComponentBase
     /// <summary>
     /// custom ellipsis icon (available only in horizontal mode and ellipsis is true)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 EllipsisIcon="@value"，并保持声明的分支类型。字符串用 EllipsisIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("ellipsisIcon")]
     public VueStringComponentValue? EllipsisIcon { get; set; }
@@ -6993,6 +7202,7 @@ public sealed class ElMenu : ElContentComponentBase
     /// <summary>
     /// offset of the popper (effective for all submenus)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PopperOffset="@(32)" 或 PopperOffset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("popperOffset")]
     public Number? PopperOffset { get; set; }
@@ -7063,6 +7273,7 @@ public sealed class ElMenu : ElContentComponentBase
     /// <summary>
     /// custom style for all popup menus and titles' tooltips
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -7070,6 +7281,7 @@ public sealed class ElMenu : ElContentComponentBase
     /// <summary>
     /// control timeout for all menus before showing
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ShowTimeout="@(32)" 或 ShowTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
@@ -7077,6 +7289,7 @@ public sealed class ElMenu : ElContentComponentBase
     /// <summary>
     /// control timeout for all menus before hiding
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideTimeout="@(32)" 或 HideTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
@@ -7150,6 +7363,7 @@ public sealed class ElMenuItem : ElContentComponentBase
     /// <summary>
     /// Vue Router Route Location Parameters
     /// </summary>
+    /// <remarks data-authoring="types">C# union RouteLocationRaw?；值域为 string | RouteLocationAsPath | RouteLocationAsRelative。变量用 Route="@value"，并保持声明的分支类型。字符串用 Route="text"；数字字符串保持 string。投影：value?.AsString、value?.AsPath、value?.AsRelative；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("route")]
     public RouteLocationRaw? Route { get; set; }
@@ -7212,6 +7426,7 @@ public sealed class ElOption : ElContentComponentBase
     /// <summary>
     /// value of option
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectValue?；值域为 bool | double | string | VueProps。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsProps；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
@@ -7219,6 +7434,7 @@ public sealed class ElOption : ElContentComponentBase
     /// <summary>
     /// label of option, same as `value` if omitted
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
@@ -7251,6 +7467,7 @@ public sealed class ElTypedOption<TValue> : ElContentComponentBase
     /// <summary>
     /// label of option, same as `value` if omitted
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
@@ -7299,6 +7516,7 @@ public sealed class ElPageHeader : ElContentComponentBase
     /// <summary>
     /// icon component of page header
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -7386,6 +7604,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// item count of each page
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PageSize="@(32)" 或 PageSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pageSize")]
     public Number? PageSize { get; set; }
@@ -7393,6 +7612,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// default initial value of page size, not setting is the same as setting 10
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 DefaultPageSize="@(32)" 或 DefaultPageSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("defaultPageSize")]
     public Number? DefaultPageSize { get; set; }
@@ -7400,6 +7620,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// total item count
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Total="@(32)" 或 Total="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("total")]
     public Number? Total { get; set; }
@@ -7407,6 +7628,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// total page count. Set either `total` or `page-count` and pages will be displayed; if you need `page-sizes`, `total` is required
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PageCount="@(32)" 或 PageCount="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pageCount")]
     public Number? PageCount { get; set; }
@@ -7414,6 +7636,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// number of pagers. Pagination collapses when the total page count exceeds this value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PagerCount="@(32)" 或 PagerCount="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("pagerCount")]
     public Number? PagerCount { get; set; }
@@ -7421,6 +7644,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// current page number
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 CurrentPage="@(32)" 或 CurrentPage="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("currentPage")]
     public Number? CurrentPage { get; set; }
@@ -7428,6 +7652,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// default initial value of current-page, not setting is the same as setting 1
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 DefaultCurrentPage="@(32)" 或 DefaultCurrentPage="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("defaultCurrentPage")]
     public Number? DefaultCurrentPage { get; set; }
@@ -7463,6 +7688,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// custom style for the page size Select's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -7477,6 +7703,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// icon for the prev button, has a lower priority than `prev-text`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 PrevIcon="@value"，并保持声明的分支类型。字符串用 PrevIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prevIcon")]
     public VueStringComponentValue? PrevIcon { get; set; }
@@ -7491,6 +7718,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// icon for the next button, has a lower priority than `next-text`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 NextIcon="@value"，并保持声明的分支类型。字符串用 NextIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("nextIcon")]
     public VueStringComponentValue? NextIcon { get; set; }
@@ -7526,6 +7754,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// triggers when `page-size` changes
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onSizeChange")]
     public EventCallback<Number> OnSizeChange { get; set; }
@@ -7533,6 +7762,7 @@ public sealed class ElPagination : ElContentComponentBase
     /// <summary>
     /// triggers when `current-page` changes
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback<Number> OnCurrentChange { get; set; }
@@ -7613,6 +7843,7 @@ public sealed class ElPopconfirm : ElComponentBase
     /// <summary>
     /// Icon Component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -7634,6 +7865,7 @@ public sealed class ElPopconfirm : ElComponentBase
     /// <summary>
     /// delay of disappear, in millisecond
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideAfter="@(32)" 或 HideAfter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
@@ -7655,6 +7887,7 @@ public sealed class ElPopconfirm : ElComponentBase
     /// <summary>
     /// popconfirm width, min width 150px
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -7700,6 +7933,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// how the popover is triggered, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTooltipTriggerValue?；值域为 ElTooltipTriggerType | ElTooltipTriggerType[]。变量用 Trigger="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElTooltipTriggerValue? Trigger { get; set; }
@@ -7735,6 +7969,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// popover width
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -7763,6 +7998,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// popover offset, `Popover` is built with `Tooltip`, offset of `Popover` is `undefined`, but offset of `Tooltip` is 12
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -7798,6 +8034,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// custom style for popover
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -7805,6 +8042,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// delay of appearance, in millisecond, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ShowAfter="@(32)" 或 ShowAfter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("showAfter")]
     public Number? ShowAfter { get; set; }
@@ -7812,6 +8050,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// delay of disappear, in millisecond, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideAfter="@(32)" 或 HideAfter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
@@ -7819,6 +8058,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// timeout in milliseconds to hide tooltip, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 AutoClose="@(32)" 或 AutoClose="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("autoClose")]
     public Number? AutoClose { get; set; }
@@ -7826,6 +8066,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// [tabindex](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex) of Popover
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -7840,6 +8081,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// which element the popover CONTENT appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -7861,6 +8103,7 @@ public sealed class ElPopover : ElContentComponentBase
     /// <summary>
     /// Indicates the reference element to which the popover is attached
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 VirtualRef="@value"，并保持声明的分支类型。字符串用 VirtualRef="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
@@ -7944,6 +8187,7 @@ public sealed class ElProgress : ElContentComponentBase
     /// <summary>
     /// percentage
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Percentage="@(32)" 或 Percentage="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("percentage")]
     public Number? Percentage { get; set; }
@@ -7958,6 +8202,7 @@ public sealed class ElProgress : ElContentComponentBase
     /// <summary>
     /// the width of progress bar
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 StrokeWidth="@(32)" 或 StrokeWidth="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public Number? StrokeWidth { get; set; }
@@ -7986,6 +8231,7 @@ public sealed class ElProgress : ElContentComponentBase
     /// <summary>
     /// control the animation duration of indeterminate progress or striped flow progress
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Duration="@(32)" 或 Duration="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
@@ -7993,6 +8239,7 @@ public sealed class ElProgress : ElContentComponentBase
     /// <summary>
     /// background color of progress bar. Overrides `status` prop
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElProgressColorValue?；值域为 string | ElProgressColorStop[] | ElProgressColorCallback。变量用 Color="@value"，并保持声明的分支类型。字符串用 Color="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStops、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("color")]
     public ElProgressColorValue? Color { get; set; }
@@ -8000,6 +8247,7 @@ public sealed class ElProgress : ElContentComponentBase
     /// <summary>
     /// the canvas width of circle progress bar
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Width="@(32)" 或 Width="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
@@ -8052,6 +8300,7 @@ public sealed class ElRadio : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -8059,6 +8308,7 @@ public sealed class ElRadio : ElContentComponentBase
     /// <summary>
     /// the value of Radio
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberValue? Value { get; set; }
@@ -8066,6 +8316,7 @@ public sealed class ElRadio : ElContentComponentBase
     /// <summary>
     /// the label of Radio. If there's no `value`, `label` will act as `value`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberValue? Label { get; set; }
@@ -8108,6 +8359,7 @@ public sealed class ElRadio : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberValue?；保持与模型相同的强类型。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -8125,6 +8377,7 @@ public sealed class ElRadioButton : ElContentComponentBase
     /// <summary>
     /// the value of Radio
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 Value="@(32)"；变量用 Value="@value"，无需 double 后缀。字符串用 Value="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberValue? Value { get; set; }
@@ -8132,6 +8385,7 @@ public sealed class ElRadioButton : ElContentComponentBase
     /// <summary>
     /// the label of Radio. If there's no `value`, `label` will act as `value`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 Label="@(32)"；变量用 Label="@value"，无需 double 后缀。字符串用 Label="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberValue? Label { get; set; }
@@ -8163,6 +8417,7 @@ public sealed class ElRadioGroup : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -8261,6 +8516,7 @@ public sealed class ElRadioGroup : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberValue?；保持与模型相同的强类型。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -8278,6 +8534,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ModelValue="@(32)" 或 ModelValue="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
@@ -8285,6 +8542,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// max rating score
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -8313,6 +8571,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// threshold value between low and medium level. The value itself will be included in low level
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 LowThreshold="@(32)" 或 LowThreshold="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("lowThreshold")]
     public Number? LowThreshold { get; set; }
@@ -8320,6 +8579,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// threshold value between medium and high level. The value itself will be included in high level
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HighThreshold="@(32)" 或 HighThreshold="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("highThreshold")]
     public Number? HighThreshold { get; set; }
@@ -8327,6 +8587,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// colors for icons. If array, it should have 3 elements, each of which corresponds with a score level, else if object, the key should be threshold value between two levels, and the value should be corresponding color
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElRateColorsValue?；值域为 string[] | ElRateColorMap。变量用 Colors="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray、value?.AsMap；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("colors")]
     public ElRateColorsValue? Colors { get; set; }
@@ -8348,6 +8609,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// icon components. If array, it should have 3 elements, each of which corresponds with a score level, else if object, the key should be threshold value between two levels, and the value should be corresponding icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElRateIconsValue?；值域为 VueStringComponentValue[] | ElRateIconMap。变量用 Icons="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsArray、value?.AsMap；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icons")]
     public ElRateIconsValue? Icons { get; set; }
@@ -8355,6 +8617,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// component of unselected icons
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 VoidIcon="@value"，并保持声明的分支类型。字符串用 VoidIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("voidIcon")]
     public VueStringComponentValue? VoidIcon { get; set; }
@@ -8362,6 +8625,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// component of unselected read-only icons
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 DisabledVoidIcon="@value"，并保持声明的分支类型。字符串用 DisabledVoidIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disabledVoidIcon")]
     public VueStringComponentValue? DisabledVoidIcon { get; set; }
@@ -8439,6 +8703,7 @@ public sealed class ElRate : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 Number?；保持与模型相同的强类型。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
@@ -8515,6 +8780,7 @@ public sealed class ElRow : ElContentComponentBase
     /// <summary>
     /// grid spacing
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Gutter="@(32)" 或 Gutter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("gutter")]
     public Number? Gutter { get; set; }
@@ -8553,6 +8819,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// height of scrollbar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -8560,6 +8827,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// max height of scrollbar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -8574,6 +8842,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// style of wrap container
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 WrapStyle="@value"，并保持声明的分支类型。字符串用 WrapStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("wrapStyle")]
     public VueStyleValue? WrapStyle { get; set; }
@@ -8588,6 +8857,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// style of view
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 ViewStyle="@value"，并保持声明的分支类型。字符串用 ViewStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("viewStyle")]
     public VueStyleValue? ViewStyle { get; set; }
@@ -8623,6 +8893,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// minimum size of scrollbar
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MinSize="@(32)" 或 MinSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minSize")]
     public Number? MinSize { get; set; }
@@ -8658,6 +8929,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// tabindex of wrap container
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -8665,6 +8937,7 @@ public sealed class ElScrollbar : ElContentComponentBase
     /// <summary>
     /// trigger end-reached event distance(px)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Distance="@(32)" 或 Distance="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("distance")]
     public Number? Distance { get; set; }
@@ -8696,6 +8969,7 @@ public sealed class ElSegmented : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -8780,6 +9054,7 @@ public sealed class ElSegmented : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberValue?；保持与模型相同的强类型。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -8797,6 +9072,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectArrayableValue?；值域为 bool | double | string | VueProps | VueBooleanStringNumberObjectValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -8874,6 +9150,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// maximum number of options user can select when `multiple` is `true`. No limit when set to 0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MultipleLimit="@(32)" 或 MultipleLimit="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
@@ -8944,6 +9221,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// debounce delay during remote search, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Debounce="@(32)" 或 Debounce="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
@@ -9000,6 +9278,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// custom style for Select's dropdown and tags' tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -9028,6 +9307,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// which element the select dropdown appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -9049,6 +9329,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -9063,6 +9344,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// custom suffix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 SuffixIcon="@value"，并保持声明的分支类型。字符串用 SuffixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
@@ -9091,6 +9373,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// offset of the dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -9119,6 +9402,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// the max tags number to be shown. To use this, `collapse-tags` must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseTags="@(32)" 或 MaxCollapseTags="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
@@ -9147,6 +9431,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -9161,6 +9446,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// tabindex for input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -9273,6 +9559,7 @@ public sealed class ElSelect : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberObjectArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
@@ -9368,6 +9655,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// maximum number of options user can select when `multiple` is `true`. No limit when set to 0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MultipleLimit="@(32)" 或 MultipleLimit="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
@@ -9438,6 +9726,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// debounce delay during remote search, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Debounce="@(32)" 或 Debounce="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
@@ -9494,6 +9783,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// custom style for Select's dropdown and tags' tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -9522,6 +9812,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// which element the select dropdown appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -9543,6 +9834,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -9557,6 +9849,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// custom suffix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 SuffixIcon="@value"，并保持声明的分支类型。字符串用 SuffixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
@@ -9585,6 +9878,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// offset of the dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -9613,6 +9907,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// the max tags number to be shown. To use this, `collapse-tags` must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseTags="@(32)" 或 MaxCollapseTags="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
@@ -9641,6 +9936,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -9655,6 +9951,7 @@ public sealed class ElTypedSelect<TValue> : ElContentComponentBase
     /// <summary>
     /// tabindex for input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -9791,6 +10088,7 @@ public sealed class ElSkeleton : ElContentComponentBase
     /// <summary>
     /// how many fake items to render to the DOM
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Count="@(32)" 或 Count="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("count")]
     public Number? Count { get; set; }
@@ -9805,6 +10103,7 @@ public sealed class ElSkeleton : ElContentComponentBase
     /// <summary>
     /// numbers of the row, only useful when no template slot were given
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Rows="@(32)" 或 Rows="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("rows")]
     public Number? Rows { get; set; }
@@ -9812,6 +10111,7 @@ public sealed class ElSkeleton : ElContentComponentBase
     /// <summary>
     /// rendering delay in milliseconds. Numbers represent delayed display, and can also be set to delay hide, for example `{ leading: 500, trailing: 500 }`. When needing to control the initial value of loading, you can set `{ initVal: true }`
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElThrottleValue?；值域为 Number | ElThrottleRenderOptions。数值用 Throttle="@(32)"；变量用 Throttle="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("throttle")]
     public ElThrottleValue? Throttle { get; set; }
@@ -9853,6 +10153,7 @@ public sealed class ElSlider : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueNumberOrNumbersValue?；值域为 double | Number[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsNumber、value?.AsNumbers；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueNumberOrNumbersValue? ModelValue { get; set; }
@@ -9860,6 +10161,7 @@ public sealed class ElSlider : ElComponentBase
     /// <summary>
     /// minimum value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Min="@(32)" 或 Min="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
@@ -9867,6 +10169,7 @@ public sealed class ElSlider : ElComponentBase
     /// <summary>
     /// maximum value
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Max="@(32)" 或 Max="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
@@ -9881,6 +10184,7 @@ public sealed class ElSlider : ElComponentBase
     /// <summary>
     /// step size, can be a number or `'mark'`  to restrict values to marks. When set to `'mark'`, the `marks` attribute must be set
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Step="@(32)"；变量用 Step="@value"，无需 double 后缀。字符串用 Step="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("step")]
     public VueStringNumberValue? Step { get; set; }
@@ -10042,6 +10346,7 @@ public sealed class ElSlider : ElComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueNumberOrNumbersValue?；保持与模型相同的强类型。投影：value?.AsNumber、value?.AsNumbers；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueNumberOrNumbersValue?> ModelValueChanged { get; set; }
@@ -10080,6 +10385,7 @@ public sealed class ElSpace : ElComponentBase
     /// <summary>
     /// Spacer
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberVNodeValue?；值域为 string | Number | IVNode。数值用 Spacer="@(32)"；变量用 Spacer="@value"，无需 double 后缀。字符串用 Spacer="text"；数字字符串保持 string。投影：value?.AsString、value?.AsNumber、value?.AsVNode；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("spacer")]
     public VueStringNumberVNodeValue? Spacer { get; set; }
@@ -10087,6 +10393,7 @@ public sealed class ElSpace : ElComponentBase
     /// <summary>
     /// Spacing size
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElSpaceSizeValue?；值域为 ElComponentSize | Number | Number[]。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsComponentSize、value?.AsNumber、value?.AsPair；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public ElSpaceSizeValue? Size { get; set; }
@@ -10108,6 +10415,7 @@ public sealed class ElSpace : ElComponentBase
     /// <summary>
     /// Ratio of fill
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FillRatio="@(32)" 或 FillRatio="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("fillRatio")]
     public Number? FillRatio { get; set; }
@@ -10177,6 +10485,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
     /// <summary>
     /// Size of the panel (in pixels or percentage)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -10184,6 +10493,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
     /// <summary>
     /// Minimum size of the panel (in pixels or percentage)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Min="@(32)"；变量用 Min="@value"，无需 double 后缀。字符串用 Min="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
@@ -10191,6 +10501,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
     /// <summary>
     /// Maximum size of the panel (in pixels or percentage)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Max="@(32)"；变量用 Max="@value"，无需 double 后缀。字符串用 Max="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
@@ -10226,6 +10537,7 @@ public sealed class ElSplitterPanel : ElContentComponentBase
     /// <summary>
     /// Triggered when panel size changes
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberValue?；保持与模型相同的强类型。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:size")]
     public EventCallback<VueStringNumberValue?> SizeChanged { get; set; }
@@ -10288,6 +10600,7 @@ public sealed class ElStep : ElComponentBase
     /// <summary>
     /// step custom icon. Icons can be passed via named slot as well
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -10333,6 +10646,7 @@ public sealed class ElSteps : ElContentComponentBase
     /// <summary>
     /// the spacing of each step, will be responsive if omitted. Supports percentage.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Space="@(32)"；变量用 Space="@value"，无需 double 后缀。字符串用 Space="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("space")]
     public VueStringNumberValue? Space { get; set; }
@@ -10347,6 +10661,7 @@ public sealed class ElSteps : ElContentComponentBase
     /// <summary>
     /// current activation step
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Active="@(32)" 或 Active="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("active")]
     public Number? Active { get; set; }
@@ -10413,6 +10728,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// custom style for the popup menu
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -10420,6 +10736,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// timeout before showing a sub-menu(inherit `show-timeout` of the menu by default.)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ShowTimeout="@(32)" 或 ShowTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
@@ -10427,6 +10744,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// timeout before hiding a sub-menu(inherit `hide-timeout` of the menu by default.)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideTimeout="@(32)" 或 HideTimeout="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
@@ -10448,6 +10766,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// offset of the popper (overrides the `popper` of menu)
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 PopperOffset="@(32)" 或 PopperOffset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("popperOffset")]
     public Number? PopperOffset { get; set; }
@@ -10455,6 +10774,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// Icon when menu are expanded and submenu are closed, `expand-close-icon` and `expand-open-icon` need to be passed together to take effect
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ExpandCloseIcon="@value"，并保持声明的分支类型。字符串用 ExpandCloseIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("expandCloseIcon")]
     public VueStringComponentValue? ExpandCloseIcon { get; set; }
@@ -10462,6 +10782,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// Icon when menu are expanded and submenu are opened, `expand-open-icon` and `expand-close-icon` need to be passed together to take effect
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ExpandOpenIcon="@value"，并保持声明的分支类型。字符串用 ExpandOpenIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("expandOpenIcon")]
     public VueStringComponentValue? ExpandOpenIcon { get; set; }
@@ -10469,6 +10790,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// Icon when menu are collapsed and submenu are closed, `collapse-close-icon` and `collapse-open-icon` need to be passed together to take effect
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 CollapseCloseIcon="@value"，并保持声明的分支类型。字符串用 CollapseCloseIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("collapseCloseIcon")]
     public VueStringComponentValue? CollapseCloseIcon { get; set; }
@@ -10476,6 +10798,7 @@ public sealed class ElSubMenu : ElContentComponentBase
     /// <summary>
     /// Icon when menu are collapsed and submenu are opened, `collapse-open-icon` and `collapse-close-icon` need to be passed together to take effect
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 CollapseOpenIcon="@value"，并保持声明的分支类型。字符串用 CollapseOpenIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("collapseOpenIcon")]
     public VueStringComponentValue? CollapseOpenIcon { get; set; }
@@ -10500,6 +10823,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// binding value, it should be equivalent to either `active-value` or `inactive-value`, by default it's `boolean` type
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
@@ -10528,6 +10852,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// width of Switch
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -10542,6 +10867,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// component of the icon displayed when in `on` state, overrides `active-text`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ActiveIcon="@value"，并保持声明的分支类型。字符串用 ActiveIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("activeIcon")]
     public VueStringComponentValue? ActiveIcon { get; set; }
@@ -10549,6 +10875,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// component of the icon displayed when in `off` state, overrides `inactive-text`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 InactiveIcon="@value"，并保持声明的分支类型。字符串用 InactiveIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inactiveIcon")]
     public VueStringComponentValue? InactiveIcon { get; set; }
@@ -10556,6 +10883,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// component of the icon displayed in action when in `on` state
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ActiveActionIcon="@value"，并保持声明的分支类型。字符串用 ActiveActionIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("activeActionIcon")]
     public VueStringComponentValue? ActiveActionIcon { get; set; }
@@ -10563,6 +10891,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// component of the icon displayed in action when in `off` state
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 InactiveActionIcon="@value"，并保持声明的分支类型。字符串用 InactiveActionIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inactiveActionIcon")]
     public VueStringComponentValue? InactiveActionIcon { get; set; }
@@ -10584,6 +10913,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// switch value when in `on` state
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 ActiveValue="@(32)"；变量用 ActiveValue="@value"，无需 double 后缀。字符串用 ActiveValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("activeValue")]
     public VueBooleanStringNumberValue? ActiveValue { get; set; }
@@ -10591,6 +10921,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// switch value when in `off` state
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberValue?；值域为 bool | double | string。数值用 InactiveValue="@(32)"；变量用 InactiveValue="@value"，无需 double 后缀。字符串用 InactiveValue="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("inactiveValue")]
     public VueBooleanStringNumberValue? InactiveValue { get; set; }
@@ -10626,6 +10957,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// tabindex for input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -10703,6 +11035,7 @@ public sealed class ElSwitch : ElComponentBase
     /// <summary>
     /// binding value, it should be equivalent to either `active-value` or `inactive-value`, by default it's `boolean` type
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberValue?；保持与模型相同的强类型。投影：value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -10734,6 +11067,7 @@ public sealed class ElTabPane : ElContentComponentBase
     /// <summary>
     /// identifier corresponding to the name of Tabs, representing the alias of the tab-pane, the default is ordinal number of the tab-pane in the sequence, e.g. the first tab-pane is '0'
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Name="@(32)"；变量用 Name="@value"，无需 double 后缀。字符串用 Name="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringNumberValue? Name { get; set; }
@@ -10779,6 +11113,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// table's height. By default it has an `auto` height. If its value is a number, the height is measured in pixels; if its value is a string, the value will be assigned to element's style.height, the height is affected by external styles
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -10786,6 +11121,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// table's max-height. The legal value is a number or the height in px
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -10835,6 +11171,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// key of current row, a set only prop
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CurrentRowKey="@(32)"；变量用 CurrentRowKey="@value"，无需 double 后缀。字符串用 CurrentRowKey="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("currentRowKey")]
     public VueStringNumberValue? CurrentRowKey { get; set; }
@@ -10842,6 +11179,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a row, or a string assigning class names for every row
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowClassNameValue?；值域为 string | ElTableRowClassNameCallback。变量用 RowClassName="@value"，并保持声明的分支类型。字符串用 RowClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public ElTableRowClassNameValue? RowClassName { get; set; }
@@ -10849,6 +11187,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a row, or an object assigning custom style for every row
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableRowStyleCallback。变量用 RowStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowStyle")]
     public ElTableRowStyleValue? RowStyle { get; set; }
@@ -10856,6 +11195,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a cell, or a string assigning class names for every cell
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellClassNameValue?；值域为 string | ElTableCellClassNameCallback。变量用 CellClassName="@value"，并保持声明的分支类型。字符串用 CellClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cellClassName")]
     public ElTableCellClassNameValue? CellClassName { get; set; }
@@ -10863,6 +11203,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a cell, or an object assigning custom style for every cell
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableCellStyleCallback。变量用 CellStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cellStyle")]
     public ElTableCellStyleValue? CellStyle { get; set; }
@@ -10870,6 +11211,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a row in table header, or a string assigning class names for every row in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowClassNameValue?；值域为 string | ElTableRowClassNameCallback。变量用 HeaderRowClassName="@value"，并保持声明的分支类型。字符串用 HeaderRowClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerRowClassName")]
     public ElTableRowClassNameValue? HeaderRowClassName { get; set; }
@@ -10877,6 +11219,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a row in table header, or an object assigning custom style for every row in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableRowStyleCallback。变量用 HeaderRowStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerRowStyle")]
     public ElTableRowStyleValue? HeaderRowStyle { get; set; }
@@ -10884,6 +11227,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a cell in table header, or a string assigning class names for every cell in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellClassNameValue?；值域为 string | ElTableCellClassNameCallback。变量用 HeaderCellClassName="@value"，并保持声明的分支类型。字符串用 HeaderCellClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerCellClassName")]
     public ElTableCellClassNameValue? HeaderCellClassName { get; set; }
@@ -10891,6 +11235,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a cell in table header, or an object assigning custom style for every cell in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableCellStyleCallback。变量用 HeaderCellStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerCellStyle")]
     public ElTableCellStyleValue? HeaderCellStyle { get; set; }
@@ -10898,6 +11243,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// key of row data, used for optimizing rendering. Required if `reserve-selection` is on or display tree data. When its type is String, multi-level access is supported, e.g. `user.info.id`, but `user.info[0].id` is not supported, in which case `Function` should be used
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowKeyValue?；值域为 string | ElTableRowKeyCallback。变量用 RowKey="@value"，并保持声明的分支类型。字符串用 RowKey="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowKey")]
     public ElTableRowKeyValue? RowKey { get; set; }
@@ -10989,6 +11335,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// horizontal indentation of tree data
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Indent="@(32)" 或 Indent="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
@@ -11031,6 +11378,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// whether to hide extra content and show them in a tooltip when hovering on the cell.It will affect all the table columns, refer to table [tooltip-options](#table-attributes)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableOverflowTooltipValue?；值域为 bool | ElTableOverflowTooltipOptions。变量用 ShowOverflowTooltip="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
@@ -11045,6 +11393,7 @@ public sealed class ElTable : ElContentComponentBase
     /// <summary>
     /// body scrollbar's wrap container tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ScrollbarTabindex="@(32)"；变量用 ScrollbarTabindex="@value"，无需 double 后缀。字符串用 ScrollbarTabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrollbarTabindex")]
     public VueStringNumberValue? ScrollbarTabindex { get; set; }
@@ -11252,6 +11601,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// table's height. By default it has an `auto` height. If its value is a number, the height is measured in pixels; if its value is a string, the value will be assigned to element's style.height, the height is affected by external styles
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Height="@(32)"；变量用 Height="@value"，无需 double 后缀。字符串用 Height="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
@@ -11259,6 +11609,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// table's max-height. The legal value is a number or the height in px
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MaxHeight="@(32)"；变量用 MaxHeight="@value"，无需 double 后缀。字符串用 MaxHeight="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
@@ -11308,6 +11659,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// key of current row, a set only prop
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CurrentRowKey="@(32)"；变量用 CurrentRowKey="@value"，无需 double 后缀。字符串用 CurrentRowKey="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("currentRowKey")]
     public VueStringNumberValue? CurrentRowKey { get; set; }
@@ -11315,6 +11667,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a row, or a string assigning class names for every row
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowClassNameValue?；值域为 string | ElTableRowClassNameCallback。变量用 RowClassName="@value"，并保持声明的分支类型。字符串用 RowClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public ElTableRowClassNameValue? RowClassName { get; set; }
@@ -11322,6 +11675,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a row, or an object assigning custom style for every row
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableRowStyleCallback。变量用 RowStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowStyle")]
     public ElTableRowStyleValue? RowStyle { get; set; }
@@ -11329,6 +11683,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a cell, or a string assigning class names for every cell
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellClassNameValue?；值域为 string | ElTableCellClassNameCallback。变量用 CellClassName="@value"，并保持声明的分支类型。字符串用 CellClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cellClassName")]
     public ElTableCellClassNameValue? CellClassName { get; set; }
@@ -11336,6 +11691,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a cell, or an object assigning custom style for every cell
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableCellStyleCallback。变量用 CellStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cellStyle")]
     public ElTableCellStyleValue? CellStyle { get; set; }
@@ -11343,6 +11699,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a row in table header, or a string assigning class names for every row in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowClassNameValue?；值域为 string | ElTableRowClassNameCallback。变量用 HeaderRowClassName="@value"，并保持声明的分支类型。字符串用 HeaderRowClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerRowClassName")]
     public ElTableRowClassNameValue? HeaderRowClassName { get; set; }
@@ -11350,6 +11707,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a row in table header, or an object assigning custom style for every row in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableRowStyleCallback。变量用 HeaderRowStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerRowStyle")]
     public ElTableRowStyleValue? HeaderRowStyle { get; set; }
@@ -11357,6 +11715,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom class names for a cell in table header, or a string assigning class names for every cell in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellClassNameValue?；值域为 string | ElTableCellClassNameCallback。变量用 HeaderCellClassName="@value"，并保持声明的分支类型。字符串用 HeaderCellClassName="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerCellClassName")]
     public ElTableCellClassNameValue? HeaderCellClassName { get; set; }
@@ -11364,6 +11723,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// function that returns custom style for a cell in table header, or an object assigning custom style for every cell in table header
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableCellStyleValue?；值域为 string | VueProps | VueStyleValue[] | ElTableCellStyleCallback。变量用 HeaderCellStyle="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsStyle、value?.AsCallback、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerCellStyle")]
     public ElTableCellStyleValue? HeaderCellStyle { get; set; }
@@ -11371,6 +11731,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// key of row data, used for optimizing rendering. Required if `reserve-selection` is on or display tree data. When its type is String, multi-level access is supported, e.g. `user.info.id`, but `user.info[0].id` is not supported, in which case `Function` should be used
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableRowKeyValue?；值域为 string | ElTableRowKeyCallback。变量用 RowKey="@value"，并保持声明的分支类型。字符串用 RowKey="text"；数字字符串保持 string。投影：value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowKey")]
     public ElTableRowKeyValue? RowKey { get; set; }
@@ -11462,6 +11823,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// horizontal indentation of tree data
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Indent="@(32)" 或 Indent="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
@@ -11504,6 +11866,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// whether to hide extra content and show them in a tooltip when hovering on the cell.It will affect all the table columns, refer to table [tooltip-options](#table-attributes)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableOverflowTooltipValue?；值域为 bool | ElTableOverflowTooltipOptions。变量用 ShowOverflowTooltip="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
@@ -11518,6 +11881,7 @@ public sealed class ElTypedTable<TRow> : ElContentComponentBase
     /// <summary>
     /// body scrollbar's wrap container tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ScrollbarTabindex="@(32)"；变量用 ScrollbarTabindex="@value"，无需 double 后缀。字符串用 ScrollbarTabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("scrollbarTabindex")]
     public VueStringNumberValue? ScrollbarTabindex { get; set; }
@@ -11731,6 +12095,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// customize indices for each row, works on columns with `type=index`
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableColumnIndexValue?；值域为 Number | ElTableColumnIndexCallback。数值用 Index="@(32)"；变量用 Index="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("index")]
     public ElTableColumnIndexValue? Index { get; set; }
@@ -11759,6 +12124,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// column width
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -11766,6 +12132,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// column minimum width. Columns with `width` has a fixed width, while columns with `min-width` has a width that is distributed in proportion
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -11773,6 +12140,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// whether column is fixed at left / right. Will be fixed at left if `true`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringValue?；值域为 bool | string。变量用 Fixed="@value"，并保持声明的分支类型。字符串用 Fixed="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("fixed")]
     public VueBooleanStringValue? Fixed { get; set; }
@@ -11787,6 +12155,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// whether column can be sorted. Remote sorting can be done by setting this attribute to 'custom' and listening to the `sort-change` event of Table
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringValue?；值域为 bool | string。变量用 Sortable="@value"，并保持声明的分支类型。字符串用 Sortable="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sortable")]
     public VueBooleanStringValue? Sortable { get; set; }
@@ -11801,6 +12170,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// specify which property to sort by, works when `sortable` is `true` and `sort-method` is `undefined`. If set to an Array, the column will sequentially sort by the next property if the previous one is equal
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableColumnSortByValue?；值域为 string | string[] | ElTableColumnSortByCallback。变量用 SortBy="@value"，并保持声明的分支类型。字符串用 SortBy="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sortBy")]
     public ElTableColumnSortByValue? SortBy { get; set; }
@@ -11829,6 +12199,7 @@ public sealed class ElTableColumn : ElComponentBase
     /// <summary>
     /// whether to hide extra content and show them in a tooltip when hovering on the cell
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableOverflowTooltipValue?；值域为 bool | ElTableOverflowTooltipOptions。变量用 ShowOverflowTooltip="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
@@ -11973,6 +12344,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// customize indices for each row, works on columns with `type=index`
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableColumnIndexValue?；值域为 Number | ElTableColumnIndexCallback。数值用 Index="@(32)"；变量用 Index="@value"，无需 double 后缀。投影：value?.AsNumber、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("index")]
     public ElTableColumnIndexValue? Index { get; set; }
@@ -12001,6 +12373,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// column width
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Width="@(32)"；变量用 Width="@value"，无需 double 后缀。字符串用 Width="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
@@ -12008,6 +12381,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// column minimum width. Columns with `width` has a fixed width, while columns with `min-width` has a width that is distributed in proportion
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 MinWidth="@(32)"；变量用 MinWidth="@value"，无需 double 后缀。字符串用 MinWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
@@ -12015,6 +12389,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// whether column is fixed at left / right. Will be fixed at left if `true`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringValue?；值域为 bool | string。变量用 Fixed="@value"，并保持声明的分支类型。字符串用 Fixed="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("fixed")]
     public VueBooleanStringValue? Fixed { get; set; }
@@ -12029,6 +12404,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// whether column can be sorted. Remote sorting can be done by setting this attribute to 'custom' and listening to the `sort-change` event of Table
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringValue?；值域为 bool | string。变量用 Sortable="@value"，并保持声明的分支类型。字符串用 Sortable="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sortable")]
     public VueBooleanStringValue? Sortable { get; set; }
@@ -12043,6 +12419,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// specify which property to sort by, works when `sortable` is `true` and `sort-method` is `undefined`. If set to an Array, the column will sequentially sort by the next property if the previous one is equal
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableColumnSortByValue?；值域为 string | string[] | ElTableColumnSortByCallback。变量用 SortBy="@value"，并保持声明的分支类型。字符串用 SortBy="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("sortBy")]
     public ElTableColumnSortByValue? SortBy { get; set; }
@@ -12071,6 +12448,7 @@ public sealed class ElTypedTableColumn<TRow> : ElComponentBase
     /// <summary>
     /// whether to hide extra content and show them in a tooltip when hovering on the cell
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableOverflowTooltipValue?；值域为 bool | ElTableOverflowTooltipOptions。变量用 ShowOverflowTooltip="@value"，并保持声明的分支类型。投影：value?.AsBool、value?.AsOptions；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
@@ -12200,6 +12578,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Number of rows rendered in advance to boost the performance
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Cache="@(32)" 或 Cache="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("cache")]
     public Number? Cache { get; set; }
@@ -12207,6 +12586,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// The estimated row height for rendering dynamic height rows
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 EstimatedRowHeight="@(32)" 或 EstimatedRowHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("estimatedRowHeight")]
     public Number? EstimatedRowHeight { get; set; }
@@ -12214,6 +12594,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Customized class name passed to header wrapper
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2ClassValue?；值域为 string | ElTableV2ClassGetter。变量用 HeaderClass="@value"，并保持声明的分支类型。字符串用 HeaderClass="text"；数字字符串保持 string。投影：value?.AsString、value?.AsGetter；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerClass")]
     public ElTableV2ClassValue? HeaderClass { get; set; }
@@ -12221,6 +12602,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Customized props name passed to header component
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2DynamicPropsValue?；值域为 VueDictionary | ElTableV2DynamicPropsGetter。变量用 HeaderProps="@value"，并保持声明的分支类型。投影：value?.AsObject、value?.AsGetter；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerProps")]
     public ElTableV2DynamicPropsValue? HeaderProps { get; set; }
@@ -12228,6 +12610,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Customized props name passed to header cell component
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2DynamicPropsValue?；值域为 VueDictionary | ElTableV2DynamicPropsGetter。变量用 HeaderCellProps="@value"，并保持声明的分支类型。投影：value?.AsObject、value?.AsGetter；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerCellProps")]
     public ElTableV2DynamicPropsValue? HeaderCellProps { get; set; }
@@ -12235,6 +12618,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// The height of the header is set by `height`. If given an array, it renders header rows equal to its length
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2HeaderHeightValue?；值域为 double | Number[]。数值用 HeaderHeight="@(32)"；变量用 HeaderHeight="@value"，无需 double 后缀。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsNumber、value?.AsNumbers；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headerHeight")]
     public ElTableV2HeaderHeightValue? HeaderHeight { get; set; }
@@ -12242,6 +12626,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// The height of the footer element, when provided, will be part to the calculation of the table's height.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 FooterHeight="@(32)" 或 FooterHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("footerHeight")]
     public Number? FooterHeight { get; set; }
@@ -12249,6 +12634,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Customized class name passed to row wrapper
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2ClassValue?；值域为 string | ElTableV2ClassGetter。变量用 RowClass="@value"，并保持声明的分支类型。字符串用 RowClass="text"；数字字符串保持 string。投影：value?.AsString、value?.AsGetter；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowClass")]
     public ElTableV2ClassValue? RowClass { get; set; }
@@ -12256,6 +12642,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// The key of each row, if not provided, will be the index of the row
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2KeyValue?；值域为 VueKey。数值用 RowKey="@(32)"；变量用 RowKey="@value"，无需 double 后缀。字符串用 RowKey="text"；数字字符串保持 string。投影：value?.AsKey；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowKey")]
     public ElTableV2KeyValue? RowKey { get; set; }
@@ -12263,6 +12650,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Customized props name passed to row component
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2DynamicPropsValue?；值域为 VueDictionary | ElTableV2DynamicPropsGetter。变量用 RowProps="@value"，并保持声明的分支类型。投影：value?.AsObject、value?.AsGetter；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("rowProps")]
     public ElTableV2DynamicPropsValue? RowProps { get; set; }
@@ -12270,6 +12658,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// The height of each row, used for calculating the total height of the table
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 RowHeight="@(32)" 或 RowHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("rowHeight")]
     public Number? RowHeight { get; set; }
@@ -12284,6 +12673,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// extra props passed to each cell (except header cells)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTableV2DynamicPropsValue?；值域为 VueDictionary | ElTableV2DynamicPropsGetter。变量用 CellProps="@value"，并保持声明的分支类型。投影：value?.AsObject、value?.AsGetter；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("cellProps")]
     public ElTableV2DynamicPropsValue? CellProps { get; set; }
@@ -12347,6 +12737,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Width of the table
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Width="@(32)" 或 Width="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
@@ -12354,6 +12745,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Height of the table
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -12361,6 +12753,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Maximum height of the table
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxHeight="@(32)" 或 MaxHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public Number? MaxHeight { get; set; }
@@ -12368,6 +12761,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// horizontal indentation of tree table
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 IndentSize="@(32)" 或 IndentSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("indentSize")]
     public Number? IndentSize { get; set; }
@@ -12375,6 +12769,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Indicates the horizontal scrollbar's size for the table, used to prevent the horizontal and vertical scrollbar to collapse
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HScrollbarSize="@(32)" 或 HScrollbarSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hScrollbarSize")]
     public Number? HScrollbarSize { get; set; }
@@ -12382,6 +12777,7 @@ public sealed class ElTableV2 : ElComponentBase
     /// <summary>
     /// Indicates the vertical scrollbar's size for the table, used to prevent the horizontal and vertical scrollbar to collapse
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 VScrollbarSize="@(32)" 或 VScrollbarSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("vScrollbarSize")]
     public Number? VScrollbarSize { get; set; }
@@ -12511,6 +12907,7 @@ public sealed class ElTabs : ElContentComponentBase
     /// <summary>
     /// binding value, name of the selected tab, the default value is the name of first tab
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
@@ -12518,6 +12915,7 @@ public sealed class ElTabs : ElContentComponentBase
     /// <summary>
     /// The value of the tab that should be active when initially rendered. (avoid initial transition)
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 DefaultValue="@(32)"；变量用 DefaultValue="@value"，无需 double 后缀。字符串用 DefaultValue="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueStringNumberValue? DefaultValue { get; set; }
@@ -12574,6 +12972,7 @@ public sealed class ElTabs : ElContentComponentBase
     /// <summary>
     /// tabs tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -12623,6 +13022,7 @@ public sealed class ElTabs : ElContentComponentBase
     /// <summary>
     /// binding value, name of the selected tab, the default value is the name of first tab
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberValue?；保持与模型相同的强类型。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
@@ -12741,6 +13141,7 @@ public sealed class ElText : ElContentComponentBase
     /// <summary>
     /// maximum lines
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 LineClamp="@(32)"；变量用 LineClamp="@value"，无需 double 后缀。字符串用 LineClamp="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("lineClamp")]
     public VueStringNumberValue? LineClamp { get; set; }
@@ -12765,6 +13166,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// binding value, if it is an array, the length should be 2
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberDateArrayableValue?；值域为 double | string | Date | Number[] | string[] | Date[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsNumbers、value?.AsStrings、value?.AsDates、value?.AsNumber、value?.AsString、value?.AsDate；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
@@ -12849,6 +13251,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// custom style for TimePicker's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -12891,6 +13294,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// optional, default date of the calendar
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
@@ -12905,6 +13309,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// same as `id` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringSingleOrRangeValue?；值域为 string | string[]。变量用 Id="@value"，并保持声明的分支类型。字符串用 Id="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
@@ -12912,6 +13317,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// same as `name` in native input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringSingleOrRangeValue?；值域为 string | string[]。变量用 Name="@value"，并保持声明的分支类型。字符串用 Name="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
@@ -12926,6 +13332,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// Custom prefix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 PrefixIcon="@value"，并保持声明的分支类型。字符串用 PrefixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
@@ -12933,6 +13340,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// Custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -12968,6 +13376,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// input tabindex
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -12982,6 +13391,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -13003,6 +13413,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// 日期时间选择过程初始化时间部分时使用的默认时间值。
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueDateSingleOrRangeValue?；值域为 Date | Date[]。变量用 DefaultTime="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsDate、value?.AsRange；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
@@ -13059,6 +13470,7 @@ public sealed class ElTimePicker : ElComponentBase
     /// <summary>
     /// binding value, if it is an array, the length should be 2
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueStringNumberDateArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsNumbers、value?.AsStrings、value?.AsDates、value?.AsNumber、value?.AsString、value?.AsDate；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
@@ -13139,6 +13551,7 @@ public sealed class ElTimeSelect : ElComponentBase
     /// <summary>
     /// custom prefix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 PrefixIcon="@value"，并保持声明的分支类型。字符串用 PrefixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
@@ -13146,6 +13559,7 @@ public sealed class ElTimeSelect : ElComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -13202,6 +13616,7 @@ public sealed class ElTimeSelect : ElComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -13216,6 +13631,7 @@ public sealed class ElTimeSelect : ElComponentBase
     /// <summary>
     /// custom style for TimeSelect's dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -13341,6 +13757,7 @@ public sealed class ElTimelineItem : ElContentComponentBase
     /// <summary>
     /// icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -13372,6 +13789,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Which element the tooltip CONTENT appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -13428,6 +13846,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Offset of the Tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -13449,6 +13868,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Controls the offset (padding) of the tooltip’s arrow relative to the popper.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ArrowOffset="@(32)" 或 ArrowOffset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("arrowOffset")]
     public Number? ArrowOffset { get; set; }
@@ -13456,6 +13876,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Delay of appearance, in millisecond, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ShowAfter="@(32)" 或 ShowAfter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("showAfter")]
     public Number? ShowAfter { get; set; }
@@ -13470,6 +13891,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Delay of disappear, in millisecond, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 HideAfter="@(32)" 或 HideAfter="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
@@ -13477,6 +13899,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Timeout in milliseconds to hide tooltip, not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 AutoClose="@(32)" 或 AutoClose="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("autoClose")]
     public Number? AutoClose { get; set; }
@@ -13491,6 +13914,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Custom style for Tooltip's popper
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -13512,6 +13936,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// How should the tooltip be triggered (to show), not valid in controlled mode
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTooltipTriggerValue?；值域为 ElTooltipTriggerType | ElTooltipTriggerType[]。变量用 Trigger="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElTooltipTriggerValue? Trigger { get; set; }
@@ -13526,6 +13951,7 @@ public sealed class ElTooltip : ElContentComponentBase
     /// <summary>
     /// Indicates the reference element to which the tooltip is attached
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 VirtualRef="@value"，并保持声明的分支类型。字符串用 VirtualRef="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
@@ -13668,6 +14094,7 @@ public sealed class ElTransfer : ElContentComponentBase
     /// <summary>
     /// custom list titles
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTransferTextPair?；值域为 string[]。变量用 Titles="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsValues；不匹配返回 null，0/false 保留。带标签的重叠分支不能从擦除后的 JS 值恢复精确标签；这类投影需要明确的宿主映射。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("titles")]
     public ElTransferTextPair? Titles { get; set; }
@@ -13675,6 +14102,7 @@ public sealed class ElTransfer : ElContentComponentBase
     /// <summary>
     /// custom button texts
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElTransferTextPair?；值域为 string[]。变量用 ButtonTexts="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsValues；不匹配返回 null，0/false 保留。带标签的重叠分支不能从擦除后的 JS 值恢复精确标签；这类投影需要明确的宿主映射。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("buttonTexts")]
     public ElTransferTextPair? ButtonTexts { get; set; }
@@ -13731,6 +14159,7 @@ public sealed class ElTransfer : ElContentComponentBase
     /// <summary>
     /// item height for virtual scrolling
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemSize="@(32)" 或 ItemSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
@@ -13923,6 +14352,7 @@ public sealed class ElTree : ElContentComponentBase
     /// <summary>
     /// key of initially selected node
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CurrentNodeKey="@(32)"；变量用 CurrentNodeKey="@value"，无需 double 后缀。字符串用 CurrentNodeKey="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
@@ -13944,6 +14374,7 @@ public sealed class ElTree : ElContentComponentBase
     /// <summary>
     /// horizontal indentation of nodes in adjacent levels in pixels
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Indent="@(32)" 或 Indent="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
@@ -13951,6 +14382,7 @@ public sealed class ElTree : ElContentComponentBase
     /// <summary>
     /// custom tree node icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -14108,6 +14540,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanStringNumberObjectArrayableValue?；值域为 bool | double | string | VueProps | VueBooleanStringNumberObjectValue[]。数值用 ModelValue="@(32)"；变量用 ModelValue="@value"，无需 double 后缀。字符串用 ModelValue="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
@@ -14178,6 +14611,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// maximum number of options user can select when `multiple` is `true`. No limit when set to 0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MultipleLimit="@(32)" 或 MultipleLimit="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
@@ -14248,6 +14682,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// debounce delay during remote search, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Debounce="@(32)" 或 Debounce="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
@@ -14304,6 +14739,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// custom style for Select's dropdown and tags' tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -14332,6 +14768,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// which element the select dropdown appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -14353,6 +14790,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// custom clear icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -14367,6 +14805,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// custom suffix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 SuffixIcon="@value"，并保持声明的分支类型。字符串用 SuffixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
@@ -14395,6 +14834,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// offset of the dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -14423,6 +14863,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// the max tags number to be shown. To use this, `collapse-tags` must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseTags="@(32)" 或 MaxCollapseTags="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
@@ -14451,6 +14892,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -14465,6 +14907,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// tabindex for input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -14584,6 +15027,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// key of initially selected node
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CurrentNodeKey="@(32)"；变量用 CurrentNodeKey="@value"，无需 double 后缀。字符串用 CurrentNodeKey="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
@@ -14605,6 +15049,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// horizontal indentation of nodes in adjacent levels in pixels
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Indent="@(32)" 或 Indent="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
@@ -14612,6 +15057,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// custom tree node icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -14752,6 +15198,7 @@ public sealed class ElTreeSelect : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 VueBooleanStringNumberObjectArrayableValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsMultiple、value?.AsBool、value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
@@ -14937,6 +15384,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
     /// <summary>
     /// key of initially selected node
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 CurrentNodeKey="@(32)"；变量用 CurrentNodeKey="@value"，无需 double 后缀。字符串用 CurrentNodeKey="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
@@ -14951,6 +15399,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
     /// <summary>
     /// horizontal indentation of nodes in adjacent levels in pixels
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Indent="@(32)" 或 Indent="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
@@ -14958,6 +15407,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
     /// <summary>
     /// custom tree node icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 Icon="@value"，并保持声明的分支类型。字符串用 Icon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
@@ -14965,6 +15415,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
     /// <summary>
     /// custom tree node height
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemSize="@(32)" 或 ItemSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
@@ -14979,6 +15430,7 @@ public sealed class ElTreeV2 : ElContentComponentBase
     /// <summary>
     /// height of the tree
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -15066,6 +15518,7 @@ public sealed class ElUpload : ElContentComponentBase
     /// <summary>
     /// request headers.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueHeadersValue?；值域为 Headers | VueDictionary。变量用 Headers="@value"，并保持声明的分支类型。投影：value?.AsHeaders、value?.AsDictionary；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("headers")]
     public VueHeadersValue? Headers { get; set; }
@@ -15087,6 +15540,7 @@ public sealed class ElUpload : ElContentComponentBase
     /// <summary>
     /// additions options of request. support `Awaitable` data and `Function` since v2.3.13.
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElUploadDataValue?；值域为 ElUploadData | IPromise&lt;ElUploadData&gt; | ElUploadDataFactory | ElUploadDataPromiseFactory。变量用 Data="@value"，并保持声明的分支类型。投影：value?.AsData、value?.AsPromise、value?.AsFactory、value?.AsAsyncFactory；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("data")]
     public ElUploadDataValue? Data { get; set; }
@@ -15234,6 +15688,7 @@ public sealed class ElUpload : ElContentComponentBase
     /// <summary>
     /// maximum number of uploads allowed.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Limit="@(32)" 或 Limit="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("limit")]
     public Number? Limit { get; set; }
@@ -15279,6 +15734,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElSelectV2ModelValue?；值域为 VueValue | VueValue[]。变量用 ModelValue="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public ElSelectV2ModelValue? ModelValue { get; set; }
@@ -15335,6 +15791,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// custom clear icon
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 ClearIcon="@value"，并保持声明的分支类型。字符串用 ClearIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
@@ -15349,6 +15806,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// maximum number of options user can select when multiple is true. No limit when set to 0
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MultipleLimit="@(32)" 或 MultipleLimit="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
@@ -15454,6 +15912,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// custom class name for Select's dropdown and tags' tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueClassValue?；值域为 string | string[] | VueProps | VueValue[]。变量用 PopperClass="@value"，并保持声明的分支类型。字符串用 PopperClass="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
@@ -15461,6 +15920,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// custom style for Select's dropdown and tags' tooltip
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStyleValue?；值域为 string | VueProps | VueStyleValue[]。变量用 PopperStyle="@value"，并保持声明的分支类型。字符串用 PopperStyle="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsProps、value?.AsValues；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
@@ -15475,6 +15935,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// which element the select dropdown appends to
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueTeleportTarget?；值域为 string | Element。变量用 AppendTo="@value"，并保持声明的分支类型。字符串用 AppendTo="text"；数字字符串保持 string。投影：value?.AsString、value?.AsElement；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
@@ -15503,6 +15964,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// whether the width of the dropdown is the same as the input, if the value is `number`, then the width is fixed
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueBooleanNumberValue?；值域为 bool | double。数值用 FitInputWidth="@(32)"；变量用 FitInputWidth="@value"，无需 double 后缀。投影：value?.AsBool、value?.AsNumber；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public VueBooleanNumberValue? FitInputWidth { get; set; }
@@ -15510,6 +15972,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// custom suffix icon component
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringComponentValue?；值域为 string | IVueComponent。变量用 SuffixIcon="@value"，并保持声明的分支类型。字符串用 SuffixIcon="text"；数字字符串保持 string。投影：value?.AsString、value?.AsComponent；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
@@ -15517,6 +15980,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// The height of the dropdown panel, 34px for each item
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -15524,6 +15988,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// The height of the dropdown item
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ItemHeight="@(32)" 或 ItemHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("itemHeight")]
     public Number? ItemHeight { get; set; }
@@ -15531,6 +15996,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// Controls virtual-list sizing mode: if undefined, the list uses fixed item height from `item-height`; if provided, the list uses dynamic item sizing and this value as the estimated item height.
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 EstimatedOptionHeight="@(32)" 或 EstimatedOptionHeight="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("estimatedOptionHeight")]
     public Number? EstimatedOptionHeight { get; set; }
@@ -15552,6 +16018,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// debounce delay during remote search, in milliseconds
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Debounce="@(32)" 或 Debounce="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
@@ -15580,6 +16047,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// offset of the dropdown
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Offset="@(32)" 或 Offset="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
@@ -15622,6 +16090,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// The max tags number to be shown. To use this, `collapse-tags` must be true
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 MaxCollapseTags="@(32)" 或 MaxCollapseTags="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
@@ -15657,6 +16126,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
     /// </summary>
+    /// <remarks data-authoring="types">C# union ElValueOnClearValue?；值域为 bool | double | string | ElValueOnClearCallback。数值用 ValueOnClear="@(32)"；变量用 ValueOnClear="@value"，无需 double 后缀。字符串用 ValueOnClear="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsNumber、value?.AsString、value?.AsCallback；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
@@ -15671,6 +16141,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// tabindex for input
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Tabindex="@(32)"；变量用 Tabindex="@value"，无需 double 后缀。字符串用 Tabindex="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
@@ -15776,6 +16247,7 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
     /// <summary>
     /// binding value
     /// </summary>
+    /// <remarks data-authoring="types">C# 回调参数为 ElSelectV2ModelValue?；保持与模型相同的强类型。投影：value?.AsSingle、value?.AsMultiple；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<ElSelectV2ModelValue?> ModelValueChanged { get; set; }
@@ -15793,6 +16265,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// The width of the watermark, the default value of `content` is its own width
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Width="@(32)" 或 Width="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
@@ -15800,6 +16273,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// The height of the watermark, the default value of `content` is its own height
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Height="@(32)" 或 Height="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
@@ -15807,6 +16281,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// When the watermark is drawn, the rotation Angle, unit `°`
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 Rotate="@(32)" 或 Rotate="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("rotate")]
     public Number? Rotate { get; set; }
@@ -15814,6 +16289,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// The z-index of the appended watermark element
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 Number?；Razor 数值写 ZIndex="@(32)" 或 ZIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
@@ -15828,6 +16304,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// Watermark text content
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringOrStringsValue?；值域为 string | string[]。变量用 Content="@value"，并保持声明的分支类型。字符串用 Content="text"；数字字符串保持 string。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsString、value?.AsStrings；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("content")]
     public VueStringOrStringsValue? Content { get; set; }
@@ -15842,6 +16319,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// The spacing between watermarks
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueNumberPair?；值域为 Number[]。变量用 Gap="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsValues；不匹配返回 null，0/false 保留。带标签的重叠分支不能从擦除后的 JS 值恢复精确标签；这类投影需要明确的宿主映射。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("gap")]
     public VueNumberPair? Gap { get; set; }
@@ -15849,6 +16327,7 @@ public sealed class ElWatermark : ElContentComponentBase
     /// <summary>
     /// The offset of the watermark from the upper left corner of the container. The default is `gap/2`
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueNumberPair?；值域为 Number[]。变量用 Offset="@value"，并保持声明的分支类型。数组使用强类型数组/已支持的集合表达式；空数组与 null 分开，运行时不检查数组元素类型。投影：value?.AsValues；不匹配返回 null，0/false 保留。带标签的重叠分支不能从擦除后的 JS 值恢复精确标签；这类投影需要明确的宿主映射。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("offset")]
     public VueNumberPair? Offset { get; set; }

@@ -11,6 +11,7 @@ public sealed class VdXy : VdChartComponent<VdXyDatasetItem[], VdXyConfig>
     /// <summary>
     /// 外部控制的 X 轴选中索引，从 0 开始；可用于同步多个图表的指示位置。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int?；Razor 数值写 SelectedXIndex="@(32)" 或 SelectedXIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("selectedXIndex")]
     public int? SelectedXIndex { get; set; }
@@ -75,6 +76,7 @@ public sealed class VdStackline : VdChartComponent<VdStacklineDatasetItem[], VdS
     /// <summary>
     /// 外部控制的 X 轴选中索引，从 0 开始；可用于同步多个图表的指示位置。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int?；Razor 数值写 SelectedXIndex="@(32)" 或 SelectedXIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("selectedXIndex")]
     public int? SelectedXIndex { get; set; }
@@ -211,6 +213,7 @@ public sealed class VdCandlestick : VdChartComponent<VdCellValue[][], VdCandlest
     /// <summary>
     /// 外部控制的 X 轴选中索引，从 0 开始；可用于同步多个图表的指示位置。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 int?；Razor 数值写 SelectedXIndex="@(32)" 或 SelectedXIndex="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("selectedXIndex")]
     public int? SelectedXIndex { get; set; }

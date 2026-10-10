@@ -170,6 +170,7 @@ public sealed class VdIcon : ComponentBase, ECMAScript.Vue.IVueComponent
     /// <summary>
     /// SVG 描边线宽，以 SVG 用户坐标单位表示。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 double?；Razor 数值写 StrokeWidth="@(32)" 或 StrokeWidth="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public double? StrokeWidth { get; set; }
@@ -177,6 +178,7 @@ public sealed class VdIcon : ComponentBase, ECMAScript.Vue.IVueComponent
     /// <summary>
     /// 图标显示尺寸，可使用数值或带单位的 CSS 尺寸。
     /// </summary>
+    /// <remarks data-authoring="types">C# union Vue.VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("size")]
     public Vue.VueStringNumberValue? Size { get; set; }
@@ -271,6 +273,7 @@ public sealed class VdPattern : ComponentBase
     /// <summary>
     /// SVG 描边线宽，以 SVG 用户坐标单位表示。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 double?；Razor 数值写 StrokeWidth="@(32)" 或 StrokeWidth="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public double? StrokeWidth { get; set; }
@@ -278,6 +281,7 @@ public sealed class VdPattern : ComponentBase
     /// <summary>
     /// 缩放 SVG 图案的比例。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 double?；Razor 数值写 Scale="@(32)" 或 Scale="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("scale")]
     public double? Scale { get; set; }
@@ -300,6 +304,7 @@ public sealed class VdPatternSeed : ComponentBase
     /// <summary>
     /// 确定性图案的随机种子；相同种子和配置生成相同的图案。
     /// </summary>
+    /// <remarks data-authoring="types">C# union Vue.VueStringNumberValue；值域为 double | string。数值用 Seed="@(32)"；变量用 Seed="@value"，无需 double 后缀。字符串用 Seed="text"；数字字符串保持 string。投影：value.AsNumber、value.AsString；不匹配返回 null，0/false 保留。</remarks>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("seed")]
@@ -322,6 +327,7 @@ public sealed class VdPatternSeed : ComponentBase
     /// <summary>
     /// 种子图案允许的最大图形尺寸。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 double?；Razor 数值写 MaxSize="@(32)" 或 MaxSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("maxSize")]
     public double? MaxSize { get; set; }
@@ -329,6 +335,7 @@ public sealed class VdPatternSeed : ComponentBase
     /// <summary>
     /// 种子图案允许的最小图形尺寸。
     /// </summary>
+    /// <remarks data-authoring="types">C# 类型为 double?；Razor 数值写 MinSize="@(32)" 或 MinSize="@value"，由 C#/Razor 检查转换。Number/double 遵循 JavaScript 双精度语义，大整数 ID 使用字符串。</remarks>
     [Parameter]
     [ECMAScriptName("minSize")]
     public double? MinSize { get; set; }
@@ -336,6 +343,7 @@ public sealed class VdPatternSeed : ComponentBase
     /// <summary>
     /// 区分使用相同种子的多个图案实例，避免 SVG 标识冲突。
     /// </summary>
+    /// <remarks data-authoring="types">C# union Vue.VueStringNumberValue?；值域为 double | string。数值用 Disambiguator="@(32)"；变量用 Disambiguator="@value"，无需 double 后缀。字符串用 Disambiguator="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("disambiguator")]
     public Vue.VueStringNumberValue? Disambiguator { get; set; }

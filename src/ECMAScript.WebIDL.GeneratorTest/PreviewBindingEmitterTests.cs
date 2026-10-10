@@ -124,7 +124,18 @@ public sealed class PreviewBindingEmitterTests
             namespace ECMAScript;
 
             public class Uint8Array;
-            public readonly struct Number;
+            public readonly struct Number
+            {
+                public static implicit operator Number(byte value) => default;
+                public static implicit operator Number(sbyte value) => default;
+                public static implicit operator Number(short value) => default;
+                public static implicit operator Number(ushort value) => default;
+                public static implicit operator Number(int value) => default;
+                public static implicit operator Number(uint value) => default;
+                public static implicit operator Number(float value) => default;
+                public static implicit operator Number(double value) => default;
+                public static implicit operator Number(decimal value) => default;
+            }
             public abstract class BigInt;
             """);
 

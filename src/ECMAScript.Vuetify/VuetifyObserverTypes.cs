@@ -135,6 +135,22 @@ public readonly union VuetifyIntersectionObserverThreshold(Number, Number[]) : I
 
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<Number>)this).GetEnumerator();
+    #region Generated union numeric conversions
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(byte value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(decimal value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(float value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(sbyte value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(short value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(uint value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+    public static implicit operator VuetifyIntersectionObserverThreshold(ushort value) => (VuetifyIntersectionObserverThreshold)(ECMAScript.Number)value;
+    #endregion
 }
 
 /// <summary>

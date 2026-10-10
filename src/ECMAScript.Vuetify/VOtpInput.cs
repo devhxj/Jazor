@@ -13,6 +13,7 @@ public sealed class VOtpInput : ComponentBase, IVuetifyComponent
     /// OTP 输入框的数量。
     /// Number of OTP input fields.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VueStringNumberValue?；值域为 double | string。数值用 Length="@(32)"；变量用 Length="@value"，无需 double 后缀。字符串用 Length="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("length")]
     public VueStringNumberValue? Length { get; set; }
@@ -45,6 +46,7 @@ public sealed class VOtpInput : ComponentBase, IVuetifyComponent
     /// 是否显示加载状态。
     /// Whether to show a loading state.
     /// </summary>
+    /// <remarks data-authoring="types">C# union VuetifyBooleanStringValue?；值域为 bool | string。变量用 Loading="@value"，并保持声明的分支类型。字符串用 Loading="text"；数字字符串保持 string。投影：value?.AsBool、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter]
     [ECMAScriptName("loading")]
     public VuetifyBooleanStringValue? Loading { get; set; }

@@ -7,8 +7,10 @@ namespace ECMAScript.Lucide;
 public abstract class LucideIconBase : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>图标尺寸。数字按像素处理，也可使用 CSS 尺寸字符串。</summary>
+    /// <remarks data-authoring="types">C# union Vue.VueStringNumberValue?；值域为 double | string。数值用 Size="@(32)"；变量用 Size="@value"，无需 double 后缀。字符串用 Size="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter, ECMAScriptName("size")] public Vue.VueStringNumberValue? Size { get; set; }
     /// <summary>SVG 描边宽度。</summary>
+    /// <remarks data-authoring="types">C# union Vue.VueStringNumberValue?；值域为 double | string。数值用 StrokeWidth="@(32)"；变量用 StrokeWidth="@value"，无需 double 后缀。字符串用 StrokeWidth="text"；数字字符串保持 string。投影：value?.AsNumber、value?.AsString；不匹配返回 null，0/false 保留。清空值由宿主组件的公开参数决定。</remarks>
     [Parameter, ECMAScriptName("strokeWidth")] public Vue.VueStringNumberValue? StrokeWidth { get; set; }
     /// <summary>保持绝对描边宽度，使描边不随图标尺寸同比缩放。</summary>
     [Parameter, ECMAScriptName("absoluteStrokeWidth")] public bool? AbsoluteStrokeWidth { get; set; }

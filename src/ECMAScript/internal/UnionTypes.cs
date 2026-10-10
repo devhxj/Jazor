@@ -22,6 +22,26 @@ public readonly union PropertyKeyRef(string, Number, Symbol)
 
 	/// <summary>Gets the Symbol branch, or <see langword="null"/> for another branch. 获取 Symbol 分支；其他分支时为 <see langword="null"/>。</summary>
 	public Symbol? AsSymbol => Value as Symbol;
+	#region Generated union numeric conversions
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(byte value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(decimal value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(double value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(float value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(int value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(sbyte value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(short value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(uint value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator PropertyKeyRef(ushort value) => (PropertyKeyRef)(ECMAScript.Number)value;
+	#endregion
 }
 
 /// <summary>JavaScript Date constructor primitive input union. JavaScript Date 构造器原始值输入联合。</summary>
@@ -34,6 +54,26 @@ public readonly union DatePrimitive(string, Number)
 
 	/// <summary>Gets the millisecond timestamp branch. 获取毫秒时间戳分支。</summary>
 	public Number? AsNumber => Value is Number value ? value : default(Number?);
+	#region Generated union numeric conversions
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(byte value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(decimal value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(double value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(float value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(int value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(sbyte value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(short value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(uint value) => (DatePrimitive)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator DatePrimitive(ushort value) => (DatePrimitive)(ECMAScript.Number)value;
+	#endregion
 }
 
 /// <summary>Result value union returned by <c>Atomics.waitAsync</c>. <c>Atomics.waitAsync</c> 返回的结果值联合。</summary>
@@ -73,6 +113,26 @@ public readonly union IntlNumberInput(Number, BigInt, string)
 
 	/// <summary>Gets the decimal-string branch. 获取十进制字符串分支。</summary>
 	public string? AsString => Value as string;
+	#region Generated union numeric conversions
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(byte value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(decimal value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(double value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(float value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(int value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(sbyte value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(short value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(uint value) => (IntlNumberInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlNumberInput(ushort value) => (IntlNumberInput)(ECMAScript.Number)value;
+	#endregion
 }
 
 /// <summary>Date-or-timestamp union accepted by ECMA-402 date/time APIs. ECMA-402 日期时间 API 接受的 Date 或时间戳联合。</summary>
@@ -85,6 +145,26 @@ public readonly union IntlDateTimeInput(Date, Number)
 
 	/// <summary>Gets the millisecond timestamp branch. 获取毫秒时间戳分支。</summary>
 	public Number? AsNumber => Value is Number value ? value : default(Number?);
+	#region Generated union numeric conversions
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(byte value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(decimal value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(double value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(float value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(int value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(sbyte value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(short value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(uint value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	/// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+	public static implicit operator IntlDateTimeInput(ushort value) => (IntlDateTimeInput)(ECMAScript.Number)value;
+	#endregion
 }
 
 /// <summary>Month-style union for ECMA-402 date/time formatting. ECMA-402 日期时间格式化的月份样式联合。</summary>

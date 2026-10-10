@@ -568,7 +568,7 @@ internal static class ElementPlusGenerator
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlus.Components.generated.cs"),
-            RenderComponentDefinitions(components, componentModulePaths, webTypesPath, attributesPath, componentBaselinePath));
+            new BindingAuthoringDocumentation(repositoryRoot).Annotate(RenderComponentDefinitions(components, componentModulePaths, webTypesPath, attributesPath, componentBaselinePath)));
 
         WriteFile(
             Path.Combine(packageRoot, "ElementPlusDirectiveExports.cs"),

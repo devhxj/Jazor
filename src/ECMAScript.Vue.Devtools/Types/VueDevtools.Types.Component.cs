@@ -16,6 +16,26 @@ public static partial class VueDevtools
         /// <summary>从整数 uid 创建 identity projection。</summary>
         [ECMAScriptInline("__arg1")]
         public extern static ComponentIdentifier From(int value);
+        #region Generated union numeric conversions
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(byte value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(decimal value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(double value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(float value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(int value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(sbyte value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(short value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(uint value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        /// <summary>Accepts a numeric value through the declared Number branch; avoids two chained C# user conversions. 经现有 Number 分支接受数值。</summary>
+        public static implicit operator ComponentIdentifier(ushort value) => (ComponentIdentifier)(ECMAScript.Number)value;
+        #endregion
     }
 
     /// <summary>
