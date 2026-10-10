@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using DenoHost.Core;
@@ -46,6 +47,21 @@ internal static class DenoPackageRestorer
         }
 
         var deno = ResolveExecutable(executablePath);
+        var restoreStatePath = Path.Combine(workspaceRoot, "node_modules", ".jazor-restore-state");
+        // Reinstalling an unchanged graph overwrites Vite's loaded native .node files on Windows.
+        // Reuse only a successful external-package restore with the exact package/lock contents;
+        // changed authored modules still run Deno check. Local file: packages keep their restore
+        // path because their contents can change without changing the root lock identity.
+        // HMR 只改作者模块时不触碰 node_modules；stamp 属于该目录，删除目录即失效。
+        var reusableIdentity = GetRestoredExternalIdentity(packagePath, lockPath);
+        if (reusableIdentity is not null && File.Exists(restoreStatePath) &&
+            File.ReadAllText(restoreStatePath) == reusableIdentity)
+        {
+            progress?.WriteLine("[Jazor Emit] deno install: skipped (package/lock unchanged; restored node_modules)");
+            await CheckAsync(workspaceRoot, deno, entryPaths, libraries, cancellationToken, progress).ConfigureAwait(false);
+            return;
+        }
+        DeleteFile(restoreStatePath);
         ClearNpmAliasProjections(workspaceRoot, packagePath);
         ProcessResult restoreResult;
         if (File.Exists(lockPath) && LockMatchesPackageJson(packagePath, lockPath))
@@ -105,6 +121,20 @@ internal static class DenoPackageRestorer
 
         MaterializeNpmAliasProjections(workspaceRoot, packagePath);
         await CheckAsync(workspaceRoot, deno, entryPaths, libraries, cancellationToken, progress).ConfigureAwait(false);
+        if (GetRestoredExternalIdentity(packagePath, lockPath) is { } restoredIdentity)
+            File.WriteAllText(restoreStatePath, restoredIdentity);
+    }
+
+    private static string? GetRestoredExternalIdentity(string packagePath, string lockPath)
+    {
+        if (!File.Exists(lockPath))
+            return null;
+        using var package = JsonDocument.Parse(File.ReadAllText(packagePath));
+        if (ReadDependencies(package.RootElement).Any(static dependency =>
+                dependency.Value.GetString()!.StartsWith("file:", StringComparison.OrdinalIgnoreCase)))
+            return null;
+        return Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(packagePath))) + "\n" +
+               Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(lockPath)));
     }
 
     private static void ClearNpmAliasProjections(string workspaceRoot, string packagePath)

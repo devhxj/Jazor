@@ -117,6 +117,30 @@ public sealed class StandardPackageProjectTests
                 Assert.AreEqual("@sxzz/popperjs-es", aliasPackage.RootElement.GetProperty("name").GetString());
             Assert.AreEqual("true", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
 
+            // A source-only HMR update must preserve both the installed graph and alias projection.
+            // Hold a package file against writes to model Windows Vite/native-module ownership.
+            using (var loadedPackage = new FileStream(Path.Combine(aliasRoot, "package.json"), FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                await File.WriteAllTextAsync(appPath, "import { placements } from '@popperjs/core'; console.log(placements.includes('top'));", timeout.Token);
+                using var incrementalProgress = new StringWriter();
+                await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token, incrementalProgress);
+                StringAssert.Contains(incrementalProgress.ToString(), "deno install: skipped");
+                StringAssert.Contains(incrementalProgress.ToString(), "deno check: completed");
+            }
+            Assert.AreEqual("true", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
+
+            // A successful restore receipt cannot mask a new authored-module failure.
+            await File.WriteAllTextAsync(appPath, "import './missing-authored-module.js';", timeout.Token);
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token));
+            await File.WriteAllTextAsync(appPath, "import { placements } from '@popperjs/core'; console.log(placements.includes('bottom'));", timeout.Token);
+
+            Directory.Delete(Path.Combine(root, "node_modules"), recursive: true);
+            using var recoveredProgress = new StringWriter();
+            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token, recoveredProgress);
+            StringAssert.Contains(recoveredProgress.ToString(), "deno install: started");
+            Assert.IsTrue(File.Exists(Path.Combine(aliasRoot, "package.json")));
+
             var result = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
             Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message);
             Assert.AreEqual("true", await RunDenoAsync(deno, root, "dist/bundle.js", timeout.Token));
@@ -229,7 +253,9 @@ public sealed class StandardPackageProjectTests
             await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
             var lockPath = Path.Combine(root, "deno.lock");
             var locked = await File.ReadAllTextAsync(lockPath, timeout.Token);
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
+            using var repeatedProgress = new StringWriter();
+            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token, repeatedProgress);
+            StringAssert.Contains(repeatedProgress.ToString(), "deno install: skipped");
             Assert.AreEqual(locked, await File.ReadAllTextAsync(lockPath, timeout.Token));
             Assert.AreEqual("npm/3", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
 
@@ -251,7 +277,9 @@ public sealed class StandardPackageProjectTests
             upgradedReferences["@jsr/std__path"] = new("@jsr/std__path", "jsr:@std/path@1.0.9", "jsr");
             var upgradedLibraries = libraries with { PackageReferences = upgradedReferences };
             LibraryPackageWriter.WritePackageProject(root, upgradedLibraries);
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, upgradedLibraries, timeout.Token);
+            using var upgradedProgress = new StringWriter();
+            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, upgradedLibraries, timeout.Token, upgradedProgress);
+            StringAssert.Contains(upgradedProgress.ToString(), "deno install: started");
             var upgradedLock = await File.ReadAllTextAsync(lockPath, timeout.Token);
             Assert.AreNotEqual(locked, upgradedLock);
             StringAssert.Contains(upgradedLock, "npm:@jsr/std__path@1.0.9");

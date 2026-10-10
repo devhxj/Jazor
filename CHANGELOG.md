@@ -12,6 +12,7 @@
 - 现有构建 benchmark 增加 Release manifest 资源报告，分别统计入口、静态依赖、lazy、source map 与其它文件的原始/gzip 体积；`--release-artifacts <dist>` 可只读分析消费者已有产物。报告 schema 升为 `razorvue-build-v3`，记录 SDK/提交/平台；Debug 产物统计排除 `node_modules`，模块数从真实 `obj` manifest 读取。gzip 是逐文件估算，不代表 HTTP 压缩或首屏实测流量。
 - benchmark 的 `razorvue-build-v4` 支持真实消费者的 clean/incremental/Release 采样，保留已 restore 的候选包缓存，分别记录工具与消费者提交。可附入首屏及 HMR 的 Resource Timing 浏览器观测；缓存请求的实际 transfer 与产物 gzip 估算分开报告。
 - 修复 Monaco 编辑器操作被错误当作 ESM 根部导出的问题，使用 Monaco 0.56 的命名导出 `editor` 和既有 Inline 映射，C# 静态方法签名不变。消费者可删除自建的 `editor` namespace 接线；编辑器、模型、主题、标记与 worker 继续由原 npm 入口提供。
+- 修复 Windows Vite 运行期间，作者模块修改仍触发 Deno install 覆写正在使用的原生 `.node` 文件的问题。同一 node_modules 内成功 restore/check 的 package/lock 身份未变化时跳过重复外部依赖安装，继续检查作者模块；依赖变化或目录重建仍正常安装，file: 包保留原恢复行为。没有锁错误重试或兼容 fallback。
 
 ## 2026-10-09
 

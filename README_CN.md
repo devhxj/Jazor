@@ -38,6 +38,8 @@
 
 未发布的 Monaco 绑定将编辑器操作映射到上游命名导出 `editor`；`Monaco.Create` 与模型操作保留原有 C# 调用形式，消费者无需自建 namespace 接线。
 
+只改作者模块时，Emit 在 package/lock 内容未变化的条件下复用已成功恢复的外部依赖，仍执行 Deno check；Windows 下运行中的 Vite 不再因重复 install 覆写原生包文件而阻挡 HMR 构建。
+
 本次开发者反馈更新补齐强类型 Element Plus 交互、原生 DOM 事件与浏览器 payload 投影、可复用的 ASP.NET Core 宿主、按 RID 选择 Emit 资产和自足 SSR 发布。范围与验收见[开发者反馈状态](docs/04-roadmap/preview8-developer-feedback.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。

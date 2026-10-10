@@ -83,6 +83,8 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 `ReadyMilliseconds` 的起点和可见条件必须随采集器记录。资源体积来自原生 Resource Timing，同一资源的多次请求保留，缓存响应可能有 0 transfer；这些数值与逐文件 gzip 估算分开呈现。首屏的请求列表据浏览器实际观察填写，不能用 manifest 静态闭包代替。
 
+当前源码的 Emit 会在 `node_modules/.jazor-restore-state` 记录成功 restore/check 的 package/lock 身份。外部依赖图没有变化时只运行 Deno check，避免 HMR 构建覆写运行中的 Vite 原生模块。删除 node_modules 后正常恢复；更改 package 或锁文件会重新安装，file: 包不使用这个根锁复用条件。依赖确有变化时，Windows 上先退出使用该目录的开发宿主再构建。
+
 ## 改动边界
 
 - 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；生成器维护该文件。
