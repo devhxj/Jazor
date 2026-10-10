@@ -31,7 +31,15 @@ public sealed class BuildBenchmarkReportTests
             foreach (var (path, content) in contents)
                 await File.WriteAllTextAsync(Path.Combine(dist, path), content);
             var reportPath = Path.Combine(root, "report.json");
-            var result = await RunAsync(reportPath);
+            var browserPath = Path.Combine(root, "browser.json");
+            await File.WriteAllTextAsync(browserPath, """
+                [{"Scenario":"first-screen","Sample":1,"Browser":"Chrome/test","Url":"http://localhost/docs/","CacheDisabled":false,"ReadyMilliseconds":25,
+                  "Resources":[
+                    {"Path":"shared.js","DurationMilliseconds":10,"DecodedBodySize":7,"EncodedBodySize":7,"TransferSize":307},
+                    {"Path":"shared.js","DurationMilliseconds":1,"DecodedBodySize":7,"EncodedBodySize":7,"TransferSize":0}
+                  ]}]
+                """);
+            var result = await RunAsync(reportPath, browserPath);
             Assert.AreEqual(0, result.ExitCode, result.Output);
             using var report = JsonDocument.Parse(await File.ReadAllTextAsync(reportPath));
             var files = report.RootElement.GetProperty("Measurements")[0].GetProperty("ReleaseArtifact").GetProperty("Files");
@@ -45,6 +53,13 @@ public sealed class BuildBenchmarkReportTests
             Assert.AreEqual("source-map", byPath["bundle.js.map"].GetProperty("Group").GetString());
             Assert.AreEqual("other", byPath["unreferenced.txt"].GetProperty("Group").GetString());
             Assert.IsTrue(byPath["bundle.js"].GetProperty("GzipBytes").GetInt64() < 4096);
+            // A cached repeat is still a request. Preserve its zero transfer instead of
+            // replacing Resource Timing with the on-disk gzip estimate or deduplicating it.
+            var requests = report.RootElement.GetProperty("BrowserObservations")[0].GetProperty("Resources");
+            Assert.AreEqual(2, requests.GetArrayLength());
+            Assert.AreEqual(0L, requests[1].GetProperty("TransferSize").GetInt64());
+            var markdown = await File.ReadAllTextAsync(Path.ChangeExtension(reportPath, ".md"));
+            StringAssert.Contains(markdown, "| first-screen | 1 | Chrome/test | 25.0 | 2 | 14 | 14 | 307 |");
             Assert.AreEqual(contents.Count, Directory.GetFiles(dist).Length);
             foreach (var (path, content) in contents)
                 Assert.AreEqual(content, await File.ReadAllTextAsync(Path.Combine(dist, path)));
@@ -66,7 +81,7 @@ public sealed class BuildBenchmarkReportTests
             Directory.Delete(root, recursive: true);
         }
 
-        async Task<(int ExitCode, string Output)> RunAsync(string output)
+        async Task<(int ExitCode, string Output)> RunAsync(string output, string? browser = null)
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             using var process = new Process
@@ -80,6 +95,11 @@ public sealed class BuildBenchmarkReportTests
             foreach (var argument in new[] { "run", "--file", Path.Combine(repo, "scripts", "csharp", "benchmark-razorvue-build.cs"),
                          "--", "--release-artifacts", dist, "--out", output })
                 process.StartInfo.ArgumentList.Add(argument);
+            if (browser is not null)
+            {
+                process.StartInfo.ArgumentList.Add("--browser-observations");
+                process.StartInfo.ArgumentList.Add(browser);
+            }
             process.Start();
             var stdout = process.StandardOutput.ReadToEndAsync();
             var stderr = process.StandardError.ReadToEndAsync();

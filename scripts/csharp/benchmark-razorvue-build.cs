@@ -14,6 +14,9 @@ var repoRoot = RequireRepositoryRoot();
 var startedAt = DateTimeOffset.UtcNow;
 var sdkVersion = await ReadCommandAsync("dotnet", ["--version"], repoRoot);
 var gitCommit = await ReadCommandAsync("git", ["rev-parse", "HEAD"], repoRoot);
+var browserObservations = options.BrowserObservations is null ? null
+    : JsonSerializer.Deserialize<BrowserObservation[]>(await File.ReadAllTextAsync(options.BrowserObservations))!;
+ConsumerProjectInfo? consumer = null;
 if (options.ReleaseArtifacts is not null)
 {
     // Read-only consumer mode must run before benchmark workspace cleanup/environment changes.
@@ -29,12 +32,51 @@ if (options.ReleaseArtifacts is not null)
     await WriteReportAsync(artifactReportPath, artifactReport);
     return;
 }
-ConfigureRepositoryEnvironment(repoRoot);
+// A real consumer must retain its restored candidate packages and cache configuration.
+// Source-sample cache settings below would select a different NuGet package store.
+if (options.ConsumerProject is null)
+    ConfigureRepositoryEnvironment(repoRoot);
 var workRoot = ResolveInsideRepository(repoRoot, options.WorkRoot ?? Path.Combine(".tmp", "razorvue-build-benchmark"));
 var reportPath = ResolveInsideRepository(repoRoot, options.Output ?? Path.Combine(workRoot, "report.json"));
 if (Directory.Exists(workRoot))
     Directory.Delete(workRoot, recursive: true);
 Directory.CreateDirectory(workRoot);
+
+if (options.ConsumerProject is not null)
+{
+    if (!options.SkipHmr)
+        throw new ArgumentException("--consumer-project requires --skip-hmr; measure consumer HMR in its running browser.");
+    var project = Path.GetFullPath(options.ConsumerProject);
+    var projectDirectory = Path.GetDirectoryName(project)!;
+    var intermediate = await ReadCommandAsync("dotnet", ["msbuild", project, "-nologo", "-p:Configuration=Debug", "-getProperty:IntermediateOutputPath"], projectDirectory);
+    var manifest = Path.GetFullPath(Path.Combine(projectDirectory, intermediate, "jazor-manifest.json"));
+    consumer = new ConsumerProjectInfo(project, await ReadCommandAsync("git", ["rev-parse", "HEAD"], projectDirectory), manifest,
+        "Restored .NET packages and warm download caches; clean uses Rebuild and a fresh frontend directory; Release measures publish into a fresh directory.");
+    var consumerMeasurements = new List<BuildMeasurement>();
+    for (var sample = 1; sample <= options.Samples; sample++)
+    {
+        var sampleRoot = Path.Combine(workRoot, "consumer-" + sample);
+        var frontend = Path.Combine(sampleRoot, "debug-project", "jazor");
+        var output = EnsureTrailingSeparator(Path.Combine(sampleRoot, "debug-bin"));
+        string[] BuildArguments(bool rebuild) => ["build", project, "-c", "Debug", "--no-restore", "/m:1", "/nr:false",
+            "-p:UseSharedCompilation=false", "-p:OutDir=" + output, "-p:JazorDir=" + frontend, .. rebuild ? new[] { "-t:Rebuild" } : Array.Empty<string>()];
+        var clean = await MeasureAsync("clean", sample, BuildArguments(rebuild: true), projectDirectory);
+        clean = clean with { Artifact = CaptureArtifact(frontend, manifest, null) };
+        consumerMeasurements.Add(clean);
+        var incremental = await MeasureAsync("incremental", sample, BuildArguments(rebuild: false), projectDirectory);
+        consumerMeasurements.Add(incremental with { Artifact = CaptureArtifact(frontend, manifest, clean.Artifact) });
+        if (!options.SkipRelease)
+        {
+            var publish = Path.Combine(sampleRoot, "publish");
+            var release = await MeasureAsync("release", sample, ["publish", project, "-c", "Release", "--no-restore", "/m:1", "/nr:false",
+                "-p:UseSharedCompilation=false", "-p:OutDir=" + EnsureTrailingSeparator(Path.Combine(sampleRoot, "release-bin")),
+                "-p:JazorDir=" + Path.Combine(sampleRoot, "release-project", "jazor"), "-o", publish], projectDirectory);
+            consumerMeasurements.Add(release with { ReleaseArtifact = CaptureReleaseArtifact(Path.Combine(publish, "jazor", "dist")) });
+        }
+    }
+    await WriteReportAsync(reportPath, CreateReport(consumerMeasurements));
+    return;
+}
 
 var measurements = new List<BuildMeasurement>();
 BuildArtifactSnapshot? previousArtifact = null;
@@ -90,8 +132,8 @@ foreach (var group in measurements.GroupBy(static measurement => measurement.Nam
     Console.WriteLine($"  {group.Key} median: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
 
 BuildBenchmarkReport CreateReport(IReadOnlyList<BuildMeasurement> values)
-    => new("razorvue-build-v3", startedAt, Environment.Version.ToString(), sdkVersion, gitCommit,
-        RuntimeInformation.OSDescription, RuntimeInformation.ProcessArchitecture.ToString(), options, values);
+    => new("razorvue-build-v4", startedAt, Environment.Version.ToString(), sdkVersion, gitCommit,
+        RuntimeInformation.OSDescription, RuntimeInformation.ProcessArchitecture.ToString(), options, values, consumer, browserObservations);
 
 static async Task WriteReportAsync(string path, BuildBenchmarkReport report)
 {
@@ -366,6 +408,22 @@ static string ToMarkdown(BuildBenchmarkReport report)
     lines.Add("Median elapsed time by scenario:");
     foreach (var group in report.Measurements.GroupBy(static measurement => measurement.Name, StringComparer.Ordinal))
         lines.Add($"- `{group.Key}`: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
+    if (report.Consumer is { } consumer)
+        lines.AddRange(["", $"Consumer: `{consumer.Project}`", $"Consumer commit: `{consumer.GitCommit}`", $"Cache policy: {consumer.CachePolicy}"]);
+    if (report.BrowserObservations is { } observations)
+    {
+        lines.AddRange(["", "## Browser observations", "",
+            "Ready time uses the collector's visible-page/update condition. Resource sizes are actual Resource Timing values; zero can mean a cached response.", "",
+            "| Scenario | Sample | Browser | Ready (ms) | Requests | Decoded body bytes | Encoded body bytes | Transfer bytes |",
+            "| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |"]);
+        foreach (var observation in observations)
+            lines.Add($"| {observation.Scenario} | {observation.Sample} | {observation.Browser} | {observation.ReadyMilliseconds:0.0} | {observation.Resources.Count} | {observation.Resources.Sum(file => file.DecodedBodySize)} | {observation.Resources.Sum(file => file.EncodedBodySize)} | {observation.Resources.Sum(file => file.TransferSize)} |");
+        lines.Add("");
+        foreach (var observation in observations)
+        {
+            lines.Add($"- `{observation.Scenario}#{observation.Sample}`: `{observation.Url}`, cache disabled: `{observation.CacheDisabled}`; requested paths: {string.Join(", ", observation.Resources.Select(file => "`" + file.Path + "`"))}");
+        }
+    }
     foreach (var measurement in report.Measurements.Where(static measurement => measurement.ReleaseArtifact is not null))
     {
         var artifact = measurement.ReleaseArtifact!;
@@ -388,16 +446,22 @@ sealed record BuildArtifactSnapshot(int GeneratedModuleCount, int MjsFileCount, 
 sealed record ReleaseFileArtifact(string Path, string Group, long Bytes, long GzipBytes);
 sealed record ReleaseArtifactSnapshot(string Root, IReadOnlyList<ReleaseFileArtifact> Files);
 sealed record BuildMeasurement(string Name, int Sample, long ElapsedMilliseconds, BuildArtifactSnapshot? Artifact, ReleaseArtifactSnapshot? ReleaseArtifact = null);
+sealed record ConsumerProjectInfo(string Project, string GitCommit, string Manifest, string CachePolicy);
+sealed record BrowserResource(string Path, double DurationMilliseconds, long DecodedBodySize, long EncodedBodySize, long TransferSize);
+sealed record BrowserObservation(string Scenario, int Sample, string Browser, string Url, bool CacheDisabled, double ReadyMilliseconds, IReadOnlyList<BrowserResource> Resources);
 sealed record BuildBenchmarkReport(string SchemaVersion, DateTimeOffset StartedAt, string DotnetVersion, string SdkVersion, string GitCommit,
-    string OperatingSystem, string Architecture, BuildBenchmarkOptions Options, IReadOnlyList<BuildMeasurement> Measurements);
+    string OperatingSystem, string Architecture, BuildBenchmarkOptions Options, IReadOnlyList<BuildMeasurement> Measurements,
+    ConsumerProjectInfo? Consumer, IReadOnlyList<BrowserObservation>? BrowserObservations);
 
-sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Samples, bool SkipHmr, bool SkipRelease, string? ReleaseArtifacts)
+sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Samples, bool SkipHmr, bool SkipRelease, string? ReleaseArtifacts, string? ConsumerProject, string? BrowserObservations)
 {
     public static BuildBenchmarkOptions Parse(string[] args)
     {
         string? workRoot = null;
         string? output = null;
         string? releaseArtifacts = null;
+        string? consumerProject = null;
+        string? browserObservations = null;
         var samples = 3;
         var skipHmr = false;
         var skipRelease = false;
@@ -411,14 +475,16 @@ sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Sample
                 case "--skip-hmr": skipHmr = true; break;
                 case "--skip-release": skipRelease = true; break;
                 case "--release-artifacts": releaseArtifacts = Next(args, ref index); break;
+                case "--consumer-project": consumerProject = Next(args, ref index); break;
+                case "--browser-observations": browserObservations = Next(args, ref index); break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- [--work-root DIR] [--out FILE] [--samples N] [--skip-hmr] [--skip-release] [--release-artifacts DIST_DIR]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- [--work-root DIR] [--out FILE] [--samples N] [--skip-hmr] [--skip-release] [--release-artifacts DIST_DIR] [--consumer-project CSPROJ --skip-hmr] [--browser-observations JSON]");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown argument: " + args[index]);
             }
         }
-        return new BuildBenchmarkOptions(workRoot, output, samples, skipHmr, skipRelease, releaseArtifacts);
+        return new BuildBenchmarkOptions(workRoot, output, samples, skipHmr, skipRelease, releaseArtifacts, consumerProject, browserObservations);
     }
 
     private static string Next(string[] args, ref int index)

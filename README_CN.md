@@ -34,6 +34,8 @@
 
 现有构建 benchmark 支持 `--release-artifacts <dist目录>`，只读统计消费者 Release 入口、静态依赖及懒加载资源的原始/gzip 体积，详见[开发与测试指南](docs/03-guides/development-and-testing.md)。
 
+工具还可通过 `--consumer-project <csproj> --skip-hmr` 测量真实宿主，保留消费者包缓存并单独记录其提交；`--browser-observations <json>` 接入首屏与 HMR 的浏览器观测，具体统计口径见开发与测试指南。
+
 本次开发者反馈更新补齐强类型 Element Plus 交互、原生 DOM 事件与浏览器 payload 投影、可复用的 ASP.NET Core 宿主、按 RID 选择 Emit 资产和自足 SSR 发布。范围与验收见[开发者反馈状态](docs/04-roadmap/preview8-developer-feedback.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。

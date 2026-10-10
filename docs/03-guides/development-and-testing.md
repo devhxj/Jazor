@@ -71,6 +71,18 @@ JSON 与 Markdown 分别记录入口、静态依赖、lazy、source map、metada
 
 schema `razorvue-build-v3` 增加 SDK、源码提交、操作系统、架构及采样参数。Debug 产物不计恢复得到的 `node_modules`，模块数和 manifest 体积从当前样例的真实隔离 `obj` 读取；这一统计口径与旧 v2 不同。gzip 使用 .NET `SmallestSize` 逐文件估算，不能视作 HTTP 压缩或首屏实际请求。`artifact-scan` 的耗时仅表示报告扫描，不能作为构建耗时。
 
+当前 schema `razorvue-build-v4` 还支持真实消费者的构建与浏览器观测。消费者保持自己的 NuGet/cache 配置；工具与消费者提交分别记录。先在消费者准备好同版本包并 restore，再从上游执行：
+
+```powershell
+dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-project D:/consumer/src/Host/Host.csproj --skip-hmr --samples 3 --work-root .tmp/consumer-benchmark
+```
+
+每轮使用新的前端目录和输出目录；clean 是已 restore 的 C# `Rebuild`，下载缓存保持温热，incremental 是同目录的无改动 build，Release 是空目录 publish。这不是清空全机缓存的冷启动指标。应用 manifest 从消费者实际 `IntermediateOutputPath` 读取。`--skip-release` 可省略发布采样。
+
+消费者 HMR 应在自己的运行浏览器中测量。默认样例的 `hmr` 行表示整个 HMR 验证脚本的墙钟时间，不能当作消费者更新延迟。浏览器采集器可通过 `--browser-observations observations.json` 附入当前报告，也可与 `--release-artifacts` 合用。输入是 `BrowserObservation[]`，字段为 `Scenario`、`Sample`、`Browser`、`Url`、`CacheDisabled`、`ReadyMilliseconds` 与 `Resources`；每个资源记录 `Path`、`DurationMilliseconds`、`DecodedBodySize`、`EncodedBodySize`、`TransferSize`。
+
+`ReadyMilliseconds` 的起点和可见条件必须随采集器记录。资源体积来自原生 Resource Timing，同一资源的多次请求保留，缓存响应可能有 0 transfer；这些数值与逐文件 gzip 估算分开呈现。首屏的请求列表据浏览器实际观察填写，不能用 manifest 静态闭包代替。
+
 ## 改动边界
 
 - 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；生成器维护该文件。

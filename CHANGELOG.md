@@ -10,6 +10,7 @@
 - 已有标准前端工程也可重新生成缺失的 SDK 默认 Vite 配置；作者配置与替代构建工具继续由项目拥有。
 - Emit 显示模块收集、工程写入、依赖 restore/check 和 bundle 的阶段耗时及即时 Deno 输出，失败或取消指出当前阶段。启动期间取消仍会终止自身 Deno 进程树，避免残留进程占用输出目录。
 - 现有构建 benchmark 增加 Release manifest 资源报告，分别统计入口、静态依赖、lazy、source map 与其它文件的原始/gzip 体积；`--release-artifacts <dist>` 可只读分析消费者已有产物。报告 schema 升为 `razorvue-build-v3`，记录 SDK/提交/平台；Debug 产物统计排除 `node_modules`，模块数从真实 `obj` manifest 读取。gzip 是逐文件估算，不代表 HTTP 压缩或首屏实测流量。
+- benchmark 的 `razorvue-build-v4` 支持真实消费者的 clean/incremental/Release 采样，保留已 restore 的候选包缓存，分别记录工具与消费者提交。可附入首屏及 HMR 的 Resource Timing 浏览器观测；缓存请求的实际 transfer 与产物 gzip 估算分开报告。
 
 ## 2026-10-09
 
