@@ -2676,7 +2676,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "injectedRoute.path");
         StringAssert.Contains(module, "injectedRouteRef.value.path");
         StringAssert.Contains(module, "injectedMatched.value.path");
-        StringAssert.Contains(module, "injectedDepth.toString()");
+        StringAssert.Contains(module, "(typeof injectedDepth === \"number\" ? injectedDepth : null).toString()");
         StringAssert.Contains(module, "link.href.value");
         StringAssert.Contains(module, "link.route.value.href");
 
