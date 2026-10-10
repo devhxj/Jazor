@@ -28,17 +28,19 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             .Where(static source => source is not null)
             .Select(static (source, _) => source!.Value)
             .Collect();
+        var timingPath = context.AnalyzerConfigOptionsProvider.Select(static (options, _) =>
+            options.GlobalOptions.TryGetValue("build_property.JazorCompilationTimingPath", out var path) ? path : null);
         context.RegisterImplementationSourceOutput(
-            razorSources,
-            static (output, sources) =>
+            razorSources.Combine(timingPath),
+            static (output, input) =>
             {
-                if (sources.IsDefaultOrEmpty)
+                if (input.Left.IsDefaultOrEmpty && string.IsNullOrEmpty(input.Right))
                     return;
 
                 output.AddSource(
                     RazorSourceTextRegistry.CarrierHintName,
                     Microsoft.CodeAnalysis.Text.SourceText.From(
-                        RazorSourceTextRegistry.BuildCarrierSource(sources),
+                        RazorSourceTextRegistry.BuildCarrierSource(input.Left, input.Right),
                         System.Text.Encoding.UTF8));
             });
 

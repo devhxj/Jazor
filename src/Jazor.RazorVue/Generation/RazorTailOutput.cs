@@ -22,7 +22,8 @@ internal static class RazorTailOutput
         CancellationToken cancellationToken,
         out string? catalogSource,
         out ImmutableArray<RazorVueDiagnosticInfo> diagnostics,
-        bool appendToExistingModuleCatalog = false)
+        bool appendToExistingModuleCatalog = false,
+        RazorCompilationTiming? timing = null)
     {
         catalogSource = null;
         diagnostics = ImmutableArray<RazorVueDiagnosticInfo>.Empty;
@@ -46,22 +47,31 @@ internal static class RazorTailOutput
                 RazorVueDiagnosticCategory.Internal));
             return false;
         }
+        finally
+        {
+            timing?.CompleteStage("component-discovery");
+        }
+
+        if (timing is not null)
+            timing.ComponentCount = components.Length;
 
         if (components.IsDefaultOrEmpty)
             return true;
 
-        if (!GeneratedCSharpBinder.TryBindFinalCompilationWithDiagnostics(
+        var bound = GeneratedCSharpBinder.TryBindFinalCompilationWithDiagnostics(
                 compilation,
                 components,
                 out var binding,
-                out diagnostics))
+                out diagnostics);
+        timing?.CompleteStage("render-binding");
+        if (!bound)
         {
             // The binder emits one typed diagnostic for every failed component. Keeping that
             // contract direct avoids a generic fallback that can never identify the failed root.
             return false;
         }
 
-        if (!TryBuildVueRenderArtifacts(cancellationToken, binding!, out var artifacts, out diagnostics))
+        if (!TryBuildVueRenderArtifacts(cancellationToken, binding!, out var artifacts, out diagnostics, timing))
         {
             return false;
         }
@@ -70,6 +80,7 @@ internal static class RazorTailOutput
             artifacts,
             appendToExistingModuleCatalog,
             compilation.AssemblyName ?? "Jazor.RazorVue");
+        timing?.CompleteStage("catalog-serialization");
         return true;
     }
 
@@ -77,7 +88,8 @@ internal static class RazorTailOutput
         CancellationToken cancellationToken,
         GeneratedCSharpBinding binding,
         out ImmutableArray<VueModuleArtifact> artifacts,
-        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics)
+        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics,
+        RazorCompilationTiming? timing)
     {
         artifacts = ImmutableArray<VueModuleArtifact>.Empty;
         diagnostics = ImmutableArray<RazorVueDiagnosticInfo>.Empty;
@@ -108,6 +120,7 @@ internal static class RazorTailOutput
 
             inputs.Add(new ArtifactBuildInput(component, closure!));
         }
+        timing?.CompleteStage("member-closures");
 
         if (diagnosticBuilder.Count > 0)
         {
@@ -130,6 +143,10 @@ internal static class RazorTailOutput
                 RazorVueDiagnosticCategory.VueInject));
             return false;
         }
+        finally
+        {
+            timing?.CompleteStage("inject-validation");
+        }
 
         var results = BuildArtifacts(
             cancellationToken,
@@ -149,6 +166,7 @@ internal static class RazorTailOutput
 
             builder.Add(result.Artifact!);
         }
+        timing?.CompleteStage("artifact-emission");
 
         if (diagnosticBuilder.Count > 0)
         {
@@ -171,6 +189,10 @@ internal static class RazorTailOutput
                 RazorVueDiagnosticCategory.VueModule,
                 binding.Components[0].ComponentSymbol));
             return false;
+        }
+        finally
+        {
+            timing?.CompleteStage("route-catalog");
         }
 
         artifacts = builder

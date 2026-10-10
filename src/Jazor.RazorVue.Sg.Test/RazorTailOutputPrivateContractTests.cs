@@ -46,7 +46,7 @@ public sealed class RazorTailOutputPrivateContractTests
             "TryBuildVueRenderArtifacts",
             BindingFlags.NonPublic | BindingFlags.Static);
         Assert.IsNotNull(method);
-        var arguments = new object?[] { CancellationToken.None, binding, null, null };
+        var arguments = new object?[] { CancellationToken.None, binding, null, null, null };
 
         Assert.IsTrue((bool)method.Invoke(null, arguments)!);
         var artifacts = (ImmutableArray<VueModuleArtifact>)arguments[2]!;
@@ -122,7 +122,7 @@ public sealed class RazorTailOutputPrivateContractTests
             "TryBuildVueRenderArtifacts",
             BindingFlags.NonPublic | BindingFlags.Static);
         Assert.IsNotNull(method);
-        var arguments = new object?[] { CancellationToken.None, invalidBinding, null, null };
+        var arguments = new object?[] { CancellationToken.None, invalidBinding, null, null, null };
 
         var built = (bool)method.Invoke(null, arguments)!;
 

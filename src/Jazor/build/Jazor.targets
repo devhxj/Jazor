@@ -14,6 +14,8 @@
     limited to resource-manifest locators, so an assembly reference cannot grant Emit/analyzer use.
   -->
   <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Jazor.Resources.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Jazor.CompilationTiming.targets"
+          Condition="'$(_JazorCompilationTimingTargetsImported)' != 'true'" />
 
   <ItemGroup>
     <!-- Roslyn resolves analyzer dependencies only from registered analyzer paths. Register the

@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)Jazor.CompilationTiming.targets"
+          Condition="'$(_JazorCompilationTimingTargetsImported)' != 'true'" />
   <!--
     NuGet imports this one target for both direct and transitive references. Resource locators
     are intentionally transitive, while RazorVue analyzer activation is granted only when the

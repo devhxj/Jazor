@@ -25,6 +25,7 @@
     <file src="$projectDir$..\..\LICENSE.txt" target="LICENSE.txt" />
     <file src="$projectDir$..\..\NOTICE.txt" target="NOTICE.txt" />
     <file src="$projectDir$buildTransitive\Jazor.Vue.targets" target="buildTransitive\Jazor.Vue.targets" />
+    <file src="$projectDir$..\Jazor\build\Jazor.CompilationTiming.targets" target="buildTransitive\Jazor.CompilationTiming.targets" />
     <file src="$buildOutputRoot$ECMAScript.Vue\bin\$configuration$\net11.0\ECMAScript.Vue.dll" target="lib/net11.0" />
     <file src="$buildOutputRoot$ECMAScript.Vue\bin\$configuration$\net11.0\ECMAScript.Vue.pdb" target="lib/net11.0" />
     <file src="$buildOutputRoot$ECMAScript.Vue\bin\$configuration$\net11.0\ECMAScript.Vue.xml" target="lib/net11.0" />

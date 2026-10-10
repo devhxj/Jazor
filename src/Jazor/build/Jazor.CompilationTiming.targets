@@ -1,0 +1,41 @@
+<Project>
+  <PropertyGroup>
+    <_JazorCompilationTimingTargetsImported>true</_JazorCompilationTimingTargetsImported>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="JazorCompilationTimingPath" />
+  </ItemGroup>
+
+  <!-- This path is compilation-local. It travels in RazorVue's transient generator carrier,
+       which the final hook removes; timing never becomes an assembly or Emit artifact. -->
+  <Target Name="_PrepareJazorCompilationTiming"
+          BeforeTargets="GenerateMSBuildEditorConfigFileCore"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <JazorCompilationTimingPath>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'jazor-compilation-timing.log'))</JazorCompilationTimingPath>
+    </PropertyGroup>
+  </Target>
+
+  <!-- BeforeTargets also runs when CoreCompile is skipped. Accept only a newly written
+       observation, so unchanged builds cannot display the previous compilation's sample. -->
+  <Target Name="_BeginJazorCompilationTiming"
+          BeforeTargets="CoreCompile"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorCompilationTimingPath)' != ''">
+    <PropertyGroup>
+      <_JazorCompilationTimingStartedTicks>$([System.DateTime]::UtcNow.Ticks)</_JazorCompilationTimingStartedTicks>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_ReportJazorCompilationTiming"
+          AfterTargets="CoreCompile"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorCompilationTimingPath)' != '' and Exists('$(JazorCompilationTimingPath)') and $([System.IO.File]::GetLastWriteTimeUtc('$(JazorCompilationTimingPath)').Ticks) &gt;= $(_JazorCompilationTimingStartedTicks)">
+    <ReadLinesFromFile File="$(JazorCompilationTimingPath)" ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="Lines" ItemName="_JazorCompilationTimingLine" />
+    </ReadLinesFromFile>
+    <Message Text="%(_JazorCompilationTimingLine.Identity)" Importance="high" />
+    <ItemGroup>
+      <FileWrites Include="$(JazorCompilationTimingPath)" />
+    </ItemGroup>
+  </Target>
+</Project>

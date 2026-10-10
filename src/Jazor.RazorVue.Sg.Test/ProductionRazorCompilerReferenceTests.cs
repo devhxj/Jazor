@@ -199,7 +199,11 @@ public sealed class ProductionRazorCompilerReferenceTests
         };
         var razorVueTextLowering = razorVueSources
             .Where(sourceLine => retiredTextLoweringTokens.Any(token =>
-                sourceLine.Text.Contains(token, StringComparison.Ordinal)))
+                sourceLine.Text.Contains(token, StringComparison.Ordinal) &&
+                // Route catalog imports frame a Vue artifact from manifest paths;
+                // they do not serialize or reparse C# expression/member semantics.
+                !(token == "AppendLine(\"import " && sourceLine.Path.EndsWith(
+                    "RazorVueRouteCatalogBuilder.cs", StringComparison.OrdinalIgnoreCase))))
             .ToArray();
         Assert.AreEqual(0, razorVueTextLowering.Length, DescribeSourceLines(razorVueTextLowering));
 

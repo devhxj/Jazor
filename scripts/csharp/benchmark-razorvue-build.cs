@@ -17,6 +17,22 @@ var gitCommit = await ReadCommandAsync("git", ["rev-parse", "HEAD"], repoRoot);
 var browserObservations = options.BrowserObservations is null ? null
     : JsonSerializer.Deserialize<BrowserObservation[]>(await File.ReadAllTextAsync(options.BrowserObservations))!;
 ConsumerProjectInfo? consumer = null;
+if (options.BuildObservations is not null)
+{
+    // Import actual author-edit samples without rebuilding or touching their consumer workspace.
+    var observationsPath = Path.GetFullPath(options.BuildObservations);
+    var observations = JsonSerializer.Deserialize<BuildMeasurement[]>(await File.ReadAllTextAsync(observationsPath))!;
+    var imported = new List<BuildMeasurement>();
+    foreach (var observation in observations)
+    {
+        var logPath = Path.GetFullPath(observation.LogPath
+            ?? throw new ArgumentException("Each build observation must include LogPath."), Path.GetDirectoryName(observationsPath)!);
+        imported.Add(observation with { LogPath = logPath, CompilationTimings = ParseCompilationTimings(await File.ReadAllTextAsync(logPath)) });
+    }
+    var importedReportPath = Path.GetFullPath(options.Output ?? Path.Combine(repoRoot, ".tmp", "razorvue-build-benchmark", "imported-report.json"));
+    await WriteReportAsync(importedReportPath, CreateReport(imported));
+    return;
+}
 if (options.ReleaseArtifacts is not null)
 {
     // Read-only consumer mode must run before benchmark workspace cleanup/environment changes.
@@ -129,11 +145,20 @@ foreach (var measurement in measurements)
     Console.WriteLine($"  {measurement.Name}#{measurement.Sample}: {measurement.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture)} ms" +
         (measurement.Artifact is null ? string.Empty : $", {measurement.Artifact.GeneratedModuleCount} generated modules, {measurement.Artifact.TotalBytes.ToString(CultureInfo.InvariantCulture)} bytes"));
 foreach (var group in measurements.GroupBy(static measurement => measurement.Name, StringComparer.Ordinal))
-    Console.WriteLine($"  {group.Key} median: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
+{
+    var slowest = group.MaxBy(static measurement => measurement.ElapsedMilliseconds)!;
+    Console.WriteLine($"  {group.Key} median: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms; slowest: {slowest.ElapsedMilliseconds} ms (sample #{slowest.Sample})");
+}
 
 BuildBenchmarkReport CreateReport(IReadOnlyList<BuildMeasurement> values)
-    => new("razorvue-build-v4", startedAt, Environment.Version.ToString(), sdkVersion, gitCommit,
-        RuntimeInformation.OSDescription, RuntimeInformation.ProcessArchitecture.ToString(), options, values, consumer, browserObservations);
+    => new("razorvue-build-v5", startedAt, Environment.Version.ToString(), sdkVersion, gitCommit,
+        RuntimeInformation.OSDescription, RuntimeInformation.ProcessArchitecture.ToString(), options, values,
+        values.GroupBy(static value => value.Name, StringComparer.Ordinal).Select(group =>
+        {
+            var slowest = group.MaxBy(static value => value.ElapsedMilliseconds)!;
+            return new BuildScenarioSummary(group.Key, group.Count(), Median(group.Select(static value => value.ElapsedMilliseconds)),
+                slowest.ElapsedMilliseconds, slowest.Sample);
+        }).ToArray(), consumer, browserObservations);
 
 static async Task WriteReportAsync(string path, BuildBenchmarkReport report)
 {
@@ -168,7 +193,7 @@ static async Task<string> ReadCommandAsync(string command, string[] arguments, s
     return output.Trim();
 }
 
-static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadOnlyList<string> arguments, string workdir)
+async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadOnlyList<string> arguments, string workdir)
 {
     Console.WriteLine($"[{name}#{sample}] started");
     var stopwatch = Stopwatch.StartNew();
@@ -182,6 +207,15 @@ static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadO
     };
     foreach (var argument in arguments)
         process.StartInfo.ArgumentList.Add(argument);
+    var logPath = Path.Combine(workRoot, $"{name}-{sample}.log");
+    string? binaryLogPath = null;
+    if (options.Diagnostics && arguments[0] is "build" or "publish")
+    {
+        binaryLogPath = Path.Combine(workRoot, $"{name}-{sample}.binlog");
+        process.StartInfo.ArgumentList.Add("-p:ReportAnalyzer=true");
+        process.StartInfo.ArgumentList.Add("-clp:PerformanceSummary");
+        process.StartInfo.ArgumentList.Add("-bl:" + binaryLogPath);
+    }
     process.Start();
     var stdout = ReadStreamAsync(process.StandardOutput);
     var stderr = ReadStreamAsync(process.StandardError);
@@ -189,9 +223,11 @@ static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadO
     stopwatch.Stop();
     var output = await stdout;
     var error = await stderr;
+    await File.WriteAllTextAsync(logPath, output + error);
     if (process.ExitCode != 0)
         throw new InvalidOperationException($"{name} benchmark failed (exit {process.ExitCode}).{Environment.NewLine}{output}{Environment.NewLine}{error}");
-    return new BuildMeasurement(name, sample, stopwatch.ElapsedMilliseconds, null);
+    return new BuildMeasurement(name, sample, stopwatch.ElapsedMilliseconds, null,
+        LogPath: logPath, BinaryLogPath: binaryLogPath, CompilationTimings: ParseCompilationTimings(output + error));
 
     async Task<string> ReadStreamAsync(StreamReader reader)
     {
@@ -203,6 +239,32 @@ static async Task<BuildMeasurement> MeasureAsync(string name, int sample, IReadO
         }
         return captured.ToString();
     }
+}
+
+static IReadOnlyList<CompilationTiming> ParseCompilationTimings(string output)
+{
+    const string prefix = "[Jazor.RazorVue] compilation timing; ";
+    var result = new List<CompilationTiming>();
+    using var reader = new StringReader(output);
+    while (reader.ReadLine() is { } line)
+    {
+        var message = line.TrimStart();
+        // Diagnostic verbosity repeats messages in task input/output metadata. Consume only
+        // the actual Message line; value-based dedupe could hide a second real compilation.
+        // -v:diag 的 Text=/输出项不是额外编译样本，不能按相同耗时去重真实 invocation。
+        if (!message.StartsWith(prefix, StringComparison.Ordinal))
+            continue;
+        var fields = message[prefix.Length..].Trim().Split("; ", StringSplitOptions.None)
+            .Select(static field => field.Split('=', 2)).ToDictionary(static field => field[0], static field => field[1], StringComparer.Ordinal);
+        // MSBuild can append a localized task ID after the last "ms". The unit terminates
+        // the authored numeric field; logger decoration is not part of that value.
+        double Milliseconds(string value) => double.Parse(value[..value.IndexOf(" ms", StringComparison.Ordinal)], CultureInfo.InvariantCulture);
+        result.Add(new CompilationTiming(fields["assembly"], int.Parse(fields["components"], CultureInfo.InvariantCulture),
+            fields["status"], Milliseconds(fields["total"]), fields
+                .Where(static field => field.Key is not ("assembly" or "components" or "status" or "total"))
+                .ToDictionary(static field => field.Key, field => Milliseconds(field.Value), StringComparer.Ordinal)));
+    }
+    return result;
 }
 
 static ReleaseArtifactSnapshot CaptureReleaseArtifact(string distRoot)
@@ -405,9 +467,26 @@ static string ToMarkdown(BuildBenchmarkReport report)
         lines.Add($"| {measurement.Name} | {measurement.Sample} | {measurement.ElapsedMilliseconds} | {artifact?.GeneratedModuleCount.ToString() ?? ""} | {artifact?.SourceMapCount.ToString() ?? ""} | {artifact?.TotalBytes.ToString() ?? ""} | {artifact?.TotalGzipBytes.ToString() ?? ""} | {artifact?.ChangedFileCount?.ToString() ?? ""} | {artifact?.ChangedBytes?.ToString() ?? ""} |");
     }
     lines.Add("");
-    lines.Add("Median elapsed time by scenario:");
-    foreach (var group in report.Measurements.GroupBy(static measurement => measurement.Name, StringComparer.Ordinal))
-        lines.Add($"- `{group.Key}`: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
+    lines.AddRange(["Typical and slowest elapsed time by scenario:", "",
+        "| Scenario | Samples | Median (ms) | Slowest (ms) | Slowest sample |",
+        "| --- | ---: | ---: | ---: | ---: |"]);
+    foreach (var summary in report.Summaries)
+        lines.Add($"| {summary.Name} | {summary.SampleCount} | {summary.MedianMilliseconds:0} | {summary.MaximumMilliseconds} | {summary.SlowestSample} |");
+    if (report.Measurements.Any(static measurement => measurement.CompilationTimings is { Count: > 0 }))
+    {
+        lines.AddRange(["", "## Final-compilation hook timing", "",
+            "Hook total includes every listed wall-clock stage. Generators includes all generators in this driver, including the official Razor SG; artifact-emission is parallel-worker wall time. These totals exclude later Csc emit/analyzer work and must not be added to their contained stages.", "",
+            "| Scenario | Sample | Assembly | Components | Hook total (ms) | Stage | Stage (ms) |",
+            "| --- | ---: | --- | ---: | ---: | --- | ---: |"]);
+        foreach (var measurement in report.Measurements)
+            foreach (var timing in measurement.CompilationTimings ?? [])
+                foreach (var stage in timing.Stages)
+                    lines.Add(FormattableString.Invariant($"| {measurement.Name} | {measurement.Sample} | {timing.Assembly} | {timing.ComponentCount} | {timing.TotalMilliseconds:0.0} | {stage.Key} | {stage.Value:0.0} |"));
+    }
+    lines.Add("");
+    foreach (var measurement in report.Measurements.Where(static measurement => measurement.LogPath is not null))
+        lines.Add($"- `{measurement.Name}#{measurement.Sample}` log: `{measurement.LogPath}`" +
+            (measurement.BinaryLogPath is null ? "" : $"; binary log: `{measurement.BinaryLogPath}`"));
     if (report.Consumer is { } consumer)
         lines.AddRange(["", $"Consumer: `{consumer.Project}`", $"Consumer commit: `{consumer.GitCommit}`", $"Cache policy: {consumer.CachePolicy}"]);
     if (report.BrowserObservations is { } observations)
@@ -445,15 +524,19 @@ sealed record FileArtifact(string Path, long Bytes, string FullPath);
 sealed record BuildArtifactSnapshot(int GeneratedModuleCount, int MjsFileCount, int SourceMapCount, long MjsBytes, long SourceMapBytes, long ManifestBytes, long MjsGzipBytes, long SourceMapGzipBytes, long ManifestGzipBytes, long TotalGzipBytes, long TotalBytes, int? ChangedFileCount, long? ChangedBytes, [property: JsonIgnore] IReadOnlyList<FileArtifact>? Files = null);
 sealed record ReleaseFileArtifact(string Path, string Group, long Bytes, long GzipBytes);
 sealed record ReleaseArtifactSnapshot(string Root, IReadOnlyList<ReleaseFileArtifact> Files);
-sealed record BuildMeasurement(string Name, int Sample, long ElapsedMilliseconds, BuildArtifactSnapshot? Artifact, ReleaseArtifactSnapshot? ReleaseArtifact = null);
+sealed record BuildMeasurement(string Name, int Sample, long ElapsedMilliseconds, BuildArtifactSnapshot? Artifact,
+    ReleaseArtifactSnapshot? ReleaseArtifact = null, string? LogPath = null, string? BinaryLogPath = null, IReadOnlyList<CompilationTiming>? CompilationTimings = null);
+sealed record CompilationTiming(string Assembly, int ComponentCount, string Status, double TotalMilliseconds, IReadOnlyDictionary<string, double> Stages);
+sealed record BuildScenarioSummary(string Name, int SampleCount, double MedianMilliseconds, long MaximumMilliseconds, int SlowestSample);
 sealed record ConsumerProjectInfo(string Project, string GitCommit, string Manifest, string CachePolicy);
 sealed record BrowserResource(string Path, double DurationMilliseconds, long DecodedBodySize, long EncodedBodySize, long TransferSize);
 sealed record BrowserObservation(string Scenario, int Sample, string Browser, string Url, bool CacheDisabled, double ReadyMilliseconds, IReadOnlyList<BrowserResource> Resources);
 sealed record BuildBenchmarkReport(string SchemaVersion, DateTimeOffset StartedAt, string DotnetVersion, string SdkVersion, string GitCommit,
-    string OperatingSystem, string Architecture, BuildBenchmarkOptions Options, IReadOnlyList<BuildMeasurement> Measurements,
+    string OperatingSystem, string Architecture, BuildBenchmarkOptions Options, IReadOnlyList<BuildMeasurement> Measurements, IReadOnlyList<BuildScenarioSummary> Summaries,
     ConsumerProjectInfo? Consumer, IReadOnlyList<BrowserObservation>? BrowserObservations);
 
-sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Samples, bool SkipHmr, bool SkipRelease, string? ReleaseArtifacts, string? ConsumerProject, string? BrowserObservations)
+sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Samples, bool SkipHmr, bool SkipRelease, string? ReleaseArtifacts,
+    string? ConsumerProject, string? BrowserObservations, string? BuildObservations, bool Diagnostics)
 {
     public static BuildBenchmarkOptions Parse(string[] args)
     {
@@ -462,6 +545,8 @@ sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Sample
         string? releaseArtifacts = null;
         string? consumerProject = null;
         string? browserObservations = null;
+        string? buildObservations = null;
+        var diagnostics = false;
         var samples = 3;
         var skipHmr = false;
         var skipRelease = false;
@@ -477,14 +562,17 @@ sealed record BuildBenchmarkOptions(string? WorkRoot, string? Output, int Sample
                 case "--release-artifacts": releaseArtifacts = Next(args, ref index); break;
                 case "--consumer-project": consumerProject = Next(args, ref index); break;
                 case "--browser-observations": browserObservations = Next(args, ref index); break;
+                case "--build-observations": buildObservations = Next(args, ref index); break;
+                case "--diagnostics": diagnostics = true; break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- [--work-root DIR] [--out FILE] [--samples N] [--skip-hmr] [--skip-release] [--release-artifacts DIST_DIR] [--consumer-project CSPROJ --skip-hmr] [--browser-observations JSON]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- [--work-root DIR] [--out FILE] [--samples N] [--skip-hmr] [--skip-release] [--release-artifacts DIST_DIR] [--consumer-project CSPROJ --skip-hmr] [--browser-observations JSON] [--build-observations JSON] [--diagnostics]");
+                    Console.WriteLine("Build observations: [{\"Name\":\"author-edit\",\"Sample\":1,\"ElapsedMilliseconds\":45108,\"LogPath\":\"sample-1.log\"}]. LogPath is relative to that JSON. --diagnostics adds analyzer timing, MSBuild performance summary and a binary log to direct build/publish samples; keep diagnostic samples separate from normal timing samples.");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown argument: " + args[index]);
             }
         }
-        return new BuildBenchmarkOptions(workRoot, output, samples, skipHmr, skipRelease, releaseArtifacts, consumerProject, browserObservations);
+        return new BuildBenchmarkOptions(workRoot, output, samples, skipHmr, skipRelease, releaseArtifacts, consumerProject, browserObservations, buildObservations, diagnostics);
     }
 
     private static string Next(string[] args, ref int index)

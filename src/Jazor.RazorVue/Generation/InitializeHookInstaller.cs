@@ -119,12 +119,15 @@ internal static class InitializeHookInstaller
             throw new InvalidOperationException("GeneratorDriver hook was invoked before its hook handle was published.");
         }
 
+        var timing = new RazorCompilationTiming();
         // Calling the patched method's original body required temporarily restoring its
         // process-wide machine code. A concurrent driver could enter during that window and
         // bypass RazorVue tail output entirely. Reproduce Roslyn's public completion contract
         // from RunGenerators/GetRunResult so the hook remains installed for every thread.
         var result = instance.RunGenerators(compilation, cancellationToken);
         var runResult = result.GetRunResult();
+        timing.CompleteStage("generators");
+        var timingPath = RazorCompilationTiming.GetOutputPath(runResult.GeneratedTrees, cancellationToken);
         using var sourceTextScope = RazorSourceTextRegistry.PushGeneratedTrees(
             runResult.GeneratedTrees,
             cancellationToken);
@@ -133,20 +136,27 @@ internal static class InitializeHookInstaller
         diagnostics = runResult.Diagnostics;
         if (ContainsRazorModuleCatalog(outputCompilation))
             return result;
+        timing.CompleteStage("generated-compilation");
 
         // Only a successful final Compilation is a valid lowering input. Razor SG diagnostics
         // remain authoritative for invalid Razor authoring, and existing C# errors likewise
         // must not be masked by a secondary RazorVue failure or produce a partial catalog.
-        if (diagnostics.Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error) ||
-            outputCompilation.GetDiagnostics().Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+        var hasErrors = diagnostics.Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error) ||
+            outputCompilation.GetDiagnostics().Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+        timing.CompleteStage("final-validation");
+        if (hasErrors)
             return result;
 
-        if (!RazorTailOutput.TryBuildFinalCompilationCatalog(
+        var appendToExistingModuleCatalog = ContainsModuleCatalog(outputCompilation);
+
+        var succeeded = RazorTailOutput.TryBuildFinalCompilationCatalog(
                 outputCompilation,
                 cancellationToken,
                 out var catalogSource,
                 out var tailDiagnostics,
-                appendToExistingModuleCatalog: ContainsModuleCatalog(outputCompilation)))
+                appendToExistingModuleCatalog,
+                timing);
+        if (!succeeded)
         {
             if (tailDiagnostics.IsDefaultOrEmpty)
             {
@@ -161,12 +171,16 @@ internal static class InitializeHookInstaller
             // 独立组件错误必须分别报告，不能退化为 Location.None 的单条字符串。
             foreach (var tailDiagnostic in tailDiagnostics)
                 diagnostics = diagnostics.Add(Diagnostics.Create(tailDiagnostic));
+            timing.Write(timingPath, outputCompilation.AssemblyName ?? "Jazor.RazorVue", succeeded: false);
             return result;
         }
 
         if (catalogSource is { Length: > 0 })
             outputCompilation = outputCompilation.AddSyntaxTrees(
                 CreateCatalogSyntaxTree(outputCompilation, catalogSource, ContainsModuleCatalog(outputCompilation)));
+
+        timing.CompleteStage("catalog-attach");
+        timing.Write(timingPath, outputCompilation.AssemblyName ?? "Jazor.RazorVue", succeeded: true);
 
         return result;
     }
