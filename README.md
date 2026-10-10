@@ -1,8 +1,6 @@
 <div align="center">
 
-<!-- today-verse:start -->
-<p><a href="https://www.jinrishici.com/">天上秋期近，人间月影清。</a></p>
-<!-- today-verse:end -->
+[![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
 
 <h1>Jazor</h1>
 
