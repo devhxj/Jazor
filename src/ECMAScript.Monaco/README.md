@@ -14,7 +14,7 @@ the entries for the generated `jazor` project.
 | npm 包 | `monaco-editor` |
 | 版本 | 见 `manifest.json` / `inventory.json` |
 | 许可证 | MIT（`licenses/MONACO-LICENSE` 与 `licenses/THIRD-PARTY-NOTICES.txt`） |
-| 作者入口 | `monaco-editor` |
+| 作者入口 | `monaco-editor/editor/editor.api.js` 的命名导出 `editor` |
 | 构建输入 | `src/ECMAScript.Vue.Generator/monaco-runtime/`（package.json + lockfile 锁定版本） |
 
 ### 入口解析
@@ -22,6 +22,9 @@ the entries for the generated `jazor` project.
 绑定保留 Monaco npm package 的 ESM 与 worker 入口，让 NetPack 根据 package `exports`、相对
 依赖和 `sideEffects` 在应用入口处做裁剪。Emit 不复制绑定库自己的 bundle；Deno restore
 负责把锁定的 npm package 放入 `jazor/node_modules`。
+
+`Monaco.Create`、模型、主题、标记和 worker 操作映射到命名导出 `editor` 的成员。
+这些函数不是 ESM 根部导出；C# 调用形式不变，消费者无需自建 namespace 接线。
 
 ## 首期范围 First slice
 

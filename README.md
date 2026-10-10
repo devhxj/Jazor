@@ -38,6 +38,8 @@ The existing build benchmark can analyze a consumer's Release `dist` with `--rel
 
 It also measures an actual host with `--consumer-project <csproj> --skip-hmr`, keeping the consumer's package cache and recording its commit separately. Browser first-screen and HMR observations can be attached with `--browser-observations <json>`; see [measurement definitions](docs/03-guides/development-and-testing.md).
 
+The unreleased Monaco binding maps editor operations to the upstream named `editor` namespace, so `Monaco.Create` and model operations use the actual ESM export without a consumer shim.
+
 The developer-feedback release adds typed Element Plus interactions, native DOM event and browser payload projections, reusable ASP.NET Core hosting, RID-aware Emit assets, and self-contained SSR publishing. See [the feedback scope and validation](docs/04-roadmap/preview8-developer-feedback.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.

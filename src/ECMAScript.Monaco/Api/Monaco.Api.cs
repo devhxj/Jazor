@@ -4,6 +4,9 @@ namespace ECMAScript;
 
 public static partial class Monaco
 {
+    // Monaco 0.56 exposes these operations through the named `editor` namespace.
+    // Import that namespace and retain its receiver; these are not module-root exports.
+    // 命名导入配合既有 Inline 协议，保留 C# 静态 API，无消费者 shim。
     // ---------- 编辑器与模型 Editor & model ----------
 
     /// <summary>
@@ -13,7 +16,7 @@ public static partial class Monaco
     /// </summary>
     /// <param name="domElement">容器元素。The container element.</param>
     /// <param name="options">构造选项。The construction options.</param>
-    [Description("@#create")]
+    [Description("@#editor"), ECMAScriptInline("editor.create(__arg1, __arg2)")]
     public extern static MonacoEditor Create(Element domElement, MonacoEditorConstructionOptions? options = null);
 
     /// <summary>
@@ -22,21 +25,21 @@ public static partial class Monaco
     /// </summary>
     /// <param name="value">初始内容。The initial value.</param>
     /// <param name="language">语言 id。The language id.</param>
-    [Description("@#createModel")]
+    [Description("@#editor"), ECMAScriptInline("editor.createModel(__arg1, __arg2)")]
     public extern static MonacoModel CreateModel(string value, string? language = null);
 
     /// <summary>
     /// 返回所有已创建的模型。
     /// Returns every created model.
     /// </summary>
-    [Description("@#getModels")]
+    [Description("@#editor"), ECMAScriptInline("editor.getModels()")]
     public extern static MonacoModel[] GetModels();
 
     /// <summary>
     /// 返回所有已创建的编辑器。
     /// Returns every created editor.
     /// </summary>
-    [Description("@#getEditors")]
+    [Description("@#editor"), ECMAScriptInline("editor.getEditors()")]
     public extern static MonacoEditor[] GetEditors();
 
     // ---------- 语言与主题 Language & theme ----------
@@ -47,7 +50,7 @@ public static partial class Monaco
     /// </summary>
     /// <param name="model">目标模型。The target model.</param>
     /// <param name="languageId">语言 id。The language id.</param>
-    [Description("@#setModelLanguage")]
+    [Description("@#editor"), ECMAScriptInline("editor.setModelLanguage(__arg1, __arg2)")]
     public extern static void SetModelLanguage(MonacoModel model, string languageId);
 
     /// <summary>
@@ -56,7 +59,7 @@ public static partial class Monaco
     /// </summary>
     /// <param name="themeName">主题名。The theme name.</param>
     /// <param name="themeData">主题数据。The theme data.</param>
-    [Description("@#defineTheme")]
+    [Description("@#editor"), ECMAScriptInline("editor.defineTheme(__arg1, __arg2)")]
     public extern static void DefineTheme(string themeName, MonacoThemeData themeData);
 
     /// <summary>
@@ -64,7 +67,7 @@ public static partial class Monaco
     /// Switches the current theme.
     /// </summary>
     /// <param name="themeName">主题名。The theme name.</param>
-    [Description("@#setTheme")]
+    [Description("@#editor"), ECMAScriptInline("editor.setTheme(__arg1)")]
     public extern static void SetTheme(string themeName);
 
     // ---------- 标记 Markers ----------
@@ -76,7 +79,7 @@ public static partial class Monaco
     /// <param name="model">目标模型。The target model.</param>
     /// <param name="owner">标记所有者标识。The marker owner identifier.</param>
     /// <param name="markers">标记集合。The markers.</param>
-    [Description("@#setModelMarkers")]
+    [Description("@#editor"), ECMAScriptInline("editor.setModelMarkers(__arg1, __arg2, __arg3)")]
     public extern static void SetModelMarkers(MonacoModel model, string owner, MonacoMarker[] markers);
 
     /// <summary>
@@ -84,7 +87,7 @@ public static partial class Monaco
     /// Removes every marker owned by <paramref name="owner"/>.
     /// </summary>
     /// <param name="owner">标记所有者标识。The marker owner identifier.</param>
-    [Description("@#removeAllMarkers")]
+    [Description("@#editor"), ECMAScriptInline("editor.removeAllMarkers(__arg1)")]
     public extern static void RemoveAllMarkers(string owner);
 
     /// <summary>
@@ -92,7 +95,7 @@ public static partial class Monaco
     /// Subscription for marker changes; the handle cancels it.
     /// </summary>
     /// <param name="listener">变化回调。The change listener.</param>
-    [Description("@#onDidChangeMarkers")]
+    [Description("@#editor"), ECMAScriptInline("editor.onDidChangeMarkers(__arg1)")]
     public extern static MonacoDisposable OnDidChangeMarkers(Action<MonacoUri[]> listener);
 
     // ---------- Worker ----------
@@ -103,6 +106,6 @@ public static partial class Monaco
     /// </summary>
     /// <param name="options">worker 选项。The worker options.</param>
     /// <typeparam name="TWorker">worker 代理的强类型契约。The strongly typed contract of the worker proxy.</typeparam>
-    [Description("@#createWebWorker")]
+    [Description("@#editor"), ECMAScriptInline("editor.createWebWorker(__arg1)")]
     public extern static MonacoWebWorker<TWorker> CreateWebWorker<TWorker>(MonacoWebWorkerOptions options);
 }

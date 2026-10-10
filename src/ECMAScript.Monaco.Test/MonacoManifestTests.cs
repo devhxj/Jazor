@@ -62,8 +62,9 @@ public sealed class MonacoManifestTests
             .Select(static attribute => attribute.Description)
             .Where(static description => description.StartsWith("@#", StringComparison.Ordinal))
             .Select(static description => description[2..])
-            .ToHashSet(StringComparer.Ordinal);
-        Assert.IsTrue(bound.Count >= 11);
+            .ToArray();
+        Assert.AreEqual(11, bound.Length);
+        Assert.IsTrue(bound.All(static name => name == "editor"), "Editor operations belong to the named editor export.");
 
         using var manifest = JsonDocument.Parse(File.ReadAllText(GetProjectPath("manifest.json")));
         var imports = manifest.RootElement.GetProperty("imports");

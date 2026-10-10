@@ -14,7 +14,7 @@ namespace ECMAScriptMonacoTest;
 public sealed class MonacoCompilerBoundaryTests
 {
     [TestMethod]
-    public async Task Monaco_CreateEditor_EmitsTheAuthoredPackageExport()
+    public async Task Monaco_EditorOperations_UseTheNamedEditorNamespace()
     {
         var script = await ConvertAsync("""
             using ECMAScript;
@@ -24,19 +24,25 @@ public sealed class MonacoCompilerBoundaryTests
             {
                 public static string Build(Element container)
                 {
-                    var editor = Create(container, new MonacoEditorConstructionOptions
+                    var instance = Create(container, new MonacoEditorConstructionOptions
                     {
                         Value = "const answer = 42;",
                         Language = "csharp"
                     });
-                    return editor.GetValue();
+                    SetModelLanguage(instance.GetModel()!, "plaintext");
+                    var models = GetModels();
+                    var editors = GetEditors();
+                    return instance.GetValue();
                 }
             }
             """);
 
-        StringAssert.Contains(script, "import { create } from \"monaco-editor/editor/editor.api.js\";");
-        StringAssert.Contains(script, "let editor = create(container, { value: \"const answer = 42;\", language: \"csharp\" });");
-        StringAssert.Contains(script, "return editor.getValue();");
+        StringAssert.Contains(script, "import { editor } from \"monaco-editor/editor/editor.api.js\";");
+        StringAssert.Contains(script, "let instance = editor.create(container, { value: \"const answer = 42;\", language: \"csharp\" });");
+        StringAssert.Contains(script, "editor.setModelLanguage(instance.getModel(), \"plaintext\");");
+        StringAssert.Contains(script, "editor.getModels()");
+        StringAssert.Contains(script, "editor.getEditors()");
+        StringAssert.Contains(script, "return instance.getValue();");
     }
 
     private static async Task<string> ConvertAsync(string code)
