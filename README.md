@@ -28,12 +28,6 @@
 
 > Jazor 1.0.0-preview.9 is the current preview release.
 
-Choose browser startup modules with `JazorBrowserEntry` and load RazorVue pages during navigation. Numeric and union authoring supports ordinary integer literals and direct scalar projections such as `value?.AsNumber`; see the [compiled examples](samples/RazorVue.NumericUnion/README.md).
-
-Normal build logs explain Emit and final RazorVue compilation costs. The benchmark keeps every sample and reports both typical and slowest timings, with optional consumer, browser, and Release asset measurements. Source-only rebuilds reuse unchanged dependencies and library assets so Windows Vite can keep running; see [development and testing](docs/03-guides/development-and-testing.md).
-
-Pagination uses `Number` callbacks, `ElStringDatePicker` keeps formatted string values, Release CSS comes from the manifest, and Monaco editor operations use the upstream `editor` namespace. Upgrade guidance is in the [Changelog](CHANGELOG.md).
-
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
