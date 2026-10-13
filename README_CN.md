@@ -28,12 +28,6 @@
 
 > Jazor 1.0.0-preview.9 是当前预览版本。
 
-通过 `JazorBrowserEntry` 选择浏览器启动模块，RazorVue 页面随导航加载。数值与 union 支持普通整数字面量和 `value?.AsNumber` 等直接投影；可编译示例见[作者体验样例](samples/RazorVue.NumericUnion/README.md)。
-
-普通日志说明 Emit 和 RazorVue 最终编译的阶段耗时；采样保留典型与最慢样本，并可关联消费者、浏览器与 Release 资源观测。只改作者代码时复用未变化的依赖和库资源，让 Windows Vite 能持续运行，详见[开发与测试](docs/03-guides/development-and-testing.md)。
-
-分页使用 `Number` 回调，`ElStringDatePicker` 保留格式化字符串，Release 样式通过 manifest 接入，Monaco 编辑器操作使用上游 `editor` 命名导出。升级路径见[更新日志](CHANGELOG.md)。
-
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
@@ -78,7 +72,7 @@ flowchart LR
 - 当前 Razor-to-Vue 集成：至少 4,000 个通过场景、90% 行覆盖率和 94% 分支覆盖率；该门槛会在集成完善后再提高。
 - Vue 生态绑定：每个目标至少 90% 的已审计公共绑定契约覆盖率。
 
-可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs`、`verify-razorvue-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。
+可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs`、`verify-razorvue-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。运行 `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` 可验证公共 ECMAScript 和绑定声明保留了 XML 文档、上游源元数据和包 XML 交付。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。
 
 ## 包组成
 
@@ -100,7 +94,7 @@ flowchart LR
 
 | 类库形式 | carrier | 直接引用规则 |
 | --- | --- | --- |
-| JS resource library（`ECMAScript`、Vue、Vuetify、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包内 `manifest.json + dist/**` | 包声明自己的资源依赖；消费方不会因传递引用获得 Jazor 工具链。 |
+| JS resource library（`ECMAScript`、Vue、Vuetify、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`deno.lock`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
 | 纯 Jazor 类库（`ECMAScript.Style`、`Jazor.Admin` 或其他开发者编写的 C# 和 RazorVue） | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 编写纯 Jazor 模块的项目直接引用 `Jazor`；编写 RazorVue 组件的项目直接引用 `Jazor` 和 `Jazor.Vue`。 |
 
 最终可执行或 Web 宿主运行 Emit 时必须直接引用 `Jazor`。宿主一次收集选中的
@@ -197,7 +191,8 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 ```bash
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 ```
 
 仓库自动化使用 `scripts/csharp/` 下的单文件 C# 入口。完整流程见[开发与测试](docs/03-guides/development-and-testing.md)。
