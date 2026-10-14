@@ -96,21 +96,16 @@ internal static class RazorSgTestDocumentFactory
     {
         var requiredMethod = typeof(RazorCodeDocument).GetMethod(
             "GetRequiredCSharpDocument",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (requiredMethod?.Invoke(codeDocument, null) is RazorCSharpDocument requiredDocument)
-        {
-            return requiredDocument;
-        }
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            binder: null,
+            types: [typeof(bool)],
+            modifiers: null)
+            ?? throw new InvalidOperationException("RazorCodeDocument.GetRequiredCSharpDocument(bool declarationDocument) was not found.");
 
-        var optionalMethod = typeof(RazorCodeDocument).GetMethod(
-            "GetCSharpDocument",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (optionalMethod?.Invoke(codeDocument, null) is RazorCSharpDocument optionalDocument)
-        {
-            return optionalDocument;
-        }
-
-        throw new InvalidOperationException("RazorCodeDocument.GetRequiredCSharpDocument()/GetCSharpDocument() did not return RazorCSharpDocument.");
+        // RC2 separates declaration and implementation documents; lowering fixtures need
+        // implementation C# with render bodies, so declarationDocument must stay false.
+        return requiredMethod.Invoke(codeDocument, [false]) as RazorCSharpDocument
+            ?? throw new InvalidOperationException("RazorCodeDocument.GetRequiredCSharpDocument(false) did not return RazorCSharpDocument.");
     }
 
     private static object GetTagHelperDiscoveryService(RazorProjectEngine projectEngine)

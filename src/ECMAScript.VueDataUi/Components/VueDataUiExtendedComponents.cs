@@ -238,7 +238,7 @@ public sealed class VdParallelCoordinatePlot : VdChartComponent<VdParallelCoordi
 [ECMAScriptName("VueUiPattern")]
 [Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-pattern")]
-public sealed class VdPattern : ComponentBase
+public sealed class VdPattern : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>
     /// 要使用的内置 SVG 填充图案。
@@ -291,7 +291,7 @@ public sealed class VdPattern : ComponentBase
 [ECMAScriptName("VueUiPatternSeed")]
 [Style("vue-data-ui/style.css")]
 [ECMAScript("vue-data-ui/vue-ui-pattern-seed")]
-public sealed class VdPatternSeed : ComponentBase
+public sealed class VdPatternSeed : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>
     /// 当前 SVG 图案的唯一 id；使用 url(#id) 引用填充时应保持一致。

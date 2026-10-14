@@ -1,6 +1,6 @@
 #!/usr/bin/env dotnet run
 #:package AngleSharp@1.3.0
-#:package Microsoft.CodeAnalysis.CSharp@5.11.0-1.26425.128
+#:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26505.4
 #:property PublishAot=false
 
 using System.Collections.Concurrent;

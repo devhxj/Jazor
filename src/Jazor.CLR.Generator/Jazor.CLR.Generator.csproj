@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="11.0.0-rc.2.26504.105" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.2.26504.105" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(CodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(CodeAnalysisVersion)">
       <PrivateAssets>all</PrivateAssets>

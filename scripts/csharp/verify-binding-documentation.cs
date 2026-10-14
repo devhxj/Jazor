@@ -1,6 +1,6 @@
 #!/usr/bin/env dotnet run
 #:property PublishAot=false
-#:package Microsoft.CodeAnalysis.CSharp@5.11.0-1.26425.128
+#:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26505.4
 
 using System.Diagnostics;
 using System.IO.Compression;

@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet run
-#:package Microsoft.CodeAnalysis.CSharp@5.11.0-1.26425.128
-#:package Microsoft.CodeAnalysis.Common@5.11.0-1.26425.128
-#:package Basic.Reference.Assemblies.Net110@1.8.11
+#:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26505.4
+#:package Microsoft.CodeAnalysis.Common@5.12.0-1.26505.4
+#:package Basic.Reference.Assemblies.Net110@1.8.12
 #:property EnableTrimAnalyzer=false
 
 using System.Diagnostics;

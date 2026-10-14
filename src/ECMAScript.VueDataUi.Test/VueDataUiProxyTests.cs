@@ -37,6 +37,8 @@ public sealed class VueDataUiProxyTests
         foreach (var (type, attribute) in componentTypes)
         {
             Assert.IsNotNull(attribute);
+            Assert.IsTrue(typeof(ComponentBase).IsAssignableFrom(type), type.Name);
+            Assert.IsTrue(typeof(Vue.IVueComponent).IsAssignableFrom(type), type.Name);
             Assert.IsTrue(
                 attribute!.Import!.StartsWith("vue-data-ui/vue-ui-", StringComparison.Ordinal),
                 $"{type.Name} must use a per-component vue-data-ui entry.");

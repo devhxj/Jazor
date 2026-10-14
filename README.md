@@ -7,7 +7,7 @@
 <p><strong>A typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules.</strong></p>
 
 <p>
-  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC2" src="https://img.shields.io/badge/.NET-11%20RC2-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
   <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.9&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
@@ -180,7 +180,7 @@ Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core applicatio
 
 ## Development
 
-Use the .NET 11 SDK preview selected by [global.json](global.json). From the repository root:
+Use the .NET 11 RC2 SDK selected by [global.json](global.json). From the repository root:
 
 ```bash
 dotnet restore Jazor.slnx

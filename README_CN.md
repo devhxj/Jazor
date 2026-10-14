@@ -7,7 +7,7 @@
 <p><strong>将受支持的 C# 语义编译为确定性 ECMAScript 模块的强类型 .NET 工具链。</strong></p>
 
 <p>
-  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC2" src="https://img.shields.io/badge/.NET-11%20RC2-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
   <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.9&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
@@ -178,7 +178,7 @@ ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设
 
 ## 开发
 
-使用 [global.json](global.json) 指定的 .NET 11 SDK preview。在仓库根目录执行：
+使用 [global.json](global.json) 指定的 .NET 11 RC2 SDK。在仓库根目录执行：
 
 ```bash
 dotnet restore Jazor.slnx

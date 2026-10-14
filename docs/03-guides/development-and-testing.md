@@ -120,11 +120,14 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 | 层 | 当前基线 | 验证入口 |
 | --- | --- | --- |
-| .NET SDK | `11.0.100-rc.1.26425.128`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
+| .NET SDK | `11.0.100-rc.2.26504.105`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
+| Roslyn / 参考程序集 | `5.12.0-1.26505.4` / `Basic.Reference.Assemblies.Net110` `1.8.12` | 编译器、Razor SG、Emit 回归 |
 | Node.js | `20`、`22`（Wiki Chrome browser consumer 矩阵）；发布 workflow 使用 `22`，本地 benchmark 应记录实际版本 | `wiki-verify.yml`、发布 workflow、`benchmark-razorvue-build.cs` |
 | 浏览器 | Windows SPA/Wiki/SSR 统一使用 Google Chrome headless | SPA/SSR、Wiki browser scripts |
 | 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
 | 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
+
+RC2 SDK 自带 Roslyn `5.12.0-1.26504.105`；该精确构建尚未发布到 `dotnet-tools` 公共源，因此源码项目和单文件脚本固定使用已发布的同系列 `5.12.0-1.26505.4`。官方 Razor SG 回归继续直接引用当前 SDK 的 Roslyn 与 Razor compiler。
 
 Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 使用 Node 22（浏览器脚本依赖 Node 22 提供的 WebSocket 客户端），`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。本地运行结果不构成跨版本保证。组件库升级还需先通过 `verify-vue-binding-contracts.cs`，再运行发布消费者验证。
 

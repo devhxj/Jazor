@@ -1,5 +1,5 @@
 #!/usr/bin/env dotnet run
-#:package Microsoft.CodeAnalysis.CSharp@5.7.0-1.26207.106
+#:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26505.4
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

@@ -16,36 +16,15 @@ internal static class TDesignRouteMapper
         return routeTarget.Value.AsString;
     }
 
-    // TDesign exposes separate menu and breadcrumb route records. Keep both mappings exact
-    // even though their current JavaScript shapes match.
+    // Raw route object branches erase to indistinguishable objects. Let Vue Router resolve
+    // named routes, params, query and hash before adapting the concrete URL to TDesign.
     public static TMenuItemToValue? MapMenuRoute(RouteLocationRaw? routeTarget)
     {
         if (!routeTarget.HasValue)
             return null;
 
         var route = routeTarget.Value;
-        if (route.AsString is { } routeString)
-            return (TMenuItemToValue)routeString;
-
-        if (route.AsPath is { } pathRoute)
-        {
-            return (TMenuItemToValue)new TMenuRoute
-            {
-                Path = pathRoute.Path,
-                Hash = pathRoute.Hash
-            };
-        }
-
-        if (route.AsRelative is { } relativeRoute)
-        {
-            return (TMenuItemToValue)new TMenuRoute
-            {
-                Name = relativeRoute.Name.HasValue ? relativeRoute.Name.Value.AsString : null,
-                Hash = relativeRoute.Hash
-            };
-        }
-
-        return null;
+        return (TMenuItemToValue)(route.AsString ?? UseRouter().Resolve(route).FullPath);
     }
 
     public static TBreadcrumbItemToValue? MapBreadcrumbRoute(RouteLocationRaw? routeTarget)
@@ -54,28 +33,7 @@ internal static class TDesignRouteMapper
             return null;
 
         var route = routeTarget.Value;
-        if (route.AsString is { } routeString)
-            return (TBreadcrumbItemToValue)routeString;
-
-        if (route.AsPath is { } pathRoute)
-        {
-            return (TBreadcrumbItemToValue)new TRoute
-            {
-                Path = pathRoute.Path,
-                Hash = pathRoute.Hash
-            };
-        }
-
-        if (route.AsRelative is { } relativeRoute)
-        {
-            return (TBreadcrumbItemToValue)new TRoute
-            {
-                Name = relativeRoute.Name.HasValue ? relativeRoute.Name.Value.AsString : null,
-                Hash = relativeRoute.Hash
-            };
-        }
-
-        return null;
+        return (TBreadcrumbItemToValue)(route.AsString ?? UseRouter().Resolve(route).FullPath);
     }
 
     private static string? Normalize(string? value)

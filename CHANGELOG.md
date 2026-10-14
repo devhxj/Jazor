@@ -2,6 +2,15 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-10-14
+
+### 未发布 / Unreleased
+
+- 开发与构建基线升级至 .NET 11 RC2（SDK `11.0.100-rc.2.26504.105`）；同步 Roslyn `5.12.0-1.26505.4`、.NET 11 参考程序集 `1.8.12` 及 ASP.NET Core/EF Core RC2 依赖，更新开发脚本与示例。by @devhxj
+- 修复 `VdPattern`、`VdPatternSeed` 缺少 `IVueComponent` 契约，以及 JazorAdmin 路由辅助代码使用已退役原始对象投影导致示例构建失败的问题；对象路由通过 `router.Resolve` 转为具体 URL。by @devhxj
+- Upgrade the development and build baseline to .NET 11 RC2 (SDK `11.0.100-rc.2.26504.105`), with Roslyn `5.12.0-1.26505.4`, .NET 11 reference assemblies `1.8.12`, and ASP.NET Core/EF Core RC2 dependencies across scripts and samples. by @devhxj
+- Fix sample build failures from missing `IVueComponent` contracts on `VdPattern` and `VdPatternSeed` and retired raw-object projections in JazorAdmin route helpers; resolve object routes through `router.Resolve` to concrete URLs. by @devhxj
+
 ## 2026-10-10
 
 ### Jazor 1.0.0-preview.9

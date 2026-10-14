@@ -83,12 +83,13 @@ internal static class RazorSgOfficialAuthoringTestHost
             optionsProvider: optionsProvider);
         driver = driver.RunGeneratorsAndUpdateCompilation(baseCompilation, out var compilation, out var diagnostics);
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics));
-        var generatedSource = driver.GetRunResult().Results
+        // RC2 emits @code members separately from the render body. Observe the complete
+        // official SG output so assertions cover both parts of the component.
+        var generatedSource = string.Join("\n", driver.GetRunResult().Results
             .Single()
             .GeneratedSources
-            .Single(source => source.HintName.EndsWith("_razor.g.cs", StringComparison.Ordinal))
-            .SourceText
-            .ToString();
+            .OrderBy(static source => source.HintName, StringComparer.Ordinal)
+            .Select(static source => source.SourceText.ToString()));
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
 

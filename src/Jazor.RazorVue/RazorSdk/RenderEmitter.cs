@@ -4982,8 +4982,7 @@ internal static class RenderEmitter
             "Microsoft.AspNetCore.Components.Web.Virtualization" => metadataName is "Virtualize`1",
             "Microsoft.AspNetCore.Components.QuickGrid" => metadataName is "QuickGrid`1",
             "Microsoft.AspNetCore.Components" => metadataName is
-                "CacheView" or "ConfigureBrowser" or "DynamicComponent" or "ImportMap" or "LayoutView" or "ResourcePreloader" or "RouteView",
-            "Microsoft.AspNetCore.Components.Endpoints" => metadataName is "BasePath",
+                "BasePath" or "CacheView" or "ConfigureBrowser" or "DynamicComponent" or "ImportMap" or "LayoutView" or "ResourcePreloader" or "RouteView",
             _ => false
         };
     }
