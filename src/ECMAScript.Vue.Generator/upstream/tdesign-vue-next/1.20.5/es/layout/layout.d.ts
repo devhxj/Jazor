@@ -1,6 +1,0 @@
-import { Ref } from 'vue';
-export type LayoutProvideType = {
-    hasSide: Ref<boolean>;
-};
-declare const _default: import("vue").DefineComponent<{}, () => import("vue/jsx-runtime").JSX.Element, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps, Readonly<import("vue").ExtractPropTypes<{}>>, {}, {}>;
-export default _default;

@@ -6,9 +6,9 @@
 
 ### 未发布 / Unreleased
 
-- 开发与构建基线升级至 .NET 11 RC2（SDK `11.0.100-rc.2.26504.105`）；同步 Roslyn `5.12.0-1.26505.4`、.NET 11 参考程序集 `1.8.12` 及 ASP.NET Core/EF Core RC2 依赖，更新开发脚本与示例。by @devhxj
+- 开发与构建基线升级至 .NET 11 RC3（SDK `11.0.100-rc.3.26522.148`）；同步 Roslyn `5.12.0-1.26522.148`（与 SDK 同一构建）、.NET 11 参考程序集 `1.8.14`（上游目前最新为 RC2 参考程序集，尚无 RC3 版本）及 ASP.NET Core/EF Core RC3 依赖，更新开发脚本与示例。by @devhxj
 - 修复 `VdPattern`、`VdPatternSeed` 缺少 `IVueComponent` 契约，以及 JazorAdmin 路由辅助代码使用已退役原始对象投影导致示例构建失败的问题；对象路由通过 `router.Resolve` 转为具体 URL。by @devhxj
-- Upgrade the development and build baseline to .NET 11 RC2 (SDK `11.0.100-rc.2.26504.105`), with Roslyn `5.12.0-1.26505.4`, .NET 11 reference assemblies `1.8.12`, and ASP.NET Core/EF Core RC2 dependencies across scripts and samples. by @devhxj
+- Upgrade the development and build baseline to .NET 11 RC3 (SDK `11.0.100-rc.3.26522.148`), with Roslyn `5.12.0-1.26522.148` (the same build as the SDK), .NET 11 reference assemblies `1.8.14` (the newest upstream release is still the RC2 reference set; no RC3 set exists yet), and ASP.NET Core/EF Core RC3 dependencies across scripts and samples. by @devhxj
 - Fix sample build failures from missing `IVueComponent` contracts on `VdPattern` and `VdPatternSeed` and retired raw-object projections in JazorAdmin route helpers; resolve object routes through `router.Resolve` to concrete URLs. by @devhxj
 
 ## 2026-10-10

@@ -26,6 +26,8 @@ dotnet run --project src/ECMAScript.Vue.Generator -- authoring --check
 
 ## 输入与边界
 
+`upstream/` 只保留当前生成器和绑定 manifest 使用的锁定版本。升级并通过生成检查后，移除已被替代的版本目录；旧输入通过 Git 历史追溯。
+
 `authoring` 扫描当前 `ECMAScript.*` C# 声明，维护数值/union 参数的 XML 提示、嵌套 union
 的直接标量投影，以及 Number 分支缺少的强类型数值转换。转换输入来自 `ECMAScript.Number`
 已有隐式转换；不引入 `object`、开放泛型或组件名名单。生成区域和 `data-authoring="types"`

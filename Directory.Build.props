@@ -6,9 +6,10 @@
     <!-- DenoHost 2.9.6 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <JsonNetVersion>10.0.7</JsonNetVersion>
-    <!-- RC2 ships Roslyn 5.12; its exact SDK build is not published to dotnet-tools. -->
-    <CodeAnalysisVersion>5.12.0-1.26505.4</CodeAnalysisVersion>
-    <Net110AssembliesVersion>1.8.12</Net110AssembliesVersion>
+    <!-- RC3 ships Roslyn 5.12.0-1.26522.148 and that exact build is published to dotnet-tools. Keep it equal to the SDK's Roslyn. -->
+    <CodeAnalysisVersion>5.12.0-1.26522.148</CodeAnalysisVersion>
+    <!-- Latest published reference assemblies are the .NET 11 RC2 set (1.8.14); no RC3 set exists yet. -->
+    <Net110AssembliesVersion>1.8.14</Net110AssembliesVersion>
     <CoverletVersion>10.0.1</CoverletVersion>
     <MinVerPackageVersion>7.0.0</MinVerPackageVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>

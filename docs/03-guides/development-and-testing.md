@@ -14,6 +14,17 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 `Jazor.slnx` 是解决方案入口。仓库自动化采用 `scripts/csharp/` 下的单文件 C# 程序，不新增 PowerShell build、test、publish 或诊断 wrapper。
 
+## 清理本地输出
+
+历次隔离测试、发布验证和样例构建会累积临时产物。先预览占用，再按需清理：
+
+```bash
+dotnet run --file scripts/csharp/clean-workspace.cs
+dotnet run --file scripts/csharp/clean-workspace.cs -- --apply
+```
+
+清理前结束正在运行的构建和样例。脚本清理 `.tmp/`、`artifacts/`、`test/` 等忽略目录，以及 `src/`、`samples/` 中的 `bin/`、`obj/`、`node_modules/` 和生成输出；保留 Git 管理的文件、未忽略的新文件、NuGet 缓存、worktree 和 IDE 设置。清理后下一次构建会重新生成产物，npm 验证输入按对应脚本恢复。
+
 ## 聚焦测试
 
 | 领域 | 命令 |
@@ -120,14 +131,17 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 | 层 | 当前基线 | 验证入口 |
 | --- | --- | --- |
-| .NET SDK | `11.0.100-rc.2.26504.105`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
-| Roslyn / 参考程序集 | `5.12.0-1.26505.4` / `Basic.Reference.Assemblies.Net110` `1.8.12` | 编译器、Razor SG、Emit 回归 |
+| .NET SDK | `11.0.100-rc.3.26522.148`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
+| Roslyn / 参考程序集 | `5.12.0-1.26522.148` / `Basic.Reference.Assemblies.Net110` `1.8.14` | 编译器、Razor SG、Emit 回归 |
+| ASP.NET Core / EF Core 包 | `11.0.0-rc.3.26522.148`（`Jazor.CLR.Generator` 与 `samples/JazorAdmin*`） | 示例构建、JazorAdmin 后端测试 |
 | Node.js | `20`、`22`（Wiki Chrome browser consumer 矩阵）；发布 workflow 使用 `22`，本地 benchmark 应记录实际版本 | `wiki-verify.yml`、发布 workflow、`benchmark-razorvue-build.cs` |
 | 浏览器 | Windows SPA/Wiki/SSR 统一使用 Google Chrome headless | SPA/SSR、Wiki browser scripts |
 | 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
 | 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
 
-RC2 SDK 自带 Roslyn `5.12.0-1.26504.105`；该精确构建尚未发布到 `dotnet-tools` 公共源，因此源码项目和单文件脚本固定使用已发布的同系列 `5.12.0-1.26505.4`。官方 Razor SG 回归继续直接引用当前 SDK 的 Roslyn 与 Razor compiler。
+RC3 SDK 自带 Roslyn `5.12.0-1.26522.148`，该精确构建已发布到 `dotnet-tools` 公共源，源码项目（`Directory.Build.props` 的 `CodeAnalysisVersion`）和单文件脚本（`#:package` 指令）与 SDK 保持同一构建。RC2 时该构建未发布，当时只能使用同系列的 `5.12.0-1.26505.4`。官方 Razor SG 回归继续直接引用当前 SDK 的 Roslyn 与 Razor compiler。
+
+`Basic.Reference.Assemblies.Net110` 目前最新的 `1.8.14` 对应 .NET 11 RC2 参考程序集（上游提交 “Update .NET 11 to RC 2”），尚无 RC3 版本。因此测试编译所用的参考程序集比 SDK 和运行时落后一个 RC；升级到上游发布的 RC3 版本后，应同步更新 `Net110AssembliesVersion` 和 `scripts/csharp/inspect-razor-generator-result.cs` 中的 `#:package` 版本。
 
 Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 使用 Node 22（浏览器脚本依赖 Node 22 提供的 WebSocket 客户端），`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。本地运行结果不构成跨版本保证。组件库升级还需先通过 `verify-vue-binding-contracts.cs`，再运行发布消费者验证。
 
