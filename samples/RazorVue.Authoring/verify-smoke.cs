@@ -15,6 +15,7 @@ using System.Xml.Linq;
 
 var options = SmokeOptions.Parse(args);
 var repoRoot = ScriptHelpers.FindRepositoryRoot(Directory.GetCurrentDirectory());
+Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 var sampleRoot = Path.Combine(repoRoot, "samples", "RazorVue.Authoring");
 var buildScript = Path.Combine(sampleRoot, "build-local.cs");
 var workRoot = ScriptHelpers.ResolvePath(repoRoot, options.WorkRoot ?? Path.Combine(".tmp", "sample-smoke", "RazorVue.Authoring", options.Configuration));
@@ -591,7 +592,7 @@ internal static class ScriptHelpers
 
     public static Process StartHost(string hostAssembly, string artifactRoot, int port, string logPath)
     {
-        var startInfo = new ProcessStartInfo("dotnet")
+        var startInfo = new ProcessStartInfo(Path.ChangeExtension(hostAssembly, OperatingSystem.IsWindows() ? ".exe" : null))
         {
             WorkingDirectory = Path.GetDirectoryName(hostAssembly)!,
             UseShellExecute = false,
@@ -601,7 +602,6 @@ internal static class ScriptHelpers
         };
         foreach (var argument in new[]
         {
-            hostAssembly,
             "--urls", "http://127.0.0.1:" + port,
             "--Authoring:JazorRoot=" + artifactRoot,
             "--Authoring:PathBase=/authoring"

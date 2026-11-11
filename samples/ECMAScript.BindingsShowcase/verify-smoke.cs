@@ -177,11 +177,11 @@ static async Task RunAsync(string fileName, string[] arguments, string workingDi
 
 static Process StartHost(string outputRoot, string artifactRoot, int port, int vitePort)
 {
-    var executable = Path.Combine(outputRoot, "BindingsShowcase.Host.dll");
+    var executable = Path.Combine(outputRoot, OperatingSystem.IsWindows() ? "BindingsShowcase.Host.exe" : "BindingsShowcase.Host");
     if (!File.Exists(executable))
         throw new FileNotFoundException($"Showcase host assembly was not built: {executable}");
 
-    var startInfo = new ProcessStartInfo("dotnet")
+    var startInfo = new ProcessStartInfo(executable)
     {
         WorkingDirectory = outputRoot,
         RedirectStandardOutput = true,
@@ -196,7 +196,6 @@ static Process StartHost(string outputRoot, string artifactRoot, int port, int v
     // and release smoke lanes.
     startInfo.Environment["DOTNET_ENVIRONMENT"] = "Development";
     startInfo.Environment["Logging__LogLevel__Default"] = "Warning";
-    startInfo.ArgumentList.Add(executable);
     var process = Process.Start(startInfo)
         ?? throw new InvalidOperationException("Failed to start the showcase host.");
     // Drain both streams: a redirected pipe that is never read fills up and blocks the host.

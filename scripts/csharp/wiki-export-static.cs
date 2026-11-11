@@ -62,8 +62,8 @@ try
     File.WriteAllText(Path.Combine(outputRoot, ".nojekyll"), "GitHub Pages static export\n", new UTF8Encoding(false));
 
     hostProcess = StartProcess(
-        "dotnet",
-        ["Wiki.dll", "--urls", hostUrl],
+        Path.Combine(publishRoot, OperatingSystem.IsWindows() ? "Wiki.exe" : "Wiki"),
+        ["--urls", hostUrl],
         publishRoot,
         new Dictionary<string, string?>
         {

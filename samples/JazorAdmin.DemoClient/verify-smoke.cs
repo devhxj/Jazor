@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 
 var options = DemoSmokeOptions.Parse(args);
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
+Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 var runRoot = Path.Combine(repoRoot, ".tmp", "sample-smoke", "JazorAdmin.DemoClient", "run-" + Environment.ProcessId);
 EnsureDirectoryWithinRepo(runRoot, repoRoot);
 if (Directory.Exists(runRoot))
@@ -332,18 +333,20 @@ static RunningHost StartHost(
     Directory.CreateDirectory(logRoot);
     var startInfo = new ProcessStartInfo
     {
-        FileName = "dotnet",
+        FileName = Path.ChangeExtension(assemblyPath, OperatingSystem.IsWindows() ? ".exe" : null),
         WorkingDirectory = workingDirectory,
         UseShellExecute = false,
         CreateNoWindow = true,
         RedirectStandardOutput = true,
         RedirectStandardError = true
     };
-    startInfo.ArgumentList.Add(assemblyPath);
     startInfo.ArgumentList.Add("--urls");
     startInfo.ArgumentList.Add(baseUri.AbsoluteUri);
     foreach (var pair in environment)
         startInfo.Environment[pair.Key] = pair.Value;
+    // The local smoke owns redirected diagnostics; it must not depend on
+    // permission to write the machine-wide Windows .NET Runtime EventLog.
+    startInfo.Environment["Logging__EventLog__LogLevel__Default"] = "None";
 
     var process = new Process { StartInfo = startInfo };
     if (!process.Start())
