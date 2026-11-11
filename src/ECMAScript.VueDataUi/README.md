@@ -3,7 +3,7 @@
 > `vue-data-ui` 3.23.4 的 RazorVue 强类型 binding，完整覆盖上游 71 个公开 `vue-ui-*` entry。每个 Razor component 指向单独的 upstream ESM entry，因此不会因为使用一个图表而导入整个 chart bundle。
 
 本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 `vue-data-ui`
-npm package、组件入口、全局样式和依赖元数据；Emit 生成标准 `jazor/package.json`，Deno 将
+npm package、组件入口、全局样式和依赖元数据；Emit 生成标准 `jazor/package.json`，pnpm API 将
 运行时恢复到 `jazor/node_modules`。C# 程序集只提供映射和 RazorVue authoring contract。
 消费方生成的组件模块进入消费程序集的 `Jazor.Generated.ModuleCatalog`。
 

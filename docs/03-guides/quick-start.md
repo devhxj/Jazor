@@ -58,7 +58,9 @@ dotnet add Sample.Host package Jazor --version 1.0.0
 dotnet build Sample.Host
 ```
 
-构建完成后，MSBuild 在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，在 `JazorDir` 生成标准 JavaScript 项目。项目包含 `features/greetings.js` 及其 source map、`entry.js`、`package.json`、`deno.lock` 和恢复后的 `node_modules`；release 模式还会执行项目的 `deno task build`，默认由 Vite 写入 `dist/`。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主负责项目目录。生成模块使用标准 ECMAScript 具名导出，跨模块调用由编译器创建稳定 import。`jazor-manifest.json` 只保存在 `obj` 中用于增量状态与诊断，不参与浏览器、SSR 或 Deno 的模块解析；标准项目不生成运行时 import map。发布时 SDK 只将运行闭包 `dist/**` 和可选 `ssr/**` 复制到发布输出的 `jazor/`；源码、根 lock 与 `node_modules` 留在构建项目中。source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。
+构建后，MSBuild 在最终 `Exe`/`WinExe` 宿主调用 `Jazor.Emit`，在 `JazorDir` 生成标准项目。当前源码候选通过进程内 pnpm API 恢复 `node_modules` 与 `pnpm-lock.yaml`；Release 通过 Vite API 构建 `dist/`，无需全局 Node/pnpm 或单独运行 JS 工具进程。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主拥有项目目录；跨模块调用仍使用稳定的标准 ECMAScript import。
+
+诊断 manifest 仅保存在 `obj`，不参与运行时解析。发布只复制 `dist/**` 和启用后的 `ssr/**`，源码、根 lock 与 `node_modules` 留在构建项目中。source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。已发布 1.0.0 的运行时说明与当前候选边界见[安装与配置](./installation-and-configuration.md)。
 
 ## 4. 可选：加入 Razor-to-Vue
 

@@ -1,6 +1,6 @@
 # npm/JSR 包绑定指南
 
-> 面向：为上游 JavaScript/JSR 库创建 `ECMAScript.<Name>` 强类型绑定的仓库维护者。绑定结果进入标准 `jazor/` 项目，由 Deno、项目配置的 JavaScript 构建工具和 Deno SSR 运行时直接消费。
+> 面向：为上游 JavaScript/JSR 库创建 `ECMAScript.<Name>` 强类型绑定的仓库维护者。当前源码候选通过进程内 NodeApi 调用 pnpm、Vite 和 Vue SSR API，直接消费标准 `jazor/` 项目。
 
 ## 绑定交付模型
 
@@ -24,7 +24,7 @@ ECMAScript 自有 MJS 属于源码库输入。`src/ECMAScript/clr/**` 写入 `ja
 - 许可证、上游文档来源、采集时间和 fingerprint；
 - 组件样式、worker、字体、图片或 wasm 的标准 import/URL 关系。
 
-生成器可以从 registry tarball 或本地缓存复现上游快照。快照用于契约检查与升级审阅；运行时依赖仍由项目根的 Deno restore 提供。
+生成器可以从 registry tarball 或本地缓存复现上游快照。快照用于契约检查与升级审阅；运行时依赖由项目根的 pnpm API restore 提供。
 
 上游包形态决定入口选择：
 
@@ -32,7 +32,7 @@ ECMAScript 自有 MJS 属于源码库输入。`src/ECMAScript/clr/**` 写入 `ja
 | --- | --- | --- |
 | 公开的细粒度 ESM 子路径 | 直接使用子路径 | 项目构建工具沿入口可达图裁剪 export、模块和资源 |
 | 正式根入口承载完整运行时 | 使用根入口 | 入口的内部依赖和初始化顺序完整保留 |
-| 条件导出提供 browser/deno/development/production | 保存公开 specifier | Deno 与项目构建工具按各自条件选择上游目标 |
+| 条件导出提供 browser/node/development/production | 保存公开 specifier | Node/Vite 按各自条件选择上游目标 |
 | 高耦合组件库 | 使用正式组件或根入口 | 组件闭包随真实 import 保留 |
 
 VueDraggable 等底层库可以直接绑定正式根入口。组件内部依赖由上游 import 表达，绑定维护者只需验证运行语义和入口 identity。
@@ -74,10 +74,10 @@ public static class AddDays
 | 来源 | 根 `package.json` | 生成 import |
 | --- | --- | --- |
 | npm | 精确 npm 版本，例如 `"date-fns": "4.4.0"` | `date-fns/addDays` |
-| JSR | 精确 `jsr:` identity，例如 `"@std/path": "jsr:@std/path@..."` | `@std/path/...` |
+| JSR | npm 兼容包的精确版本；metadata 保留原始 `jsr:` identity | `@jsr/std__path/...` 等声明的兼容入口 |
 | ECMAScript 源码 | 不增加 package dependency | `./` 或 `../` 相对路径 |
 
-一个 dependency key 只对应一个 identity。冲突在 Deno restore 前由 Emit 报告，便于定位绑定包或项目引用。
+一个 dependency key 只对应一个 identity。冲突在恢复前由 Emit 报告，便于定位绑定包或项目引用。
 
 上游 named export 本身是对象时，可以用 extern 静态属性取得该对象，再用无参 `[ECMAScript]` 宿主类型映射其成员。例如消费者反馈 G10 使用以下强类型声明绑定 `sm-crypto-v2`：
 
@@ -130,7 +130,7 @@ MSBuild 执行 Emit 时，绑定包参与以下步骤：
 1. 提供实际使用的 package imports、dependency identities 与必要的 CSS side-effect specifier；
 2. 让 Emit 把标准 bare import 写入项目源码；
 3. 让 Emit 生成 `entry.js`、可选的 `ssr-entry.js` 和根 `package.json`；
-4. 由 Deno 2.9.7 恢复 `node_modules`、生成或校验 `deno.lock` 并执行 frozen check；
+4. 由 pnpm API 恢复 `node_modules`、生成或校验 `pnpm-lock.yaml`，再检查语法与 Vite 模块图；
 5. 由项目配置的 JavaScript 构建工具从同一 `jazor/` 根读取上游 `exports`、conditions、`sideEffects` 和 ESM 资源图。
 
 最终宿主统一生成项目入口、恢复依赖并构建 bundle，使源码 ProjectReference、NuGet consumer、浏览器构建与 SSR 共享同一标准项目。
@@ -156,10 +156,10 @@ MSBuild 执行 Emit 时，绑定包参与以下步骤：
 2. 每个 `[ECMAScript]` specifier 与上游公开入口和 export name 一致；
 3. 生成源码中的 bare import 都能在 `jazor/package.json` 找到 dependency key；
 4. 项目源码的相对 import、source map 和本地资源路径可解析；
-5. Deno 2.9.7 restore、`deno.lock` frozen check 和无网络检查通过；
+5. pnpm API 恢复、lock 冻结和恢复后的模块图检查通过；
 6. 构建工具提供的 metafile 或等价输出证明单组件/单函数入口只保留可达 JS、CSS、worker 和静态资源；
 7. 组件内部依赖、共享模块、初始化顺序和必要 side effects 在真实 consumer 中保持；
-8. SSR 入口复用同一 `node_modules`、`deno.lock` 和 package identity。
+8. 开发 SSR 入口复用同一 `node_modules`、`pnpm-lock.yaml` 和 package identity，发布 SSR 从自足 bundle 加载。
 
 测试入口遵循仓库脚本策略：
 
@@ -187,5 +187,5 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 - 每个 public C# API 都有对应的标准 ESM specifier 和 export 证据；
 - npm/JSR dependency identity 能合并到根 `package.json`；
 - ECMAScript 源码 carrier 能按相对路径写入项目；
-- Deno restore/check、所选构建工具的 tree shaking、CSS/worker/static 和 SSR consumer 均有测试；
+- NodeApi restore/check、Vite tree shaking、CSS/worker/static 和 SSR consumer 均有测试；
 - 文档、生成器、metadata、测试和 CHANGELOG 使用相同的 package identity 与入口。

@@ -234,7 +234,7 @@ also revoke the previous URL when it is replaced and release the final URL on un
 The preview.8 mainline and release gates passed: compiler and RazorVue coverage,
 public API compatibility, binding generation/inventory, XML documentation, and
 23 lockstep package shapes. Packaged Windows SPA and SSR consumers verified real
-Chrome interaction, `/docs` and `/todo` PathBase assets, self-contained Deno SSR,
+Chrome interaction, `/docs` and `/todo` PathBase assets, self-contained NodeApi SSR,
 and hydration. See [the validation record](../04-roadmap/preview8-developer-feedback.md)
 for commands, counts, and scope.
 

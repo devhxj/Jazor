@@ -6,39 +6,19 @@
 
 ### 未发布 | Unreleased
 
-#### 其他变更
+#### 下一 MAJOR 候选
 
-- 修复 Linux/macOS 打包时库与原生工具资产路径中的重复分隔符，确保包内路径与 Windows 一致，并由四平台包闭包门禁检查。by @devhxj
-- 模块图检查不再打开 Vite WebSocket 监听，避免并行恢复和真实开发服务器争抢端口；确定性验收比较源码、maps、配置和 lock，排除 pnpm 安装缓存。绑定覆盖率先完成各测试 lane 再加载程序集，避免 Windows 文件锁。by @devhxj
-- 修复 Vite build/check 的取消令牌转发，取消后等待 JS environment 退出再返回；真实挂起插件回归确认返回后不再继续写文件。by @devhxj
-- 将 Vite 的 CSS 引擎固定为官方同版本 `lightningcss-wasm`，避免旧版 napi-rs Windows addon 在 .NET 内嵌宿主中终止进程；覆盖 TDesign Release 的真实 CSS 压缩，并把选择记录到 pnpm override 与 lock 身份。by @devhxj
-- 修复 Linux 进程内 pnpm addon 无法解析 Node-API 符号的问题：将 .NET 选中的 libnode 提升至全局动态链接作用域，并保留底层原生加载错误原因。by @devhxj
-- 将当前候选的仓库脚本、浏览器驱动与 CI 改为进程内 NodeApi；移除全局 Node/npm 安装要求，工具依赖由 `restore-node-project.cs` 调用 pnpm API。JazorAdmin、Wiki `/docs`、Windows NuGet SPA/SSR 发布与 hydration 已验证；Windows 启动脚本使用所选构建的 `CETCompat=false` apphost。跨平台及完整发布门禁继续验收。by @devhxj
-- NodeApi 候选的 Pinia 与 VueRoute 示例通过 pnpm API 恢复依赖并在进程内执行 runtime/DOM smoke，示例使用 `--frontend-only` 重验现有产物；DOM fixture 固定为支持当前 LibNode 的 jsdom 26。Pinia 恢复元数据对齐绑定声明的 Pinia 4.0.3 / Testing 2.0.1，保留 predicate action stub 语义。by @devhxj
-- 修复多个绑定共同引用相同 npm/JSR 包时的误报冲突，按外部包身份合并；不同版本和不兼容资源继续报错。BindingsShowcase 已以进程内 Vite 通过真实浏览器渲染、语言切换与 HMR 状态保持验证。by @devhxj
-- NodeApi 候选的 LibNode 统一升级至 `20.1800.215`，继续使用已接受的 `CETCompat=false` 配置；此更新仍属 Node 20 系列。by @devhxj
-- NodeApi 候选包携带共享宿主、libnode 与 Windows `CETCompat=false` Emit apphost，MSBuild 按构建机选择工具并独立处理目标 RID；移除 `--deno` / `JazorDenoPath`，共享 store 可用 `--pnpm-store` / `JazorPnpmStoreDirectory` 配置。SSR 从程序集资源加载桥接代码，不在部署目录生成工具文件。by @devhxj
-- NodeApi 候选已接入 Emit 恢复/检查、Vite API 构建、开发代理/HMR 和 Vue SSR 环境池。**迁移**：使用 `pnpm-lock.yaml`，删除 SSR/Vite `TaskName` 配置；将 shell 构建定制迁入 Vite 配置。JSR 保留绑定身份并通过 npm 兼容注册表安装。正式包/MSBuild、脚本与跨平台门禁仍待完成。by @devhxj
-- 编译器、CLR、Razor SG、Style 与 Devtools 的运行时回归迁往共享进程内 NodeApi 宿主，真实 npm fixture 通过 pnpm API 恢复；保留异步失败传播、组件生命周期与 Chrome 交互验证。该切片不代表完整产品迁移及发布门禁已经完成。by @devhxj
-- 开始全局 NodeApi 工具链迁移：提取共享内嵌宿主并验证进程内 Vite 启动、关闭与构建。正式前端/SSR 主线仍在迁移中，当前试点的范围与运行限制以各工具 README 为准。by @devhxj
-- WebIDL 采集工具试点切换为完整 NodeApi 进程内执行：pnpm API 恢复固定依赖，TypeScript API 转译并加载 collector，不再启动 Deno 或 JS 工具子进程。`--deno-config` 改为 `--node-project`；当前验证组合与 Windows CET、依赖布局及取消限制见工具 README，其他 Jazor 路径仍待迁移。by @devhxj
+- 工具链和 SSR 全局切换为进程内 Microsoft.JavaScript.NodeApi + LibNode + pnpm API：WebIDL、Emit、Vite/HMR、Vue SSR、运行时测试、浏览器驱动、脚本和 CI 使用同一执行路线，无需全局 Node/pnpm，不启动 JS 工具或 shell 子进程。固定 LibNode `20.1800.215`，仍属于 Node 20 系列；Windows 使用已接受的 `CETCompat=false` apphost。by @devhxj
+- **破坏性变更与迁移**：移除 `--deno` / `JazorDenoPath` 和 Vite/SSR `TaskName`，WebIDL `--deno-config` 改为 `--node-project`；审阅并清理旧安装结果，改用 `pnpm-lock.yaml`，将 shell 构建定制迁入 Vite 配置。共享 store 使用 `--pnpm-store` / `JazorPnpmStoreDirectory`。依赖不执行 lifecycle shell scripts；pnpm 取消须等待原生安装实际结束。完整步骤见[迁移方案](docs/04-roadmap/nodejs-pnpm-migration-plan.md)。不覆盖已发布的 1.0.0。by @devhxj
+- NuGet 携带共享宿主、七个构建机 RID 的 libnode 和 Windows Emit apphost；工具按构建机选取，运行资产按目标 RID 解析。修复 Linux/macOS 包路径、Linux addon 符号加载和 Windows Rolldown 绑定选择；Vite CSS 固定为官方同版本 Lightning CSS WASM 并保持压缩。发布 SSR 从 bundle 与程序集资源加载，不在请求期间生成工具文件。by @devhxj
+- 保持 Vite/SSR 的取消与退出顺序，模块图检查不再打开 WebSocket；多个绑定共同声明相同外部包身份时正确合并，Pinia 恢复元数据对齐 Pinia 4.0.3 / Testing 2.0.1。四平台组合 CI、完整 48 项 Emit 消费者、Windows 23 包 SPA/SSR 浏览器发布、主线及默认覆盖率门禁通过；候选尚未正式发布。by @devhxj
 
-#### Chores
+#### Next MAJOR candidate
 
-- Use explicit package filenames for managed libraries and native tooling assets so Linux/macOS packages have the same canonical paths as Windows; verify them through the four-platform package closure gate. by @devhxj
-- Keep Vite dependency checks free of WebSocket listeners, compare emitted sources/maps/config/lock independently of installation caches, and audit binding assemblies after all test lanes finish to avoid Windows file locks. by @devhxj
-- Forward cancellation into Vite build/check environments and await shutdown before returning; pending-plugin regressions verify that file writes stop before cancellation completes. by @devhxj
-- Pin Vite's CSS engine to the official same-version `lightningcss-wasm`, preserving CSS minification inside the embedded host where the older Windows napi-rs addon aborts. Record the selection in pnpm overrides and restore identity. by @devhxj
-- Expose the selected libnode symbols to Linux Node-API addons through the global dynamic-linker scope, and preserve native loader failure causes in diagnostics. by @devhxj
-- Run candidate repository scripts, browser drivers, and CI tooling through embedded NodeApi. Restore fixtures with the pnpm API instead of global Node/npm. Verify JazorAdmin, Wiki `/docs`, and Windows NuGet SPA/SSR publication with hydration; launch the selected build's `CETCompat=false` apphost on Windows. Cross-platform and full release gates remain in progress. by @devhxj
-- Restore Pinia and VueRoute sample dependencies through the pnpm API and run runtime/DOM smoke inside NodeApi. Recheck existing artifacts with `--frontend-only`; pin DOM fixtures to jsdom 26 for the current LibNode. Align Pinia restore metadata with the authored Pinia 4.0.3 / Testing 2.0.1 contracts, preserving predicate action stubs. by @devhxj
-- Merge identical external npm/JSR package identities shared by multiple bindings without false conflicts; continue rejecting incompatible versions/assets. Verify BindingsShowcase rendering, locale changes, and preserved HMR state with in-process Vite and a real browser. by @devhxj
-- Upgrade the NodeApi candidate's shared LibNode dependency to `20.1800.215`, retaining the accepted `CETCompat=false` configuration. This package remains in the Node 20 family. by @devhxj
-- Package the NodeApi candidate with its shared host, libnode, and Windows `CETCompat=false` Emit apphosts. Select tools for the build host independently of the target RID, remove `--deno` / `JazorDenoPath`, and expose shared-store selection through `--pnpm-store` / `JazorPnpmStoreDirectory`. Load the SSR bridge from assembly resources without writing tool files into the deployment. by @devhxj
-- Connect the NodeApi candidate to Emit restore/check, Vite API builds, development proxy/HMR, and the Vue SSR environment pool. **Migration**: use `pnpm-lock.yaml`, remove SSR/Vite `TaskName` settings, and move shell build customization into Vite config. Preserve JSR binding identities through its npm compatibility registry. Package/MSBuild, script, and cross-platform gates remain pending. by @devhxj
-- Move compiler, CLR, Razor SG, Style, and Devtools runtime regressions to the shared in-process NodeApi host, restoring real npm fixtures through the pnpm API. Preserve async failure propagation, component lifecycle, and Chrome interaction checks. This slice does not complete the product migration or release gates. by @devhxj
-- Begin the global NodeApi toolchain migration with a shared embedding host and in-process Vite startup, shutdown, and build verification. Production frontend/SSR integration remains in progress; tool READMEs define the verified scope and limitations. by @devhxj
-- Pilot the WebIDL collector on an entirely in-process NodeApi stack: restore pinned dependencies with the pnpm API and transpile/load the collector with the TypeScript API, without Deno or JS tool child processes. Replace `--deno-config` with `--node-project`; the tool README documents the verified combination and Windows CET, dependency layout, and cancellation limits. Other Jazor execution paths remain pending. by @devhxj
+- Move WebIDL, Emit, Vite/HMR, Vue SSR, runtime tests, browser drivers, scripts, and CI to in-process Microsoft.JavaScript.NodeApi + LibNode + the pnpm API. No global Node/pnpm or JS-tool/shell child process is required. Pin LibNode `20.1800.215`, still in the Node 20 family, and use the accepted `CETCompat=false` apphost on Windows. by @devhxj
+- **Breaking changes and migration**: remove `--deno` / `JazorDenoPath` and Vite/SSR `TaskName`; replace WebIDL `--deno-config` with `--node-project`. Review old installation artifacts, adopt `pnpm-lock.yaml`, and move shell build customization into Vite config. Select the shared store with `--pnpm-store` / `JazorPnpmStoreDirectory`. Lifecycle shell scripts are disabled; cancellation waits for native pnpm installation to finish. Follow the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md); the published 1.0.0 remains unchanged. by @devhxj
+- Package the shared host, libnode for seven build-host RIDs, and Windows Emit apphosts. Select tooling for the build host and runtime assets for the target RID. Correct Linux/macOS package paths, Linux addon symbol visibility, and Windows Rolldown binding selection; pin the official same-version Lightning CSS WASM implementation with minification. Published SSR loads its bundle and assembly resources without writing per-request tool files. by @devhxj
+- Preserve Vite/SSR cancellation and shutdown ordering and keep module checks free of WebSocket listeners. Merge identical external package identities and align Pinia restore metadata with Pinia 4.0.3 / Testing 2.0.1. Four-platform CI, all 48 Emit consumers, Windows SPA/SSR browser gates from 23 packages, mainline tests, and default coverage gates pass. This candidate has not been released. by @devhxj
 
 ### Jazor 1.0.0
 

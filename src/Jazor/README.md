@@ -103,7 +103,7 @@ app.UseJazorHost();
 app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
-当前 NodeApi 迁移分支由 ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SSR 与 Vite API。pnpm API 恢复项目的 `node_modules` 和 `pnpm-lock.yaml`，无需全局 Node、pnpm 或 CDN。Windows 宿主配置 `CETCompat=false`，随包 Emit apphost 按构建机 RID 选择，部署运行库按目标 RID 解析；原生 pnpm 安装期间的取消需等待引擎实际结束。全仓库脚本与跨平台门禁仍待完成，此说明不改变已发布版本的执行路径。
+当前 NodeApi 迁移分支由 ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SSR 与 Vite API。pnpm API 恢复项目的 `node_modules` 和 `pnpm-lock.yaml`，无需全局 Node、pnpm 或 CDN。Windows 宿主配置 `CETCompat=false`，随包 Emit apphost 按构建机 RID 选择，部署运行库按目标 RID 解析；原生 pnpm 安装期间的取消需等待引擎实际结束。全仓库脚本已切换；四平台组合与 Windows SPA/SSR 发布门禁已通过。候选按下一 MAJOR 准备，此说明不改变已发布 1.0.0 的执行路径。
 
 ## Razor-to-Vue
 

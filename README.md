@@ -28,7 +28,7 @@
 
 > Jazor 1.0.0 is the current stable release, built on .NET 11 GA. Native union authoring still requires C# preview language mode.
 
-> This source branch is migrating tooling and SSR to in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Windows x64 SPA/SSR package consumers and browser flows have passed; full migration and platform gates remain in progress. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
+> This source candidate runs tooling and SSR through in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Four-platform CI and Windows SPA/SSR package/browser gates have passed. The breaking migration targets the next MAJOR; 1.0.0 remains the published stable release. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 

@@ -1,6 +1,6 @@
 # ECMAScript.Lucide
 
-Complete generated Blazor/RazorVue bindings for `lucide-vue-next`. The generator reads the upstream TypeScript declarations and emits one strongly typed component for every named icon export. Each icon remains a named export from the upstream npm ESM package, so Deno and Vite perform normal tree shaking.
+Complete generated Blazor/RazorVue bindings for `lucide-vue-next`. The generator reads the upstream TypeScript declarations and emits one strongly typed component for every named icon export. Each icon remains a named export from the upstream npm ESM package, so Vite performs normal tree shaking after pnpm API restoration.
 
 Use the binding directly in a Razor component:
 

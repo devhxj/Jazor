@@ -4,7 +4,7 @@
 
 本包属于 JS resource library。发布包的 `manifest.json` 与 `inventory.json` 记录锁定的
 `tdesign-vue-next` 1.20.7 npm package、入口、样式和依赖元数据；Emit 生成标准
-`jazor/package.json`，Deno 将 TDesign 与 Vue 恢复到 `jazor/node_modules`。C# 程序集只提供
+`jazor/package.json`，pnpm API 将 TDesign 与 Vue 恢复到 `jazor/node_modules`。C# 程序集只提供
 映射和 authoring contract。消费方编写的 RazorVue 组件生成到消费程序集的
 `Jazor.Generated.ModuleCatalog`。
 
@@ -49,7 +49,7 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 
 ## 已验证的 Razor 写法
 
-以下语法已通过作者源码、official Razor Source Generator、render module、Deno runtime、隔离
+以下语法已通过作者源码、official Razor Source Generator、render module、NodeApi runtime、隔离
 Release NuGet consumer 和真实 Chrome browser smoke。它证明的是 TDesign typed authoring 这一条
 能力，不会扩大 Microsoft/Blazor 内置 UI、`IJSRuntime` 或 server-only service 的明确 Reject 边界。
 

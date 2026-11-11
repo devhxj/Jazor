@@ -28,6 +28,8 @@
 
 > Jazor 1.0.0 是当前正式版本，基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。
 
+> 当前源码候选的工具链与 SSR 已切换为进程内 NodeApi、LibNode 20.1800.215 与 pnpm API，四平台 CI 和 Windows SPA/SSR 包/浏览器门禁已通过。破坏性迁移按下一 MAJOR 准备，已发布正式版本仍为 1.0.0，见[迁移方案](docs/04-roadmap/nodejs-pnpm-migration-plan.md)。
+
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
@@ -40,7 +42,7 @@ Jazor 核心编译器、RazorVue 和 CLR 支持的第一版，以及首批 500 �
 
 ## 致谢
 
-Jazor 使用了 [Roslyn](https://github.com/dotnet/roslyn)、[Acornima](https://github.com/adams85/acornima)、[Netpack](https://github.com/FlorianRappl/netpack)、[DenoHost](https://github.com/thomas3577/DenoHost)、[WebRef](https://github.com/w3c/webref)，并参考了 [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) 等早期 C# 到 JavaScript 项目。
+Jazor 使用了 [Roslyn](https://github.com/dotnet/roslyn)、[Acornima](https://github.com/adams85/acornima)、[node-api-dotnet](https://github.com/microsoft/node-api-dotnet)、[pnpm](https://github.com/pnpm/pnpm)、[Vite](https://github.com/vitejs/vite) 与 [WebRef](https://github.com/w3c/webref)。早期工作也受益于 Netpack、DenoHost，以及 [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) 等 C# 到 JavaScript 项目。
 
 ## 核心模型
 
@@ -94,7 +96,7 @@ flowchart LR
 
 | 类库形式 | carrier | 直接引用规则 |
 | --- | --- | --- |
-| JS resource library（`ECMAScript`、Vue、Vuetify、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`deno.lock`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
+| JS resource library（`ECMAScript`、Vue、Vuetify、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`pnpm-lock.yaml`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
 | 纯 Jazor 类库（`ECMAScript.Style`、`Jazor.Admin` 或其他开发者编写的 C# 和 RazorVue） | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 编写纯 Jazor 模块的项目直接引用 `Jazor`；编写 RazorVue 组件的项目直接引用 `Jazor` 和 `Jazor.Vue`。 |
 
 最终可执行或 Web 宿主运行 Emit 时必须直接引用 `Jazor`。宿主一次收集选中的

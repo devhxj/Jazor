@@ -40,7 +40,7 @@ P1 以版本化状态和生命周期协议为目标；JavaScript 语义通过 ty
 
 ### 验收
 
-1. 官方 Razor SG、Deno runner、TestServer 和真实浏览器都能读取同一 envelope。
+1. 官方 Razor SG、NodeApi runner、TestServer 和真实浏览器都能读取同一 envelope。
 2. props/provider 值在 SSR 与 hydration 中保持一致，且 HTML 中不存在未版本化的第二份状态载体。
 3. 重复 hydration、过期/错误 envelope 和 render-hook 异常都有可观察失败。
 4. Release package consumer 能在隔离资源闭包下复现上述行为。

@@ -23,11 +23,11 @@
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 
-这些包按需显式引用。绑定库声明 npm/JSR package identity 与标准 ESM specifier；最终宿主的 Emit 将依赖写入根 `package.json`，Deno 恢复 `node_modules`，项目配置的 JavaScript 构建工具从同一 `jazor/` 项目解析模块、样式和其他资源。
+这些包按需显式引用。绑定库声明 npm/JSR package identity 与标准 ESM specifier；最终宿主的 Emit 将依赖写入根 `package.json`，pnpm API 恢复 `node_modules`，项目配置的 JavaScript 构建工具从同一 `jazor/` 项目解析模块、样式和其他资源。
 
 `ECMAScript.VueDataUi` 以 71 个组件 binding 对应上游 `vue-data-ui/vue-ui-*` entry，并为需要全局样式的入口声明标准 stylesheet import。图表模块、样式和 PDF export 的 `jspdf` 依赖由恢复后的 package 与项目构建工具按标准 ESM 图解析。
 
-`ECMAScript.Lucide` 的每个图标类型直接对应 `lucide-vue-next` 的 named export，生成器同时保留 XML 文档、官方图标链接和 Razor 参数类型。应用只导入实际使用的图标，Deno/Vite 可按正常 ESM 图执行 tree shaking。
+`ECMAScript.Lucide` 的每个图标类型直接对应 `lucide-vue-next` 的 named export，生成器同时保留 XML 文档、官方图标链接和 Razor 参数类型。应用只导入实际使用的图标，Vite 可按正常 ESM 图执行 tree shaking。
 
 ## Blazor framework 绑定
 

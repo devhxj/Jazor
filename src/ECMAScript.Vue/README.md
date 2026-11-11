@@ -24,7 +24,7 @@
 ## 交付边界
 
 Vue browser runtime 由 `manifest.json` 记录的 `vue` npm package 提供。Emit 在 MSBuild 阶段生成
-标准 `jazor/package.json`，Deno 将 Vue 恢复到 `jazor/node_modules`，项目配置的 JavaScript
+标准 `jazor/package.json`，pnpm API 将 Vue 恢复到 `jazor/node_modules`，项目配置的 JavaScript
 构建工具再按 Vue 的 `exports` 与 `sideEffects` 解析实际入口。`ECMAScript.Vue` 是 Vue API 的 binding/resource
 package，不复制上游 runtime 文件。
 

@@ -1,12 +1,22 @@
 # Node.js 与 pnpm 迁移方案
 
-> 状态：待实施方案。编写日期：2026-11-11。源码基线：`e2abbf90` / `v1.0.0`。本文定义迁出 Deno 的目标、实施路线和验收条件，不代表 Node.js、pnpm 或进程内宿主已经进入当前支持范围。
+> 状态：源码迁移与候选验收完成，下一 MAJOR 尚未发布。编写日期：2026-11-11。迁移前基线：`e2abbf90` / `v1.0.0`。当前分支已接入 NodeApi 工具链，支持声明仍以实际平台和门禁证据为准；不会覆盖已发布的 1.0.0。
 
 Jazor 将前端工具链与服务端 JavaScript 执行迁往完整的 NodeApi 技术栈：C# 内嵌 Node，通过 `@pnpm/napi` 恢复依赖，并在内嵌环境调用工具与渲染 API。不得以独立 Node、pnpm、tsc 或 shell 进程完成验证或替代该目标。首先用 WebIDL collector 验证安装、TypeScript 转译、ESM 加载与结果回传；Vite 和 SSR 在同一进程约束下另行完成生命周期设计及验收。迁移完成后，正式交付闭包不再依赖 DenoHost 或 Deno。
 
 WebIDL 试点的实现、固定版本与当前限制见 [collector README](../../src/ECMAScript.WebIDL.Generator/README.md)，可通过 `dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs` 复现；其结果不代表其余产品路径已通过验证。
 
 已接受的宿主配置：`CETCompat=false`。仓库可执行项目、测试宿主和 Jazor NuGet 的构建接线统一设置，不将其作为待决阻断项，也不引入替代执行路线。
+
+当前实施固定 NodeApi `0.9.36`、LibNode `20.1800.215` 与 `@pnpm/napi` `12.5.1`，以 `Directory.Build.props` 为准。后文外部资料中的候选版本用于决策背景，不能替代已验证的组合。
+
+Windows x64 已通过共享宿主、WebIDL、Vite/HMR、Vue SSR、Pinia/VueRoute DOM、JazorAdmin、Wiki PathBase、Authoring 和本地 NuGet 的独立 SPA/SSR 发布目录验证。Release 主测试、默认 Debug 覆盖率门禁已通过。四平台 CI（Windows x64、Linux x64、macOS x64/ARM64）已验证 pnpm、原生 addon、Vite 与 CSS、源码/部署 SSR、取消和固定 WebIDL 基线；见 [NodeApi CI](https://github.com/devhxj/Jazor/actions/runs/43019983602)。最终[四平台组合 CI](https://github.com/devhxj/Jazor/actions/runs/43030143205)还通过 37 项 ASP.NET hosting/标准项目回归和 NuGet 资产闭包；Windows 的完整 Emit 消费者 48/48、干净 23 包 SPA/SSR 浏览器门禁均通过。Linux/macOS 的组合结果不等同于 Windows 浏览器发布门禁，也不外推到未验证 RID 或 musl。
+
+公开 API 对比确认删除 Vite/SSR 的 `TaskName` 及其访问器，旧稳定基线比较按预期失败。结合 CLI、lock 和 scripts 的迁移，版本通道按下一 MAJOR 准备，不覆盖既有 tag 或改写旧基线。可重复入口为 `test-dotnet.cs`、`verify-webidl-nodeapi.cs`、`verify-nodeapi-pipeline.cs`、`verify-windows-spa-release.cs` 与 `verify-windows-ssr-release.cs`。
+
+pnpm 原生安装没有取消接口，当前契约是等待实际安装结束再传播取消，期间不启动后续阶段。SSR/Vite/测试环境在可调度 JS 线程上终止并等待退出；同步无限循环的中断仍不支持。布局采用实际验证的 hoisted linker；不宣称已采用 isolated linker，也不执行依赖 lifecycle shell scripts。
+
+Vite 的 CSS 阶段固定使用同版本官方 `lightningcss-wasm`，其选择进入 pnpm override 与 lock 身份。旧 napi-rs Windows addon 只从主 executable 查找符号，无法满足内嵌 .NET 宿主；WASM 仍在当前 NodeApi environment 执行，真实 TDesign Release 图保留 CSS 压缩。它是固定工具实现，不是失败后的 fallback。
 
 ## 一、背景与决策依据
 
@@ -97,7 +107,7 @@ Jazor 的入口是 .NET 11 / ASP.NET Core 主进程，必须由它创建 Node �
 | 范围 | 当前入口 | 迁移责任 |
 | --- | --- | --- |
 | 工具链版本 | [Directory.Build.props](../../Directory.Build.props) | 固定 Node、NodeApi、libnode、pnpm 引擎版本；最终移除 DenoHostVersion 和仅为它设置的属性 |
-| 恢复与检查 | [DenoPackageRestorer.cs](../../src/Jazor.Emit/DenoPackageRestorer.cs)、[EmitPipeline.cs](../../src/Jazor.Emit/EmitPipeline.cs) | 替换恢复引擎、锁文件、增量身份、检查和取消行为 |
+| 恢复与检查 | [NodePackageRestorer.cs](../../src/Jazor.Emit/NodePackageRestorer.cs)、[EmitPipeline.cs](../../src/Jazor.Emit/EmitPipeline.cs) | 替换恢复引擎、锁文件、增量身份、检查和取消行为 |
 | 项目配置 | [LibraryPackageWriter.cs](../../src/Jazor.Emit/LibraryPackageWriter.cs)、[LibraryPackageIdentity.cs](../../src/Jazor.Emit/LibraryPackageIdentity.cs) | 写入 pnpm 配置与 scripts；处理 npm alias、JSR 和已有作者配置 |
 | 构建 | [JavaScriptProjectBuilder.cs](../../src/Jazor.Emit/JavaScriptProjectBuilder.cs)、[ViteProjectWriter.cs](../../src/Jazor.Emit/ViteProjectWriter.cs) | 内嵌 Node 调用 Vite API；保持 bundle、CSS、manifest、source map 和 tree shaking |
 | 入口与 SSR runner | [ProjectEntryWriter.cs](../../src/Jazor.Emit/ProjectEntryWriter.cs)、[ssr-runner.js](../../src/Jazor.Emit/tooling/ssr-runner.js) | 用 Node HTTP 接口替代 `Deno.serve`；保留渲染及请求/响应协议 |
@@ -353,7 +363,7 @@ Release SSR 必须从部署目录独立运行：无开发源码、根 `node_modu
 | 绑定 | Style、Vue Devtools、Pinia、VueRoute 和已进入主线的生态包行为 |
 | 真实浏览器 | Chrome 中实际交互、资源加载、HMR、PathBase 与 hydration，不能只靠 Node shim 声明浏览器支持 |
 
-不为省事注入一个生产或测试全局 `Deno` 兼容对象。测试名称的 `OnDenoHost` 与 catalog 引用可在对应切片一致迁移；不得因改名丢失 test filter、场景目录或覆盖率范围。每阶段记录测试发现数和结果，任何减少都应有逐项解释。
+不为省事注入一个生产或测试全局 `Deno` 兼容对象。测试名称的 `OnNodeApi` 与 catalog 引用可在对应切片一致迁移；不得因改名丢失 test filter、场景目录或覆盖率范围。每阶段记录测试发现数和结果，任何减少都应有逐项解释。
 
 测试拥有独立目录、端口、文件和 NodeApi environment；从当前测试输出选择内嵌资产，不回退到仓库默认 `bin/Debug`。多 lane 并发构建隔离输出，不增加常规 `DoNotParallelize`，不用进程全局环境变量传每个测试的配置。
 
@@ -512,18 +522,18 @@ MAJOR 切换提交统一删除 DenoHost runtime 引用、Deno 执行实现、旧
 
 完成定义如下：
 
-- [ ] P0 版本、执行方式、取消、scripts 和检查边界都有实际证据，未决必需项为零。
-- [ ] Emit、Vite、SSR、测试、collector、smoke、benchmark 和 CI 的受维护执行路径均可在没有 Deno 的环境运行。
-- [ ] 依赖恢复、工具与渲染通过 NodeApi 使用明确固定资源，bootstrap 不依赖消费者全局工具，不启动 JS 工具子进程。
-- [ ] npm alias、JSR、peer、CSS、tree shaking、动态模块和跨平台依赖闭包通过真实验证。
-- [ ] 依赖不变的增量构建不重装；失败/取消不留下成功状态或仍在运行的自有任务。
-- [ ] SPA/SSR 发布从干净部署目录独立运行，PathBase、资源、hydration 和失败副作用契约成立。
-- [ ] 主线、覆盖率、API/产物兼容性、绑定、包形状、平台和性能报告完成，既有门槛没有降低。
-- [ ] 依赖清单和执行资产中无 DenoHost/Deno 残留；历史文档、旧版本说明和迁移说明中的文字引用允许保留。
-- [ ] 当前架构、安装/开发/发布指南、项目 README、`AGENTS.md` 与 CHANGELOG 同步，支持声明仅覆盖有证据的平台和能力。
-- [ ] 版本通道按最终兼容性结果确定，官方发布前门禁全部通过。
+- [x] P0 版本、执行方式、取消、scripts 和检查边界都有实际证据，未决必需项为零。
+- [x] Emit、Vite、SSR、测试、collector、smoke、benchmark 和 CI 的受维护执行路径均可在没有 Deno 的环境运行。
+- [x] 依赖恢复、工具与渲染通过 NodeApi 使用明确固定资源，bootstrap 不依赖消费者全局工具，不启动 JS 工具子进程。
+- [x] npm alias、JSR、peer、CSS、tree shaking、动态模块和跨平台依赖闭包通过真实验证。
+- [x] 依赖不变的增量构建不重装；失败/取消不留下成功状态或仍在运行的自有任务。
+- [x] SPA/SSR 发布从干净部署目录独立运行，PathBase、资源、hydration 和失败副作用契约成立。
+- [x] 主线、覆盖率、API/产物兼容性、绑定、包形状、平台和性能报告完成，既有门槛没有降低。
+- [x] 依赖清单和执行资产中无 DenoHost/Deno 残留；历史文档、旧版本说明和迁移说明中的文字引用允许保留。
+- [x] 当前架构、安装/开发/发布指南、项目 README、`AGENTS.md` 与 CHANGELOG 同步，支持声明仅覆盖有证据的平台和能力。
+- [x] 版本通道按最终兼容性结果确定为下一 MAJOR；源码候选的本地门禁已通过，正式发布必须由官方 workflow 在新 ref 上重新验收。
 
-本次文档交付不勾选上述实施项。后续实施报告应写入 `artifacts/node-pnpm-migration/`，稳定结论在完成时收敛到架构、指南和当前状态；探索过程由 Git 和候选报告追溯，不长期堆积为新的历史快照。
+源码候选已完成上述执行路径、资产与本地质量门禁验收，正式发布仍须在新的 MAJOR ref 上由官方 workflow 重新执行门禁。本地实施报告写入 `artifacts/node-pnpm-migration/`，稳定结论在完成时收敛到架构、指南和当前状态；探索过程由 Git 和候选报告追溯，不长期堆积为新的历史快照。
 
 ## 十五、参考资料
 

@@ -106,7 +106,7 @@ Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件
 | P1 | 完善响应式与生命周期语义 | 继续验证参数替换、slot 捕获、`@key` identity、异步事件、异步 lifecycle、卸载竞态和 SSR side effect；明确 Vue 语义与 CLR parity 的适用范围。 | 当前声明子集已完成；完整 CLR reference parity 和复杂 SSR side effect 属于边界 |
 | P1 | 提供范式级调试工具 | 让作者能从 `.razor` 位置追踪到 generated C#、lowered module、source map 和最终组件边界，不要求阅读内部 AST。 | 已完成；使用 `inspect-razorvue-chain.cs` |
 | P1 | 建立中型应用体验基线 | 以 `samples/JazorAdmin` 真实应用和 `RazorVue.Authoring` Golden Path 测量多个组件、多层 slot、表单、路由和状态组合的首次构建、增量构建、HMR、产物体积和诊断耗时。 | 基线已完成；后续优化需保持同一 benchmark 参数 |
-| P2 | 扩展 typed 生态绑定 | **已完成本轮 Element Plus 切片**：`ElButton`/`ElInput` 覆盖枚举 prop、事件、`@bind-ModelValue`、default/prefix slot、class/style 与 attribute splat，并通过官方 SG、Deno 模块运行时、Release package consumer 和真实浏览器证据。后续组件仍按同一门槛逐切片加入。 |
+| P2 | 扩展 typed 生态绑定 | **已完成本轮 Element Plus 切片**：`ElButton`/`ElInput` 覆盖枚举 prop、事件、`@bind-ModelValue`、default/prefix slot、class/style 与 attribute splat，并通过官方 SG、NodeApi 模块运行时、Release package consumer 和真实浏览器证据。后续组件仍按同一门槛逐切片加入。 |
 | P2 | 评估有限的协议扩展 | **本轮沿用既有协议**：现有 `ECMAScript` metadata、Razor SG 参数绑定、slot descriptor 与 Vue module pipeline 足以表达 Element Plus 切片；协议通过既有 metadata 与强类型 binding 表达。 |
 
 任何后续能力只有在实现、测试、作者指南和当前状态同步后，才能从 Guidance/Reject 升级为 Support。
@@ -137,4 +137,4 @@ Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件
 
 ### P2 Element Plus 验收入口
 
-Element Plus 的 typed binding 以生成源 `src/ECMAScript.Vue.Generator/ElementPlusGenerator.cs` 和上游 `2.14.5` metadata 为单一来源。生成器 `elementplus --check` 报告 `111 components and 2 directives`，工作区保持生成一致性。组件绑定现在按 `element-plus/<component>/<export>` 逻辑入口生成，root 入口只承载插件、版本和指令等全局 API；每个组件的 JS/CSS 通过 manifest 入口闭包按需物化。官方 SG 回归 `RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests` 验证 `ElButton` 的枚举与 click、`ElInput` 的 `VueStringNumberValue` 双向绑定、named slot、属性 splat 以及组件级 import；Emit 的 `LibraryMaterializerTests.Materialize_ElementPlusButtonEntry_DoesNotMaterializeAlertOrRootAssets` 验证只请求 Button 时不会复制 Alert、root bundle 或全局样式。组件交互语义由上面的官方 SG + Deno 运行时测试覆盖。
+Element Plus 的 typed binding 以生成源 `src/ECMAScript.Vue.Generator/ElementPlusGenerator.cs` 和上游 `2.14.5` metadata 为单一来源。生成器 `elementplus --check` 报告 `111 components and 2 directives`，工作区保持生成一致性。组件绑定现在按 `element-plus/<component>/<export>` 逻辑入口生成，root 入口只承载插件、版本和指令等全局 API；每个组件的 JS/CSS 通过 manifest 入口闭包按需物化。官方 SG 回归 `RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests` 验证 `ElButton` 的枚举与 click、`ElInput` 的 `VueStringNumberValue` 双向绑定、named slot、属性 splat 以及组件级 import；Emit 的 `LibraryMaterializerTests.Materialize_ElementPlusButtonEntry_DoesNotMaterializeAlertOrRootAssets` 验证只请求 Button 时不会复制 Alert、root bundle 或全局样式。组件交互语义由上面的官方 SG + NodeApi 运行时测试覆盖。

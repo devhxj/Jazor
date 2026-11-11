@@ -1,149 +1,85 @@
 # 产物管线
 
-> 适用范围：C# 编译模块、ECMAScript 源码、npm/JSR 绑定、Jazor.Emit、Deno、所选构建工具、SSR 与 HMR。标准项目契约见[类库与标准前端项目契约](./library-artifact-contract.md)。
+> 适用范围：当前源码候选的编译模块、ECMAScript 源码、npm/JSR 绑定、Emit、进程内 NodeApi、Vite、SSR 与 HMR。完整迁移与平台验收状态见[迁移方案](../04-roadmap/nodejs-pnpm-migration-plan.md)，类库边界见[类库与标准前端项目契约](./library-artifact-contract.md)。
 
 ## 一个项目根
 
-最终宿主的前端产物统一位于 `jazor/`：
+最终宿主的前端项目统一位于 `jazor/`：
 
 ```text
 ModuleCatalog + ECMAScript 源码 + binding declarations
                          |
-                         v
                      Jazor.Emit
                          |
-                         v
-             jazor/（源码、入口、package.json）
+           jazor/（源码、入口、package.json）
                          |
-             +-----------+-----------+
-             |                       |
-             v                       v
-       Deno restore/check       Vite / DenoHost
+          +--------------+---------------+
+          |              |               |
+    pnpm API 恢复    Vite API 构建    Vue SSR / Vite HMR
+          +--------------+---------------+
+              .NET 进程内 NodeApi + libnode
 ```
 
-Emit 是 MSBuild 阶段的项目适配器。它把 Jazor carrier 转换为标准项目文件，再调用标准工具。项目形成后，包解析、条件选择、模块可达性和资源裁剪遵循 Deno、npm/JSR package 与 所选构建工具 的规则。
+Emit 在 MSBuild 阶段将 carrier 物化为标准项目，再经共享 `Jazor.NodeHost` 调用 API。包恢复使用固定 `@pnpm/napi`，构建和开发服务使用 Vite API，SSR 直接调用生成入口。整个执行链不启动 Node、pnpm、tsc、Deno 或 shell 工具子进程，不需要消费者安装全局 JavaScript 工具。
 
 ## 输入与所有权
 
-| 输入 | 产生方 | Emit 的处理 | 项目结果 |
-| --- | --- | --- | --- |
-| `Jazor.Generated.ModuleCatalog` | `Jazor.Compiler` / RazorVue | 读取生成模块、Entries、source map、相对依赖与 package imports | 生成的 `.mjs`、`.map` 与相对 import |
-| ECMAScript 源码 carrier | ECMAScript 源码库 | 按声明路径写入源码树 | `clr/**` 与其他项目源码 |
-| binding declaration | `ECMAScript.*` binding | 收集 dependency key、版本、integrity、specifier 与显式样式入口 | 根 `package.json` 的 `dependencies` 与源码 bare import |
-| 应用本地资源 | 最终宿主 / `ModuleCatalog` | 按源码 import 或 URL 的目标路径写出 | 项目内 CSS、worker、字体、图片和 wasm |
+| 输入 | 产生方 | Emit 的处理 |
+| --- | --- | --- |
+| `Jazor.Generated.ModuleCatalog` | Compiler / RazorVue | 写入生成模块、Entries、source map、相对依赖与 package imports |
+| ECMAScript 源码 carrier | ECMAScript 源码库 | 按声明路径写入 `clr/**` 等项目源码 |
+| binding declaration | `ECMAScript.*` | 收集 npm/JSR 身份、精确版本、specifier 与显式样式入口 |
+| 应用资源 | 最终宿主 / ModuleCatalog | 按源码 import 或 URL 的目标路径写出 CSS、worker、字体、图片和 wasm |
 
-现有 metadata 中的 `embedded-mjs` 对应 ECMAScript 源码 carrier，写入项目源码树。npm/JSR binding 的运行时代码由依赖恢复提供。`manifest.json`、inventory 和 source map 保存声明与诊断证据，项目运行时解析使用标准 `package.json` 和源码 import。
+`embedded-mjs` 是源码 carrier；外部绑定的运行时代码由恢复后的包提供。manifest 和 inventory 保存声明与诊断证据，运行时使用标准 package exports 和源码 import。
 
 ## 固定数据流
 
-1. **收集**：最终宿主提供根程序集、参与程序集、应用 Entries、`ModuleCatalog`、源码 carrier 和 binding declarations。
-2. **就地准备项目**：Emit 直接在最终 `jazor/` 写入，单文件使用临时文件加 rename 以避免半写文件，并复用仍与 `package.json` 一致的锁文件。
-3. **写源码**：写入 `clr/**`、其他 ECMAScript 源码、编译生成模块、source map 与本地资源。
-4. **归一化 import**：项目内模块按最终文件位置写 `./` 或 `../`；npm/JSR import 保留绑定声明中的 bare specifier。
-5. **生成入口**：`entry.js` 连接浏览器 roots；启用 SSR 时生成 `ssr-entry.js`，通过渲染请求加载选定组件。SSR 入口不提前执行浏览器启动代码。
-6. **生成项目声明**：合并实际 package imports，写根 `package.json` 的标准字段、`dependencies` 和 `exports`。
-7. **恢复与检查**：调用 Deno 2.9.7 生成或验证 `deno.lock` 和 `node_modules`，再以 frozen lock 检查可见入口。
-8. **消费与交付**：Release 交给选定的标准前端工具构建 `dist/`，启用 SSR 时同时构建 `ssr/` 运行闭包。发布仅复制这两个运行目录，source map 由 `JazorPublishSourceMaps=true` 显式启用；写入就地生效，失败显式返回并由下一次构建收敛。
+1. 收集最终宿主根程序集、参与程序集、Entries、ModuleCatalog、源码 carrier 和绑定声明。
+2. 就地准备最终 `jazor/` 项目。单文件以临时文件加 rename 发布，内容不变时保留时间戳。
+3. 写入源码、source map 和资源。项目内模块按最终位置写 `./` 或 `../`；外部 import 保留声明的 bare specifier。
+4. 生成浏览器 `entry.js`；启用 SSR 时生成 `ssr-entry.js`，按请求选择组件，不提前执行浏览器启动代码。
+5. 合并根 `package.json` 的 dependencies、exports 和默认 Vite 配置。
+6. 经 pnpm API 生成或验证 `pnpm-lock.yaml` 和 hoisted `node_modules`。依赖声明与现有 lock 一致时使用 frozen restore。
+7. Acornima 检查作者模块语法，Vite 检查模块图解析；检查不执行模块初始化，不重复实现 C# 类型检查。
+8. Release 经 Vite API 生成 `dist/`，启用 SSR 时再生成 `ssr/`。发布复制运行闭包；source map 仅在 `JazorPublishSourceMaps=true` 时交付。
 
-## 源码与入口路径
+## 恢复与检查
 
-源码 carrier 的路径在项目内保持稳定：
+NodeApi、LibNode、pnpm 引擎版本集中在 `Directory.Build.props`。当前固定组合为 NodeApi 0.9.36、LibNode 20.1800.215、`@pnpm/napi` 12.5.1；Windows apphost 使用已接受的 `CETCompat=false`。LibNode 仍属于 Node 20 系列。
 
-```text
-src/ECMAScript/clr/**         -> jazor/clr/**
-ECMAScriptModule.RelativePath -> jazor/<RelativePath>
-```
+原生 pnpm 引擎由宿主引导，并校验包 integrity。恢复通过其发布 API 读取 registry、认证、代理和 TLS 配置；安装固定使用 hoisted linker、自动 peer 安装和 `ignoreScripts=true`。不执行生命周期 shell scripts，不自动回退到 CLI。当前契约不承诺 pnpm CLI 的全部配置、workspace 或 lifecycle 行为。
 
-`ModuleCatalog` 中的相对依赖在写出时根据 importer 的最终路径计算。package import 直接由 Deno 恢复的 `node_modules` 解析。入口导出保持 C# binding 声明的 named/default 形式。
+依赖声明、引擎、Node、平台、架构、linker 与 lock 内容参与恢复状态。已成功恢复且身份不变时跳过重装；`file:` 依赖每次重新交给安装引擎处理。安装前清除成功状态，只有成功后才写回，失败不能伪装为可复用结果。
 
-应用可以拥有浏览器、SSR 和 HMR 等可见入口；这些入口共享一棵项目源码与 package 依赖图。`obj/.../jazor-manifest.json` 属于 Emit 的诊断/增量证据；source map 用于调试。开发与构建时 package resolution 读取根 `package.json`；发布后的 SSR 使用 `ssr/package.json` 任务和本地 bundled chunks。
+通过 `JazorPnpmStoreDirectory` / Emit `--pnpm-store` 选择共享 store。pnpm 原生安装 API 没有取消入口，恢复必须等待实际安装结束后传播取消，避免原生任务继续写 store。SSR、Vite 与测试环境在可调度的 JS 线程上终止事件循环并等待退出；同步无限循环的强制中断尚不支持。
 
-## Deno 项目恢复
+## 构建与开发服务
 
-Deno 版本固定为 2.9.7，由 `DenoHost.Runtime` 包提供可执行文件。Emit 的 restore/check 与 `deno task build` 统一经 `DenoHost.Core` 的 `DenoProcess` 启动（输出捕获、退出等待与取消终止都由它托管）；`--deno`/`JazorDenoPath`/`JAZOR_DENO_PATH` 保留为仅做存在性校验的兼容入口。Emit 根据根项目的 dependency identity 选择标准命令。
+当前支持的构建入口是 `vite build` 与 SSR 配置的 Vite build，通过 API 执行。应用定制放入 Vite 配置；任意 package scripts 或 shell 命令不是替代执行协议。
 
-首次生成或依赖 identity 变化：
+Vite 沿标准 ESM 图解析 package exports、conditions、sideEffects、CSS、worker 与静态资源。共享 helper 和必要副作用保留，未到达的导出与资源由构建器裁剪。
 
-```text
-deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=false
-```
+开发服务器由 ASP.NET Core 生命周期拥有，在进程内 NodeApi environment 中启动与关闭。ASP.NET Core 代理 HTTP/WebSocket，Vite 负责模块解析、source map 与 HMR；不要求另开终端执行 dev 命令。
 
-锁文件与 `package.json` 对齐（按 lock 确定性恢复）：
+## SSR 环境池
 
-```text
-deno install --package-json --node-modules-dir=manual --node-modules-linker=hoisted --frozen=true
-```
+SSR 复用有界的 NodeApi environment 池。`WorkerCount` 为单应用实例的并发环境数，默认 `min(Environment.ProcessorCount, 4)`。每次渲染创建独立 Vue app，直接调用入口并等待异步生命周期；环境复用 ESM 模块缓存。
 
-恢复后的入口检查：
+Development 使用根 `ssr-entry.js`、package 声明和 lock；Release 使用 `ssr/ssr-entry.js`、`ssr/package.json` 与本地 bundled chunks。发布目录不需要源码、根 lock、node_modules 或包恢复。桥接从程序集资源加载，不在部署目录写临时工具文件。
 
-```text
-deno check --node-modules-dir=manual --no-remote --no-config --frozen-lockfile entry.js
-```
+入口、依赖声明、开发 lock 和源码模块内容变化时轮换 generation，以清除旧模块缓存。内容不变只改时间戳时复用环境。取消或失败的租用环境退出后恢复池容量；与 generation 切换重叠的错误显式传播，不自动重放有副作用的渲染。
 
-启用 SSR 时对 `ssr-entry.js` 追加相同的 frozen check。`deno.lock` 是 Deno 的冻结依据；完整 npm `package-lock.json` 作为生态兼容输入随项目保留，并在生成时验证根依赖一致。
+SSR 不再通过 loopback HTTP 或 package task 启动，`TaskName` 设置已移除。state 仍通过强类型请求、props 和显式 provider 传递。
 
-## 标准消费者
+## 确定性与交付
 
-### 项目构建脚本
+`JazorMode=debug` 保留源码与 maps；`release` 从同一项目根生成浏览器运行闭包；`JazorSSR=true` 增加 SSR 输出。最终可执行项目拥有这些配置，类库只传播自己的 carrier。
 
-所选构建工具 接收项目根、可见 entry、构建模式与输出目录，并沿普通 ESM 图读取：
+相同源码、SDK、固定运行时、依赖身份和构建选项应产生稳定路径、入口、声明、lock 与 bundle 元数据。模块按稳定路径与内容去重；外部包版本或资源冲突在恢复前失败。相同外部包可由多个不同绑定声明，但其身份与资源边必须一致。
 
-```text
-entry.js
-  -> 项目源码
-  -> npm/JSR 公开入口
-  -> 包内实现与共享 helper
-  -> peer / optional dependency
-  -> side-effect module
-  -> CSS / worker / static asset
-```
+写入就地生效，失败或中断后由下一次构建收敛，不对整个项目根做快照或回滚。诊断 manifest 位于 obj，是构建证据；浏览器、Vite 与 SSR 不依赖它解析模块。
 
-所选构建工具 使用上游 `package.json` 的 `exports`、conditions 和 `sideEffects`。公开子路径与 named export 提供细粒度入口；组件内部 import、共享模块和必要副作用在可达图中保持，未到达的导出与资源由构建器裁剪。
+`dotnet publish` 仅交付 `dist/**` 和启用后的 `ssr/**`，运行时所需 NodeApi/libnode 资产随宿主发布。Windows 应启动该构建的 apphost，以保留 `CETCompat=false`，不要用另一个工具宿主替代。
 
-### DenoHost
-
-DenoHost 在开发时以 `jazor/` 为工作目录，加载 Emit 生成的 `ssr-entry.js`，复用已恢复的 `node_modules` 与 `deno.lock`。Release 构建从同一依赖图生成 `ssr/ssr-entry.js` 和本地 chunks，DenoHost 改以 `jazor/ssr/` 为工作目录执行其 `package.json` 任务。浏览器构建与 SSR 共享 package identity 和源码；条件选择由各自的标准运行目标决定。
-
-SSR 在 Development 环境优先使用完整的开发图（根目录 `ssr-entry.js`、`package.json` 和 `deno.lock`），避免前次 Release bundle 遮蔽源码更新。其他环境优先查找 `ssr/ssr-entry.js` 和 `ssr/package.json`；bundled 图无需 `node_modules` 或 `deno.lock`。宿主不读取 Emit 诊断 manifest，也不根据样式清单注入 `<link>`。worker 在 SSR 入口、package 声明或开发 lock 内容变化后轮换；仅时间戳变化时复用现有 worker。入口和 package 文件以单文件临时写入加 rename 发布，内容不变时保留时间戳。
-
-worker 通过标准项目任务启动，`TaskName` 默认 `ssr`；开发可选择 `ssr:dev`，由静态脚本中的 Deno `--watch=.` 更新子模块（排除依赖目录与构建输出）。渲染通过 Deno loopback HTTP 服务处理，重启后的监听地址经 ready 通知更新；宿主不实现文件监听或 import 图扫描。与重启重叠的请求允许失败并传播错误，不自动重放。
-
-### HMR
-
-Vite 开发服务器读取当前项目的源码入口、source map 和变更文件，ASP.NET Core 代理 HTTP/WebSocket，不默认静态托管或观察 jazor/。更新消息引用项目内稳定路径；依赖恢复和包解析继续由同一 `package.json`、`node_modules` 与 lock 提供。
-
-## 写入与确定性
-
-Emit 在最终 `jazor/` 中就地完成写入、恢复、检查和构建。写入就地生效：中断或失败时项目可能处于未收敛状态，下一次构建按同一规则收敛；HMR 需要模块随时变更，因此不保留整目录快照，也不做整目录回滚。相同源码、SDK、Deno、所选构建工具、依赖 identity 和构建选项产生稳定的源码路径、入口、项目声明、lock 与 bundle 元数据。
-
-项目内重复模块按稳定路径和内容 hash 去重。dependency key、版本或入口冲突在 Deno restore 前报告；缺失源码、无法解析的相对 import、Deno frozen check 失败或 所选构建工具 失败会使本次构建显式失败。
-
-## 配置与交付
-
-最终宿主配置 `JazorMode` 与 `JazorDir`，Emit 在 MSBuild 中运行：
-
-```xml
-<PropertyGroup>
-  <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)/jazor/</JazorDir>
-</PropertyGroup>
-```
-
-- `debug`：保留项目源码、source map 和诊断 manifest，交由标准开发服务提供模块解析与 HMR。
-- `release`：从同一项目根调用 所选构建工具，输出 `dist/` 与 bundle metafile。
-- `JazorSSR=true`：在同一次项目生成与恢复中增加开发 `ssr-entry.js`，Release 另生成 `ssr/` 运行闭包供 DenoHost 消费。
-- `dotnet publish`：交付 `dist/**` 和启用 SSR 时的 `ssr/**`；默认排除 source map，设置 `JazorPublishSourceMaps=true` 可携带运行目录内的 map。
-
-### 单一项目根（已定）
-
-消费入口只接受**一个项目根**：`jazor/` 同时是模块输入、依赖恢复根、package 解析根与构建输出根。标准构建从 `entry.js` 和根 `package.json` 读取图，输出位置与文件名由选定工具配置；宿主侧的就绪探测以 `entry.js` 为主，并保留旧 bundle 路径兼容。`jazor-manifest.json` 若存在，只是 Emit 的诊断/增量证据。
-
-早期契约把同一个目录拆成 `ArtifactRoot`/`SourceRoot`/`OutputRoot`/`PackageRoot` 四个参数传入；生产路径上它们始终指向同一处，拆开只把"必须一致"的责任推给调用方。区分"调用方是否已恢复依赖"的判据改为是否传入物化结果（`MaterializedLibraries`）：Emit 先在自己的项目根完成 restore 再传结果，直接调用 Toolchain 的调用方没有恢复过，需要在临时工作区补一次同样的 restore。
-
-## 验收证据
-
-- 生成的 `jazor/` 可由 Deno 2.9.7 在 `--no-remote` 与 frozen lock 下检查。
-- `package.json` 的每个 dependency key 都对应一个精确 binding identity，源码中的每个 bare import 都能解析。
-- 所选构建工具 metafile 展示入口可达的 JS、CSS、worker 和 static 资源；组件内部依赖保持完整，共享模块只出现一个实例。
-- DenoHost 开发 SSR 使用同一 `node_modules` 与 `deno.lock`；发布 SSR 从独立 `ssr/` 目录启动，浏览器与 SSR 的 package identity 一致。
-- 重复 MSBuild 生成得到稳定项目文件、路径、source map 和 bundle 输出。
+当前 Windows x64 的真实证据包含 pnpm/JSR 解析、Vite/HMR、Pinia/VueRoute DOM、JazorAdmin、Wiki PathBase，以及从 NuGet 发布到干净目录的 SPA/SSR 和 hydration。跨平台、覆盖率与全仓库门禁仍须按迁移方案完成，不能据此扩大支持声明。

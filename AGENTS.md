@@ -77,7 +77,13 @@ Run from the repository root unless noted:
 - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` runs the Razor SG integration suite.
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj` runs the emit and bundle regression suite.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` runs one compiler test class.
-- In `src/ECMAScript.WebIDL`, run `npm install` once, then `npm run build` to compile the archived TypeScript generator, and `npm run clean` to clear its build artifacts.
+- `dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs` verifies the maintained WebIDL collector; `src/ECMAScript.WebIDL` is archived.
+
+NodeApi migration contract:
+- All maintained JavaScript tooling and SSR paths use in-process `Microsoft.JavaScript.NodeApi` + LibNode + fixed pnpm API. Do not launch Node, npm, pnpm, tsc, Deno, or shell tool child processes or add CLI fallbacks.
+- Windows hosts must run the selected build's `CETCompat=false` apphost. Keep LibNode and NodeApi versions centralized in `Directory.Build.props`.
+- Use `pnpm-lock.yaml` and `JazorPnpmStoreDirectory`; restore tool fixtures with `dotnet run --file scripts/csharp/restore-node-project.cs -- <directory>`.
+- `src/ECMAScript.WebIDL` is archived. The maintained collector is `src/ECMAScript.WebIDL.Generator`, verified by `verify-webidl-nodeapi.cs`.
 
 Script policy:
 - Repository automation scripts must use single-file C# entrypoints (`dotnet run --file ...`) rather than PowerShell.

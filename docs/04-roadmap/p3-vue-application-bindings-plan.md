@@ -31,7 +31,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 - 公开 C# API 使用具体类型、重载、命名 union 和显式 callback；不使用 `object`/`dynamic` 作为万能参数。
 - Vue ref、computed、事件和组件 props 通过现有 `ECMAScript.Vue`/`ECMAScript.VueContract` 投影；第三方库自身的响应式语义不复制到 Jazor runtime。
-- 每个库按需导入公开 ESM entry；`SemanticWalker` 负责表达式和成员翻译，`Jazor.Emit` 生成标准项目，NetPack 负责 bundle 与资源图。
+- 每个库按需导入公开 ESM entry；`SemanticWalker` 负责表达式和成员翻译，`Jazor.Emit` 生成标准项目，进程内 Vite API 负责 bundle 与资源图。
 - SSR 不可用的浏览器 API 必须在 contract 中标明生命周期和使用边界；不能静默退化为服务器实现。
 - 上游包名、版本、export/component、prop、event、slot、文档来源、许可证和资源 hash 都写入 manifest/快照，并接受 contract drift 检查。
 
@@ -69,7 +69,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 2. C# 类型契约、delegate、union、组件 proxy 和 `[ECMAScript]` 映射；命名空间不跨包复用。
 3. 上游 runtime 的锁定版本、`manifest.json` schema 2、npm/JSR identity、公开入口、许可证和 `README.md`。
 4. 生成或手工维护的 export/prop/event/slot inventory、文档来源和 contract fingerprint。
-5. 对应 `src/ECMAScript.<Name>.Test`：metadata、compiler emission、Razor SG、标准项目/NetPack 输出和适用的 browser smoke。
+5. 对应 `src/ECMAScript.<Name>.Test`：metadata、compiler emission、Razor SG、标准项目/Vite 输出和适用的 browser smoke。
 6. 真实消费者样例，证明安装包和源码引用得到相同 module/import 结果。
 7. 作者指南、平台绑定表、current status 和 CHANGELOG 的同步条目。
 
@@ -80,7 +80,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 - C# API 能在官方 Razor Source Generator 下编译，且错误输入产生稳定诊断；
 - compiler 输出的 import、alias、临时变量、source origin 和 source map 稳定；
 - Debug/Release/SSR（适用时）使用同一 `jazor/` 项目、`node_modules` 与 frozen lock；
-- Deno/runtime 测试覆盖正常、空值、错误、取消、重复挂载或竞态路径；
+- NodeApi runtime 测试覆盖正常、空值、错误、取消、重复挂载或竞态路径；
 - 真实 Chromium browser smoke 覆盖至少一个用户可观察流程；
 - 上游版本、文档和 contract fingerprint 与仓库 baseline 一致；漂移默认阻止发布；
 - 适用的 compiler、Razor SG、Emit、Vue binding coverage 和 package consumer 门禁通过。

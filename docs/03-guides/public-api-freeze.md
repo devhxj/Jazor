@@ -74,6 +74,8 @@ preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审�
 - `JazorViteServerOptions`：server origin、Deno task、是否启动、启动与停止超时。
 - `JazorReloadOptions`：client/WebSocket path、观察路径、HMR mapping、节流/轮询/心跳与 HTML 注入开关。
 
+以上记录 1.0.0 的冻结表面。NodeApi 源码候选直接调用 Vite 与 SSR API，已移除 Vite/SSR 的 `TaskName`；此变化须在下一 MAJOR 发布时说明迁移路径，不修改既有稳定 tag 或冻结快照。
+
 集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`entry.js`、`dist/bundle.js`、`http://127.0.0.1:5173`、`/@jazor/client`、`/@jazor/reload`、安全头、探针文件和缓存策略。
 
 ## SSR 数据模型

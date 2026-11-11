@@ -3,6 +3,8 @@
 > 面向：使用 Jazor 核心平台、当前 Razor-to-Vue 集成或可选生态绑定的应用开发者。
 >
 > 说明：ECMAScript 自有 MJS 与 `Jazor.Generated.ModuleCatalog` 提供项目源码，`ECMAScript.*` binding 提供 npm/JSR identity 与标准 ESM specifier。最终宿主在 MSBuild 中调用 `Jazor.Emit`，生成标准 `jazor/` 项目并恢复依赖。
+>
+> 当前源码候选已切换为进程内 NodeApi/pnpm/Vite，通过四平台组合与 Windows SPA/SSR 发布消费者验收，按下一 MAJOR 准备。以下执行说明描述源码候选；已发布 1.0.0 的旧运行时说明应查看对应 tag。迁移步骤与限制见[迁移方案](../04-roadmap/nodejs-pnpm-migration-plan.md)。
 
 ## 前置条件
 
@@ -95,9 +97,9 @@ preview.9 允许最终宿主选择浏览器启动根：
 </ItemGroup>
 ```
 
-路径必须是生成 `ModuleCatalog` 中的模块路径，可以声明多个启动根。省略时沿用原有入口集合；显式选择仅影响浏览器入口，所有作者模块仍被物化并执行 Deno 检查，SSR/hydration 根独立。RazorVue 路由页面通过 literal `import()` 按导航加载，布局仍静态导入。页面或编辑器若仍被启动模块静态导入，就仍属于首屏闭包；只调整 chunk 名称无法推迟请求。
+路径必须是生成 `ModuleCatalog` 中的模块路径，可以声明多个启动根。省略时沿用原有入口集合；显式选择仅影响浏览器入口，所有作者模块仍被物化并执行语法与 Vite 模块图检查，SSR/hydration 根独立。RazorVue 路由页面通过 literal `import()` 按导航加载，布局仍静态导入。页面或编辑器若仍被启动模块静态导入，就仍属于首屏闭包。
 
-输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；源码类库通过 `ModuleCatalog` 或源码 locator 传递模块，binding 通过 metadata 传递 npm/JSR identity 与入口。最终宿主的 MSBuild target 调用 Emit 写出源码、入口和 `package.json`，再使用 Deno 2.9.7 恢复 `node_modules` 并生成或验证 `deno.lock`。
+输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；源码类库通过 `ModuleCatalog` 或源码 locator 传递模块，binding 通过 metadata 传递 npm/JSR identity 与入口。最终宿主调用 Emit 写出源码、入口和 `package.json`，再通过进程内 pnpm API 恢复 `node_modules` 并生成或验证 `pnpm-lock.yaml`。
 
 多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具；最终宿主直接引用并配置 Emit。工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
 
@@ -110,13 +112,14 @@ preview.9 允许最终宿主选择浏览器启动根：
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
-| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另执行项目构建脚本；preview.8 将默认值延后至 targets，允许项目体用空值条件设置模式 |
+| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另调用 Vite build API；preview.8 将默认值延后至 targets，允许项目体用空值条件设置模式 |
 | `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；preview.8 保留此目录中的作者 `.cs` / `.razor` 输入，只排除生成资源 |
 | `JazorSSR` | `false` | 生成开发 SSR 入口；Release 另构建 `ssr/` 运行闭包 |
+| `JazorPnpmStoreDirectory` | 用户本地 Jazor store | 当前候选的共享 pnpm store；不要求生产部署恢复依赖 |
 | `JazorPublishSourceMaps` | `false` | preview.8 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |
 | `RuntimeIdentifier` | 未设置 | preview.8 优先传入指定 RID，未设置时使用 SDK 当前 RID；同时传入 SDK runtime graph，先选择兼容 runtime asset 再对程序集身份去重 |
 
-`debug` 与 `release` 是互斥输出模式。`release` 从 `jazor/` 项目入口执行 `package.json` 中的标准构建脚本。默认脚本使用 Vite；应用可以保留或替换自己的 JavaScript 构建工具和配置。
+`debug` 与 `release` 是互斥输出模式。`release` 从 `jazor/` 入口调用 Vite build API；构建定制放入 Vite 配置。任意 shell scripts 不在进程内执行契约中。
 
 Folder Publish 使用 Release 构建运行闭包，发布后的 `jazor/` 包含 `dist/` 和可选 `ssr/`；源码、根 lock 和 `node_modules` 保留在本地生成项目中。
 
@@ -197,7 +200,9 @@ app.MapPost("/api/editor/commit", async (EditorCommand command, EditorService se
 
 浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider 以 endpoint 响应作为授权结果来源。endpoint 异常通过 `provider.error` 暴露，当前状态保持可观察；并发请求按最新请求生效。该 provider 定义 Jazor 的 browser contract。
 
-ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 在开发时使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块。preview.8 Release 使用 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json` 任务，可从独立发布目录启动，无需恢复 `node_modules` 或根 lock。Deno 执行 SSR 模块，项目配置的 JavaScript 构建工具负责浏览器产物。`WorkerCount` 定义单应用实例的 Deno worker 数和 SSR 并发数，取正整数，默认值为 `min(Environment.ProcessorCount, 4)`。SSR state 通过 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value，共享业务状态通过 props 或应用自有 payload 传递。
+ASP.NET Core 负责路由、静态文件与响应。`Jazor.AspNetCore` 在开发时通过 NodeApi 加载项目 SSR 入口；Release 从独立发布目录加载 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json`，无需恢复依赖或访问 pnpm store。`WorkerCount` 定义单应用实例的持久 NodeApi environment 数和 SSR 并发数，必须为正数，默认 `min(Environment.ProcessorCount, 4)`；每次渲染创建独立 Vue app。state 通过 `JazorSsrRequest.Providers` 的字符串 key 与 JSON value 显式传递，业务状态通过 props 或应用 payload 传递。
+
+从旧运行时迁移时移除 `--deno` / `JazorDenoPath` 和 Vite/SSR `TaskName` 设置，审阅作者 scripts 与 Vite 配置，改用 `pnpm-lock.yaml`。不要把 Deno 路径解释为 Node 路径。共享 store 使用 `JazorPnpmStoreDirectory`；Windows 宿主须启动当前构建的 `CETCompat=false` apphost。安装不执行 shell lifecycle scripts，取消 pnpm 恢复会等待不可中断的原生安装实际结束。
 
 ## 后续阅读
 

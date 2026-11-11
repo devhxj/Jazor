@@ -4,8 +4,8 @@
 
 - `Todo.Library` contains a native RazorVue component with Razor bindings, events, loops, and conditional state.
 - `TodoStyleSheet` owns every visual rule through `ECMAScript.Style`; there is no authored CSS under `wwwroot`.
-- `Todo.Host` emits to its project-root `jazor/` directory. In Development, DenoHost starts Vite and the ASP.NET Core host forwards `/jazor` HTTP and WebSocket requests. In other environments the same middleware serves the Release artifact graph directly.
-- SSR executes the project's `ssr` task in production and `ssr:dev` in Development. The latter uses Deno watch so transitive module edits become visible without rewriting the entry.
+- `Todo.Host` emits to its project-root `jazor/` directory. In Development, the host starts Vite through the in-process NodeApi API and forwards `/jazor` HTTP and WebSocket requests. Other environments serve the Release artifact graph directly.
+- SSR directly loads the generated entry inside a bounded NodeApi environment pool. Source and dependency changes retire the generation so transitive module edits become visible without a tool child process.
 - `Todo:PathBase` supports a mounted application such as `/docs`.
 - `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` publishes this sample as an isolated NuGet consumer with `JazorSSR=true`; the SSR gate exercises the standard `[Parameter]`/`SetParametersAsync(ParameterView)` entry before Chrome hydration.
 
@@ -25,4 +25,4 @@ Set `Todo:Ssr=true` to serve rendered HTML and hydrate it through the same front
 
 The Release gate starts the published ASP.NET Core host and checks real browser hydration and interactions through `/todo`. The CSR shell loads `entry.js` through Vite in Development and `dist/bundle.js` from the published artifact graph in production; publishing never starts Vite.
 
-Generated Vue components still need migration from the former Jazor HMR bridge to standard tool HMR. Ordinary Vite module updates and SSR Deno watch do not yet prove preservation of Vue component state.
+The development HMR gate verifies generated component replacement with parent state preserved. SSR generation replacement separately invalidates module caches; it does not share browser component instances.

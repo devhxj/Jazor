@@ -10,7 +10,7 @@
 | G33/G34 | wrapper 默认 props 保留；`Class`/映射 `CssClass` 冲突在生成期提示 | 常量默认值、显式覆盖、splat precedence 与冲突诊断；未覆盖的动态 initializer 仍拒绝并给出替代建议 |
 | G27/G28 | code-behind Vue lifecycle import 保留；条件分支使用稳定 Fragment 锚点 | 真实 Vue/happy-dom 覆盖 constructor/OnInitialized hook 注册、mount/unmount/remount、每次挂载 90 次 loading/empty/data 转换及资源清理 |
 | G5/G7/G8 | Select、Table、Dropdown、消息/通知/确认/Prompt 强类型交互 | `RazorSgOfficialElementPlusTypedInteractionTests` 覆盖泛型 payload、slot、selection/selectable、command、服务调用和 DOM 交互；具体 stub 边界见下文 |
-| G29 | CLR 将 `InputFileChangeEventArgs` 映射到 `EventRef` 与原生 `FileCount`；`NativeFileEventExtensions` 提供 input/drop `Files` | `FileList`/`FileRef` 保持 WebIDL；compiler 和官方 SG/Deno 回归覆盖选取、清空、多文件、drop、multipart、下载 URL 和取消 |
+| G29 | CLR 将 `InputFileChangeEventArgs` 映射到 `EventRef` 与原生 `FileCount`；`NativeFileEventExtensions` 提供 input/drop `Files` | `FileList`/`FileRef` 保持 WebIDL；compiler 和官方 SG/NodeApi 回归覆盖选取、清空、多文件、drop、multipart、下载 URL 和取消 |
 | DOM events/payload | 12 种 DOM 事件的共有属性与精确 `NativeEvent`；CLR DataTransfer、DataTransferItem、TouchPoint、ElementReference 原生投影 | CLR metadata、compiler 发射及官方 SG/runtime 回归覆盖原对象身份、继承属性、单次求值、nullability、原生集合和 CLR DTO 冲突边界 |
 | G1 | 前端宿主可接入 `IServiceCollection` / 真正的 `IApplicationBuilder` | `JazorFrontendBuilderTests` 覆盖 HTTP body/query/header/response、双向 WebSocket、PathBase 和 Release 静态资源 |
 | G32 | 显式声明的子路径复用闭包中唯一包身份 | npm/JSR/alias、version/integrity、未声明与身份歧义诊断；Base64 完整性摘要按大小写精确比较 |

@@ -26,7 +26,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
 ```
 
-本地 NuGet、外部 Razor SG、Deno 和真实浏览器消费者矩阵属于发布验收 lane：
+本地 NuGet、外部 Razor SG、NodeApi 和真实浏览器消费者矩阵属于发布验收 lane：
 
 ```bash
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
@@ -34,7 +34,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 说明
 
-测试使用独立临时工作区并在结束后清理。当前迁移分支的直接恢复/构建、SSR、Vite 代理/HMR 与 hydration 测试使用进程内 NodeApi；SDK/NuGet 消费者等其余测试仍在迁移，不能据此宣称全套门禁已通过。还原期间出现 `NU1900` 漏洞源警告不阻断已成功完成的测试。
+测试使用独立临时工作区并在结束后清理。直接恢复/构建、SSR、Vite 代理/HMR、hydration 和 SDK/NuGet runtime 消费者使用进程内 NodeApi。Windows SPA/SSR 发布消费者已有验证，完整消费者矩阵仍须单独运行，不以主线通过代替。还原期间出现 `NU1900` 漏洞源警告不阻断已成功完成的测试。
 
 `SdkIntegrationTests` 标记为 `Consumer`。普通 `emit` lane 会跳过这组昂贵的包消费者测试，保持模块、SourceMap、宿主、SSR 和 artifact 契约快速反馈；`emit-consumer` 执行完整消费者矩阵。发布工作流仍必须运行 SPA/SSR 消费者门禁。
 
@@ -46,7 +46,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 Emit tests use class-level parallelism: independent test classes may run concurrently,
 while methods in one fixture run in source order. Several fixtures build local packages
-or start Deno/browser processes and share repository build outputs; method-level
+or start NodeApi environments and browser processes and share repository build outputs; method-level
 parallelism can race those outputs and make the testhost appear hung behind a locked
 assembly. Use a focused `--filter` for browser or package-consumer lanes when diagnosing
 an individual failure.

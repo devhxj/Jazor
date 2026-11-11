@@ -39,7 +39,7 @@ dotnet run --file scripts/csharp/clean-workspace.cs -- --apply
 | Lucide binding | `dotnet test src/ECMAScript.Lucide.Test/ECMAScript.Lucide.Test.csproj` |
 | 单个编译器类别 | `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` |
 
-`emit-consumer` 包含 48 个真实打包、SDK、Deno 与浏览器场景。日常修改应按 fixture 家族选择对应 lane；CI 也以同样的四条 lane 并行执行，避免一个测试进程串行占用全部门禁时间：
+`emit-consumer` 包含真实打包、SDK、NodeApi 与浏览器场景。日常修改应按 fixture 家族选择对应 lane；CI 也以同样的四条 lane 并行执行，避免一个测试进程串行占用全部门禁时间：
 
 ```bash
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-packages
@@ -66,9 +66,9 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 
 ## Emit 阶段输出与取消（preview.9）
 
-正常构建会显示 `[Jazor Emit]` 阶段的开始、完成和耗时，依次包括模块收集、工程写入、依赖 restore/check、Release 浏览器 bundle，以及启用时的 SSR bundle。Deno 的 stdout/stderr 即时输出；失败的最终诊断仍保留原始输出和退出码，并指出失败阶段与工程目录。
+正常构建会显示 `[Jazor Emit]` 阶段的开始、完成和耗时，包括模块收集、项目写入、依赖 restore/check、浏览器 bundle 与 SSR bundle。NodeApi 中的工具进度即时输出；失败保留 JS 异常、工具诊断、阶段与项目目录。
 
-Emit CLI 接收 Ctrl+C 后取消当前工作并终止自身 Deno 进程树。DenoHost 2.9.7 的启动后等待先完成，再处理取消，避免启动过程中丢失已创建进程的所有权。Emit 就地写入，取消可能留下部分产物；再次构建会按现有契约收敛，不承诺回滚。
+Emit 接收 Ctrl+C 后不再启动后续阶段。pnpm 原生 API 没有取消入口，恢复等待实际安装结束再传播取消；Vite/SSR/测试环境在 JS 线程可调度时终止事件循环并等待退出，不留下仍在执行的自有任务。同步无限循环尚不能强制打断。就地写入可能留下部分产物，再次构建会收敛，不承诺回滚。
 
 ## 最终编译计时与长尾（preview.9）
 
@@ -114,7 +114,7 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 `ReadyMilliseconds` 的起点和可见条件必须随采集器记录。资源体积来自原生 Resource Timing，同一资源的多次请求保留，缓存响应可能有 0 transfer；这些数值与逐文件 gzip 估算分开呈现。首屏的请求列表据浏览器实际观察填写，不能用 manifest 静态闭包代替。
 
-当前源码的 Emit 会在 `node_modules/.jazor-restore-state` 记录成功 restore/check 的 package/lock 身份。外部依赖图没有变化时只运行 Deno check，避免 HMR 构建覆写运行中的 Vite 原生模块。删除 node_modules 后正常恢复；更改 package 或锁文件会重新安装，file: 包不使用这个根锁复用条件。依赖确有变化时，Windows 上先退出使用该目录的开发宿主再构建。
+当前源码的 Emit 在 `node_modules/.jazor-restore-state` 记录成功恢复的 package/lock 与工具链身份。外部依赖图不变时跳过重装，继续执行语法与 Vite 模块图检查，避免 HMR 构建覆写运行中的原生模块。删除 node_modules 后正常恢复；更改 package 或 lock 时重新安装，`file:` 包不复用安装状态。依赖变化时，Windows 上先退出使用该目录的开发宿主再构建。
 
 库资源物化也按 manifest 内容 hash 保留未变化的目标文件和时间戳，不因作者修改而触发无关 Vite 更新或替换 Windows 正在读取的文件。源资源先按既有契约校验；内容更新、缺失或损坏的目标仍走原子写入，错误继续传播。
 

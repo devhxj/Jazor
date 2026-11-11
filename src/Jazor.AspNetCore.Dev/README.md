@@ -1,6 +1,6 @@
 # Jazor.AspNetCore.Dev
 
-统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。当前迁移分支在 Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。正式 NuGet/MSBuild 交付仍待验收。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
+统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。当前迁移分支在 Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。四平台宿主/包组合和 Windows x64 本地 NuGet/MSBuild 发布消费者已通过验收；候选按下一 MAJOR 准备。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
 
 ## 标准前端宿主
 
@@ -52,7 +52,7 @@ Development 启动顺序如下：
 3. 等待入口可访问，再开放 ASP.NET Core 宿主；HTTP、query 和 Vite HMR WebSocket 透明转发到同一 origin。
 4. 宿主停止时关闭自己创建的 Vite server，并停止、等待对应 JS 线程退出。
 
-非 Development 环境不会探测或启动 Vite，而是从 `ProjectRootPath` 静态提供 `ReleaseEntryRelativePath` 所在的产物图。Visual Studio F5、Ctrl+F5 和 Folder Publish 都直接走该宿主契约；不需要启动脚本、全局 Deno、`PATH`/`DENO_DIR`、SpaProxy 或 Hosting Startup。
+非 Development 环境不会探测或启动 Vite，而是从 `ProjectRootPath` 静态提供 `ReleaseEntryRelativePath` 所在的产物图。Visual Studio F5、Ctrl+F5 和 Folder Publish 都直接走该宿主契约；不需要启动脚本、全局 Node/pnpm 或运行时 `PATH` 设置、SpaProxy 或 Hosting Startup。
 
 ## 配置与浏览器 URL
 

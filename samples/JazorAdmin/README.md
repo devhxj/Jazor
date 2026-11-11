@@ -18,7 +18,7 @@ JazorAdmin 在一个 ASP.NET Core 宿主中组合 RazorVue UI、Web API、ASP.NE
 2. 将 `JazorAdmin` 设为启动项目，选择 `JazorAdmin` 启动配置和 `Debug` 解决方案配置。
 3. 按 **F5** 调试，或按 **Ctrl+F5** 直接启动。
 
-项目启动时由 `AddJazorFrontend` 注册的 hosted service 通过 DenoHost 随包运行时启动 Vite，ASP.NET Core 同时代理模块和 HMR WebSocket。停止 Visual Studio 调试/启动会话时，宿主只终止自己启动的前端进程树。不要求全局安装 Deno，也不依赖 SpaProxy、Hosting Startup、`PATH` 或 `DENO_DIR`。
+项目启动时，`AddJazorFrontend` 注册的 hosted service 在进程内 NodeApi environment 启动 Vite，ASP.NET Core 同时代理模块和 HMR WebSocket。停止宿主时关闭它拥有的环境与服务器。不要求全局 Node/pnpm，也不依赖 SpaProxy 或 Hosting Startup。浏览器 smoke 的 Playwright 驱动同样通过 NodeApi 执行，仅 Chromium 是其拥有的子进程。
 
 访问启动日志输出的 `/login` 地址。空的开发数据存储会创建默认管理员：`admin@jazor.local` / `JazorAdmin123!`。此账户仅用于本地开发初始化；已有账户的密码不会被启动过程重置。
 

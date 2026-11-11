@@ -20,7 +20,7 @@ the entries for the generated `jazor` project.
 ### 入口解析
 
 绑定保留 Monaco npm package 的 ESM 与 worker 入口，让 NetPack 根据 package `exports`、相对
-依赖和 `sideEffects` 在应用入口处做裁剪。Emit 不复制绑定库自己的 bundle；Deno restore
+依赖和 `sideEffects` 在应用入口处做裁剪。Emit 不复制绑定库自己的 bundle；pnpm API restore
 负责把锁定的 npm package 放入 `jazor/node_modules`。
 
 `Monaco.Create`、模型、主题、标记和 worker 操作映射到命名导出 `editor` 的成员。
@@ -64,7 +64,7 @@ dotnet run --file scripts/csharp/generate-monaco.cs -- --version 0.56.0
 ```
 
 生成器用锁定的 package 输入验证编辑器与四个语言 worker 的 exports，并执行浏览器安全闸门
-（`process.env` 必须带环境守卫）；应用构建由 Emit/Deno 完成 package restore。
+（`process.env` 必须带环境守卫）；应用构建由 Emit/pnpm 完成 package restore。
 
 ## 测试 Tests
 

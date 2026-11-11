@@ -23,7 +23,7 @@ P2 的每个可交付切片都必须满足：
 
 1. C# public surface 保持强类型，并能通过官方 Razor SG；运行时语义通过明确参数、union、overload 与 binding 表达。
 2. compiler/lowering、runtime/binding 和 diagnostic 各有针对性回归；相邻形状在使用点具有稳定诊断。
-3. 有 Deno/runtime 证据和真实浏览器交互证据；涉及发布时必须增加隔离 Release package consumer。
+3. 有 NodeApi runtime 证据和真实浏览器交互证据；涉及发布时必须增加隔离 Release package consumer。
 4. 涉及 SSR 或 hydration 时，证明 envelope 所有权、错误传播、重复执行和资源闭包；协议以版本化 bootstrap envelope 描述。
 5. 作者指南、范式、当前状态、capability ledger、诊断矩阵和 CHANGELOG 同步。
 6. 适用的 Compiler、CLR、Razor SG、Emit、coverage、SPA、SSR、HMR 门禁通过，并记录提交、SDK、Node、浏览器和生成物路径。
@@ -92,7 +92,7 @@ Microsoft Blazor 内置 UI 组件通过 `JAZORVGA021` 进入明确诊断路径�
 
 最近一次已记录运行时基线（Node `v24.14.1`）为：`counter` generated render/update `476190.48/2500000`、gzip `118`；`keyed-list-100` generated render/update `136363.64/188679.25`、gzip `99`。该数据只用于同参数比较，不构成性能承诺；本轮未实施未经证明的优化。
 
-SSR 状态输入边界由 `Jazor.EmitTest.JazorSsrHostingTests` 锁定：空 provider key、空白 provider key、重复 provider key 和认证保留 key 冲突均在启动 Deno worker 前报告失败；runner 保持完整产物状态。
+SSR 状态输入边界由 `Jazor.EmitTest.JazorSsrHostingTests` 锁定：空 provider key、空白 provider key、重复 provider key 和认证保留 key 冲突均在创建 NodeApi 渲染环境前报告失败；runner 保持完整产物状态。
 
 ## 证据入口
 

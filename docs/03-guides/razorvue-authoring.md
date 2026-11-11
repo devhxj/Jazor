@@ -79,9 +79,9 @@ RazorVue 组件按独立入口契约判断：类型可赋值给 `ComponentBase`�
 <a id="routing"></a>
 ### 路由
 
-`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 由 official Razor SG symbols 自动生成稳定 route catalog；`NavigationManager` 和应用自有页面 host framing 消费该 contract。页面使用应用自定义 host 或明确的 Vue Router/组件库 contract。当前 Support 的 route-host 子集覆盖初始匹配、layout composition、query/route prop 映射、pushState、replaceState、popstate、query refresh、not-found、browser history 和 `LocationChanged` 事件；该子集由 official SG、Deno、HTTP-origin browser 以及 isolated Release package consumer 共同验证。复杂 constraint/fragment/history 序列化和 SSR/hydration route identity 归属扩展范围；`LocationChanging` 的取消范围按对应 ledger 条目裁决。
+`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 由 official Razor SG symbols 自动生成稳定 route catalog；`NavigationManager` 和应用自有页面 host framing 消费该 contract。页面使用应用自定义 host 或明确的 Vue Router/组件库 contract。当前 Support 的 route-host 子集覆盖初始匹配、layout composition、query/route prop 映射、pushState、replaceState、popstate、query refresh、not-found、browser history 和 `LocationChanged` 事件；该子集由 official SG、NodeApi、HTTP-origin browser 以及 isolated Release package consumer 共同验证。复杂 constraint/fragment/history 序列化和 SSR/hydration route identity 归属扩展范围；`LocationChanging` 的取消范围按对应 ledger 条目裁决。
 
-`NavigationManager.RegisterLocationChangingHandler(...)` 的 browser-interactive 支持范围是同一 base URI 的内部 `NavigateTo`：handler 可以读取 `TargetLocation`、`HistoryEntryState` 和 `CancellationToken`，调用 `PreventNavigation()`，通过 `CancellationToken.Register` 观察被后续导航 supersede 的取消，并在返回的 `IDisposable` dispose 后停止拦截。该子集已通过 Blazor reference oracle、official Razor SG、Deno、真实 HTTP-origin browser 和 isolated Release package consumer；`forceLoad`、外部 URI、`popstate`/`hashchange` cancellation、server circuit 与 SSR/prerender route identity 不在声明内。`NavigationOptions` 在 C# 中使用 `Microsoft.AspNetCore.Components.NavigationOptions`，避免与 `ECMAScript.NavigationOptions` 绑定产生歧义；后者对应 Web Platform Navigation API 的 options dictionary，不应重命名。
+`NavigationManager.RegisterLocationChangingHandler(...)` 的 browser-interactive 支持范围是同一 base URI 的内部 `NavigateTo`：handler 可以读取 `TargetLocation`、`HistoryEntryState` 和 `CancellationToken`，调用 `PreventNavigation()`，通过 `CancellationToken.Register` 观察被后续导航 supersede 的取消，并在返回的 `IDisposable` dispose 后停止拦截。该子集已通过 Blazor reference oracle、official Razor SG、NodeApi、真实 HTTP-origin browser 和 isolated Release package consumer；`forceLoad`、外部 URI、`popstate`/`hashchange` cancellation、server circuit 与 SSR/prerender route identity 不在声明内。`NavigationOptions` 在 C# 中使用 `Microsoft.AspNetCore.Components.NavigationOptions`，避免与 `ECMAScript.NavigationOptions` 绑定产生歧义；后者对应 Web Platform Navigation API 的 options dictionary，不应重命名。
 
 <a id="component-adapters"></a>
 ### 标准组件适配器
@@ -196,7 +196,7 @@ Razor SDK 提供 C# 与 Razor 编译能力；浏览器运行时通过已注册�
 <a id="ssr-state-handoff"></a>
 ### SSR 状态与表单交接
 
-`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。RazorVue 的 SSR host 提供 `jazor-ssr-state` v1 envelope（`schema`、`version`、`props`、`providers`），并在 Deno runner 与浏览器 hydration 入口校验版本、provider key 和 provider key 唯一性；空白 key、重复 key 以及认证保留 key 冲突产生显式诊断。浏览器 hydration 在首次异步导入前占用 mount；并发入口、组件导入和挂载错误保留可观察的失败状态。该协议定义 host-owned state transport。作者源中出现这些 API 时报告 `JAZORVCA011`，位置落在对应类型或 attribute 上。
+`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。RazorVue 的 SSR host 提供 `jazor-ssr-state` v1 envelope（`schema`、`version`、`props`、`providers`），并在 NodeApi runner 与浏览器 hydration 入口校验版本、provider key 和 provider key 唯一性；空白 key、重复 key 以及认证保留 key 冲突产生显式诊断。浏览器 hydration 在首次异步导入前占用 mount；并发入口、组件导入和挂载错误保留可观察的失败状态。该协议定义 host-owned state transport。作者源中出现这些 API 时报告 `JAZORVCA011`，位置落在对应类型或 attribute 上。
 
 `[StreamRendering]` 需要 renderer-owned 的流式 SSR 生命周期；RazorVue 通过 `JAZORVCA012` 说明该协议条件。增量数据使用显式 typed endpoint/bootstrap 协议并自行定义加载状态。
 
@@ -373,7 +373,7 @@ member closure 物化 render、已支持 lifecycle、constructor replay 和捕�
 
 当 runtime member class 进入 Vue `reactive()` 或其他 deep Proxy，JavaScript private field 的 brand check 会针对 Proxy receiver 失败。在 Vue member-closure profile 中，RazorVue 降级非 public field、auto-property backing field、primary-constructor capture 和 field-like event storage，得到稳定的普通 mangled property，例如 `$jazor$private$...`。它仍保持 class identity、继承和访问顺序；该名称是实现细节，不应在作者代码中引用。
 
-这项 Support 由 official Razor SG + deep Proxy Deno regression 覆盖。组件参数遵守 Vue 的 shallow-prop 语义：触发父子更新时替换整个引用，或使用明确的 Vue ref/reactive contract。
+这项 Support 由 official Razor SG + deep Proxy NodeApi regression 覆盖。组件参数遵守 Vue 的 shallow-prop 语义：触发父子更新时替换整个引用，或使用明确的 Vue ref/reactive contract。
 
 <a id="vue-inject"></a>
 ## VueInject
@@ -456,7 +456,7 @@ Element Plus 回归使用真实 Vue、Element Plus 与 happy-dom 检查值、事
 - `BootstrapPatchTests`（文件 `RazorSourceGeneratorBootstrapPatchTests.cs`）的 mapped diagnostic 和无 partial `ModuleCatalog`/module gate；
 - `RazorSgOfficialNestedRuntimeClassClosureRuntimeTests` 的 deep Proxy regression；
 - `MemberClosureBuilderContractTests` 的显式 component/source-base constructor、runtime entry mapping diagnostic gate；
-- `RazorSgOfficialRuntimeAuthoringTests.BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnDenoHost`，验证 `@code` 业务循环与 direct-render 循环边界；
+- `RazorSgOfficialRuntimeAuthoringTests.BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnNodeApi`，验证 `@code` 业务循环与 direct-render 循环边界；
 - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj`、`dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj`，以及发布/SSR consumer gate。
 
 这些门禁检查的是 operation contract、作者位置和运行时语义；旧 snapshot 通过本身不足以证明 preview SDK 升级安全。

@@ -64,7 +64,7 @@ P0 包含四条相互衔接的工作线：
 
 1. 固定页面需求和交互断言，先写 authoring fixture，再实现页面。
 2. 用官方 Razor Source Generator 编译 fixture，保存生成 C# 作为诊断和 source map 的输入证据。
-3. 在 Deno/module runner 验证初始渲染、参数更新、表单提交和错误路径。
+3. 在 NodeApi module runner 验证初始渲染、参数更新、表单提交和错误路径。
 4. 在隔离 package consumer 中验证 Release 资源闭包、PathBase 和刷新路由。
 5. 在真实 HTTP-origin browser 中验证 HMR、SPA 和适用 SSR/hydration 行为。
 6. 页面写法、支持约束和失败替代路径加入作者指南；样本中的临时 workaround 不提升为公共 API。

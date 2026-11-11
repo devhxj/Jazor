@@ -16,7 +16,7 @@
 </ItemGroup>
 ```
 
-所有 Jazor、`Jazor.Vue` 和 `ECMAScript.*` 包应使用相同版本。Emit 根据各 binding manifest 将 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的 npm identity 写入标准 `jazor/package.json`，由 Deno 恢复共享 `node_modules`；本包只提供 authoring contract。
+所有 Jazor、`Jazor.Vue` 和 `ECMAScript.*` 包应使用相同版本。Emit 根据各 binding manifest 将 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的 npm identity 写入标准 `jazor/package.json`，由 pnpm API 恢复共享 `node_modules`；本包只提供 authoring contract。
 
 ## 使用
 

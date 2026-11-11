@@ -5,7 +5,7 @@
 该包提供 Element Plus runtime 导入、组件代理和强类型 props/slot 契约。本文描述 `1.0.0`；完整质量与发布消费者门禁见[当前状态](../../docs/04-roadmap/current-status.md)，具体交互/服务的验证范围见下文。
 
 本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Element Plus
-npm package、入口、样式和依赖元数据；Emit 生成标准 `jazor/package.json`，Deno 将运行时恢复
+npm package、入口、样式和依赖元数据；Emit 生成标准 `jazor/package.json`，pnpm API 将运行时恢复
 到 `jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的 RazorVue
 组件仍按纯 Jazor 规则生成到消费程序集的 `Jazor.Generated.ModuleCatalog`。
 
