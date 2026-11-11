@@ -47,7 +47,7 @@ internal static class NodeToolchain
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory, progress);
-        var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "build",
+        var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "build", cancellationToken,
             JsonSerializer.Serialize(new { projectDirectory, ssr }));
         progress?.WriteLine("[Jazor NodeApi] " + result);
         cancellationToken.ThrowIfCancellationRequested();
@@ -59,7 +59,7 @@ internal static class NodeToolchain
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory, progress);
-        var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "check",
+        var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "check", cancellationToken,
             JsonSerializer.Serialize(new { projectDirectory, entryPaths }));
         progress?.WriteLine("[Jazor NodeApi] " + result);
         cancellationToken.ThrowIfCancellationRequested();

@@ -7,6 +7,52 @@ namespace Jazor.EmitTest;
 public sealed class EmitProgressTests
 {
     [TestMethod]
+    [DataRow("build")]
+    [DataRow("check")]
+    public async Task ToolchainCancellation_StopsPendingVitePluginBeforeReturning(string operation)
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.ToolchainCancellation", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(root, "package.json"),
+                """{"private":true,"type":"module","devDependencies":{"vite":"8.3.0"}}""");
+            var entry = Path.Combine(root, "app.js");
+            await File.WriteAllTextAsync(entry, "export const value = 1;");
+            await File.WriteAllTextAsync(Path.Combine(root, "vite.config.js"), """
+                import { writeFileSync } from 'node:fs';
+                export default {
+                    plugins: [{ name: 'pending-plugin', load(id) {
+                        if (!id.endsWith('/app.js')) return;
+                        let writes = 0;
+                        const marker = new URL('./writes.txt', import.meta.url);
+                        setInterval(() => writeFileSync(marker, String(++writes)), 10);
+                        return new Promise(() => {});
+                    } }],
+                    build: { rolldownOptions: { input: 'app.js' } }
+                };
+                """);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await NodeToolchain.RestoreAsync(root, Path.Combine(RepositoryTemp.Root, "nodeapi-store"), timeout.Token);
+            using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+            var running = operation == "build"
+                ? NodeToolchain.BuildAsync(root, false, cancellation.Token)
+                : NodeToolchain.CheckAsync(root, [entry], cancellation.Token);
+            var marker = Path.Combine(root, "writes.txt");
+            while (!File.Exists(marker)) await Task.Delay(10, timeout.Token);
+            cancellation.Cancel();
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await running.WaitAsync(timeout.Token));
+            var writes = await File.ReadAllTextAsync(marker);
+            await Task.Delay(100, timeout.Token);
+            Assert.AreEqual(writes, await File.ReadAllTextAsync(marker), "Vite plugin continued after cancellation returned.");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task NodeApiProgress_IsVisibleBeforeCompletion_AndCancellationStopsTheEnvironment()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitProgressTest", Guid.NewGuid().ToString("N"));

@@ -8,6 +8,7 @@
 
 #### 其他变更
 
+- 修复 Vite build/check 的取消令牌转发，取消后等待 JS environment 退出再返回；真实挂起插件回归确认返回后不再继续写文件。by @devhxj
 - 将 Vite 的 CSS 引擎固定为官方同版本 `lightningcss-wasm`，避免旧版 napi-rs Windows addon 在 .NET 内嵌宿主中终止进程；覆盖 TDesign Release 的真实 CSS 压缩，并把选择记录到 pnpm override 与 lock 身份。by @devhxj
 - 修复 Linux 进程内 pnpm addon 无法解析 Node-API 符号的问题：将 .NET 选中的 libnode 提升至全局动态链接作用域，并保留底层原生加载错误原因。by @devhxj
 - 将当前候选的仓库脚本、浏览器驱动与 CI 改为进程内 NodeApi；移除全局 Node/npm 安装要求，工具依赖由 `restore-node-project.cs` 调用 pnpm API。JazorAdmin、Wiki `/docs`、Windows NuGet SPA/SSR 发布与 hydration 已验证；Windows 启动脚本使用所选构建的 `CETCompat=false` apphost。跨平台及完整发布门禁继续验收。by @devhxj
@@ -22,6 +23,7 @@
 
 #### Chores
 
+- Forward cancellation into Vite build/check environments and await shutdown before returning; pending-plugin regressions verify that file writes stop before cancellation completes. by @devhxj
 - Pin Vite's CSS engine to the official same-version `lightningcss-wasm`, preserving CSS minification inside the embedded host where the older Windows napi-rs addon aborts. Record the selection in pnpm overrides and restore identity. by @devhxj
 - Expose the selected libnode symbols to Linux Node-API addons through the global dynamic-linker scope, and preserve native loader failure causes in diagnostics. by @devhxj
 - Run candidate repository scripts, browser drivers, and CI tooling through embedded NodeApi. Restore fixtures with the pnpm API instead of global Node/npm. Verify JazorAdmin, Wiki `/docs`, and Windows NuGet SPA/SSR publication with hydration; launch the selected build's `CETCompat=false` apphost on Windows. Cross-platform and full release gates remain in progress. by @devhxj
