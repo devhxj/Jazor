@@ -162,7 +162,7 @@
            consumer's target RID. Runtime NuGet assets follow normal RID rules. -->
       <TfmSpecificPackageFile Include="$(JazorEmitPublishOutputRoot)**\*"
                               Exclude="$(JazorEmitPublishOutputRoot)tooling\vue\**\*;$(JazorEmitPublishOutputRoot)runtimes\**\*;$(JazorEmitPublishOutputRoot)Jazor.Emit.exe;$(JazorEmitPublishOutputRoot)Jazor.Emit">
-        <PackagePath>tools\net11.0\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+        <PackagePath>tools/net11.0/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
       </TfmSpecificPackageFile>
       <!-- Use literal filenames here: unqualified metadata inside this target
            batches against existing tool items and duplicates native payloads. -->
