@@ -4,7 +4,7 @@
     <AngleSharpVersion>1.7.2</AngleSharpVersion>
     <DenoHostVersion>2.9.7</DenoHostVersion>
     <NodeApiVersion>0.9.36</NodeApiVersion>
-    <LibNodeVersion>20.1800.203</LibNodeVersion>
+    <LibNodeVersion>20.1800.215</LibNodeVersion>
     <PnpmEngineVersion>12.5.1</PnpmEngineVersion>
     <!-- NodeApi embeds libnode in repository hosts and runtime tests. V8 stack
          switching in this supported combination requires CET compatibility off. -->

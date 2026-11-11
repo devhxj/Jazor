@@ -11,9 +11,9 @@
 
 ## 运行
 
-本工具是 NodeApi 迁移试点，目前在 Windows x64 / .NET 11 验证。固定组合为 `Microsoft.JavaScript.NodeApi 0.9.36`、`Microsoft.JavaScript.LibNode 20.1800.203`、`@pnpm/napi 12.5.1` 和 `TypeScript 5.9.3`；不依赖本机全局 Node 或 pnpm。该组合不代表整个 Jazor 已迁移，也不代表已获得生产运行时或其他平台的支持证据。
+本工具是 NodeApi 迁移试点，目前在 Windows x64 / .NET 11 验证。固定组合为 `Microsoft.JavaScript.NodeApi 0.9.36`、`Microsoft.JavaScript.LibNode 20.1800.215`、`@pnpm/napi 12.5.1` 和 `TypeScript 5.9.3`；不依赖本机全局 Node 或 pnpm。该组合不代表整个 Jazor 已迁移，也不代表已获得生产运行时或其他平台的支持证据。
 
-首次采集时，C# 从 npm registry 引导下载固定版本的 pnpm loader 与当前平台原生包，并校验 registry 提供的 SHA-512。缓存位于 `node/obj/pnpm-bootstrap/`；随后在内嵌 Node 中直接调用 pnpm `install` API，从 `node/package.json` 恢复应用依赖。`node/pnpm-lock.yaml` 是权威锁文件，有 lock 时必须 frozen，失败不自动重新解析。共享 store 位于仓库 `.tmp/webidl-pnpm-store/`。
+首次采集时，C# 从 npm registry 引导下载固定版本的 pnpm loader 与当前平台原生包，并校验 registry 提供的 SHA-512。引擎缓存位于 `node/obj/pnpm-engine/`；随后在内嵌 Node 中直接调用 pnpm `install` API，从 `node/package.json` 恢复应用依赖。`node/pnpm-lock.yaml` 是权威锁文件，有 lock 时必须 frozen，失败不自动重新解析。共享 store 位于仓库 `.tmp/webidl-pnpm-store/`。
 
 WebRef 与 TypeScript 均为本工具的固定纯 JS 依赖，恢复显式禁用 lifecycle scripts。collector 由 TypeScript `transpileModule` 在进程内转译为标准 ESM，写入 `node/obj/collector/`，随后通过动态 import 调用；没有 `tsc` 或 Node CLI 执行步骤。生成器的既有 `--from-inventory` 路径仍不加载 NodeApi、不恢复 npm 依赖。
 

@@ -7,6 +7,7 @@
 ### 未发布 | Unreleased
 
 #### 其他变更
+- NodeApi 候选的 LibNode 统一升级至 `20.1800.215`，继续使用已接受的 `CETCompat=false` 配置；此更新仍属 Node 20 系列。by @devhxj
 
 - NodeApi 候选已接入 Emit 恢复/检查、Vite API 构建、开发代理/HMR 和 Vue SSR 环境池。**迁移**：使用 `pnpm-lock.yaml`，删除 SSR/Vite `TaskName` 配置；将 shell 构建定制迁入 Vite 配置。JSR 保留绑定身份并通过 npm 兼容注册表安装。正式包/MSBuild、脚本与跨平台门禁仍待完成。by @devhxj
 - 编译器、CLR、Razor SG、Style 与 Devtools 的运行时回归迁往共享进程内 NodeApi 宿主，真实 npm fixture 通过 pnpm API 恢复；保留异步失败传播、组件生命周期与 Chrome 交互验证。该切片不代表完整产品迁移及发布门禁已经完成。by @devhxj
@@ -14,6 +15,7 @@
 - WebIDL 采集工具试点切换为完整 NodeApi 进程内执行：pnpm API 恢复固定依赖，TypeScript API 转译并加载 collector，不再启动 Deno 或 JS 工具子进程。`--deno-config` 改为 `--node-project`；当前验证组合与 Windows CET、依赖布局及取消限制见工具 README，其他 Jazor 路径仍待迁移。by @devhxj
 
 #### Chores
+- Upgrade the NodeApi candidate's shared LibNode dependency to `20.1800.215`, retaining the accepted `CETCompat=false` configuration. This package remains in the Node 20 family. by @devhxj
 
 - Connect the NodeApi candidate to Emit restore/check, Vite API builds, development proxy/HMR, and the Vue SSR environment pool. **Migration**: use `pnpm-lock.yaml`, remove SSR/Vite `TaskName` settings, and move shell build customization into Vite config. Preserve JSR binding identities through its npm compatibility registry. Package/MSBuild, script, and cross-platform gates remain pending. by @devhxj
 - Move compiler, CLR, Razor SG, Style, and Devtools runtime regressions to the shared in-process NodeApi host, restoring real npm fixtures through the pnpm API. Preserve async failure propagation, component lifecycle, and Chrome interaction checks. This slice does not complete the product migration or release gates. by @devhxj
