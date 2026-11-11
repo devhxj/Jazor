@@ -1,0 +1,14 @@
+{
+  "name": "@jazor/webidl-collector",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@webref/css": "8.7.4",
+    "@webref/events": "1.25.1",
+    "@webref/idl": "3.83.1",
+    "@webref/xref": "1.2.16",
+    "parse5": "8.0.1",
+    "typescript": "5.9.3",
+    "webidl2": "24.5.0"
+  }
+}

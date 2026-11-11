@@ -1305,7 +1305,7 @@ public sealed class PreviewBindingEmitterTests
             var options = new GeneratorOptions(
                 RepositoryRoot: tempDirectory.FullName,
                 WorkerPath: Path.Combine(tempDirectory.FullName, "worker.ts"),
-                DenoConfigPath: Path.Combine(tempDirectory.FullName, "deno.json"),
+                NodeProjectPath: Path.Combine(tempDirectory.FullName, "package.json"),
                 OutputDirectory: tempDirectory.FullName,
                 InventoryFileName: "inventory.json");
             var emitter = new PreviewBindingEmitter(options);
@@ -1343,7 +1343,7 @@ public sealed class PreviewBindingEmitterTests
             var options = new GeneratorOptions(
                 RepositoryRoot: tempDirectory.FullName,
                 WorkerPath: Path.Combine(tempDirectory.FullName, "worker.ts"),
-                DenoConfigPath: Path.Combine(tempDirectory.FullName, "deno.json"),
+                NodeProjectPath: Path.Combine(tempDirectory.FullName, "package.json"),
                 OutputDirectory: tempDirectory.FullName,
                 InventoryFileName: "inventory.json");
             var emitter = new PreviewBindingEmitter(options);
@@ -1364,7 +1364,7 @@ public sealed class PreviewBindingEmitterTests
             var options = new GeneratorOptions(
                 RepositoryRoot: tempDirectory.FullName,
                 WorkerPath: Path.Combine(tempDirectory.FullName, "worker.ts"),
-                DenoConfigPath: Path.Combine(tempDirectory.FullName, "deno.json"),
+                NodeProjectPath: Path.Combine(tempDirectory.FullName, "package.json"),
                 OutputDirectory: tempDirectory.FullName,
                 InventoryFileName: "inventory.json");
             var emitter = new PreviewBindingEmitter(options);
@@ -1395,7 +1395,7 @@ public sealed class PreviewBindingEmitterTests
             var options = new GeneratorOptions(
                 RepositoryRoot: tempDirectory.FullName,
                 WorkerPath: Path.Combine(tempDirectory.FullName, "worker.ts"),
-                DenoConfigPath: Path.Combine(tempDirectory.FullName, "deno.json"),
+                NodeProjectPath: Path.Combine(tempDirectory.FullName, "package.json"),
                 OutputDirectory: tempDirectory.FullName,
                 InventoryFileName: "inventory.json");
             var emitter = new PreviewBindingEmitter(options);

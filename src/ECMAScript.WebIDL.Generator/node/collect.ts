@@ -19,11 +19,6 @@ import type {
   WebIdlSpecificationSource,
 } from "./types.ts";
 
-// Keep specification prose enabled by default because it is part of the authoring
-// documentation contract. Pass --skip-spec-prose only for offline/diagnostic runs.
-const skipSpecificationProse = Deno.args.includes("--skip-spec-prose") ||
-  Deno.env.get("JAZOR_SKIP_SPEC_PROSE") === "1";
-
 const parserVersion = "webidl2@24.5.0";
 const webrefIdlVersion = "@webref/idl@3.83.1";
 const webrefCssVersion = "@webref/css@8.7.4";
@@ -147,26 +142,6 @@ const generateCssIdl = function (properties: string[]): string {
     )
     .join("")}\n};`;
 };
-
-function parseArgs(args: string[]): string | undefined {
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--out") {
-      return args[i + 1];
-    }
-  }
-
-  return undefined;
-}
-
-function getDirectoryName(path: string): string | undefined {
-  const normalized = path.replace(/\\/g, "/");
-  const index = normalized.lastIndexOf("/");
-  if (index <= 0) {
-    return undefined;
-  }
-
-  return path.slice(0, index);
-}
 
 function normalizeSpecificationUrl(value: string): string | undefined {
   try {
@@ -328,10 +303,12 @@ class SpecificationSourceCatalog {
   private readonly _pending: Array<() => void> = [];
   private _activeFetches = 0;
 
+  public constructor(private readonly _skipSpecificationProse: boolean) {}
+
   public async getProse(specification: XrefSpec | undefined, definition: XrefDefinition): Promise<string | undefined> {
     // A source failure affects only prose for this definition; xref links and
     // declarations remain available, so the primary inventory stays usable.
-    if (skipSpecificationProse) {
+    if (this._skipSpecificationProse) {
       return undefined;
     }
     const sourceUrl = specification ? getSpecificationSourceUrl(specification) : undefined;
@@ -1215,7 +1192,7 @@ async function collectInterfaceEvents(): Promise<InterfaceEventMap[]> {
     });
 }
 
-async function collectInventory(): Promise<WebIdlInventory> {
+export async function collectInventory(skipSpecificationProse = false): Promise<WebIdlInventory> {
   console.error(`[webidl] Loading WebRef packages; specification prose ${skipSpecificationProse ? "disabled" : "enabled"}.`);
   const [files, interfaceEvents, xrefCatalog] = await Promise.all([
     collectFiles(),
@@ -1223,7 +1200,7 @@ async function collectInventory(): Promise<WebIdlInventory> {
     XrefCatalog.create(),
   ]);
 
-  const sourceCatalog = new SpecificationSourceCatalog();
+  const sourceCatalog = new SpecificationSourceCatalog(skipSpecificationProse);
   console.error(`[webidl] Normalizing ${files.length} IDL files and their documentation.`);
   const normalizedFiles = await Promise.all(files
     .sort((left, right) => left.fileName.localeCompare(right.fileName))
@@ -1286,26 +1263,5 @@ async function collectInventory(): Promise<WebIdlInventory> {
       ),
     },
   };
-}
-
-async function run(): Promise<void> {
-  const outputPath = parseArgs(Deno.args);
-  const inventory = await collectInventory();
-  const json = JSON.stringify(inventory, null, 2);
-  console.error(`[webidl] Collected ${inventory.stats.fileCount} files, ${inventory.stats.declarationCount} declarations.`);
-
-  if (!outputPath) {
-    console.log(json);
-  } else {
-    const outputDirectory = getDirectoryName(outputPath);
-    if (outputDirectory) {
-      await Deno.mkdir(outputDirectory, { recursive: true });
-    }
-    await Deno.writeTextFile(outputPath, `${json}\n`);
-  }
-}
-
-if (import.meta.main) {
-  await run();
 }
 

@@ -4,6 +4,16 @@
 
 ## 2026-11-11
 
+### 未发布 | Unreleased
+
+#### 其他变更
+
+- WebIDL 采集工具试点切换为完整 NodeApi 进程内执行：pnpm API 恢复固定依赖，TypeScript API 转译并加载 collector，不再启动 Deno 或 JS 工具子进程。`--deno-config` 改为 `--node-project`；当前验证组合与 Windows CET、依赖布局及取消限制见工具 README，其他 Jazor 路径仍待迁移。by @devhxj
+
+#### Chores
+
+- Pilot the WebIDL collector on an entirely in-process NodeApi stack: restore pinned dependencies with the pnpm API and transpile/load the collector with the TypeScript API, without Deno or JS tool child processes. Replace `--deno-config` with `--node-project`; the tool README documents the verified combination and Windows CET, dependency layout, and cancellation limits. Other Jazor execution paths remain pending. by @devhxj
+
 ### Jazor 1.0.0
 
 中文 | English

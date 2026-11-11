@@ -15,6 +15,8 @@
 
 ## P0：编写体验与交付闭环
 
+迁出 Deno 的工具链方案见 [Node.js 与 pnpm 迁移方案](./nodejs-pnpm-migration-plan.md)。该方案先验证内嵌 Node 调用 pnpm 安装引擎，再推进 Emit、Vite、SSR、测试和交付；现行 Deno 工具链在完整验收前仍是当前实现，正式切换的版本通道由兼容性审查决定。
+
 具体执行顺序、交付物、测量协议和 Definition of Done 见 [RazorVue P0 执行计划](./p0-plan.md)。
 
 优先处理已经进入真实页面、并直接影响作者体验和交付可信度的路径。

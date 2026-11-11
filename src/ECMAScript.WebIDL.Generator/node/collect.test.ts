@@ -1,4 +1,4 @@
-import { isUsefulSpecificationProse } from "./collect.ts";
+import { isUsefulSpecificationProse } from "./collect.mjs";
 
 function assert(value: boolean, message: string): void {
   if (!value) {
@@ -6,7 +6,7 @@ function assert(value: boolean, message: string): void {
   }
 }
 
-Deno.test("specification prose keeps direct API guidance and rejects adjacent algorithms", () => {
+export function specificationProseKeepsDirectApiGuidance(): void {
   const abortCandidate = {
     types: ["method"],
     names: ["abort", "abort()"],
@@ -33,9 +33,9 @@ Deno.test("specification prose keeps direct API guidance and rejects adjacent al
     ),
     "unresolved Bikeshed syntax should not reach generated XML docs",
   );
-});
+}
 
-Deno.test("argument prose must identify both the argument and its owning operation", () => {
+export function argumentProseIdentifiesItsOwningOperation(): void {
   const reasonCandidate = {
     types: ["argument"],
     names: ["reason"],
@@ -56,4 +56,4 @@ Deno.test("argument prose must identify both the argument and its owning operati
     ),
     "same-name or nearby argument text from another operation should be dropped",
   );
-});
+}

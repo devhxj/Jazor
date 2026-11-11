@@ -5,12 +5,15 @@
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Libnode 20's V8 stack switching is incompatible with Windows CET shadow stacks.
+         Keep this local to the experimental WebIDL embedding host. -->
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" PrivateAssets="All" />
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="0.9.36" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="20.1800.203" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ECMAScript.Vue.Generator\BindingAuthoringDocumentation.cs" Link="Shared\BindingAuthoringDocumentation.cs" />

@@ -28,11 +28,11 @@ public sealed class RepositoryLayoutTests
 
                 Assert.AreEqual(repositoryRoot.FullName, layout.RepositoryRoot);
                 Assert.AreEqual(
-                    Path.Combine(repositoryRoot.FullName, "src", "ECMAScript.WebIDL.Generator", "deno", "collect.ts"),
+                    Path.Combine(repositoryRoot.FullName, "src", "ECMAScript.WebIDL.Generator", "node", "collect.ts"),
                     layout.DefaultWorkerPath);
                 Assert.AreEqual(
-                    Path.Combine(repositoryRoot.FullName, "src", "ECMAScript.WebIDL.Generator", "deno.json"),
-                    layout.DefaultDenoConfigPath);
+                    Path.Combine(repositoryRoot.FullName, "src", "ECMAScript.WebIDL.Generator", "node", "package.json"),
+                    layout.DefaultNodeProjectPath);
                 Assert.AreEqual(
                     Path.Combine(repositoryRoot.FullName, "src", "ECMAScript", "webidl"),
                     layout.DefaultOutputDirectory);

@@ -3,7 +3,7 @@ namespace ECMAScript.WebIDL.Generator;
 internal sealed record RepositoryLayout(
     string RepositoryRoot,
     string DefaultWorkerPath,
-    string DefaultDenoConfigPath,
+    string DefaultNodeProjectPath,
     string DefaultOutputDirectory)
 {
     public static RepositoryLayout Discover(string baseDirectory)
@@ -22,8 +22,8 @@ internal sealed record RepositoryLayout(
         var repositoryRoot = current.FullName;
         return new RepositoryLayout(
             repositoryRoot,
-            Path.Combine(repositoryRoot, "src", "ECMAScript.WebIDL.Generator", "deno", "collect.ts"),
-            Path.Combine(repositoryRoot, "src", "ECMAScript.WebIDL.Generator", "deno.json"),
+            Path.Combine(repositoryRoot, "src", "ECMAScript.WebIDL.Generator", "node", "collect.ts"),
+            Path.Combine(repositoryRoot, "src", "ECMAScript.WebIDL.Generator", "node", "package.json"),
             Path.Combine(repositoryRoot, "src", "ECMAScript","webidl"));
     }
 

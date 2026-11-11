@@ -13,6 +13,7 @@
 | 执行 RazorVue P2 | [P2 执行计划](./p2-plan.md) |
 | 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |
 | 执行 npm/JSR 绑定与标准项目改造 | [npm/JSR 绑定与标准 Jazor 项目计划](./npm-jsr-binding-tree-shaking-plan.md) |
+| 规划迁出 Deno 与 Node.js/pnpm 工具链 | [Node.js 与 pnpm 迁移方案](./nodejs-pnpm-migration-plan.md)（待实施） |
 
 ## 维护准则
 

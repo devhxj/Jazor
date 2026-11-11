@@ -62,7 +62,7 @@ internal sealed class InventoryArtifactGenerator
         builder.AppendLine();
         builder.AppendLine("## Next Step");
         builder.AppendLine();
-        builder.AppendLine("This inventory is the stable interchange format between the Deno collection layer and the C# binding emitter.");
+        builder.AppendLine("This inventory is the stable interchange format between the NodeApi collection layer and the C# binding emitter.");
         builder.AppendLine("The preview emitter writes typedef, enum, callback, callback interface, dictionary, interface, and namespace bindings under `webidl/`.");
         builder.AppendLine("When WebRef XRef can match a declaration, member, or argument to a specification definition, the inventory also carries the source anchor, heading, source-authored prose, and available specification usage expressions for XML documentation emission.");
         return builder.ToString();

@@ -10,9 +10,16 @@ internal static class WebIdlGeneratorApplication
         WriteIndented = true,
     };
 
-    public static async Task<int> RunAsync(string[] args, CancellationToken cancellationToken)
+    public static Task<int> RunAsync(string[] args, CancellationToken cancellationToken)
+        => RunAsync(GeneratorOptions.Parse(args, RepositoryLayout.Discover(AppContext.BaseDirectory)), cancellationToken);
+
+    public static async Task<int> RunAsync(GeneratorOptions options, CancellationToken cancellationToken)
     {
-        var options = GeneratorOptions.Parse(args, RepositoryLayout.Discover(AppContext.BaseDirectory));
+        if (options.TestCollector)
+        {
+            Console.WriteLine(await new NodeWebIdlCollector(options).TestAsync(cancellationToken));
+            return 0;
+        }
         var inventory = options.InputInventoryPath is { } inputInventoryPath
             ? await ReadInventoryAsync(inputInventoryPath, cancellationToken)
             : await CollectAsync(options, cancellationToken);
@@ -32,7 +39,7 @@ internal static class WebIdlGeneratorApplication
 
     private static async Task<WebIdlInventory> CollectAsync(GeneratorOptions options, CancellationToken cancellationToken)
     {
-        var collector = new DenoWebIdlCollector(options);
+        var collector = new NodeWebIdlCollector(options);
         return await collector.CollectAsync(cancellationToken);
     }
 
