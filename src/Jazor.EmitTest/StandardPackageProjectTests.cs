@@ -18,7 +18,8 @@ public sealed class StandardPackageProjectTests
             File.WriteAllText(Path.Combine(root, "package.json"), """
                 {"type":"module","devDependencies":{"vite":"8.3.0"},"scripts":{"build":"vite build"}}
                 """);
-            File.WriteAllText(Path.Combine(root, "app.js"), "export const built = true;");
+            File.WriteAllText(Path.Combine(root, "app.js"), "import './app.css'; export const built = true;");
+            File.WriteAllText(Path.Combine(root, "app.css"), ".probe { color: rgb(255, 0, 0); padding: 0px 0px 0px 0px; }");
             File.WriteAllText(Path.Combine(root, "vite.config.js"), """
                 export default { build: { outDir: 'custom-output', rolldownOptions: {
                   input: 'app.js', preserveEntrySignatures: 'strict', output: { entryFileNames: 'custom-output.js' }
@@ -29,6 +30,12 @@ public sealed class StandardPackageProjectTests
             var built = await builder.BuildAsync(root);
             Assert.IsTrue(built.IsSuccess, built.Diagnostic?.Message);
             Assert.IsTrue(File.Exists(Path.Combine(root, "custom-output", "custom-output.js")));
+            var cssFiles = Directory.GetFiles(Path.Combine(root, "custom-output"), "*.css", SearchOption.AllDirectories);
+            Assert.HasCount(1, cssFiles);
+            StringAssert.Contains(File.ReadAllText(cssFiles[0]), "padding:0");
+            using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "package.json")));
+            Assert.AreEqual("npm:lightningcss-wasm@1.33.0",
+                manifest.RootElement.GetProperty("pnpm").GetProperty("overrides").GetProperty("vite>lightningcss").GetString());
             Assert.IsFalse(Directory.Exists(Path.Combine(root, "dist")));
             File.WriteAllText(Path.Combine(root, "vite.config.js"), "throw new Error('authored build failed');");
             using var progress = new StringWriter();

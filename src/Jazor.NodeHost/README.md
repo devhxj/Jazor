@@ -16,6 +16,8 @@ Rolldown 的 napi-rs loader 将 Windows `shared_library` 误判为 GNU 构建。
 
 Linux 的 .NET native loader 默认以局部符号作用域加载 libnode，导致 pnpm addon 无法解析 `napi_create_promise`。宿主在平台初始化前把同一已加载库提升为 `RTLD_GLOBAL`，不加载另一个 Node 实例。此路径针对当前 glibc 发行包；musl 不据此进入支持声明。
 
+Vite 的 CSS 压缩固定使用官方 `lightningcss-wasm`，版本与原生 Lightning CSS 一致，集中于 `Directory.Build.props`。其旧版 napi-rs Windows addon 只从主 executable 查找 Node-API，遇到真实 TDesign CSS 图会终止进程。恢复时将 `vite>lightningcss` 的固定 override 写入根 `package.json`，传给 pnpm API 并纳入 lock/增量身份；所有平台使用相同实现，不在失败后切换执行路线。
+
 验证命令：
 
 ```text

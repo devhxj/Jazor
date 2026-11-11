@@ -8,6 +8,7 @@
 
 #### 其他变更
 
+- 将 Vite 的 CSS 引擎固定为官方同版本 `lightningcss-wasm`，避免旧版 napi-rs Windows addon 在 .NET 内嵌宿主中终止进程；覆盖 TDesign Release 的真实 CSS 压缩，并把选择记录到 pnpm override 与 lock 身份。by @devhxj
 - 修复 Linux 进程内 pnpm addon 无法解析 Node-API 符号的问题：将 .NET 选中的 libnode 提升至全局动态链接作用域，并保留底层原生加载错误原因。by @devhxj
 - 将当前候选的仓库脚本、浏览器驱动与 CI 改为进程内 NodeApi；移除全局 Node/npm 安装要求，工具依赖由 `restore-node-project.cs` 调用 pnpm API。JazorAdmin、Wiki `/docs`、Windows NuGet SPA/SSR 发布与 hydration 已验证；Windows 启动脚本使用所选构建的 `CETCompat=false` apphost。跨平台及完整发布门禁继续验收。by @devhxj
 - NodeApi 候选的 Pinia 与 VueRoute 示例通过 pnpm API 恢复依赖并在进程内执行 runtime/DOM smoke，示例使用 `--frontend-only` 重验现有产物；DOM fixture 固定为支持当前 LibNode 的 jsdom 26。Pinia 恢复元数据对齐绑定声明的 Pinia 4.0.3 / Testing 2.0.1，保留 predicate action stub 语义。by @devhxj
@@ -21,6 +22,7 @@
 
 #### Chores
 
+- Pin Vite's CSS engine to the official same-version `lightningcss-wasm`, preserving CSS minification inside the embedded host where the older Windows napi-rs addon aborts. Record the selection in pnpm overrides and restore identity. by @devhxj
 - Expose the selected libnode symbols to Linux Node-API addons through the global dynamic-linker scope, and preserve native loader failure causes in diagnostics. by @devhxj
 - Run candidate repository scripts, browser drivers, and CI tooling through embedded NodeApi. Restore fixtures with the pnpm API instead of global Node/npm. Verify JazorAdmin, Wiki `/docs`, and Windows NuGet SPA/SSR publication with hydration; launch the selected build's `CETCompat=false` apphost on Windows. Cross-platform and full release gates remain in progress. by @devhxj
 - Restore Pinia and VueRoute sample dependencies through the pnpm API and run runtime/DOM smoke inside NodeApi. Recheck existing artifacts with `--frontend-only`; pin DOM fixtures to jsdom 26 for the current LibNode. Align Pinia restore metadata with the authored Pinia 4.0.3 / Testing 2.0.1 contracts, preserving predicate action stubs. by @devhxj

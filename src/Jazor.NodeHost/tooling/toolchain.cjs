@@ -73,9 +73,25 @@ exports.restore = async (requestJson) => {
     }
     const manifestText = await fs.readFile(path.join(root, 'package.json'), 'utf8');
     const manifest = JSON.parse(manifestText);
+    if (manifest.dependencies?.vite || manifest.devDependencies?.vite) {
+        // Lightning CSS's napi-rs v2 Windows addon resolves symbols only from
+        // the executable, which aborts inside a .NET host. Select its official
+        // same-version WASM implementation for Vite on every platform. This is
+        // a fixed dependency choice, recorded for ordinary pnpm reproduction.
+        const selector = 'vite>lightningcss';
+        const cssPackage = 'npm:lightningcss-wasm@' + request.lightningCssWasmVersion;
+        const overrides = (manifest.pnpm ??= {}).overrides ??= {};
+        if (overrides[selector] && overrides[selector] !== cssPackage)
+            throw new Error('Embedded Vite requires pnpm.overrides["' + selector + '"] = "' + cssPackage + '".');
+        if (overrides[selector] !== cssPackage) {
+            overrides[selector] = cssPackage;
+            await fs.writeFile(path.join(root, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
+        }
+    }
     const lockPath = path.join(root, 'pnpm-lock.yaml');
     const statePath = path.join(root, 'node_modules', '.jazor-restore-state');
-    const graph = JSON.stringify({ dependencies: manifest.dependencies, devDependencies: manifest.devDependencies, optionalDependencies: manifest.optionalDependencies });
+    const graph = JSON.stringify({ dependencies: manifest.dependencies, devDependencies: manifest.devDependencies,
+        optionalDependencies: manifest.optionalDependencies, overrides: manifest.pnpm?.overrides });
     const identity = hash(JSON.stringify({ graph, engine: request.engineVersion, node: process.version, platform: process.platform, arch: process.arch, linker: 'hoisted' }));
     const lock = await exists(lockPath) ? await fs.readFile(lockPath, 'utf8') : '';
     const expected = identity + '\n' + hash(lock);
@@ -97,6 +113,7 @@ exports.restore = async (requestJson) => {
         storeDir: request.storeDirectory,
         cacheDir: path.join(request.storeDirectory, 'cache'),
         nodeLinker: 'hoisted',
+        overrides: manifest.pnpm?.overrides,
         nodeVersion: process.versions.node,
         autoInstallPeers: true,
         frozenLockfile: frozen,
@@ -113,6 +130,8 @@ async function rootMatchesLock(pnpm, root, manifest) {
     const lock = await pnpm.readLockfile({ dir: root });
     const importer = lock?.importers?.['.'];
     if (!importer) return false;
+    const orderedOverrides = value => JSON.stringify(Object.entries(value ?? {}).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+    if (orderedOverrides(lock.overrides) !== orderedOverrides(manifest.pnpm?.overrides)) return false;
     for (const group of ['dependencies', 'devDependencies', 'optionalDependencies']) {
         const expected = manifest[group] ?? {};
         const actual = importer[group] ?? {};

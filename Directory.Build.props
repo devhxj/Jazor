@@ -5,6 +5,7 @@
     <NodeApiVersion>0.9.36</NodeApiVersion>
     <LibNodeVersion>20.1800.215</LibNodeVersion>
     <PnpmEngineVersion>12.5.1</PnpmEngineVersion>
+    <LightningCssWasmVersion>1.33.0</LightningCssWasmVersion>
     <NodeToolAppHostVersion>11.0.0</NodeToolAppHostVersion>
     <!-- NodeApi embeds libnode in repository hosts and runtime tests. V8 stack
          switching in this supported combination requires CET compatibility off. -->

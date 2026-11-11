@@ -8,6 +8,9 @@ internal static class NodeToolchain
 {
     private static readonly string BridgeSource = ReadBridge();
     private static readonly string BridgeHash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(BridgeSource)));
+    private static readonly string LightningCssWasmVersion = typeof(NodeToolchain).Assembly
+        .GetCustomAttributes<AssemblyMetadataAttribute>()
+        .Single(attribute => attribute.Key == "LightningCssWasmVersion").Value!;
 
     public static async Task<string> RestoreAsync(string projectDirectory, string storeDirectory,
         CancellationToken cancellationToken, TextWriter? progress = null)
@@ -16,7 +19,8 @@ internal static class NodeToolchain
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory, progress);
         var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "restore",
-            JsonSerializer.Serialize(new { projectDirectory, storeDirectory, bootstrap, engineVersion = PnpmBootstrap.Version }));
+            JsonSerializer.Serialize(new { projectDirectory, storeDirectory, bootstrap,
+                engineVersion = PnpmBootstrap.Version, lightningCssWasmVersion = LightningCssWasmVersion }));
         progress?.WriteLine("[Jazor NodeApi] " + result);
         cancellationToken.ThrowIfCancellationRequested();
         return result;

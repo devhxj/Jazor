@@ -7,6 +7,7 @@
   <ItemGroup>
     <EmbeddedResource Include="tooling\toolchain.cjs" LogicalName="Jazor.NodeHost.toolchain.cjs" />
     <AssemblyMetadata Include="PnpmEngineVersion" Value="$(PnpmEngineVersion)" />
+    <AssemblyMetadata Include="LightningCssWasmVersion" Value="$(LightningCssWasmVersion)" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
     <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
   </ItemGroup>
