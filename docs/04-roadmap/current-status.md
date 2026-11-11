@@ -1,6 +1,6 @@
 # 当前状态
 
-> 当前预览版本：[1.0.0-preview.9（2026-10-10）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前正式版本：[1.0.0（2026-11-11）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 

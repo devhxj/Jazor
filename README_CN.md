@@ -7,9 +7,9 @@
 <p><strong>将受支持的 C# 语义编译为确定性 ECMAScript 模块的强类型 .NET 工具链。</strong></p>
 
 <p>
-  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC3" src="https://img.shields.io/badge/.NET-11%20RC3-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.9&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.9 是当前预览版本。
+> Jazor 1.0.0 是当前正式版本，基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -109,15 +109,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.9
+dotnet add package Jazor --version 1.0.0
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.9" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.9" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -178,7 +178,7 @@ ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设
 
 ## 开发
 
-使用 [global.json](global.json) 指定的 .NET 11 RC3 SDK。在仓库根目录执行：
+使用 [global.json](global.json) 指定的 .NET 11 SDK。在仓库根目录执行：
 
 ```bash
 dotnet restore Jazor.slnx
@@ -199,15 +199,14 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 最新更新
 
-### Jazor 1.0.0-preview.9 · 2026-10-10
+### Jazor 1.0.0 · 2026-11-11
 
-- 显式选择浏览器启动模块，RazorVue 路由页面按需加载。
-- 使用 `Size="@(32)"`、nullable union 直接投影和强类型数值回调；属性提示展示实际值域。
-- 普通日志显示编译和 Emit 阶段耗时，采样保留中位与最慢样本；HMR 构建复用未变化的依赖和资源。
-- 接入字符串日期、manifest 样式与相对分包，以及 Monaco 的实际编辑器导出；迁移详情见[CHANGELOG](CHANGELOG.md)。
-- 一次准备本地候选包与实际包／源码身份；正式发布继续经过 GitHub Actions 门禁。
+- 使用 .NET SDK 11.0.100、ASP.NET Core/EF Core 11.0.0，以及匹配 SDK 的 Roslyn 与 GA 参考程序集构建和运行。
+- 全部 Jazor/ECMAScript 包统一安装 `1.0.0`；preview.9 消费者沿用现有作者 API。原生 union 继续要求 `<LangVersion>preview</LangVersion>`。
+- 编译器、RazorVue 与绑定支持范围以当前文档为准，公共 API 后续按正式版语义版本规则演进。
+- 修复图表 pattern 组件契约与管理示例的路由 URL 解析。
 
-版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)及对应 Git tag 为准；所有 Jazor/ECMAScript 包统一使用 `1.0.0-preview.9`。稳定版 1.0 尚未发布，完整历史见[CHANGELOG](CHANGELOG.md)。
+版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 

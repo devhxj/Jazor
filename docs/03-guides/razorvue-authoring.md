@@ -2,7 +2,7 @@
 
 > 本指南描述当前 RazorVue 的作者面（authoring surface）。Razor SDK/Roslyn 负责 Razor 绑定、C# 类型检查和语法诊断；RazorVue 消费 official Razor Source Generator 完成后的最终 `Compilation`，分别降低 VNode-producing `BuildRenderTree` 和其可达的组件 C# 成员，产出 Vue render-function `.mjs`。
 
-版本边界：本文描述 `1.0.0-preview.9` 的作者面，包括组件身份诊断、Vue 参数名冲突诊断、外部 wrapper 常量默认 props 和 Element Plus typed 交互。安装与升级统一使用对应 lockstep 版本；验收范围见[当前状态](../04-roadmap/current-status.md)。
+版本边界：本文描述 `1.0.0` 的作者面，包括组件身份诊断、Vue 参数名冲突诊断、外部 wrapper 常量默认 props 和 Element Plus typed 交互。安装与升级统一使用对应 lockstep 版本；验收范围见[当前状态](../04-roadmap/current-status.md)。
 
 ## 先判断代码位置
 

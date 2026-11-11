@@ -70,7 +70,7 @@ RazorVue artifact and lowering boundary rule:
 Run from the repository root unless noted:
 
 - `dotnet restore Jazor.slnx` restores NuGet packages for the solution projects.
-- `dotnet build Jazor.slnx` builds the full solution targeting the current `net11.0` preview SDK.
+- `dotnet build Jazor.slnx` builds the full solution using the .NET 11 GA SDK selected by `global.json`; native unions still require C# preview language mode.
 - `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Lucide, Pinia, Pinia.Testing, VueRoute, P3/Monaco binding, Razor SG, and Emit suites.
 - `dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg` runs the focused Razor SG suite.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` runs the compiler regression suite.

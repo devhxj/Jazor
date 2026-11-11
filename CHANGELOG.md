@@ -2,14 +2,37 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## 2026-10-14
+## 2026-11-11
 
-### 未发布 / Unreleased
+### Jazor 1.0.0
 
-- 开发与构建基线升级至 .NET 11 RC3（SDK `11.0.100-rc.3.26522.148`）；同步 Roslyn `5.12.0-1.26522.148`（与 SDK 同一构建）、.NET 11 参考程序集 `1.8.14`（上游目前最新为 RC2 参考程序集，尚无 RC3 版本）及 ASP.NET Core/EF Core RC3 依赖，更新开发脚本与示例。by @devhxj
-- 修复 `VdPattern`、`VdPatternSeed` 缺少 `IVueComponent` 契约，以及 JazorAdmin 路由辅助代码使用已退役原始对象投影导致示例构建失败的问题；对象路由通过 `router.Resolve` 转为具体 URL。by @devhxj
-- Upgrade the development and build baseline to .NET 11 RC3 (SDK `11.0.100-rc.3.26522.148`), with Roslyn `5.12.0-1.26522.148` (the same build as the SDK), .NET 11 reference assemblies `1.8.14` (the newest upstream release is still the RC2 reference set; no RC3 set exists yet), and ASP.NET Core/EF Core RC3 dependencies across scripts and samples. by @devhxj
-- Fix sample build failures from missing `IVueComponent` contracts on `VdPattern` and `VdPatternSeed` and retired raw-object projections in JazorAdmin route helpers; resolve object routes through `router.Resolve` to concrete URLs. by @devhxj
+中文 | English
+
+#### 体验优化
+
+- 发布首个正式版本，冻结已声明的公共作者 API、包名与宿主契约；后续新增进入 MINOR、修复进入 PATCH、破坏性变更进入 MAJOR。支持范围继续以当前产品矩阵为准，Guidance 绑定不随正式版自动升级为 Support。by @devhxj
+- **迁移**：安装 .NET SDK `11.0.100` 或允许的更新正式 SDK，将全部 Jazor/ECMAScript 包统一升级到正式版；从 preview.9 升级无已知作者 API 迁移，使用原生 `union` 的项目继续保留 `<LangVersion>preview</LangVersion>`。更早预览版按对应历史版本的迁移说明升级。冻结日期为本节日期；完整候选门禁通过后才创建正式 tag，[候选与发布证据](https://github.com/devhxj/Jazor/actions/workflows/release-candidate.yml)及[发布门禁](https://github.com/devhxj/Jazor/actions/workflows/nuget-publish-ref.yml)可重复核验。by @devhxj
+
+#### 问题修复
+
+- 修复 `VdPattern`、`VdPatternSeed` 缺少组件契约和管理示例使用已退役原始对象投影导致的构建失败；对象路由通过 `router.Resolve` 转为具体 URL。by @devhxj
+
+#### 其他变更
+
+- 开发与构建基线升级至 .NET 11 GA（SDK `11.0.100`、ASP.NET Core/EF Core `11.0.0`），同步正式 SDK 内置的 Roslyn `5.12.0-1.26529.118` 和 GA 参考程序集 `1.8.15`；SDK 选择禁用预发布，安装示例和工具链文档同步更新。by @devhxj
+
+Improvements
+
+- Ship the first stable release and freeze the declared public authoring APIs, package names, and hosting contracts. Future additions use MINOR, fixes use PATCH, and breaking changes use MAJOR. Existing support boundaries remain in force; Guidance bindings do not become Support automatically. by @devhxj
+- **Migration**: install .NET SDK `11.0.100` or an allowed newer stable SDK and upgrade all Jazor/ECMAScript packages together. There is no known authoring API migration from preview.9; projects using native `union` must retain `<LangVersion>preview</LangVersion>`. Follow the historical migration notes for older previews. The freeze date is this section's date; the stable tag is created only after the complete candidate gate passes. [Candidate evidence](https://github.com/devhxj/Jazor/actions/workflows/release-candidate.yml) and [publishing gates](https://github.com/devhxj/Jazor/actions/workflows/nuget-publish-ref.yml) remain reproducible. by @devhxj
+
+Bug Fixes
+
+- Fix build failures caused by missing component contracts on `VdPattern` and `VdPatternSeed` and retired raw-object projections in the admin sample; resolve object routes through `router.Resolve` to concrete URLs. by @devhxj
+
+Chores
+
+- Upgrade the development and build baseline to .NET 11 GA (SDK `11.0.100`, ASP.NET Core/EF Core `11.0.0`), matching the stable SDK's Roslyn `5.12.0-1.26529.118` and GA reference assemblies `1.8.15`. Disable prerelease SDK selection and update installation examples and toolchain documentation. by @devhxj
 
 ## 2026-10-10
 

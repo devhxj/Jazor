@@ -131,17 +131,18 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 | 层 | 当前基线 | 验证入口 |
 | --- | --- | --- |
-| .NET SDK | `11.0.100-rc.3.26522.148`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
-| Roslyn / 参考程序集 | `5.12.0-1.26522.148` / `Basic.Reference.Assemblies.Net110` `1.8.14` | 编译器、Razor SG、Emit 回归 |
-| ASP.NET Core / EF Core 包 | `11.0.0-rc.3.26522.148`（`Jazor.CLR.Generator` 与 `samples/JazorAdmin*`） | 示例构建、JazorAdmin 后端测试 |
+| .NET SDK | `11.0.100`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
+| Roslyn / 参考程序集 | `5.12.0-1.26529.118` / `Basic.Reference.Assemblies.Net110` `1.8.15` | 编译器、Razor SG、Emit 回归 |
+| ASP.NET Core / EF Core 包 | `11.0.0`（`Jazor.CLR.Generator` 与 `samples/JazorAdmin*`） | 示例构建、JazorAdmin 后端测试 |
+| System.Text.Json / ASP.NET Core TestHost | `11.0.0` | Common、Emit 与宿主集成回归 |
 | Node.js | `20`、`22`（Wiki Chrome browser consumer 矩阵）；发布 workflow 使用 `22`，本地 benchmark 应记录实际版本 | `wiki-verify.yml`、发布 workflow、`benchmark-razorvue-build.cs` |
 | 浏览器 | Windows SPA/Wiki/SSR 统一使用 Google Chrome headless | SPA/SSR、Wiki browser scripts |
 | 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
 | 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
 
-RC3 SDK 自带 Roslyn `5.12.0-1.26522.148`，该精确构建已发布到 `dotnet-tools` 公共源，源码项目（`Directory.Build.props` 的 `CodeAnalysisVersion`）和单文件脚本（`#:package` 指令）与 SDK 保持同一构建。RC2 时该构建未发布，当时只能使用同系列的 `5.12.0-1.26505.4`。官方 Razor SG 回归继续直接引用当前 SDK 的 Roslyn 与 Razor compiler。
+.NET 11 GA SDK 自带 Roslyn `5.12.0-1.26529.118`，该精确构建已发布到 `dotnet-tools` 公共源。虽然 Roslyn 包版本带预发布后缀，使用的是正式 SDK 内置的同一构建；不要改成不同构建的稳定包。源码项目（`Directory.Build.props` 的 `CodeAnalysisVersion`）和单文件脚本（`#:package` 指令）与 SDK 保持一致，官方 Razor SG 回归直接引用当前 SDK 的 Roslyn 与 Razor compiler。
 
-`Basic.Reference.Assemblies.Net110` 目前最新的 `1.8.14` 对应 .NET 11 RC2 参考程序集（上游提交 “Update .NET 11 to RC 2”），尚无 RC3 版本。因此测试编译所用的参考程序集比 SDK 和运行时落后一个 RC；升级到上游发布的 RC3 版本后，应同步更新 `Net110AssembliesVersion` 和 `scripts/csharp/inspect-razor-generator-result.cs` 中的 `#:package` 版本。
+`Basic.Reference.Assemblies.Net110` `1.8.15` 对应 .NET 11 GA 参考程序集（上游提交 “Update .NET 11 to GA”），测试编译与 SDK/运行时保持正式版基线。升级时同步更新 `Net110AssembliesVersion` 和单文件脚本的 `#:package` 版本。`global.json` 禁止选择预发布 SDK；原生 `union` 仍是 C# preview 特性，相关项目继续使用 `<LangVersion>preview</LangVersion>`。
 
 Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 使用 Node 22（浏览器脚本依赖 Node 22 提供的 WebSocket 客户端），`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。本地运行结果不构成跨版本保证。组件库升级还需先通过 `verify-vue-binding-contracts.cs`，再运行发布消费者验证。
 

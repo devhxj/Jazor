@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
   "libraryId": "jazor-vue-runtime",
-  "version": "1.0.0-preview.1",
+  "version": "1.0.0",
   "source": "embedded-mjs",
   "packages": {
     "@jazor/vue-runtime": {
       "source": "embedded-mjs",
-      "version": "1.0.0-preview.1"
+      "version": "1.0.0"
     }
   },
   "imports": {
@@ -53,7 +53,7 @@
     }
   },
   "requires": {
-    "ecmascript": "^1.0.0-preview.1",
+    "ecmascript": "^1.0.0",
     "vue3": "^3.5.42"
   },
   "styles": [],

@@ -7,9 +7,9 @@
 <p><strong>A typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules.</strong></p>
 
 <p>
-  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC3" src="https://img.shields.io/badge/.NET-11%20RC3-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.9&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.0.0-preview.9 is the current preview release.
+> Jazor 1.0.0 is the current stable release, built on .NET 11 GA. Native union authoring still requires C# preview language mode.
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -110,7 +110,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.0.0-preview.9
+dotnet add package Jazor --version 1.0.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -118,8 +118,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0-preview.9" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.9" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -180,7 +180,7 @@ Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core applicatio
 
 ## Development
 
-Use the .NET 11 RC3 SDK selected by [global.json](global.json). From the repository root:
+Use the .NET 11 SDK selected by [global.json](global.json). From the repository root:
 
 ```bash
 dotnet restore Jazor.slnx
@@ -201,15 +201,14 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
-### Jazor 1.0.0-preview.9 · 2026-10-10
+### Jazor 1.0.0 · 2026-11-11
 
-- Select browser startup modules explicitly and load RazorVue route pages on demand.
-- Use `Size="@(32)"`, direct nullable union projections, and strongly typed numeric callbacks; parameter hints follow the declared value domain.
-- Read compilation and Emit stage costs from normal logs, preserve median and slowest build samples, and reuse unchanged dependencies and resources during HMR rebuilds.
-- Use string-formatted date input, manifest-based Release CSS and relative chunks, and Monaco's actual editor export. Migration details are in the [Changelog](CHANGELOG.md).
-- Prepare local candidate packages and their actual package/source identity in one command; official releases continue through the GitHub Actions gates.
+- Build and run on .NET SDK 11.0.100 and ASP.NET Core/EF Core 11.0.0, with matching SDK Roslyn and GA reference assemblies.
+- Install all Jazor/ECMAScript packages at `1.0.0`; preview.9 consumers keep their existing authoring APIs. Native unions continue to require `<LangVersion>preview</LangVersion>`.
+- Retain the documented compiler, RazorVue, and binding support boundaries. Public API changes now follow stable semantic versioning.
+- Fix chart pattern component contracts and admin sample route URL resolution.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9) and matching Git tag as the version reference. Keep all Jazor/ECMAScript packages on `1.0.0-preview.9`. Stable 1.0 remains unreleased; full version history is in the [Changelog](CHANGELOG.md).
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

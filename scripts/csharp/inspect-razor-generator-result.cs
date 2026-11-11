@@ -1,13 +1,12 @@
 #!/usr/bin/env dotnet run
-#:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26522.148
-#:package Microsoft.CodeAnalysis.Common@5.12.0-1.26522.148
-#:package Basic.Reference.Assemblies.Net110@1.8.14
+#:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26529.118
+#:package Microsoft.CodeAnalysis.Common@5.12.0-1.26529.118
+#:package Basic.Reference.Assemblies.Net110@1.8.15
 #:property EnableTrimAnalyzer=false
 
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -127,49 +126,25 @@ internal static class RazorCompilerPathResolver
 {
     public static string Resolve()
     {
-        var sdkVersion = ReadSdkVersionFromGlobalJson()
-            ?? throw new InvalidOperationException("global.json with sdk.version was not found from the current directory upward.");
+        // Use the CLI-selected SDK so global.json roll-forward and allowPrerelease
+        // apply to this probe exactly as they do to the real Razor build.
+        var sdkVersion = ReadSelectedSdkVersion();
 
         foreach (var root in EnumerateDotNetRoots())
         {
-            foreach (var candidateVersion in EnumerateSdkVersions(root, sdkVersion))
-            {
-                var candidate = Path.Combine(
-                    root,
-                    "sdk",
-                    candidateVersion,
-                    "Sdks",
-                    "Microsoft.NET.Sdk.Razor",
-                    "source-generators",
-                    "Microsoft.CodeAnalysis.Razor.Compiler.dll");
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
+            var candidate = Path.Combine(
+                root,
+                "sdk",
+                sdkVersion,
+                "Sdks",
+                "Microsoft.NET.Sdk.Razor",
+                "source-generators",
+                "Microsoft.CodeAnalysis.Razor.Compiler.dll");
+            if (File.Exists(candidate))
+                return candidate;
         }
 
         throw new FileNotFoundException("Microsoft.CodeAnalysis.Razor.Compiler.dll was not found for SDK " + sdkVersion + ".");
-    }
-
-    private static IEnumerable<string> EnumerateSdkVersions(string root, string requestedVersion)
-    {
-        yield return requestedVersion;
-
-        var sdkRoot = Path.Combine(root, "sdk");
-        if (!Directory.Exists(sdkRoot))
-            yield break;
-
-        // RC SDK folders use the same feature-band prefix as preview folders.
-        // Keep the fallback broad enough to resolve either channel when global.json
-        // points at a locally installed SDK with a matching Razor toolset.
-        foreach (var directory in Directory.EnumerateDirectories(sdkRoot, "11.0.100-*")
-                     .OrderByDescending(static path => path, StringComparer.Ordinal))
-        {
-            var version = Path.GetFileName(directory);
-            if (!string.Equals(version, requestedVersion, StringComparison.Ordinal))
-                yield return version;
-        }
     }
 
     private static IEnumerable<string> EnumerateDotNetRoots()
@@ -242,28 +217,23 @@ internal static class RazorCompilerPathResolver
         return Directory.Exists(root) && seen.Add(root);
     }
 
-    private static string? ReadSdkVersionFromGlobalJson()
+    private static string ReadSelectedSdkVersion()
     {
-        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
-        while (directory is not null)
+        using var process = Process.Start(new ProcessStartInfo
         {
-            var globalJsonPath = Path.Combine(directory.FullName, "global.json");
-            if (File.Exists(globalJsonPath))
-            {
-                using var stream = File.OpenRead(globalJsonPath);
-                using var document = JsonDocument.Parse(stream);
-                if (document.RootElement.TryGetProperty("sdk", out var sdk)
-                    && sdk.TryGetProperty("version", out var version)
-                    && !string.IsNullOrWhiteSpace(version.GetString()))
-                {
-                    return version.GetString();
-                }
-            }
-
-            directory = directory.Parent;
-        }
-
-        return null;
+            FileName = "dotnet",
+            Arguments = "--version",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        }) ?? throw new InvalidOperationException("Unable to start dotnet --version.");
+        var version = process.StandardOutput.ReadToEnd().Trim();
+        var error = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        if (process.ExitCode != 0)
+            throw new InvalidOperationException("Unable to select the repository SDK: " + error);
+        return version;
     }
 
     private static string? TryGetDotNetRootFromInfo()

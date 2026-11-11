@@ -1,6 +1,6 @@
 # 1.0 公共 API 冻结审查
 
-> 当前预览版本：[1.0.0-preview.9（2026-10-10）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前正式版本：[1.0.0（2026-11-11）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > preview.9 包含 `ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets`、Pagination 的两个 `EventCallback<Number>`，以及数值转换和直接 union 标量投影。机器 snapshot 按本次预览 API 更新；回调与投影的迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
@@ -99,7 +99,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.9
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。

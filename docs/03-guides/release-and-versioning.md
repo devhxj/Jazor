@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前预览版本：[1.0.0-preview.9（2026-10-10）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.9)。下文 preview.1 指首次冻结候选里程碑；版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前正式版本：[1.0.0（2026-11-11）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -18,11 +18,9 @@
 
 ## 1.0.0 出场条件
 
-当前质量门禁、发布消费者门禁与绑定审计已达到 `1.0` 级验收强度，`0.x` 对外传达的“早期、勿用于生产”信号与实际状态不符。`1.0.0-preview.1` 已作为首个 1.0 预发布与冻结候选发布；正式的 `1.0.0` 仍需通过完整 RC 门禁，满足以下条件后发布：
+`1.0.0` 已于 2026-11-11 发布。当前质量门禁、发布消费者门禁与绑定审计继续作为正式版之后每次发布的验收要求；`1.0.0` 之前的预览版仍按历史章节保留。
 
-1. 完成[1.0 公共 API 冻结审查](./public-api-freeze.md)：ASP.NET Core 扩展面（`AddJazor*` / `UseJazor*` 族）、包名、命名空间、公共配置模型命名、SSR 数据模型和开发期 reload 边界。计划中的重命名全部在 `1.0.0` 之前完成，避免发布后立即进入 `2.0.0`。
-2. 当时的全部质量门禁通过，门槛以[当前状态](../04-roadmap/current-status.md)的门槛表为准。
-3. CHANGELOG 完整覆盖全部已发布版本，且本规则已生效。
+正式版后的每次发布仍需完成[当前状态](../04-roadmap/current-status.md)列出的质量门禁、发布消费者门禁与绑定审计，并更新 CHANGELOG；公共 API 冻结与兼容性要求见[1.0 公共 API 冻结审查](./public-api-freeze.md)。
 
 发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、绑定 contract 与 XML 文档、RazorVue diagnostics、包形状和 SPA/SSR consumer 证据。绑定 contract 报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移或公开绑定文档缺失时阻断候选。它通过后才进入正式发布工作流。
 
