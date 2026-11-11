@@ -29,7 +29,7 @@ internal static class LibraryPackageWriter
             var isExternal = reference.Source is "npm" or "jsr";
             if (isExternal)
             {
-                // External packages are resolved by Deno/npm. Never copy a binding snapshot into
+                // External packages are resolved by pnpm. Never copy a binding snapshot into
                 // node_modules: doing so hides upstream exports/sideEffects and defeats tree
                 // shaking.
                 AddDependency(dependencies, reference.Name, LibraryPackageIdentity.GetDependencySpecifier(reference));
@@ -65,8 +65,8 @@ internal static class LibraryPackageWriter
                 [JazorArtifactDefaults.DevelopmentTaskName] = "vite",
                 ["build"] = "vite build"
             },
-            // npm/Deno ignore this namespace. It keeps the source and digest that produced an
-            // exact dependency available to DenoHost's frozen restore diagnostics.
+            // pnpm ignores this namespace. Preserve the authored source and
+            // exact binding identity independently of its npm installation key.
             ["jazor"] = new JsonObject { ["packages"] = managedPackages }
         };
         if (existing is not null)
@@ -86,11 +86,8 @@ internal static class LibraryPackageWriter
         if (hasSsrEntry)
         {
             var scripts = rootPackage["scripts"]?.AsObject() ?? new JsonObject();
-            const string ssrArguments = "--node-modules-dir=manual --frozen-lockfile --no-remote --no-prompt --allow-env=NODE_ENV --allow-read=. --allow-net=127.0.0.1 ssr-entry.js";
-            // SSR tasks are ordinary project configuration. Seed missing tasks when enabling
-            // SSR, but preserve authored commands and their choice of runtime/watch options.
-            scripts["ssr"] ??= "deno run " + ssrArguments;
-            scripts["ssr:dev"] ??= "deno run --watch=. --watch-exclude=node_modules,dist --no-clear-screen " + ssrArguments;
+            // ASP.NET Core imports SSR exports directly through NodeApi. No
+            // process-launching ssr/ssr:dev command is needed for new projects.
             scripts["build:ssr"] ??= "vite build --config " + ViteProjectWriter.SsrConfigFileName;
             rootPackage["scripts"] = scripts;
             ViteProjectWriter.WriteSsr(workspaceRoot);
@@ -100,7 +97,13 @@ internal static class LibraryPackageWriter
         // Authored config files remain untouched; alternate build tools do not acquire Vite files.
         if (rootPackage["scripts"]?["build"]?.GetValue<string>() == "vite build")
             ViteProjectWriter.Write(workspaceRoot);
-        PreserveCompatibleNpmLock(workspaceRoot, rootPackage);
+        if (libraries.PackageReferences.Values.Any(reference => reference.Source == "jsr"))
+        {
+            var npmrc = Path.Combine(workspaceRoot, ".npmrc");
+            var config = File.Exists(npmrc) ? File.ReadAllText(npmrc) : string.Empty;
+            if (!config.Split('\n').Any(line => line.TrimStart().StartsWith("@jsr:registry", StringComparison.Ordinal)))
+                ProjectFileWriter.Write(npmrc, config.TrimEnd() + "\n@jsr:registry=https://npm.jsr.io\n");
+        }
     }
 
     private static JsonObject CreateExports(bool hasSsrEntry)
@@ -136,38 +139,5 @@ internal static class LibraryPackageWriter
 
         dependencies[name] = value;
     }
-
-    private static void PreserveCompatibleNpmLock(string workspaceRoot, JsonObject package)
-    {
-        var lockPath = Path.Combine(workspaceRoot, "package-lock.json");
-        if (!File.Exists(lockPath))
-            return;
-
-        try
-        {
-            var lockJson = JsonNode.Parse(File.ReadAllText(lockPath))?.AsObject();
-            var root = lockJson?["packages"]?[""]?.AsObject();
-            if (lockJson is null || root is null ||
-                lockJson["lockfileVersion"] is null ||
-                !DependenciesEqual(package["dependencies"]?.AsObject(), root["dependencies"]?.AsObject()) ||
-                !DependenciesEqual(package["devDependencies"]?.AsObject(), root["devDependencies"]?.AsObject()))
-            {
-                File.Delete(lockPath);
-            }
-        }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException)
-        {
-            File.Delete(lockPath);
-        }
-    }
-
-    private static bool DependenciesEqual(JsonObject? expected, JsonObject? actual)
-    {
-        expected ??= new JsonObject();
-        actual ??= new JsonObject();
-        return expected.Count == actual.Count && expected.All(pair =>
-            actual[pair.Key]?.GetValue<string>() == pair.Value?.GetValue<string>());
-    }
-
 
 }

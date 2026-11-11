@@ -10,7 +10,7 @@
 
 这两种 carrier 是并列的一等输入。Emit 可以在内存中把它们归一化为资源记录和 package graph
 来做去重、依赖闭包和冲突校验，并生成标准 `jazor/package.json`。源码 carrier 按声明路径写入项目；
-Emit 经 DenoHost（`DenoProcess`）调用 Deno 生成 `deno.lock` 并恢复 `node_modules`，已有且匹配的 npm lock 保留。
+当前迁移分支通过共享 NodeApi 宿主调用 pnpm API，恢复 `node_modules` 并生成 `pnpm-lock.yaml`。新宿主的 NuGet/MSBuild 打包与全仓库脚本切换仍待验收，正式发布版本按其对应文档使用。
 
 ## 唯一调用边界
 
@@ -26,7 +26,7 @@ MSBuild 只收集：
 2. 读取并校验显式 package metadata，收集 npm/JSR identity 与 embedded carrier；
 3. 按模块/package/resource 声明解析依赖闭包、版本、路径和 hash；
 4. 生成模块、source map、资源、标准入口与 package project；增量/诊断状态单独写入 `obj`；
-5. Release 时运行项目自己的 `build` script；SSR 同时构建自足 `ssr/` 运行闭包；
+5. Release 时在进程内调用 Vite build API，使用作者拥有的 Vite 配置和输出布局；SSR 同时构建自足 `ssr/` 运行闭包；
 6. 工具失败时返回原始错误，由下一次构建继续收敛。
 
 单文件使用原子替换；不做整目录 staging 或回滚。项目文件变动可直接被标准开发服务器观察。
@@ -53,15 +53,15 @@ dotnet Jazor.Emit.dll \
 `node_modules`，embedded carrier 的选中文件进入项目源码目录。
 
 `toolchain` 和 `manifest materialize` 不再是构建入口。新项目初始化 Vite 配置；已有项目的
-scripts、devDependencies 和构建配置保留。构建只调用 `deno task build`，工具和输出布局由项目配置决定。
+scripts、devDependencies 和构建配置保留。内嵌构建支持 `vite build` 和 `vite build --config ssr.vite.config.js`，其他 shell script 返回明确迁移诊断；将构建定制放入 Vite 配置，不会静默忽略自定义命令。
 NetPack 已从默认实现移除。Emit 不生成运行时 import map 或私有包投影。
 
 ## 输出
 
-Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules` 与 `deno.lock`；Emit
+Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules` 与 `pnpm-lock.yaml`；Emit
 增量/诊断 manifest 写入 `obj`，不属于运行项目；显式
 `embedded-mjs` carrier 按声明写入 `clr/` 等源码目录。Release 在同一项目运行生产构建，默认 Vite 输出
-`dist/`；启用 `--ssr` 时增加开发用 `ssr-entry.js` 和 `hydration.js`，Release 另构建 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json`。Production Deno 直接执行该 bundle，无需恢复根 lock 或 `node_modules`；Development 优先当前源码图。输出
+`dist/`；启用 `--ssr` 时增加开发用 `ssr-entry.js` 和 `hydration.js`，Release 另构建 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json`。Production 通过 NodeApi 导入该 bundle，无需恢复根 lock 或 `node_modules`；Development 优先当前源码图。输出
 文件属于宿主 profile，上游 npm/JSR package 的 exports、sideEffects 和依赖关系保持在共享图中。
 
 Folder Publish 只复制 `dist/**` 和启用 SSR 时的 `ssr/**`，默认排除 source map；需要发布 map 时设置 `JazorPublishSourceMaps=true`。源码、标准项目和恢复后的依赖继续保留在本地 `JazorDir`。

@@ -7,15 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
-    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
-    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
 
   <ItemGroup>

@@ -70,7 +70,7 @@ internal static class ViteProjectWriter
                 rolldownOptions: {
                   input: {
                     '{{releaseEntryName}}': '{{JazorArtifactDefaults.DevelopmentEntryRelativePath}}',
-                    ...(existsSync('hydration.js') ? { hydration: 'hydration.js' } : {})
+                    ...(existsSync(new URL('./hydration.js', import.meta.url)) ? { hydration: 'hydration.js' } : {})
                   },
                   preserveEntrySignatures: 'strict',
                   output: { entryFileNames: '[name].js' }

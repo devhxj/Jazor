@@ -34,7 +34,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 说明
 
-测试使用独立临时工作区并在结束后清理。SSR 和 runtime smoke 使用打包的 `DenoHost` runtime；还原期间出现 `NU1900` 漏洞源警告不阻断已成功完成的测试。
+测试使用独立临时工作区并在结束后清理。当前迁移分支的直接恢复/构建、SSR、Vite 代理/HMR 与 hydration 测试使用进程内 NodeApi；SDK/NuGet 消费者等其余测试仍在迁移，不能据此宣称全套门禁已通过。还原期间出现 `NU1900` 漏洞源警告不阻断已成功完成的测试。
 
 `SdkIntegrationTests` 标记为 `Consumer`。普通 `emit` lane 会跳过这组昂贵的包消费者测试，保持模块、SourceMap、宿主、SSR 和 artifact 契约快速反馈；`emit-consumer` 执行完整消费者矩阵。发布工作流仍必须运行 SPA/SSR 消费者门禁。
 

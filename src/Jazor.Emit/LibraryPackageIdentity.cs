@@ -1,7 +1,7 @@
 namespace Jazor.Emit;
 
 /// <summary>
-/// Normalizes logical npm/JSR package names to the package identity materialized by Deno.
+/// Normalizes logical npm/JSR package names to the package identity materialized by pnpm.
 /// JSR dependencies are installed through npm compatibility names (<c>@jsr/scope__name</c>),
 /// while binding metadata and authored imports keep the original JSR specifier.
 /// </summary>
@@ -25,10 +25,9 @@ internal static class LibraryPackageIdentity
         if (!string.Equals(reference.Source, "jsr", StringComparison.Ordinal))
             return reference.Version;
 
-        if (reference.Version.StartsWith("jsr:", StringComparison.OrdinalIgnoreCase))
-            return reference.Version;
-
-        return "jsr:" + GetAuthoredName(reference) + "@" + reference.Version;
+        var version = TryParseJsrSpecifier(reference.Version, out _, out var parsedVersion)
+            ? parsedVersion : reference.Version;
+        return "npm:" + GetCanonicalName(reference) + "@" + version;
     }
 
     public static string GetCanonicalSpecifier(LibraryPackageReference reference, string specifier)

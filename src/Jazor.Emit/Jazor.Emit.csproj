@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <PublishSingleFile>false</PublishSingleFile>
     <SelfContained>false</SelfContained>
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+    <ProjectReference Include="..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
   </ItemGroup>
 </Project>

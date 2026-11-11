@@ -1,6 +1,6 @@
 # Jazor.AspNetCore.Dev
 
-统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。Development 环境由 DenoHost 使用随包运行时启动 Vite；其他环境直接托管 Release 产物。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
+统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。当前迁移分支在 Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。正式 NuGet/MSBuild 交付仍待验收。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
 
 ## 标准前端宿主
 
@@ -48,9 +48,9 @@ public void Configure(IApplicationBuilder app)
 Development 启动顺序如下：
 
 1. 探测配置的 `DevelopmentEntryRelativePath`；已有 Vite 可用时复用它，不接管其生命周期。
-2. 未就绪且 `LaunchServer=true` 时，通过 `DenoHost.Core.DenoProcess` 在项目根运行 `deno task dev --host ... --port ... --strictPort --base ...`。
+2. 未就绪且 `LaunchServer=true` 时，在宿主进程创建 NodeApi environment，调用项目已恢复的 Vite `createServer` / `listen` API；传入统一的 host、port、strictPort 与 base。
 3. 等待入口可访问，再开放 ASP.NET Core 宿主；HTTP、query 和 Vite HMR WebSocket 透明转发到同一 origin。
-4. 宿主停止时只停止自己启动的进程树。
+4. 宿主停止时关闭自己创建的 Vite server，并停止、等待对应 JS 线程退出。
 
 非 Development 环境不会探测或启动 Vite，而是从 `ProjectRootPath` 静态提供 `ReleaseEntryRelativePath` 所在的产物图。Visual Studio F5、Ctrl+F5 和 Folder Publish 都直接走该宿主契约；不需要启动脚本、全局 Deno、`PATH`/`DENO_DIR`、SpaProxy 或 Hosting Startup。
 
@@ -64,7 +64,6 @@ Development 启动顺序如下：
 | `DevelopmentEntryRelativePath` | `entry.js`，启动就绪探针与开发浏览器入口 |
 | `ReleaseEntryRelativePath` | `dist/bundle.js`，非 Development 浏览器入口 |
 | `Vite.ServerOrigin` | `http://127.0.0.1:5173` |
-| `Vite.TaskName` | `dev` |
 | `Vite.LaunchServer` | true；false 表示只使用外部服务器 |
 | `Vite.StartupTimeout` | 2 分钟 |
 | `Vite.ShutdownTimeout` | 5 秒 |

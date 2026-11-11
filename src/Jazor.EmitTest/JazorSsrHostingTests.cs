@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using System.Diagnostics;
+using Jazor.NodeHost;
 using System.Net;
 using System.Security.Claims;
 using Jazor.AspNetCore;
@@ -85,7 +85,7 @@ public sealed partial class JazorSsrHostingTests
     }
 
     [TestMethod]
-    public async Task JazorSsrRenderer_UsesPackagedDenoHostRuntime()
+    public async Task JazorSsrRenderer_UsesPackagedNodeApiRuntime()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -368,7 +368,7 @@ public sealed partial class JazorSsrHostingTests
         var second = ParseWorkerProbe(await renderer.RenderAsync(
             new JazorSsrRequest("components/worker-probe.js")));
 
-        Assert.AreEqual(first.ProcessId, second.ProcessId);
+        Assert.AreEqual(first.EnvironmentId, second.EnvironmentId);
         Assert.AreEqual(1, first.RenderCount);
         Assert.AreEqual(2, second.RenderCount);
         Assert.AreEqual("warm", second.Version);
@@ -390,14 +390,14 @@ public sealed partial class JazorSsrHostingTests
         var after = ParseWorkerProbe(await renderer.RenderAsync(
             new JazorSsrRequest("components/worker-probe.js")));
 
-        Assert.AreNotEqual(before.ProcessId, after.ProcessId);
+        Assert.AreNotEqual(before.EnvironmentId, after.EnvironmentId);
         Assert.AreEqual(1, after.RenderCount);
         Assert.AreEqual("after", after.Version);
     }
 
     [TestMethod]
     [DataRow("package.json")]
-    [DataRow("deno.lock")]
+    [DataRow("pnpm-lock.yaml")]
     [DataRow("ssr-entry.js")]
     public async Task JazorSsrRenderer_ProjectInputChangeReplacesWorkersButTimestampChangeDoesNot(string fileName)
     {
@@ -412,20 +412,20 @@ public sealed partial class JazorSsrHostingTests
         var inputPath = Path.Combine(artifactRoot, fileName);
         File.SetLastWriteTimeUtc(inputPath, File.GetLastWriteTimeUtc(inputPath).AddSeconds(-10));
         var touched = ParseWorkerProbe(await renderer.RenderAsync(request));
-        Assert.AreEqual(before.ProcessId, touched.ProcessId);
+        Assert.AreEqual(before.EnvironmentId, touched.EnvironmentId);
         Assert.AreEqual(2, touched.RenderCount);
 
         // A valid content change in each project input must invalidate the warm module cache.
         await File.AppendAllTextAsync(inputPath, "\n");
         var changed = ParseWorkerProbe(await renderer.RenderAsync(request));
-        Assert.AreNotEqual(before.ProcessId, changed.ProcessId);
+        Assert.AreNotEqual(before.EnvironmentId, changed.EnvironmentId);
         Assert.AreEqual(1, changed.RenderCount);
     }
 
     [TestMethod]
     [DataRow(".js")]
     [DataRow(".mjs")]
-    public async Task JazorSsrRenderer_DenoWatchReloadsTransitiveModuleWithoutRewritingEntry(string extension)
+    public async Task JazorSsrRenderer_GenerationReloadsTransitiveModuleWithoutRewritingEntry(string extension)
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -438,10 +438,10 @@ public sealed partial class JazorSsrHostingTests
         var component = await File.ReadAllTextAsync(componentPath);
         await File.WriteAllTextAsync(componentPath,
             $"import {{ version }} from './barrel{extension}';\n" + component.Replace("|before", "|${version}"));
-        var projectInputs = new[] { "ssr-entry.js", "package.json", "deno.lock", "components/worker-probe.js" }
+        var projectInputs = new[] { "ssr-entry.js", "package.json", "pnpm-lock.yaml", "components/worker-probe.js" }
             .ToDictionary(name => name, name => File.ReadAllText(Path.Combine(artifactRoot, name)));
 
-        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1, taskName: "ssr:dev");
+        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
         var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
         var request = new JazorSsrRequest("components/worker-probe.js");
         Assert.AreEqual("before", ParseWorkerProbe(await renderer.RenderAsync(request)).Version);
@@ -469,7 +469,7 @@ public sealed partial class JazorSsrHostingTests
 
             var warm = ParseWorkerProbe(await renderer.RenderAsync(request));
             Assert.AreEqual(version, warm.Version);
-            Assert.AreEqual(updated.ProcessId, warm.ProcessId);
+            Assert.AreEqual(updated.EnvironmentId, warm.EnvironmentId);
             Assert.AreEqual(updated.RenderCount + 1, warm.RenderCount);
         }
 
@@ -478,7 +478,7 @@ public sealed partial class JazorSsrHostingTests
     }
 
     [TestMethod]
-    public async Task JazorSsrRenderer_CrashedWorkerIsDiscardedAndReplaced()
+    public async Task JazorSsrRenderer_FailedSetupEnvironmentIsDiscardedAndReplaced()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -494,7 +494,7 @@ public sealed partial class JazorSsrHostingTests
         var after = ParseWorkerProbe(await renderer.RenderAsync(
             new JazorSsrRequest("components/worker-probe.js")));
 
-        Assert.AreNotEqual(before.ProcessId, after.ProcessId);
+        Assert.AreNotEqual(before.EnvironmentId, after.EnvironmentId);
         Assert.AreEqual(1, after.RenderCount);
     }
 
@@ -517,12 +517,12 @@ public sealed partial class JazorSsrHostingTests
         var after = ParseWorkerProbe(await renderer.RenderAsync(
             new JazorSsrRequest("components/worker-probe.js")));
 
-        Assert.AreNotEqual(before.ProcessId, after.ProcessId);
+        Assert.AreNotEqual(before.EnvironmentId, after.EnvironmentId);
         Assert.AreEqual(1, after.RenderCount);
     }
 
     [TestMethod]
-    public async Task JazorSsrRenderer_BoundsConcurrentDenoWorkers()
+    public async Task JazorSsrRenderer_BoundsConcurrentNodeEnvironments()
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
@@ -536,7 +536,7 @@ public sealed partial class JazorSsrHostingTests
             .ToArray();
         var results = await Task.WhenAll(renders);
         var processIds = results
-            .Select(ParseDelayedProcessId)
+            .Select(ParseDelayedEnvironmentId)
             .Distinct()
             .ToArray();
 
@@ -548,17 +548,27 @@ public sealed partial class JazorSsrHostingTests
     {
         using var workspace = new SsrHostWorkspace();
         var artifactRoot = await workspace.CreateArtifactRootAsync();
-        await workspace.WriteWorkerProbeAsync("dispose");
+        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "components", "dispose.js"), """
+            import { defineComponent, h } from 'vue';
+            import { writeFileSync } from 'node:fs';
+            let writes = 0;
+            setInterval(() => writeFileSync(new URL('../dispose-counter.txt', import.meta.url), String(++writes)), 10);
+            export default defineComponent({ setup: () => () => h('main', 'disposal probe') });
+            """);
         var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
         var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
-        var probe = ParseWorkerProbe(await renderer.RenderAsync(
-            new JazorSsrRequest("components/worker-probe.js")));
+        await renderer.RenderAsync(new JazorSsrRequest("components/dispose.js"));
+        var counter = Path.Combine(artifactRoot, "dispose-counter.txt");
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!File.Exists(counter))
+            await Task.Delay(10, deadline.Token);
 
         await app.DisposeAsync();
 
-        Assert.IsTrue(
-            await WaitForProcessExitAsync(probe.ProcessId, TimeSpan.FromSeconds(5)),
-            "The persistent Deno worker remained alive after the application service provider was disposed.");
+        var writes = await File.ReadAllTextAsync(counter);
+        await Task.Delay(100, deadline.Token);
+        Assert.AreEqual(writes, await File.ReadAllTextAsync(counter),
+            "The environment continued writing after the application service provider was disposed.");
     }
 
     [TestMethod]
@@ -631,8 +641,7 @@ public sealed partial class JazorSsrHostingTests
     private static WebApplication CreateRendererApplication(
         string contentRootPath,
         string artifactRoot,
-        int workerCount,
-        string taskName = "ssr")
+        int workerCount)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -644,7 +653,6 @@ public sealed partial class JazorSsrHostingTests
         {
             options.ArtifactRootPath = artifactRoot;
             options.WorkerCount = workerCount;
-            options.TaskName = taskName;
         });
         return builder.Build();
     }
@@ -657,38 +665,16 @@ public sealed partial class JazorSsrHostingTests
         Assert.IsTrue(result.Html.EndsWith(suffix, StringComparison.Ordinal));
         var parts = result.Html[prefix.Length..^suffix.Length].Split('|');
         Assert.HasCount(3, parts);
-        return new WorkerProbe(int.Parse(parts[0]), int.Parse(parts[1]), parts[2]);
+        return new WorkerProbe(parts[0], int.Parse(parts[1]), parts[2]);
     }
 
-    private static int ParseDelayedProcessId(JazorSsrRenderResult result)
+    private static string ParseDelayedEnvironmentId(JazorSsrRenderResult result)
     {
         const string prefix = "<main id=\"delayed\">";
         const string suffix = "</main>";
         Assert.IsTrue(result.Html.StartsWith(prefix, StringComparison.Ordinal));
         Assert.IsTrue(result.Html.EndsWith(suffix, StringComparison.Ordinal));
-        return int.Parse(result.Html[prefix.Length..^suffix.Length]);
-    }
-
-    private static async Task<bool> WaitForProcessExitAsync(int processId, TimeSpan timeout)
-    {
-        var deadline = Stopwatch.GetTimestamp() + (long)(timeout.TotalSeconds * Stopwatch.Frequency);
-        while (Stopwatch.GetTimestamp() < deadline)
-        {
-            try
-            {
-                using var process = Process.GetProcessById(processId);
-                if (process.HasExited)
-                    return true;
-            }
-            catch (ArgumentException)
-            {
-                return true;
-            }
-
-            await Task.Delay(50);
-        }
-
-        return false;
+        return result.Html[prefix.Length..^suffix.Length];
     }
 
     private static async Task<WebApplication> CreateNetworkHostAsync(
@@ -737,8 +723,8 @@ public sealed partial class JazorSsrHostingTests
 
     private sealed class SsrHostWorkspace : IDisposable
     {
-        private Process? _devServer;
-        private Task<string>? _devServerErrors;
+        private NodeViteServer? _devServer;
+
         public SsrHostWorkspace()
         {
             RootPath = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "ssr", Guid.NewGuid().ToString("N"));
@@ -805,61 +791,29 @@ public sealed partial class JazorSsrHostingTests
                 ["components/counter.js", "components/hydration.js"],
                 enableSsr: true);
             LibraryPackageWriter.WritePackageProject(artifactRoot, materialization, hasSsrEntry: true);
-            await DenoPackageRestorer.RestoreAndCheckAsync(
+            await NodePackageRestorer.RestoreAndCheckAsync(
                 artifactRoot,
-                ResolveTestDenoExecutable(),
                 [Path.Combine(artifactRoot, "entry.js"), Path.Combine(artifactRoot, "ssr-entry.js")],
-                materialization,
-                CancellationToken.None);
+                CancellationToken.None, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
             await File.WriteAllTextAsync(
                 Path.Combine(artifactRoot, "jazor-manifest.json"),
                 "{\"generation\":\"fixture\"}\n");
             Assert.IsFalse(File.Exists(Path.Combine(artifactRoot, "manifest.json")));
             Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "ssr-entry.js")));
             Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "package.json")));
-            Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "deno.lock")));
+            Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "pnpm-lock.yaml")));
             return artifactRoot;
-        }
-
-        private static string ResolveTestDenoExecutable()
-        {
-            var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-            var rid = OperatingSystem.IsWindows()
-                ? (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "win-arm64" : "win-x64")
-                : OperatingSystem.IsMacOS()
-                    ? (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "osx-arm64" : "osx-x64")
-                    : "linux-x64";
-            var path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", runtimeName);
-            return File.Exists(path) ? path : runtimeName;
         }
 
         public async Task<Uri> StartDevServerAsync(params string[] components)
         {
             var root = Path.Combine(RootPath, "jazor");
             ProjectEntryWriter.Write(root, components, enableSsr: true);
-            await File.WriteAllTextAsync(Path.Combine(root, "test-server.js"), """
-                import { createServer } from 'vite';
-                const server = await createServer({ configFile: false, base: '/docs/jazor/',
-                  logLevel: 'silent', server: { host: '127.0.0.1', port: 0 } });
-                await server.listen();
-                console.log(server.resolvedUrls.local[0]);
-                """);
-            var start = new ProcessStartInfo(ResolveTestDenoExecutable())
-            {
-                WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true,
-                RedirectStandardOutput = true, RedirectStandardError = true
-            };
-            foreach (var argument in new[] { "run", "-A", "test-server.js" })
-                start.ArgumentList.Add(argument);
-            RepositoryTemp.ApplyProcessEnvironment(start);
-            _devServer = Process.Start(start)!;
-            _devServerErrors = _devServer.StandardError.ReadToEndAsync();
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var address = await _devServer.StandardOutput.ReadLineAsync(timeout.Token);
-            Assert.IsNotNull(address, _devServer.HasExited ? await _devServerErrors : "Vite did not publish its URL.");
-            return new Uri(new Uri(address), "/");
+            _devServer = new NodeViteServer(root);
+            var result = await _devServer.StartAsync(root, "127.0.0.1", 0, "/docs/jazor/");
+            using var address = System.Text.Json.JsonDocument.Parse(result);
+            return new Uri(new Uri(address.RootElement.GetProperty("origin").GetString()!), "/");
         }
-
         public async Task PublishGenerationAsync(string generation)
         {
             var entryPath = Path.Combine(RootPath, "jazor", "ssr-entry.js");
@@ -875,11 +829,13 @@ public sealed partial class JazorSsrHostingTests
                 $$"""
                 import { defineComponent, h } from "vue";
 
+                import { randomUUID } from 'node:crypto';
+                const environmentId = randomUUID();
                 let renderCount = 0;
                 export default defineComponent({
                   setup() {
                     const currentRender = ++renderCount;
-                    return () => h("main", { id: "worker-probe" }, `${Deno.pid}|${currentRender}|{{version}}`);
+                    return () => h("main", { id: "worker-probe" }, `${environmentId}|${currentRender}|{{version}}`);
                   }
                 });
                 """);
@@ -892,7 +848,7 @@ public sealed partial class JazorSsrHostingTests
 
                 export default defineComponent({
                   setup() {
-                    Deno.exit(73);
+                    throw new Error('worker-setup-failure');
                   }
                 });
                 """);
@@ -931,30 +887,25 @@ public sealed partial class JazorSsrHostingTests
                 Path.Combine(RootPath, "jazor", "components", "delayed.js"),
                 """
                 import { defineComponent, h, onServerPrefetch } from "vue";
+                import { randomUUID } from 'node:crypto';
+                const environmentId = randomUUID();
 
                 export default defineComponent({
                   props: ["Delay"],
                   setup(props) {
                     onServerPrefetch(() => new Promise((resolve) => setTimeout(resolve, props.Delay)));
-                    return () => h("main", { id: "delayed" }, String(Deno.pid));
+                    return () => h("main", { id: "delayed" }, environmentId);
                   }
                 });
                 """);
 
         public void Dispose()
         {
-            if (_devServer is not null)
-            {
-                if (!_devServer.HasExited)
-                    _devServer.Kill(entireProcessTree: true);
-                _devServer.WaitForExit();
-                _ = _devServerErrors?.GetAwaiter().GetResult();
-                _devServer.Dispose();
-            }
+            _devServer?.DisposeAsync().AsTask().GetAwaiter().GetResult();
             if (Directory.Exists(RootPath))
                 Directory.Delete(RootPath, recursive: true);
         }
     }
 
-    private sealed record WorkerProbe(int ProcessId, int RenderCount, string Version);
+    private sealed record WorkerProbe(string EnvironmentId, int RenderCount, string Version);
 }

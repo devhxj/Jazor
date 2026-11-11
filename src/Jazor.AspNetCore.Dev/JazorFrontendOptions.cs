@@ -72,7 +72,7 @@ public sealed class JazorFrontendOptions
         => path.Replace('\\', '/').TrimStart('/');
 }
 
-/// <summary>Configures the DenoHost-owned Vite development server.</summary>
+/// <summary>Configures the NodeApi-owned Vite development server.</summary>
 public sealed class JazorViteServerOptions
 {
     /// <summary>Default Vite origin used by the generated standard project.</summary>
@@ -83,15 +83,12 @@ public sealed class JazorViteServerOptions
     /// <summary>Vite origin used for readiness probes and proxy forwarding.</summary>
     public Uri ServerOrigin { get; set; } = DefaultServerOrigin;
 
-    /// <summary>Deno task that starts Vite.</summary>
-    public string TaskName { get; set; } = JazorArtifactDefaults.DevelopmentTaskName;
-
-    /// <summary>Whether DenoHost starts Vite when the configured origin is not already ready.</summary>
+    /// <summary>Whether NodeApi starts Vite when the configured origin is not already ready.</summary>
     public bool LaunchServer { get; set; } = true;
 
     /// <summary>Maximum time allowed for Vite to serve the configured development entry.</summary>
     public TimeSpan StartupTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
-    /// <summary>Maximum graceful shutdown interval before DenoHost terminates the process tree.</summary>
+    /// <summary>Maximum graceful shutdown interval before terminating the owned Node environment.</summary>
     public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 }

@@ -132,6 +132,38 @@ exports.build = async (requestJson) => {
     return JSON.stringify({ operation: 'build', ssr, status: 'completed', pid: process.pid });
 };
 
+exports.check = async (requestJson) => {
+    const { projectDirectory, entryPaths } = JSON.parse(requestJson);
+    const vite = await loadVite(projectDirectory);
+    const server = await vite.createServer({
+        root: projectDirectory,
+        appType: 'custom',
+        server: { middlewareMode: true, watch: null, hmr: false },
+        optimizeDeps: { noDiscovery: true, include: [] }
+    });
+    try {
+        const visited = new Set();
+        async function visit(url) {
+            if (visited.has(url)) return;
+            visited.add(url);
+            await server.transformRequest(url);
+            const module = await server.moduleGraph.getModuleByUrl(url);
+            for (const dependency of module?.importedModules ?? []) {
+                // Transform authored local modules without evaluating their
+                // initializers. Package exports resolve through Vite; package
+                // implementations are checked by the eventual build.
+                if (dependency.file && !dependency.file.includes('/node_modules/'))
+                    await visit(dependency.url);
+            }
+        }
+        for (const entry of entryPaths)
+            await visit('/' + path.relative(projectDirectory, entry).split(path.sep).join('/'));
+        return JSON.stringify({ operation: 'check', modules: visited.size, pid: process.pid });
+    } finally {
+        await server.close();
+    }
+};
+
 let ownedViteServer;
 exports.startVite = async (requestJson) => {
     const { projectDirectory, host, port, base } = JSON.parse(requestJson);
@@ -139,7 +171,7 @@ exports.startVite = async (requestJson) => {
     ownedViteServer = await vite.createServer({ root: projectDirectory, base, server: { host, port, strictPort: true, open: false } });
     try {
         await ownedViteServer.listen();
-        return JSON.stringify({ operation: 'vite', status: 'listening', pid: process.pid });
+        return JSON.stringify({ operation: 'vite', status: 'listening', pid: process.pid, origin: ownedViteServer.resolvedUrls.local[0] });
     } catch (error) {
         await ownedViteServer.close();
         ownedViteServer = undefined;

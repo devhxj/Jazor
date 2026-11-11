@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using Jazor.NodeHost;
 using System.Text.Json;
 using Jazor.Common;
 using Jazor.Emit;
@@ -10,32 +9,33 @@ namespace Jazor.EmitTest;
 public sealed class StandardPackageProjectTests
 {
     [TestMethod]
-    public async Task ProjectBuild_UsesAuthoredScriptAndOutputLayout_AndPropagatesFailure()
+    public async Task ProjectBuild_UsesAuthoredViteConfigAndOutputLayout_AndPropagatesFailure()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.ProjectBuildTest", Guid.NewGuid().ToString("N"));
-        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
-            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
         Directory.CreateDirectory(root);
         try
         {
             File.WriteAllText(Path.Combine(root, "package.json"), """
-                {"type":"module","scripts":{"build":"deno run --allow-write build.js"}}
+                {"type":"module","devDependencies":{"vite":"8.3.0"},"scripts":{"build":"vite build"}}
                 """);
-            File.WriteAllText(Path.Combine(root, "build.js"), "await Deno.writeTextFile('custom-output.js', 'export const built = true;');");
+            File.WriteAllText(Path.Combine(root, "app.js"), "export const built = true;");
+            File.WriteAllText(Path.Combine(root, "vite.config.js"), """
+                export default { build: { outDir: 'custom-output', rolldownOptions: {
+                  input: 'app.js', preserveEntrySignatures: 'strict', output: { entryFileNames: 'custom-output.js' }
+                } } };
+                """);
+            await NodeToolchain.RestoreAsync(root, Path.Combine(RepositoryTemp.Root, "nodeapi-store"), CancellationToken.None);
             var builder = new JavaScriptProjectBuilder();
-            var built = await builder.BuildAsync(root, deno);
+            var built = await builder.BuildAsync(root);
             Assert.IsTrue(built.IsSuccess, built.Diagnostic?.Message);
-            Assert.IsTrue(File.Exists(Path.Combine(root, "custom-output.js")));
+            Assert.IsTrue(File.Exists(Path.Combine(root, "custom-output", "custom-output.js")));
             Assert.IsFalse(Directory.Exists(Path.Combine(root, "dist")));
-            File.WriteAllText(Path.Combine(root, "build.js"), "console.error('authored build failed'); Deno.exit(7);");
+            File.WriteAllText(Path.Combine(root, "vite.config.js"), "throw new Error('authored build failed');");
             using var progress = new StringWriter();
-            var failed = await builder.BuildAsync(root, deno, progress: progress);
+            var failed = await builder.BuildAsync(root, progress: progress);
             Assert.IsFalse(failed.IsSuccess);
-            Assert.AreEqual(7, failed.ExitCode);
+            Assert.AreEqual(1, failed.ExitCode);
             StringAssert.Contains(failed.Diagnostic!.Message, "authored build failed");
-            StringAssert.Contains(progress.ToString(), "deno task build: started");
-            StringAssert.Contains(progress.ToString(), "authored build failed");
-            StringAssert.Contains(progress.ToString(), "failed (exit=7)");
         }
         finally
         {
@@ -81,12 +81,9 @@ public sealed class StandardPackageProjectTests
     }
 
     [TestMethod]
-    public async Task NpmAlias_RestoreProjectsAuthoredPackageNameForDenoAndVite()
+    public async Task NpmAlias_RestoreProjectsAuthoredPackageNameForNodeApiAndVite()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "npm-alias", Guid.NewGuid().ToString("N"));
-        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
-            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
-        Assert.IsTrue(File.Exists(deno), "The test must use the Deno runtime from its own build output.");
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         Directory.CreateDirectory(root);
         try
@@ -109,13 +106,13 @@ public sealed class StandardPackageProjectTests
             LibraryPackageWriter.WritePackageProject(root, libraries);
             var entries = ProjectEntryWriter.Write(root, ["app.js"]);
 
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
+            await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
 
             var aliasRoot = Path.Combine(root, "node_modules", "@popperjs", "core");
             Assert.IsTrue(File.Exists(Path.Combine(aliasRoot, "package.json")));
             using (var aliasPackage = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(aliasRoot, "package.json"), timeout.Token)))
                 Assert.AreEqual("@sxzz/popperjs-es", aliasPackage.RootElement.GetProperty("name").GetString());
-            Assert.AreEqual("true", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
+            Assert.AreEqual("true", await RunNodeAsync(root, "entry.js", timeout.Token));
 
             // A source-only HMR update must preserve both the installed graph and alias projection.
             // Hold a package file against writes to model Windows Vite/native-module ownership.
@@ -123,27 +120,27 @@ public sealed class StandardPackageProjectTests
             {
                 await File.WriteAllTextAsync(appPath, "import { placements } from '@popperjs/core'; console.log(placements.includes('top'));", timeout.Token);
                 using var incrementalProgress = new StringWriter();
-                await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token, incrementalProgress);
-                StringAssert.Contains(incrementalProgress.ToString(), "deno install: skipped");
-                StringAssert.Contains(incrementalProgress.ToString(), "deno check: completed");
+                await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, incrementalProgress, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+                StringAssert.Contains(incrementalProgress.ToString(), "\"status\":\"skipped\"");
+                StringAssert.Contains(incrementalProgress.ToString(), "\"operation\":\"check\"");
             }
-            Assert.AreEqual("true", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
+            Assert.AreEqual("true", await RunNodeAsync(root, "entry.js", timeout.Token));
 
             // A successful restore receipt cannot mask a new authored-module failure.
             await File.WriteAllTextAsync(appPath, "import './missing-authored-module.js';", timeout.Token);
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token));
+                NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store")));
             await File.WriteAllTextAsync(appPath, "import { placements } from '@popperjs/core'; console.log(placements.includes('bottom'));", timeout.Token);
 
             Directory.Delete(Path.Combine(root, "node_modules"), recursive: true);
             using var recoveredProgress = new StringWriter();
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token, recoveredProgress);
-            StringAssert.Contains(recoveredProgress.ToString(), "deno install: started");
+            await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, recoveredProgress, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+            StringAssert.Contains(recoveredProgress.ToString(), "\"status\":\"completed\"");
             Assert.IsTrue(File.Exists(Path.Combine(aliasRoot, "package.json")));
 
-            var result = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
+            var result = await new JavaScriptProjectBuilder().BuildAsync(root, cancellationToken: timeout.Token);
             Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message);
-            Assert.AreEqual("true", await RunDenoAsync(deno, root, "dist/bundle.js", timeout.Token));
+            Assert.AreEqual("true", await RunNodeAsync(root, "dist/bundle.js", timeout.Token));
         }
         finally
         {
@@ -152,7 +149,7 @@ public sealed class StandardPackageProjectTests
     }
 
     [TestMethod]
-    public async Task VueBindingPeerClosures_RestorePinnedVueForDenoAndVite()
+    public async Task VueBindingPeerClosures_RestorePinnedVueForNodeApiAndVite()
     {
         var cases = new[]
         {
@@ -169,9 +166,6 @@ public sealed class StandardPackageProjectTests
                 Specifier: "lucide-vue-next",
                 Source: "import { Circle } from 'lucide-vue-next'; console.log(Boolean(Circle));")
         };
-        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
-            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
-        Assert.IsTrue(File.Exists(deno), "The test must use the Deno runtime from its own build output.");
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
 
         foreach (var testCase in cases)
@@ -195,7 +189,7 @@ public sealed class StandardPackageProjectTests
                 LibraryPackageWriter.WritePackageProject(root, libraries);
                 var entries = ProjectEntryWriter.Write(root, ["app.js"]);
 
-                await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
+                await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
 
                 using (var vuePackage = JsonDocument.Parse(await File.ReadAllTextAsync(
                            Path.Combine(root, "node_modules", "vue", "package.json"),
@@ -207,7 +201,7 @@ public sealed class StandardPackageProjectTests
                         $"{testCase.Manifest} restored an implicit Vue peer instead of the declared identity.");
                 }
 
-                var result = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
+                var result = await new JavaScriptProjectBuilder().BuildAsync(root, cancellationToken: timeout.Token);
                 Assert.IsTrue(result.IsSuccess, $"{testCase.Manifest}: {result.Diagnostic?.Message}");
             }
             finally
@@ -218,12 +212,9 @@ public sealed class StandardPackageProjectTests
     }
 
     [TestMethod]
-    public async Task NpmAndJsr_DeclaredKeysResolveThroughDenoAndViteWithoutPrivateManifests()
+    public async Task NpmAndJsr_DeclaredKeysResolveThroughNodeApiAndViteWithoutPrivateManifests()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", "standard-project", Guid.NewGuid().ToString("N"));
-        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
-            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
-        Assert.IsTrue(File.Exists(deno), "The test must use the Deno runtime from its own build output.");
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         Directory.CreateDirectory(root);
         try
@@ -247,28 +238,28 @@ public sealed class StandardPackageProjectTests
             var entries = ProjectEntryWriter.Write(root, ["app.js"]);
             using var package = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(root, "package.json"), timeout.Token));
             var dependencies = package.RootElement.GetProperty("dependencies");
-            Assert.AreEqual("jsr:@std/path@1.0.8", dependencies.GetProperty("@jsr/std__path").GetString());
+            Assert.AreEqual("npm:@jsr/std__path@1.0.8", dependencies.GetProperty("@jsr/std__path").GetString());
             Assert.AreEqual("4.1.0", dependencies.GetProperty("date-fns").GetString());
 
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token);
-            var lockPath = Path.Combine(root, "deno.lock");
+            await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+            var lockPath = Path.Combine(root, "pnpm-lock.yaml");
             var locked = await File.ReadAllTextAsync(lockPath, timeout.Token);
             using var repeatedProgress = new StringWriter();
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, libraries, timeout.Token, repeatedProgress);
-            StringAssert.Contains(repeatedProgress.ToString(), "deno install: skipped");
+            await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, repeatedProgress, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+            StringAssert.Contains(repeatedProgress.ToString(), "\"status\":\"skipped\"");
             Assert.AreEqual(locked, await File.ReadAllTextAsync(lockPath, timeout.Token));
-            Assert.AreEqual("npm/3", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
+            Assert.AreEqual("npm/3", await RunNodeAsync(root, "entry.js", timeout.Token));
 
-            var result = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
+            var result = await new JavaScriptProjectBuilder().BuildAsync(root, cancellationToken: timeout.Token);
             Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message);
-            Assert.AreEqual("npm/3", await RunDenoAsync(deno, root, "dist/bundle.js", timeout.Token));
+            Assert.AreEqual("npm/3", await RunNodeAsync(root, "dist/bundle.js", timeout.Token));
 
             // Enabling SSR later must not require Emit to overwrite the authored Vite config.
             var config = await File.ReadAllTextAsync(Path.Combine(root, "vite.config.js"), timeout.Token);
             await File.WriteAllTextAsync(Path.Combine(root, "hydration.js"), "export const hydrate = () => 'ready';", timeout.Token);
             LibraryPackageWriter.WritePackageProject(root, libraries, hasSsrEntry: true);
             Assert.AreEqual(config, await File.ReadAllTextAsync(Path.Combine(root, "vite.config.js"), timeout.Token));
-            var withHydration = await new JavaScriptProjectBuilder().BuildAsync(root, deno, timeout.Token);
+            var withHydration = await new JavaScriptProjectBuilder().BuildAsync(root, cancellationToken: timeout.Token);
             Assert.IsTrue(withHydration.IsSuccess, withHydration.Diagnostic?.Message);
             Assert.IsTrue(File.Exists(Path.Combine(root, "dist", "hydration.js")));
 
@@ -278,12 +269,12 @@ public sealed class StandardPackageProjectTests
             var upgradedLibraries = libraries with { PackageReferences = upgradedReferences };
             LibraryPackageWriter.WritePackageProject(root, upgradedLibraries);
             using var upgradedProgress = new StringWriter();
-            await DenoPackageRestorer.RestoreAndCheckAsync(root, deno, entries, upgradedLibraries, timeout.Token, upgradedProgress);
-            StringAssert.Contains(upgradedProgress.ToString(), "deno install: started");
+            await NodePackageRestorer.RestoreAndCheckAsync(root, entries, timeout.Token, upgradedProgress, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+            StringAssert.Contains(upgradedProgress.ToString(), "\"status\":\"completed\"");
             var upgradedLock = await File.ReadAllTextAsync(lockPath, timeout.Token);
             Assert.AreNotEqual(locked, upgradedLock);
-            StringAssert.Contains(upgradedLock, "npm:@jsr/std__path@1.0.9");
-            Assert.AreEqual("npm/3", await RunDenoAsync(deno, root, "entry.js", timeout.Token));
+            StringAssert.Contains(upgradedLock, "@jsr/std__path@1.0.9");
+            Assert.AreEqual("npm/3", await RunNodeAsync(root, "entry.js", timeout.Token));
             Assert.IsFalse(File.Exists(Path.Combine(root, "importmap.json")));
             Assert.IsFalse(File.Exists(Path.Combine(root, "jazor-manifest.json")));
             Assert.IsFalse(File.Exists(Path.Combine(root, ".jazor-deno-check-importmap.json")));
@@ -294,38 +285,8 @@ public sealed class StandardPackageProjectTests
         }
     }
 
-    private static async Task<string> RunDenoAsync(string deno, string root, string entry, CancellationToken cancellationToken)
-    {
-        var start = new ProcessStartInfo(deno)
-        {
-            WorkingDirectory = root,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-        foreach (var argument in new[] { "run", "--no-config", "--no-remote", "--frozen-lockfile", "--node-modules-dir=manual", entry })
-            start.ArgumentList.Add(argument);
-        RepositoryTemp.ApplyProcessEnvironment(start);
-        using var process = Process.Start(start)!;
-        var stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken);
-            Assert.AreEqual(0, process.ExitCode, await stderr);
-            return (await stdout).Trim();
-        }
-        finally
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-                await process.WaitForExitAsync(CancellationToken.None);
-            }
-        }
-    }
-
+    private static Task<string> RunNodeAsync(string root, string entry, CancellationToken cancellationToken)
+        => NodeModuleRunner.RunAsync(root, Path.Combine(root, entry), cancellationToken: cancellationToken);
     private static string FindLibraryManifest(string projectName)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

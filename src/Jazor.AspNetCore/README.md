@@ -1,6 +1,6 @@
 # Jazor.AspNetCore
 
-为 ASP.NET Core 提供生成产物托管、SPA 导航 fallback 和 Vue SSR。此程序集及其 XML 文档随 **Jazor** NuGet 包交付；Vue/Razor authoring 另需 **Jazor.Vue**。不需要安装名为 Jazor.AspNetCore 的独立包。项目配置见 [Jazor 包说明](../Jazor/README.md)。
+为 ASP.NET Core 提供生成产物托管、SPA 导航 fallback 和 Vue SSR。此程序集及其 XML 文档随 **Jazor** NuGet 包交付；Vue/Razor authoring 另需 **Jazor.Vue**。不需要安装名为 Jazor.AspNetCore 的独立包。项目配置见 [Jazor 包说明](../Jazor/README.md)。当前迁移分支使用进程内 NodeApi；正式 NuGet/MSBuild 与跨平台交付验收仍在进行，已发布版本按其对应说明使用。
 
 ## SPA 接入
 
@@ -29,7 +29,7 @@ app.Run();
 
 | 入口 | 职责 |
 | --- | --- |
-| `AddJazorFrontend` | 注册统一前端 options 与 DenoHost Vite 生命周期 |
+| `AddJazorFrontend` | 注册统一前端 options 与进程内 Vite 生命周期 |
 | `UseJazorPathBase` | 在调用方选择的位置应用统一配置的 PathBase |
 | `UseJazorFrontend` | Development 代理 Vite，其他环境组合 `UseJazorHost` 托管 Release 产物 |
 | `UseJazorHost` | 依次注册响应头和 `UseJazorAssets`；供不使用统一前端入口的高级场景调用 |
@@ -46,7 +46,7 @@ SPA fallback 只在下游返回 **404**、响应尚未开始、没有选中 endp
 
 ## 目录、缓存与自定义挂载
 
-`ServeArtifacts` 默认 false，标准项目由 Deno 运行的 Web 服务提供。只有显式调用 `UseJazorArtifacts` 或设置 `ServeArtifacts = true` 时才静态挂载，默认物理目录是 `ContentRootPath/jazor`。**注册中间件时**至少存在 `entry.js` 或 `dist/bundle.js` 才挂载；不会在首个请求重新探测。如果先启动空宿主、后首次生成产物，需要重启。探测通过仅代表允许挂载，不保证 SSR 文件完整。
+`ServeArtifacts` 默认 false，标准项目在开发时由内嵌 Vite 提供。只有显式调用 `UseJazorArtifacts` 或设置 `ServeArtifacts = true` 时才静态挂载，默认物理目录是 `ContentRootPath/jazor`。**注册中间件时**至少存在 `entry.js` 或 `dist/bundle.js` 才挂载；不会在首个请求重新探测。如果先启动空宿主、后首次生成产物，需要重启。探测通过仅代表允许挂载，不保证 SSR 文件完整。
 
 已挂载目录的缺失文件默认直接返回 404。资源默认补充 `nosniff` 和 `Cache-Control: no-cache, must-revalidate`，保留已有头；配置 `ImmutableCachePathPrefixes` 才采用一年 immutable 缓存，应仅用于内容版本化 URL。前缀匹配 `Request.Path`，不含 `PathBase`。`OnPrepareResponse` 最后执行，可覆盖默认头。
 
@@ -79,7 +79,6 @@ builder.AddJazorFrontend();
 builder.Services.AddJazorSsr(options =>
 {
     options.WorkerCount = 2;
-    options.TaskName = builder.Environment.IsDevelopment() ? "ssr:dev" : "ssr";
 });
 var app = builder.Build();
 
@@ -98,15 +97,15 @@ Debug 使用物化模块图；Release 构建应配置 `JazorMode=release` 和 `J
 dotnet publish YourHost.csproj -c Release -p:JazorMode=release -p:JazorSSR=true
 ```
 
-默认查找 `ContentRootPath/jazor`。SSR 根目录必须同时包含 `ssr-entry.js`、`package.json`、`deno.lock` 及其引用的模块/资源；仅浏览器 bundle 不够。默认浏览器前缀为 `/jazor`：Development 由统一前端入口代理 Vite，其他环境由同一入口托管 Release 产物。
+默认查找 `ContentRootPath/jazor`。Development 根目录包含 `ssr-entry.js`、`package.json`、`pnpm-lock.yaml` 及其引用的模块/资源；Production 使用 `ssr/` 中自足的入口、chunks 和 `package.json`，无需安装依赖。仅浏览器 bundle 不够。默认浏览器前缀为 `/jazor`：Development 由统一前端入口代理 Vite，其他环境由同一入口托管 Release 产物。
 
 自定义 SSR 根目录时通过 `AddJazorSsr` 配置 `ArtifactRootPath` 与 `RequestPath`，确保浏览器前缀能访问同一套资源；URL 会自动加上请求 `PathBase`。`MountElementId` 默认 `app`，不得为空或含空白。
 
 SSR 复用 SPA 的导航筛选规则。GET 创建请求并渲染，HEAD 只设置 HTML 响应类型，不运行工厂或 renderer。`IJazorSsrRenderer.RenderAsync` 只返回组件 HTML 和 JSON；`UseJazorSsr` 再包装完整文档和 hydration 引导，浏览器通过项目服务加载 `hydration.js`。
 
-`WorkerCount` 默认 CPU 数限制在 1–4，必须大于零；Deno workers 按需创建、持久复用，由 DI 释放。每次渲染创建新 Vue app，但模块环境可跨请求复用。传递 `RequestAborted` 取消排队/渲染；异常通过正常 ASP.NET Core 异常管线处理。
+`WorkerCount` 默认 CPU 数限制在 1–4，必须大于零；NodeApi environments 按需创建、持久复用，由 DI 释放。每次渲染创建新 Vue app，但模块环境可跨请求复用。传递 `RequestAborted` 取消排队/异步渲染；取消会停止并等待该 JS 线程退出后再归还容量，异常通过正常 ASP.NET Core 异常管线处理。
 
-`TaskName` 默认 `ssr`，宿主在项目根执行 `deno task ssr`。启用 SSR 时 Emit 为缺失的 `ssr` 与 `ssr:dev` 脚本提供初始配置，保留用户已有命令。开发任务使用 Deno 原生 `--watch=.`（排除 `node_modules`、`dist`），子模块改动会更新运行时；ASP.NET Core 不扫描或监听项目目录。runner 通过 loopback HTTP 接收渲染请求，Deno 重启后发布新监听地址。重启时正在执行的请求可能失败，宿主显式传播错误，不重放可能已经产生副作用的渲染。
+宿主直接导入 SSR 入口的 `render` 导出，已移除 `TaskName` 配置。开发时入口、声明、pnpm lock 或传递源码内容变化会轮换 environment，清除 ESM cache；仅时间戳变化保留环境。旧 generation 的已租用请求先完成，新请求使用新环境。渲染失败直接传播，不重放可能已经产生副作用的渲染。
 
 固定 request/props 重载会跨请求共享对象；请求相关数据应由工厂创建。Props/providers 使用 `System.Text.Json` 序列化，同一快照交给浏览器 hydration，默认保留 CLR 属性名。Provider 键必须非空且唯一（区分大小写）。`Authentication` 自动占用 `jazor:auth-state`；不要同时手动提供该键。`FromPrincipal` 会复制全部 claims；它是快照转换，不执行认证或授权。
 

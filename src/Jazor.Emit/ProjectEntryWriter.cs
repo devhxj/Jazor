@@ -60,9 +60,9 @@ internal static class ProjectEntryWriter
 
         // SsrArtifactLocator starts the task from this bundled directory. Its entry is
         // relative to that directory, and all imports are local bundled chunks: no restore
-        // graph or deno.lock is needed on the published host.
+        // graph or pnpm-lock.yaml is needed on the published host.
         ProjectFileWriter.Write(Path.Combine(runtimeRoot, "package.json"), """
-            {"private":true,"type":"module","scripts":{"ssr":"deno run --no-remote --no-prompt --allow-env=NODE_ENV --allow-read=. --allow-net=127.0.0.1 ssr-entry.js"}}
+            {"private":true,"type":"module"}
             """ + "\n");
     }
 

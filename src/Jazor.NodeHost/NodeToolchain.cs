@@ -14,7 +14,7 @@ internal static class NodeToolchain
     {
         var bootstrap = await PnpmBootstrap.EnsureAsync(storeDirectory, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
-        using var environment = new NodeEnvironment(projectDirectory);
+        using var environment = new NodeEnvironment(projectDirectory, progress);
         var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "restore",
             JsonSerializer.Serialize(new { projectDirectory, storeDirectory, bootstrap, engineVersion = PnpmBootstrap.Version }));
         progress?.WriteLine("[Jazor NodeApi] " + result);
@@ -36,9 +36,21 @@ internal static class NodeToolchain
         CancellationToken cancellationToken, TextWriter? progress = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using var environment = new NodeEnvironment(projectDirectory);
+        using var environment = new NodeEnvironment(projectDirectory, progress);
         var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "build",
             JsonSerializer.Serialize(new { projectDirectory, ssr }));
+        progress?.WriteLine("[Jazor NodeApi] " + result);
+        cancellationToken.ThrowIfCancellationRequested();
+        return result;
+    }
+
+    public static async Task<string> CheckAsync(string projectDirectory, IReadOnlyList<string> entryPaths,
+        CancellationToken cancellationToken, TextWriter? progress = null)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var environment = new NodeEnvironment(projectDirectory, progress);
+        var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "check",
+            JsonSerializer.Serialize(new { projectDirectory, entryPaths }));
         progress?.WriteLine("[Jazor NodeApi] " + result);
         cancellationToken.ThrowIfCancellationRequested();
         return result;

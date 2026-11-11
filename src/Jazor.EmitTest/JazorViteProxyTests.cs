@@ -4,7 +4,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using DenoHost.Core;
+using Jazor.NodeHost;
 using Jazor.AspNetCore.Dev;
 using Jazor.Common;
 using Jazor.Emit;
@@ -70,7 +70,7 @@ public sealed class JazorViteProxyTests
                 await WaitUntilUnavailableAsync(
                     new Uri($"http://127.0.0.1:{vitePort}{JazorArtifactDefaults.RequestPath}/"),
                     timeout.Token),
-                "Missing generated input must fail before DenoHost launches Vite.");
+                "Missing generated input must fail before NodeApi starts Vite.");
         }
         finally
         {
@@ -79,7 +79,7 @@ public sealed class JazorViteProxyTests
     }
 
     [TestMethod]
-    public async Task Frontend_StartsProxiesAndStopsDenoHostOwnedVite()
+    public async Task Frontend_StartsProxiesAndStopsNodeApiOwnedVite()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.ViteProxyTest", Guid.NewGuid().ToString("N"));
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -153,7 +153,7 @@ public sealed class JazorViteProxyTests
             await host.StopAsync(timeout.Token);
             Assert.IsTrue(
                 await WaitUntilUnavailableAsync(new Uri($"http://127.0.0.1:{vitePort}/docs/jazor/entry.js"), timeout.Token),
-                "The DenoHost-owned Vite process remained reachable after the ASP.NET Core host stopped.");
+                "The NodeApi-owned Vite server remained reachable after the ASP.NET Core host stopped.");
         }
         finally
         {
@@ -167,27 +167,15 @@ public sealed class JazorViteProxyTests
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.ExternalViteTest", Guid.NewGuid().ToString("N"));
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         Directory.CreateDirectory(root);
-        DenoProcess? vite = null;
+        NodeViteServer? vite = null;
         try
         {
             await WriteProjectAsync(root, timeout.Token);
             await File.WriteAllTextAsync(Path.Combine(root, "app.js"), "export const existing = true;\n", timeout.Token);
             var vitePort = ReserveLoopbackPort();
             var origin = new Uri($"http://127.0.0.1:{vitePort}");
-            vite = new DenoProcess(
-                [
-                    "task",
-                    JazorArtifactDefaults.DevelopmentTaskName,
-                    "--host",
-                    JazorArtifactDefaults.DevelopmentServerHost,
-                    "--port",
-                    vitePort.ToString(),
-                    "--strictPort",
-                    "--base",
-                    JazorArtifactDefaults.RequestPath + "/"
-                ],
-                root);
-            await vite.StartAsync(CancellationToken.None);
+            vite = new NodeViteServer(root);
+            await vite.StartAsync(root, JazorArtifactDefaults.DevelopmentServerHost, vitePort, JazorArtifactDefaults.RequestPath + "/");
             await WaitUntilReadyAsync(new Uri(origin, "/jazor/entry.js"), timeout.Token);
 
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -215,16 +203,11 @@ public sealed class JazorViteProxyTests
             using var direct = new HttpClient();
             using var response = await direct.GetAsync(new Uri(origin, "/jazor/entry.js"), timeout.Token);
             response.EnsureSuccessStatusCode();
-            Assert.IsTrue(vite.IsRunning, "Stopping the ASP.NET Core host stopped an externally owned Vite process.");
         }
         finally
         {
             if (vite is not null)
-            {
-                if (vite.IsRunning)
-                    await vite.StopAsync(TimeSpan.Zero, CancellationToken.None);
-                vite.Dispose();
-            }
+                await vite.DisposeAsync();
             Directory.Delete(root, recursive: true);
         }
     }
@@ -249,12 +232,7 @@ public sealed class JazorViteProxyTests
             "export const ready = true;\n",
             cancellationToken);
 
-        var restore = await DenoPackageRestorer.RunAsync(
-            "DenoHost",
-            root,
-            ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted"],
-            cancellationToken);
-        Assert.IsTrue(restore.Succeeded, restore.StandardError);
+        await NodeToolchain.RestoreAsync(root, Path.Combine(RepositoryTemp.Root, "nodeapi-store"), cancellationToken);
     }
 
     private static int ReserveLoopbackPort()

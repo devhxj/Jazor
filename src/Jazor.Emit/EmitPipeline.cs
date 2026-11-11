@@ -123,11 +123,9 @@ internal sealed class EmitPipeline
             // entry must not hide missing imports or syntax failures until a user opens a page.
             var checkPaths = entryPaths.Concat(applicationManifest.Modules.Select(module =>
                 Path.Combine(outputRoot, module.RelativePath))).ToArray();
-            await DenoPackageRestorer.RestoreAndCheckAsync(
+            await NodePackageRestorer.RestoreAndCheckAsync(
                 outputRoot,
-                options.DenoExecutablePath,
                 checkPaths,
-                packageLibraries,
                 cancellationToken,
                 _progress).ConfigureAwait(false);
             FinishStage("completed");

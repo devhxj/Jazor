@@ -30,7 +30,7 @@ internal sealed class SsrArtifactLocator
             var sourceEntryPath = Path.Combine(candidate, SsrEntryFileName);
             var sourceArtifacts = File.Exists(sourceEntryPath) &&
                                   File.Exists(Path.Combine(candidate, "package.json")) &&
-                                  File.Exists(Path.Combine(candidate, "deno.lock"))
+                                  File.Exists(Path.Combine(candidate, "pnpm-lock.yaml"))
                 ? new SsrArtifacts(candidate, sourceEntryPath, ResolveRequestPath())
                 : null;
             // Release and Debug share one project root. A previous bundle must not hide
@@ -44,7 +44,7 @@ internal sealed class SsrArtifactLocator
             if (File.Exists(Path.Combine(bundledRoot, SsrEntryFileName)) &&
                 File.Exists(Path.Combine(bundledRoot, "package.json")))
             {
-                // All runtime imports are local bundled chunks. Requiring a Deno restore
+                // All runtime imports are local bundled chunks. Requiring a pnpm restore
                 // lock here would incorrectly reject an independent runtime-only publish.
                 return new SsrArtifacts(bundledRoot, Path.Combine(bundledRoot, SsrEntryFileName), ResolveRequestPath(), IsBundled: true);
             }
@@ -55,7 +55,7 @@ internal sealed class SsrArtifactLocator
 
         throw new InvalidOperationException(
             "Jazor SSR could not find a standard project containing '" + SsrEntryFileName +
-            "' and package.json in its ssr/ runtime directory, or a development project with deno.lock. Build with Jazor SSR enabled.");
+            "' and package.json in its ssr/ runtime directory, or a development project with pnpm-lock.yaml. Build with Jazor SSR enabled.");
     }
 
     public static string CreateBrowserArtifactUrl(

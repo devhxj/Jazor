@@ -6,6 +6,39 @@ namespace Jazor.CompilerTest;
 public sealed class NodeModuleRunnerTests
 {
     [TestMethod]
+    public async Task RunAsync_CancellationStopsTimerAndFileWritesBeforeReturning()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "nodeapi-cancellation", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var module = Path.Combine(root, "timer.mjs");
+            var counter = Path.Combine(root, "counter.txt");
+            await File.WriteAllTextAsync(module, """
+                import { writeFileSync } from 'node:fs';
+                const counter = new URL('./counter.txt', import.meta.url);
+                let writes = 0;
+                setInterval(() => writeFileSync(counter, String(++writes)), 10);
+                globalThis.__jazorTest('pending timer work', () => new Promise(() => {}));
+                """);
+            using var cancellation = new CancellationTokenSource();
+            var running = NodeModuleRunner.RunAsync(root, module, cancellationToken: cancellation.Token);
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            while (!File.Exists(counter))
+                await Task.Delay(10, deadline.Token);
+            cancellation.Cancel();
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await running.WaitAsync(deadline.Token));
+            var writes = await File.ReadAllTextAsync(counter);
+            await Task.Delay(100, deadline.Token);
+            Assert.AreEqual(writes, await File.ReadAllTextAsync(counter), "JS continued to write after cancellation returned.");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task RunAsync_AwaitsRegisteredTestsAndPropagatesAsyncAssertionFailure()
     {
         var root = Path.Combine(RepositoryTemp.Root, "nodeapi-runner", Guid.NewGuid().ToString("N"));

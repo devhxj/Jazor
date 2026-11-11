@@ -31,9 +31,6 @@ internal sealed class JazorFrontendOptionsValidator : IValidateOptions<JazorFron
         if (!IsSafeRelativePath(options.ReleaseEntryRelativePath))
             return ValidateOptionsResult.Fail("Jazor frontend ReleaseEntryRelativePath must be a project-relative path.");
 
-        if (string.IsNullOrWhiteSpace(options.Vite.TaskName))
-            return ValidateOptionsResult.Fail("Jazor Vite TaskName cannot be empty.");
-
         if (options.Vite.StartupTimeout <= TimeSpan.Zero)
             return ValidateOptionsResult.Fail("Jazor Vite StartupTimeout must be greater than zero.");
 
@@ -43,7 +40,7 @@ internal sealed class JazorFrontendOptionsValidator : IValidateOptions<JazorFron
         if (options.Vite.LaunchServer && options.Vite.ServerOrigin.Scheme != Uri.UriSchemeHttp)
         {
             return ValidateOptionsResult.Fail(
-                "DenoHost-managed Vite launch requires an HTTP ServerOrigin. Set LaunchServer=false for an external HTTPS server.");
+                "NodeApi-managed Vite startup requires an HTTP ServerOrigin. Set LaunchServer=false for an external HTTPS server.");
         }
 
         return ValidateOptionsResult.Success;

@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+
 using Jazor.AspNetCore;
 using Jazor.Emit;
 using Microsoft.AspNetCore.Builder;
@@ -22,7 +22,7 @@ public sealed class Preview8SsrBundleTests
             Directory.CreateDirectory(Path.Combine(root, "ssr"));
             File.WriteAllText(Path.Combine(root, "ssr-entry.js"), "// current development source");
             File.WriteAllText(Path.Combine(root, "package.json"), "{}");
-            File.WriteAllText(Path.Combine(root, "deno.lock"), "{}");
+            File.WriteAllText(Path.Combine(root, "pnpm-lock.yaml"), "{}");
             File.WriteAllText(Path.Combine(root, "ssr", "ssr-entry.js"), "// previous release bundle");
             File.WriteAllText(Path.Combine(root, "ssr", "package.json"), "{}");
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -51,9 +51,6 @@ public sealed class Preview8SsrBundleTests
         var root = Path.Combine(RepositoryTemp.Root, "preview8-ssr-bundle", Guid.NewGuid().ToString("N"));
         var source = Path.Combine(root, "source");
         var published = Path.Combine(root, "published");
-        var deno = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
-            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
-        Assert.IsTrue(File.Exists(deno), "Use the test's current-output Deno runtime.");
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         try
         {
@@ -74,8 +71,8 @@ public sealed class Preview8SsrBundleTests
                 """, timeout.Token);
             var entries = ProjectEntryWriter.Write(source, ["components/counter.js"], enableSsr: true);
             LibraryPackageWriter.WritePackageProject(source, libraries, hasSsrEntry: true);
-            await DenoPackageRestorer.RestoreAndCheckAsync(source, deno, entries, libraries, timeout.Token);
-            var built = await new JavaScriptProjectBuilder().BuildAsync(source, deno, timeout.Token, "build:ssr");
+            await NodePackageRestorer.RestoreAndCheckAsync(source, entries, timeout.Token, storeDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+            var built = await new JavaScriptProjectBuilder().BuildAsync(source, cancellationToken: timeout.Token, taskName: "build:ssr");
             Assert.IsTrue(built.IsSuccess, built.Diagnostic?.Message);
             ProjectEntryWriter.WriteSsrRuntimePackage(source);
 
@@ -91,10 +88,10 @@ public sealed class Preview8SsrBundleTests
             Directory.Delete(source, recursive: true);
             Assert.IsFalse(Directory.Exists(Path.Combine(published, "node_modules")));
             Assert.IsFalse(File.Exists(Path.Combine(published, "package.json")));
-            Assert.IsFalse(File.Exists(Path.Combine(published, "deno.lock")));
-            Assert.IsFalse(File.Exists(Path.Combine(published, "ssr", "deno.lock")));
+            Assert.IsFalse(File.Exists(Path.Combine(published, "pnpm-lock.yaml")));
+            Assert.IsFalse(File.Exists(Path.Combine(published, "ssr", "pnpm-lock.yaml")));
 
-            // Exercise the actual ASP.NET locator and DenoHost task launcher. Starting the
+            // Exercise the actual ASP.NET locator and NodeApi environment pool. Starting the
             // entry directly would miss task working-directory and runtime-package defects.
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {

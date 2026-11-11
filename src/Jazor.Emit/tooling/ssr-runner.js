@@ -1,12 +1,7 @@
 import { createSSRApp } from "vue";
 import { renderToString } from "@vue/server-renderer";
 
-const protocolPrefix = "__JAZOR_SSR__:";
 const artifactRootUrl = new URL("./", import.meta.url);
-
-function writeResponse(response) {
-  console.log(protocolPrefix + JSON.stringify(response));
-}
 
 function normalizeModulePath(value) {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -21,7 +16,7 @@ function normalizeModulePath(value) {
   return segments.join("/");
 }
 
-async function render(request) {
+export async function render(request) {
   const modulePath = normalizeModulePath(request.modulePath);
   const state = request.state;
   if (!state || state.schema !== "jazor-ssr-state" || state.version !== 1 ||
@@ -60,19 +55,3 @@ async function render(request) {
 
   return html;
 }
-
-// A loopback HTTP endpoint survives Deno watch restarts without reusing an old stdin reader.
-// The host owns worker concurrency; Deno owns module loading and development file watching.
-Deno.serve({
-  hostname: "127.0.0.1",
-  port: 0,
-  onListen: ({ port }) => writeResponse({ kind: "ready", url: `http://127.0.0.1:${port}/` })
-}, async (request) => {
-  try {
-    const html = await render(await request.json());
-    return Response.json({ html });
-  } catch (error) {
-    const message = error instanceof Error ? error.stack ?? error.message : String(error);
-    return Response.json({ error: message }, { status: 500 });
-  }
-});

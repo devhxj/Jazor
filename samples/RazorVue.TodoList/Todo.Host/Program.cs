@@ -22,7 +22,6 @@ internal static class Program
         if (useSsr)
             builder.Services.AddJazorSsr(options =>
             {
-                options.TaskName = builder.Environment.IsDevelopment() ? "ssr:dev" : "ssr";
                 if (!builder.Environment.IsDevelopment())
                     options.HydrationEntryPath = "dist/hydration.js";
             });

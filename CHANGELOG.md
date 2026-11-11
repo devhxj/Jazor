@@ -8,12 +8,14 @@
 
 #### 其他变更
 
+- NodeApi 候选已接入 Emit 恢复/检查、Vite API 构建、开发代理/HMR 和 Vue SSR 环境池。**迁移**：使用 `pnpm-lock.yaml`，删除 SSR/Vite `TaskName` 配置；将 shell 构建定制迁入 Vite 配置。JSR 保留绑定身份并通过 npm 兼容注册表安装。正式包/MSBuild、脚本与跨平台门禁仍待完成。by @devhxj
 - 编译器、CLR、Razor SG、Style 与 Devtools 的运行时回归迁往共享进程内 NodeApi 宿主，真实 npm fixture 通过 pnpm API 恢复；保留异步失败传播、组件生命周期与 Chrome 交互验证。该切片不代表完整产品迁移及发布门禁已经完成。by @devhxj
 - 开始全局 NodeApi 工具链迁移：提取共享内嵌宿主并验证进程内 Vite 启动、关闭与构建。正式前端/SSR 主线仍在迁移中，当前试点的范围与运行限制以各工具 README 为准。by @devhxj
 - WebIDL 采集工具试点切换为完整 NodeApi 进程内执行：pnpm API 恢复固定依赖，TypeScript API 转译并加载 collector，不再启动 Deno 或 JS 工具子进程。`--deno-config` 改为 `--node-project`；当前验证组合与 Windows CET、依赖布局及取消限制见工具 README，其他 Jazor 路径仍待迁移。by @devhxj
 
 #### Chores
 
+- Connect the NodeApi candidate to Emit restore/check, Vite API builds, development proxy/HMR, and the Vue SSR environment pool. **Migration**: use `pnpm-lock.yaml`, remove SSR/Vite `TaskName` settings, and move shell build customization into Vite config. Preserve JSR binding identities through its npm compatibility registry. Package/MSBuild, script, and cross-platform gates remain pending. by @devhxj
 - Move compiler, CLR, Razor SG, Style, and Devtools runtime regressions to the shared in-process NodeApi host, restoring real npm fixtures through the pnpm API. Preserve async failure propagation, component lifecycle, and Chrome interaction checks. This slice does not complete the product migration or release gates. by @devhxj
 - Begin the global NodeApi toolchain migration with a shared embedding host and in-process Vite startup, shutdown, and build verification. Production frontend/SSR integration remains in progress; tool READMEs define the verified scope and limitations. by @devhxj
 - Pilot the WebIDL collector on an entirely in-process NodeApi stack: restore pinned dependencies with the pnpm API and transpile/load the collector with the TypeScript API, without Deno or JS tool child processes. Replace `--deno-config` with `--node-project`; the tool README documents the verified combination and Windows CET, dependency layout, and cancellation limits. Other Jazor execution paths remain pending. by @devhxj

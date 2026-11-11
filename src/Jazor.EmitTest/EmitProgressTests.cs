@@ -1,4 +1,5 @@
 using Jazor.Emit;
+using Jazor.NodeHost;
 
 namespace Jazor.EmitTest;
 
@@ -6,27 +7,33 @@ namespace Jazor.EmitTest;
 public sealed class EmitProgressTests
 {
     [TestMethod]
-    public async Task DenoProgress_IsVisibleBeforeExit_AndCancellationStopsTheProcess()
+    public async Task NodeApiProgress_IsVisibleBeforeCompletion_AndCancellationStopsTheEnvironment()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitProgressTest", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
         using var progress = new ReadyWriter();
-        Task<DenoPackageRestorer.ProcessResult>? running = null;
+        Task<string>? running = null;
+        using var environment = new NodeEnvironment(root, progress);
         try
         {
-            // A live timer keeps Deno alive until the test cancels it; no timing-based sleep
+            // A live timer keeps Node alive until the test cancels it; no timing-based sleep
             // can accidentally turn buffered output into a successful streaming assertion.
-            running = DenoPackageRestorer.RunAsync(
-                DenoPackageRestorer.ResolveExecutable(null), root,
-                ["eval", "console.log('progress-ready'); setInterval(() => {}, 1000);"],
-                cancellation.Token, progress);
+            var module = Path.Combine(root, "progress.cjs");
+            await File.WriteAllTextAsync(module, """
+                exports.run = async () => {
+                    console.log('progress-ready');
+                    setInterval(() => {}, 1000);
+                    await new Promise(() => {});
+                };
+                """);
+            running = environment.InvokeAsync(module, "run", cancellation.Token);
             await progress.Ready.Task.WaitAsync(timeout.Token);
-            Assert.IsFalse(running.IsCompleted, "Progress must be visible while Deno is still running.");
+            Assert.IsFalse(running.IsCompleted, "Progress must be visible while JS is still running.");
             cancellation.Cancel();
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await running);
-            StringAssert.Contains(progress.ToString(), "deno eval: cancelled");
+            StringAssert.Contains(progress.ToString(), "progress-ready");
         }
         finally
         {

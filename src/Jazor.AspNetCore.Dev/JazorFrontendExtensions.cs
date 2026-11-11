@@ -15,7 +15,7 @@ public static class JazorFrontendExtensions
     private const string PathBaseRegisteredKey = "__JazorFrontendPathBaseRegistered";
     private const string FrontendRegisteredKey = "__JazorFrontendRegistered";
 
-    /// <summary>Registers the generated frontend and its DenoHost-owned Vite development server.</summary>
+    /// <summary>Registers the generated frontend and its NodeApi-owned Vite development server.</summary>
     public static WebApplicationBuilder AddJazorFrontend(
         this WebApplicationBuilder builder,
         Action<JazorFrontendOptions>? configure = null)
