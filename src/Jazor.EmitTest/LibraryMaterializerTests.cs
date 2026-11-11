@@ -1291,6 +1291,57 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    [DataRow("0.14.10", true)]
+    [DataRow("0.14.9", false)]
+    public void Materialize_ExternalPeerSharedByDifferentBindings_RequiresSamePackageIdentity(string peerVersion, bool compatible)
+    {
+        using var workspace = new LibraryWorkspace();
+        string WriteBinding(string libraryId, string version, string dependencyVersion)
+        {
+            var manifest = new
+            {
+                schemaVersion = 2,
+                libraryId,
+                version,
+                source = "npm",
+                packages = new Dictionary<string, object>
+                {
+                    ["vue-demi"] = new { source = "npm", version = dependencyVersion }
+                },
+                imports = new Dictionary<string, object>
+                {
+                    ["vue-demi"] = new { type = "module", path = "vue-demi", dependencies = Array.Empty<string>() }
+                },
+                requires = new Dictionary<string, string>(),
+                styles = Array.Empty<object>(),
+                files = Array.Empty<object>()
+            };
+            var path = Path.Combine(workspace.Root, libraryId + ".json");
+            File.WriteAllText(path, JsonSerializer.Serialize(manifest));
+            return path;
+        }
+
+        var manifests = new[]
+        {
+            WriteBinding("floating-ui", "2.0.1", "0.14.10"),
+            WriteBinding("vue-query", "5.103.1", peerVersion)
+        };
+        var output = Path.Combine(workspace.Root, "out");
+        if (compatible)
+        {
+            var result = new LibraryMaterializer().Materialize(manifests, output, BuildMode.Production, ["vue-demi"]);
+            Assert.AreEqual("0.14.10", result.PackageReferences["vue-demi"].Version);
+            Assert.HasCount(1, result.PackageReferences);
+        }
+        else
+        {
+            var exception = Assert.Throws<LibraryException>(() =>
+                new LibraryMaterializer().Materialize(manifests, output, BuildMode.Production, ["vue-demi"]));
+            Assert.AreEqual("JAZOR_LIBRARY_IMPORT_CONFLICT", exception.Code);
+        }
+    }
+
+    [TestMethod]
     public void Materialize_RejectsMissingRequiredImport()
     {
         using var workspace = new LibraryWorkspace();

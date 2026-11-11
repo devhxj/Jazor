@@ -2,12 +2,9 @@ import assert from "node:assert/strict";
 import { installDomEnvironment } from "./test-dom.js";
 
 const disposeDomEnvironment = installDomEnvironment();
+globalThis.__jazorAfterAll(disposeDomEnvironment);
 const { nextTick } = await import("vue");
 const { CreateConfiguredApp } = await import("host/app.mjs");
-
-addEventListener("unload", () => {
-  disposeDomEnvironment();
-});
 
 function createHost() {
   const host = document.createElement("div");
@@ -41,7 +38,7 @@ async function withMountedApps(callback) {
   }
 }
 
-Deno.test("generated pinia app DOM mounts the generated root with projected plugin, multi-store, subscription, and hmr cookbook cards", async () => {
+globalThis.__jazorTest("generated pinia app DOM mounts the generated root with projected plugin, multi-store, subscription, and hmr cookbook cards", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
     const app = CreateConfiguredApp();
@@ -69,7 +66,7 @@ Deno.test("generated pinia app DOM mounts the generated root with projected plug
   });
 });
 
-Deno.test("generated pinia app DOM reacts through the generated multi-store and subscription interactions", async () => {
+globalThis.__jazorTest("generated pinia app DOM reacts through the generated multi-store and subscription interactions", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
     const app = CreateConfiguredApp();
@@ -122,7 +119,7 @@ Deno.test("generated pinia app DOM reacts through the generated multi-store and 
   });
 });
 
-Deno.test("generated pinia app DOM can remount a fresh generated root after unmount cleanup", async () => {
+globalThis.__jazorTest("generated pinia app DOM can remount a fresh generated root after unmount cleanup", async () => {
   await withMountedApps(async (mountedApps) => {
     const firstHost = createHost();
     const firstApp = CreateConfiguredApp();

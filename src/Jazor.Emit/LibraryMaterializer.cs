@@ -312,8 +312,14 @@ internal sealed class LibraryMaterializer
 
     private static bool EquivalentEntry(ImportSelection left, ImportSelection right)
     {
-        if (!string.Equals(left.Manifest.LibraryId, right.Manifest.LibraryId, StringComparison.Ordinal) ||
-            !string.Equals(left.Manifest.Version, right.Manifest.Version, StringComparison.Ordinal))
+        // Different bindings may declare the same external peer (for example
+        // Floating UI and Vue Query both own vue-demi dependency edges). Compare
+        // that package's identity, not the unrelated binding library versions.
+        var external = left.Manifest.Source is "npm" or "jsr" && right.Manifest.Source is "npm" or "jsr";
+        if (external
+            ? left.Manifest.GetPackageReference(left.Entry.Path) != right.Manifest.GetPackageReference(right.Entry.Path)
+            : !string.Equals(left.Manifest.LibraryId, right.Manifest.LibraryId, StringComparison.Ordinal) ||
+              !string.Equals(left.Manifest.Version, right.Manifest.Version, StringComparison.Ordinal))
         {
             return false;
         }

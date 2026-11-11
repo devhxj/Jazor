@@ -37,6 +37,7 @@ exports.executeModule = async (requestJson) => {
         });
     }
     const tests = [];
+    const cleanups = [];
     const output = [];
     const { format } = require('node:util');
     console.log = (...values) => output.push(format(...values));
@@ -44,10 +45,17 @@ exports.executeModule = async (requestJson) => {
     // Runtime fixtures register their existing assertions here. This is a
     // test-owned function, not a Deno compatibility object or a production API.
     globalThis.__jazorTest = (name, body) => tests.push({ name, body });
-    await import(pathToFileURL(modulePath).href);
-    for (const test of tests) {
-        try { await test.body(); }
-        catch (error) { throw new Error(test.name + ': ' + (error.stack ?? error)); }
+    // Embedded environments have no browser unload event. Release fixture-owned
+    // DOM windows after assertions, including import and async test failures.
+    globalThis.__jazorAfterAll = (cleanup) => cleanups.push(cleanup);
+    try {
+        await import(pathToFileURL(modulePath).href);
+        for (const test of tests) {
+            try { await test.body(); }
+            catch (error) { throw new Error(test.name + ': ' + (error.stack ?? error)); }
+        }
+    } finally {
+        for (const cleanup of cleanups.reverse()) await cleanup();
     }
     return JSON.stringify({ tests: tests.length, pid: process.pid, output: output.join('\n') });
 };

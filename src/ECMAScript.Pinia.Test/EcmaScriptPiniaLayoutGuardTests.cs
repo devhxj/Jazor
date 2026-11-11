@@ -125,38 +125,34 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	{
 		var repoRoot = ResolveRepositoryRoot();
 		var consumerRoot = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "pinia-consumer");
-		var denoConfigPath = Path.Combine(consumerRoot, "deno.json");
 		var nugetConfigPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "NuGet.Config");
 		var scriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.cs");
-		var consumerBuildPath = Path.Combine(consumerRoot, "scripts", "build.ts");
+		var consumerBuildPath = Path.Combine(consumerRoot, "scripts", "build.cjs");
 		var packageJsonPath = Path.Combine(consumerRoot, "package.json");
 		var viteConfigPath = Path.Combine(consumerRoot, "vite.config.js");
-		var denoConfig = System.IO.File.ReadAllText(denoConfigPath);
+		var packageJson = System.IO.File.ReadAllText(packageJsonPath);
 		var nugetConfig = System.IO.File.ReadAllText(nugetConfigPath);
 		var source = System.IO.File.ReadAllText(scriptPath);
 		var consumerBuild = System.IO.File.ReadAllText(consumerBuildPath);
 
-		StringAssert.Contains(denoConfig, "\"build\": \"deno run -A scripts/build.ts\"");
-		StringAssert.Contains(denoConfig, "\"test\": \"deno run -A scripts/test.ts\"");
+		StringAssert.Contains(packageJson, "\"@pinia/testing\": \"2.0.1\"");
+		StringAssert.Contains(packageJson, "\"pinia\": \"4.0.3\"");
 		StringAssert.Contains(nugetConfig, "https://api.nuget.org/v3/index.json");
-		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"task\", \"build\" })");
-		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"test\", \"-A\", \"--frozen\", \"--import-map\"");
+		StringAssert.Contains(source, "NodeToolchain.RestoreAsync");
+		StringAssert.Contains(source, "NodeModuleRunner.RunAsync");
 		StringAssert.Contains(source, "sample host assembly for requested configuration");
 		StringAssert.Contains(source, "AssertGeneratedHostArtifacts");
-		StringAssert.Contains(source, "ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo)");
 		StringAssert.Contains(source, "AssertStandardReleaseArtifacts(bundleOutputRoot)");
-		StringAssert.Contains(source, "[\"JAZOR_BUNDLE_ROOT\"] = bundleOutputRoot");
+		StringAssert.Contains(source, "bundleRoot = bundleOutputRoot");
 		StringAssert.Contains(source, "RestoreAdditionalProjectSources={packageOutput}");
-		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment");
 		StringAssert.Contains(source, "ECMAScript.Pinia sample smoke verification passed.");
 		Assert.IsFalse(nugetConfig.Contains(".tmp\\nupkg-sample", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should not depend on a transient local package output path.");
 		Assert.IsFalse(nugetConfig.Contains("JazorLocal", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should keep only stable baseline sources.");
-		Assert.IsFalse(source.Contains("vite", StringComparison.OrdinalIgnoreCase), "Smoke verification script should not depend on Vite anymore.");
-		StringAssert.Contains(consumerBuild, "Missing generated host entry");
-		StringAssert.Contains(consumerBuild, "copyDirectoryContents(workspace.generatedRoot, workspace.assetsDirectory)");
-		Assert.IsFalse(consumerBuild.Contains("deno bundle", StringComparison.OrdinalIgnoreCase), "The active sample must use Deno bundling commands.");
-		Assert.IsFalse(System.IO.File.Exists(packageJsonPath), $"Vite package manifest should not remain in the Deno consumer: {packageJsonPath}");
-		Assert.IsFalse(System.IO.File.Exists(viteConfigPath), $"Vite config should not remain in the Deno consumer: {viteConfigPath}");
+		StringAssert.Contains(consumerBuild, "path.join(bundleRoot, 'dist')");
+		StringAssert.Contains(consumerBuild, "await fs.cp(source, assets, { recursive: true })");
+		StringAssert.Contains(consumerBuild, "Boot(\"#app\")");
+		Assert.IsFalse(System.IO.File.Exists(Path.Combine(consumerRoot, "deno.json")));
+		Assert.IsFalse(System.IO.File.Exists(viteConfigPath), "The consumer reuses the host's Release build.");
 	}
 
 	[TestMethod]
@@ -318,13 +314,12 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 
 		StringAssert.Contains(sampleVerifyScript, "GetIsolationArguments(options)");
 		StringAssert.Contains(sampleVerifyScript, "ResolveHostAssemblyPath(hostRoot, options)");
-		StringAssert.Contains(sampleVerifyScript, "ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo)");
+		StringAssert.Contains(sampleVerifyScript, "NodeToolchain.RestoreAsync");
 		StringAssert.Contains(sampleVerifyScript, "AssertStandardReleaseArtifacts(bundleOutputRoot)");
 		StringAssert.Contains(sampleVerifyScript, "RestoreAdditionalProjectSources={packageOutput}");
-		StringAssert.Contains(sampleVerifyScript, "PINIA_DENO_DIST_ROOT");
 		StringAssert.Contains(sampleVerifyScript, "consumerDistRoot");
-		StringAssert.Contains(sampleVerifyScript, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"task\", \"build\" })");
-		StringAssert.Contains(sampleVerifyScript, "Path.Combine(consumerRoot, \".deno-build\", \"import-map.generated.json\")");
+		StringAssert.Contains(sampleVerifyScript, "NodeModuleRunner.RunAsync");
+		StringAssert.Contains(sampleVerifyScript, "\"--frontend-only\"");
 		StringAssert.Contains(sampleVerifyScript, "GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null)");
 		StringAssert.Contains(sampleVerifyScript, "GetIsolatedBuildRoot(options.BaseIntermediateOutputPath!, repoRoot: null)");
 	}

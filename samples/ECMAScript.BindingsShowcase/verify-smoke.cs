@@ -1,5 +1,10 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -19,6 +24,7 @@ using System.Text.Json;
 //   dotnet run --file samples/ECMAScript.BindingsShowcase/verify-smoke.cs -- --skip-build
 var options = SmokeOptions.Parse(args);
 var repoRoot = FindRepositoryRoot();
+Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 var sampleRoot = Path.Combine(repoRoot, "samples", "ECMAScript.BindingsShowcase");
 var projectPath = Path.Combine(sampleRoot, "BindingsShowcase.Host", "BindingsShowcase.Host.csproj");
 var hostProjectRoot = Path.Combine(sampleRoot, "BindingsShowcase.Host");
@@ -46,7 +52,14 @@ var pageUrl = $"http://127.0.0.1:{port}/";
 var profileRoot = Path.Combine(repoRoot, ".tmp", "bindings-showcase-smoke", Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(profileRoot);
 
-using var vite = StartVite(artifactRoot, repoRoot, vitePort);
+await NodeToolchain.RestoreAsync(artifactRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+    CancellationToken.None, Console.Out);
+using var vite = new NodeEnvironment(artifactRoot, Console.Out);
+var bridge = NodeToolchain.MaterializeBridge(artifactRoot);
+await vite.InvokeAsync(bridge, "startVite", JsonSerializer.Serialize(new
+{
+    projectDirectory = artifactRoot, host = "127.0.0.1", port = vitePort, @base = "/jazor/"
+}));
 using var host = StartHost(outputRoot, artifactRoot, port, vitePort);
 try
 {
@@ -119,8 +132,8 @@ finally
     {
         // Restore is best-effort cleanup after the browser and project processes are stopped.
     }
-    TryKill(vite);
     TryKill(host);
+    await vite.InvokeAsync(bridge, "closeVite");
     TryDelete(profileRoot);
 }
 
@@ -141,14 +154,25 @@ static async Task RunAsync(string fileName, string[] arguments, string workingDi
     // Read both pipes concurrently: draining stdout to completion first can deadlock when the
     // child fills its stderr pipe in the meantime.
     // 必须并发读取两个管道；先读完 stdout 会在子进程写满 stderr 时死锁。
-    var stdoutTask = process.StandardOutput.ReadToEndAsync();
-    var stderrTask = process.StandardError.ReadToEndAsync();
+    var stdoutTask = DrainAsync(process.StandardOutput, Console.Out);
+    var stderrTask = DrainAsync(process.StandardError, Console.Error);
     await Task.WhenAll(stdoutTask, stderrTask);
     await process.WaitForExitAsync();
     var stdout = stdoutTask.Result;
     var stderr = stderrTask.Result;
     if (process.ExitCode != 0)
         throw new InvalidOperationException($"{fileName} {string.Join(' ', arguments)} failed ({process.ExitCode}).\n{stdout}\n{stderr}");
+
+    static async Task<string> DrainAsync(StreamReader reader, TextWriter writer)
+    {
+        var output = new StringBuilder();
+        while (await reader.ReadLineAsync() is { } line)
+        {
+            writer.WriteLine(line);
+            output.AppendLine(line);
+        }
+        return output.ToString();
+    }
 }
 
 static Process StartHost(string outputRoot, string artifactRoot, int port, int vitePort)
@@ -178,31 +202,6 @@ static Process StartHost(string outputRoot, string artifactRoot, int port, int v
     // Drain both streams: a redirected pipe that is never read fills up and blocks the host.
     // 必须持续读取被重定向的输出管道，否则管道填满后宿主会阻塞。
     DrainProcessOutput(process, "bindings-showcase-host");
-    return process;
-}
-
-static Process StartVite(string artifactRoot, string repoRoot, int port)
-{
-    var deno = ResolveDenoHostRuntime(repoRoot);
-    var startInfo = new ProcessStartInfo(deno)
-    {
-        WorkingDirectory = artifactRoot,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false
-    };
-    startInfo.ArgumentList.Add("task");
-    startInfo.ArgumentList.Add("dev");
-    startInfo.ArgumentList.Add("--host");
-    startInfo.ArgumentList.Add("127.0.0.1");
-    startInfo.ArgumentList.Add("--port");
-    startInfo.ArgumentList.Add(port.ToString(System.Globalization.CultureInfo.InvariantCulture));
-    startInfo.ArgumentList.Add("--strictPort");
-    startInfo.Environment["DENO_NO_PROMPT"] = "1";
-    var process = Process.Start(startInfo)
-        ?? throw new InvalidOperationException("Failed to start the generated project's Vite server.");
-    // Keep both pipes drained so Vite cannot block on redirected diagnostics.
-    DrainProcessOutput(process, "bindings-showcase-vite");
     return process;
 }
 
@@ -307,28 +306,6 @@ static string FindRepositoryRoot()
     }
 
     throw new InvalidOperationException("Run from the repository root (Jazor.slnx not found).");
-}
-
-static string ResolveDenoHostRuntime(string repoRoot)
-{
-    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE")?.Trim();
-    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
-        return explicitPath;
-
-    var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-    var packageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages");
-    var candidate = Directory.Exists(packageRoot)
-        ? Directory.EnumerateDirectories(packageRoot, "denohost.runtime.*")
-            .SelectMany(static root => Directory.EnumerateFiles(root, "deno*", SearchOption.AllDirectories))
-            .Where(path => string.Equals(Path.GetFileName(path), executableName, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault()
-        : null;
-    if (candidate is not null)
-        return candidate;
-
-    throw new FileNotFoundException(
-        "DenoHost runtime was not restored. Set JAZOR_DENO_EXE to a Deno executable or restore Jazor.Emit.");
 }
 
 static void RequireEqual(string expected, string? actual, string description)

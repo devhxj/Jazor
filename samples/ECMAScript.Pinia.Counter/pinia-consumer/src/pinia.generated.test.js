@@ -17,7 +17,7 @@ function activateTestingRoot() {
     setActivePinia(CreateTestingRoot());
 }
 
-Deno.test("generated pinia sample modules seeds counter state through createTestingPinia()", () => {
+globalThis.__jazorTest("generated pinia sample modules seeds counter state through createTestingPinia()", () => {
   activateTestingRoot();
     const store = UseCounterStore();
 
@@ -26,7 +26,7 @@ Deno.test("generated pinia sample modules seeds counter state through createTest
     assert.strictEqual(store.$state.PersistedAt, "testing:counter:typed");
 });
 
-Deno.test("generated pinia sample modules keeps increment live while decrement is stubbed by predicate", () => {
+globalThis.__jazorTest("generated pinia sample modules keeps increment live while decrement is stubbed by predicate", () => {
   activateTestingRoot();
     const store = UseCounterStore();
 
@@ -39,7 +39,7 @@ Deno.test("generated pinia sample modules keeps increment live while decrement i
     assert.strictEqual(store.Status, "increment() updated the store.");
 });
 
-Deno.test("generated pinia sample modules allows real patch/reset because the testing root disabled those stubs", () => {
+globalThis.__jazorTest("generated pinia sample modules allows real patch/reset because the testing root disabled those stubs", () => {
   activateTestingRoot();
     const store = UseCounterStore();
 
@@ -55,7 +55,7 @@ Deno.test("generated pinia sample modules allows real patch/reset because the te
     assert.strictEqual(store.Status, "Store seeded through defineStore().");
 });
 
-Deno.test("generated pinia sample modules supports combined typed testing options while keeping runtime shape unchanged", () => {
+globalThis.__jazorTest("generated pinia sample modules supports combined typed testing options while keeping runtime shape unchanged", () => {
     setActivePinia(CreateTypedTestingRoot());
 
     const store = UseCounterStore();
@@ -80,7 +80,7 @@ Deno.test("generated pinia sample modules supports combined typed testing option
     assert.strictEqual(store.Status, "typed root patch");
 });
 
-Deno.test("generated pinia sample modules supports combined typed testing options through the explicit union factory path", () => {
+globalThis.__jazorTest("generated pinia sample modules supports combined typed testing options through the explicit union factory path", () => {
     setActivePinia(CreateFactoryTestingRoot());
 
     const store = UseCounterStore();
@@ -98,7 +98,7 @@ Deno.test("generated pinia sample modules supports combined typed testing option
     assert.strictEqual(store.Status, "increment() updated the store.");
 });
 
-Deno.test("generated pinia sample modules can wrap the generated plugin callback with a JS spy", () => {
+globalThis.__jazorTest("generated pinia sample modules can wrap the generated plugin callback with a JS spy", () => {
     const pluginContext = {
       store: {
         $id: "counter",
@@ -122,7 +122,7 @@ Deno.test("generated pinia sample modules can wrap the generated plugin callback
     assert.strictEqual(pluginContext.store.$state.PersistedAt, "plugin:counter");
 });
 
-Deno.test("generated pinia sample modules keeps setup-store client-only refs skipped from hydration while option-store hydrate receives seeded state", () => {
+globalThis.__jazorTest("generated pinia sample modules keeps setup-store client-only refs skipped from hydration while option-store hydrate receives seeded state", () => {
     setActivePinia(CreateConfiguredPinia());
 
     const setupStore = UseHydrationStore();
@@ -140,7 +140,7 @@ Deno.test("generated pinia sample modules keeps setup-store client-only refs ski
     );
 });
 
-Deno.test("generated pinia sample modules supports named stubActions plus stubbed patch/reset in a stricter testing root", () => {
+globalThis.__jazorTest("generated pinia sample modules supports named stubActions plus stubbed patch/reset in a stricter testing root", () => {
     setActivePinia(CreateStrictTestingRoot());
 
     const store = UseCounterStore();

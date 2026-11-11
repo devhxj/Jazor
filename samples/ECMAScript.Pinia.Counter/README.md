@@ -2,14 +2,14 @@
 
 > 定位：Pinia binding、生成模块、浏览器 bundle 和运行时验证的端到端示例。
 
-本示例演示如何在 C# 中编写 Pinia option store，并将 Jazor 生成的模块交给 Vue、Pinia 和 Deno runtime 消费。它验证 binding 的真实使用路径，不定义 `ECMAScript.Pinia` 的公共 API。
+本示例演示如何在 C# 中编写 Pinia option store，并将 Jazor 生成的模块交给 Vue、Pinia 和进程内 NodeApi 消费。它验证 binding 的真实使用路径，不定义 `ECMAScript.Pinia` 的公共 API。
 
 ## 结构
 
 - `Pinia.Counter.Host`：Jazor host，生成 `stores/`、`components/`、`tests/` 和 `host/` 模块。
-- `pinia-consumer`：Deno consumer，通过 import map 运行生成模块并检查 DOM 行为。
+- `pinia-consumer`：标准 npm consumer，通过 pnpm API 恢复固定依赖，在 NodeApi 内运行生成模块并检查 DOM 行为。
 - `build-local.cs`：基于当前仓库打包本地 `Jazor` 后构建 host。
-- `verify-smoke.cs`：构建 release bundle 并执行 Deno runtime/DOM smoke。
+- `verify-smoke.cs`：构建 release bundle 并执行 NodeApi runtime/DOM smoke，不需要全局 Node、pnpm 或 Deno。
 
 ## 构建与验证
 
@@ -25,9 +25,7 @@ dotnet run --file samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- -Configura
 如需单独检查前端 consumer：
 
 ```bash
-cd samples/ECMAScript.Pinia.Counter/pinia-consumer
-deno task build
-deno task test
+dotnet run --file samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- --frontend-only
 ```
 
 ## 验证范围

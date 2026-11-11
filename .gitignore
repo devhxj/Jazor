@@ -305,6 +305,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+.jazor/
 samples/**/dist/
 
 # Visual Studio 6 build log

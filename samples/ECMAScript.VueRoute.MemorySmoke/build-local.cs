@@ -78,7 +78,7 @@ if (!string.IsNullOrWhiteSpace(options.BundleOutputRoot))
     var bundleOutputRoot = ScriptHelpers.ResolvePath(repoRoot, options.BundleOutputRoot);
     ScriptHelpers.CleanDirectoryWithinRepo(bundleOutputRoot, repoRoot);
 
-    // Preserve debug modules for DenoHost runtime checks, then build the browser artifact through Netpack.
+    // Preserve debug modules for NodeApi runtime checks, then build the browser artifact through Netpack.
     var releaseBuildArguments = new List<string>
     {
         "build",
@@ -295,6 +295,7 @@ internal static class ScriptHelpers
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
         startInfo.Environment["UseSharedCompilation"] = "false";
+        startInfo.Environment["JazorPnpmStoreDirectory"] = Path.Combine(workdir, ".tmp", "nodeapi-store");
 
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start process: dotnet");

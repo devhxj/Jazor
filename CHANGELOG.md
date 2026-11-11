@@ -8,6 +8,8 @@
 
 #### 其他变更
 
+- NodeApi 候选的 Pinia 与 VueRoute 示例通过 pnpm API 恢复依赖并在进程内执行 runtime/DOM smoke，示例使用 `--frontend-only` 重验现有产物；DOM fixture 固定为支持当前 LibNode 的 jsdom 26。Pinia 恢复元数据对齐绑定声明的 Pinia 4.0.3 / Testing 2.0.1，保留 predicate action stub 语义。by @devhxj
+- 修复多个绑定共同引用相同 npm/JSR 包时的误报冲突，按外部包身份合并；不同版本和不兼容资源继续报错。BindingsShowcase 已以进程内 Vite 通过真实浏览器渲染、语言切换与 HMR 状态保持验证。by @devhxj
 - NodeApi 候选的 LibNode 统一升级至 `20.1800.215`，继续使用已接受的 `CETCompat=false` 配置；此更新仍属 Node 20 系列。by @devhxj
 - NodeApi 候选包携带共享宿主、libnode 与 Windows `CETCompat=false` Emit apphost，MSBuild 按构建机选择工具并独立处理目标 RID；移除 `--deno` / `JazorDenoPath`，共享 store 可用 `--pnpm-store` / `JazorPnpmStoreDirectory` 配置。SSR 从程序集资源加载桥接代码，不在部署目录生成工具文件。by @devhxj
 - NodeApi 候选已接入 Emit 恢复/检查、Vite API 构建、开发代理/HMR 和 Vue SSR 环境池。**迁移**：使用 `pnpm-lock.yaml`，删除 SSR/Vite `TaskName` 配置；将 shell 构建定制迁入 Vite 配置。JSR 保留绑定身份并通过 npm 兼容注册表安装。正式包/MSBuild、脚本与跨平台门禁仍待完成。by @devhxj
@@ -17,6 +19,8 @@
 
 #### Chores
 
+- Restore Pinia and VueRoute sample dependencies through the pnpm API and run runtime/DOM smoke inside NodeApi. Recheck existing artifacts with `--frontend-only`; pin DOM fixtures to jsdom 26 for the current LibNode. Align Pinia restore metadata with the authored Pinia 4.0.3 / Testing 2.0.1 contracts, preserving predicate action stubs. by @devhxj
+- Merge identical external npm/JSR package identities shared by multiple bindings without false conflicts; continue rejecting incompatible versions/assets. Verify BindingsShowcase rendering, locale changes, and preserved HMR state with in-process Vite and a real browser. by @devhxj
 - Upgrade the NodeApi candidate's shared LibNode dependency to `20.1800.215`, retaining the accepted `CETCompat=false` configuration. This package remains in the Node 20 family. by @devhxj
 - Package the NodeApi candidate with its shared host, libnode, and Windows `CETCompat=false` Emit apphosts. Select tools for the build host independently of the target RID, remove `--deno` / `JazorDenoPath`, and expose shared-store selection through `--pnpm-store` / `JazorPnpmStoreDirectory`. Load the SSR bridge from assembly resources without writing tool files into the deployment. by @devhxj
 - Connect the NodeApi candidate to Emit restore/check, Vite API builds, development proxy/HMR, and the Vue SSR environment pool. **Migration**: use `pnpm-lock.yaml`, remove SSR/Vite `TaskName` settings, and move shell build customization into Vite config. Preserve JSR binding identities through its npm compatibility registry. Package/MSBuild, script, and cross-platform gates remain pending. by @devhxj

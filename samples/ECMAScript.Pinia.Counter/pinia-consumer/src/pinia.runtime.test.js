@@ -29,7 +29,7 @@ async function withRuntimeCleanup(callback) {
   }
 }
 
-Deno.test("pinia runtime integration seams registers both generated HMR accept handlers through the host bridge", () => {
+globalThis.__jazorTest("pinia runtime integration seams registers both generated HMR accept handlers through the host bridge", () => {
     const calls = [];
     const accept = (...args) => {
       calls.push(args);
@@ -42,7 +42,7 @@ Deno.test("pinia runtime integration seams registers both generated HMR accept h
     assert.strictEqual(typeof calls[1][0], "function");
 });
 
-Deno.test("pinia runtime integration seams creates, activates, and disposes a configured pinia root", () => {
+globalThis.__jazorTest("pinia runtime integration seams creates, activates, and disposes a configured pinia root", () => {
     const managed = createManagedPiniaRoot();
     const projectedStore = UseProjectedCounterStore(managed.pinia);
 
@@ -59,7 +59,7 @@ Deno.test("pinia runtime integration seams creates, activates, and disposes a co
     assert.strictEqual(getActivePinia(), undefined);
 });
 
-Deno.test("pinia runtime integration seams clears the active root through the generated host lifecycle helper", () => {
+globalThis.__jazorTest("pinia runtime integration seams clears the active root through the generated host lifecycle helper", () => {
     const managed = createManagedPiniaRoot();
 
     assert.strictEqual(getActivePinia(), managed.pinia);
@@ -72,7 +72,7 @@ Deno.test("pinia runtime integration seams clears the active root through the ge
     managed.dispose();
 });
 
-Deno.test("pinia runtime integration seams keeps the testing root fake app and plugin ordering observable at runtime", async () => {
+globalThis.__jazorTest("pinia runtime integration seams keeps the testing root fake app and plugin ordering observable at runtime", async () => {
   await withRuntimeCleanup(async (ephemeralPiniaRoots) => {
     const testingPinia = CreateTestingRoot();
     ephemeralPiniaRoots.push(testingPinia);
@@ -87,7 +87,7 @@ Deno.test("pinia runtime integration seams keeps the testing root fake app and p
   });
 });
 
-Deno.test("pinia runtime integration seams keeps the combined typed testing root observable at runtime", async () => {
+globalThis.__jazorTest("pinia runtime integration seams keeps the combined typed testing root observable at runtime", async () => {
   await withRuntimeCleanup(async (ephemeralPiniaRoots) => {
     const testingPinia = CreateTypedTestingRoot();
     ephemeralPiniaRoots.push(testingPinia);
@@ -108,7 +108,7 @@ Deno.test("pinia runtime integration seams keeps the combined typed testing root
   });
 });
 
-Deno.test("pinia runtime integration seams keeps the combined typed factory testing root observable at runtime", async () => {
+globalThis.__jazorTest("pinia runtime integration seams keeps the combined typed factory testing root observable at runtime", async () => {
   await withRuntimeCleanup(async (ephemeralPiniaRoots) => {
     const testingPinia = CreateFactoryTestingRoot();
     ephemeralPiniaRoots.push(testingPinia);
@@ -129,7 +129,7 @@ Deno.test("pinia runtime integration seams keeps the combined typed factory test
   });
 });
 
-Deno.test("pinia runtime integration seams disposes an individual store scope without deleting the retained pinia state snapshot", () => {
+globalThis.__jazorTest("pinia runtime integration seams disposes an individual store scope without deleting the retained pinia state snapshot", () => {
     const managed = createManagedPiniaRoot();
     const store = UseCounterStore(managed.pinia);
 
@@ -144,7 +144,7 @@ Deno.test("pinia runtime integration seams disposes an individual store scope wi
     managed.dispose();
 });
 
-Deno.test("pinia runtime integration seams can recreate a fresh pinia root after disposing the previous one", () => {
+globalThis.__jazorTest("pinia runtime integration seams can recreate a fresh pinia root after disposing the previous one", () => {
     const first = createManagedPiniaRoot();
     first.dispose();
 
@@ -157,7 +157,7 @@ Deno.test("pinia runtime integration seams can recreate a fresh pinia root after
     second.dispose();
 });
 
-Deno.test("pinia runtime integration seams restores the previous active root when managed roots are disposed in stack order", () => {
+globalThis.__jazorTest("pinia runtime integration seams restores the previous active root when managed roots are disposed in stack order", () => {
     const first = createManagedPiniaRoot();
     const second = createManagedPiniaRoot();
 
@@ -172,7 +172,7 @@ Deno.test("pinia runtime integration seams restores the previous active root whe
     assert.strictEqual(getActivePinia(), undefined);
 });
 
-Deno.test("pinia runtime integration seams never reactivates a previously disposed root when managed roots are torn down out of order", () => {
+globalThis.__jazorTest("pinia runtime integration seams never reactivates a previously disposed root when managed roots are torn down out of order", () => {
     const first = createManagedPiniaRoot();
     const second = createManagedPiniaRoot();
 
@@ -185,7 +185,7 @@ Deno.test("pinia runtime integration seams never reactivates a previously dispos
     assert.strictEqual(getActivePinia(), undefined);
 });
 
-Deno.test("pinia runtime integration seams keeps named action stubs and patch/reset stubs active in the strict testing root", async () => {
+globalThis.__jazorTest("pinia runtime integration seams keeps named action stubs and patch/reset stubs active in the strict testing root", async () => {
   await withRuntimeCleanup(async (ephemeralPiniaRoots) => {
     const testingPinia = CreateStrictTestingRoot();
     ephemeralPiniaRoots.push(testingPinia);
@@ -207,7 +207,7 @@ Deno.test("pinia runtime integration seams keeps named action stubs and patch/re
   });
 });
 
-Deno.test("pinia runtime integration seams keeps explicit multi-root store resolution isolated across two configured pinia roots", () => {
+globalThis.__jazorTest("pinia runtime integration seams keeps explicit multi-root store resolution isolated across two configured pinia roots", () => {
     const snapshot = CompareIsolatedRoots();
 
     assert.strictEqual(snapshot, "3|2|counter:audited|counter:audited|isolated:left:counter|plugin:counter");

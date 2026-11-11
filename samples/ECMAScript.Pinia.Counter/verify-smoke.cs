@@ -1,8 +1,16 @@
+#!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
+using Jazor.NodeHost;
+using System.Text.Json;
 using System.Diagnostics;
 using System.Globalization;
 
 var options = SmokeOptions.Parse(args);
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
+Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 var sampleRoot = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter");
 var consumerRoot = Path.Combine(sampleRoot, "pinia-consumer");
 var hostRoot = Path.Combine(sampleRoot, "Pinia.Counter.Host");
@@ -96,22 +104,24 @@ AssertPathExists(ResolveHostAssemblyPath(hostRoot, options), "sample host assemb
 AssertGeneratedHostArtifacts(generatedOutputRoot);
 AssertStandardReleaseArtifacts(bundleOutputRoot);
 
-var denoExePath = ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo);
-var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+await NodeToolchain.RestoreAsync(consumerRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+    CancellationToken.None, Console.Out);
+var distRoot = Path.Combine(repoRoot, ".tmp", "sample-smoke", "ECMAScript.Pinia.Counter", options.Configuration, "consumer-dist");
+using (var environment = new NodeEnvironment(consumerRoot))
 {
-    ["JAZOR_GENERATED_ROOT"] = generatedOutputRoot,
-    ["JAZOR_BUNDLE_ROOT"] = bundleOutputRoot,
-    // Deno release assets 保持隔离，避免 smoke 覆盖跟踪的 sample fixture。
-    ["PINIA_DENO_DIST_ROOT"] = consumerDistRoot
-};
-
-RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "task", "build" });
-RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--frozen", "--import-map", Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"), "src/pinia.generated.test.js" });
-RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--frozen", "--import-map", Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"), "src/pinia.runtime.test.js" });
-RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "test", "-A", "--frozen", "--import-map", Path.Combine(consumerRoot, ".deno-build", "import-map.generated.json"), "src/pinia.generated.dom.test.js" });
-
+    var result = await environment.InvokeAsync(Path.Combine(consumerRoot, "scripts", "build.cjs"), "build",
+        JsonSerializer.Serialize(new { consumerRoot, generatedRoot = generatedOutputRoot, bundleRoot = bundleOutputRoot, distRoot }));
+    Console.WriteLine(result);
+}
+var imports = new Dictionary<string, string>(StringComparer.Ordinal);
+foreach (var folder in "components,host,stores,tests,clr,runtime,System".Split(','))
+    imports[folder + "/"] = new Uri(Path.Combine(generatedOutputRoot, folder) + Path.DirectorySeparatorChar).AbsoluteUri;
+foreach (var package in "vue,pinia,@pinia/testing,jsdom".Split(','))
+    imports[package] = package;
+foreach (var testFile in new[] { "src/pinia.generated.test.js", "src/pinia.runtime.test.js", "src/pinia.generated.dom.test.js" })
+    Console.Write(await NodeModuleRunner.RunAsync(consumerRoot, Path.Combine(consumerRoot, testFile), imports: imports));
 Console.WriteLine("ECMAScript.Pinia sample smoke verification passed.");
-Console.WriteLine("Verified: local Jazor package pack, isolated generated Pinia/testing modules, standard JavaScript release project, and DenoHost runtime/DOM coverage.");
+Console.WriteLine("Verified: local Jazor package pack, isolated generated Pinia/testing modules, standard JavaScript release project, and in-process NodeApi runtime/DOM coverage.");
 
 static string FindRepositoryRoot(string startDirectory)
 {
@@ -212,45 +222,6 @@ static string ResolveHostAssemblyPath(string hostRoot, SmokeOptions options)
     return Path.Combine(isolatedOutputRoot, "Pinia.Counter.Host", "bin", options.Configuration, "net11.0", "Pinia.Counter.Host.dll");
 }
 
-static string ResolveDenoHostRuntime(string repoRoot, string? restorePackagesPath, PackageInfo? packageInfo)
-{
-    var candidatePaths = new List<string>();
-
-    if (!string.IsNullOrWhiteSpace(restorePackagesPath) && Directory.Exists(restorePackagesPath))
-    {
-        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(restorePackagesPath, "denohost.runtime.win-x64"));
-    }
-
-    var denoHostPackageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "denohost.runtime.win-x64");
-    AddDenoRuntimeCandidates(candidatePaths, denoHostPackageRoot);
-
-    var denoExePath = candidatePaths.FirstOrDefault(File.Exists);
-    if (denoExePath is null)
-    {
-        var packageLabel = packageInfo is { } package
-            ? $"local Jazor {package.Version} package restore"
-            : "local Jazor package restore";
-        throw new FileNotFoundException($"DenoHost runtime was not found after the {packageLabel}.");
-    }
-
-    return denoExePath;
-}
-
-static void AddDenoRuntimeCandidates(ICollection<string> candidates, string baseDirectory)
-{
-    if (!Directory.Exists(baseDirectory))
-    {
-        return;
-    }
-
-    foreach (var candidate in Directory
-        .EnumerateFiles(baseDirectory, "deno.exe", SearchOption.AllDirectories)
-        .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase))
-    {
-        candidates.Add(candidate);
-    }
-}
-
 static void AssertStandardReleaseArtifacts(string bundleOutputRoot)
 {
     AssertPathExists(Path.Combine(bundleOutputRoot, "entry.js"), "standard JavaScript release entry");
@@ -325,11 +296,6 @@ static string GetIsolatedBuildRoot(string path, string? repoRoot)
 static void RunDotNet(string repoRoot, IEnumerable<string> arguments)
 {
     RunProcess("dotnet", arguments, repoRoot);
-}
-
-static void RunDeno(string denoExePath, string workingDirectory, IReadOnlyDictionary<string, string> environment, IReadOnlyList<string> arguments)
-{
-    RunProcess(denoExePath, arguments, workingDirectory, environment);
 }
 
 static void RunProcess(string fileName, IEnumerable<string> arguments, string workingDirectory, IReadOnlyDictionary<string, string>? environment = null)

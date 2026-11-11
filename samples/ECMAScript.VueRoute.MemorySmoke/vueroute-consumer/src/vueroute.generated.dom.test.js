@@ -2,12 +2,9 @@ import assert from "node:assert/strict";
 import { installDomEnvironment } from "./test-dom.js";
 
 const disposeDomEnvironment = installDomEnvironment();
+globalThis.__jazorAfterAll(disposeDomEnvironment);
 const { nextTick } = await import("vue");
 const { CreateConfiguredApp } = await import("host/app.mjs");
-
-addEventListener("unload", () => {
-  disposeDomEnvironment();
-});
 
 function createHost() {
   const host = document.createElement("div");
@@ -47,7 +44,7 @@ async function withMountedApps(callback) {
   }
 }
 
-Deno.test("generated vue route app DOM mounts the generated router root with RouterLink and RouterView", async () => {
+globalThis.__jazorTest("generated vue route app DOM mounts the generated router root with RouterLink and RouterView", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
     const app = CreateConfiguredApp();
@@ -65,7 +62,7 @@ Deno.test("generated vue route app DOM mounts the generated router root with Rou
   });
 });
 
-Deno.test("generated vue route app DOM reacts through generated route navigation and component guards", async () => {
+globalThis.__jazorTest("generated vue route app DOM reacts through generated route navigation and component guards", async () => {
   await withMountedApps(async (mountedApps) => {
     const host = createHost();
     const app = CreateConfiguredApp();

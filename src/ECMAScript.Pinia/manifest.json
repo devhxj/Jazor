@@ -6,7 +6,7 @@
   "packages": {
     "pinia": {
       "source": "npm",
-      "version": "3.0.3"
+      "version": "4.0.3"
     },
     "@vue/devtools-api": {
       "source": "npm",

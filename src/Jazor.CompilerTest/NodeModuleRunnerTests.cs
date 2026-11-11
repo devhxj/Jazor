@@ -48,6 +48,10 @@ public sealed class NodeModuleRunnerTests
             var module = Path.Combine(root, "failure.mjs");
             await File.WriteAllTextAsync(module, """
                 import assert from 'node:assert/strict';
+                import { writeFile } from 'node:fs/promises';
+                globalThis.__jazorAfterAll(async () => {
+                    await writeFile(new URL('./cleanup.txt', import.meta.url), 'released');
+                });
                 globalThis.__jazorTest('async assertion must reach MSTest', async () => {
                     await new Promise(resolve => setTimeout(resolve, 10));
                     assert.equal(41, 42, 'native host assertion evidence');
@@ -57,6 +61,8 @@ public sealed class NodeModuleRunnerTests
                 async () => await NodeModuleRunner.RunAsync(root, module));
             StringAssert.Contains(failure.ToString(), "async assertion must reach MSTest");
             StringAssert.Contains(failure.ToString(), "native host assertion evidence");
+            Assert.AreEqual("released", await File.ReadAllTextAsync(Path.Combine(root, "cleanup.txt")),
+                "Fixture cleanup must finish even when an async assertion fails.");
 
             // A failed environment must not poison the next environment or
             // replay the previous module's registered assertions.
