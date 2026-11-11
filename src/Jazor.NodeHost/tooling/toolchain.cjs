@@ -63,7 +63,14 @@ exports.executeModule = async (requestJson) => {
 exports.restore = async (requestJson) => {
     const request = JSON.parse(requestJson);
     const root = request.projectDirectory;
-    const pnpm = createRequire(path.join(request.bootstrap, 'package.json'))('@pnpm/napi');
+    let pnpm;
+    try {
+        pnpm = createRequire(path.join(request.bootstrap, 'package.json'))('@pnpm/napi');
+    } catch (error) {
+        // NodeApi's managed exception does not carry Error.cause. Preserve the
+        // loader's native failure so missing symbols/dependencies stay visible.
+        throw new Error(inspect(error, { depth: 5 }));
+    }
     const manifestText = await fs.readFile(path.join(root, 'package.json'), 'utf8');
     const manifest = JSON.parse(manifestText);
     const lockPath = path.join(root, 'pnpm-lock.yaml');
