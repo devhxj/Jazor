@@ -163,7 +163,7 @@ public sealed class SdkIntegrationTests
     [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_CarriesNodeApiRuntimeAndFrontendHost()
     {
-        var package = await LocalPackage.Value;
+        var package = await LocalCorePackage.Value;
         var nuspec = ReadPackageEntryText(package.PackagePath, "Jazor.nuspec");
         var props = ReadPackageEntryText(package.PackagePath, "build/Jazor.props");
         using var archive = ZipFile.OpenRead(package.PackagePath);
@@ -201,6 +201,8 @@ public sealed class SdkIntegrationTests
                 : rid.StartsWith("osx", StringComparison.Ordinal) ? "libnode.dylib" : "libnode.so";
             var nativePrefix = $"tools/net11.0/runtimes/{rid}/native/";
             Assert.IsTrue(entryNames.Contains(nativePrefix + binaryName, StringComparer.OrdinalIgnoreCase), nativePrefix + binaryName);
+            Assert.HasCount(1, entryNames.Where(path => path.StartsWith(nativePrefix, StringComparison.Ordinal)),
+                "Each build-host RID must contain exactly its libnode binary.");
         }
 
         StringAssert.Contains(

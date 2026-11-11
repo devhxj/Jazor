@@ -8,6 +8,7 @@
 
 #### 其他变更
 
+- 修复 Linux/macOS 打包时库与原生工具资产路径中的重复分隔符，确保包内路径与 Windows 一致，并由四平台包闭包门禁检查。by @devhxj
 - 模块图检查不再打开 Vite WebSocket 监听，避免并行恢复和真实开发服务器争抢端口；确定性验收比较源码、maps、配置和 lock，排除 pnpm 安装缓存。绑定覆盖率先完成各测试 lane 再加载程序集，避免 Windows 文件锁。by @devhxj
 - 修复 Vite build/check 的取消令牌转发，取消后等待 JS environment 退出再返回；真实挂起插件回归确认返回后不再继续写文件。by @devhxj
 - 将 Vite 的 CSS 引擎固定为官方同版本 `lightningcss-wasm`，避免旧版 napi-rs Windows addon 在 .NET 内嵌宿主中终止进程；覆盖 TDesign Release 的真实 CSS 压缩，并把选择记录到 pnpm override 与 lock 身份。by @devhxj
@@ -24,6 +25,7 @@
 
 #### Chores
 
+- Use explicit package filenames for managed libraries and native tooling assets so Linux/macOS packages have the same canonical paths as Windows; verify them through the four-platform package closure gate. by @devhxj
 - Keep Vite dependency checks free of WebSocket listeners, compare emitted sources/maps/config/lock independently of installation caches, and audit binding assemblies after all test lanes finish to avoid Windows file locks. by @devhxj
 - Forward cancellation into Vite build/check environments and await shutdown before returning; pending-plugin regressions verify that file writes stop before cancellation completes. by @devhxj
 - Pin Vite's CSS engine to the official same-version `lightningcss-wasm`, preserving CSS minification inside the embedded host where the older Windows napi-rs addon aborts. Record the selection in pnpm overrides and restore identity. by @devhxj

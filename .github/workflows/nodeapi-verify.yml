@@ -9,6 +9,8 @@ on:
       - Directory.Build.props
       - src/Jazor.NodeHost/**
       - src/Jazor.Emit/**
+      - src/Jazor/**
+      - src/Jazor.EmitTest/**
       - src/Jazor.AspNetCore/**
       - src/ECMAScript.WebIDL.Generator/**
       - scripts/csharp/verify-*-nodeapi.cs
