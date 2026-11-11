@@ -43,3 +43,10 @@ jobs:
         run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-build --filter FullyQualifiedName~CreateLocalPackage_CarriesNodeApiRuntimeAndFrontendHost --nologo -v minimal
       - name: WebIDL collector and generated output parity
         run: dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs
+      - name: Preserve failed package closure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodeapi-packages-${{ matrix.os }}
+          path: .tmp/Jazor.EmitTest/debug-core-nupkg/**/*.nupkg
+          retention-days: 3

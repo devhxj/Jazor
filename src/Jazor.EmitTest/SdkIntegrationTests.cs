@@ -187,7 +187,8 @@ public sealed class SdkIntegrationTests
         {
             Assert.IsTrue(
                 entryNames.Contains(asset, StringComparer.OrdinalIgnoreCase),
-                $"The core Jazor package must carry the frontend host asset '{asset}'.");
+                    $"The core Jazor package must carry the frontend host asset '{asset}'. Actual lib entries: " +
+                    string.Join(", ", entryNames.Where(static name => name.StartsWith("lib/", StringComparison.Ordinal))));
         }
         Assert.IsFalse(
             entryNames.Any(static path => path.EndsWith("spa.proxy.json", StringComparison.OrdinalIgnoreCase)),
