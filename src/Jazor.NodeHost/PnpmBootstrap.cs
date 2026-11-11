@@ -15,13 +15,16 @@ internal static class PnpmBootstrap
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
     private static readonly SemaphoreSlim Gate = new(1, 1);
 
-    public static async Task<string> EnsureAsync(string projectDirectory, CancellationToken cancellationToken)
+    public static async Task<string> EnsureAsync(string cacheDirectory, CancellationToken cancellationToken)
     {
         var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win32"
             : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "darwin" : "linux";
         var architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
         var nativePackage = $"@pnpm/napi.{platform}-{architecture}";
-        var root = Path.Combine(projectDirectory, "obj", "pnpm-bootstrap", Version, platform + "-" + architecture);
+        // Node keeps native addons loaded for the lifetime of the platform. A
+        // project/fixture cannot own these files: deleting it on Windows would
+        // fail even after its environment has been disposed.
+        var root = Path.Combine(cacheDirectory, "pnpm-engine", Version, platform + "-" + architecture);
 
         await Gate.WaitAsync(cancellationToken);
         try
@@ -62,7 +65,15 @@ internal static class PnpmBootstrap
             using var gzip = new GZipStream(new MemoryStream(archive), CompressionMode.Decompress);
             await TarFile.ExtractToDirectoryAsync(gzip, temporaryDirectory, overwriteFiles: false, cancellationToken);
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            Directory.Move(Path.Combine(temporaryDirectory, "package"), destination);
+            try
+            {
+                Directory.Move(Path.Combine(temporaryDirectory, "package"), destination);
+            }
+            catch (IOException) when (File.Exists(Path.Combine(destination, "package.json")))
+            {
+                // Another .NET process atomically published the same fixed
+                // package while this process downloaded it.
+            }
         }
         finally
         {

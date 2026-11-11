@@ -32,13 +32,13 @@ public sealed class RazorSgOfficialPropertyLocalNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "\"local\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "\"state\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/computed-status.js",
             observation.ModuleText,
             "official-property-local-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/computed-status.js";
 

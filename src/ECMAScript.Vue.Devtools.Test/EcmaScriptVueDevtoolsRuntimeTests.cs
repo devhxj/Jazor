@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
-using DenoHost.Core;
+using Jazor.NodeHost;
 
 namespace ECMAScript.VueDevtoolsTest;
 
@@ -35,14 +35,10 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
             await WriteUtf8Async(Path.Combine(root, "devtools-runtime.test.mjs"), RuntimeSmokeSource);
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
-                timeout.Token);
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--node-modules-dir=manual", "--no-config", "--no-remote", "--frozen-lockfile", "--quiet", "--allow-read", Path.Combine(root, "devtools-runtime.test.mjs")],
-                timeout.Token);
+            await NodeToolchain.RestoreAsync(root,
+                Path.Combine(RepositoryTemp.Root, "nodeapi-store"), timeout.Token);
+            await NodeModuleRunner.RunAsync(root, Path.Combine(root, "devtools-runtime.test.mjs"),
+                cancellationToken: timeout.Token);
         }
         finally
         {
@@ -240,7 +236,7 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
           }
         };
 
-        Deno.test("generated Devtools binding calls the official browser API through its hook bridge", async () => {
+        globalThis.__jazorTest("generated Devtools binding calls the official browser API through its hook bridge", async () => {
           const binding = await import("./devtools-binding.mjs");
           binding.Register({ name: "runtime-app" });
 

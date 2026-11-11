@@ -68,13 +68,13 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "name: \"item\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/inherited-release-template-forwarder-runtime.js",
             observation.ModuleText,
             "official-inherited-generic-slot-forwarder-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/inherited-release-template-forwarder-runtime.js";
             import releaseList from "./components/release-list-inherited-generic-slot-runtime.js";

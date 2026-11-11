@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -45,7 +45,7 @@ public sealed class EnumerableGroupByRuntimeTests
                 import { {{groupBy}}, {{groupByElement}}, {{groupByResult}}, {{groupByElementResult}} } from "./clr/System/Linq/EnumerableModule.js";
                 import { {{groupingKey}} } from "./clr/System/Linq/GroupingT2Module.js";
 
-                Deno.test("GroupBy preserves group order, carrier keys, and selector order", () => {
+                globalThis.__jazorTest("GroupBy preserves group order, carrier keys, and selector order", () => {
                   const trace = [];
                   const groups = {{groupBy}}([1, 2, 3, 4], value => {
                     trace.push(`key:${value}`);
@@ -122,10 +122,7 @@ public sealed class EnumerableGroupByRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

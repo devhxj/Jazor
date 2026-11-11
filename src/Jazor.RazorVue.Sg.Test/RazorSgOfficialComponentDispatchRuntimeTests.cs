@@ -46,13 +46,13 @@ public sealed class RazorSgOfficialComponentDispatchRuntimeTests
         StringAssert.Contains(observation.ModuleText, "stateHasChanged", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("this.", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/component-dispatch-runtime.js",
             observation.ModuleText,
             "official-component-dispatch-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/component-dispatch-runtime.js";
 

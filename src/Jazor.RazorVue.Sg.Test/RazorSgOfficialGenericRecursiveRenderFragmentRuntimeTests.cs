@@ -75,13 +75,13 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "renderRenderNode", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/navigation-template-runtime.js",
             observation.ModuleText,
             "official-navigation-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/navigation-template-runtime.js";
             import navigationPanel from "./components/navigation-panel-recursive-scoped-slot-runtime.js";

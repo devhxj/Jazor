@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -29,7 +29,7 @@ public sealed class EnumerableIndexRuntimeTests
                 $$"""
                 import { {{index}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable.Index preserves source order and tuple names", () => {
+                globalThis.__jazorTest("Enumerable.Index preserves source order and tuple names", () => {
                   const trace = [];
                   function* source() {
                     for (const value of [7, 3, 9]) {
@@ -59,7 +59,7 @@ public sealed class EnumerableIndexRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

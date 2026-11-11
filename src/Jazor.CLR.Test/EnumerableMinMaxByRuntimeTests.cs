@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -30,7 +30,7 @@ public sealed class EnumerableMinMaxByRuntimeTests
                 $$"""
                 import { {{minBy}}, {{maxBy}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("MinBy and MaxBy preserve selector order and first ties", () => {
+                globalThis.__jazorTest("MinBy and MaxBy preserve selector order and first ties", () => {
                   const source = [22, 15, 35, 12];
                   const minTrace = [];
                   const minimum = {{minBy}}(source, value => {
@@ -54,10 +54,7 @@ public sealed class EnumerableMinMaxByRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

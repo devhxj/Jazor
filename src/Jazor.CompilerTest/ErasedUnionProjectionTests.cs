@@ -1,4 +1,4 @@
-using DenoHost.Core;
+using Jazor.NodeHost;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -91,7 +91,7 @@ public sealed class ErasedUnionProjectionTests
             await File.WriteAllTextAsync(Path.Combine(root, "projections.test.mjs"), """
                 import assert from "node:assert/strict";
                 import * as p from "./projections.mjs";
-                Deno.test("all named host unions keep numeric/string/bool/array branches", () => {
+                globalThis.__jazorTest("all named host unions keep numeric/string/bool/array branches", () => {
                     assert.equal(p.Number(0), 0);
                     assert.equal(p.Number("32"), null);
                     assert.equal(p.Text(32), null);
@@ -130,8 +130,7 @@ public sealed class ErasedUnionProjectionTests
                 });
                 """);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", "projections.test.mjs"], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, Path.Combine(root, "projections.test.mjs"), cancellationToken: timeout.Token);
         }
         finally { Directory.Delete(root, recursive: true); }
     }

@@ -43,13 +43,13 @@ public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
         StringAssert.Contains(observation.ModuleText, "const activeTemplate = typeof slots.item", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "activeTemplate(state.Current)", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-row-template.js",
             observation.ModuleText,
             "official-release-row-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-row-template.js";
 

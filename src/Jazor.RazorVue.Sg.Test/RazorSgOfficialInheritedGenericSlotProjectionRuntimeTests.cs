@@ -62,13 +62,13 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "slots[\"release-item\"](state.Current)", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/inherited-release-template-runtime.js",
             observation.ModuleText,
             "official-inherited-release-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/inherited-release-template-runtime.js";
 

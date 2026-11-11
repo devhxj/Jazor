@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -36,7 +36,7 @@ public sealed class ExceptionCauseRuntimeTests
                 $$"""
                 import { {{create}}, {{getInner}}, {{getBase}}, {{getHelpLink}}, {{setHelpLink}} } from "./clr/System/ExceptionModule.js";
 
-                Deno.test("Exception cause chain preserves CLR-facing identity", () => {
+                globalThis.__jazorTest("Exception cause chain preserves CLR-facing identity", () => {
                   const leaf = new Error("leaf");
                   const middle = {{create}}("middle", leaf);
                   const outer = {{create}}("outer", middle);
@@ -86,10 +86,7 @@ public sealed class ExceptionCauseRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

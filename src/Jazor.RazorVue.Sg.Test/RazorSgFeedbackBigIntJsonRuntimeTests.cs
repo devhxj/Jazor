@@ -36,7 +36,7 @@ public sealed class RazorSgFeedbackBigIntJsonRuntimeTests
 
         StringAssert.Contains(observation.ModuleText, "JSON.stringify");
         StringAssert.Contains(observation.ModuleText, "typeof value");
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/bigint-json-feedback.js", observation.ModuleText, "bigint-json-feedback.test.mjs",
             """
             import assert from "node:assert/strict";

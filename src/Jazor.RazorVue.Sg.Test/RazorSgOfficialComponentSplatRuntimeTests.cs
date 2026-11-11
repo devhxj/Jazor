@@ -60,13 +60,13 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
         StringAssert.Contains(observation.ModuleText, "function __normalizeComponentAttributes", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/component-splat-runtime.js",
             observation.ModuleText,
             "official-component-splat-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/component-splat-runtime.js";
 

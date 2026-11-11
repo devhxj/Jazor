@@ -101,13 +101,13 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-workflow.js",
             observation.ModuleText,
             "official-release-workflow-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-workflow.js";
             import releasePanel from "./components/release-panel-workflow.js";

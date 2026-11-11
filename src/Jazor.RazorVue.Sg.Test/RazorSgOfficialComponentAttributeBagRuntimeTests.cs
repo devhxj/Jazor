@@ -54,13 +54,13 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
         StringAssert.Contains(observation.ModuleText, "normalizeComponentAttributes", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "panel-heading", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-panel-host.js",
             observation.ModuleText,
             "official-release-panel-attribute-bag-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-panel-host.js";
             import releasePanel from "./components/release-panel-attribute-bag.js";

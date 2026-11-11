@@ -101,13 +101,13 @@ public sealed class RazorSgCascadingValueRuntimeTests
         StringAssert.Contains(consumerObservation.ModuleText, "jazor:cascade:", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("JAZORVCA008", StringComparison.Ordinal));
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/cascading-runtime.js",
             observation.ModuleText,
             "cascading-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import host from "./components/cascading-runtime.js";
             import consumer from "./components/cascading-consumer.js";
             import { __runWatchers, __resetProviders } from "vue";
@@ -226,13 +226,13 @@ public sealed class RazorSgCascadingValueRuntimeTests
         StringAssert.Contains(consumer.ModuleText, "cascadingParameterSnapshot", StringComparison.Ordinal);
         StringAssert.Contains(consumer.ModuleText, "runSetParametersAsync", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/cascading-parameter-view-provider.js",
             provider.ModuleText,
             "cascading-parameter-view.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import providerHost from "./components/cascading-parameter-view-provider.js";
             import consumer from "./components/cascading-parameter-view-consumer.js";
             import { __runWatchers, __resetProviders } from "vue";
@@ -324,13 +324,13 @@ public sealed class RazorSgCascadingValueRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.FixedNullCascadeConsumer");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/fixed-null-cascade-provider.js",
             provider.ModuleText,
             "fixed-null-cascade.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import providerHost from "./components/fixed-null-cascade-provider.js";
             import consumer from "./components/fixed-null-cascade-consumer.js";
             import { __runWatchers, __resetProviders } from "vue";

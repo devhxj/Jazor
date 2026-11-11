@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -30,7 +30,7 @@ public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
                 $$"""
                 import { {{exportName}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable.TryGetNonEnumeratedCount reads Array length without advancing its iterator", () => {
+                globalThis.__jazorTest("Enumerable.TryGetNonEnumeratedCount reads Array length without advancing its iterator", () => {
                   const source = [5, 8, 13];
                   source[Symbol.iterator] = () => {
                     throw new Error("TryGetNonEnumeratedCount must not enumerate source");
@@ -57,10 +57,7 @@ public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

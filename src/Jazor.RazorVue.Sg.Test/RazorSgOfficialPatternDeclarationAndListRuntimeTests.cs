@@ -40,13 +40,13 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.QueueTitle", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "props.ReleaseIds", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-queue-summary.js",
             observation.ModuleText,
             "official-pattern-declaration-and-list-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { Fragment } from "vue";
 
             import component from "./components/release-queue-summary.js";

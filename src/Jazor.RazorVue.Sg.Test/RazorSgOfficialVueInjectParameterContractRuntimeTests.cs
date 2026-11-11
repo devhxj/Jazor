@@ -76,13 +76,13 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
         StringAssert.Contains(observation.ModuleText, "injectedTitle: \"Account\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "\"data-region\": \"release\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/injected-shell-parameter-contract-parent-runtime.js",
             observation.ModuleText,
             "official-vue-inject-parameter-contract-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import parent from "./components/injected-shell-parameter-contract-parent-runtime.js";
             import injectedShell from "./components/injected-shell-parameter-contract-runtime.js";

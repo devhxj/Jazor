@@ -30,13 +30,13 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "createRawMarkup", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nullable-release-summary-runtime.js";
 
@@ -80,13 +80,13 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-panel-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-panel-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nullable-release-summary-panel-runtime.js";
 
@@ -141,13 +141,13 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "ReadSummary()", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-method-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-method-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { Fragment } from "vue";
 
             import component from "./components/nullable-release-summary-method-runtime.js";
@@ -218,13 +218,13 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "default:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "createRawMarkup", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-slot-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-slot-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nullable-release-summary-slot-runtime.js";
             import panelComponent from "./components/nullable-release-summary-slot-panel-runtime.js";
@@ -286,13 +286,13 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "Array.from(props.Releases ?? []", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-list-runtime.js",
             observation.ModuleText,
             "official-nullable-release-summary-list-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nullable-release-summary-list-runtime.js";
 

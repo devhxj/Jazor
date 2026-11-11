@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -29,7 +29,7 @@ public sealed class EnumerableSequenceEqualRuntimeTests
                 $$"""
                 import { {{sequenceEqual}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("SequenceEqual compares aligned values and stops at the first mismatch", () => {
+                globalThis.__jazorTest("SequenceEqual compares aligned values and stops at the first mismatch", () => {
                   if (!{{sequenceEqual}}([Number.NaN, -0], [Number.NaN, 0]))
                     throw new Error("SequenceEqual did not use the default equality contract");
 
@@ -54,10 +54,7 @@ public sealed class EnumerableSequenceEqualRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

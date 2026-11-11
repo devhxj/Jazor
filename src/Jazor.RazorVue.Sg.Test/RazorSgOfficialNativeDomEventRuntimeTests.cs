@@ -104,13 +104,13 @@ public sealed class RazorSgOfficialNativeDomEventRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains(".NativeEvent", StringComparison.Ordinal), observation.ModuleText);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/native-dom-events.js",
             observation.ModuleText,
             "native-dom-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import { Window } from "npm:happy-dom@20.10.6";
+            import { Window } from "happy-dom";
 
             const window = new Window();
             for (const name of ["window", "document", "Node", "Element", "HTMLElement", "SVGElement"])
@@ -118,7 +118,7 @@ public sealed class RazorSgOfficialNativeDomEventRuntimeTests
             const { createApp, nextTick } = await import("vue");
             const { default: component } = await import("./components/native-dom-events.js");
 
-            Deno.test("native carriers keep identity, nullability and live payloads", async () => {
+            globalThis.__jazorTest("native carriers keep identity, nullability and live payloads", async () => {
                 const host = document.createElement("main");
                 document.body.append(host);
                 const seen = [], targets = [], stats = [], payloads = [], touches = [], errors = [];
@@ -228,7 +228,7 @@ public sealed class RazorSgOfficialNativeDomEventRuntimeTests
                 window.happyDOM.abort();
             });
             """,
-            vueModuleSpecifier: "npm:vue@3.5.42/dist/vue.runtime.esm-browser.prod.js",
-            restoreNpmDependencies: true);
+            vueModuleSpecifier: "vue/dist/vue.runtime.esm-browser.prod.js",
+            packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6" });
     }
 }

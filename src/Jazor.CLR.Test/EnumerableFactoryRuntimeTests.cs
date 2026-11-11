@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -38,7 +38,7 @@ public sealed class EnumerableFactoryRuntimeTests
                     throw new Error(`${name}: ${JSON.stringify(actual)} did not match ${JSON.stringify(expected)}`);
                 }
 
-                Deno.test("Enumerable factories preserve materialized values and source identity", () => {
+                globalThis.__jazorTest("Enumerable factories preserve materialized values and source identity", () => {
                   const emptyValues = {{empty}}();
                   assertArray(emptyValues, [], "Empty");
                   if (emptyValues === {{empty}}())
@@ -79,10 +79,7 @@ public sealed class EnumerableFactoryRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

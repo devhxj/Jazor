@@ -64,13 +64,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "from \"./template-panel-factory-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/template-factory-runtime.js",
             observation.ModuleText,
             "official-template-factory-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/template-factory-runtime.js";
             import templatePanel from "./components/template-panel-factory-runtime.js";
@@ -158,13 +158,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "from \"./template-panel-property-runtime.js\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/template-property-runtime.js",
             observation.ModuleText,
             "official-template-property-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/template-property-runtime.js";
             import templatePanel from "./components/template-panel-property-runtime.js";
@@ -259,13 +259,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-template-property-runtime.js",
             observation.ModuleText,
             "official-conditional-template-property-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/conditional-template-property-runtime.js";
             import slotPanel from "./components/slot-panel-conditional-property-runtime.js";
@@ -362,13 +362,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-template-parameter-runtime.js",
             observation.ModuleText,
             "official-conditional-template-parameter-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/conditional-template-parameter-runtime.js";
             import slotPanel from "./components/slot-panel-conditional-parameter-runtime.js";
@@ -455,13 +455,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.ModuleText, "footer: withCtx(() =>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "_: 1", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/template-method-group-runtime.js",
             observation.ModuleText,
             "official-template-method-group-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/template-method-group-runtime.js";
             import slotPanel from "./components/slot-panel-method-group-runtime.js";

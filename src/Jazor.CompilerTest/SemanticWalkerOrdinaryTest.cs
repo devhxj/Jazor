@@ -1,6 +1,6 @@
+using Jazor.NodeHost;
 using Acornima;
 using Acornima.Ast;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -5730,7 +5730,7 @@ public sealed class SemanticWalkerOrdinaryTest
             throw new Error(message);
         }
 
-        Deno.test("Nullable Value preserves value and throws for an empty carrier", () => {
+        globalThis.__jazorTest("Nullable Value preserves value and throws for an empty carrier", () => {
           assert(read(42) === 42, "a populated nullable value must be returned unchanged");
 
           for (const emptyValue of [null, undefined]) {
@@ -5751,10 +5751,7 @@ public sealed class SemanticWalkerOrdinaryTest
         new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
       using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-      await Deno.Execute(
-        new DenoExecuteBaseOptions { WorkingDirectory = root },
-        ["test", "--quiet", "--allow-read", testPath],
-        timeout.Token);
+      await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
     }
     finally
     {

@@ -33,13 +33,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "for (;", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/indexed-for-loop-runtime.js",
             observation.ModuleText,
             "official-indexed-for-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/indexed-for-loop-runtime.js";
 
@@ -89,13 +89,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "let index = 0", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/indexed-while-loop-runtime.js",
             observation.ModuleText,
             "official-indexed-while-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/indexed-while-loop-runtime.js";
 
@@ -144,13 +144,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "let index = 0", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/do-while-loop-runtime.js",
             observation.ModuleText,
             "official-do-while-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/do-while-loop-runtime.js";
 
@@ -198,13 +198,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "for (;", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/for-loop-without-update-runtime.js",
             observation.ModuleText,
             "official-for-loop-without-update-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/for-loop-without-update-runtime.js";
 
@@ -246,13 +246,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "ordinal += 10", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/for-loop-multiple-updates-runtime.js",
             observation.ModuleText,
             "official-for-loop-multiple-updates-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/for-loop-multiple-updates-runtime.js";
 
@@ -299,13 +299,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "key: props.Items[index]", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/keyed-while-loop-runtime.js",
             observation.ModuleText,
             "official-keyed-while-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/keyed-while-loop-runtime.js";
 
@@ -353,13 +353,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "createElementBlock(Fragment", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/do-while-multiple-roots-runtime.js",
             observation.ModuleText,
             "official-do-while-multiple-roots-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/do-while-multiple-roots-runtime.js";
 
@@ -476,13 +476,13 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
         StringAssert.Contains(observation.ModuleText, "break;", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "for (let value of", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/loop-branches-runtime.js",
             observation.ModuleText,
             "official-loop-branches-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/loop-branches-runtime.js";
 

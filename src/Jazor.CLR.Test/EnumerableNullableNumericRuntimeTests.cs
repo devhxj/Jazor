@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -44,7 +44,7 @@ public sealed class EnumerableNullableNumericRuntimeTests
                 $$"""
                 import { {{string.Join(", ", sumNames.Concat(averageNames))}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable nullable numeric terminals preserve CLR contracts", () => {
+                globalThis.__jazorTest("Enumerable nullable numeric terminals preserve CLR contracts", () => {
                   const [sumInt, sumInt64, sumSingle, sumDouble, sumDecimal] = [{{string.Join(", ", sumNames)}}];
                   const [averageInt, averageInt64, averageSingle, averageDouble, averageDecimal] = [{{string.Join(", ", averageNames)}}];
                   const integerSource = [null, 1, null, 2];
@@ -82,7 +82,7 @@ public sealed class EnumerableNullableNumericRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

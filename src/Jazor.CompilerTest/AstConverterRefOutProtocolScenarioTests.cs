@@ -1,6 +1,6 @@
+using Jazor.NodeHost;
 using Acornima;
 using Acornima.Ast;
-using DenoHost.Core;
 using Jazor.Compiler;
 using Jazor.ComplierTest;
 using Microsoft.CodeAnalysis;
@@ -135,7 +135,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 				"""
 				import { Run } from "./anonymous-ref-out.mjs";
 
-				Deno.test("anonymous ref and out delegates write values back through the shared protocol", () => {
+				globalThis.__jazorTest("anonymous ref and out delegates write values back through the shared protocol", () => {
 				  const result = Run(3);
 				  if (result !== 56)
 				    throw new Error(`expected 56 after ref and out write-back, got ${result}`);
@@ -144,10 +144,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
 			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-			await Deno.Execute(
-				new DenoExecuteBaseOptions { WorkingDirectory = root },
-				["test", "--quiet", "--allow-read", testPath],
-				timeout.Token);
+			await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
 		}
 		finally
 		{
@@ -276,7 +273,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 				"""
 				import { Invoke, Construct } from "./ref-out-complex-targets.mjs";
 
-				Deno.test("ref and out locations are evaluated once before the protocol call", () => {
+				globalThis.__jazorTest("ref and out locations are evaluated once before the protocol call", () => {
 				  if (Invoke() !== 34560891)
 				    throw new Error(`invocation result: ${Invoke()}`);
 				  if (Construct() !== 1230803)
@@ -286,10 +283,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
 			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-			await Deno.Execute(
-				new DenoExecuteBaseOptions { WorkingDirectory = root },
-				["test", "--quiet", "--allow-read", testPath],
-				timeout.Token);
+			await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
 		}
 		finally
 		{

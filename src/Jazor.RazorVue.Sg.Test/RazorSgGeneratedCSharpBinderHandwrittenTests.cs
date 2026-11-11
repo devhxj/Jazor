@@ -471,13 +471,13 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         StringAssert.Contains(script, "props.UseAttributeSlot", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/mixed-slot-page.js",
             script,
             "handwritten-mixed-slot-page.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/mixed-slot-page.js";
             import panel from "./components/mixed-slot-panel.js";
@@ -563,13 +563,13 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         StringAssert.Contains(script, "createTextVNode(props.Title + state.Suffix, 1)", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/expression-helper-page.js",
             script,
             "handwritten-expression-helper-page.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/expression-helper-page.js";
 
@@ -650,13 +650,13 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
         Assert.IsFalse(script.Contains("builder.", StringComparison.Ordinal), script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/static-scalar-page.js",
             script,
             "handwritten-static-scalar-page.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/static-scalar-page.js";
 
@@ -757,13 +757,13 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         StringAssert.Contains(script, "createSlots", StringComparison.Ordinal);
         StringAssert.Contains(script, "props.ShowHeader", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/optional-slot-page.js",
             script,
             "handwritten-optional-slot-page.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/optional-slot-page.js";
             import panel from "./components/optional-slot-panel.js";

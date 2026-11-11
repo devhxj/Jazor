@@ -101,13 +101,13 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
         Assert.IsFalse(script.Contains("WheelEventArgsModule.js", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/extended-dom-events.js",
             script,
             "official-extended-dom-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/extended-dom-events.js";
 
@@ -208,13 +208,13 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
         Assert.IsFalse(script.Contains("ClipboardEventArgsModule.js", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/drag-clipboard-events.js",
             script,
             "official-drag-clipboard-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/drag-clipboard-events.js";
 
@@ -352,13 +352,13 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
         Assert.IsFalse(script.Contains("ProgressEventArgsModule.js", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/touch-error-progress-events.js",
             script,
             "official-touch-error-progress-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/touch-error-progress-events.js";
 

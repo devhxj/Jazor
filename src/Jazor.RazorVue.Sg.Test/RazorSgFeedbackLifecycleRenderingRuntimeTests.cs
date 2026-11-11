@@ -7,7 +7,7 @@ namespace Jazor.RazorVue.Sg.Test;
 [TestClass]
 public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
 {
-    private const string RealVueModule = "npm:vue@3.5.42/dist/vue.runtime.esm-browser.prod.js";
+    private const string RealVueModule = "vue/dist/vue.runtime.esm-browser.prod.js";
 
     [TestMethod]
     [DataRow(false)]
@@ -35,13 +35,13 @@ public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.FeedbackLifecycle");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/feedback-lifecycle.js",
             observation.ModuleText,
             "feedback-lifecycle-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import { Window } from "npm:happy-dom@20.10.6";
+            import { Window } from "happy-dom";
 
             const window = new Window();
             for (const name of ["window", "document", "Node", "Element", "HTMLElement", "SVGElement"])
@@ -49,7 +49,7 @@ public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
             const { createApp, nextTick } = await import("vue");
             const { default: component } = await import("./components/feedback-lifecycle.js");
 
-            Deno.test("each component instance registers and releases exactly its own resource", async () => {
+            globalThis.__jazorTest("each component instance registers and releases exactly its own resource", async () => {
                 const host = document.createElement("main");
                 document.body.append(host);
                 const events = [];
@@ -74,7 +74,7 @@ public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
             });
             """,
             vueModuleSpecifier: RealVueModule,
-            restoreNpmDependencies: true);
+            packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6" });
     }
 
     [TestMethod]
@@ -119,13 +119,13 @@ public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.FeedbackPolling");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/feedback-polling.js",
             observation.ModuleText,
             "feedback-polling-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import { Window } from "npm:happy-dom@20.10.6";
+            import { Window } from "happy-dom";
 
             const window = new Window();
             for (const name of ["window", "document", "Node", "Element", "HTMLElement", "SVGElement"])
@@ -133,7 +133,7 @@ public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
             const { createApp, h, reactive, nextTick } = await import("vue");
             const { default: component } = await import("./components/feedback-polling.js");
 
-            Deno.test("loading/empty/data transitions preserve each DOM range and adjacent footer", async () => {
+            globalThis.__jazorTest("loading/empty/data transitions preserve each DOM range and adjacent footer", async () => {
                 const host = document.createElement("main");
                 document.body.append(host);
                 const errors = [];
@@ -177,6 +177,6 @@ public sealed class RazorSgFeedbackLifecycleRenderingRuntimeTests
             });
             """,
             vueModuleSpecifier: RealVueModule,
-            restoreNpmDependencies: true);
+            packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6" });
     }
 }

@@ -59,14 +59,14 @@ public sealed class RazorSgOfficialElementPlusPaginationDateTests
         var imports = new Dictionary<string, string>();
         foreach (var path in new[] { "pagination", "date-picker" })
         {
-            imports[$"element-plus/es/components/{path}/index.mjs"] = $"npm:element-plus@2.14.5/es/components/{path}/index.mjs";
+            imports[$"element-plus/es/components/{path}/index.mjs"] = $"element-plus/es/components/{path}/index.mjs";
             imports[$"element-plus/es/components/{path}/style/css.mjs"] = "./fixtures/empty-style.mjs";
         }
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/pagination-date.js", observation.ModuleText, "pagination-date.test.mjs",
             """
             import assert from "node:assert/strict";
-            import { Window } from "npm:happy-dom@20.10.6";
+            import { Window } from "happy-dom";
             const window = new Window({ url: "http://localhost/" });
             for (const name of ["document", "Node", "Element", "HTMLElement", "SVGElement", "HTMLInputElement", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver", "ResizeObserver", "DOMException", "navigator"])
                 globalThis[name] = window[name];
@@ -78,7 +78,7 @@ public sealed class RazorSgOfficialElementPlusPaginationDateTests
             const { default: component } = await import("./components/pagination-date.js");
             const settle = async () => { await nextTick(); await new Promise(resolve => setTimeout(resolve, 40)); await nextTick(); };
 
-            Deno.test("actual pagination numbers and formatted strings reach their authored fields", async () => {
+            globalThis.__jazorTest("actual pagination numbers and formatted strings reach their authored fields", async () => {
                 const host = document.createElement("div");
                 document.body.append(host);
                 const app = createApp(component);
@@ -122,6 +122,6 @@ public sealed class RazorSgOfficialElementPlusPaginationDateTests
                 await nextTick();
                 window.happyDOM.abort();
             });
-            """, modules, vueModuleSpecifier: "npm:vue@3.5.42", restoreNpmDependencies: true, importSpecifiers: imports);
+            """, modules, vueModuleSpecifier: "vue", packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6", ["element-plus"] = "2.14.5" }, importSpecifiers: imports);
     }
 }

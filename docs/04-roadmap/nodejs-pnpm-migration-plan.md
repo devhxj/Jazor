@@ -6,6 +6,8 @@ Jazor 将前端工具链与服务端 JavaScript 执行迁往完整的 NodeApi �
 
 WebIDL 试点的实现、固定版本与当前限制见 [collector README](../../src/ECMAScript.WebIDL.Generator/README.md)，可通过 `dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs` 复现；其结果不代表其余产品路径已通过验证。
 
+已接受的宿主配置：`CETCompat=false`。仓库可执行项目、测试宿主和 Jazor NuGet 的构建接线统一设置，不将其作为待决阻断项，也不引入替代执行路线。
+
 ## 一、背景与决策依据
 
 ### 1.1 上游变化
@@ -58,6 +60,12 @@ install(
 
 若 P0 证明内嵌恢复无法满足必须的取消、退出或平台要求，应记录阻断项并修复或重新评审产品契约，不能用 CLI 或独立 JS 进程绕过本方案的验证目标。
 
+### 1.4 edge-js 候选评估
+
+2026-11-11 核对 [edge-js README](https://github.com/agracio/edge-js) 与 [C# 项目条件编译](https://github.com/agracio/edge-js/blob/master/src/double/Edge.js/Edge.js.csproj)：它持续跟进 Node 20/22/24/26/27，值得关注；但支持表中的 CoreCLR 支持属于 Node 托管 .NET，CoreCLR 托管 Node 方向仍标为不支持。项目虽然包含 `net8.0`，该目标编译的是 `dotnetcore` 桥接端；`EdgeJs.Edge.Func` 所在的 `dotnet` 源码只编入 `net462`。
+
+Jazor 的入口是 .NET 11 / ASP.NET Core 主进程，必须由它创建 Node 环境。现有证据不足以将 edge-js 作为这条路径的替代。继续实施 NodeApi，按真实 pnpm/Vite/SSR、取消、退出及发布闭包验证决定是否可交付；Microsoft 名称本身不构成支持保证，当前 libnode 的版本滞后仍是需要解决的维护问题。
+
 ## 二、目标、范围与稳定边界
 
 ### 2.1 完成目标
@@ -97,7 +105,7 @@ install(
 | SSR 宿主 | [SsrRenderer.cs](../../src/Jazor.AspNetCore/SsrRenderer.cs)、[SsrArtifactLocator.cs](../../src/Jazor.AspNetCore/SsrArtifactLocator.cs)、[JazorSsrOptions.cs](../../src/Jazor.AspNetCore/JazorSsrOptions.cs) | Node worker、开发 pnpm lock、发布闭包、generation 和取消 |
 | MSBuild 与 NuGet | [Jazor.props](../../src/Jazor/build/Jazor.props)、[Jazor.targets](../../src/Jazor/build/Jazor.targets)、[Jazor.csproj](../../src/Jazor/Jazor.csproj)、[Jazor.Emit.csproj](../../src/Jazor.Emit/Jazor.Emit.csproj) | 构建机/目标 RID、原生资产、工具资源、复制与发布规则 |
 | 编译器与 CLR 测试 | `src/Jazor.CompilerTest`、`src/Jazor.CLR.Test` | `Deno.Execute`、`Deno.test` 和 runtime package 引用迁移，保留行为断言 |
-| RazorVue 测试 | [RazorSgOfficialDenoRuntimeTestHost.cs](../../src/Jazor.RazorVue.Sg.Test/RazorSgOfficialDenoRuntimeTestHost.cs)、[RazorSgDenoRuntime.cs](../../src/Jazor.RazorVue.Sg.Test/RazorSgDenoRuntime.cs) 及调用方 | Node test runner、临时项目、import map 替代与 runtime fixtures |
+| RazorVue 测试 | [RazorSgOfficialNodeRuntimeTestHost.cs](../../src/Jazor.RazorVue.Sg.Test/RazorSgOfficialNodeRuntimeTestHost.cs) 及调用方 | 共享进程内 runner、临时项目、测试专用 ESM loader 与 runtime fixtures |
 | Emit 与绑定测试 | `src/Jazor.EmitTest`、Style、Vue Devtools、Pinia、VueRoute 等测试项目 | 恢复、发布、进程、DOM shim 和依赖布局验证 |
 | WebIDL 工具 | [NodeWebIdlCollector.cs](../../src/ECMAScript.WebIDL.Generator/NodeWebIdlCollector.cs)、[collect.ts](../../src/ECMAScript.WebIDL.Generator/node/collect.ts)、`GeneratorOptions` / `RepositoryLayout` | 纯进程内试点，包含 pnpm API、TypeScript API、collector 和错误回传 |
 | 脚本与样例 | `scripts/csharp/`、`samples/*/verify-smoke.cs`、Pinia/VueRoute consumer 配置、Wiki | 去除 Deno 查找/缓存/启动逻辑，使用当前输出的 Node 工具链 |

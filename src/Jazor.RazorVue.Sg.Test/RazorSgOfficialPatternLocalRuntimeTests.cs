@@ -33,13 +33,13 @@ public sealed class RazorSgOfficialPatternLocalRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.ReleaseName", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/pattern-local-runtime.js",
             observation.ModuleText,
             "official-pattern-local-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/pattern-local-runtime.js";
 

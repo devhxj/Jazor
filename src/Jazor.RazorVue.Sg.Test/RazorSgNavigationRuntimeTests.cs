@@ -57,13 +57,13 @@ public sealed class RazorSgNavigationRuntimeTests
         StringAssert.Contains(observation.ModuleText, "toBaseRelativePath(", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "navigateToForceLoadReplace(", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/navigation-runtime.js",
             observation.ModuleText,
             "navigation-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/navigation-runtime.js";
             import { __serviceProvider } from "vue";
 
@@ -169,13 +169,13 @@ public sealed class RazorSgNavigationRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.NavigationHost");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/navigation-host.js",
             observation.ModuleText,
             "navigation-host.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/navigation-host.js";
             import { CreateNavigationManager, navigateToForceLoadReplace } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
             import { __getProvider, __setProvider, reactive } from "vue";
@@ -407,13 +407,13 @@ public sealed class RazorSgNavigationRuntimeTests
         StringAssert.Contains(observation.ModuleText, "getPathAndQuery", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "getPort", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/not-found-runtime.js",
             observation.ModuleText,
             "not-found-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/not-found-runtime.js";
             import { __serviceProvider } from "vue";
             import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
@@ -538,13 +538,13 @@ public sealed class RazorSgNavigationRuntimeTests
         // ValueTask 与 Task 共用 Promise carrier，所以 handler 的返回值不需要额外运行时载体。
         StringAssert.Contains(observation.ModuleText, "Promise.resolve()", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/location-changing-runtime.js",
             observation.ModuleText,
             "location-changing-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/location-changing-runtime.js";
             import { __serviceProvider, __unmount } from "vue";
             import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
@@ -703,13 +703,13 @@ public sealed class RazorSgNavigationRuntimeTests
             observation.ModuleText,
             "System/Threading/CancellationTokenModule.js",
             StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/location-changing-supersede.js",
             observation.ModuleText,
             "location-changing-supersede.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/location-changing-supersede.js";
             import { __serviceProvider } from "vue";
             import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";

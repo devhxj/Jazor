@@ -1,4 +1,4 @@
-using DenoHost.Core;
+using Jazor.NodeHost;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -53,7 +53,7 @@ public sealed class ConditionalAccessReceiverChainTests
             await File.WriteAllTextAsync(testPath, """
                 import assert from "node:assert/strict";
                 import * as p from "./chains.mjs";
-                Deno.test("nullish chains skip indices and retain field/property values", () => {
+                globalThis.__jazorTest("nullish chains skip indices and retain field/property values", () => {
                     for (const absent of [null, undefined]) {
                         for (const read of [p.Array, p.IndexFromEnd, p.FieldArray, p.NestedField, p.PropertyIndex, p.PropertyRange, p.ConvertedField])
                             assert.equal(read(absent) ?? null, null);
@@ -72,8 +72,7 @@ public sealed class ConditionalAccessReceiverChainTests
                 });
                 """);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

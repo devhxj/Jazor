@@ -1,3 +1,4 @@
+using Jazor.NodeHost;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ namespace Jazor.RazorVue.Sg.Test;
 [TestClass]
 public sealed class MemberClosureTests
 {
-    private static readonly Lazy<string> DenoExecutable = new(RazorSgDenoRuntime.ResolveExecutable);
+
 
     [TestMethod]
     public async Task Build_OfficialRazorCounter_CompilesStateThroughCompilerClosureAndHost()
@@ -599,7 +600,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/counter.js";
 
@@ -617,7 +618,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -691,7 +692,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/region-markup.js";
 
@@ -709,7 +710,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -823,7 +824,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/structured.js";
 
@@ -841,7 +842,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -951,7 +952,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/conditional-props.js";
 
@@ -972,7 +973,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1075,7 +1076,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/computed-slot.js";
 
@@ -1111,7 +1112,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1213,7 +1214,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/recursive-fragment.js";
 
@@ -1231,7 +1232,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1347,7 +1348,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/parent.js";
 
@@ -1363,7 +1364,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1456,7 +1457,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { h } from "vue";
 
                 import component from "./components/parent.js";
@@ -1472,7 +1473,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1751,7 +1752,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { h } from "vue";
 
                 import component from "./components/parent.js";
@@ -1768,7 +1769,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1854,7 +1855,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { h } from "vue";
 
                 import component from "./components/parent.js";
@@ -1869,7 +1870,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -1959,7 +1960,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/helper-fragment.js";
 
@@ -1972,7 +1973,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2070,7 +2071,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/object-carried-fragment.js";
 
@@ -2088,7 +2089,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2180,7 +2181,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/sibling-helper-locals.js";
 
@@ -2196,7 +2197,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2289,7 +2290,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/output-return-branches.js";
 
@@ -2304,7 +2305,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2521,7 +2522,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/counter.js";
 
@@ -2549,7 +2550,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2638,7 +2639,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/local-member-name-collision.js";
 
@@ -2652,7 +2653,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2744,7 +2745,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/const-field-condition.js";
 
@@ -2758,7 +2759,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2865,7 +2866,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/direct-bulk.js";
 
@@ -2887,7 +2888,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -2975,7 +2976,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/direct-bind.js";
 
@@ -3003,7 +3004,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -3199,6 +3200,11 @@ public sealed class MemberClosureTests
         {
             WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
             WriteFile(Path.Combine(tempRoot, parentArtifact.RelativePath), parentArtifact.ModuleText);
+            WriteFile(Path.Combine(tempRoot, "package.json"),
+                """{"private":true,"type":"module","dependencies":{"ws":"8.18.3"}}""");
+            await NodeToolchain.RestoreAsync(tempRoot,
+                Path.Combine(Path.GetDirectoryName(typeof(MemberClosureTests).Assembly.Location)!, "nodeapi-store"),
+                CancellationToken.None);
             WriteFile(
                 Path.Combine(tempRoot, "index.html"),
                 """
@@ -3398,7 +3404,8 @@ public sealed class MemberClosureTests
                 import { readFile } from "node:fs/promises";
                 import { extname, join, normalize, resolve, sep } from "node:path";
                 import { spawn } from "node:child_process";
-                import test from "node:test";
+                import WebSocket from "ws";
+                const test = globalThis.__jazorTest;
 
                 const root = {{System.Text.Json.JsonSerializer.Serialize(tempRoot)}};
                 const browserPath = {{System.Text.Json.JsonSerializer.Serialize(browserPath)}};
@@ -3616,7 +3623,7 @@ public sealed class MemberClosureTests
                 }
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -3783,13 +3790,13 @@ public sealed class MemberClosureTests
         StringAssert.Contains(artifact.ModuleText, "continue;", StringComparison.Ordinal);
         StringAssert.Contains(artifact.ModuleText, "break;", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/handwritten-loop-branches.js",
             artifact.ModuleText,
             "handwritten-loop-branches-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/handwritten-loop-branches.js";
 
@@ -4203,7 +4210,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { __runMounted, __runUpdated, __runUnmounted, __runWatchers } from "vue";
 
                 import component from "./components/counter.js";
@@ -4228,7 +4235,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4371,7 +4378,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/counter.js";
 
@@ -4394,7 +4401,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4497,7 +4504,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/parent.js";
 
@@ -4523,7 +4530,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4673,7 +4680,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/counter.js";
 
@@ -4689,7 +4696,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4802,7 +4809,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { __runUnmounted } from "vue";
 
                 import component from "./components/counter.js";
@@ -4829,7 +4836,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -4992,7 +4999,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { __runWatchers } from "vue";
 
                 import component from "./components/counter.js";
@@ -5025,7 +5032,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5197,7 +5204,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { __runMounted, __runUpdated, __runUnmounted } from "vue";
 
                 import component from "./components/counter.js";
@@ -5219,7 +5226,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5409,7 +5416,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
                 import { h } from "vue";
 
                 import child from "./components/child.js";
@@ -5449,7 +5456,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -5585,7 +5592,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import parent from "./components/parent.js";
 
@@ -5606,7 +5613,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6035,7 +6042,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/counter.js";
                 import { reactiveCalls } from "vue";
@@ -6073,7 +6080,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6183,7 +6190,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/parent.js";
 
@@ -6199,7 +6206,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6303,7 +6310,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/parent.js";
 
@@ -6328,7 +6335,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6429,7 +6436,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/parent.js";
 
@@ -6457,7 +6464,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6578,7 +6585,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import component from "./components/parent.js";
 
@@ -6599,7 +6606,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -6762,7 +6769,7 @@ public sealed class MemberClosureTests
                 testFile,
                 """
                 import assert from "node:assert/strict";
-                import test from "node:test";
+                const test = globalThis.__jazorTest;
 
                 import parent from "./components/parent.js";
 
@@ -6806,7 +6813,7 @@ public sealed class MemberClosureTests
                 });
                 """);
 
-            await RunDenoTestAsync(testFile, tempRoot);
+            await RunNodeTestAsync(testFile, tempRoot);
         }
         finally
         {
@@ -7007,82 +7014,13 @@ public sealed class MemberClosureTests
         int SourceLine,
         int SourceColumn);
 
-    private static async Task RunDenoTestAsync(string testFile, string workingDirectory)
-    {
-        var configPath = Path.Combine(workingDirectory, "deno.json");
-        // Fixtures provide exact local stubs instead of an installed npm graph. Map the production
-        // specifiers to those stubs so Deno 2 never reaches its package cache or the network.
-        System.IO.File.WriteAllText(
-            configPath,
-            """
-            {"imports":{"vue":"./node_modules/vue/index.mjs","runtime/vue/":"./runtime/vue/"}}
-            """);
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = DenoExecutable.Value,
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            WorkingDirectory = workingDirectory
-        };
-        RazorSgTestHost.ConfigureProcessEnvironment(startInfo);
-        startInfo.ArgumentList.Add("test");
-        startInfo.ArgumentList.Add("--quiet");
-        startInfo.ArgumentList.Add("--allow-all");
-        startInfo.ArgumentList.Add("--config");
-        startInfo.ArgumentList.Add(configPath);
-        startInfo.ArgumentList.Add(testFile);
-
-        Process process;
-        try
-        {
-            process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException("Failed to start Deno runtime test process.");
-        }
-        catch (Win32Exception ex)
-        {
-            Assert.Fail("Bundled DenoHost runtime was not available to run the RazorVue generated module runtime test: " + ex.Message);
-            return;
-        }
-
-        using (process)
-        {
-            var standardOutput = process.StandardOutput.ReadToEndAsync();
-            var standardError = process.StandardError.ReadToEndAsync();
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            try
+    private static Task RunNodeTestAsync(string testFile, string workingDirectory)
+        => NodeModuleRunner.RunAsync(workingDirectory, testFile,
+            imports: new Dictionary<string, string>
             {
-                await process.WaitForExitAsync(timeout.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch (InvalidOperationException)
-                {
-                }
-
-                Assert.Fail("Deno runtime test timed out after 30 seconds.");
-            }
-
-            var output = await standardOutput;
-            var error = await standardError;
-            if (process.ExitCode != 0)
-            {
-                Assert.Fail(
-                    "Deno runtime test failed with exit code " +
-                    process.ExitCode +
-                    Environment.NewLine +
-                    output +
-                    Environment.NewLine +
-                    error);
-            }
-        }
-    }
-
+                ["vue"] = "./node_modules/vue/index.mjs",
+                ["runtime/vue/"] = "./runtime/vue/"
+            });
     private static string? ResolveBrowserExecutable()
     {
         var explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE");

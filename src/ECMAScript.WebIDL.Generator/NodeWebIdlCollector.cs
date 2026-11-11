@@ -20,7 +20,7 @@ internal sealed class NodeWebIdlCollector(GeneratorOptions options)
     private async Task<string> RunAsync(string operation, CancellationToken cancellationToken)
     {
         var projectDirectory = Path.GetDirectoryName(options.NodeProjectPath)!;
-        var bootstrap = await PnpmBootstrap.EnsureAsync(projectDirectory, cancellationToken);
+        var bootstrap = await PnpmBootstrap.EnsureAsync(Path.Combine(projectDirectory, "obj"), cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory);
         Console.Error.WriteLine($"[webidl] Embedded NodeApi host: .NET PID {Environment.ProcessId}.");

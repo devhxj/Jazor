@@ -23,14 +23,14 @@ public sealed class RazorSgOfficialElementPlusNumericUnionTests
         var imports = new Dictionary<string, string>();
         foreach (var path in new[] { "avatar", "pagination", "select", "option" })
         {
-            imports[$"element-plus/es/components/{path}/index.mjs"] = $"npm:element-plus@2.14.5/es/components/{path}/index.mjs";
+            imports[$"element-plus/es/components/{path}/index.mjs"] = $"element-plus/es/components/{path}/index.mjs";
             imports[$"element-plus/es/components/{path}/style/css.mjs"] = "./fixtures/empty-style.mjs";
         }
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/numeric-union-authoring.js", observation.ModuleText, "numeric-union-authoring.test.mjs",
             """
             import assert from "node:assert/strict";
-            import { Window } from "npm:happy-dom@20.10.6";
+            import { Window } from "happy-dom";
             const window = new Window({ url: "http://localhost/" });
             for (const name of ["document", "Node", "Element", "HTMLElement", "SVGElement", "HTMLInputElement", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver", "ResizeObserver", "DOMException", "navigator"])
                 globalThis[name] = window[name];
@@ -43,7 +43,7 @@ public sealed class RazorSgOfficialElementPlusNumericUnionTests
             const { ElAvatar } = await import("element-plus/es/components/avatar/index.mjs");
             const settle = async () => { await nextTick(); await new Promise(resolve => setTimeout(resolve, 40)); await nextTick(); };
 
-            Deno.test("N4 numeric props and nested unions keep exact values through actual Element Plus", async () => {
+            globalThis.__jazorTest("N4 numeric props and nested unions keep exact values through actual Element Plus", async () => {
                 // Inspect final Vue props before mounting: string "32" must stay distinguishable from numeric 32.
                 const render = component.setup({}, { slots: {} });
                 const avatars = render().children.filter(node => node.type === ElAvatar);
@@ -106,6 +106,6 @@ public sealed class RazorSgOfficialElementPlusNumericUnionTests
                 window.happyDOM.abort();
             });
             """, new Dictionary<string, string> { ["fixtures/empty-style.mjs"] = "" },
-            vueModuleSpecifier: "npm:vue@3.5.42", restoreNpmDependencies: true, importSpecifiers: imports);
+            vueModuleSpecifier: "vue", packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6", ["element-plus"] = "2.14.5" }, importSpecifiers: imports);
     }
 }

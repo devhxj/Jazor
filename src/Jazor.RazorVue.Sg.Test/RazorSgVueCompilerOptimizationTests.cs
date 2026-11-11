@@ -43,13 +43,13 @@ public sealed class RazorSgVueCompilerOptimizationTests
             observation.ModuleText.IndexOf("function createStaticHoistsSetupScope", StringComparison.Ordinal),
             observation.ModuleText.IndexOf("const __jazor$hoistedProps0", StringComparison.Ordinal));
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/static-hoists.js",
             observation.ModuleText,
             "static-hoists-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/static-hoists.js";
 
@@ -172,13 +172,13 @@ public sealed class RazorSgVueCompilerOptimizationTests
             "h(\"section\", __jazor$hoistedProps4",
             StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/child-plans.js",
             observation.ModuleText,
             "child-plans-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/child-plans.js";
 
@@ -325,13 +325,13 @@ public sealed class RazorSgVueCompilerOptimizationTests
             slotObservation.ModuleText.Contains("const __jazor$hoistedProps", StringComparison.Ordinal),
             slotObservation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/slot-scope.js",
             slotObservation.ModuleText,
             "slot-scope-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/slot-scope.js";
             import slotHost from "./components/slot-host.js";
@@ -450,13 +450,13 @@ public sealed class RazorSgVueCompilerOptimizationTests
         StringAssert.Contains(observation.ModuleText, "withCtx(() =>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, ", 1024)", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-slot-scope.js",
             observation.ModuleText,
             "conditional-slot-scope-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/conditional-slot-scope.js";
             import slotHost from "./components/conditional-slot-host.js";
@@ -523,13 +523,13 @@ public sealed class RazorSgVueCompilerOptimizationTests
             StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("eventOrValue", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/stable-handler.js",
             observation.ModuleText,
             "stable-handler-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/stable-handler.js";
 

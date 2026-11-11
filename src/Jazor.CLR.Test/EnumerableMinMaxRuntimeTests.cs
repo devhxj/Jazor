@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -41,7 +41,7 @@ public sealed class EnumerableMinMaxRuntimeTests
                 $$"""
                 import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable.Min and Max preserve numeric carriers and NaN behavior", () => {
+                globalThis.__jazorTest("Enumerable.Min and Max preserve numeric carriers and NaN behavior", () => {
                   const [minIntOperation, maxIntOperation, minInt64Operation, maxInt64Operation, minSingleOperation, maxSingleOperation, minDoubleOperation, maxDoubleOperation, minDecimalOperation, maxDecimalOperation] = [{{string.Join(", ", names)}}];
                   if (minIntOperation([7, -2, 4]) !== -2 || maxIntOperation([7, -2, 4]) !== 7)
                     throw new Error("Int32 Min/Max drifted");
@@ -63,7 +63,7 @@ public sealed class EnumerableMinMaxRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

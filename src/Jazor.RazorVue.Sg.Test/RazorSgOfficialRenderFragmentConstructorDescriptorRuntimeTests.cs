@@ -73,13 +73,13 @@ public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTes
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/constructor-content-descriptor-runtime.js",
             observation.ModuleText,
             "official-constructor-content-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/constructor-content-descriptor-runtime.js";
             import slotPanel from "./components/slot-panel-constructor-descriptor-runtime.js";

@@ -38,13 +38,13 @@ public sealed class RazorSgDirectRenderSlotParameterTests
         Assert.IsFalse(observation.ModuleText.Contains("componentProps", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("syncSlotParameters", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/child-content-bridge-runtime.js",
             observation.ModuleText,
             "official-child-content-bridge-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/child-content-bridge-runtime.js";
 

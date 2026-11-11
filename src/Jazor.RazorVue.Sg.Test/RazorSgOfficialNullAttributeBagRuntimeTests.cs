@@ -28,13 +28,13 @@ public sealed class RazorSgOfficialNullAttributeBagRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("mergeProps", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-action-without-attributes-runtime.js",
             observation.ModuleText,
             "official-release-action-without-attributes-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-action-without-attributes-runtime.js";
 

@@ -41,13 +41,13 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "System/Linq/EnumerableModule.js", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "_1cb3ec9a7fb8aaab", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-count.js",
             observation.ModuleText,
             "official-conditional-count-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/conditional-count.js";
 
@@ -109,13 +109,13 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "__jazor$if_", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-profiles.js",
             observation.ModuleText,
             "official-conditional-profiles-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/conditional-profiles.js";
 
@@ -195,13 +195,13 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Fragment", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "ToggleDetails", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-details-toggle-runtime.js",
             observation.ModuleText,
             "official-release-details-toggle-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { Fragment } from "vue";
 
             import component from "./components/release-details-toggle-runtime.js";

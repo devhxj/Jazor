@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -64,7 +64,7 @@ public sealed class EnumerableAggregateByRuntimeTests
                   throw new Error(`${name}: expected ArgumentNullException`);
                 }
 
-                Deno.test("CountBy and AggregateBy preserve CLR grouping protocol", () => {
+                globalThis.__jazorTest("CountBy and AggregateBy preserve CLR grouping protocol", () => {
                   const source = [3, 1, 2, 5, 4];
                   assertEntries({{countBy}}([1, 1, 2], value => value, null), [[1, 2], [2, 1]], "CountBy default comparer");
                   assertEntries({{aggregateBy}}([1, 1, 2], value => value, 1, (sum, value) => sum + value, null), [[1, 3], [2, 3]], "AggregateBy default comparer");
@@ -120,10 +120,7 @@ public sealed class EnumerableAggregateByRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

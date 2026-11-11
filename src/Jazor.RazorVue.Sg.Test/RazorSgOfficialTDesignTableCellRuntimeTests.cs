@@ -116,13 +116,13 @@ public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
         StringAssert.Contains(observation.ModuleText, "__jazor$renderH, context", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "import { Button } from \"tdesign-vue-next/es/button/index.mjs\";", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/t-design-table-cell-runtime.js",
             observation.ModuleText,
             "official-t-design-table-cell-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/t-design-table-cell-runtime.js";
 

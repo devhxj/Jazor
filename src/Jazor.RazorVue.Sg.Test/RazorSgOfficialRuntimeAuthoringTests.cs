@@ -37,13 +37,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "InvokeAsynchronousDelegate", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/input-binding-after-runtime.js",
             observation.ModuleText,
             "official-input-bind-after-action.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/input-binding-after-runtime.js";
 
@@ -118,13 +118,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "InvokeAsynchronousDelegate", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/component-binding-after-runtime.js",
             observation.ModuleText,
             "official-component-bind-after-action.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/component-binding-after-runtime.js";
 
@@ -189,13 +189,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddEventStopPropagationAttribute", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/event-modifiers-runtime.js",
             observation.ModuleText,
             "official-event-modifiers-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/event-modifiers-runtime.js";
 
@@ -249,13 +249,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddMultipleAttributes", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/attribute-splat-runtime.js",
             observation.ModuleText,
             "official-attribute-splat-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/attribute-splat-runtime.js";
 
@@ -310,13 +310,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "__builder.SetKey(", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/keyed-loop-runtime.js",
             observation.ModuleText,
             "official-keyed-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/keyed-loop-runtime.js";
 
@@ -372,13 +372,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/named-tuple-loop-runtime.js",
             observation.ModuleText,
             "official-named-tuple-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/named-tuple-loop-runtime.js";
 
@@ -430,13 +430,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/dictionary-loop-runtime.js",
             observation.ModuleText,
             "official-dictionary-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/dictionary-loop-runtime.js";
 
@@ -511,13 +511,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "Header", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/component-slots-runtime.js",
             observation.ModuleText,
             "official-component-slots-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/component-slots-runtime.js";
             import slotPanel from "./components/slot-panel-runtime.js";
@@ -610,13 +610,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "RenderFragment<global::Demo.Models.ReleaseEntry>", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-template-runtime.js",
             observation.ModuleText,
             "official-generic-item-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-template-runtime.js";
             import templateList from "./components/release-template-list-runtime.js";
@@ -718,13 +718,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "foreach", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-template-control-flow-runtime.js",
             observation.ModuleText,
             "official-generic-item-template-control-flow-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-template-control-flow-runtime.js";
             import templateList from "./components/release-template-control-flow-list-runtime.js";
@@ -823,13 +823,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddComponentParameter", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-header-method-group-runtime.js",
             observation.ModuleText,
             "official-render-fragment-method-group-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-header-method-group-runtime.js";
             import panelComponent from "./components/release-header-panel-runtime.js";
@@ -915,7 +915,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(script, "Value: props.Value", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("TItem", StringComparison.Ordinal), script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/generic-component-runtime.js",
             script,
             "official-generic-component-runtime.test.mjs",
@@ -923,7 +923,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             import component from "./components/generic-component-runtime.js";
             import genericValue from "./components/generic-value-runtime.js";
 
-            Deno.test("official Razor generic component erases its type parameter but preserves the prop value", () => {
+            globalThis.__jazorTest("official Razor generic component erases its type parameter but preserves the prop value", () => {
                 const value = { id: 9, label: "Deploy" };
                 const render = component.setup({ Value: value }, { slots: {} });
                 const node = render();
@@ -1011,7 +1011,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(script, "onSelect:", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("TItem", StringComparison.Ordinal), script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/generic-event-callback-runtime.js",
             script,
             "official-generic-event-callback-runtime.test.mjs",
@@ -1019,7 +1019,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             import component from "./components/generic-event-callback-runtime.js";
             import genericSelectable from "./components/generic-selectable-runtime.js";
 
-            Deno.test("official Razor generic callbacks retain the listener and update parent state", () => {
+            globalThis.__jazorTest("official Razor generic callbacks retain the listener and update parent state", () => {
                 const value = { id: 9, label: "Deploy" };
                 const render = component.setup({ Value: value }, { slots: {} });
                 const initial = render();
@@ -1105,7 +1105,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "BuildPanelContent().Header", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/content-descriptor-runtime.js",
             observation.ModuleText,
             "official-content-descriptor-slot-runtime.test.mjs",
@@ -1113,7 +1113,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             import component from "./components/content-descriptor-runtime.js";
             import slotPanel from "./components/content-descriptor-slot-panel-runtime.js";
 
-            Deno.test("official Razor content descriptor resolves a method-group slot", () => {
+            globalThis.__jazorTest("official Razor content descriptor resolves a method-group slot", () => {
                 const panel = component.setup({}, { slots: {} })();
                 if (panel.name !== slotPanel)
                     throw new Error("slot panel import was not retained");
@@ -1171,13 +1171,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.ModuleText, "function FormatTitle", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("NeverRendered", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/direct-render-reachability-runtime.js",
             observation.ModuleText,
             "official-direct-render-reachability-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/direct-render-reachability-runtime.js";
 
@@ -1245,13 +1245,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.ModuleText, "onUpdated(", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onUnmounted(", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/lifecycle-runtime.js",
             observation.ModuleText,
             "official-lifecycle-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runMounted, __runUpdated, __runUnmounted, __runWatchers } from "vue";
 
             import component from "./components/lifecycle-runtime.js";
@@ -1355,13 +1355,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "base-ctor", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/source-constructor-runtime.js",
             observation.ModuleText,
             "official-source-constructor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runUnmounted } from "vue";
 
             import component from "./components/source-constructor-runtime.js";
@@ -1426,13 +1426,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddComponentReferenceCapture", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/component-reference-runtime.js",
             observation.ModuleText,
             "official-component-reference-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/component-reference-runtime.js";
 
@@ -1510,13 +1510,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "break;", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/complex-code-runtime.js",
             observation.ModuleText,
             "official-complex-code-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/complex-code-runtime.js";
 
@@ -1593,13 +1593,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             observation.ModuleText.IndexOf("function createStaticMembersRuntimeSetupScope", StringComparison.Ordinal),
             observation.ModuleText.IndexOf("function Seed()", StringComparison.Ordinal));
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/static-members-runtime.js",
             observation.ModuleText,
             "official-static-members-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/static-members-runtime.js";
 
@@ -1660,13 +1660,13 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "EventCallback.Factory.Create", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/event-callback-runtime.js",
             observation.ModuleText,
             "official-event-callback-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/event-callback-runtime.js";
 

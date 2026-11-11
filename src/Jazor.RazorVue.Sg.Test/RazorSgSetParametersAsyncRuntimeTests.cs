@@ -35,13 +35,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.SetParametersInitialValue");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-initial-value.js",
             observation.ModuleText,
             "set-parameters-initial-value.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runServerPrefetch } from "vue";
 
             import component from "./components/set-parameters-initial-value.js";
@@ -107,13 +107,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
         StringAssert.Contains(observation.ModuleText, "runSetParametersAsync", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "applyComponentBaseParameters", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-runtime.js",
             observation.ModuleText,
             "set-parameters-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runServerPrefetch, __runWatchers } from "vue";
 
             import component from "./components/set-parameters-runtime.js";
@@ -172,13 +172,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             componentMetadataName: "Demo.Pages.SetParametersSparse");
 
         StringAssert.Contains(observation.ModuleText, "title-value", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-sparse.js",
             observation.ModuleText,
             "set-parameters-sparse.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runWatchers } from "vue";
 
             import component from "./components/set-parameters-sparse.js";
@@ -239,13 +239,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             componentMetadataName: "Demo.Pages.SetParametersProperties");
 
         StringAssert.Contains(observation.ModuleText, "applyParameterProperties", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-properties.js",
             observation.ModuleText,
             "set-parameters-properties.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/set-parameters-properties.js";
 
@@ -290,13 +290,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
 
         StringAssert.Contains(observation.ModuleText, "header-slot", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "createSnapshot", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-slot.js",
             observation.ModuleText,
             "set-parameters-slot.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runWatchers } from "vue";
 
             import component from "./components/set-parameters-slot.js";
@@ -352,13 +352,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.SetParametersQueue");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-queue.js",
             observation.ModuleText,
             "set-parameters-queue.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runWatchers } from "vue";
 
             import component from "./components/set-parameters-queue.js";
@@ -410,13 +410,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             componentMetadataName: "Demo.Pages.SetParametersFailure");
 
         StringAssert.Contains(observation.ModuleText, "hasParameterFailure", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/set-parameters-failure.js",
             observation.ModuleText,
             "set-parameters-failure.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/set-parameters-failure.js";
 
@@ -468,13 +468,13 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
         StringAssert.Contains(observation.ModuleText, "attrs", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Object.defineProperty", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/capture-unmatched-runtime.js",
             observation.ModuleText,
             "capture-unmatched-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runWatchers } from "vue";
 
             import component from "./components/capture-unmatched-runtime.js";

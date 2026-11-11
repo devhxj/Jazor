@@ -13,7 +13,7 @@
 | 输出基础设施 | helper、alias、optimizer 和白名单查找 | `UniqueNameAllocatorTests.cs`、`WhiteListLookupCompatibilityTests.cs` |
 | SourceMap 与 descriptor | source-origin、map、descriptor node 和 materialization 交接 | `*SourceMap*Tests.cs`、`ESGenerator*Tests.cs` |
 
-涉及真实运行时顺序、异步回调、unmount 或浏览器交互的场景，可补 DenoHost 或样例级验证；其余情况优先断言 `IOperation -> ESTree -> JavaScript` 的结构和文本契约。
+涉及真实运行时顺序、异步回调、unmount 或浏览器交互的场景，通过共享的进程内 NodeApi 宿主或样例验证；其余情况优先断言 `IOperation -> ESTree -> JavaScript` 的结构和文本契约。测试不启动 Node 或 pnpm 工具进程，真实 npm 依赖使用共享 pnpm API 恢复。宿主回归同时验证异步断言失败传播与失败后新环境的隔离。
 
 ## 编写原则
 

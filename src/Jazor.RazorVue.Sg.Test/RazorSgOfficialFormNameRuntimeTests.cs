@@ -31,13 +31,13 @@ public sealed class RazorSgOfficialFormNameRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("formname", StringComparison.OrdinalIgnoreCase), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("\"release-deployment\"", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-deployment-form.js",
             observation.ModuleText,
             "official-form-name-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-deployment-form.js";
 

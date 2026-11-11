@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -89,7 +89,7 @@ public sealed class SemanticWalkerLambdaOptionalParameterTests
                 """
                 import { Run } from "./optional-lambda.mjs";
 
-                Deno.test("optional lambda parameters preserve omitted and explicit C# calls", () => {
+                globalThis.__jazorTest("optional lambda parameters preserve omitted and explicit C# calls", () => {
                   const result = Run();
                   if (result !== 35)
                     throw new Error(`expected 35, got ${result}`);
@@ -98,10 +98,7 @@ public sealed class SemanticWalkerLambdaOptionalParameterTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

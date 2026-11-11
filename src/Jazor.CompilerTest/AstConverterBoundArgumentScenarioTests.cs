@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -100,7 +100,7 @@ public sealed class AstConverterBoundArgumentScenarioTests
                 """
                 import { Run, RunReceiverOrder } from "./bound-arguments.mjs";
 
-                Deno.test("named arguments preserve source evaluation, parameter binding, defaults, and ref/out write-back", () => {
+                globalThis.__jazorTest("named arguments preserve source evaluation, parameter binding, defaults, and ref/out write-back", () => {
                   const result = Run();
                   if (result !== 21355363011)
                     throw new Error(`expected 21355363011, got ${result}`);
@@ -112,10 +112,7 @@ public sealed class AstConverterBoundArgumentScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

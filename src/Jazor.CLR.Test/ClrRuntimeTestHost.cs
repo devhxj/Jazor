@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DenoHost.Core;
+using Jazor.NodeHost;
 
 namespace Jazor.CLR.Test;
 
@@ -63,18 +63,8 @@ internal static class ClrRuntimeTestHost
             await File.WriteAllTextAsync(runnerPath, RunnerSource, Utf8WithoutBom);
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                [
-                    "run",
-                    "--quiet",
-                    "--allow-read",
-                    "--allow-write",
-                    runnerPath,
-                    invocationPath,
-                    resultPath
-                ],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, runnerPath,
+                [invocationPath, resultPath], timeout.Token);
 
             await using var stream = File.OpenRead(resultPath);
             var results = await JsonSerializer.DeserializeAsync<ClrRuntimeExecutionResult[]>(
@@ -115,8 +105,9 @@ internal static class ClrRuntimeTestHost
     }
 
     private const string RunnerSource = """
-        const [scenarioPath, resultPath] = Deno.args;
-        const scenarios = JSON.parse(await Deno.readTextFile(scenarioPath));
+        import { readFile, writeFile } from 'node:fs/promises';
+        const [scenarioPath, resultPath] = globalThis.__jazorArguments;
+        const scenarios = JSON.parse(await readFile(scenarioPath, 'utf8'));
 
         if (typeof URL.parse !== "function")
           URL.parse = (value, base) => {
@@ -414,6 +405,6 @@ internal static class ClrRuntimeTestHost
           }
         }
 
-        await Deno.writeTextFile(resultPath, JSON.stringify(results));
+        await writeFile(resultPath, JSON.stringify(results));
         """;
 }

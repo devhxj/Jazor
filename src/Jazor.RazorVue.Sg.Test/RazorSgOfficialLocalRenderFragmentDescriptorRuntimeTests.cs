@@ -80,13 +80,13 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-summary-local-descriptor-runtime.js",
             observation.ModuleText,
             "official-render-fragment-local-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-summary-local-descriptor-runtime.js";
             import panel from "./components/slot-panel-local-descriptor-runtime.js";

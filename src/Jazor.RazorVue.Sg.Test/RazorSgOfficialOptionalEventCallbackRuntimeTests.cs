@@ -46,13 +46,13 @@ public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
         StringAssert.Contains(observation.ModuleText, "await props.OnDismiss?.();", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "state.DismissCount++;", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/dismissible-panel-runtime.js",
             observation.ModuleText,
             "official-optional-event-callback-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/dismissible-panel-runtime.js";
 

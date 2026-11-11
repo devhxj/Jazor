@@ -66,13 +66,13 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Queued: ", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "props.ReleaseName", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-footer-composition-runtime.js",
             observation.ModuleText,
             "official-release-footer-composition-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { Fragment } from "vue";
 
             import component from "./components/release-footer-composition-runtime.js";

@@ -70,13 +70,13 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
         StringAssert.Contains(observation.ModuleText, "\"injected-content\": withCtx(() =>", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("contract-shell-runtime", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/injected-parent-runtime.js",
             observation.ModuleText,
             "official-vue-inject-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import parent from "./components/injected-parent-runtime.js";
             import injectedShell from "./components/injected-shell-runtime.js";

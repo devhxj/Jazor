@@ -49,13 +49,13 @@ public sealed class RazorSgParameterLifecycleWatchRuntimeTests
         StringAssert.Contains(observation.ModuleText, "() => [props.Label, props.Model]", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("deep: true", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/parameter-lifecycle-runtime.js",
             observation.ModuleText,
             "parameter-lifecycle-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runWatchers } from "vue";
 
             import component from "./components/parameter-lifecycle-runtime.js";

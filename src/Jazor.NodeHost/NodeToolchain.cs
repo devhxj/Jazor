@@ -12,7 +12,7 @@ internal static class NodeToolchain
     public static async Task<string> RestoreAsync(string projectDirectory, string storeDirectory,
         CancellationToken cancellationToken, TextWriter? progress = null)
     {
-        var bootstrap = await PnpmBootstrap.EnsureAsync(projectDirectory, cancellationToken);
+        var bootstrap = await PnpmBootstrap.EnsureAsync(storeDirectory, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory);
         var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "restore",

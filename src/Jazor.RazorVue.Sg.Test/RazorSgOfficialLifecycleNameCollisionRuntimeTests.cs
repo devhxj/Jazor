@@ -37,13 +37,13 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/lifecycle-name-collision.js",
             observation.ModuleText,
             "official-lifecycle-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/lifecycle-name-collision.js";
 
@@ -138,13 +138,13 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/lifecycle-names.js",
             observation.ModuleText,
             "official-lifecycle-names.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runMounted, __runUpdated } from "vue";
 
             import component from "./components/lifecycle-names.js";

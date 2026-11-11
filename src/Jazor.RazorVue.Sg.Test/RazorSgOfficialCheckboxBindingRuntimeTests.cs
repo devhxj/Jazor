@@ -36,13 +36,13 @@ public sealed class RazorSgOfficialCheckboxBindingRuntimeTests
             StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("eventOrValue", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-approval-toggle-runtime.js",
             observation.ModuleText,
             "official-release-approval-toggle-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-approval-toggle-runtime.js";
 

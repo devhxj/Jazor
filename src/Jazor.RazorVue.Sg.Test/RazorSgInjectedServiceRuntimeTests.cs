@@ -49,13 +49,13 @@ public sealed class RazorSgInjectedServiceRuntimeTests
         StringAssert.Contains(observation.ModuleText, "inject", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "jazor:service:Demo.Pages.BrowserClock", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/injected-service-runtime.js",
             observation.ModuleText,
             "injected-service-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/injected-service-runtime.js";
             import { __serviceProvider } from "vue";
 
@@ -131,13 +131,13 @@ public sealed class RazorSgInjectedServiceRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.MissingConstructorServiceRuntime");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/missing-constructor-service-runtime.js",
             observation.ModuleText,
             "missing-constructor-service-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/missing-constructor-service-runtime.js";
 
             test("missing constructor provider is an activation error", () => {
@@ -182,13 +182,13 @@ public sealed class RazorSgInjectedServiceRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.MissingInjectedServiceRuntime");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/missing-injected-service-runtime.js",
             observation.ModuleText,
             "missing-injected-service-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/missing-injected-service-runtime.js";
 
             test("missing provider is an activation error, never undefined state", () => {
@@ -268,13 +268,13 @@ public sealed class RazorSgInjectedServiceRuntimeTests
             componentMetadataName: "Demo.Pages.ConstructorServiceRuntime");
 
         StringAssert.Contains(observation.ModuleText, "inject(\"jazor:service:Demo.Pages.BrowserClock\")", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/constructor-service-runtime.js",
             observation.ModuleText,
             "constructor-service-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/constructor-service-runtime.js";
             import { __serviceProvider } from "vue";
 
@@ -344,13 +344,13 @@ public sealed class RazorSgInjectedServiceRuntimeTests
             componentMetadataName: "Demo.Pages.DerivedConstructorServiceRuntime");
 
         StringAssert.Contains(observation.ModuleText, "inject(\"jazor:service:Demo.Pages.BrowserClock\")", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/derived-constructor-service-runtime.js",
             observation.ModuleText,
             "derived-constructor-service-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/derived-constructor-service-runtime.js";
             import { __serviceProvider } from "vue";
 

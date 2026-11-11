@@ -45,13 +45,13 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.ReleaseName", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "state.SavedReleaseName", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-name-editor-runtime.js",
             observation.ModuleText,
             "official-release-name-editor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-name-editor-runtime.js";
 
@@ -111,13 +111,13 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.ReleaseName", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "state.SavedReleaseName", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-name-sync-editor-runtime.js",
             observation.ModuleText,
             "official-release-name-sync-editor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-name-sync-editor-runtime.js";
 

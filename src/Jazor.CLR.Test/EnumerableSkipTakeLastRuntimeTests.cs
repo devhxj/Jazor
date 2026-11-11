@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -30,7 +30,7 @@ public sealed class EnumerableSkipTakeLastRuntimeTests
                 $$"""
                 import { {{skipLast}}, {{takeLast}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("SkipLast and TakeLast preserve bounded tail traversal", () => {
+                globalThis.__jazorTest("SkipLast and TakeLast preserve bounded tail traversal", () => {
                   const trace = [];
                   function* source(values) {
                     for (const value of values) {
@@ -71,10 +71,7 @@ public sealed class EnumerableSkipTakeLastRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

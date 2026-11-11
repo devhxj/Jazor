@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -41,7 +41,7 @@ public sealed class EnumerableSetRuntimeTests
                     throw new Error(`${name}: ${JSON.stringify(actual)} did not match the expected CLR-order result`);
                 }
 
-                Deno.test("Enumerable set operators preserve CLR equality and enumeration order", () => {
+                globalThis.__jazorTest("Enumerable set operators preserve CLR equality and enumeration order", () => {
                   assertArray({{distinct}}([Number.NaN, -0, 0, Number.NaN, 1]), [Number.NaN, -0, 1], "Distinct");
                   assertArray({{union}}([1, 2, 1], [2, 3, 1]), [1, 2, 3], "Union");
                   assertArray({{except}}([1, 2, 2, 3], [2, 4]), [1, 3], "Except");
@@ -57,10 +57,7 @@ public sealed class EnumerableSetRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

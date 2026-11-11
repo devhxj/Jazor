@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -43,7 +43,7 @@ public sealed class EnumerableSetByRuntimeTests
                   }
                 }
 
-                Deno.test("Enumerable key-set operators preserve CLR equality and traversal order", () => {
+                globalThis.__jazorTest("Enumerable key-set operators preserve CLR equality and traversal order", () => {
                   let trace = [];
                   const union = {{unionBy}}(
                     tracked("first", [1, 3, 2, 4], trace),
@@ -93,10 +93,7 @@ public sealed class EnumerableSetByRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

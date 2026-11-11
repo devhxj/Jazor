@@ -77,13 +77,13 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("CreateTemplateState", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "get ItemTemplate()", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/template-state-helper-runtime.js",
             observation.ModuleText,
             "official-template-state-helper-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/template-state-helper-runtime.js";
             import templatePanel from "./components/template-panel-render-state-runtime.js";
@@ -174,13 +174,13 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("CreateTemplateState", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "get ItemTemplate()", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/template-state-initializer-runtime.js",
             observation.ModuleText,
             "official-template-state-initializer-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/template-state-initializer-runtime.js";
             import templatePanel from "./components/template-panel-render-state-initializer-runtime.js";

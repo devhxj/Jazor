@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -34,7 +34,7 @@ public sealed class EnumerableLongCountRuntimeTests
                 $$"""
                 import { {{longCount}}, {{longCountWhere}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable.LongCount preserves BigInt width and predicate order", () => {
+                globalThis.__jazorTest("Enumerable.LongCount preserves BigInt width and predicate order", () => {
                   const source = [3, 1, 4, 2];
                   const all = {{longCount}}(source);
                   if (all !== 4n || typeof all !== "bigint")
@@ -72,10 +72,7 @@ public sealed class EnumerableLongCountRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

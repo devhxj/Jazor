@@ -16,11 +16,11 @@ public sealed class RazorSgOfficialNumericUnionMatrixTests
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(document,
             await File.ReadAllTextAsync(sample), await File.ReadAllTextAsync(sample + ".cs"), "Demo.Pages", "Demo.Pages.BindingMatrix");
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync("components/binding-matrix.js", observation.ModuleText,
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync("components/binding-matrix.js", observation.ModuleText,
             "binding-matrix.test.mjs", """
             import assert from "node:assert/strict";
             import component from "./components/binding-matrix.js";
-            Deno.test("Razor SG and compiler preserve plain number literals and int/float model values", () => {
+            globalThis.__jazorTest("Razor SG and compiler preserve plain number literals and int/float model values", () => {
                 const nodes = component.setup({}, { slots: {} })().children.filter(node => ["ElAvatar", "ElPagination", "VAvatar", "Tag", "span"].includes(node?.name));
                 assert.equal(nodes[0].props.size, 32);
                 assert.equal(nodes[1].props.size, 32);

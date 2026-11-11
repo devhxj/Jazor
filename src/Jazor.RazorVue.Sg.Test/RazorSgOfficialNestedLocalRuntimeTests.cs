@@ -33,13 +33,13 @@ public sealed class RazorSgOfficialNestedLocalRuntimeTests
         StringAssert.Contains(observation.ModuleText, "data-label", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("const label", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-details-label-nested-local-runtime.js",
             observation.ModuleText,
             "official-release-details-label-nested-local-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-details-label-nested-local-runtime.js";
 

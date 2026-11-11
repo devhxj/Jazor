@@ -1,4 +1,4 @@
-using DenoHost.Core;
+using Jazor.NodeHost;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -70,7 +70,7 @@ public sealed class ErasedUnionInlineProjectionTests
                 """
                 import assert from "node:assert/strict";
                 import { ReadNumber, ReadString, ReadMultiple, ReadEffectfulString, ReadCalls, ReadMapped } from "./projections.mjs";
-                Deno.test("authored host projections keep branches and evaluate receivers once", () => {
+                globalThis.__jazorTest("authored host projections keep branches and evaluate receivers once", () => {
                     assert.equal(ReadNumber(0), 0);
                     assert.equal(ReadNumber(32), 32);
                     assert.equal(ReadString("32"), "32");
@@ -93,8 +93,7 @@ public sealed class ErasedUnionInlineProjectionTests
                 });
                 """);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

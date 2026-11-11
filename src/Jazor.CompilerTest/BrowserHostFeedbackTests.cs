@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Jazor.ComplierTest;
@@ -46,16 +46,16 @@ public sealed class BrowserHostFeedbackTests
         StringAssert.Contains(script, ".location.reload()");
         StringAssert.Contains(script, "BigInt(value)");
 
-        var root = Path.Combine(Path.GetTempPath(), "jazor-browser-host-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-browser-host-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
             await File.WriteAllTextAsync(Path.Combine(root, "app.mjs"), script);
             var runner = Path.Combine(root, "app.test.mjs");
             await File.WriteAllTextAsync(runner, """
-                import { Window } from "npm:happy-dom@20.10.6";
+                import { Window } from "happy-dom";
                 import { Update, ReloadView, ReloadBrowser, Signed, Unsigned } from "./app.mjs";
-                Deno.test("live classList and navigation methods", () => {
+                globalThis.__jazorTest("live classList and navigation methods", () => {
                   const document = new Window().document;
                   const element = document.createElement('div');
                   element.className = 'loading base';
@@ -70,8 +70,11 @@ public sealed class BrowserHostFeedbackTests
                 });
                 """);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-all", runner], timeout.Token);
+            await File.WriteAllTextAsync(Path.Combine(root, "package.json"),
+                """{"private":true,"type":"module","dependencies":{"happy-dom":"20.10.6"}}""");
+            await NodeToolchain.RestoreAsync(root,
+                Path.Combine(RepositoryTemp.Root, "nodeapi-store"), timeout.Token);
+            await NodeModuleRunner.RunAsync(root, runner, cancellationToken: timeout.Token);
         }
         finally
         {

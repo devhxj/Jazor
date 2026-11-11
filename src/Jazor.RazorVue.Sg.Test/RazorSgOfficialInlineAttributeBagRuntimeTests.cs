@@ -38,13 +38,13 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
         StringAssert.Contains(observation.ModuleText, "\"data-source\": \"inline\"", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("new Dictionary", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-deployment-inline-attributes.js",
             observation.ModuleText,
             "official-release-deployment-inline-attributes-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-deployment-inline-attributes.js";
 

@@ -28,13 +28,13 @@ public sealed class RazorSgOfficialInlineConstantRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "true", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/static-boolean-content-runtime.js",
             observation.ModuleText,
             "official-static-boolean-content-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/static-boolean-content-runtime.js";
 
@@ -83,13 +83,13 @@ public sealed class RazorSgOfficialInlineConstantRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("approval =", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("retryLimit =", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-policy-summary-runtime.js",
             observation.ModuleText,
             "official-release-policy-summary-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-policy-summary-runtime.js";
 

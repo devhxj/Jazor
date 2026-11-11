@@ -71,13 +71,13 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "content:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-summary-render-fragment-composition-runtime.js",
             observation.ModuleText,
             "official-release-summary-render-fragment-composition-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-summary-render-fragment-composition-runtime.js";
             import slotHost from "./components/slot-host-render-fragment-composition-runtime.js";
@@ -183,13 +183,13 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-item-template-render-fragment-composition-runtime.js",
             observation.ModuleText,
             "official-release-item-template-render-fragment-composition-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-item-template-render-fragment-composition-runtime.js";
             import itemPanel from "./components/item-panel-render-fragment-composition-runtime.js";
@@ -292,13 +292,13 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-item-variant-render-fragment-runtime.js",
             observation.ModuleText,
             "official-release-item-variant-render-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-item-variant-render-fragment-runtime.js";
 
@@ -387,13 +387,13 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "renderRenderTree", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-tree-local-render-fragment-runtime.js",
             observation.ModuleText,
             "official-release-tree-local-render-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-tree-local-render-fragment-runtime.js";
 
@@ -473,13 +473,13 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateNotice()", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-notice-expression-fragment-runtime.js",
             observation.ModuleText,
             "official-release-notice-expression-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-notice-expression-fragment-runtime.js";
 

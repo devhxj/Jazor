@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -31,7 +31,7 @@ public sealed class EnumerableAggregateRuntimeTests
                 $$"""
                 import { {{aggregate}}, {{aggregateWithSeed}}, {{aggregateWithResult}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Aggregate preserves accumulator and result-selector order", () => {
+                globalThis.__jazorTest("Aggregate preserves accumulator and result-selector order", () => {
                   const unseededTrace = [];
                   const unseeded = {{aggregate}}([2, 3, 4], (total, value) => {
                     unseededTrace.push(`${total}:${value}`);
@@ -62,10 +62,7 @@ public sealed class EnumerableAggregateRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Common;
 using Jazor.Compiler;
@@ -165,7 +165,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                 """
                 import { evaluate } from "./element-at-or-default.mjs";
 
-                Deno.test("ElementAtOrDefault returns closed defaults and closes array iteration early", () => {
+                globalThis.__jazorTest("ElementAtOrDefault returns closed defaults and closes array iteration early", () => {
                   if (evaluate([7, 9], 0) !== 14)
                     throw new Error("the direct and method-group paths must both return the first item");
                   if (evaluate([], 0) !== 0 || evaluate([7], -1) !== 0 || evaluate([7], 2) !== 0)
@@ -183,10 +183,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -325,7 +322,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                   };
                 }
 
-                Deno.test("ElementAtOrDefault Index preserves from-start and from-end traversal", () => {
+                globalThis.__jazorTest("ElementAtOrDefault Index preserves from-start and from-end traversal", () => {
                   let trace = [];
                   if (evaluate(tracked([2, 7, 9], trace), fromStart(1), false) !== 14)
                     throw new Error("stored from-start Index or method-group dispatch returned the wrong item");
@@ -388,10 +385,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -2448,7 +2448,7 @@ ${name ?? """"}!`;
 				"""
                 import { run } from "./interpolation.mjs";
 
-                Deno.test("standard interpolation preserves C# null and bool text", () => {
+                globalThis.__jazorTest("standard interpolation preserves C# null and bool text", () => {
                   const result = run();
                   if (result !== "[]|[True]")
                     throw new Error(`expected []|[True], got ${result}`);
@@ -2457,10 +2457,7 @@ ${name ?? """"}!`;
 				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
 			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-			await Deno.Execute(
-				new DenoExecuteBaseOptions { WorkingDirectory = root },
-				["test", "--quiet", "--allow-read", testPath],
-				timeout.Token);
+			await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
 		}
 		finally
 		{

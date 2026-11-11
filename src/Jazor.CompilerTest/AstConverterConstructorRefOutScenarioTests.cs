@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -79,7 +79,7 @@ public sealed class AstConverterConstructorRefOutScenarioTests
                 """
                 import { Run, RunNamed } from "./constructor-ref-out.mjs";
 
-                Deno.test("member constructors write ref and out values through the compiler sink", () => {
+                globalThis.__jazorTest("member constructors write ref and out values through the compiler sink", () => {
                   if (Run(3) !== 155)
                     throw new Error(`positive path: ${Run(3)}`);
                   if (Run(-2) !== 387)
@@ -93,10 +93,7 @@ public sealed class AstConverterConstructorRefOutScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

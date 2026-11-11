@@ -29,7 +29,7 @@ public sealed class RazorSgFeedbackSyntaxTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         var sourceMap = new SourceMapReader().Read(observation.SourceMapContent);
         Assert.IsTrue(sourceMap.Sources.Any(source => source.Content == documentText));
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/syntax-feedback.js", observation.ModuleText, "syntax-feedback.test.mjs",
             """
             import assert from "node:assert/strict";
@@ -92,7 +92,7 @@ public sealed class RazorSgFeedbackSyntaxTests
             """,
             "Demo.Pages", "Demo.Pages.DomNullFeedback");
         Assert.IsFalse(observation.ModuleText.Contains("instanceof HTMLElement", StringComparison.Ordinal), observation.ModuleText);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/dom-null-feedback.js", observation.ModuleText, "dom-null-feedback.test.mjs",
             """
             import assert from "node:assert/strict";

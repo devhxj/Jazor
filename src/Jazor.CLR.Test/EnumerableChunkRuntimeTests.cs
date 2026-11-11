@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -29,7 +29,7 @@ public sealed class EnumerableChunkRuntimeTests
                 $$"""
                 import { {{chunk}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Chunk preserves enumeration order and independent chunk carriers", () => {
+                globalThis.__jazorTest("Chunk preserves enumeration order and independent chunk carriers", () => {
                   const trace = [];
                   function* source(values) {
                     for (const value of values) {
@@ -57,10 +57,7 @@ public sealed class EnumerableChunkRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

@@ -95,12 +95,12 @@ public sealed class RazorSgOfficialElementPlusTypedInteractionTests
         StringAssert.Contains(observation.GeneratedCSharp, "ElTableSlotContext<", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/element-plus-typed-interactions.js", observation.ModuleText,
             "typed-interactions.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/element-plus-typed-interactions.js";
             import { calls } from "element-plus/es/index.mjs";
 
@@ -165,18 +165,18 @@ public sealed class RazorSgOfficialElementPlusTypedInteractionTests
         };
         var npmImports = new Dictionary<string, string>
         {
-            ["element-plus/es/index.mjs"] = "npm:element-plus@2.14.5/es/index.mjs"
+            ["element-plus/es/index.mjs"] = "element-plus/es/index.mjs"
         };
         foreach (var path in new[] { "select", "table", "dropdown" })
-            npmImports[$"element-plus/es/components/{path}/index.mjs"] = $"npm:element-plus@2.14.5/es/components/{path}/index.mjs";
+            npmImports[$"element-plus/es/components/{path}/index.mjs"] = $"element-plus/es/components/{path}/index.mjs";
         foreach (var path in new[] { "select", "table", "dropdown", "message", "message-box", "notification" })
             npmImports[$"element-plus/es/components/{path}/style/css.mjs"] = "./fixtures/empty-style.mjs";
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/element-plus-typed-interactions.js", observation.ModuleText,
             "typed-interactions-real-dom.test.mjs",
             """
             import assert from "node:assert/strict";
-            import { Window } from "npm:happy-dom@20.10.6";
+            import { Window } from "happy-dom";
             const window = new Window({ url: "http://localhost/" });
             for (const name of ["document", "Node", "Element", "HTMLElement", "SVGElement", "HTMLInputElement", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver", "ResizeObserver", "DOMException", "navigator"])
                 globalThis[name] = window[name];
@@ -188,7 +188,7 @@ public sealed class RazorSgOfficialElementPlusTypedInteractionTests
             const { default: component } = await import("./components/element-plus-typed-interactions.js");
             const settle = async () => { await nextTick(); await new Promise(resolve => setTimeout(resolve, 40)); await nextTick(); };
 
-            Deno.test("actual Element Plus accepts string IDs and created values, and blocks disabled rows", async () => {
+            globalThis.__jazorTest("actual Element Plus accepts string IDs and created values, and blocks disabled rows", async () => {
                 const host = document.createElement("main");
                 document.body.append(host);
                 const app = createApp(component);
@@ -228,8 +228,8 @@ public sealed class RazorSgOfficialElementPlusTypedInteractionTests
                 window.happyDOM.abort();
             });
             """, realModules,
-            vueModuleSpecifier: "npm:vue@3.5.42",
-            restoreNpmDependencies: true,
+            vueModuleSpecifier: "vue",
+            packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6", ["element-plus"] = "2.14.5" },
             importSpecifiers: npmImports);
     }
 

@@ -108,13 +108,13 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("admin-input", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("builder.OpenComponent", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/tdesign-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/tdesign-natural-authoring-runtime.js";
             import { Button } from "tdesign-vue-next/es/button/index.mjs";
@@ -227,13 +227,13 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("AdminRadioGroup", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("AdminToggle", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/tdesign-form-control-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-form-control-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/tdesign-form-control-natural-authoring-runtime.js";
             import { Form, FormItem } from "tdesign-vue-next/es/form/index.mjs";
@@ -365,13 +365,13 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "import { Textarea } from \"tdesign-vue-next/es/textarea/index.mjs\";", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("AdminTextarea", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/tdesign-textarea-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-textarea-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/tdesign-textarea-natural-authoring-runtime.js";
             import { Textarea } from "tdesign-vue-next/es/textarea/index.mjs";
@@ -477,13 +477,13 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("AdminDialog", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("AdminTable", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/tdesign-dialog-table-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-tdesign-dialog-table-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/tdesign-dialog-table-natural-authoring-runtime.js";
             import { Dialog } from "tdesign-vue-next/es/dialog/index.mjs";

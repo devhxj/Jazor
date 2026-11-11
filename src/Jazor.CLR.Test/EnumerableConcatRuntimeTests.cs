@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -29,7 +29,7 @@ public sealed class EnumerableConcatRuntimeTests
                 $$"""
                 import { {{concat}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Concat enumerates first before second without mutating either source", () => {
+                globalThis.__jazorTest("Concat enumerates first before second without mutating either source", () => {
                   const trace = [];
                   function* source(name, values) {
                     for (const value of values) {
@@ -54,10 +54,7 @@ public sealed class EnumerableConcatRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

@@ -65,13 +65,13 @@ public sealed class RazorSgOfficialRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "renderRenderNested", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "content:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/recursive-template-runtime.js",
             observation.ModuleText,
             "official-recursive-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/recursive-template-runtime.js";
             import treePanel from "./components/tree-panel-recursive-template-runtime.js";

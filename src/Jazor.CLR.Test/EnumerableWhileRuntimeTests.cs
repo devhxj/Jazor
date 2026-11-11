@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -60,7 +60,7 @@ public sealed class EnumerableWhileRuntimeTests
                   };
                 }
 
-                Deno.test("SkipWhile and TakeWhile preserve predicate stop and iterator close behavior", () => {
+                globalThis.__jazorTest("SkipWhile and TakeWhile preserve predicate stop and iterator close behavior", () => {
                   let trace = [];
                   assertArray({{skipWhile}}(tracked([2, 4, 1, 6], trace), value => {
                     trace.push(`predicate:${value}`);
@@ -103,10 +103,7 @@ public sealed class EnumerableWhileRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

@@ -74,13 +74,13 @@ public sealed class RazorSgOfficialLoopBoundSelectRuntimeTests
             observation.ModuleText.IndexOf("let state =", StringComparison.Ordinal),
             observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-environment-editor-runtime.js",
             observation.ModuleText,
             "official-release-environment-editor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-environment-editor-runtime.js";
 

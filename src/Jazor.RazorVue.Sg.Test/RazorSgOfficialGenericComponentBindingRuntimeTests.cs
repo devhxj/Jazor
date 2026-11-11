@@ -61,13 +61,13 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
         StringAssert.Contains(observation.ModuleText, "nested-generic-value-runtime.js", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("__builder", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nested-generic-inference-runtime.js",
             observation.ModuleText,
             "official-nested-generic-inference-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nested-generic-inference-runtime.js";
             import slotHost from "./components/nested-generic-slot-host-runtime.js";
@@ -145,13 +145,13 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
         StringAssert.Contains(observation.ModuleText, "modelValue: state.ReleaseName", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onUpdate:modelValue", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-editor-host-generic-runtime.js",
             observation.ModuleText,
             "official-release-editor-host-generic-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-editor-host-generic-runtime.js";
             import releaseEditor from "./components/release-editor-generic-runtime.js";

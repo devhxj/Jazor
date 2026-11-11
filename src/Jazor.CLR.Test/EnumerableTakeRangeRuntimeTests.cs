@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -35,7 +35,7 @@ public sealed class EnumerableTakeRangeRuntimeTests
                 import { {{fromStart}}, {{fromEnd}} } from "./clr/System/IndexModule.js";
                 import { {{createRange}}, {{allRange}} } from "./clr/System/RangeModule.js";
 
-                Deno.test("Enumerable.Take(Range) preserves closed Range semantics", () => {
+                globalThis.__jazorTest("Enumerable.Take(Range) preserves closed Range semantics", () => {
                   const source = [1, 2, 3, 4, 5];
                   const middle = {{takeRange}}(source, {{createRange}}({{fromStart}}(1), {{fromEnd}}(1)));
                   if (JSON.stringify(middle) !== "[2,3,4]")
@@ -61,7 +61,7 @@ public sealed class EnumerableTakeRangeRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

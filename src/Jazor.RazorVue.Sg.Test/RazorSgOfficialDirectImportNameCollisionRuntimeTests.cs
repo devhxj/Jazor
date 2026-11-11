@@ -59,13 +59,13 @@ public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "onClick: QueueRelease", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("function queueRelease(", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/direct-import-name-collision.js",
             observation.ModuleText,
             "official-direct-import-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/direct-import-name-collision.js";
 

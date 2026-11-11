@@ -75,13 +75,13 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-summary-members.js",
             observation.ModuleText,
             "official-release-summary-members-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-summary-members.js";
             import slotPanel from "./components/slot-panel-render-fragment-members.js";

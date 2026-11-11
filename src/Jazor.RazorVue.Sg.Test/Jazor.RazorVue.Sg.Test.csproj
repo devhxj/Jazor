@@ -11,6 +11,7 @@
     <RazorSgTestSdkPath Condition="'$(RazorSgTestSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</RazorSgTestSdkPath>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -49,10 +50,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
-    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
-    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />

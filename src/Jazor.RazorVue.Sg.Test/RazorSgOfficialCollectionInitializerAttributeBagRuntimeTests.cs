@@ -34,13 +34,13 @@ public sealed class RazorSgOfficialCollectionInitializerAttributeBagRuntimeTests
         StringAssert.Contains(observation.ModuleText, "\"data-source\": \"collection\"", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("new Dictionary", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-collection-attributes.js",
             observation.ModuleText,
             "official-release-collection-attributes-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-collection-attributes.js";
 

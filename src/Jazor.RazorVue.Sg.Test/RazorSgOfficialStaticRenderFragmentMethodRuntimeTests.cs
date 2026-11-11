@@ -55,13 +55,13 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "content:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-terms-static-render-fragment-runtime.js",
             observation.ModuleText,
             "official-release-terms-static-render-fragment-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-terms-static-render-fragment-runtime.js";
             import slotHost from "./components/slot-host-static-render-fragment-runtime.js";

@@ -19,7 +19,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_TypedFactories_EmitPlainCssStringsAndComposeValues()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import {
               style, px, rem, percent, rgba, hex, variable, varOr, ms,
@@ -41,9 +41,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             });
             console.log(JSON.stringify({ name, css: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var name = json.RootElement.GetProperty("name").GetString();
         var css = json.RootElement.GetProperty("css").GetString() ?? string.Empty;
         Assert.IsNotNull(name);
@@ -63,7 +61,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_AnchorAndSizingFactories_EmitStructuredModernCss()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import {
               style, extract, anchorName, anchor, anchorNamedFallback,
@@ -83,9 +81,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             });
             console.log(JSON.stringify({ name, css: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var name = json.RootElement.GetProperty("name").GetString();
         var css = json.RootElement.GetProperty("css").GetString() ?? string.Empty;
         Assert.IsNotNull(name);
@@ -101,7 +97,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_Shadows_SerializesStructuredTokensInStableOrder()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, shadows, px, hex, variable, extract } from "./runtime.mjs";
 
@@ -114,9 +110,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             });
             console.log(JSON.stringify({ name, css: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var name = json.RootElement.GetProperty("name").GetString();
         var css = json.RootElement.GetProperty("css").GetString() ?? string.Empty;
         Assert.IsNotNull(name);
@@ -128,7 +122,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_TypedFactories_RejectInvalidValuesWithActionableErrors()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import {
               px, hex, rgb, rgba, hsl, ratio, repeat, fr, transform, shadows,
@@ -155,9 +149,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             capture(() => variable("brand"));
             console.log(JSON.stringify(messages));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        var messages = JsonSerializer.Deserialize<string[]>(result.StandardOutput.Trim());
+        var messages = JsonSerializer.Deserialize<string[]>(result.Trim());
         Assert.IsNotNull(messages);
         Assert.HasCount(12, messages);
         Assert.IsFalse(messages.Contains("missing-error", StringComparer.Ordinal));
@@ -178,20 +170,18 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_HashV1_MatchesFixedVector()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style } from "./runtime.mjs";
             console.log(style({ color: "red" }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        Assert.AreEqual("ecs-48pape-1cqt43e", result.StandardOutput.Trim());
+        Assert.AreEqual("ecs-48pape-1cqt43e", result.Trim());
     }
 
     [TestMethod]
     public async Task Runtime_NoDom_GeneratesDeterministicRulesAndExtractsCss()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, keyframes, global as cssGlobal, extract } from "./runtime.mjs";
 
@@ -223,9 +213,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             const css = extract();
             console.log(JSON.stringify({ first, second, animation, css, repeated: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var root = json.RootElement;
         var first = root.GetProperty("first").GetString();
         var second = root.GetProperty("second").GetString();
@@ -249,7 +237,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_Dom_InjectsNonceAndAdoptsLengthFramedEntriesAcrossReload()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             class FakeElement {
               constructor(localName, owner) {
@@ -298,9 +286,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               text: style.textContent
             }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var root = json.RootElement;
         Assert.AreEqual(root.GetProperty("firstName").GetString(), root.GetProperty("secondName").GetString());
         Assert.AreEqual("nonce-1", root.GetProperty("nonce").GetString());
@@ -314,7 +300,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_InvalidInputs_FailWithActionableErrors()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, keyframes, configure, context, atRule } from "./runtime.mjs";
 
@@ -342,9 +328,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             capture(() => configure({ nonce: "late" }));
             console.log(JSON.stringify(messages));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        var messages = JsonSerializer.Deserialize<string[]>(result.StandardOutput.Trim());
+        var messages = JsonSerializer.Deserialize<string[]>(result.Trim());
         Assert.IsNotNull(messages);
         Assert.HasCount(14, messages);
         Assert.IsFalse(messages.Contains("missing-error", StringComparer.Ordinal));
@@ -367,7 +351,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_SelectorScanner_PreservesNestedCommasAndAttributeValues()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, extract } from "./runtime.mjs";
             const name = style({
@@ -379,9 +363,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             });
             console.log(JSON.stringify({ name, text: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var name = json.RootElement.GetProperty("name").GetString();
         var text = json.RootElement.GetProperty("text").GetString() ?? string.Empty;
         Assert.IsNotNull(name);
@@ -391,7 +373,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_NormalizationPreservesObservableOrderAndSeparatesNameDomains()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, keyframes, global, extract } from "./runtime.mjs";
 
@@ -418,9 +400,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               duplicateStable: beforeDuplicate === extract()
             }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var root = json.RootElement;
         var first = root.GetProperty("first").GetString();
         Assert.AreEqual(first, root.GetProperty("reordered").GetString());
@@ -438,7 +418,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_NestedConditionsPreserveSelectorContextAndSiblingOrder()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, extract } from "./runtime.mjs";
             const name = style({
@@ -454,9 +434,7 @@ public sealed class EcmaScriptStyleRuntimeTests
             });
             console.log(JSON.stringify({ name, css: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var name = json.RootElement.GetProperty("name").GetString();
         var css = json.RootElement.GetProperty("css").GetString();
         Assert.AreEqual(
@@ -467,7 +445,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_DomAppearingAfterRegistrationAttachesCacheAndRejectsForeignOwnership()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             const memoryModule = await import("./runtime.mjs");
             const name = memoryModule.style({ color: "red" });
@@ -530,9 +508,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               messages
             }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var root = json.RootElement;
         Assert.AreEqual(root.GetProperty("name").GetString(), root.GetProperty("cachedName").GetString());
         StringAssert.Contains(root.GetProperty("attachedText").GetString() ?? string.Empty, "/*ecmascript-style:v1*//*ecs:v1:");
@@ -546,7 +522,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_IsolatedContextsProvideDeterministicNamesSnapshotsAndAtRules()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import {
               context,
@@ -590,9 +566,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               snapshot
             }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var root = json.RootElement;
         Assert.AreEqual(root.GetProperty("firstName").GetString(), root.GetProperty("secondName").GetString());
         Assert.AreEqual(string.Empty, root.GetProperty("defaultCss").GetString());
@@ -613,7 +587,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_ModernGroupingAtRulesPreserveStructuredNestingAndOrder()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { style, extract } from "./runtime.mjs";
 
@@ -631,9 +605,7 @@ public sealed class EcmaScriptStyleRuntimeTests
 
             console.log(JSON.stringify({ name, css: extract() }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var name = json.RootElement.GetProperty("name").GetString();
         Assert.IsNotNull(name);
         Assert.AreEqual(
@@ -648,7 +620,7 @@ public sealed class EcmaScriptStyleRuntimeTests
     [TestMethod]
     public async Task Runtime_TargetContextCreatesAndAdoptsOneOwnedStylePerFragment()
     {
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(
             """
             import { context, styleIn, snapshotFrom } from "./runtime.mjs";
 
@@ -697,9 +669,7 @@ public sealed class EcmaScriptStyleRuntimeTests
               snapshot
             }));
             """);
-
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
-        using var json = JsonDocument.Parse(result.StandardOutput.Trim());
+        using var json = JsonDocument.Parse(result.Trim());
         var root = json.RootElement;
         Assert.AreEqual(root.GetProperty("firstName").GetString(), root.GetProperty("secondName").GetString());
         Assert.AreEqual(1, root.GetProperty("styleCount").GetInt32());

@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -59,7 +59,7 @@ public sealed class SemanticWalkerStringForEachTests
                 """
                 import { countUnits } from "./string-foreach.mjs";
 
-                Deno.test("foreach string preserves C# UTF-16 char iteration", () => {
+                globalThis.__jazorTest("foreach string preserves C# UTF-16 char iteration", () => {
                   if (countUnits() !== 13)
                     throw new Error(`expected one evaluation and 3 UTF-16 units, got ${countUnits()}`);
                 });
@@ -67,10 +67,7 @@ public sealed class SemanticWalkerStringForEachTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

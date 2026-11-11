@@ -61,13 +61,13 @@ public sealed class RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests
         StringAssert.Contains(observation.ModuleText, "import \"element-plus/es/components/input/style/css.mjs\";", StringComparison.Ordinal);
         Assert.DoesNotContain("builder.OpenComponent", observation.ModuleText, StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/element-plus-natural-authoring-runtime.js",
             observation.ModuleText,
             "official-element-plus-natural-authoring-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/element-plus-natural-authoring-runtime.js";
             import { ElButton } from "element-plus/es/components/button/index.mjs";

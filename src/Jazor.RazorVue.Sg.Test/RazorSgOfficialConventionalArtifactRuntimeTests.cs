@@ -33,13 +33,13 @@ public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "\"data-area\": \"releases\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/conventional-artifact-page-runtime.js",
             observation.ModuleText,
             "official-conventional-artifact-page-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/conventional-artifact-page-runtime.js";
 

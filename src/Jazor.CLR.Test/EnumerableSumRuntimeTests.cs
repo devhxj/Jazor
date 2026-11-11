@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -36,7 +36,7 @@ public sealed class EnumerableSumRuntimeTests
                 $$"""
                 import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable.Sum preserves numeric carrier contracts", () => {
+                globalThis.__jazorTest("Enumerable.Sum preserves numeric carrier contracts", () => {
                   const [sumIntOperation, sumInt64Operation, sumSingleOperation, sumDoubleOperation, sumDecimalOperation] = [{{string.Join(", ", names)}}];
                   if (sumIntOperation([7, -2, 4]) !== 9 || sumIntOperation([]) !== 0)
                     throw new Error("Int32 Sum normal or empty behavior drifted");
@@ -67,7 +67,7 @@ public sealed class EnumerableSumRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

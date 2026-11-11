@@ -46,13 +46,13 @@ public sealed class RazorSgOfficialExplicitLifecycleRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("system.IDisposable", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("system.IAsyncDisposable", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/explicit-lifecycle-runtime.js",
             observation.ModuleText,
             "official-explicit-lifecycle-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runUnmounted } from "vue";
 
             import component from "./components/explicit-lifecycle-runtime.js";

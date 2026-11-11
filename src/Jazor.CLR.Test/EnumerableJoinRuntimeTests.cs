@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -32,7 +32,7 @@ public sealed class EnumerableJoinRuntimeTests
                 $$"""
                 import { {{join}}, {{groupJoin}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Join and GroupJoin preserve lookup, result, and numeric comparer semantics", () => {
+                globalThis.__jazorTest("Join and GroupJoin preserve lookup, result, and numeric comparer semantics", () => {
                   const trace = [];
                   const joined = {{join}}([1, 2, 3], [10, 11, 12], outer => {
                     trace.push(`outer:${outer}`);
@@ -63,10 +63,7 @@ public sealed class EnumerableJoinRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

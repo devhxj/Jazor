@@ -47,13 +47,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
         StringAssert.Contains(observation.ModuleText, "recordLifecycleFailure", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "lifecycleFailure", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/async-initialization-failure.js",
             observation.ModuleText,
             "official-async-initialization-failure.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/async-initialization-failure.js";
 
@@ -108,13 +108,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.AsyncInitializationOrder");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/async-initialization-order.js",
             observation.ModuleText,
             "official-async-initialization-order.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runServerPrefetch } from "vue";
 
             import component from "./components/async-initialization-order.js";
@@ -152,13 +152,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.SynchronousInitializationThrow");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/synchronous-initialization-throw.js",
             observation.ModuleText,
             "official-synchronous-initialization-throw.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/synchronous-initialization-throw.js";
 
@@ -204,13 +204,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
         StringAssert.Contains(observation.ModuleText, "parametersSetAsyncGen", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "if (disposed) {", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/canceled-parameter-lifecycle.js",
             observation.ModuleText,
             "official-canceled-parameter-lifecycle.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runUnmounted } from "vue";
 
             import component from "./components/canceled-parameter-lifecycle.js";
@@ -269,13 +269,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "if (disposed) {", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/queued-parameter-lifecycle.js",
             observation.ModuleText,
             "official-queued-parameter-lifecycle.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runUnmounted, __runWatchers } from "vue";
 
             import component from "./components/queued-parameter-lifecycle.js";
@@ -333,13 +333,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "recordLifecycleFailure", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/stale-parameter-failure.js",
             observation.ModuleText,
             "official-stale-parameter-failure.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runWatchers } from "vue";
 
             import component from "./components/stale-parameter-failure.js";
@@ -393,13 +393,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
         StringAssert.Contains(observation.ModuleText, "onUpdated(() => {", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "recordLifecycleFailure(error)", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/repeated-after-render.js",
             observation.ModuleText,
             "official-repeated-after-render.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runMounted, __runUpdated } from "vue";
 
             import component from "./components/repeated-after-render.js";
@@ -464,13 +464,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
         StringAssert.Contains(observation.ModuleText, "disposed = true;", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "recordLifecycleFailure", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/async-unmount-race.js",
             observation.ModuleText,
             "official-async-unmount-race.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { __runUnmounted } from "vue";
 
             import component from "./components/async-unmount-race.js";

@@ -109,13 +109,13 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
             "ElementReferenceExtensionsModule.js",
             StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/reference-focus-runtime.js",
             observation.ModuleText,
             "official-reference-focus-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/reference-focus-runtime.js";
 
@@ -277,13 +277,13 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddComponentReferenceCapture", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/reference-runtime.js",
             observation.ModuleText,
             "official-reference-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/reference-runtime.js";
 

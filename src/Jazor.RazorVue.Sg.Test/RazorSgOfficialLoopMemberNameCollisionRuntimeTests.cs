@@ -44,13 +44,13 @@ public sealed class RazorSgOfficialLoopMemberNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "Array.from(props.Releases ?? []", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "data-last", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-refresh-queue-runtime.js",
             observation.ModuleText,
             "official-release-refresh-queue-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-refresh-queue-runtime.js";
 

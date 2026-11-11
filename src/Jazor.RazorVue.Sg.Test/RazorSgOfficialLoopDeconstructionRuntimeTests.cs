@@ -37,13 +37,13 @@ public sealed class RazorSgOfficialLoopDeconstructionRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "Array.from(state.ReleaseCounts ?? []", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-environment-summary-loop-runtime.js",
             observation.ModuleText,
             "official-release-environment-summary-loop-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-environment-summary-loop-runtime.js";
 

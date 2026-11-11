@@ -72,13 +72,13 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
         StringAssert.Contains(artifact.ModuleText, "createRawMarkup", StringComparison.Ordinal);
         StringAssert.Contains(artifact.ModuleText, "[].concat", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/direct-nullable-markup-parent.js",
             artifact.ModuleText,
             "direct-nullable-markup-child-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/direct-nullable-markup-parent.js";
             import child from "./components/direct-nullable-markup-child.js";

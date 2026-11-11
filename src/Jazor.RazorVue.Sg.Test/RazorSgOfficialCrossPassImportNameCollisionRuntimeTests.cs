@@ -48,13 +48,13 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "function m$", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "import { Normalize", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/declared-direct-import-name-collision.js",
             observation.ModuleText,
             "official-declared-direct-import-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/declared-direct-import-name-collision.js";
 
@@ -122,13 +122,13 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
             observation.ModuleText.Contains("StaticMessageModule", StringComparison.Ordinal),
             "Static module calls must import their export, not materialize the C# containing type.");
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/static-module-text.js",
             observation.ModuleText,
             "official-static-module-member-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/static-module-text.js";
 
@@ -206,13 +206,13 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "direct-normalize-library", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "as i$", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/cross-pass-import-name-collision.js",
             observation.ModuleText,
             "official-cross-pass-import-name-collision-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/cross-pass-import-name-collision.js";
 

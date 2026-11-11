@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -29,7 +29,7 @@ public sealed class EnumerableDistinctByRuntimeTests
                 $$"""
                 import { {{distinctBy}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("DistinctBy evaluates each key once and uses CLR default equality", () => {
+                globalThis.__jazorTest("DistinctBy evaluates each key once and uses CLR default equality", () => {
                   const source = [2, 7, 4, 9, 3];
                   const keyTrace = [];
                   const result = {{distinctBy}}(source, value => {
@@ -51,10 +51,7 @@ public sealed class EnumerableDistinctByRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

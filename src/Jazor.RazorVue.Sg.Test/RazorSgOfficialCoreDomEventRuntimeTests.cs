@@ -144,13 +144,13 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
         Assert.IsFalse(script.Contains("FocusEventArgsModule.js", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/core-dom-events.js",
             script,
             "official-core-dom-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/core-dom-events.js";
             import forwarder from "./components/native-event-forwarder.js";
@@ -277,13 +277,13 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
         Assert.IsFalse(script.Contains("eventOrValue", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/core-dom-change-events.js",
             script,
             "official-core-dom-change-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             globalThis.HTMLInputElement = class HTMLInputElement {
               constructor(type, value, checked) {

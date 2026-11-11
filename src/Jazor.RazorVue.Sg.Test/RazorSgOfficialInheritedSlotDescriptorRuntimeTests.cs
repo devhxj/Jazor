@@ -47,13 +47,13 @@ public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
         StringAssert.Contains(observation.ModuleText, "slots[\"release-header\"]", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("slots.header", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-layout-inherited-slot-runtime.js",
             observation.ModuleText,
             "official-inherited-slot-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-layout-inherited-slot-runtime.js";
 
@@ -113,13 +113,13 @@ public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
         StringAssert.Contains(observation.ModuleText, "slots[\"base-header\"]", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("slots.header", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/audit-layout-inherited-slot-runtime.js",
             observation.ModuleText,
             "official-inherited-base-slot-descriptor-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/audit-layout-inherited-slot-runtime.js";
 

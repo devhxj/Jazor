@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -69,7 +69,7 @@ public sealed class SemanticWalkerTranslatedQueryTests
 				"""
 				import { selectNormalizedValues } from "./query-let.mjs";
 
-				Deno.test("query let preserves its projected value through where and select", () => {
+				globalThis.__jazorTest("query let preserves its projected value through where and select", () => {
 				  const actual = selectNormalizedValues([1, 2, 3]);
 				  if (actual.length !== 2 || actual[0] !== 5 || actual[1] !== 7)
 				    throw new Error(`expected [5, 7], got ${JSON.stringify(actual)}`);
@@ -78,10 +78,7 @@ public sealed class SemanticWalkerTranslatedQueryTests
 				new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
 			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-			await Deno.Execute(
-				new DenoExecuteBaseOptions { WorkingDirectory = root },
-				["test", "--quiet", "--allow-read", testPath],
-				timeout.Token);
+			await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
 		}
 		finally
 		{

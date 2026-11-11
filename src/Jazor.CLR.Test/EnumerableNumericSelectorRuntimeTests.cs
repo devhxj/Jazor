@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -51,7 +51,7 @@ public sealed class EnumerableNumericSelectorRuntimeTests
                 $$"""
                 import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable numeric selectors preserve carrier and source order", () => {
+                globalThis.__jazorTest("Enumerable numeric selectors preserve carrier and source order", () => {
                   const [sumIntByOperation, sumInt64ByOperation, sumSingleByOperation, sumDoubleByOperation, sumDecimalByOperation, averageIntByOperation, averageInt64ByOperation, averageSingleByOperation, averageDoubleByOperation, averageDecimalByOperation, minIntByOperation, minInt64ByOperation, minSingleByOperation, minDoubleByOperation, minDecimalByOperation, maxIntByOperation, maxInt64ByOperation, maxSingleByOperation, maxDoubleByOperation, maxDecimalByOperation] = [{{string.Join(", ", names)}}];
                   const entries = [{ value: 1 }, { value: 2 }];
                   const sumTrace = [];
@@ -141,7 +141,7 @@ public sealed class EnumerableNumericSelectorRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

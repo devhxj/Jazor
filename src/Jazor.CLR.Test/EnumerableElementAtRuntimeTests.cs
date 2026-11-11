@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -33,7 +33,7 @@ public sealed class EnumerableElementAtRuntimeTests
                 import { {{elementAt}}, {{elementAtIndex}} } from "./clr/System/Linq/EnumerableModule.js";
                 import { {{fromStart}}, {{fromEnd}} } from "./clr/System/IndexModule.js";
 
-                Deno.test("ElementAt stops enumeration at the target index", () => {
+                globalThis.__jazorTest("ElementAt stops enumeration at the target index", () => {
                   const trace = [];
                   function* source(values) {
                     for (const value of values) {
@@ -89,10 +89,7 @@ public sealed class EnumerableElementAtRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

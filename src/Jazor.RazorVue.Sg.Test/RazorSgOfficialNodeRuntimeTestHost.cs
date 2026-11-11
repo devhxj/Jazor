@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Diagnostics;
+using Jazor.NodeHost;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -9,14 +9,14 @@ using Acornima.Ast;
 namespace Jazor.RazorVue.Sg.Test;
 
 /// <summary>
-/// Runs a generated official RazorVue artifact with the DenoHost runtime packaged by Jazor.
+/// Runs a generated official RazorVue artifact in the shared in-process NodeApi host.
 /// </summary>
 /// <remarks>
 /// Official Razor authoring tests normally assert the generated module text. This host is
 /// intentionally narrow: use it only when the observed behavior depends on JS evaluation,
 /// such as an event callback seeing state assigned by a binding handler.
 /// </remarks>
-internal static class RazorSgOfficialDenoRuntimeTestHost
+internal static class RazorSgOfficialNodeRuntimeTestHost
 {
     private static readonly IReadOnlyDictionary<string, string> EcmascriptResourceModules = ReadEcmascriptResourceModules();
     private static readonly IReadOnlyDictionary<string, string> VueRuntimeResourceModules = ReadVueRuntimeResourceModules();
@@ -29,204 +29,226 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         IReadOnlyDictionary<string, string>? supportingModules = null,
         string? vueRuntimeSource = null,
         string? vueModuleSpecifier = null,
-        bool restoreNpmDependencies = false,
+        IReadOnlyDictionary<string, string>? packageDependencies = null,
         IReadOnlyDictionary<string, string>? importSpecifiers = null)
     {
-        var root = RazorSgTestHost.CreateTestArtifactDirectory("deno-runtime");
+        var root = RazorSgTestHost.CreateTestArtifactDirectory("nodeapi-runtime");
         try
         {
+            WriteFile(Path.Combine(root, "package.json"), JsonSerializer.Serialize(new
+            {
+                @private = true,
+                type = "module",
+                dependencies = packageDependencies
+            }));
+            if (packageDependencies is not null)
+                await NodeToolchain.RestoreAsync(root,
+                    Path.Combine(FindRepositoryRoot(), ".tmp", "test-workspaces", "nodeapi-store"),
+                    CancellationToken.None);
             WriteFile(Path.Combine(root, moduleRelativePath), moduleText);
             if (supportingModules is not null)
             {
                 foreach (var module in supportingModules)
                     WriteFile(Path.Combine(root, module.Key), module.Value);
+                // These fixtures declare empty CSS resources to exercise the
+                // component's side-effect imports. Node does not load CSS; map
+                // only those authored empty doubles to an empty ESM module.
+                WriteFile(Path.Combine(root, "empty-style.mjs"), "export {};\n");
             }
             MaterializeCatalogDependencies(root, moduleRelativePath, moduleText, supportingModules);
             MaterializeRazorVueRuntimeModules(root, supportingModules);
-            WriteFile(
-                Path.Combine(root, "package.json"),
-                """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(root, "deno.json"),
-                BuildDenoImportMap(supportingModules, vueModuleSpecifier, importSpecifiers));
-            WriteFile(
-                Path.Combine(root, "node_modules", "vue", "package.json"),
-                """{"type":"module","exports":"./index.mjs"}""");
-            WriteFile(
-                Path.Combine(root, "node_modules", "vue", "index.mjs"),
-                vueRuntimeSource ?? """
-                export function defineComponent(options) {
-                    return options;
-                }
-
-                export const Fragment = Symbol("Fragment");
-
-                export function reactive(value) {
-                    return value;
-                }
-
-                const provides = new Map();
-
-                export function provide(key, value) {
-                    provides.set(key, value);
-                }
-
-                export function inject(key, fallback) {
-                    return provides.has(key) ? provides.get(key) : fallback;
-                }
-
-                export function ref(value) {
-                    return { value };
-                }
-
-                export function onErrorCaptured(callback) {
-                    // The lightweight host does not run a component scheduler; retaining the
-                    // callback keeps adapter setup/import behavior executable in Deno fixtures.
-                    return () => {};
-                }
-
-                const mounted = [];
-                const updated = [];
-                const unmounted = [];
-                const serverPrefetch = [];
-                const watchers = [];
-
-                export function watch(source, callback) {
-                    watchers.push({ source, callback, value: source() });
-                    return () => {};
-                }
-
-                export function onMounted(callback) {
-                    mounted.push(callback);
-                }
-
-                export function onUpdated(callback) {
-                    updated.push(callback);
-                }
-
-                export function onUnmounted(callback) {
-                    unmounted.push(callback);
-                }
-
-                export function onServerPrefetch(callback) {
-                    serverPrefetch.push(callback);
-                }
-
-                export function __runMounted() {
-                    for (const callback of mounted) {
-                        callback();
+            if (vueModuleSpecifier is null)
+            {
+                WriteFile(
+                    Path.Combine(root, "node_modules", "vue", "package.json"),
+                    """{"type":"module","exports":"./index.mjs"}""");
+                WriteFile(
+                    Path.Combine(root, "node_modules", "vue", "index.mjs"),
+                    vueRuntimeSource ?? """
+                    export function defineComponent(options) {
+                        return options;
                     }
-                }
 
-                export function __runUpdated() {
-                    for (const callback of updated) {
-                        callback();
+                    export const Fragment = Symbol("Fragment");
+
+                    export function reactive(value) {
+                        return value;
                     }
-                }
 
-                export function __runUnmounted() {
-                    for (const callback of unmounted) {
-                        callback();
+                    const provides = new Map();
+
+                    export function provide(key, value) {
+                        provides.set(key, value);
                     }
-                }
 
-                export async function __runServerPrefetch() {
-                    for (const callback of serverPrefetch) {
-                        await callback();
+                    export function inject(key, fallback) {
+                        return provides.has(key) ? provides.get(key) : fallback;
                     }
-                }
 
-                export function __runWatchers() {
-                    for (const watcher of watchers) {
-                        const next = watcher.source();
-                        const changed = Array.isArray(next) && Array.isArray(watcher.value)
-                            ? next.length !== watcher.value.length || next.some((value, index) => !Object.is(value, watcher.value[index]))
-                            : !Object.is(next, watcher.value);
-                        if (changed) {
-                            const previous = watcher.value;
-                            watcher.value = next;
-                            watcher.callback(next, previous);
+                    export function ref(value) {
+                        return { value };
+                    }
+
+                    export function onErrorCaptured(callback) {
+                        // The lightweight host does not run a component scheduler; retaining the
+                        // callback keeps adapter setup/import behavior executable in runtime fixtures.
+                        return () => {};
+                    }
+
+                    const mounted = [];
+                    const updated = [];
+                    const unmounted = [];
+                    const serverPrefetch = [];
+                    const watchers = [];
+
+                    export function watch(source, callback) {
+                        watchers.push({ source, callback, value: source() });
+                        return () => {};
+                    }
+
+                    export function onMounted(callback) {
+                        mounted.push(callback);
+                    }
+
+                    export function onUpdated(callback) {
+                        updated.push(callback);
+                    }
+
+                    export function onUnmounted(callback) {
+                        unmounted.push(callback);
+                    }
+
+                    export function onServerPrefetch(callback) {
+                        serverPrefetch.push(callback);
+                    }
+
+                    export function __runMounted() {
+                        for (const callback of mounted) {
+                            callback();
                         }
                     }
-                }
 
-                export function createStaticVNode(html, count) {
-                    return { name: "__static", props: { html, count }, children: html };
-                }
+                    export function __runUpdated() {
+                        for (const callback of updated) {
+                            callback();
+                        }
+                    }
 
-                export function createCommentVNode(text) {
-                    return { name: "__comment", children: text };
-                }
+                    export function __runUnmounted() {
+                        for (const callback of unmounted) {
+                            callback();
+                        }
+                    }
 
-                export function openBlock() {
-                    return null;
-                }
+                    export async function __runServerPrefetch() {
+                        for (const callback of serverPrefetch) {
+                            await callback();
+                        }
+                    }
 
-                export function createElementBlock(name, props, children, patchFlag, dynamicProps) {
-                    return { name, props, children, patchFlag, dynamicProps, block: "element" };
-                }
-
-                export function createBlock(name, props, children, patchFlag, dynamicProps) {
-                    return { name, props, children, patchFlag, dynamicProps, block: "component" };
-                }
-
-                // Preserve the slot function identity for assertions while matching Vue's
-                // createSlots merge contract. Dynamic entries can be absent on a render pass.
-                // 测试 stub 不模拟实例上下文，只保留 slot descriptor 的合并语义。
-                export function withCtx(slot) {
-                    return slot;
-                }
-
-                export function createSlots(slots, dynamicSlots) {
-                    for (const slot of dynamicSlots) {
-                        if (Array.isArray(slot)) {
-                            for (const entry of slot) {
-                                if (entry) slots[entry.name] = entry.fn;
+                    export function __runWatchers() {
+                        for (const watcher of watchers) {
+                            const next = watcher.source();
+                            const changed = Array.isArray(next) && Array.isArray(watcher.value)
+                                ? next.length !== watcher.value.length || next.some((value, index) => !Object.is(value, watcher.value[index]))
+                                : !Object.is(next, watcher.value);
+                            if (changed) {
+                                const previous = watcher.value;
+                                watcher.value = next;
+                                watcher.callback(next, previous);
                             }
-                        } else if (slot) {
-                            slots[slot.name] = slot.fn;
                         }
                     }
-                    return slots;
-                }
 
-                // Match the Vue helper shape closely enough for generated artifact assertions.
-                // block collection only relies on the returned VNode identity and patch flag.
-                // 测试 stub 保留 text vnode 的 patchFlag，验证 E1 不会遗漏动态文本协议。
-                export function createTextVNode(children, patchFlag) {
-                    return { name: "__text", children, patchFlag };
-                }
-
-                // Keep the test contract aligned with Vue's array/iterable/object list domains.
-                // 这里不模拟 diff，只验证 mapper、fragment flag 与 iteration identity。
-                export function renderList(source, renderItem) {
-                    if (Array.isArray(source) || typeof source === "string") {
-                        return Array.from(source, (item, index) => renderItem(item, index));
+                    export function createStaticVNode(html, count) {
+                        return { name: "__static", props: { html, count }, children: html };
                     }
-                    if (typeof source === "number") {
-                        return Array.from({ length: source }, (_, index) => renderItem(index + 1, index));
-                    }
-                    if (source?.[Symbol.iterator]) {
-                        return Array.from(source, (item, index) => renderItem(item, index));
-                    }
-                    if (source && typeof source === "object") {
-                        return Object.keys(source).map((key, index) => renderItem(source[key], key, index));
-                    }
-                    return [];
-                }
 
-                export function mergeProps(...sources) {
-                    return Object.assign({}, ...sources.filter(source => source != null));
-                }
+                    export function createCommentVNode(text) {
+                        return { name: "__comment", children: text };
+                    }
 
-                export function h(name, props, children) {
-                    return { name, props, children };
-                }
-                """);
+                    export function openBlock() {
+                        return null;
+                    }
 
+                    export function createElementBlock(name, props, children, patchFlag, dynamicProps) {
+                        return { name, props, children, patchFlag, dynamicProps, block: "element" };
+                    }
+
+                    export function createBlock(name, props, children, patchFlag, dynamicProps) {
+                        return { name, props, children, patchFlag, dynamicProps, block: "component" };
+                    }
+
+                    // Preserve the slot function identity for assertions while matching Vue's
+                    // createSlots merge contract. Dynamic entries can be absent on a render pass.
+                    // 测试 stub 不模拟实例上下文，只保留 slot descriptor 的合并语义。
+                    export function withCtx(slot) {
+                        return slot;
+                    }
+
+                    export function createSlots(slots, dynamicSlots) {
+                        for (const slot of dynamicSlots) {
+                            if (Array.isArray(slot)) {
+                                for (const entry of slot) {
+                                    if (entry) slots[entry.name] = entry.fn;
+                                }
+                            } else if (slot) {
+                                slots[slot.name] = slot.fn;
+                            }
+                        }
+                        return slots;
+                    }
+
+                    // Match the Vue helper shape closely enough for generated artifact assertions.
+                    // block collection only relies on the returned VNode identity and patch flag.
+                    // 测试 stub 保留 text vnode 的 patchFlag，验证 E1 不会遗漏动态文本协议。
+                    export function createTextVNode(children, patchFlag) {
+                        return { name: "__text", children, patchFlag };
+                    }
+
+                    // Keep the test contract aligned with Vue's array/iterable/object list domains.
+                    // 这里不模拟 diff，只验证 mapper、fragment flag 与 iteration identity。
+                    export function renderList(source, renderItem) {
+                        if (Array.isArray(source) || typeof source === "string") {
+                            return Array.from(source, (item, index) => renderItem(item, index));
+                        }
+                        if (typeof source === "number") {
+                            return Array.from({ length: source }, (_, index) => renderItem(index + 1, index));
+                        }
+                        if (source?.[Symbol.iterator]) {
+                            return Array.from(source, (item, index) => renderItem(item, index));
+                        }
+                        if (source && typeof source === "object") {
+                            return Object.keys(source).map((key, index) => renderItem(source[key], key, index));
+                        }
+                        return [];
+                    }
+
+                    export function mergeProps(...sources) {
+                        return Object.assign({}, ...sources.filter(source => source != null));
+                    }
+
+                    export function h(name, props, children) {
+                        return { name, props, children };
+                    }
+                    """);
+
+            }
             var testFile = Path.Combine(root, testFileName);
             WriteFile(testFile, testSource);
-            await RunDenoTestAsync(testFile, root, restoreNpmDependencies);
+            if (vueModuleSpecifier is not null && vueModuleSpecifier.StartsWith("vue/dist/", StringComparison.Ordinal))
+            {
+                // Vue's browser bundle is ESM text shipped as .js in a CommonJS
+                // package. Give this standalone browser fixture an explicit ESM
+                // extension, preserving the published bytes and Vue instance.
+                var source = Path.Combine(root, "node_modules", vueModuleSpecifier);
+                var target = Path.Combine(root, "vue-browser-runtime.mjs");
+                File.Copy(source, target);
+                vueModuleSpecifier = "./vue-browser-runtime.mjs";
+            }
+            await NodeModuleRunner.RunAsync(root, testFile,
+                imports: BuildImportMap(supportingModules, vueModuleSpecifier, importSpecifiers));
         }
         finally
         {
@@ -243,7 +265,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         File.WriteAllText(path, content);
     }
 
-    private static string BuildDenoImportMap(
+    private static IReadOnlyDictionary<string, string> BuildImportMap(
         IReadOnlyDictionary<string, string>? supportingModules,
         string? vueModuleSpecifier,
         IReadOnlyDictionary<string, string>? importSpecifiers)
@@ -255,7 +277,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             ["System/"] = "./clr/System/",
             ["Microsoft/"] = "./clr/Microsoft/",
             ["clr/"] = "./clr/",
-            ["runtime/vue/"] = "runtime/vue/",
+            ["runtime/vue/"] = "./runtime/vue/",
             ["vue"] = vueModuleSpecifier ?? "./node_modules/vue/index.mjs",
         };
 
@@ -266,7 +288,8 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 // fixture 里的每个模块文件都按其裸 specifier 暴露：上游包（如
                 // tdesign-vue-next）不发布 exports 字段，深层 specifier 直接按文件布局解析，
                 // 因此映射必须逐文件建立，不能只映射包根。
-                if (!IsJavaScriptModulePath(supportingModule.Key))
+                var emptyStyle = supportingModule.Key.EndsWith(".css", StringComparison.Ordinal) && supportingModule.Value.Length == 0;
+                if (!IsJavaScriptModulePath(supportingModule.Key) && !emptyStyle)
                     continue;
 
                 var normalized = supportingModule.Key.Replace('\\', '/');
@@ -274,19 +297,19 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     continue;
 
                 var specifier = normalized.Substring(NodeModulesPrefix.Length);
-                imports[specifier] = "./" + normalized;
+                imports[specifier] = emptyStyle ? "./empty-style.mjs" : "./" + normalized;
             }
         }
 
-        // Real npm fixtures must map at the Deno graph boundary. A facade inside
-        // node_modules is evaluated by Node's ESM loader, which rejects npm: URLs.
+        // Map only test-owned doubles/aliases at the fixture loader boundary.
+        // Real packages are restored by pnpm and use standard Node resolution.
         if (importSpecifiers is not null)
         {
             foreach (var import in importSpecifiers)
                 imports[import.Key] = import.Value;
         }
 
-        return JsonSerializer.Serialize(new { imports });
+        return imports;
     }
 
     private const string NodeModulesPrefix = "node_modules/";
@@ -571,42 +594,6 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         }
 
         throw new DirectoryNotFoundException("Could not locate the Jazor repository root.");
-    }
-
-    private static async Task RunDenoTestAsync(string testFile, string workingDirectory, bool restoreNpmDependencies)
-    {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = RazorSgDenoRuntime.ResolveExecutable(),
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            WorkingDirectory = workingDirectory
-        };
-        RazorSgTestHost.ConfigureProcessEnvironment(startInfo);
-        startInfo.ArgumentList.Add("test");
-        startInfo.ArgumentList.Add("--quiet");
-        startInfo.ArgumentList.Add("--allow-all");
-        if (restoreNpmDependencies)
-            startInfo.ArgumentList.Add("--node-modules-dir=auto");
-        startInfo.ArgumentList.Add("--config");
-        startInfo.ArgumentList.Add(Path.Combine(workingDirectory, "deno.json"));
-        startInfo.ArgumentList.Add(testFile);
-        startInfo.Environment["DENO_DIR"] = Path.Combine(workingDirectory, ".deno-cache");
-
-        using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to start the bundled DenoHost runtime.");
-        var standardOutput = process.StandardOutput.ReadToEndAsync();
-        var standardError = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-
-        if (process.ExitCode == 0)
-            return;
-
-        Assert.Fail(
-            "Bundled DenoHost runtime test failed." + Environment.NewLine +
-            await standardOutput + Environment.NewLine +
-            await standardError);
     }
 
 }

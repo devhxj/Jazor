@@ -74,13 +74,13 @@ public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/inherited-template-runtime.js",
             observation.ModuleText,
             "official-inherited-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/inherited-template-runtime.js";
             import slotPanel from "./components/slot-panel-inherited-template-runtime.js";

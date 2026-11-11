@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Common;
 using Jazor.Compiler;
@@ -126,7 +126,7 @@ public sealed class SemanticWalkerEnumerableZipTests
 				    throw new Error(`Zip must reject null ${expected} source before iterator creation`);
 				}
 
-				Deno.test("Zip of three sources preserves iterator protocol", () => {
+				globalThis.__jazorTest("Zip of three sources preserves iterator protocol", () => {
 				  const trace = [];
 				  const triples = evaluate(
 				    tracked("first", [2, 7, 9], trace),
@@ -160,10 +160,7 @@ public sealed class SemanticWalkerEnumerableZipTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -283,7 +280,7 @@ public sealed class SemanticWalkerEnumerableZipTests
                   };
                 }
 
-                Deno.test("Zip preserves iterator creation, advance, and close order", () => {
+                globalThis.__jazorTest("Zip preserves iterator creation, advance, and close order", () => {
                   let trace = [];
                   assertArray(
                     evaluate(tracked("first", [2, 7, 9], trace), tracked("second", ["ab", "x"], trace), false, false, () => 0),
@@ -332,10 +329,7 @@ public sealed class SemanticWalkerEnumerableZipTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

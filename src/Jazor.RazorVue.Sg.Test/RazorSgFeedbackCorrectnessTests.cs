@@ -127,7 +127,7 @@ public sealed class RazorSgFeedbackCorrectnessTests
                 """
             });
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/binding-defaults-feedback.js", observation.ModuleText,
             "binding-defaults-feedback.test.mjs",
             """

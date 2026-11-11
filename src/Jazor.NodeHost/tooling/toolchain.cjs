@@ -8,6 +8,50 @@ const { inspect } = require('node:util');
 const exists = (file) => fs.access(file).then(() => true, () => false);
 const hash = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
+exports.render = async (requestJson) => {
+    const { projectDirectory, modulePath, state } = JSON.parse(requestJson);
+    const module = await import(pathToFileURL(path.join(projectDirectory, 'ssr-entry.js')).href);
+    return module.render({ modulePath, state });
+};
+
+exports.executeModule = async (requestJson) => {
+    const { projectDirectory, modulePath, arguments: args, imports } = JSON.parse(requestJson);
+    if (imports) {
+        // Only test fixtures need an import map for their local host doubles.
+        // Register an environment-owned ESM hook; production modules retain
+        // standard package resolution and are never rewritten by this runner.
+        const loader = `
+            let imports, baseURL;
+            export function initialize(data) { ({ imports, baseURL } = data); }
+            export async function resolve(specifier, context, nextResolve) {
+                const key = Object.keys(imports).sort((a, b) => b.length - a.length)
+                    .find(key => key === specifier || key.endsWith('/') && specifier.startsWith(key));
+                if (!key) return nextResolve(specifier, context);
+                const target = imports[key] + specifier.slice(key.length);
+                return nextResolve(target, { ...context, parentURL: baseURL });
+            }
+        `;
+        const { register } = require('node:module');
+        register('data:text/javascript,' + encodeURIComponent(loader), {
+            data: { imports, baseURL: pathToFileURL(path.join(projectDirectory, 'package.json')).href }
+        });
+    }
+    const tests = [];
+    const output = [];
+    const { format } = require('node:util');
+    console.log = (...values) => output.push(format(...values));
+    globalThis.__jazorArguments = args;
+    // Runtime fixtures register their existing assertions here. This is a
+    // test-owned function, not a Deno compatibility object or a production API.
+    globalThis.__jazorTest = (name, body) => tests.push({ name, body });
+    await import(pathToFileURL(modulePath).href);
+    for (const test of tests) {
+        try { await test.body(); }
+        catch (error) { throw new Error(test.name + ': ' + (error.stack ?? error)); }
+    }
+    return JSON.stringify({ tests: tests.length, pid: process.pid, output: output.join('\n') });
+};
+
 exports.restore = async (requestJson) => {
     const request = JSON.parse(requestJson);
     const root = request.projectDirectory;

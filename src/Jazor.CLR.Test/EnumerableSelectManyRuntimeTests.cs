@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -34,7 +34,7 @@ public sealed class EnumerableSelectManyRuntimeTests
                 $$"""
                 import { {{collectionSelector}}, {{indexedCollectionSelector}}, {{resultSelector}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("SelectMany preserves outer/inner and selector evaluation order", () => {
+                globalThis.__jazorTest("SelectMany preserves outer/inner and selector evaluation order", () => {
                   const trace = [];
                   const flattened = {{collectionSelector}}([2, 3], outer => {
                     trace.push(`collection:${outer}`);
@@ -68,10 +68,7 @@ public sealed class EnumerableSelectManyRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

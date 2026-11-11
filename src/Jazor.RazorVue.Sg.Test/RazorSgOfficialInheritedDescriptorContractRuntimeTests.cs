@@ -43,13 +43,13 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("emits:", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.heading", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/inherited-release-panel-self-contract-runtime.js",
             observation.ModuleText,
             "official-inherited-self-descriptor-contract-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/inherited-release-panel-self-contract-runtime.js";
 
@@ -128,13 +128,13 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
         StringAssert.Contains(observation.ModuleText, "onTitleChange", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-editor-inherited-contract-runtime.js",
             observation.ModuleText,
             "official-inherited-descriptor-contract-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-editor-inherited-contract-runtime.js";
             import inheritedReleasePanel from "./components/inherited-release-panel-contract-runtime.js";

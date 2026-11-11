@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using Acornima;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -57,7 +57,7 @@ public static class BindingScenarios
                 """
                 import { transform } from "./bindings.mjs";
 
-                Deno.test("escaped C# keyword bindings stay lexical in JavaScript", () => {
+                globalThis.__jazorTest("escaped C# keyword bindings stay lexical in JavaScript", () => {
                   const result = transform(4);
                   if (result !== 7)
                     throw new Error(`expected 7, got ${result}`);
@@ -66,10 +66,7 @@ public static class BindingScenarios
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

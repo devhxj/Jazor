@@ -39,13 +39,13 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "onClick: m$", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("function h()", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/runtime-name-collision.js",
             observation.ModuleText,
             "official-runtime-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/runtime-name-collision.js";
 
@@ -97,13 +97,13 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
         StringAssert.Contains(observation.ModuleText, "new m$", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("class h ", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nested-runtime-name-collision.js",
             observation.ModuleText,
             "official-nested-runtime-name-collision.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nested-runtime-name-collision.js";
 

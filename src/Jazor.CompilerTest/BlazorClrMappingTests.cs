@@ -1,6 +1,6 @@
+using Jazor.NodeHost;
 using Acornima;
 using Acornima.Ast;
-using DenoHost.Core;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.AspNetCore.Components;
@@ -548,7 +548,7 @@ public sealed class BlazorClrMappingTests
             await File.WriteAllTextAsync(runner, $$"""
                 import assert from "node:assert/strict";
                 function evaluate(read) {{body}}
-                Deno.test("inline getter keeps the conditional receiver and chain short-circuit", () => {
+                globalThis.__jazorTest("inline getter keeps the conditional receiver and chain short-circuit", () => {
                   let reads = 0, calls = 0;
                   const files = {}, path = [];
                   const event = { target: { files }, type: 'change', composedPath() { calls++; return path; } };
@@ -561,8 +561,7 @@ public sealed class BlazorClrMappingTests
                 });
                 """);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", runner], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, runner, cancellationToken: timeout.Token);
         }
         finally
         {

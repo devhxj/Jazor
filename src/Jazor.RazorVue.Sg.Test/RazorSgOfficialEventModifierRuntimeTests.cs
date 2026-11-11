@@ -47,13 +47,13 @@ public sealed class RazorSgOfficialEventModifierRuntimeTests
         StringAssert.Contains(observation.ModuleText, "props.PreventNativeSubmit", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "props.StopSubmit", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-deploy-form-event-modifiers-runtime.js",
             observation.ModuleText,
             "official-release-deploy-form-event-modifiers-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-deploy-form-event-modifiers-runtime.js";
 

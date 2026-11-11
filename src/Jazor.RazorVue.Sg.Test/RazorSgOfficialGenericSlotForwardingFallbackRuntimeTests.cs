@@ -70,13 +70,13 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
         StringAssert.Contains(observation.ModuleText, "name: \"item\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Fallback: ", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-template-forwarder-runtime.js",
             observation.ModuleText,
             "official-release-template-forwarder-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-template-forwarder-runtime.js";
             import releaseList from "./components/release-list-generic-slot-forwarding-runtime.js";

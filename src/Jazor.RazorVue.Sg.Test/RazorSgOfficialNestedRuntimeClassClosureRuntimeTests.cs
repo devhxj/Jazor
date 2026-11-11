@@ -60,13 +60,13 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
         StringAssert.Contains(observation.ModuleText, "$jazor$private$", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("this.#", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/reactive-nested-runtime-class.js",
             observation.ModuleText,
             "official-reactive-nested-runtime-class.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/reactive-nested-runtime-class.js";
             import { reactiveWrites } from "vue";
@@ -202,13 +202,13 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
         StringAssert.Contains(observation.ModuleText, "new ReleaseFormatter(\"release\")", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Combine(title)", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/nested-runtime-class-closure-runtime.js",
             observation.ModuleText,
             "official-nested-runtime-class-closure-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/nested-runtime-class-closure-runtime.js";
 

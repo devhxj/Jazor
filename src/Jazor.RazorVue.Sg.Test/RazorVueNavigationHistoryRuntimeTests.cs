@@ -8,14 +8,14 @@ public sealed class RazorVueNavigationHistoryRuntimeTests
     {
         var module = File.ReadAllText(FindRepositoryRoot("src", "Jazor.Vue", "runtime", "vue", "blazor-routing.js"))
             .Replace("import { routes } from \"./routes.js\";", "const routes = [];", StringComparison.Ordinal);
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             // The fixture uses the carrier's actual project path for relative imports.
             "runtime/vue/blazor-routing.js",
             module,
             "navigation-history-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { createNavigationHost } from "./runtime/vue/blazor-routing.js";
             import { preventNavigation } from "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
 

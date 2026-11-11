@@ -13,14 +13,14 @@ namespace Jazor.RazorVue.Sg.Test;
 [TestClass]
 public sealed class RazorVueLazyRouteRuntimeTests
 {
-    private const string RealVueModule = "npm:vue@3.5.42/dist/vue.runtime.esm-browser.prod.js";
+    private const string RealVueModule = "vue/dist/vue.runtime.esm-browser.prod.js";
 
     [TestMethod]
     public async Task RouteCatalog_ImportAndNavigation_EvaluateOnlyRequestedPageDependencies()
         => await RunRuntimeTestAsync(
             "lazy-route-navigation.test.mjs",
             """
-            Deno.test("catalog import keeps pages cold and navigation loads only the selected page", async () => {
+            globalThis.__jazorTest("catalog import keeps pages cold and navigation loads only the selected page", async () => {
                 assert.deepEqual(observation.evaluated, ["Shell"]);
                 assert.deepEqual(observation.mounted, []);
                 const app = mountRoute("/app/home");
@@ -53,7 +53,7 @@ public sealed class RazorVueLazyRouteRuntimeTests
         => await RunRuntimeTestAsync(
             "lazy-route-abandoned-load.test.mjs",
             """
-            Deno.test("an unresolved page cannot mount after navigation has selected another page", async () => {
+            globalThis.__jazorTest("an unresolved page cannot mount after navigation has selected another page", async () => {
                 const slow = routes.find(route => route.template === "/slow");
                 const app = mountRoute("/app/slow");
                 try {
@@ -91,7 +91,7 @@ public sealed class RazorVueLazyRouteRuntimeTests
         => await RunRuntimeTestAsync(
             "lazy-route-shared-loader.test.mjs",
             """
-            Deno.test("route aliases and parameter changes share one wrapper and one module evaluation", async () => {
+            globalThis.__jazorTest("route aliases and parameter changes share one wrapper and one module evaluation", async () => {
                 const primary = routes.find(route => route.template === "/items/{id:int}");
                 const alias = routes.find(route => route.template === "/items-alias/{id:int}");
                 assert.strictEqual(primary.component, alias.component);
@@ -144,14 +144,14 @@ public sealed class RazorVueLazyRouteRuntimeTests
         // Route metadata and import paths come from bound C# symbols and the production builder.
         // Only page business fixtures are handwritten, so observing module evaluation cannot
         // accidentally replace or rewrite the generated lazy-route protocol under test.
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             catalog.RelativePath,
             catalog.ModuleText,
             testFileName,
             RuntimeHarness + Environment.NewLine + testSource,
             supportingModules,
             vueModuleSpecifier: RealVueModule,
-            restoreNpmDependencies: true);
+            packageDependencies: new Dictionary<string, string> { ["vue"] = "3.5.42", ["happy-dom"] = "20.10.6" });
     }
 
     private static string CreatePageModule(string name, bool gated)

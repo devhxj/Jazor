@@ -1,6 +1,6 @@
+using Jazor.NodeHost;
 using Acornima;
 using Acornima.Ast;
-using DenoHost.Core;
 using Jazor.Compiler;
 using Jazor.ComplierTest;
 using Microsoft.CodeAnalysis;
@@ -358,7 +358,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                   return result;
                 }
 
-                Deno.test("generated iterator methods retain JavaScript generator protocols", async () => {
+                globalThis.__jazorTest("generated iterator methods retain JavaScript generator protocols", async () => {
                   const stream = new Stream();
                   const syncValues = Array.from(ModuleValues(3));
                   const memberValues = Array.from(stream.Values(5));
@@ -376,10 +376,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -435,7 +432,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Counter } from "./counter.mjs";
 
-                Deno.test("field-backed accessor stores and reads its assigned value", () => {
+                globalThis.__jazorTest("field-backed accessor stores and reads its assigned value", () => {
                   const counter = new Counter();
                   counter.Value = 42;
                   if (counter.Value !== 42)
@@ -445,10 +442,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -503,7 +497,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Snapshot } from "./snapshot.mjs";
 
-                Deno.test("primary constructor parameters survive their private storage bridge", () => {
+                globalThis.__jazorTest("primary constructor parameters survive their private storage bridge", () => {
                   const snapshot = new Snapshot(42n, "published");
                   if (snapshot.Total() !== 42n || snapshot.Label() !== "published")
                     throw new Error("primary constructor values were not retained by the generated class");
@@ -512,10 +506,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -566,7 +557,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Project } from "./helpers.mjs";
 
-                Deno.test("a source helper named ToArray remains a source helper", () => {
+                globalThis.__jazorTest("a source helper named ToArray remains a source helper", () => {
                   if (Project() !== 42)
                     throw new Error(`expected the local ToArray helper result 42, got ${Project()}`);
                 });
@@ -574,10 +565,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -725,7 +713,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Derived } from "./classes.mjs";
 
-                Deno.test("explicit base initializer selects the Roslyn-bound overload", () => {
+                globalThis.__jazorTest("explicit base initializer selects the Roslyn-bound overload", () => {
                   const derived = new Derived(4);
                   if (derived.Value !== 15)
                     throw new Error(`expected the int base constructor and derived body to produce 15, got ${derived.Value}`);
@@ -734,10 +722,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -802,7 +787,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Measurement } from "./measurement.mjs";
 
-                Deno.test("compound from-end array mutation evaluates the receiver once", () => {
+                globalThis.__jazorTest("compound from-end array mutation evaluates the receiver once", () => {
                   const measurement = new Measurement();
                   const result = measurement.IncreaseLast(5);
                   if (result !== 109 || measurement.Reads !== 1 || measurement.Values[1] !== 9)
@@ -812,10 +797,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -900,7 +882,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Recorder } from "./using-declaration.mjs";
 
-                Deno.test("using declarations release resources in reverse acquisition order", () => {
+                globalThis.__jazorTest("using declarations release resources in reverse acquisition order", () => {
                   const recorder = new Recorder();
                   recorder.Run();
                   if (recorder.Trace !== "body:second:first:")
@@ -910,10 +892,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1001,7 +980,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Recorder } from "./await-using-declaration.mjs";
 
-                Deno.test("await using waits for reverse-order asynchronous disposal", async () => {
+                globalThis.__jazorTest("await using waits for reverse-order asynchronous disposal", async () => {
                   const recorder = new Recorder();
                   const run = recorder.RunAsync();
                   if (recorder.Trace !== "body:second:start:")
@@ -1015,10 +994,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1124,7 +1100,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Recorder } from "./using-expression.mjs";
 
-                Deno.test("using expression caches its resource and disposes it across control-flow exits", () => {
+                globalThis.__jazorTest("using expression caches its resource and disposes it across control-flow exits", () => {
                   const returning = new Recorder();
                   const returned = returning.ReturnThroughUsing();
                   if (returned !== "open:return|body:return|" ||
@@ -1150,10 +1126,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1226,7 +1199,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Matcher } from "./erased-interface-pattern.mjs";
 
-                Deno.test("erased interface pattern keeps C# null semantics and evaluates its source once", () => {
+                globalThis.__jazorTest("erased interface pattern keeps C# null semantics and evaluates its source once", () => {
                   const matcher = new Matcher();
                   matcher.SetNext(null);
                   if (matcher.HasTag() || matcher.Probes !== 1)
@@ -1240,10 +1213,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1319,7 +1289,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Matcher } from "./list-pattern-switch-expression.mjs";
 
-                Deno.test("list-pattern switch expression preserves arm ordering and single evaluation", () => {
+                globalThis.__jazorTest("list-pattern switch expression preserves arm ordering and single evaluation", () => {
                   const matcher = new Matcher();
                   const cases = [
                     [[1, 9], 9],
@@ -1342,10 +1312,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1462,7 +1429,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Matcher, Segment } from "./structural-list-pattern.mjs";
 
-                Deno.test("structural list pattern preserves custom collection semantics", () => {
+                globalThis.__jazorTest("structural list pattern preserves custom collection semantics", () => {
                   const matcher = new Matcher();
                   const cases = [
                     [[1, 5, 9], 5],
@@ -1490,10 +1457,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1584,7 +1548,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Consumer, KeyedValues } from "./overloaded-indexers.mjs";
 
-                Deno.test("overloaded C# indexers remain symbol-bound", () => {
+                globalThis.__jazorTest("overloaded C# indexers remain symbol-bound", () => {
                   const consumer = new Consumer();
                   const actual = consumer.WriteAndRead(new KeyedValues());
                   if (actual !== 18)
@@ -1594,10 +1558,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1693,7 +1654,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { BatchProcessor } from "./loop-control-flow.mjs";
 
-                Deno.test("loop lowering retains C# continue, break, foreach, and do-while behavior", () => {
+                globalThis.__jazorTest("loop lowering retains C# continue, break, foreach, and do-while behavior", () => {
                   const processor = new BatchProcessor();
                   if (processor.SumOddUntil(7) !== 9)
                     throw new Error(`expected odd total 9, got ${processor.SumOddUntil(7)}`);
@@ -1706,10 +1667,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1804,7 +1762,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { CallbackReader } from "./callback-reader.mjs";
 
-                Deno.test("closures over a C# for control variable observe its final value", () => {
+                globalThis.__jazorTest("closures over a C# for control variable observe its final value", () => {
                   const reader = new CallbackReader();
                   const lambda = reader.ReadCapturedValues();
                   const localFunction = reader.ReadCapturedLocalFunctionValues();
@@ -1816,10 +1774,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1892,7 +1847,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { ProgressRecorder } from "./for-update-await.mjs";
 
-                Deno.test("for update increments before the awaited progress tick", async () => {
+                globalThis.__jazorTest("for update increments before the awaited progress tick", async () => {
                   const recorder = new ProgressRecorder();
                   const run = recorder.RunAsync();
                   if (recorder.Trace !== "body:0:tick:1:start:")
@@ -1907,10 +1862,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -1987,7 +1939,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { SnapshotReader } from "./conditional-array-index-and-range.mjs";
 
-                Deno.test("conditional array index and range access short-circuit and evaluate their receiver once", () => {
+                globalThis.__jazorTest("conditional array index and range access short-circuit and evaluate their receiver once", () => {
                   const reader = new SnapshotReader();
                   reader.SetCurrent(null);
                   const missingLast = reader.ReadLast();
@@ -2007,10 +1959,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2080,7 +2029,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { DefaultReader } from "./nullable-get-value-or-default.mjs";
 
-                Deno.test("Nullable GetValueOrDefault preserves a single nullable receiver evaluation", () => {
+                globalThis.__jazorTest("Nullable GetValueOrDefault preserves a single nullable receiver evaluation", () => {
                   const reader = new DefaultReader();
 
                   reader.SetNext(null);
@@ -2099,10 +2048,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2182,7 +2128,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { DefaultReader } from "./nullable-get-value-or-default-with-default.mjs";
 
-                Deno.test("Nullable GetValueOrDefault(defaultValue) evaluates receiver then fallback exactly once", () => {
+                globalThis.__jazorTest("Nullable GetValueOrDefault(defaultValue) evaluates receiver then fallback exactly once", () => {
                   const reader = new DefaultReader();
 
                   reader.SetNext(23);
@@ -2201,10 +2147,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2279,7 +2222,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { RequiredReader } from "./nullable-value.mjs";
 
-                Deno.test("Nullable Value preserves one receiver evaluation and its empty-carrier failure", () => {
+                globalThis.__jazorTest("Nullable Value preserves one receiver evaluation and its empty-carrier failure", () => {
                   const reader = new RequiredReader();
                   const expectedError = "InvalidOperationException: Nullable object must have a value.";
 
@@ -2311,10 +2254,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2412,7 +2352,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Counter } from "./counter.mjs";
 
-                Deno.test("instance-capturing local function remains bound after callback detaches", () => {
+                globalThis.__jazorTest("instance-capturing local function remains bound after callback detaches", () => {
                   const counter = new Counter();
                   const increment = counter.CreateIncrementer();
                   const first = increment();
@@ -2424,10 +2364,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2503,7 +2440,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { CounterFactory } from "./counter-factory.mjs";
 
-                Deno.test("method-group receiver is evaluated once and remains bound after callback detaches", () => {
+                globalThis.__jazorTest("method-group receiver is evaluated once and remains bound after callback detaches", () => {
                   const factory = new CounterFactory();
                   const Increment = factory.CreateIncrementer();
                   const first = Increment();
@@ -2515,10 +2452,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2589,7 +2523,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { ReleaseQueue } from "./release-queue.mjs";
 
-                Deno.test("nested record foreach binding retains the selected nested property", () => {
+                globalThis.__jazorTest("nested record foreach binding retains the selected nested property", () => {
                   const queue = new ReleaseQueue();
                   const total = queue.SumReadyPending();
                   if (total !== 5)
@@ -2599,10 +2533,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -2669,7 +2600,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Defaults } from "./defaults.mjs";
 
-                Deno.test("implicit member fields use C# defaults instead of undefined", () => {
+                globalThis.__jazorTest("implicit member fields use C# defaults instead of undefined", () => {
                   const value = new Defaults();
                   if (value.IsReady !== false || value.Marker !== "\0" || value.Fraction !== 0 || value.Total !== 0n || value.Huge !== 0n || value.Label !== null || value.Retry !== null)
                     throw new Error("scalar C# member defaults were not preserved");
@@ -2680,10 +2611,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -3099,7 +3027,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                     throw new Error(message);
                 }
 
-                Deno.test("field-like events retain multicast and snapshot semantics", () => {
+                globalThis.__jazorTest("field-like events retain multicast and snapshot semantics", () => {
                   const empty = new Emitter();
                   assert(!empty.HasHandlers(), "new event should compare equal to null");
                   assert(empty.IsEmptyByEquality(), "binary event null comparison did not preserve empty state");
@@ -3173,10 +3101,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -3411,7 +3336,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { Emitter } from "./local-events.mjs";
 
-                Deno.test("capturing local event handlers retain their receiver and removal identity", () => {
+                globalThis.__jazorTest("capturing local event handlers retain their receiver and removal identity", () => {
                   const emitter = new Emitter();
                   emitter.ExerciseCapturedLocal();
                   if (emitter.Trace !== "3;")
@@ -3421,10 +3346,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -3490,7 +3412,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { DerivedEmitter } from "./base-events.mjs";
 
-                Deno.test("base method groups preserve their original receiver", () => {
+                globalThis.__jazorTest("base method groups preserve their original receiver", () => {
                   const emitter = new DerivedEmitter();
                   emitter.SubscribeBase();
                   emitter.Raise(7);
@@ -3505,10 +3427,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -3710,7 +3629,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { NullMatcher } from "./null-matcher.mjs";
 
-                Deno.test("null patterns treat an omitted host value as missing", () => {
+                globalThis.__jazorTest("null patterns treat an omitted host value as missing", () => {
                   const matcher = new NullMatcher();
                   const cases = [
                     [undefined, true, false],
@@ -3727,10 +3646,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {
@@ -3795,7 +3711,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 """
                 import { ReleaseQueue } from "./release-queue.mjs";
 
-                Deno.test("dictionary foreach deconstruction consumes JavaScript Map entries", () => {
+                globalThis.__jazorTest("dictionary foreach deconstruction consumes JavaScript Map entries", () => {
                   const queue = new ReleaseQueue();
                   const stages = new Map([
                     ["queued", 2],
@@ -3810,10 +3726,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

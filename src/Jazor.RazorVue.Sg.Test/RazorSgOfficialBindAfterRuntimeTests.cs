@@ -44,13 +44,13 @@ public sealed class RazorSgOfficialBindAfterRuntimeTests
         StringAssert.Contains(observation.ModuleText, "state.ReleaseName", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "state.PersistedReleaseName", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-name-persistence-runtime.js",
             observation.ModuleText,
             "official-release-name-persistence-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-name-persistence-runtime.js";
 

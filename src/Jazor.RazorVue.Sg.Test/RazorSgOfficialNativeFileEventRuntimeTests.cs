@@ -89,13 +89,13 @@ public sealed class RazorSgOfficialNativeFileEventRuntimeTests
         StringAssert.Contains(observation.ModuleText, "dataTransfer", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/native-file-events.js",
             observation.ModuleText,
             "official-native-file-events-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import component from "./components/native-file-events.js";
 
             function find(node, id) {

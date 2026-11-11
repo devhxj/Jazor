@@ -444,15 +444,14 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         // imitation of the pipe operators. 捕获值域擦除、Inline 拼接和导出名之间的集成回归。
         var runner = module.ToKnRECMAScript().Replace("\"./style.js\"", "\"./runtime.mjs\"", StringComparison.Ordinal)
             + "\nconsole.log(Build());";
-        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(runner);
-        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        var result = await EcmaScriptStyleModuleTestHost.RunNodeAsync(runner);
         Assert.AreEqual(
             ".card{border:1px solid var(--brand,#fff);border-radius:4px 8px 12px;"
             + "filter:blur(2px) saturate(1.2) blur(1px);gap:8px 16px;margin:8px auto;"
             + "outline:thin dashed currentColor;padding:8px 10% calc(50% - 1rem) var(--space,32px)!important;"
             + "transform:translateX(2px) rotate(90deg) scale(2);}"
             + ".pair{padding:5% 8px;}.triple{padding:calc(50% - 4px) 1rem 5%;}",
-            result.StandardOutput.Trim());
+            result.Trim());
     }
 
     [TestMethod]

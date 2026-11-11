@@ -60,13 +60,13 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
         StringAssert.Contains(observation.ModuleText, "default:", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "props.ShowHistory", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-panel-page-conditional-slot-runtime.js",
             observation.ModuleText,
             "official-release-panel-conditional-slot-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
             import { Fragment } from "vue";
 
             import component from "./components/release-panel-page-conditional-slot-runtime.js";

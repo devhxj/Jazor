@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -30,7 +30,7 @@ public sealed class EnumerableOrderRuntimeTests
                 $$"""
                 import { {{order}}, {{orderDescending}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Order and OrderDescending use the default comparer without source mutation", () => {
+                globalThis.__jazorTest("Order and OrderDescending use the default comparer without source mutation", () => {
                   const source = [2, 7, 4, 1];
                   const ascending = {{order}}(source);
                   const descending = {{orderDescending}}(source);
@@ -45,10 +45,7 @@ public sealed class EnumerableOrderRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(
-                new DenoExecuteBaseOptions { WorkingDirectory = root },
-                ["test", "--quiet", "--allow-read", testPath],
-                timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

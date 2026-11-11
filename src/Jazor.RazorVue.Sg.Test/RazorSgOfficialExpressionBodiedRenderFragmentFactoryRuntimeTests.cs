@@ -54,13 +54,13 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/expression-bodied-release-header-runtime.js",
             observation.ModuleText,
             "official-expression-bodied-release-header-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/expression-bodied-release-header-runtime.js";
             import releaseHeaderPanel from "./components/expression-bodied-release-header-panel-runtime.js";
@@ -137,13 +137,13 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/expression-bodied-release-template-runtime.js",
             observation.ModuleText,
             "official-expression-bodied-release-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/expression-bodied-release-template-runtime.js";
             import releaseTemplatePanel from "./components/expression-bodied-release-template-panel-runtime.js";

@@ -78,13 +78,13 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "footer: withCtx(() =>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "_: 1", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-overload-template-runtime.js",
             observation.ModuleText,
             "official-release-overload-template-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-overload-template-runtime.js";
             import panel from "./components/dual-slot-panel-overloaded-template-runtime.js";
@@ -191,13 +191,13 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-header-variant-runtime.js",
             observation.ModuleText,
             "official-release-header-variant-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-header-variant-runtime.js";
             import panel from "./components/slot-panel-header-variant-runtime.js";

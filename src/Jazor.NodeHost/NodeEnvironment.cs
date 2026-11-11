@@ -23,8 +23,25 @@ internal sealed class NodeEnvironment : IDisposable
         _runtime = Platform.Value.CreateThreadRuntime(Path.GetDirectoryName(projectFile),
             new NodeEmbeddingRuntimeSettings
             {
+                // The shared libnode inspector initializes process-global async
+                // state. Independent hosted environments must not each own it.
+                RuntimeFlags = NodejsRuntime.NodeEmbeddingRuntimeFlags.DefaultFlags |
+                    NodejsRuntime.NodeEmbeddingRuntimeFlags.NoCreateInspector |
+                    NodejsRuntime.NodeEmbeddingRuntimeFlags.NoStartDebugSignalHandler,
                 MainScript = "globalThis.require = require('node:module').createRequire(\"" + requireBase + "\");"
             });
+        _runtime.Run(() =>
+        {
+            var math = JSValue.Global["Math"];
+            if (math["f16round"].IsUndefined())
+            {
+                // Current libnode predates ES2025 f16round, which Jazor's Half
+                // slice already requires. .NET Half provides the exact binary16
+                // conversion, including ties, signed zero, infinity and NaN.
+                math["f16round"] = JSValue.CreateFunction("f16round", args =>
+                    (double)(Half)(double)args[0]);
+            }
+        });
     }
 
     public Task<T> RunAsync<T>(Func<NodeEmbeddingThreadRuntime, Task<T>> operation)

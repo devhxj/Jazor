@@ -1,7 +1,7 @@
 using System.Collections;
-using System.Diagnostics;
+using Jazor.NodeHost;
 using System.Reflection;
-using System.Runtime.InteropServices;
+
 using System.Text;
 
 namespace ECMAScript.Style.Tests;
@@ -25,7 +25,7 @@ internal static class EcmaScriptStyleModuleTestHost
             ReadProperty(module, "Content"));
     }
 
-    public static async Task<ProcessResult> RunDenoAsync(string runnerSource)
+    public static async Task<string> RunNodeAsync(string runnerSource)
     {
         var root = Path.Combine(RepositoryTemp.Root, "ecmascript-style-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -37,50 +37,13 @@ internal static class EcmaScriptStyleModuleTestHost
             await global::System.IO.File.WriteAllTextAsync(runtimePath, module.Content, new UTF8Encoding(false));
             await global::System.IO.File.WriteAllTextAsync(runnerPath, runnerSource, new UTF8Encoding(false));
 
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = ResolveDenoPath(),
-                WorkingDirectory = root,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            startInfo.ArgumentList.Add("run");
-            startInfo.ArgumentList.Add("--no-config");
-            startInfo.ArgumentList.Add("runner.mjs");
-            RepositoryTemp.ApplyProcessEnvironment(startInfo);
-
-            using var process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException("Deno process could not be started.");
-            var standardOutput = process.StandardOutput.ReadToEndAsync();
-            var standardError = process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));
-            return new ProcessResult(process.ExitCode, await standardOutput, await standardError);
+            return await NodeModuleRunner.RunAsync(root, runnerPath);
         }
         finally
         {
             if (Directory.Exists(root))
                 Directory.Delete(root, recursive: true);
         }
-    }
-
-    private static string ResolveDenoPath()
-    {
-        var runtimeIdentifier = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? "win-x64"
-            : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                ? "linux-x64"
-                : RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                    ? "osx-arm64"
-                    : "osx-x64";
-        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "deno.exe" : "deno";
-        var path = Path.Combine(AppContext.BaseDirectory, "runtimes", runtimeIdentifier, "native", executableName);
-        return global::System.IO.File.Exists(path)
-            ? path
-            : throw new FileNotFoundException("Bundled Deno runtime was not found.", path);
     }
 
     private static string ReadProperty(object instance, string name)
@@ -92,5 +55,5 @@ internal static class EcmaScriptStyleModuleTestHost
 
     internal sealed record ModuleRecord(string TypeName, string RelativePath, string Content);
 
-    internal sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);
+
 }

@@ -55,13 +55,13 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-list-page-scoped-slot-context-alias-runtime.js",
             observation.ModuleText,
             "official-release-list-scoped-slot-context-alias-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-list-page-scoped-slot-context-alias-runtime.js";
             import releaseList from "./components/release-list-scoped-slot-context-alias-runtime.js";

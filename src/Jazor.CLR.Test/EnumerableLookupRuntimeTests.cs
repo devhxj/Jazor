@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -33,7 +33,7 @@ public sealed class EnumerableLookupRuntimeTests
                 import { {{toLookup}}, {{toLookupElement}}, {{lookupCount}}, {{lookupContains}}, {{lookupGet}} } from "./clr/System/Linq/EnumerableModule.js";
                 import { {{groupingKey}} } from "./clr/System/Linq/GroupingT2Module.js";
 
-                Deno.test("Enumerable.ToLookup preserves CLR grouping and lookup behavior", () => {
+                globalThis.__jazorTest("Enumerable.ToLookup preserves CLR grouping and lookup behavior", () => {
                   const source = [1, 2, 3, 4];
                   const trace = [];
                   const lookup = {{toLookup}}(source, value => {
@@ -75,7 +75,7 @@ public sealed class EnumerableLookupRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

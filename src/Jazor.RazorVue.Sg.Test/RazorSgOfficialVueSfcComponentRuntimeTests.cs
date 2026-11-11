@@ -48,13 +48,13 @@ public sealed class RazorSgOfficialVueSfcComponentRuntimeTests
         Assert.IsFalse(observation.ModuleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("builder.finish()", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/release-dashboard-sfc.js",
             observation.ModuleText,
             "official-release-dashboard-sfc.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/release-dashboard-sfc.js";
             import releaseCard from "./components/release-card.vue.js";

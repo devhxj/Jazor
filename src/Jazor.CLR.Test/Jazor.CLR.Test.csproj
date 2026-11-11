@@ -14,6 +14,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
+    <ProjectReference Include="..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
     <ProjectReference Include="..\Jazor.CLR.Generator\Jazor.CLR.Generator.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -22,11 +23,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
-    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
-    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />

@@ -1,5 +1,5 @@
+using Jazor.NodeHost;
 using System.Text;
-using DenoHost.Core;
 
 namespace Jazor.CLR.Test;
 
@@ -36,7 +36,7 @@ public sealed class EnumerableAverageRuntimeTests
                 $$"""
                 import { {{string.Join(", ", names)}} } from "./clr/System/Linq/EnumerableModule.js";
 
-                Deno.test("Enumerable.Average preserves numeric carrier contracts", () => {
+                globalThis.__jazorTest("Enumerable.Average preserves numeric carrier contracts", () => {
                   const [averageIntOperation, averageInt64Operation, averageSingleOperation, averageDoubleOperation, averageDecimalOperation] = [{{string.Join(", ", names)}}];
                   if (averageIntOperation([1, 2]) !== 1.5 || averageIntOperation([2147483647, 2147483647]) !== 2147483647)
                     throw new Error("Int32 Average must use the Int64 accumulator contract");
@@ -71,7 +71,7 @@ public sealed class EnumerableAverageRuntimeTests
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await Deno.Execute(new DenoExecuteBaseOptions { WorkingDirectory = root }, ["test", "--quiet", "--allow-read", testPath], timeout.Token);
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
         }
         finally
         {

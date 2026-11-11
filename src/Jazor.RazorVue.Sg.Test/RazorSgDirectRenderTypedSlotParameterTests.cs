@@ -44,13 +44,13 @@ public sealed class RazorSgDirectRenderTypedSlotParameterTests
         Assert.IsFalse(observation.ModuleText.Contains("componentProps", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("syncSlotParameters", StringComparison.Ordinal), observation.ModuleText);
 
-        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+        await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/typed-template-bridge-runtime.js",
             observation.ModuleText,
             "official-typed-template-bridge-runtime.test.mjs",
             """
             import assert from "node:assert/strict";
-            import test from "node:test";
+            const test = globalThis.__jazorTest;
 
             import component from "./components/typed-template-bridge-runtime.js";
 
