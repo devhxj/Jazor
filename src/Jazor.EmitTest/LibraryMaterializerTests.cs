@@ -182,7 +182,7 @@ public sealed class LibraryMaterializerTests
 
 
     [TestMethod]
-    public void Materialize_ExternalPackageProjectLeavesPackageLockToDeno()
+    public void Materialize_ExternalPackageProjectPreservesAuthoredLocksForMigration()
     {
         var tdesignManifest = FindLibraryManifest("ECMAScript.TDesign");
         var vueManifest = FindLibraryManifest("ECMAScript.Vue");
@@ -196,15 +196,15 @@ public sealed class LibraryMaterializerTests
                 BuildMode.Production,
                 requiredImports: ["tdesign-vue-next/es/button/index.mjs"]);
 
-            // A stale lock must not survive when the root contains external identities. Deno's
-            // resolved graph is the complete lock source for npm/JSR packages.
+            // pnpm owns its own lock. Preserve the authored npm lock for explicit
+            // migration instead of silently deleting another tool's input.
             File.WriteAllText(Path.Combine(outputRoot, "package-lock.json"), "{\"stale\":true}\n");
             LibraryPackageWriter.WritePackageProject(outputRoot, libraries);
 
             using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package.json")));
             Assert.AreEqual("1.20.7", package.RootElement.GetProperty("dependencies").GetProperty("tdesign-vue-next").GetString());
             Assert.AreEqual("npm", package.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("tdesign-vue-next").GetProperty("source").GetString());
-            Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "package-lock.json")));
+            Assert.AreEqual("{\"stale\":true}\n", File.ReadAllText(Path.Combine(outputRoot, "package-lock.json")));
         }
         finally
         {
@@ -214,7 +214,7 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public void Materialize_JsrPackageUsesCanonicalDenoIdentityAndAuthoredImportAliases()
+    public void Materialize_JsrPackageUsesCanonicalNpmIdentityAndAuthoredImportAliases()
     {
         using var workspace = new LibraryWorkspace();
         var manifestPath = Path.Combine(workspace.Root, "jsr-manifest.json");
@@ -270,8 +270,8 @@ public sealed class LibraryMaterializerTests
         using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputRoot, "package.json")));
         var dependencies = package.RootElement.GetProperty("dependencies");
         Assert.AreEqual(
-            "jsr:@std/path@1.0.8",
-            dependencies.GetProperty("@std/path").GetString());
+            "npm:@jsr/std__path@1.0.8",
+            dependencies.GetProperty("@jsr/std__path").GetString());
         var metadata = package.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("@std/path");
         Assert.AreEqual("jsr", metadata.GetProperty("source").GetString());
         Assert.AreEqual("@jsr/std__path", metadata.GetProperty("canonicalName").GetString());
@@ -346,7 +346,7 @@ public sealed class LibraryMaterializerTests
         Assert.AreEqual("@std/path", reference.Name);
         Assert.AreEqual("@std/path", reference.AuthoredName);
         Assert.AreEqual("@jsr/std__path", reference.CanonicalName);
-        Assert.AreEqual("jsr:@std/path@1.0.8", LibraryPackageIdentity.GetDependencySpecifier(reference));
+        Assert.AreEqual("npm:@jsr/std__path@1.0.8", LibraryPackageIdentity.GetDependencySpecifier(reference));
     }
 
     [TestMethod]

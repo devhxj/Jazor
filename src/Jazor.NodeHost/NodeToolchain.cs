@@ -32,6 +32,12 @@ internal static class NodeToolchain
         return path;
     }
 
+    public static Task<string> RenderAsync(NodeEnvironment environment, string projectDirectory,
+        string request, CancellationToken cancellationToken)
+        => environment.InvokeSourceAsync(BridgeSource,
+            Path.Combine(projectDirectory, ".jazor", "nodeapi", BridgeHash, "toolchain.cjs"),
+            "render", cancellationToken, request);
+
     public static async Task<string> BuildAsync(string projectDirectory, bool ssr,
         CancellationToken cancellationToken, TextWriter? progress = null)
     {

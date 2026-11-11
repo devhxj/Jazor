@@ -274,7 +274,6 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         private readonly SsrArtifacts _artifacts;
         private readonly JsonSerializerOptions _jsonOptions;
         private NodeEnvironment? _environment;
-        private string? _bridge;
         private bool _healthy = true;
 
         public SsrWorker(SsrArtifacts artifacts, JsonSerializerOptions jsonOptions)
@@ -289,7 +288,6 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
             _environment ??= new NodeEnvironment(_artifacts.RootPath);
-            _bridge ??= NodeToolchain.MaterializeBridge(_artifacts.RootPath);
             return Task.CompletedTask;
         }
 
@@ -303,7 +301,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
                 // Cancellation retires this environment and joins its JS thread
                 // before releasing capacity. Never replay a render whose hooks
                 // may already have produced side effects.
-                var html = await _environment!.InvokeAsync(_bridge!, "render", cancellationToken, request).ConfigureAwait(false);
+                var html = await NodeToolchain.RenderAsync(_environment!, _artifacts.RootPath, request, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 return html;
             }

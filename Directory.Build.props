@@ -2,14 +2,14 @@
   <PropertyGroup>
     <AcornimaVersion>1.8.0</AcornimaVersion>
     <AngleSharpVersion>1.7.2</AngleSharpVersion>
-    <DenoHostVersion>2.9.7</DenoHostVersion>
     <NodeApiVersion>0.9.36</NodeApiVersion>
     <LibNodeVersion>20.1800.215</LibNodeVersion>
     <PnpmEngineVersion>12.5.1</PnpmEngineVersion>
+    <NodeToolAppHostVersion>11.0.0</NodeToolAppHostVersion>
     <!-- NodeApi embeds libnode in repository hosts and runtime tests. V8 stack
          switching in this supported combination requires CET compatibility off. -->
     <CETCompat>false</CETCompat>
-    <!-- DenoHost 2.9.6 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
+    <!-- Host metadata and SSR envelopes use reflection-based JSON serialization. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <JsonNetVersion>11.0.0</JsonNetVersion>
     <!-- The .NET 11 GA SDK embeds this prerelease-labelled Roslyn build, published to dotnet-tools. Keep the exact SDK match for preview language features. -->

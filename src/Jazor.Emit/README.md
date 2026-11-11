@@ -47,6 +47,8 @@ dotnet Jazor.Emit.dll \
   --library-manifest <package>/manifest.json
 ```
 
+Windows 使用随包 `Jazor.Emit.<build-host-rid>.exe`（`CETCompat=false`）启动，其他平台使用托管 DLL；MSBuild 自动选择构建机工具，目标 RID 继续单独传给资源解析。`--deno` / `JazorDenoPath` 已移除。可用 `--pnpm-store <目录>` 或 MSBuild `JazorPnpmStoreDirectory` 显式选择共享 store；未设置时使用用户本地应用数据目录中的 Jazor store。
+
 `--assembly` 和 `--library-manifest` 可以重复。路径、版本、资源类型和依赖由 package metadata
 显式声明；Emit 使用 metadata 指向的 carrier 和 package identity 建立 graph，并保持
 相对模块、CSS、worker、static 和 license 资源的 owner 关系。第三方运行时代码保持在恢复的

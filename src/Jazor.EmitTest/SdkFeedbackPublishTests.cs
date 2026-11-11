@@ -49,7 +49,7 @@ public sealed class SdkFeedbackPublishTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public async Task Publish_RuntimeClosureContainsChunksAndSsrTasksAndSupportsSourceMapOptIn(bool includeSourceMaps)
+    public async Task Publish_RuntimeClosureContainsChunksAndSsrExportsAndSupportsSourceMapOptIn(bool includeSourceMaps)
     {
         using var workspace = new Workspace();
         var project = workspace.CreateProject($"""
@@ -70,8 +70,7 @@ public sealed class SdkFeedbackPublishTests
         workspace.Write("generated/frontend/dist/bundle.js.map", "{}");
         workspace.Write("generated/frontend/ssr/ssr-entry.js", "export const server = true;");
         workspace.Write("generated/frontend/ssr/chunks/view.js", "export default {};");
-        workspace.Write("generated/frontend/ssr/package.json", "{\"type\":\"module\",\"scripts\":{\"ssr\":\"deno run ssr-entry.js\"}}");
-        workspace.Write("generated/frontend/ssr/deno.lock", "{\"version\":\"5\"}");
+        workspace.Write("generated/frontend/ssr/package.json", "{\"type\":\"module\"}");
         workspace.Write("generated/frontend/ssr/ssr-entry.js.map", "{}");
         workspace.Write("generated/frontend/host/source.mjs", "export const authored = 8;");
         workspace.Write("generated/frontend/host/source.mjs.map", "{}");
@@ -87,7 +86,7 @@ public sealed class SdkFeedbackPublishTests
             .Select(path => Path.GetRelativePath(closureRoot, path).Replace('\\', '/')).OrderBy(path => path).ToArray();
         var expected = new List<string>
         {
-            "dist/bundle.js", "dist/chunks/view.js", "ssr/chunks/view.js", "ssr/deno.lock", "ssr/package.json", "ssr/ssr-entry.js"
+            "dist/bundle.js", "dist/chunks/view.js", "ssr/chunks/view.js", "ssr/package.json", "ssr/ssr-entry.js"
         };
         if (includeSourceMaps)
             expected.AddRange(["dist/bundle.js.map", "ssr/ssr-entry.js.map"]);
@@ -137,6 +136,7 @@ public sealed class SdkFeedbackPublishTests
         };
         foreach (var argument in arguments)
             start.ArgumentList.Add(argument);
+        RepositoryTemp.ApplyProcessEnvironment(start);
         using var process = Process.Start(start)!;
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();

@@ -103,7 +103,7 @@ app.UseJazorHost();
 app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
-ASP.NET Core 持有请求管线与响应文档，DenoHost 执行标准项目中的 Vue 服务器模块，Vite 是可替换的默认浏览器工具。依赖恢复到项目的 `node_modules`，无需全局 Deno 或 CDN。
+当前 NodeApi 迁移分支由 ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SSR 与 Vite API。pnpm API 恢复项目的 `node_modules` 和 `pnpm-lock.yaml`，无需全局 Node、pnpm 或 CDN。Windows 宿主配置 `CETCompat=false`，随包 Emit apphost 按构建机 RID 选择，部署运行库按目标 RID 解析；原生 pnpm 安装期间的取消需等待引擎实际结束。全仓库脚本与跨平台门禁仍待完成，此说明不改变已发布版本的执行路径。
 
 ## Razor-to-Vue
 

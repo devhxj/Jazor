@@ -26,13 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="Acornima" Version="$(AcornimaVersion)" />
-    <!-- Emit 通过 DenoHost 启动 restore/check/task build；源码构建/测试由这些引用把签名校验过的
-         当前 RID runtime 放进输出目录。NuGet 包侧的全 RID 携带由 Jazor.csproj 显式打包。 -->
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
-    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
-    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
   </ItemGroup>
 
   <ItemGroup>

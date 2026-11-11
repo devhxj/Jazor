@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Jazor.Emit;
+using Jazor.NodeHost;
 
 namespace Jazor.EmitTest;
 
@@ -160,7 +161,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Packages")]
-    public async Task CreateLocalPackage_CarriesDenoHostRuntimeAndFrontendHost()
+    public async Task CreateLocalPackage_CarriesNodeApiRuntimeAndFrontendHost()
     {
         var package = await LocalPackage.Value;
         var nuspec = ReadPackageEntryText(package.PackagePath, "Jazor.nuspec");
@@ -170,7 +171,11 @@ public sealed class SdkIntegrationTests
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
 
-        StringAssert.Contains(nuspec, "id=\"DenoHost.Core\"", StringComparison.Ordinal);
+        StringAssert.Contains(nuspec, "id=\"Microsoft.JavaScript.NodeApi\"", StringComparison.Ordinal);
+        StringAssert.Contains(nuspec, "id=\"Microsoft.JavaScript.LibNode\"", StringComparison.Ordinal);
+        Assert.IsFalse(nuspec.Contains("DenoHost", StringComparison.Ordinal));
+        Assert.IsFalse(entryNames.Any(path => path.Contains("DenoHost", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith("/deno.exe", StringComparison.OrdinalIgnoreCase) || path.EndsWith("/deno", StringComparison.OrdinalIgnoreCase)));
         Assert.IsFalse(
             nuspec.Contains("Microsoft.AspNetCore.SpaProxy", StringComparison.OrdinalIgnoreCase),
             "The unified frontend host must not restore the ASP.NET Core SpaProxy package.");
@@ -187,22 +192,14 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(
             entryNames.Any(static path => path.EndsWith("spa.proxy.json", StringComparison.OrdinalIgnoreCase)),
             "The package must not carry SpaProxy hosting-startup configuration.");
-        // Emit 的 restore/check/build 经 DenoProcess 执行，DenoHost 只从 AppContext.BaseDirectory
-        // 解析 runtime；单平台 pack 机必须无条件声明并携带全部受支持 RID 的签名 runtime。
-        foreach (var rid in new[] { "win-x64", "linux-x64", "osx-x64", "osx-arm64" })
+        // The build host selects libnode independently of the consumer target
+        // RID. All tool-native assets must survive packing on a single platform.
+        foreach (var rid in new[] { "win-x64", "win-arm64", "win-x86", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" })
         {
-            var runtimePackageName = $"DenoHost.Runtime.{rid}";
-            StringAssert.Contains(nuspec, $"id=\"{runtimePackageName}\"", StringComparison.Ordinal);
-
-            var binaryName = rid.StartsWith("win", StringComparison.Ordinal) ? "deno.exe" : "deno";
-            var checksumName = binaryName + ".sha256sum";
+            var binaryName = rid.StartsWith("win", StringComparison.Ordinal) ? "libnode.dll"
+                : rid.StartsWith("osx", StringComparison.Ordinal) ? "libnode.dylib" : "libnode.so";
             var nativePrefix = $"tools/net11.0/runtimes/{rid}/native/";
-            foreach (var fileName in new[] { binaryName, checksumName, "deno.metadata.json", "deno.metadata.sig" })
-            {
-                Assert.IsTrue(
-                    entryNames.Contains(nativePrefix + fileName, StringComparer.OrdinalIgnoreCase),
-                    $"Jazor.Emit runs Deno through DenoHost.DenoProcess, so the package must carry the signed runtime: {nativePrefix}{fileName}");
-            }
+            Assert.IsTrue(entryNames.Contains(nativePrefix + binaryName, StringComparer.OrdinalIgnoreCase), nativePrefix + binaryName);
         }
 
         StringAssert.Contains(
@@ -210,8 +207,11 @@ public sealed class SdkIntegrationTests
             "<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>",
             StringComparison.Ordinal);
         Assert.IsTrue(
-            entryNames.Contains("tools/net11.0/DenoHost.Core.dll", StringComparer.OrdinalIgnoreCase),
-            "Jazor.Emit must carry DenoHost.Core so restore/check/build run through DenoProcess.");
+            entryNames.Contains("tools/net11.0/Jazor.NodeHost.dll", StringComparer.OrdinalIgnoreCase));
+        Assert.IsTrue(entryNames.Contains("lib/net11.0/Jazor.NodeHost.dll", StringComparer.OrdinalIgnoreCase));
+        foreach (var rid in new[] { "win-x64", "win-arm64" })
+            Assert.IsTrue(entryNames.Contains($"tools/net11.0/Jazor.Emit.{rid}.exe", StringComparer.OrdinalIgnoreCase));
+        StringAssert.Contains(props, "<CETCompat>false</CETCompat>");
     }
 
     [TestMethod]
@@ -680,11 +680,11 @@ public sealed class SdkIntegrationTests
         var testFile = Path.Combine(hostRoot, "jazor", "bundle-test.mjs");
         await File.WriteAllTextAsync(testFile, """
             import { Boot } from './dist/bundle.js';
-            Deno.test('project bundle preserves named exports', () => {
+            globalThis.__jazorTest('project bundle preserves named exports', () => {
               if (Boot() !== 'Hello, Jazor') throw new Error(Boot());
             });
             """);
-        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, Path.Combine(hostRoot, "jazor"));
+        await RunNodeTestAsync( testFile, Path.Combine(hostRoot, "jazor"));
     }
 
     [TestMethod]
@@ -779,7 +779,7 @@ public sealed class SdkIntegrationTests
             File.Exists(Path.Combine(publishedSsrRoot, "ssr", "package.json")),
             "Publish output must carry the bundled SSR task package.");
         Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "package.json")));
-        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "deno.lock")));
+        Assert.IsFalse(File.Exists(Path.Combine(publishedSsrRoot, "pnpm-lock.yaml")));
         Assert.IsFalse(Directory.Exists(Path.Combine(publishedSsrRoot, "node_modules")));
         Assert.IsFalse(Directory.EnumerateFiles(publishedSsrRoot, "*.map", SearchOption.AllDirectories).Any());
     }
@@ -914,7 +914,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Core")]
-    public async Task Build_LocalJazorPackage_StoredIndexAndRange_ExecutesMaterializedRuntimeOnDenoHost()
+    public async Task Build_LocalJazorPackage_StoredIndexAndRange_ExecutesMaterializedRuntimeOnNodeApi()
     {
         var package = await LocalCorePackage.Value;
 
@@ -1054,7 +1054,7 @@ public sealed class SdkIntegrationTests
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/RangeModule.js");
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/RuntimeModule.js");
 
-        AssertStandardDenoProject(outputRoot);
+        AssertStandardNodeProject(outputRoot);
         var testFile = Path.Combine(outputRoot, "materialized-index-range.test.mjs");
         WriteFile(
             testFile,
@@ -1078,7 +1078,7 @@ public sealed class SdkIntegrationTests
                     assertEqual(actual[index], expected[index], `${message} at ${index}`);
             }
 
-            Deno.test("materialized stored Index and Range preserve array offsets and mutation", () => {
+            globalThis.__jazorTest("materialized stored Index and Range preserve array offsets and mutation", () => {
                 const source = [3, 5, 7, 11, 13, 17];
                 assertArrayEqual(SliceInterior(source), [7, 11, 13], "stored range slice");
                 assertArrayEqual(source, [3, 5, 7, 11, 13, 17], "slice source remains unchanged");
@@ -1111,12 +1111,12 @@ public sealed class SdkIntegrationTests
             });
             """);
 
-        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
+        await RunNodeTestAsync( testFile, outputRoot);
     }
 
     [TestMethod]
     [TestCategory("Consumer.Core")]
-    public async Task Build_LocalJazorPackage_QuerySyntaxWithCapturedLambda_ExecutesOnDenoHost()
+    public async Task Build_LocalJazorPackage_QuerySyntaxWithCapturedLambda_ExecutesOnNodeApi()
     {
         var package = await LocalCorePackage.Value;
 
@@ -1350,7 +1350,7 @@ public sealed class SdkIntegrationTests
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Collections/Generic/ComparerT1Module.js");
         await AssertResourceImportIsMaterializedAsync(outputRoot, "clr/System/Collections/Generic/EqualityComparerT1Module.js");
 
-        AssertStandardDenoProject(outputRoot);
+        AssertStandardNodeProject(outputRoot);
 
         var testFile = Path.Combine(outputRoot, "materialized-query.test.mjs");
         WriteFile(
@@ -1369,7 +1369,7 @@ public sealed class SdkIntegrationTests
                     assertEqual(actual[index], expected[index], `${message} at ${index}`);
             }
 
-            Deno.test("materialized query syntax preserves lambda capture and source values", () => {
+            globalThis.__jazorTest("materialized query syntax preserves lambda capture and source values", () => {
                 const source = [1, 2, 3, 4, 5];
                 assertArrayEqual(SelectEvenProducts(source, 7), [14, 28], "query result");
                 assertArrayEqual(source, [1, 2, 3, 4, 5], "query source remains unchanged");
@@ -1500,7 +1500,7 @@ public sealed class SdkIntegrationTests
             });
             """);
 
-        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
+        await RunNodeTestAsync( testFile, outputRoot);
     }
 
     [TestMethod]
@@ -3059,7 +3059,7 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnDenoHost()
+    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnNodeApi()
     {
         var package = await LocalCorePackage.Value;
 
@@ -3199,17 +3199,6 @@ public sealed class SdkIntegrationTests
             Assert.IsFalse(moduleText.Contains(".vue", StringComparison.OrdinalIgnoreCase), modulePath);
         }
 
-        // Resolve the generated bare Vue import through Deno's local import map. The fixture is
-        // intentionally adjacent to the artifact so this consumer path never needs node_modules.
-        WriteFile(
-            Path.Combine(outputRoot, "deno.json"),
-            """
-            {
-              "imports": {
-                "vue": "./vue-test-runtime.mjs"
-              }
-            }
-            """);
         WriteFile(
             Path.Combine(outputRoot, "vue-test-runtime.mjs"),
             """
@@ -3300,7 +3289,7 @@ public sealed class SdkIntegrationTests
                 return false;
             }
 
-            Deno.test("materialized RazorVue consumer preserves bind:set and async event state", async () => {
+            globalThis.__jazorTest("materialized RazorVue consumer preserves bind:set and async event state", async () => {
                 const render = component.setup({}, { slots: {} });
                 const initial = render();
                 const initialInput = findElement(initial, "input");
@@ -3347,7 +3336,7 @@ public sealed class SdkIntegrationTests
             });
             """);
 
-        await RunDenoTestAsync(package.DenoHostRuntimePath, testFile, outputRoot);
+        await RunNodeTestAsync( testFile, outputRoot);
         Assert.IsTrue(
             Directory.Exists(Path.Combine(outputRoot, "node_modules")),
             "The materialized RazorVue consumer test must resolve Vue from the Emit-owned jazor/node_modules graph.");
@@ -3593,8 +3582,8 @@ public sealed class SdkIntegrationTests
               rolldownOptions: { input: 'client-entry.mjs', output: { entryFileNames: 'client-entry.js' } }
             }});
             """);
-        var bundle = await RunDenoAsync(package.DenoHostRuntimePath, harnessJazorRoot, ["task", "build"], TimeSpan.FromMinutes(2));
-        Assert.AreEqual(0, bundle.ExitCode, bundle.ToString());
+        var bundle = await new JavaScriptProjectBuilder().BuildAsync(harnessJazorRoot);
+        Assert.IsTrue(bundle.IsSuccess, bundle.Diagnostic?.Message);
         var indexPath = Path.Combine(harnessJazorRoot, "index.html");
         var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath);
         Assert.AreEqual(0, browser.ExitCode, browser.ToString());
@@ -3666,7 +3655,7 @@ public sealed class SdkIntegrationTests
             File.Exists(Path.Combine(outputRoot, "package.json")),
             "The Release consumer did not emit the standard jazor package project.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(outputRoot, "deno.lock")),
+            File.Exists(Path.Combine(outputRoot, "pnpm-lock.yaml")),
             "The Release consumer did not freeze the restored Deno package graph.");
         Assert.IsTrue(
             File.Exists(Path.Combine(outputRoot, "node_modules", "tdesign-vue-next", "package.json")),
@@ -4548,7 +4537,6 @@ public sealed class SdkIntegrationTests
             packageOutputDirectory,
             GetPackagePath(packageOutputDirectory, packageVersion),
             GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
-            GetDenoHostRuntimePath(),
             buildWorkspace);
     }
 
@@ -4688,6 +4676,9 @@ public sealed class SdkIntegrationTests
         foreach (var argument in arguments)
             startInfo.ArgumentList.Add(argument);
 
+        if (arguments.Count > 0 && arguments[0] is "build" or "publish")
+            startInfo.ArgumentList.Add("-p:JazorPnpmStoreDirectory=" + Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
+
         RepositoryTemp.ApplyProcessEnvironment(startInfo);
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
@@ -4708,47 +4699,18 @@ public sealed class SdkIntegrationTests
             await standardError);
     }
 
-    private static async Task RunDenoTestAsync(string denoExecutablePath, string testFile, string workingDirectory)
-    {
-        Assert.IsTrue(File.Exists(denoExecutablePath), $"Bundled DenoHost runtime was not found: {denoExecutablePath}");
-
-        var startInfo = new ProcessStartInfo(denoExecutablePath)
-        {
-            WorkingDirectory = workingDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false
-        };
-        startInfo.ArgumentList.Add("test");
-        startInfo.ArgumentList.Add("--quiet");
-        startInfo.ArgumentList.Add("--allow-all");
-        startInfo.ArgumentList.Add(testFile);
-        RepositoryTemp.ApplyProcessEnvironment(startInfo);
-        // A test-local cache keeps Deno's module resolution independent from a developer cache.
-        startInfo.Environment["DENO_DIR"] = Path.Combine(workingDirectory, ".deno-cache");
-
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
-
-        var standardOutput = process.StandardOutput.ReadToEndAsync();
-        var standardError = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-
-        Assert.AreEqual(
-            0,
-            process.ExitCode,
-            "Bundled DenoHost runtime test failed." + Environment.NewLine +
-            await standardOutput + Environment.NewLine +
-            await standardError);
-    }
-
+    private static Task<string> RunNodeTestAsync(string testFile, string workingDirectory)
+        => NodeModuleRunner.RunAsync(workingDirectory, testFile,
+            imports: File.Exists(Path.Combine(workingDirectory, "vue-test-runtime.mjs"))
+                ? new Dictionary<string, string> { ["vue"] = "./vue-test-runtime.mjs" }
+                : null);
     private static string FindBuildState(string outputRoot)
     {
         var projectRoot = Directory.GetParent(outputRoot)!.FullName;
         return Directory.EnumerateFiles(Path.Combine(projectRoot, "obj"), "jazor-manifest.json", SearchOption.AllDirectories).Single();
     }
 
-    private static void AssertStandardDenoProject(string outputRoot)
+    private static void AssertStandardNodeProject(string outputRoot)
     {
         Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "package.json")));
         Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "ssr-importmap.json")));
@@ -4840,15 +4802,6 @@ public sealed class SdkIntegrationTests
             throw new FileNotFoundException($"Could not locate packed Jazor package '{packagePath}'.", packagePath);
 
         return packagePath;
-    }
-
-    private static string GetDenoHostRuntimePath()
-    {
-        var denoPath = Path.Combine(AppContext.BaseDirectory, "runtimes", "win-x64", "native", "deno.exe");
-        if (!File.Exists(denoPath))
-            throw new FileNotFoundException($"DenoHost runtime was not found under '{AppContext.BaseDirectory}'.", denoPath);
-
-        return denoPath;
     }
 
     private static void CreateCounterBrowserHarness(string harnessRoot)
@@ -7960,26 +7913,6 @@ public sealed class SdkIntegrationTests
             """);
     }
 
-    private static async Task<ProcessResult> RunDenoAsync(
-        string denoExecutablePath,
-        string workingDirectory,
-        IReadOnlyList<string> arguments,
-        TimeSpan timeout)
-    {
-        var denoCacheRoot = Path.Combine(workingDirectory, ".deno-cache");
-        Directory.CreateDirectory(denoCacheRoot);
-
-        return await RunProcessAsync(
-            denoExecutablePath,
-            workingDirectory,
-            arguments,
-            timeout,
-            new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["DENO_DIR"] = denoCacheRoot
-            });
-    }
-
     private static async Task<ProcessResult> RunProcessAsync(
         string fileName,
         string workingDirectory,
@@ -8715,7 +8648,6 @@ public sealed class SdkIntegrationTests
         string PackageOutputDirectory,
         string PackagePath,
         string VuePackagePath,
-        string DenoHostRuntimePath,
         PackageBuildWorkspace BuildWorkspace);
 
     private sealed record LocalPackageFixture(

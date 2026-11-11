@@ -32,7 +32,7 @@ internal static class LibraryPackageWriter
                 // External packages are resolved by pnpm. Never copy a binding snapshot into
                 // node_modules: doing so hides upstream exports/sideEffects and defeats tree
                 // shaking.
-                AddDependency(dependencies, reference.Name, LibraryPackageIdentity.GetDependencySpecifier(reference));
+                AddDependency(dependencies, reference.CanonicalName, LibraryPackageIdentity.GetDependencySpecifier(reference));
             }
             // ECMAScript 自有源码 carrier 是项目源码（clr/**、runtime/**、dist/**），按相对
             // import 解析；它不出现在 dependencies 里，但保留 identity 供诊断与门禁比对。
@@ -75,7 +75,7 @@ internal static class LibraryPackageWriter
             // other package fields belong to the standard project and survive regeneration.
             var previousManaged = existing["jazor"]?["packages"]?.AsObject();
             var mergedDependencies = existing["dependencies"]?.AsObject() ?? new JsonObject();
-            foreach (var name in previousManaged?.Select(pair => pair.Key).ToArray() ?? [])
+            foreach (var name in previousManaged?.SelectMany(pair => new[] { pair.Key, pair.Value?["canonicalName"]?.GetValue<string>() ?? pair.Key }).ToArray() ?? [])
                 mergedDependencies.Remove(name);
             foreach (var dependency in dependencies)
                 mergedDependencies[dependency.Key] = dependency.Value?.DeepClone();

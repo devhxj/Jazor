@@ -110,12 +110,35 @@ internal sealed class NodeEnvironment : IDisposable
 
     public async Task<string> InvokeAsync(string modulePath, string exportName,
         CancellationToken cancellationToken, params string[] arguments)
+        => await InvokeModuleAsync(() => Import(modulePath), exportName, cancellationToken, arguments).ConfigureAwait(false);
+
+    public Task<string> InvokeSourceAsync(string moduleSource, string modulePath, string exportName,
+        CancellationToken cancellationToken, params string[] arguments)
+        => InvokeModuleAsync(() =>
+        {
+            // Use Node's normal CommonJS compiler/cache with a virtual filename.
+            // Production SSR can load the embedded bridge from a read-only
+            // deployment; no temporary tool file or package restore is needed.
+            var constructor = JSValueScope.Current.RuntimeContext.Import("node:module");
+            var cache = constructor["_cache"];
+            var module = cache[modulePath];
+            if (module.IsUndefined())
+            {
+                module = constructor.CallAsConstructor(modulePath);
+                module.CallMethod("_compile", moduleSource, modulePath);
+                cache[modulePath] = module;
+            }
+            return module["exports"];
+        }, exportName, cancellationToken, arguments);
+
+    private async Task<string> InvokeModuleAsync(Func<JSValue> loadModule, string exportName,
+        CancellationToken cancellationToken, string[] arguments)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var operation = RunAsync(async environment =>
         {
             Task<string> resultTask;
-            using (var module = new JSReference(environment.Import(modulePath)))
+            using (var module = new JSReference(loadModule()))
             {
                 var values = arguments.Select(value => (JSValue)value).ToArray();
                 var result = module.GetValue()[exportName].Call(module.GetValue(), values);

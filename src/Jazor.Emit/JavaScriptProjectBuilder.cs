@@ -9,7 +9,6 @@ internal sealed class JavaScriptProjectBuilder
     /// <remarks>Build runs through the in-process Vite API. Shell scripts are not executed.</remarks>
     public async Task<ToolchainResult> BuildAsync(
         string projectRoot,
-        string? denoExecutablePath = null,
         CancellationToken cancellationToken = default,
         string taskName = "build",
         TextWriter? progress = null)

@@ -37,9 +37,8 @@ internal static class RepositoryTemp
         var dotnet = Path.Combine(root, "dotnet-home");
         var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttp = Path.Combine(root, "nuget-http-cache");
-        var deno = Path.Combine(root, "deno-cache");
         var npm = Path.Combine(root, "npm-cache");
-        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, npm })
             Directory.CreateDirectory(directory);
 
         startInfo.Environment["TEMP"] = temp;
@@ -47,7 +46,6 @@ internal static class RepositoryTemp
         startInfo.Environment["DOTNET_CLI_HOME"] = dotnet;
         startInfo.Environment["NUGET_PACKAGES"] = nuget;
         startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = nugetHttp;
-        startInfo.Environment["DENO_DIR"] = deno;
         startInfo.Environment["NPM_CONFIG_CACHE"] = npm;
         startInfo.Environment["npm_config_cache"] = npm;
     }
@@ -68,23 +66,7 @@ internal static class RepositoryTemp
         var repositoryRoot = directory?.FullName
             ?? throw new InvalidOperationException("Unable to locate Jazor.slnx for the repository-owned test workspace.");
         var root = Path.Combine(repositoryRoot, ".tmp", "test-workspaces");
-        var temp = Path.Combine(root, "process-temp");
-        var dotnet = Path.Combine(root, "dotnet-home");
-        var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
-        var nugetHttp = Path.Combine(root, "nuget-http-cache");
-        var deno = Path.Combine(root, "deno-cache");
-        var npm = Path.Combine(root, "npm-cache");
-        foreach (var path in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
-            Directory.CreateDirectory(path);
-
-        Environment.SetEnvironmentVariable("TEMP", temp);
-        Environment.SetEnvironmentVariable("TMP", temp);
-        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
-        Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
-        Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
-        Environment.SetEnvironmentVariable("DENO_DIR", deno);
-        Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
-        Environment.SetEnvironmentVariable("npm_config_cache", npm);
+        Directory.CreateDirectory(root);
         return root;
     }
 }

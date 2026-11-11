@@ -108,6 +108,8 @@ public sealed class Preview8SsrBundleTests
             var rendered = await renderer.RenderAsync(new JazorSsrRequest(
                 "components/counter.js", new { Title = "Published <title>" }), timeout.Token);
             Assert.AreEqual("<main id=\"published-ssr\">Published &lt;title&gt;|prefetched</main>", rendered.Html);
+            Assert.IsFalse(Directory.Exists(Path.Combine(published, "ssr", ".jazor")),
+                "Published SSR must load the embedded bridge without materializing tool files into the deployment.");
         }
         finally
         {

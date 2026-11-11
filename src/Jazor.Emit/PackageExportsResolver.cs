@@ -17,10 +17,10 @@ internal static class PackageExportsResolver
             var conditions = style
                 ? browser
                     ? new[] { "style", "browser", "import", "module", "default" }
-                    : new[] { "style", "deno", "node", "import", "default" }
+                    : new[] { "style", "node", "import", "default" }
                 : browser
                     ? new[] { "browser", "import", "module", "default" }
-                    : new[] { "deno", "node", "import", "default" };
+                    : new[] { "node", "import", "default" };
             var root = document.RootElement;
             if (root.TryGetProperty("exports", out var exports))
             {

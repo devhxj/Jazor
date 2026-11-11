@@ -41,6 +41,7 @@
       <_JazorTargetRuntimeIdentifier Condition="'$(_JazorTargetRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</_JazorTargetRuntimeIdentifier>
       <_JazorRuntimeIdentifierArgument Condition="'$(_JazorTargetRuntimeIdentifier)' != ''">--runtime-identifier &quot;$(_JazorTargetRuntimeIdentifier)&quot;</_JazorRuntimeIdentifierArgument>
       <_JazorRuntimeIdentifierGraphArgument Condition="'$(RuntimeIdentifierGraphPath)' != ''">--runtime-identifier-graph &quot;$(RuntimeIdentifierGraphPath)&quot;</_JazorRuntimeIdentifierGraphArgument>
+      <_JazorPnpmStoreArgument Condition="'$(JazorPnpmStoreDirectory)' != ''">--pnpm-store &quot;$([System.IO.Path]::GetFullPath('$(JazorPnpmStoreDirectory)'))&quot;</_JazorPnpmStoreArgument>
     </PropertyGroup>
   </Target>
 
@@ -68,39 +69,22 @@
 
     <Error Condition="!Exists('$(_JazorToolPath)')"
            Text="Could not locate Jazor.Emit. Install the Jazor package with its tools assets, or add a ProjectReference to Jazor.Emit for repository source builds." />
-  </Target>
-
-  <!-- Emit 自带 DenoHost runtime 并经 DenoProcess 启动 restore/check/build；这里的 deno 参数
-       是兼容入口，只做存在性校验，不再选择实际执行的二进制。 -->
-  <Target Name="_ResolveJazorDeno">
     <PropertyGroup>
-      <_JazorDenoOverride Condition="'$(JazorDenoPath)' != ''">$([System.IO.Path]::GetFullPath('$(JazorDenoPath)'))</_JazorDenoOverride>
-      <_JazorDenoRuntimeName Condition="'$(OS)' == 'Windows_NT'">deno.exe</_JazorDenoRuntimeName>
-      <_JazorDenoRuntimeName Condition="'$(_JazorDenoRuntimeName)' == ''">deno</_JazorDenoRuntimeName>
-      <_JazorDenoCandidateRid Condition="'$(RuntimeIdentifier)' != ''">$(TargetDir)runtimes\$(RuntimeIdentifier)\native\$(_JazorDenoRuntimeName)</_JazorDenoCandidateRid>
-      <_JazorDenoCandidateWinX64>$(TargetDir)runtimes\win-x64\native\deno.exe</_JazorDenoCandidateWinX64>
-      <_JazorDenoCandidateWinArm64>$(TargetDir)runtimes\win-arm64\native\deno.exe</_JazorDenoCandidateWinArm64>
-      <_JazorDenoCandidateLinuxX64>$(TargetDir)runtimes\linux-x64\native\deno</_JazorDenoCandidateLinuxX64>
-      <_JazorDenoCandidateLinuxArm64>$(TargetDir)runtimes\linux-arm64\native\deno</_JazorDenoCandidateLinuxArm64>
-      <_JazorDenoCandidateOsxX64>$(TargetDir)runtimes\osx-x64\native\deno</_JazorDenoCandidateOsxX64>
-      <_JazorDenoCandidateOsxArm64>$(TargetDir)runtimes\osx-arm64\native\deno</_JazorDenoCandidateOsxArm64>
-      <_JazorDenoPath Condition="'$(_JazorDenoOverride)' != '' and Exists('$(_JazorDenoOverride)')">$(_JazorDenoOverride)</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateRid)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateRid)'))</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateWinX64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateWinX64)'))</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateWinArm64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateWinArm64)'))</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateLinuxX64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateLinuxX64)'))</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateLinuxArm64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateLinuxArm64)'))</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateOsxX64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateOsxX64)'))</_JazorDenoPath>
-      <_JazorDenoPath Condition="'$(_JazorDenoPath)' == '' and Exists('$(_JazorDenoCandidateOsxArm64)')">$([System.IO.Path]::GetFullPath('$(_JazorDenoCandidateOsxArm64)'))</_JazorDenoPath>
-      <_JazorDenoArgument Condition="'$(_JazorDenoPath)' != ''">--deno &quot;$(_JazorDenoPath)&quot;</_JazorDenoArgument>
+      <_JazorPackagedAppHost>$([System.IO.Path]::Combine('$([System.IO.Path]::GetDirectoryName($(_JazorToolPath)))', 'Jazor.Emit.$(NETCoreSdkRuntimeIdentifier).exe'))</_JazorPackagedAppHost>
+      <_JazorSourceAppHost>$([System.IO.Path]::ChangeExtension('$(_JazorToolPath)', '.exe'))</_JazorSourceAppHost>
+      <_JazorToolCommand Condition="'$(OS)' == 'Windows_NT' and Exists('$(_JazorPackagedAppHost)')">&quot;$(_JazorPackagedAppHost)&quot;</_JazorToolCommand>
+      <_JazorToolCommand Condition="'$(OS)' == 'Windows_NT' and '$(_JazorToolCommand)' == '' and Exists('$(_JazorSourceAppHost)')">&quot;$(_JazorSourceAppHost)&quot;</_JazorToolCommand>
+      <_JazorToolCommand Condition="'$(OS)' != 'Windows_NT'">dotnet &quot;$(_JazorToolPath)&quot;</_JazorToolCommand>
     </PropertyGroup>
-    <Error Condition="'$(JazorDenoPath)' != '' and !Exists('$(_JazorDenoOverride)')"
-           Text="JazorDenoPath was specified but the DenoHost executable was not found at '$(_JazorDenoOverride)'." />
+    <Error Condition="'$(_JazorToolCommand)' == ''"
+           Text="Jazor.Emit requires its CETCompat=false apphost for the current build-host RID '$(NETCoreSdkRuntimeIdentifier)'." />
+    <Error Condition="'$(JazorDenoPath)' != ''"
+           Text="JazorDenoPath has been removed. Jazor now uses the packaged in-process NodeApi toolchain." />
   </Target>
 
   <Target Name="JazorDebug"
           AfterTargets="Build"
-          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno;_ResolveJazorRuntimeIdentifier"
+          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorRuntimeIdentifier"
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
@@ -130,7 +114,7 @@
     <WriteLinesToFile File="$(_JazorDebugLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <!-- Browser roots select only entry.js; all catalog modules remain available for lazy imports and SSR. -->
     <WriteLinesToFile File="$(_JazorDebugBrowserEntryListPath)" Lines="@(JazorBrowserEntry)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorDebugBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
+    <Exec Command="$(_JazorToolCommand) --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorPnpmStoreArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorDebugBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <Target Name="JazorRelease"
@@ -146,7 +130,7 @@
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(TargetPath)')" />
 
   <Target Name="_JazorEmitRelease"
-          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorDeno;_ResolveJazorRuntimeIdentifier">
+          DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorRuntimeIdentifier">
     <PropertyGroup>
       <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
       <_JazorReleaseManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorReleaseManifestPath>
@@ -172,7 +156,7 @@
     <WriteLinesToFile File="$(_JazorReleaseModuleAssemblyListPath)" Lines="@(JazorAdditionalAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorReleaseLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorReleaseBrowserEntryListPath)" Lines="@(JazorBrowserEntry)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorDenoArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorReleaseBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
+    <Exec Command="$(_JazorToolCommand) --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorPnpmStoreArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorReleaseBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <!--

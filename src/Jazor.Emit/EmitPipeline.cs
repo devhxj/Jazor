@@ -127,7 +127,7 @@ internal sealed class EmitPipeline
                 outputRoot,
                 checkPaths,
                 cancellationToken,
-                _progress).ConfigureAwait(false);
+                _progress, options.PnpmStoreDirectory).ConfigureAwait(false);
             FinishStage("completed");
             if (options.Mode == BuildMode.Production)
             {
@@ -147,7 +147,7 @@ internal sealed class EmitPipeline
                 {
                     StartStage("bundle SSR");
                     var ssrBundleResult = await new JavaScriptProjectBuilder().BuildAsync(
-                        outputRoot, options.DenoExecutablePath, cancellationToken, "build:ssr", _progress).ConfigureAwait(false);
+                        outputRoot, cancellationToken, "build:ssr", _progress).ConfigureAwait(false);
                     if (!ssrBundleResult.IsSuccess)
                         return Fail(ssrBundleResult.ExitCode,
                             ssrBundleResult.Diagnostic?.Message ?? "Jazor SSR bundle failed.");
@@ -267,7 +267,6 @@ internal sealed class EmitPipeline
         // The authored package script owns the tool and output layout.
         var result = await new JavaScriptProjectBuilder().BuildAsync(
             projectRoot,
-            options.DenoExecutablePath,
             cancellationToken,
             progress: _progress).ConfigureAwait(false);
         return result with { ModuleCount = ManifestModel.TryLoad(manifestPath)?.Modules.Count ?? 0 };
@@ -401,7 +400,7 @@ internal sealed class EmitPipeline
             ViteProjectWriter.SsrConfigFileName,
             "package.json",
             "package-lock.json",
-            "deno.lock"
+            "pnpm-lock.yaml"
         };
 
     private static void ValidateOptions(EmitOptions options)

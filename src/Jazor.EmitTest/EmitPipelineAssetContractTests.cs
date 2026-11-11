@@ -68,7 +68,7 @@ public sealed class EmitPipelineAssetContractTests
     [DataRow("ssr-entry.js", false)]
     [DataRow("package.json", false)]
     [DataRow("package-lock.json", false)]
-    [DataRow("deno.lock", false)]
+    [DataRow("pnpm-lock.yaml", false)]
     [DataRow("entry.js", true)]
     [DataRow("ssr-entry.js", true)]
     public async Task ExecuteAsync_RejectsModuleOrAssetPathThatConflictsWithProjectOutput(string artifactPath, bool moduleCollision)

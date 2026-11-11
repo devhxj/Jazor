@@ -6,9 +6,7 @@
     <JazorSSR Condition="'$(JazorSSR)' == ''">false</JazorSSR>
     <!-- In-process NodeApi/libnode hosting requires this apphost setting. -->
     <CETCompat>false</CETCompat>
-    <!-- Optional override for the DenoHost executable used by Emit package restore. -->
-    <JazorDenoPath Condition="'$(JazorDenoPath)' == ''"></JazorDenoPath>
-    <!-- DenoHost validates its packaged runtime metadata through System.Text.Json reflection. -->
+    <!-- The host serializes SSR envelopes and package metadata through System.Text.Json reflection. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 

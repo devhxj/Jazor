@@ -70,7 +70,6 @@ public sealed class EmitBrowserEntryTests
             CreateOptions(workspace, assembly, ["app.js"]) with
             {
                 Mode = BuildMode.Production,
-                DenoExecutablePath = DenoPath()
             }, timeout.Token);
 
         Assert.IsTrue(result.IsSuccess, result.Error);
@@ -93,11 +92,10 @@ public sealed class EmitBrowserEntryTests
         using var workspace = new Workspace();
         var assembly = CompileCatalog(workspace.Root, unusedContent: "import './missing-authored.js';");
         Directory.CreateDirectory(workspace.Output);
-        // A local-only project exercises authored-module checks without a package restore.
-        File.WriteAllText(Path.Combine(workspace.Output, "package.json"), """{"type":"module","scripts":{"build":"custom-tool"}}""");
+        File.WriteAllText(Path.Combine(workspace.Output, "package.json"), """{"type":"module","scripts":{"build":"vite build"},"devDependencies":{"vite":"8.3.0"}}""");
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var result = await new EmitPipeline().ExecuteAsync(
-            CreateOptions(workspace, assembly, ["app.js"]) with { DenoExecutablePath = DenoPath() }, timeout.Token);
+            CreateOptions(workspace, assembly, ["app.js"]), timeout.Token);
 
         Assert.IsFalse(result.IsSuccess);
         StringAssert.Contains(result.Error, "failed during 'restore/check packages'");
@@ -123,15 +121,8 @@ public sealed class EmitBrowserEntryTests
 
     private static EmitOptions CreateOptions(Workspace workspace, string assembly, IReadOnlyList<string> entries)
         => new(assembly, [], workspace.Output, Path.Combine(workspace.Root, "manifest.json"),
-            BuildMode.Development, null, [], EnableSsr: false, BrowserEntries: entries);
-
-    private static string DenoPath()
-    {
-        var path = Path.Combine(AppContext.BaseDirectory, "runtimes", RuntimeInformation.RuntimeIdentifier,
-            "native", OperatingSystem.IsWindows() ? "deno.exe" : "deno");
-        Assert.IsTrue(File.Exists(path), "Use the runtime from the current test output.");
-        return path;
-    }
+            BuildMode.Development, null, [], EnableSsr: false, BrowserEntries: entries,
+            PnpmStoreDirectory: Path.Combine(RepositoryTemp.Root, "nodeapi-store"));
 
     private static ModuleRecord CreateModule(string assembly, string assemblyName, string path, string content)
         => new(assembly, assemblyName, path, path, path, content, ArtifactHash.ComputeSha256(content));

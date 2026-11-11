@@ -10,11 +10,11 @@ internal sealed record EmitOptions(
     string? SourceRoot,
     IReadOnlyList<string> LibraryManifests,
     bool EnableSsr,
-    string? DenoExecutablePath = null,
     IReadOnlyList<string>? ModuleAssemblyPaths = null,
     string? RuntimeIdentifier = null,
     string? RuntimeIdentifierGraphPath = null,
-    IReadOnlyList<string>? BrowserEntries = null)
+    IReadOnlyList<string>? BrowserEntries = null,
+    string? PnpmStoreDirectory = null)
 {
     public static bool TryParse(string[] args, out EmitOptions? options, out string? error)
     {
@@ -31,9 +31,9 @@ internal sealed record EmitOptions(
         var sourceRoot = string.Empty;
         var libraryManifests = new List<string>();
         var enableSsr = false;
-        string? denoExecutablePath = null;
         string? runtimeIdentifier = null;
         string? runtimeIdentifierGraphPath = null;
+        string? pnpmStoreDirectory = null;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -108,11 +108,11 @@ internal sealed record EmitOptions(
                     }
 
                     break;
-                case "--deno":
-                    denoExecutablePath = value;
-                    break;
                 case "--runtime-identifier":
                     runtimeIdentifier = value;
+                    break;
+                case "--pnpm-store":
+                    pnpmStoreDirectory = value;
                     break;
                 case "--runtime-identifier-graph":
                     runtimeIdentifierGraphPath = value;
@@ -154,11 +154,11 @@ internal sealed record EmitOptions(
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)],
             enableSsr,
-            string.IsNullOrWhiteSpace(denoExecutablePath) ? null : Path.GetFullPath(denoExecutablePath),
             [.. moduleAssemblyPaths.Select(Path.GetFullPath)],
             string.IsNullOrWhiteSpace(runtimeIdentifier) ? null : runtimeIdentifier.Trim(),
             string.IsNullOrWhiteSpace(runtimeIdentifierGraphPath) ? null : Path.GetFullPath(runtimeIdentifierGraphPath),
-            browserEntries);
+            browserEntries,
+            string.IsNullOrWhiteSpace(pnpmStoreDirectory) ? null : Path.GetFullPath(pnpmStoreDirectory));
         return true;
     }
 

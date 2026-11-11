@@ -40,6 +40,7 @@ public sealed class CompilationTimingTargetTests
             };
             foreach (var argument in new[] { "msbuild", project, "/t:Probe", "/nr:false", "/v:minimal" })
                 child.StartInfo.ArgumentList.Add(argument);
+            RepositoryTemp.ApplyProcessEnvironment(child.StartInfo);
             child.Start();
             var stdout = child.StandardOutput.ReadToEndAsync();
             var stderr = child.StandardError.ReadToEndAsync();

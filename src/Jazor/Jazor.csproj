@@ -33,6 +33,8 @@
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
+    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\LICENSE" Pack="true" PackagePath="licenses\libnode\" />
+    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\NOTICE.txt" Pack="true" PackagePath="licenses\libnode\" />
     <!-- Tooling is a direct-reference capability. Only resource manifest location propagates. -->
     <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
@@ -54,13 +56,10 @@
   <ItemGroup>
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <!-- Emit 经 DenoProcess 执行 restore/check/build，DenoHost 只从 AppContext.BaseDirectory
-         解析 runtime；pack 机固定在 Windows，必须无条件引用全部 RID 才能进缓存并被显式打包。 -->
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" />
+    <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-arm64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,6 +79,8 @@
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.dll" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.xml" Pack="true" PackagePath="lib\net11.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.NodeHost\bin\$(Configuration)\net11.0\Jazor.NodeHost.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.NodeHost\bin\$(Configuration)\net11.0\Jazor.NodeHost.pdb" Pack="true" PackagePath="lib\net11.0\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -106,6 +107,7 @@
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <_JazorEmitProject Include="$(MSBuildThisFileDirectory)..\Jazor.Emit\Jazor.Emit.csproj" />
@@ -139,64 +141,48 @@
              RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
   </Target>
 
-  <Target Name="AddJazorEmitPublishOutputToPackage"
-          DependsOnTargets="PrepareJazorPackageArtifacts">
+  <UsingTask TaskName="CreateAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="CreateJazorToolAppHosts" DependsOnTargets="PrepareJazorPackageArtifacts">
     <ItemGroup>
-      <!-- Vue's SFC compiler is opt-in and is packaged by Jazor.Vue, not core Jazor.
-           publish 输出里的 runtimes/ 只覆盖构建机 RID；跨 RID 的签名 runtime 由下方
-           NuGetPackageRoot 显式打包，避免重复条目。 -->
+      <_JazorWindowsToolHost Include="win-x64;win-arm64" />
+    </ItemGroup>
+    <!-- dotnet.exe's CET flag cannot be changed by the managed tool. Package a
+         framework-dependent CET=false apphost for each Windows build-host RID. -->
+    <CreateAppHost
+      AppHostSourcePath="$(NuGetPackageRoot)microsoft.netcore.app.host.%(_JazorWindowsToolHost.Identity)\$(NodeToolAppHostVersion)\runtimes\%(_JazorWindowsToolHost.Identity)\native\apphost.exe"
+      AppHostDestinationPath="$(JazorEmitPublishOutputRoot)Jazor.Emit.%(_JazorWindowsToolHost.Identity).exe"
+      AppBinaryName="Jazor.Emit.dll"
+      IntermediateAssembly="$(JazorEmitPublishOutputRoot)Jazor.Emit.dll"
+      DisableCetCompat="true" />
+  </Target>
+  <Target Name="AddJazorEmitPublishOutputToPackage"
+          DependsOnTargets="PrepareJazorPackageArtifacts;CreateJazorToolAppHosts">
+    <ItemGroup>
+      <!-- Tool libnode assets cover the build host independently of the
+           consumer's target RID. Runtime NuGet assets follow normal RID rules. -->
       <TfmSpecificPackageFile Include="$(JazorEmitPublishOutputRoot)**\*"
-                              Exclude="$(JazorEmitPublishOutputRoot)tooling\vue\**\*;$(JazorEmitPublishOutputRoot)runtimes\**\*">
+                              Exclude="$(JazorEmitPublishOutputRoot)tooling\vue\**\*;$(JazorEmitPublishOutputRoot)runtimes\**\*;$(JazorEmitPublishOutputRoot)Jazor.Emit.exe;$(JazorEmitPublishOutputRoot)Jazor.Emit">
         <PackagePath>tools\net11.0\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
       </TfmSpecificPackageFile>
-      <!-- DenoHost 只从 AppContext.BaseDirectory/runtimes/<rid>/native 解析并签名校验 runtime，
-           包必须在 tools 下携带全部受支持 RID（二进制 + sha256sum + metadata + sig）。 -->
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.exe">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x64\$(LibNodeVersion)\runtimes\win-x64\native\libnode.dll">
         <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.exe.sha256sum">
-        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-arm64\$(LibNodeVersion)\runtimes\win-arm64\native\libnode.dll">
+        <PackagePath>tools\net11.0\runtimes\win-arm64\native\</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.metadata.json">
-        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x86\$(LibNodeVersion)\runtimes\win-x86\native\libnode.dll">
+        <PackagePath>tools\net11.0\runtimes\win-x86\native\</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.win-x64\$(DenoHostVersion)\runtimes\win-x64\native\deno.metadata.sig">
-        <PackagePath>tools\net11.0\runtimes\win-x64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.linux-x64\$(LibNodeVersion)\runtimes\linux-x64\native\libnode.so">
         <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno.sha256sum">
-        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.linux-arm64\$(LibNodeVersion)\runtimes\linux-arm64\native\libnode.so">
+        <PackagePath>tools\net11.0\runtimes\linux-arm64\native\</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno.metadata.json">
-        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.linux-x64\$(DenoHostVersion)\runtimes\linux-x64\native\deno.metadata.sig">
-        <PackagePath>tools\net11.0\runtimes\linux-x64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.osx-x64\$(LibNodeVersion)\runtimes\osx-x64\native\libnode.dylib">
         <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno.sha256sum">
-        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno.metadata.json">
-        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-x64\$(DenoHostVersion)\runtimes\osx-x64\native\deno.metadata.sig">
-        <PackagePath>tools\net11.0\runtimes\osx-x64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno">
-        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno.sha256sum">
-        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno.metadata.json">
-        <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)denohost.runtime.osx-arm64\$(DenoHostVersion)\runtimes\osx-arm64\native\deno.metadata.sig">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.osx-arm64\$(LibNodeVersion)\runtimes\osx-arm64\native\libnode.dylib">
         <PackagePath>tools\net11.0\runtimes\osx-arm64\native\</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>

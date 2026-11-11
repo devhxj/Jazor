@@ -100,6 +100,7 @@ public sealed class BuildBenchmarkReportTests
                 process.StartInfo.ArgumentList.Add("--browser-observations");
                 process.StartInfo.ArgumentList.Add(browser);
             }
+            RepositoryTemp.ApplyProcessEnvironment(process.StartInfo);
             process.Start();
             var stdout = process.StandardOutput.ReadToEndAsync();
             var stderr = process.StandardError.ReadToEndAsync();

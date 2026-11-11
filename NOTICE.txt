@@ -1,6 +1,17 @@
 This project contains third-party components under the following licenses:
 
 -------------------------------------------------
+Microsoft.JavaScript.NodeApi / node-api-dotnet (MIT)
+Copyright (c) Microsoft Corporation.
+https://github.com/microsoft/node-api-dotnet
+
+Microsoft.JavaScript.LibNode (MIT and bundled third-party licenses)
+Copyright Node.js contributors and Microsoft Corporation.
+https://github.com/nodejs/node
+The distributed Jazor package includes the upstream libnode LICENSE and NOTICE.txt
+under licenses/libnode/.
+
+-------------------------------------------------
 Acornima (BSD 3-Clause License)
 Copyright (c) Adam Simon
 

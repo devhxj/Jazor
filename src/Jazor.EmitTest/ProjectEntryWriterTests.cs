@@ -31,7 +31,7 @@ public sealed class ProjectEntryWriterTests
         var ssrEntry = File.ReadAllText(Path.Combine(workspace.Root, ProjectEntryWriter.SsrEntryFileName));
         Assert.IsFalse(ssrEntry.Contains("app/root.js", StringComparison.Ordinal));
         StringAssert.Contains(ssrEntry, "import { createSSRApp } from \"vue\";");
-        StringAssert.Contains(ssrEntry, "Deno.serve({");
+        StringAssert.Contains(ssrEntry, "export async function render(request)");
         StringAssert.Contains(ssrEntry, "new URL(\"./\", import.meta.url)");
 
         ProjectEntryWriter.Write(workspace.Root, ["app/root.js"]);
