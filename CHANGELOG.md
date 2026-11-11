@@ -15,6 +15,7 @@
 
 #### 问题修复
 
+- 修复空条件数组 Index/Range 访问在缓存接收者后仍读取空值 length 的问题；空接收者跳过全部索引求值，非空接收者保持一次求值。by @devhxj
 - 修复 `VdPattern`、`VdPatternSeed` 缺少组件契约和管理示例使用已退役原始对象投影导致的构建失败；对象路由通过 `router.Resolve` 转为具体 URL。by @devhxj
 
 #### 其他变更
@@ -28,6 +29,7 @@ Improvements
 
 Bug Fixes
 
+- Fix conditional array Index/Range access reading length after caching a nullish receiver. Nullish receivers skip all index evaluation; non-null receivers retain single evaluation. by @devhxj
 - Fix build failures caused by missing component contracts on `VdPattern` and `VdPatternSeed` and retired raw-object projections in the admin sample; resolve object routes through `router.Resolve` to concrete URLs. by @devhxj
 
 Chores

@@ -770,7 +770,10 @@ public partial class SemanticWalker
 				return indexer.Instance is IConditionalAccessInstanceOperation ||
 					RequiresConditionalAccessNullishGuard(indexer.Instance);
 			case IArrayElementReferenceOperation element:
-				return element.ArrayReference is IConditionalAccessInstanceOperation ||
+				// Cached Index/Range receivers read length after initialization; guard the
+				// entire expression so a null conditional receiver skips those reads too.
+				return element.Indices.Any(RequiresArrayReceiverCaching) ||
+					element.ArrayReference is IConditionalAccessInstanceOperation ||
 					RequiresConditionalAccessNullishGuard(element.ArrayReference);
 			case IFieldReferenceOperation field:
 				return field.Instance is not null && RequiresConditionalAccessNullishGuard(field.Instance);

@@ -204,7 +204,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 - 使用 .NET SDK 11.0.100、ASP.NET Core/EF Core 11.0.0，以及匹配 SDK 的 Roslyn 与 GA 参考程序集构建和运行。
 - 全部 Jazor/ECMAScript 包统一安装 `1.0.0`；preview.9 消费者沿用现有作者 API。原生 union 继续要求 `<LangVersion>preview</LangVersion>`。
 - 编译器、RazorVue 与绑定支持范围以当前文档为准，公共 API 后续按正式版语义版本规则演进。
-- 修复图表 pattern 组件契约与管理示例的路由 URL 解析。
+- 修复数组 Index/Range 的空值短路、图表 pattern 组件契约与管理示例的路由 URL 解析。
 
 版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
 

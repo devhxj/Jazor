@@ -206,7 +206,7 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 - Build and run on .NET SDK 11.0.100 and ASP.NET Core/EF Core 11.0.0, with matching SDK Roslyn and GA reference assemblies.
 - Install all Jazor/ECMAScript packages at `1.0.0`; preview.9 consumers keep their existing authoring APIs. Native unions continue to require `<LangVersion>preview</LangVersion>`.
 - Retain the documented compiler, RazorVue, and binding support boundaries. Public API changes now follow stable semantic versioning.
-- Fix chart pattern component contracts and admin sample route URL resolution.
+- Preserve null short-circuiting in array Index/Range access, and fix chart pattern component contracts and admin sample route URL resolution.
 
 Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 

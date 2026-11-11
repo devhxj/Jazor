@@ -4,7 +4,7 @@
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 
-preview.9 支持显式浏览器入口根、RazorVue 页面按导航加载、普通构建中的最终编译阶段计时，以及由声明生成的数值转换、属性提示和直接 union 标量投影。配置和验证入口分别见[安装与配置](../03-guides/installation-and-configuration.md)、[开发与测试](../03-guides/development-and-testing.md)、[数值/union 示例](../../samples/RazorVue.NumericUnion/README.md)。这些能力随 preview.9 交付；升级时所有 Jazor/ECMAScript 包必须统一到该版本。
+preview.9 支持显式浏览器入口根、RazorVue 页面按导航加载、普通构建中的最终编译阶段计时，以及由声明生成的数值转换、属性提示和直接 union 标量投影。配置和验证入口分别见[安装与配置](../03-guides/installation-and-configuration.md)、[开发与测试](../03-guides/development-and-testing.md)、[数值/union 示例](../../samples/RazorVue.NumericUnion/README.md)。这些能力已包含在正式版；升级时所有 Jazor/ECMAScript 包必须统一到 `1.0.0`。
 
 本地发布门禁已通过，API 与绑定基线已复核；固定计数和消费者证明范围见[preview.9 验证快照](../05-history/evolution.md#2026-10-10-preview9-作者体验与发布准备)。官方 tag workflow 在上传前重新执行质量与 Windows SPA/SSR 消费者门禁。真实后端保存、插件启用后的业务流程与修改到可见的 HMR 长尾仍需继续验证。
 
@@ -54,7 +54,7 @@ preview.8 增加 12 种 DOM 事件与既有 CLR 浏览器载荷的强类型 exte
 
 后续目标、责任归属与升级门槛见[下一阶段](./next-development.md)。
 
-## 1.0 冻结前状态
+## 1.0 正式版契约
 
 公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。`1.0.0-preview.1` 已作为首个冻结候选发布；当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型保持既定命名。`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 提供统一候选验收入口；API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据共同确认正式 `1.0.0` 发布状态。
 

@@ -16,7 +16,7 @@
 
 `PATCH` 明确不包含：新的 lowering 能力、新的绑定组件、新的公共 API、API 重命名。这些在 `0.x` 阶段归 `MINOR`，`1.0.0` 之后归 `MAJOR`（新能力仍归 `MINOR`）。判定原则是：消费者能否仅凭版本号判断升级风险——新能力改变了"能做什么"，必须进入 `MINOR` 通道。
 
-## 1.0.0 出场条件
+## 1.0 正式版契约
 
 `1.0.0` 已于 2026-11-11 发布。当前质量门禁、发布消费者门禁与绑定审计继续作为正式版之后每次发布的验收要求；`1.0.0` 之前的预览版仍按历史章节保留。
 
@@ -24,7 +24,7 @@
 
 发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、绑定 contract 与 XML 文档、RazorVue diagnostics、包形状和 SPA/SSR consumer 证据。绑定 contract 报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移或公开绑定文档缺失时阻断候选。它通过后才进入正式发布工作流。
 
-`1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。本节在 `1.0.0` 发布后归档。
+`1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。正式 API 基线与兼容性检查继续约束后续发布。
 
 ## 发版节奏
 

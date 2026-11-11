@@ -4,11 +4,11 @@
 
 > preview.9 包含 `ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets`、Pagination 的两个 `EventCallback<Number>`，以及数值转换和直接 union 标量投影。机器 snapshot 按本次预览 API 更新；回调与投影的迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
-> 状态：正式 `1.0` 尚未冻结。preview.6 已完成统一 frontend 候选契约重置；preview.8 的候选快照已按开发者反馈审查新增绑定、原生文件事件 extension 与 `DOMTokenList` 签名修正。preview.8 的 Release 构建、API 比较、完整质量与本地包发布消费者门禁已通过；正式 1.0 冻结仍按下文清单执行。
+> 状态：`1.0.0` 公共作者 API 于 2026-11-11 冻结，机器基线为 `public-api-baseline.snapshot.md`。正式 .NET 11 Release 程序集与该基线比较新增 `0`、删除 `0`；全部质量与发布消费者门禁由正式发布 ref 的 [workflow](https://github.com/devhxj/Jazor/actions/workflows/nuget-publish-ref.yml)验证后才允许上传。后续新增遵循 MINOR，删除或签名改变遵循 MAJOR。
 
 ## 审查结论
 
-frontend 宿主面在 preview.6 按新的单一契约重新收敛；preview.8 增补 Startup/framework 宿主重载、Element Plus 强类型交互和浏览器绑定修正，preview.9 补齐数值与 union 作者面，公开面与迁移说明见[1.0 公共 API 基线清单](./public-api-baseline.md)。机器候选快照保存在 `public-api-baseline.snapshot.md`；正式 1.0 前仍需在候选 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁，才能最终冻结。
+frontend 宿主面在 preview.6 按新的单一契约重新收敛；preview.8 增补 Startup/framework 宿主重载、Element Plus 强类型交互和浏览器绑定修正，preview.9 补齐数值与 union 作者面，公开面与迁移说明见[1.0 公共 API 基线清单](./public-api-baseline.md)。正式 API 基线保存在 `public-api-baseline.snapshot.md`；每次发布均在目标 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁。
 
 本次审查采用以下稳定决策：
 

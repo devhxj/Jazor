@@ -127,6 +127,16 @@ public sealed class ImportDeclarationFactoryTests
     }
 
     [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" \t ")]
+    public void CreateSideEffect_InvalidModulePath_ReportsTheModuleSpecifier(string? modulePath)
+    {
+        var exception = Assert.Throws<ArgumentException>(() => ImportDeclarationFactory.CreateSideEffect(modulePath!));
+        Assert.AreEqual("modulePath", exception.ParamName);
+    }
+
+    [TestMethod]
     public void NormalizeSpecifiers_UnsupportedNamedImportKey_ThrowsControlledFailure()
     {
         var malformedSpecifier = new ImportSpecifier(

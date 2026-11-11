@@ -9,6 +9,26 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class SourceMapLayoutScenarioTests
 {
+    [TestMethod]
+    public void Emit_IncludeSourcesContentWithoutReader_PreservesMappingsAndOmitsContent()
+    {
+        var expression = new Identifier("value")
+        {
+            UserData = new SourceOrigin("src/value.cs", 2, 3, 2, 8)
+        };
+        var artifact = expression.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "value.mjs",
+            includeSourcesContent: true,
+            readSourceContent: null);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        Assert.AreEqual("src/value.cs", parsed.RootElement.GetProperty("sources")[0].GetString());
+        Assert.IsFalse(parsed.RootElement.TryGetProperty("sourcesContent", out _));
+        var segment = DecodeSegments(parsed.RootElement).Single();
+        Assert.AreEqual(2, segment.SourceLine);
+        Assert.AreEqual(3, segment.SourceColumn);
+    }
+
     public static IEnumerable<TestDataRow<SourceMapLayoutCase>> LayoutCases
         => SourceMapLayoutCaseCatalog.All.Select(static testCase =>
             new TestDataRow<SourceMapLayoutCase>(testCase)
