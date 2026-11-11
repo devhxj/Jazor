@@ -9,7 +9,7 @@ public sealed class EnumerableLongCountRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task LongCountExports_PreserveBigIntResultPredicateOrderAndWidthBoundariesOnDenoHost()
+    public async Task LongCountExports_PreserveBigIntResultPredicateOrderAndWidthBoundariesOnNodeApi()
     {
         var longCount = GetExportName("static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
         var longCountWhere = GetExportName("static System.Linq.Enumerable.LongCount<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)");

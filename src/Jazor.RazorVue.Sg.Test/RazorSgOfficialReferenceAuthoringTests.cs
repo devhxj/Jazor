@@ -49,7 +49,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorElementReferenceFocus_PreservesMountAndUnmountFailureContractOnDenoHost()
+    public async Task BuildComponent_OfficialRazorElementReferenceFocus_PreservesMountAndUnmountFailureContractOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReferenceFocusRuntime.razor"),
@@ -240,7 +240,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentReference_TracksMountAndUnmountOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentReference_TracksMountAndUnmountOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReferenceRuntime.razor"),

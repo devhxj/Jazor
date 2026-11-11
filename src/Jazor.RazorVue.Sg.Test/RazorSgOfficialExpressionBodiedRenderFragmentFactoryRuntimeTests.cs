@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorExpressionBodiedRenderFragmentFactory_ProvidesSlotContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorExpressionBodiedRenderFragmentFactory_ProvidesSlotContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExpressionBodiedReleaseHeader.razor"),
@@ -84,7 +84,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorExpressionBodiedGenericRenderFragmentProperty_ProvidesScopedSlotContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorExpressionBodiedGenericRenderFragmentProperty_ProvidesScopedSlotContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExpressionBodiedReleaseTemplate.razor"),

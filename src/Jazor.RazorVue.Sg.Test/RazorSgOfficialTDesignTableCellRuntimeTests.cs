@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OrdinaryTDesignTableCellRenderFragment_ProducesCallableVNodeFactoryOnDenoHost()
+    public async Task BuildComponent_OrdinaryTDesignTableCellRenderFragment_ProducesCallableVNodeFactoryOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignTableCellRuntime.razor"),

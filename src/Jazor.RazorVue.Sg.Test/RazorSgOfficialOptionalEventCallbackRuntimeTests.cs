@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorOptionalEventCallback_HandlesMissingAndAsyncListenersOnDenoHost()
+    public async Task BuildComponent_OfficialRazorOptionalEventCallback_HandlesMissingAndAsyncListenersOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Components/DismissiblePanel.razor"),

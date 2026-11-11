@@ -149,7 +149,7 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNestedRuntimeClass_ProjectsFieldPropertyAndHelperInvocationOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNestedRuntimeClass_ProjectsFieldPropertyAndHelperInvocationOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NestedRuntimeClassClosureRuntime.razor"),

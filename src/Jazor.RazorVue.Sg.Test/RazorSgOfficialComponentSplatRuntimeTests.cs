@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialComponentSplatRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentSplat_MapsParameterNamesAndPreservesExplicitBindPrecedenceOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentSplat_MapsParameterNamesAndPreservesExplicitBindPrecedenceOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentSplatRuntime.razor"),

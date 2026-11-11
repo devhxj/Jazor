@@ -9,7 +9,7 @@ public sealed class EnumerableAggregateByRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task AggregateByExports_PreserveComparerRepresentativeSeedProtocolAndEntryCarrierOnDenoHost()
+    public async Task AggregateByExports_PreserveComparerRepresentativeSeedProtocolAndEntryCarrierOnNodeApi()
     {
         var countBy = GetExportName("static System.Linq.Enumerable.CountBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Collections.Generic.IEqualityComparer<TKey>)");
         var aggregateBy = GetExportName("static System.Linq.Enumerable.AggregateBy<TSource, TKey, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>, System.Collections.Generic.IEqualityComparer<TKey>)");

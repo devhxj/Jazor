@@ -3743,7 +3743,7 @@ public sealed class MemberClosureTests
     }
 
     [TestMethod]
-    public async Task BuildVueComponentModule_HandwrittenRenderTreeLoopBranches_ExecuteOnDenoHost()
+    public async Task BuildVueComponentModule_HandwrittenRenderTreeLoopBranches_ExecuteOnNodeApi()
     {
         var fixture = CreateManualGeneratedFixture(
             """

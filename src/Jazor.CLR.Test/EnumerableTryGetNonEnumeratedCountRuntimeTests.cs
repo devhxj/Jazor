@@ -10,7 +10,7 @@ public sealed class EnumerableTryGetNonEnumeratedCountRuntimeTests
     private const string Member = "static System.Linq.Enumerable.TryGetNonEnumeratedCount<TSource>(System.Collections.Generic.IEnumerable<TSource>, out int)";
 
     [TestMethod]
-    public async Task TryGetNonEnumeratedCountExport_UsesArrayCarrierLengthWithoutIteratingOnDenoHost()
+    public async Task TryGetNonEnumeratedCountExport_UsesArrayCarrierLengthWithoutIteratingOnNodeApi()
     {
         var exportName = GetExportName();
         var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-try-get-count-" + Guid.NewGuid().ToString("N"));

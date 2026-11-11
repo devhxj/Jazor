@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialLocalMemberNameCollisionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLocalAndStateMemberWithSameName_PreservesBothValuesOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLocalAndStateMemberWithSameName_PreservesBothValuesOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LocalMemberNameCollision.razor"),

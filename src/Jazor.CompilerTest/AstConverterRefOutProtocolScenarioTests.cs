@@ -85,7 +85,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 	}
 
 	[TestMethod]
-	public async Task ConvertModule_AnonymousFunctionsWithRefAndOut_PreserveRoundTripOnDenoHost()
+	public async Task ConvertModule_AnonymousFunctionsWithRefAndOut_PreserveRoundTripOnNodeApi()
 	{
 		const string scenarioId = "ast-converter-ref-out.anonymous-functions-deno-round-trip";
 		var fixture = CompileModule(

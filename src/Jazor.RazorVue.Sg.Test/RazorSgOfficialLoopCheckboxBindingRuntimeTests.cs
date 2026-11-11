@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialLoopCheckboxBindingRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLoopCheckboxBinding_UpdatesTheCapturedTaskOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLoopCheckboxBinding_UpdatesTheCapturedTaskOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TodoBoard.razor"),

@@ -9,7 +9,7 @@ public sealed class EnumerableNullableMinMaxRuntimeTests
     private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task NullableMinMaxExports_PreserveCarrierNaNAndAllNullContractsOnDenoHost()
+    public async Task NullableMinMaxExports_PreserveCarrierNaNAndAllNullContractsOnNodeApi()
     {
         var names = new[]
         {

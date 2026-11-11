@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialNullAttributeBagRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNullAttributeBag_LeavesExplicitAttributesIntactOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNullAttributeBag_LeavesExplicitAttributesIntactOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseActionWithoutAttributes.razor"),

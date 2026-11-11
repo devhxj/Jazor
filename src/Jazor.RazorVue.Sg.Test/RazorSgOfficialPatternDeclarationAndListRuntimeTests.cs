@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorPatternLocals_RenderReleaseQueueSummaryOnDenoHost()
+    public async Task BuildComponent_OfficialRazorPatternLocals_RenderReleaseQueueSummaryOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseQueueSummary.razor"),

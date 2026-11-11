@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConditionalAttributeBag_SelectsActiveAttributesAndPreservesExplicitPrecedenceOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConditionalAttributeBag_SelectsActiveAttributesAndPreservesExplicitPrecedenceOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeployAction.razor"),

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialBindAfterRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorBindAfter_UpdatesStateBeforeAwaitingPersistenceOnDenoHost()
+    public async Task BuildComponent_OfficialRazorBindAfter_UpdatesStateBeforeAwaitingPersistenceOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNamePersistence.razor"),

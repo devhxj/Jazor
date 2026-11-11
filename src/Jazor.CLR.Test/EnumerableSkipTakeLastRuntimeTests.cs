@@ -9,7 +9,7 @@ public sealed class EnumerableSkipTakeLastRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task SkipLastAndTakeLastExports_PreserveTailBufferTraversalOnDenoHost()
+    public async Task SkipLastAndTakeLastExports_PreserveTailBufferTraversalOnNodeApi()
     {
         var skipLast = GetExportName("static System.Linq.Enumerable.SkipLast<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
         var takeLast = GetExportName("static System.Linq.Enumerable.TakeLast<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");

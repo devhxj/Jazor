@@ -49,7 +49,7 @@ public sealed class SemanticWalkerLambdaOptionalParameterTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_AnonymousFunction_OptionalParameter_PreservesOmittedAndExplicitCallsOnDenoHost()
+    public async Task ConvertModule_AnonymousFunction_OptionalParameter_PreservesOmittedAndExplicitCallsOnNodeApi()
     {
         const string scenarioId = "anonymous-function.optional-parameter.deno";
         var fixture = CompileModule(

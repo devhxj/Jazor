@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialConditionalSlotRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConditionalChildContent_SelectsTheActiveDefaultSlotContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConditionalChildContent_SelectsTheActiveDefaultSlotContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleasePanelPage.razor"),

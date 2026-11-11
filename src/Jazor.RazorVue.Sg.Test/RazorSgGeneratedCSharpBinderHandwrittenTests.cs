@@ -394,7 +394,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
     }
 
     [TestMethod]
-    public async Task BuildHandwrittenArtifact_ConditionalSameNamedSlotAcrossAttributeFormsPreservesBothBranchesOnDenoHost()
+    public async Task BuildHandwrittenArtifact_ConditionalSameNamedSlotAcrossAttributeFormsPreservesBothBranchesOnNodeApi()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
             """
@@ -499,7 +499,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
     }
 
     [TestMethod]
-    public async Task BuildHandwrittenArtifact_ExpressionBodiedRenderTreeHelpersLowerLikeBlockHelpersOnDenoHost()
+    public async Task BuildHandwrittenArtifact_ExpressionBodiedRenderTreeHelpersLowerLikeBlockHelpersOnNodeApi()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
             """
@@ -585,7 +585,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
     }
 
     [TestMethod]
-    public async Task BuildHandwrittenArtifact_StaticScalarContentPreservesLiteralVNodeChildrenOnDenoHost()
+    public async Task BuildHandwrittenArtifact_StaticScalarContentPreservesLiteralVNodeChildrenOnNodeApi()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
             """
@@ -685,7 +685,7 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
     }
 
     [TestMethod]
-    public async Task BuildHandwrittenArtifact_ConditionalOptionalSlotOmitsTheSlotWhenTheAuthorBranchIsAbsentOnDenoHost()
+    public async Task BuildHandwrittenArtifact_ConditionalOptionalSlotOmitsTheSlotWhenTheAuthorBranchIsAbsentOnNodeApi()
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
             """

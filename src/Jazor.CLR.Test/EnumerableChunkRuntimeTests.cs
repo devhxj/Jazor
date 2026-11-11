@@ -9,7 +9,7 @@ public sealed class EnumerableChunkRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task ChunkExport_PreservesSourceOrderAndCreatesIndependentChunksOnDenoHost()
+    public async Task ChunkExport_PreservesSourceOrderAndCreatesIndependentChunksOnNodeApi()
     {
         var chunk = GetExportName("static System.Linq.Enumerable.Chunk<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
         var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-chunk-" + Guid.NewGuid().ToString("N"));

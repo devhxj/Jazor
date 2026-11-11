@@ -9,7 +9,7 @@ public sealed class EnumerableAggregateRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task AggregateExports_PreserveAccumulatorAndResultSelectorOrderOnDenoHost()
+    public async Task AggregateExports_PreserveAccumulatorAndResultSelectorOrderOnNodeApi()
     {
         var aggregate = GetExportName("static System.Linq.Enumerable.Aggregate<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TSource, TSource>)");
         var aggregateWithSeed = GetExportName("static System.Linq.Enumerable.Aggregate<TSource, TAccumulate>(System.Collections.Generic.IEnumerable<TSource>, TAccumulate, System.Func<TAccumulate, TSource, TAccumulate>)");

@@ -14,7 +14,7 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerEnumerableZipTests
 {
     [TestMethod]
-    public async Task Visit_EnumerableZipThreeSources_PreservesTripleIteratorProtocolOnDenoHost()
+    public async Task Visit_EnumerableZipThreeSources_PreservesTripleIteratorProtocolOnNodeApi()
     {
         var block = GetBlockOperation(
             """
@@ -170,7 +170,7 @@ public sealed class SemanticWalkerEnumerableZipTests
     }
 
     [TestMethod]
-    public async Task Visit_EnumerableZip_UsesCompilerOwnedDualIteratorProtocolOnDenoHost()
+    public async Task Visit_EnumerableZip_UsesCompilerOwnedDualIteratorProtocolOnNodeApi()
     {
         var block = GetBlockOperation(
             """

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialCheckboxBindingRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorCheckboxBinding_UpdatesBooleanStateFromCheckedTargetOnDenoHost()
+    public async Task BuildComponent_OfficialRazorCheckboxBinding_UpdatesBooleanStateFromCheckedTargetOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseApprovalToggle.razor"),

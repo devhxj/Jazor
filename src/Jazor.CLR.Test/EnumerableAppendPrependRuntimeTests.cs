@@ -9,7 +9,7 @@ public sealed class EnumerableAppendPrependRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task AppendAndPrependExports_PreserveEnumerationAndSourceOrderOnDenoHost()
+    public async Task AppendAndPrependExports_PreserveEnumerationAndSourceOrderOnNodeApi()
     {
         var append = GetExportName("static System.Linq.Enumerable.Append<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)");
         var prepend = GetExportName("static System.Linq.Enumerable.Prepend<TSource>(System.Collections.Generic.IEnumerable<TSource>, TSource)");

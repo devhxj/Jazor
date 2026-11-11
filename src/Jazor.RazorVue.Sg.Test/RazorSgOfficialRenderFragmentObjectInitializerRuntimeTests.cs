@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRenderFragmentObjectInitializerRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorBlockDescriptorFactory_ProjectsLocalFragmentFromObjectInitializerOnDenoHost()
+    public async Task BuildComponent_OfficialRazorBlockDescriptorFactory_ProjectsLocalFragmentFromObjectInitializerOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryDescriptor.razor"),

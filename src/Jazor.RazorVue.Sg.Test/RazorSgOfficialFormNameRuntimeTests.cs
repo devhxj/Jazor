@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialFormNameRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorFormName_RendersFormWithoutServerOnlyMetadataOnDenoHost()
+    public async Task BuildComponent_OfficialRazorFormName_RendersFormWithoutServerOnlyMetadataOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeploymentForm.razor"),

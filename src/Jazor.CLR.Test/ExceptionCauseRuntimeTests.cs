@@ -9,7 +9,7 @@ public sealed class ExceptionCauseRuntimeTests
     private const string ModulePath = "./clr/System/ExceptionModule.js";
 
     [TestMethod]
-    public async Task CauseExports_PreserveInnerIdentityAndRootTraversalOnDenoHost()
+    public async Task CauseExports_PreserveInnerIdentityAndRootTraversalOnNodeApi()
     {
         var create = GetExportName("System.Exception.Exception(string, System.Exception)");
         var getInner = GetExportName("System.Exception.InnerException.get");

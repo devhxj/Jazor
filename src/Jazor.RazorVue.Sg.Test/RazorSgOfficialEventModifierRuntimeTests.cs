@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialEventModifierRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDynamicFormEventModifiers_ApplyOnlyEnabledGuardsBeforeTheHandlerOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDynamicFormEventModifiers_ApplyOnlyEnabledGuardsBeforeTheHandlerOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeployForm.razor"),

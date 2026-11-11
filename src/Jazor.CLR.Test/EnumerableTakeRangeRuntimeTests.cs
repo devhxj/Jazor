@@ -7,7 +7,7 @@ namespace Jazor.CLR.Test;
 public sealed class EnumerableTakeRangeRuntimeTests
 {
     [TestMethod]
-    public async Task TakeRangeExport_PreservesRangeBoundariesAndMaterializedSourceContractOnDenoHost()
+    public async Task TakeRangeExport_PreservesRangeBoundariesAndMaterializedSourceContractOnNodeApi()
     {
         var takeRange = GetExportName(
             "static System.Linq.Enumerable.Take<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Range)",

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorGenericSlotForwardingWithFallback_RebindsScopedSlotValueOnDenoHost()
+    public async Task BuildComponent_OfficialRazorGenericSlotForwardingWithFallback_RebindsScopedSlotValueOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateForwarder.razor"),

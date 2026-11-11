@@ -9,7 +9,7 @@ public sealed class EnumerableSetByRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task SetByOperatorExports_PreserveKeyEqualityAndEnumerationOrderOnDenoHost()
+    public async Task SetByOperatorExports_PreserveKeyEqualityAndEnumerationOrderOnNodeApi()
     {
         var unionBy = GetExportName("static System.Linq.Enumerable.UnionBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
         var exceptBy = GetExportName("static System.Linq.Enumerable.ExceptBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TKey>, System.Func<TSource, TKey>)");

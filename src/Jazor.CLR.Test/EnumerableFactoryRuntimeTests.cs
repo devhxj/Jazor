@@ -9,7 +9,7 @@ public sealed class EnumerableFactoryRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task FactoryExports_PreserveRangeRepeatAndSourceIdentityOnDenoHost()
+    public async Task FactoryExports_PreserveRangeRepeatAndSourceIdentityOnNodeApi()
     {
         var empty = GetExportName("static System.Linq.Enumerable.Empty<TResult>()");
         var range = GetExportName("static System.Linq.Enumerable.Range(int, int)");

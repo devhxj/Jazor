@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConstructorContentDescriptor_ProjectsMethodGroupSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConstructorContentDescriptor_ProjectsMethodGroupSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConstructorContentDescriptorRuntime.razor"),

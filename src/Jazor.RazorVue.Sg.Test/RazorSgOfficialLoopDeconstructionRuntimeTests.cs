@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialLoopDeconstructionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLoopDeconstruction_PreservesEachTupleBindingOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLoopDeconstruction_PreservesEachTupleBindingOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEnvironmentSummary.razor"),

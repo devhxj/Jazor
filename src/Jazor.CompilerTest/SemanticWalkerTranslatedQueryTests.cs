@@ -13,7 +13,7 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerTranslatedQueryTests
 {
 	[TestMethod]
-	public async Task Visit_TranslatedQuery_LetWhereSelectToArray_PreservesProjectionChainOnDenoHost()
+	public async Task Visit_TranslatedQuery_LetWhereSelectToArray_PreservesProjectionChainOnNodeApi()
 	{
 		var block = GetBlockOperation("""
 			using System.Linq;

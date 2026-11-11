@@ -9,7 +9,7 @@ public sealed class EnumerableDistinctByRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task DistinctByExport_PreservesFirstKeysAndDefaultEqualityOnDenoHost()
+    public async Task DistinctByExport_PreservesFirstKeysAndDefaultEqualityOnNodeApi()
     {
         var distinctBy = GetExportName("static System.Linq.Enumerable.DistinctBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
         var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-distinct-by-" + Guid.NewGuid().ToString("N"));

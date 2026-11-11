@@ -9,7 +9,7 @@ public sealed class EnumerableTerminalRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task FirstLastAndSingleExports_PreserveTerminalEnumerationOrderOnDenoHost()
+    public async Task FirstLastAndSingleExports_PreserveTerminalEnumerationOrderOnNodeApi()
     {
         var first = GetExportName("static System.Linq.Enumerable.First<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
         var firstWhere = GetExportName("static System.Linq.Enumerable.First<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)");

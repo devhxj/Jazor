@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInheritedRenderFragmentMethodGroup_ProjectsBaseTemplateSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInheritedRenderFragmentMethodGroup_ProjectsBaseTemplateSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InheritedTemplateRuntime.razor"),

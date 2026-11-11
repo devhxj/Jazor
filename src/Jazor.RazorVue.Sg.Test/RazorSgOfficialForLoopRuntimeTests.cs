@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialForLoopRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorForLoop_LowersIndexedKeyedContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorForLoop_LowersIndexedKeyedContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/IndexedForLoopRuntime.razor"),
@@ -56,7 +56,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorWhileLoop_PreservesTrailingCounterUpdateOnDenoHost()
+    public async Task BuildComponent_OfficialRazorWhileLoop_PreservesTrailingCounterUpdateOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/IndexedWhileLoopRuntime.razor"),
@@ -110,7 +110,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDoWhileLoop_EvaluatesBodyBeforeConditionOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDoWhileLoop_EvaluatesBodyBeforeConditionOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DoWhileLoopRuntime.razor"),
@@ -168,7 +168,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorForLoopWithoutUpdateList_PreservesTrailingBodyMutationOnDenoHost()
+    public async Task BuildComponent_OfficialRazorForLoopWithoutUpdateList_PreservesTrailingBodyMutationOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ForLoopWithoutUpdateRuntime.razor"),
@@ -218,7 +218,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorForLoopWithMultipleUpdates_PreservesUpdateOrderOnDenoHost()
+    public async Task BuildComponent_OfficialRazorForLoopWithMultipleUpdates_PreservesUpdateOrderOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ForLoopMultipleUpdatesRuntime.razor"),
@@ -267,7 +267,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorWhileLoopWithKey_PreservesKeyedIterationIdentityOnDenoHost()
+    public async Task BuildComponent_OfficialRazorWhileLoopWithKey_PreservesKeyedIterationIdentityOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/KeyedWhileLoopRuntime.razor"),
@@ -319,7 +319,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDoWhileWithMultipleRoots_PreservesIterationFragmentsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDoWhileWithMultipleRoots_PreservesIterationFragmentsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DoWhileMultipleRootsRuntime.razor"),
@@ -376,7 +376,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLoopBranches_PreserveForeachForAndWhileControlFlowOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLoopBranches_PreserveForeachForAndWhileControlFlowOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LoopBranchesRuntime.razor"),

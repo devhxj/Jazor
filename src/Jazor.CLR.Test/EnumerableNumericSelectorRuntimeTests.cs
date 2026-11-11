@@ -9,7 +9,7 @@ public sealed class EnumerableNumericSelectorRuntimeTests
     private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task NumericSelectorExports_PreserveCarrierOrderAndFailureContractsOnDenoHost()
+    public async Task NumericSelectorExports_PreserveCarrierOrderAndFailureContractsOnNodeApi()
     {
         var names = new[]
         {

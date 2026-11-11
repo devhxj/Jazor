@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialLoopBoundSelectRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLoopBoundSelect_UpdatesTheCapturedRowOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLoopBoundSelect_UpdatesTheCapturedRowOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEnvironmentEditor.razor"),

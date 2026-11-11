@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDerivedComponent_InheritsBasePropAndEmitDescriptorsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDerivedComponent_InheritsBasePropAndEmitDescriptorsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Components/InheritedReleasePanel.razor"),
@@ -62,7 +62,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInheritedComponentContract_UsesBasePropEmitAndSlotDescriptorsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInheritedComponentContract_UsesBasePropEmitAndSlotDescriptorsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEditor.razor"),

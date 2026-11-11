@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInlineConstantRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorBooleanInlineContent_EmitsAnImmutableTextChildOnDenoHost()
+    public async Task BuildComponent_OfficialRazorBooleanInlineContent_EmitsAnImmutableTextChildOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticBooleanContent.razor"),
@@ -47,7 +47,7 @@ public sealed class RazorSgOfficialInlineConstantRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInlineFrameConstants_InlineValuesWithoutCreatingRuntimeLocalsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInlineFrameConstants_InlineValuesWithoutCreatingRuntimeLocalsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleasePolicySummary.razor"),

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorOverloadedRecursiveRenderFragments_KeepSymbolBoundSlotHelpersOnDenoHost()
+    public async Task BuildComponent_OfficialRazorOverloadedRecursiveRenderFragments_KeepSymbolBoundSlotHelpersOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseOverloadTemplateRuntime.razor"),
@@ -121,7 +121,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConditionalRenderFragmentMember_SelectsTheActiveNamedSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConditionalRenderFragmentMember_SelectsTheActiveNamedSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseHeaderVariantRuntime.razor"),

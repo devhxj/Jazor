@@ -77,7 +77,7 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorModuleStaticMember_ImportsOnlyTheMemberOnDenoHost()
+    public async Task BuildComponent_OfficialRazorModuleStaticMember_ImportsOnlyTheMemberOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticModuleText.razor"),
@@ -147,7 +147,7 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_CompilerAndDirectRenderImportsShareExportName_UsesStableAliasOnDenoHost()
+    public async Task BuildComponent_CompilerAndDirectRenderImportsShareExportName_UsesStableAliasOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/CrossPassImportNameCollision.razor"),

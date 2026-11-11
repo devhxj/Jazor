@@ -12,7 +12,7 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerStringForEachTests
 {
     [TestMethod]
-    public async Task VisitForEachLoop_String_UsesUtf16CharArrayContractOnDenoHost()
+    public async Task VisitForEachLoop_String_UsesUtf16CharArrayContractOnNodeApi()
     {
         var block = GetBlockOperation("""
             class TestModule

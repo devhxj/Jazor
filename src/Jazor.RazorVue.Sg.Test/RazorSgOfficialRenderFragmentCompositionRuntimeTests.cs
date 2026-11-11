@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComposedLocalRenderFragment_ForwardsNamedSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComposedLocalRenderFragment_ForwardsNamedSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryRuntime.razor"),
@@ -112,7 +112,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComposedLocalGenericRenderFragment_ForwardsScopedSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComposedLocalGenericRenderFragment_ForwardsScopedSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseItemTemplateRuntime.razor"),
@@ -217,7 +217,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConditionalLocalGenericRenderFragment_PreservesScopedSlotSelectionOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConditionalLocalGenericRenderFragment_PreservesScopedSlotSelectionOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseItemVariantRuntime.razor"),
@@ -323,7 +323,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRecursiveLocalRenderFragment_PreservesNestedSlotContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRecursiveLocalRenderFragment_PreservesNestedSlotContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTreeTemplateRuntime.razor"),
@@ -422,7 +422,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorExpressionBodiedRenderFragmentFactory_ForwardsNamedSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorExpressionBodiedRenderFragmentFactory_ForwardsNamedSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNoticeRuntime.razor"),

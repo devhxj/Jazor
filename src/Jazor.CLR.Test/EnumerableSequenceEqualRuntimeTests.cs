@@ -9,7 +9,7 @@ public sealed class EnumerableSequenceEqualRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task SequenceEqualExport_PreservesSynchronousEqualityAndShortCircuitOrderOnDenoHost()
+    public async Task SequenceEqualExport_PreservesSynchronousEqualityAndShortCircuitOrderOnNodeApi()
     {
         var sequenceEqual = GetExportName("static System.Linq.Enumerable.SequenceEqual<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>)");
         var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-sequence-equal-" + Guid.NewGuid().ToString("N"));

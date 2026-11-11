@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorReleaseWorkflow_ComposesFormBindingModelSlotsAndActionsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorReleaseWorkflow_ComposesFormBindingModelSlotsAndActionsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseWorkflow.razor"),

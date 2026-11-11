@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialConditionalEventCallbackRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConditionalEventCallback_SelectsCurrentActionOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConditionalEventCallback_SelectsCurrentActionOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseActionControl.razor"),

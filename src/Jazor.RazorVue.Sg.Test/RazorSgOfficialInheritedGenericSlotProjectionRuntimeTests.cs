@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_UsesDerivedMemberNameForDirectProjectionOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_UsesDerivedMemberNameForDirectProjectionOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InheritedReleaseTemplate.razor"),

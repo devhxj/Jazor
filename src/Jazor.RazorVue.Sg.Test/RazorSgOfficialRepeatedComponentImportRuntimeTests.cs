@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRepeatedComponentImportRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRepeatedExternalComponent_UsesOneStableImportOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRepeatedExternalComponent_UsesOneStableImportOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDashboard.razor"),

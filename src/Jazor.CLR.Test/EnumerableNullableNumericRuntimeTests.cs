@@ -9,7 +9,7 @@ public sealed class EnumerableNullableNumericRuntimeTests
     private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task NullableNumericTerminalExports_PreserveCarrierAndEmptySequenceContractsOnDenoHost()
+    public async Task NullableNumericTerminalExports_PreserveCarrierAndEmptySequenceContractsOnNodeApi()
     {
         var sumNames = new[]
         {

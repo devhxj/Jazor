@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialNullPatternRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OptionalParameterNullPatternTreatsMissingPropAsNullOnDenoHost()
+    public async Task BuildComponent_OptionalParameterNullPatternTreatsMissingPropAsNullOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/OptionalLabelRuntime.razor"),

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRenderFragmentFactory_ComposesLocalTemplateBeforeReturningSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRenderFragmentFactory_ComposesLocalTemplateBeforeReturningSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseFooterComposition.razor"),

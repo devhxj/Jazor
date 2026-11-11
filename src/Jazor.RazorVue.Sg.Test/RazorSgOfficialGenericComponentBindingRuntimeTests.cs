@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNestedGenericTypeInference_RendersInsideSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNestedGenericTypeInference_RendersInsideSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NestedGenericInferenceRuntime.razor"),
@@ -92,7 +92,7 @@ public sealed class RazorSgOfficialGenericComponentBindingRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorGenericComponentBinding_UpdatesConstructedModelOnDenoHost()
+    public async Task BuildComponent_OfficialRazorGenericComponentBinding_UpdatesConstructedModelOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEditorHost.razor"),

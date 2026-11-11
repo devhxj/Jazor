@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialExplicitLifecycleRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_ExplicitDisposableLifecyclesRunOnDenoHostUnmount()
+    public async Task BuildComponent_ExplicitDisposableLifecyclesRunOnNodeApiUnmount()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExplicitLifecycleRuntime.razor"),

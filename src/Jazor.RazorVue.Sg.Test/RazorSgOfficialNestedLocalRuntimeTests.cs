@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialNestedLocalRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNestedCompileTimeLocal_InlinesTheValueInsideTheOpenElementFrameOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNestedCompileTimeLocal_InlinesTheValueInsideTheOpenElementFrameOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDetailsLabel.razor"),

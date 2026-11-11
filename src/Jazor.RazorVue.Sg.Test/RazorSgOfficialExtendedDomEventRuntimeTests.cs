@@ -32,7 +32,7 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost()
+    public async Task BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExtendedDomEvents.razor"),
@@ -145,7 +145,7 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DragClipboardEvents.razor"),
@@ -247,7 +247,7 @@ public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost()
+    public async Task BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TouchErrorProgressEvents.razor"),

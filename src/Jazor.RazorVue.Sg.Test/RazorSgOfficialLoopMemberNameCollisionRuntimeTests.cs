@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialLoopMemberNameCollisionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLoopLocalAndMethodWithSameJavaScriptName_PreservesBothBindingsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLoopLocalAndMethodWithSameJavaScriptName_PreservesBothBindingsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseRefreshQueue.razor"),

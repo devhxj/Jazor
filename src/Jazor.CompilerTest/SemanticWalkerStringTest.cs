@@ -2409,7 +2409,7 @@ ${name ?? """"}!`;
 	/// 标准插值的 null 与 bool 文本语义不能沿用 JavaScript 模板字符串的 null/lowercase 行为。
 	/// </summary>
 	[TestMethod]
-	public async Task Visit_InterpolatedString_NullAndBoolean_UseCSharpTextSemanticsOnDenoHost()
+	public async Task Visit_InterpolatedString_NullAndBoolean_UseCSharpTextSemanticsOnNodeApi()
 	{
 		var block = GetBlockOperation("""
             #nullable enable

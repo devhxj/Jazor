@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialCollectionInitializerAttributeBagRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorCollectionInitializerAttributeBag_ExpandsDictionaryAddEntriesOnDenoHost()
+    public async Task BuildComponent_OfficialRazorCollectionInitializerAttributeBag_ExpandsDictionaryAddEntriesOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseCollectionAttributes.razor"),

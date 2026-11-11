@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInlineAttributeBag_ExpandsKnownAttributesAndPreservesExplicitPrecedenceOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInlineAttributeBag_ExpandsKnownAttributesAndPreservesExplicitPrecedenceOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeploymentInlineAttributes.razor"),

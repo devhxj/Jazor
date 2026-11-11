@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentAttributeBag_NormalizesDescriptorPropsAndPreservesForeignAttributesOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentAttributeBag_NormalizesDescriptorPropsAndPreservesForeignAttributesOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleasePanelHost.razor"),

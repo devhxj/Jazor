@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRuntimeAuthoringTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInputBindAfterAction_UpdatesStateBeforeCallbackOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInputBindAfterAction_UpdatesStateBeforeCallbackOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingAfterRuntime.razor"),
@@ -65,7 +65,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentBindAfterAction_UpdatesModelBeforeCallbackOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentBindAfterAction_UpdatesModelBeforeCallbackOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentBindingAfterRuntime.razor"),
@@ -149,7 +149,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorEventModifiers_RunPlatformControlsBeforeHandlerOnDenoHost()
+    public async Task BuildComponent_OfficialRazorEventModifiers_RunPlatformControlsBeforeHandlerOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/EventModifiersRuntime.razor"),
@@ -220,7 +220,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorAttributeSplat_PreservesExplicitAttributePrecedenceOnDenoHost()
+    public async Task BuildComponent_OfficialRazorAttributeSplat_PreservesExplicitAttributePrecedenceOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/AttributeSplatRuntime.razor"),
@@ -278,7 +278,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorKeyedLoop_PreservesPerItemVNodeKeysOnDenoHost()
+    public async Task BuildComponent_OfficialRazorKeyedLoop_PreservesPerItemVNodeKeysOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/KeyedLoopRuntime.razor"),
@@ -342,7 +342,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNamedTupleLoop_PreservesStructuralBindingsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNamedTupleLoop_PreservesStructuralBindingsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NamedTupleLoopRuntime.razor"),
@@ -400,7 +400,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDictionaryLoop_PreservesMapEntryBindingsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDictionaryLoop_PreservesMapEntryBindingsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DictionaryLoopRuntime.razor"),
@@ -458,7 +458,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentSlots_ExposeExecutableNamedAndDefaultSlotCallbacksOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentSlots_ExposeExecutableNamedAndDefaultSlotCallbacksOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentSlotsRuntime.razor"),
@@ -555,7 +555,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorGenericItemTemplate_ExecutesTypedSlotCallbackOnDenoHost()
+    public async Task BuildComponent_OfficialRazorGenericItemTemplate_ExecutesTypedSlotCallbackOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateRuntime.razor"),
@@ -646,7 +646,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorGenericItemTemplate_ComposesConditionalAndLoopedSlotContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorGenericItemTemplate_ComposesConditionalAndLoopedSlotContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateControlFlowRuntime.razor"),
@@ -769,7 +769,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRenderFragmentMethodGroup_ExecutesAsNamedSlotWithCurrentStateOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRenderFragmentMethodGroup_ExecutesAsNamedSlotWithCurrentStateOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseHeaderMethodGroupRuntime.razor"),
@@ -863,7 +863,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorGenericComponent_ErasesTypeArgumentAndRetainsTypedPropOnDenoHost()
+    public async Task BuildComponent_OfficialRazorGenericComponent_ErasesTypeArgumentAndRetainsTypedPropOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/GenericComponentRuntime.razor"),
@@ -941,7 +941,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorGenericComponent_MapsTypedEventCallbackToVueListenerOnDenoHost()
+    public async Task BuildComponent_OfficialRazorGenericComponent_MapsTypedEventCallbackToVueListenerOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/GenericEventCallbackRuntime.razor"),
@@ -1046,7 +1046,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentSlotFromContentDescriptor_ExecutesMethodGroupOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentSlotFromContentDescriptor_ExecutesMethodGroupOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ContentDescriptorRuntime.razor"),
@@ -1141,7 +1141,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorDirectRender_RetainsReachableHelperAndPrunesUnreachableHelperOnDenoHost()
+    public async Task BuildComponent_OfficialRazorDirectRender_RetainsReachableHelperAndPrunesUnreachableHelperOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DirectRenderReachabilityRuntime.razor"),
@@ -1191,7 +1191,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLifecycleHooks_RunAcrossPropUpdateAndUnmountOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLifecycleHooks_RunAcrossPropUpdateAndUnmountOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LifecycleRuntime.razor"),
@@ -1280,7 +1280,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorSourceBaseConstructorsAndVirtualDisposal_RunInClrOrderOnDenoHost()
+    public async Task BuildComponent_OfficialRazorSourceBaseConstructorsAndVirtualDisposal_RunInClrOrderOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/SourceConstructorRuntime.razor"),
@@ -1383,7 +1383,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentReference_UpdatesStateUsedByNextRenderOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentReference_UpdatesStateUsedByNextRenderOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentReferenceRuntime.razor"),
@@ -1455,7 +1455,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnDenoHost()
+    public async Task BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComplexCodeRuntime.razor"),
@@ -1535,7 +1535,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorStaticMembers_KeepModuleLifetimeAcrossSetupInstancesOnDenoHost()
+    public async Task BuildComponent_OfficialRazorStaticMembers_KeepModuleLifetimeAcrossSetupInstancesOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticMembersRuntime.razor"),
@@ -1619,7 +1619,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorEventCallback_AwaitsListenerBeforeUpdatingStateOnDenoHost()
+    public async Task BuildComponent_OfficialRazorEventCallback_AwaitsListenerBeforeUpdatingStateOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Components/EventCallbackRuntime.razor"),

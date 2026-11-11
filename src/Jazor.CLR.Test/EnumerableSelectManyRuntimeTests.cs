@@ -9,7 +9,7 @@ public sealed class EnumerableSelectManyRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task SelectManyExports_PreserveSelectorEvaluationOrderOnDenoHost()
+    public async Task SelectManyExports_PreserveSelectorEvaluationOrderOnNodeApi()
     {
         var collectionSelector = GetExportName(
             "static System.Linq.Enumerable.SelectMany<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, System.Collections.Generic.IEnumerable<TResult>>)");

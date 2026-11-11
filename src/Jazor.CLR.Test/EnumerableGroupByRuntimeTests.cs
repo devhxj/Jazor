@@ -10,7 +10,7 @@ public sealed class EnumerableGroupByRuntimeTests
     private const string GroupingModulePath = "./clr/System/Linq/GroupingT2Module.js";
 
     [TestMethod]
-    public async Task GroupByExports_PreserveGroupingCarrierAndComparerSemanticsOnDenoHost()
+    public async Task GroupByExports_PreserveGroupingCarrierAndComparerSemanticsOnNodeApi()
     {
         var groupBy = GetExportName(
             "static System.Linq.Enumerable.GroupBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)",

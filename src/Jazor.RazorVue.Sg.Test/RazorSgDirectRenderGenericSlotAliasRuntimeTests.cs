@@ -9,7 +9,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgDirectRenderGenericSlotAliasRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_DirectRenderGenericSlotAlias_ExpandsTemplateResultOnDenoHost()
+    public async Task BuildComponent_DirectRenderGenericSlotAlias_ExpandsTemplateResultOnNodeApi()
     {
         const string source = """
             using ECMAScript;

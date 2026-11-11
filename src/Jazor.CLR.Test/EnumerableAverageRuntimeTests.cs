@@ -9,7 +9,7 @@ public sealed class EnumerableAverageRuntimeTests
     private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task AverageExports_PreserveNumericCarrierPrecisionAndEmptySourceContractsOnDenoHost()
+    public async Task AverageExports_PreserveNumericCarrierPrecisionAndEmptySourceContractsOnNodeApi()
     {
         var names = new[]
         {

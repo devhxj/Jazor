@@ -9,7 +9,7 @@ public sealed class EnumerableSumRuntimeTests
     private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task SumExports_PreserveNumericCarrierPrecisionAndOverflowContractsOnDenoHost()
+    public async Task SumExports_PreserveNumericCarrierPrecisionAndOverflowContractsOnNodeApi()
     {
         var names = new[]
         {

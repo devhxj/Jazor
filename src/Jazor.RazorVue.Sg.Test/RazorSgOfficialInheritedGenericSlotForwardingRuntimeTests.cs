@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_ForwardsDerivedMemberNameOnDenoHost()
+    public async Task BuildComponent_OfficialRazorInheritedGenericSlot_ForwardsDerivedMemberNameOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InheritedReleaseTemplateForwarder.razor"),

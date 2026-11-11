@@ -9,7 +9,7 @@ public sealed class EnumerableIndexRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task IndexExport_PreservesSourceOrderAndNamedTupleShapeOnDenoHost()
+    public async Task IndexExport_PreservesSourceOrderAndNamedTupleShapeOnNodeApi()
     {
         var index = GetExportName("static System.Linq.Enumerable.Index<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
         var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-index-" + Guid.NewGuid().ToString("N"));

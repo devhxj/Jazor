@@ -807,7 +807,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_UsingDeclaration_DisposesResourcesInReverseOrderOnDenoHost()
+    public async Task ConvertModule_UsingDeclaration_DisposesResourcesInReverseOrderOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.using-declaration-reverse-disposal";
         var fixture = CompileModule(
@@ -902,7 +902,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_AwaitUsingDeclaration_AwaitsReverseDisposalOnDenoHost()
+    public async Task ConvertModule_AwaitUsingDeclaration_AwaitsReverseDisposalOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.await-using-declaration-reverse-disposal";
         var fixture = CompileModule(
@@ -1004,7 +1004,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_UsingExpression_DisposesSingleFactoryResultAcrossReturnAndThrowOnDenoHost()
+    public async Task ConvertModule_UsingExpression_DisposesSingleFactoryResultAcrossReturnAndThrowOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.using-expression-return-throw";
         var fixture = CompileModule(
@@ -1322,7 +1322,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_StructuralListPattern_UsesCustomLengthIndexerAndSliceContractsOnDenoHost()
+    public async Task ConvertModule_StructuralListPattern_UsesCustomLengthIndexerAndSliceContractsOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.structural-list-pattern";
         var fixture = CompileModule(
@@ -1467,7 +1467,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_OverloadedRuntimeClassIndexers_UseDistinctSymbolBoundHelpersOnDenoHost()
+    public async Task ConvertModule_OverloadedRuntimeClassIndexers_UseDistinctSymbolBoundHelpersOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.overloaded-indexers";
         var fixture = CompileModule(
@@ -1568,7 +1568,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_Loops_PreserveContinueUpdatesBreakAndDoWhileOnDenoHost()
+    public async Task ConvertModule_Loops_PreserveContinueUpdatesBreakAndDoWhileOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.loop-control-flow";
         var fixture = CompileModule(
@@ -1677,7 +1677,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnDenoHost()
+    public async Task ConvertModule_ForCapturedControlVariable_PreservesSingleCSharpBindingOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.for-captured-control-variable";
         var fixture = CompileModule(
@@ -1784,7 +1784,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_ForUpdateSequence_AwaitsAfterIncrementOnDenoHost()
+    public async Task ConvertModule_ForUpdateSequence_AwaitsAfterIncrementOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.for-update-await-sequence";
         var fixture = CompileModule(
@@ -1872,7 +1872,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_ConditionalArrayIndexAndRange_CacheNullableReceiverOnceOnDenoHost()
+    public async Task ConvertModule_ConditionalArrayIndexAndRange_CacheNullableReceiverOnceOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.conditional-array-index-and-range";
         var fixture = CompileModule(
@@ -1969,7 +1969,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_NullableGetValueOrDefault_UsesSingleProbeAndUnderlyingDefaultOnDenoHost()
+    public async Task ConvertModule_NullableGetValueOrDefault_UsesSingleProbeAndUnderlyingDefaultOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.nullable-get-value-or-default";
         var fixture = CompileModule(
@@ -2058,7 +2058,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_NullableGetValueOrDefaultWithDefault_EvaluatesFallbackBeforeCoalescingOnDenoHost()
+    public async Task ConvertModule_NullableGetValueOrDefaultWithDefault_EvaluatesFallbackBeforeCoalescingOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.nullable-get-value-or-default-with-default";
         var fixture = CompileModule(
@@ -2157,7 +2157,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_NullableValue_UsesSingleProbeAndThrowsOnEmptyCarrierOnDenoHost()
+    public async Task ConvertModule_NullableValue_UsesSingleProbeAndThrowsOnEmptyCarrierOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.nullable-value";
         var fixture = CompileModule(
@@ -3656,7 +3656,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
-    public async Task ConvertModule_DictionaryForEachDeconstruction_UsesMapEntryProtocolOnDenoHost()
+    public async Task ConvertModule_DictionaryForEachDeconstruction_UsesMapEntryProtocolOnNodeApi()
     {
         const string scenarioId = "ast-converter-runtime-class.dictionary-foreach-deconstruction";
         var fixture = CompileModule(

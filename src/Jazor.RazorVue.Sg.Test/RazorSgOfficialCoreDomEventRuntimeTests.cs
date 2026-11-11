@@ -43,7 +43,7 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorCoreDomTypedHandlers_ReadNativeMouseKeyboardFocusEventsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorCoreDomTypedHandlers_ReadNativeMouseKeyboardFocusEventsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/CoreDomEvents.razor"),
@@ -202,7 +202,7 @@ public sealed class RazorSgOfficialCoreDomEventRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorChangeHandlers_CaptureEventTimeValueAndKeepBindDirectOnDenoHost()
+    public async Task BuildComponent_OfficialRazorChangeHandlers_CaptureEventTimeValueAndKeepBindDirectOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/CoreDomChangeEvents.razor"),

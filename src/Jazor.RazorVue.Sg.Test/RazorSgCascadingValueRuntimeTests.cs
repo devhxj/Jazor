@@ -40,7 +40,7 @@ public sealed class RazorSgCascadingValueRuntimeTests
         """;
 
     [TestMethod]
-    public async Task BuildComponent_OfficialCascadingValueProvidesTypedNamedValueToChildOnDenoHost()
+    public async Task BuildComponent_OfficialCascadingValueProvidesTypedNamedValueToChildOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/CascadingRuntime.razor"),

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughAsyncSetterOnDenoHost()
+    public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughAsyncSetterOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNameEditor.razor"),
@@ -73,7 +73,7 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughSynchronousSetterOnDenoHost()
+    public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughSynchronousSetterOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNameSyncEditor.razor"),

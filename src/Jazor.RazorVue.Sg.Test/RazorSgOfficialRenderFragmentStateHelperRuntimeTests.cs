@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRenderStateHelper_ProjectsConstructedTemplatePropertyToScopedSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRenderStateHelper_ProjectsConstructedTemplatePropertyToScopedSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplateStateHelperRuntime.razor"),
@@ -107,7 +107,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRenderStateHelper_ProjectsInitializedTemplatePropertyToScopedSlotOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRenderStateHelper_ProjectsInitializedTemplatePropertyToScopedSlotOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplateStateInitializerRuntime.razor"),

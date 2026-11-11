@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLocalTemplateDescriptor_ProjectsCachedFragmentMemberOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLocalTemplateDescriptor_ProjectsCachedFragmentMemberOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryLocalDescriptor.razor"),

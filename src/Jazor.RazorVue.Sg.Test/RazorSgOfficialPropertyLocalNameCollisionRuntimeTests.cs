@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialPropertyLocalNameCollisionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorLocalAndComputedPropertyNameCollision_PreservesBothValuesOnDenoHost()
+    public async Task BuildComponent_OfficialRazorLocalAndComputedPropertyNameCollision_PreservesBothValuesOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComputedStatus.razor"),

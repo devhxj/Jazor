@@ -9,7 +9,7 @@ public sealed class EnumerableMinMaxByRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task MinByAndMaxByExports_EvaluateEachSelectorOnceAndPreserveFirstTieOnDenoHost()
+    public async Task MinByAndMaxByExports_EvaluateEachSelectorOnceAndPreserveFirstTieOnNodeApi()
     {
         var minBy = GetExportName("static System.Linq.Enumerable.MinBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
         var maxBy = GetExportName("static System.Linq.Enumerable.MaxBy<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");

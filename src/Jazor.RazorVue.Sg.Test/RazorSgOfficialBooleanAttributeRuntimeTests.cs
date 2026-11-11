@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialBooleanAttributeRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorBooleanAttribute_TracksParameterStateOnDenoHost()
+    public async Task BuildComponent_OfficialRazorBooleanAttribute_TracksParameterStateOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeployButton.razor"),

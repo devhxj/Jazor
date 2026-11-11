@@ -5691,7 +5691,7 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   [TestMethod]
-  public async Task Visit_Nullable_Value_ThrowsForEmptyCarrierOnDenoHost()
+  public async Task Visit_Nullable_Value_ThrowsForEmptyCarrierOnNodeApi()
   {
     var block = GetBlockOperation(@"
             class TestClass

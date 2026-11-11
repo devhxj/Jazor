@@ -9,7 +9,7 @@ public sealed class EnumerableWhileRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task SkipTakeWhileExports_PreservePredicateAndIteratorTerminationOnDenoHost()
+    public async Task SkipTakeWhileExports_PreservePredicateAndIteratorTerminationOnNodeApi()
     {
         var skipWhile = GetExportName("static System.Linq.Enumerable.SkipWhile<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)");
         var skipWhileAt = GetExportName("static System.Linq.Enumerable.SkipWhile<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)");

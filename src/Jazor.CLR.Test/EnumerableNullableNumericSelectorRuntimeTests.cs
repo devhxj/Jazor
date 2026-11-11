@@ -9,7 +9,7 @@ public sealed class EnumerableNullableNumericSelectorRuntimeTests
     private const string ModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task NullableNumericSelectorExports_PreserveSingleEvaluationAndCarrierContractsOnDenoHost()
+    public async Task NullableNumericSelectorExports_PreserveSingleEvaluationAndCarrierContractsOnNodeApi()
     {
         var names = new[]
         {

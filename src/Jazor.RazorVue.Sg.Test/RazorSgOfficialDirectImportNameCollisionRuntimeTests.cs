@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorMemberAndLibraryExportNamesCollide_UsesStableFallbackNameOnDenoHost()
+    public async Task BuildComponent_OfficialRazorMemberAndLibraryExportNamesCollide_UsesStableFallbackNameOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DirectImportNameCollision.razor"),

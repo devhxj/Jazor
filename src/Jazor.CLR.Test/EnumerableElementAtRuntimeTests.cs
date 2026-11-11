@@ -9,7 +9,7 @@ public sealed class EnumerableElementAtRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task ElementAtExports_PreserveFromStartAndFromEndTraversalOnDenoHost()
+    public async Task ElementAtExports_PreserveFromStartAndFromEndTraversalOnNodeApi()
     {
         var elementAt = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, int)");
         var elementAtIndex = GetExportName("static System.Linq.Enumerable.ElementAt<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Index)");

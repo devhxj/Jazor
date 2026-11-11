@@ -9,7 +9,7 @@ public sealed class EnumerableJoinRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task JoinExports_PreserveLookupAndSelectorEvaluationOrderOnDenoHost()
+    public async Task JoinExports_PreserveLookupAndSelectorEvaluationOrderOnNodeApi()
     {
         var join = GetExportName(
             "static System.Linq.Enumerable.Join<TOuter, TInner, TKey, TResult>(System.Collections.Generic.IEnumerable<TOuter>, System.Collections.Generic.IEnumerable<TInner>, System.Func<TOuter, TKey>, System.Func<TInner, TKey>, System.Func<TOuter, TInner, TResult>)");

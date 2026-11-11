@@ -13,7 +13,7 @@ namespace Jazor.ComplierTest;
 public sealed class SemanticWalkerBindingIdentifierTests
 {
     [TestMethod]
-    public async Task Visit_EscapedKeywordLocalAndLambdaParameter_UseStableLegalBindingsOnDenoHost()
+    public async Task Visit_EscapedKeywordLocalAndLambdaParameter_UseStableLegalBindingsOnNodeApi()
     {
         const string source = """
 public static class BindingScenarios

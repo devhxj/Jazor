@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorMemberNamedH_UsesStableAliasInsteadOfVueRuntimeImportOnDenoHost()
+    public async Task BuildComponent_OfficialRazorMemberNamedH_UsesStableAliasInsteadOfVueRuntimeImportOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RuntimeNameCollision.razor"),
@@ -64,7 +64,7 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNestedRuntimeClassNamedHAndInitState_PreserveVueRenderImportOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNestedRuntimeClassNamedHAndInitState_PreserveVueRenderImportOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NestedRuntimeNameCollision.razor"),

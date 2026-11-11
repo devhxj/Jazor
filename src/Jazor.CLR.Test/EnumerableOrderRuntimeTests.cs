@@ -9,7 +9,7 @@ public sealed class EnumerableOrderRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task OrderExports_UseDefaultComparerWithoutMutatingSourceOnDenoHost()
+    public async Task OrderExports_UseDefaultComparerWithoutMutatingSourceOnNodeApi()
     {
         var order = GetExportName("static System.Linq.Enumerable.Order<T>(System.Collections.Generic.IEnumerable<T>)");
         var orderDescending = GetExportName("static System.Linq.Enumerable.OrderDescending<T>(System.Collections.Generic.IEnumerable<T>)");

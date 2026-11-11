@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorTypedSlotAlias_InvokesTheScopedSlotAfterLocalNullGuardOnDenoHost()
+    public async Task BuildComponent_OfficialRazorTypedSlotAlias_InvokesTheScopedSlotAfterLocalNullGuardOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Components/ReleaseRowTemplate.razor"),

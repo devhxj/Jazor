@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialComponentDispatchRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorComponentBaseDispatch_UpdatesStateThroughInvokeAsyncOnDenoHost()
+    public async Task BuildComponent_OfficialRazorComponentBaseDispatch_UpdatesStateThroughInvokeAsyncOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentDispatchRuntime.razor"),

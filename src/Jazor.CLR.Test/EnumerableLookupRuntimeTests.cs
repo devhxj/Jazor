@@ -7,7 +7,7 @@ namespace Jazor.CLR.Test;
 public sealed class EnumerableLookupRuntimeTests
 {
     [TestMethod]
-    public async Task ToLookupExports_PreserveGroupingAndLookupContractsOnDenoHost()
+    public async Task ToLookupExports_PreserveGroupingAndLookupContractsOnNodeApi()
     {
         var toLookup = GetExportName("static System.Linq.Enumerable.ToLookup<TSource, TKey>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>)");
         var toLookupElement = GetExportName("static System.Linq.Enumerable.ToLookup<TSource, TKey, TElement>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, TKey>, System.Func<TSource, TElement>)");

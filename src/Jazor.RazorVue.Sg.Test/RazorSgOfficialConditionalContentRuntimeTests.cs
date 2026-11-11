@@ -61,7 +61,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorAdjacentConditionalSiblings_UseDistinctBranchKeysOnDenoHost()
+    public async Task BuildComponent_OfficialRazorAdjacentConditionalSiblings_UseDistinctBranchKeysOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConditionalProfiles.razor"),
@@ -153,7 +153,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorConditionalContent_UsesFragmentOnlyForTheMultiNodeBranchOnDenoHost()
+    public async Task BuildComponent_OfficialRazorConditionalContent_UsesFragmentOnlyForTheMultiNodeBranchOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDetailsToggle.razor"),

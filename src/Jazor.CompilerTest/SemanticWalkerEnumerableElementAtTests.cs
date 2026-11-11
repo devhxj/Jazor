@@ -115,7 +115,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
     }
 
     [TestMethod]
-    public async Task Visit_EnumerableElementAtOrDefault_PreservesClosedDefaultAndMethodGroupBehaviorOnDenoHost()
+    public async Task Visit_EnumerableElementAtOrDefault_PreservesClosedDefaultAndMethodGroupBehaviorOnNodeApi()
     {
         var block = GetBlockOperation(
             """
@@ -219,7 +219,7 @@ public sealed class SemanticWalkerEnumerableElementAtTests
     }
 
     [TestMethod]
-    public async Task Visit_EnumerableElementAtOrDefaultIndex_PreservesBoundIndexTraversalOnDenoHost()
+    public async Task Visit_EnumerableElementAtOrDefaultIndex_PreservesBoundIndexTraversalOnNodeApi()
     {
         var block = GetBlockOperation(
             """

@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNullableMarkupString_PreservesMarkupAndEmptyOutputOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNullableMarkupString_PreservesMarkupAndEmptyOutputOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummary.razor"),
@@ -55,7 +55,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNullableMarkupStringInsideElement_ExpandsEmptyContentOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNullableMarkupStringInsideElement_ExpandsEmptyContentOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummaryPanel.razor"),
@@ -108,7 +108,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNullableMarkupStringMethod_EvaluatesContentOnceOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNullableMarkupStringMethod_EvaluatesContentOnceOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummaryMethod.razor"),
@@ -170,7 +170,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNullableMarkupStringSlot_ExpandsToAnEmptySlotResultOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNullableMarkupStringSlot_ExpandsToAnEmptySlotResultOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummarySlot.razor"),
@@ -252,7 +252,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorNullableMarkupStringInLoop_ExpandsEachElementChildOnDenoHost()
+    public async Task BuildComponent_OfficialRazorNullableMarkupStringInLoop_ExpandsEachElementChildOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummaryList.razor"),

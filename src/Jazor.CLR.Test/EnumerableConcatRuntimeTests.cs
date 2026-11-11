@@ -9,7 +9,7 @@ public sealed class EnumerableConcatRuntimeTests
     private const string EnumerableModulePath = "./clr/System/Linq/EnumerableModule.js";
 
     [TestMethod]
-    public async Task ConcatExport_PreservesFirstThenSecondEnumerationOrderOnDenoHost()
+    public async Task ConcatExport_PreservesFirstThenSecondEnumerationOrderOnNodeApi()
     {
         var concat = GetExportName("static System.Linq.Enumerable.Concat<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>)");
         var root = Path.Combine(RepositoryTemp.Root, "jazor-enumerable-concat-" + Guid.NewGuid().ToString("N"));

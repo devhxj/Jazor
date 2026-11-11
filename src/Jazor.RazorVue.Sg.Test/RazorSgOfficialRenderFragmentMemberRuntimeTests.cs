@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRenderFragmentMembers_ProjectPropertyAndMethodGroupSlotsOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRenderFragmentMembers_ProjectPropertyAndMethodGroupSlotsOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryMembers.razor"),

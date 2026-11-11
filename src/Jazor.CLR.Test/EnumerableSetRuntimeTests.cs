@@ -10,7 +10,7 @@ public sealed class EnumerableSetRuntimeTests
     private const string MemoryExtensionsModulePath = "./clr/System/MemoryExtensionsModule.js";
 
     [TestMethod]
-    public async Task SetOperatorExports_PreserveClrEqualityAndMaterializedEnumerationOrderOnDenoHost()
+    public async Task SetOperatorExports_PreserveClrEqualityAndMaterializedEnumerationOrderOnNodeApi()
     {
         var distinct = GetExportName("static System.Linq.Enumerable.Distinct<TSource>(System.Collections.Generic.IEnumerable<TSource>)");
         var union = GetExportName("static System.Linq.Enumerable.Union<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Collections.Generic.IEnumerable<TSource>)");

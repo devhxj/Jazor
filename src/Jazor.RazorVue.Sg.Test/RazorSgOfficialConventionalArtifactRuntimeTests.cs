@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorWithModuleAttribute_PreservesTheRenderArtifactContractOnDenoHost()
+    public async Task BuildComponent_OfficialRazorWithModuleAttribute_PreservesTheRenderArtifactContractOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConventionalArtifactPage.razor"),

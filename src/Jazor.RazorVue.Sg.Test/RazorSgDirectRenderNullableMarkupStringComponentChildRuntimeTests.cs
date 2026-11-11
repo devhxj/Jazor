@@ -9,7 +9,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_DirectRenderNullableMarkupStringChild_ExpandsToZeroOrOneVNodeOnDenoHost()
+    public async Task BuildComponent_DirectRenderNullableMarkupStringChild_ExpandsToZeroOrOneVNodeOnNodeApi()
     {
         const string source = """
             using ECMAScript;

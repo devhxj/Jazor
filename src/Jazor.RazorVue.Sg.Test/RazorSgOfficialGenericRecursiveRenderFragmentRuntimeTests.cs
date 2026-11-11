@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorRecursiveScopedSlot_PreservesContextAndNestedChildrenOnDenoHost()
+    public async Task BuildComponent_OfficialRazorRecursiveScopedSlot_PreservesContextAndNestedChildrenOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NavigationTemplateRuntime.razor"),

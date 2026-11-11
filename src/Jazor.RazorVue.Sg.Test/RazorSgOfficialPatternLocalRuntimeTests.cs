@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialPatternLocalRuntimeTests
 {
     [TestMethod]
-    public async Task BuildComponent_OfficialRazorPropertyPatternLocal_RendersOnlyForMatchingValueOnDenoHost()
+    public async Task BuildComponent_OfficialRazorPropertyPatternLocal_RendersOnlyForMatchingValueOnNodeApi()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/PatternLocalRuntime.razor"),
