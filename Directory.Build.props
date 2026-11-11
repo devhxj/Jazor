@@ -3,6 +3,9 @@
     <AcornimaVersion>1.8.0</AcornimaVersion>
     <AngleSharpVersion>1.7.2</AngleSharpVersion>
     <DenoHostVersion>2.9.7</DenoHostVersion>
+    <NodeApiVersion>0.9.36</NodeApiVersion>
+    <LibNodeVersion>20.1800.203</LibNodeVersion>
+    <PnpmEngineVersion>12.5.1</PnpmEngineVersion>
     <!-- DenoHost 2.9.6 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <JsonNetVersion>11.0.0</JsonNetVersion>

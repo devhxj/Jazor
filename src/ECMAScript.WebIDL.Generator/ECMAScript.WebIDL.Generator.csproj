@@ -12,8 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="0.9.36" />
-    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="20.1800.203" />
+    <ProjectReference Include="..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ECMAScript.Vue.Generator\BindingAuthoringDocumentation.cs" Link="Shared\BindingAuthoringDocumentation.cs" />

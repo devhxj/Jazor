@@ -5,6 +5,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/generator/">
+    <Project Path="src/Jazor.NodeHost/Jazor.NodeHost.csproj" />
     <Project Path="src/ECMAScript.Vue.Generator/ECMAScript.Vue.Generator.csproj" />
     <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
     <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />

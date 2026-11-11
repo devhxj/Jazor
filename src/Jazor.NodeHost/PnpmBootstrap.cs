@@ -1,14 +1,17 @@
 using System.Formats.Tar;
 using System.IO.Compression;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace ECMAScript.WebIDL.Generator;
+namespace Jazor.NodeHost;
 
 internal static class PnpmBootstrap
 {
-    internal const string Version = "12.5.1";
+    internal static readonly string Version = typeof(PnpmBootstrap).Assembly
+        .GetCustomAttributes<AssemblyMetadataAttribute>()
+        .Single(attribute => attribute.Key == "PnpmEngineVersion").Value!;
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
     private static readonly SemaphoreSlim Gate = new(1, 1);
 
@@ -41,7 +44,7 @@ internal static class PnpmBootstrap
         if (File.Exists(Path.Combine(destination, "package.json")))
             return;
 
-        Console.Error.WriteLine($"[webidl] Bootstrapping {name}@{Version}.");
+        Console.Error.WriteLine($"[Jazor NodeApi] Bootstrapping {name}@{Version}.");
         await using var metadataStream = await Http.GetStreamAsync(
             $"https://registry.npmjs.org/{Uri.EscapeDataString(name)}/{Version}", cancellationToken);
         using var metadata = await JsonDocument.ParseAsync(metadataStream,

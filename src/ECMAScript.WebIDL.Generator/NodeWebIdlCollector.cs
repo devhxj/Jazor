@@ -1,21 +1,11 @@
-using System.Text.Encodings.Web;
 using System.Text.Json;
+using Jazor.NodeHost;
 using Microsoft.JavaScript.NodeApi;
-using Microsoft.JavaScript.NodeApi.Runtime;
 
 namespace ECMAScript.WebIDL.Generator;
 
 internal sealed class NodeWebIdlCollector(GeneratorOptions options)
 {
-    // Node allows one platform initialization per process. Environments are owned
-    // per operation and disposed after their actual JS work has completed.
-    private static readonly Lazy<NodeEmbeddingPlatform> Platform = new(() =>
-    {
-        var platform = new NodeEmbeddingPlatform(null);
-        AppDomain.CurrentDomain.ProcessExit += (_, _) => platform.Dispose();
-        return platform;
-    });
-
     public async Task<WebIdlInventory> CollectAsync(CancellationToken cancellationToken)
     {
         var json = await RunAsync("collect", cancellationToken);
@@ -32,15 +22,10 @@ internal sealed class NodeWebIdlCollector(GeneratorOptions options)
         var projectDirectory = Path.GetDirectoryName(options.NodeProjectPath)!;
         var bootstrap = await PnpmBootstrap.EnsureAsync(projectDirectory, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
-        var requireBase = JavaScriptEncoder.Default.Encode(options.NodeProjectPath);
-        using var runtime = Platform.Value.CreateThreadRuntime(projectDirectory,
-            new NodeEmbeddingRuntimeSettings
-            {
-                MainScript = "globalThis.require = require('node:module').createRequire(\"" + requireBase + "\");"
-            });
+        using var environment = new NodeEnvironment(projectDirectory);
         Console.Error.WriteLine($"[webidl] Embedded NodeApi host: .NET PID {Environment.ProcessId}.");
 
-        return await runtime.RunAsync(async () =>
+        return await environment.RunAsync(async runtime =>
         {
             // An await closes the initial callback scope even when continuation
             // returns to the JS thread. Keep the module alive through a reference.

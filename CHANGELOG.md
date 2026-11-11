@@ -8,10 +8,12 @@
 
 #### 其他变更
 
+- 开始全局 NodeApi 工具链迁移：提取共享内嵌宿主并验证进程内 Vite 启动、关闭与构建。正式前端/SSR 主线仍在迁移中，当前试点的范围与运行限制以各工具 README 为准。by @devhxj
 - WebIDL 采集工具试点切换为完整 NodeApi 进程内执行：pnpm API 恢复固定依赖，TypeScript API 转译并加载 collector，不再启动 Deno 或 JS 工具子进程。`--deno-config` 改为 `--node-project`；当前验证组合与 Windows CET、依赖布局及取消限制见工具 README，其他 Jazor 路径仍待迁移。by @devhxj
 
 #### Chores
 
+- Begin the global NodeApi toolchain migration with a shared embedding host and in-process Vite startup, shutdown, and build verification. Production frontend/SSR integration remains in progress; tool READMEs define the verified scope and limitations. by @devhxj
 - Pilot the WebIDL collector on an entirely in-process NodeApi stack: restore pinned dependencies with the pnpm API and transpile/load the collector with the TypeScript API, without Deno or JS tool child processes. Replace `--deno-config` with `--node-project`; the tool README documents the verified combination and Windows CET, dependency layout, and cancellation limits. Other Jazor execution paths remain pending. by @devhxj
 
 ### Jazor 1.0.0

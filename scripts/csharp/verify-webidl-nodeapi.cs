@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ECMAScript.WebIDL.Generator;
+using Jazor.NodeHost;
 using Microsoft.JavaScript.NodeApi;
 
 // This single .NET process hosts the native installer, transpiler and collector.
