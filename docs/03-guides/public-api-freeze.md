@@ -1,6 +1,6 @@
 # 1.0 公共 API 冻结审查
 
-> 当前正式版本：[1.0.0（2026-11-11）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前正式版本：[1.1.0（2026-11-12）](https://github.com/devhxj/Jazor/releases/tag/v1.1.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > preview.9 包含 `ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets`、Pagination 的两个 `EventCallback<Number>`，以及数值转换和直接 union 标量投影。机器 snapshot 按本次预览 API 更新；回调与投影的迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
@@ -74,7 +74,7 @@ preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审�
 - `JazorViteServerOptions`：server origin、Deno task、是否启动、启动与停止超时。
 - `JazorReloadOptions`：client/WebSocket path、观察路径、HMR mapping、节流/轮询/心跳与 HTML 注入开关。
 
-以上记录 1.0.0 的冻结表面。NodeApi 源码候选直接调用 Vite 与 SSR API，已移除 Vite/SSR 的 `TaskName`；此变化须在下一 MAJOR 发布时说明迁移路径，不修改既有稳定 tag 或冻结快照。
+以上记录 1.0.0 的冻结表面。1.1.0 直接调用 Vite 与 SSR API，移除 Vite/SSR 的 `TaskName`；维护者指定该底层重构使用 MINOR，迁移步骤见 CHANGELOG。已审阅签名由 `public-api-reviewed-removals.snapshot.md` 显式列出，既有稳定 tag 和冻结快照保持不变。
 
 集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`entry.js`、`dist/bundle.js`、`http://127.0.0.1:5173`、`/@jazor/client`、`/@jazor/reload`、安全头、探针文件和缓存策略。
 
@@ -101,7 +101,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.1.0
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。
@@ -122,7 +122,7 @@ dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api
 dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline artifacts/api/public-api-baseline.md --output artifacts/api/public-api-compatibility.md
 ```
 
-首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，删除或签名变化会使命令失败。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及 P3-A/B/C、Monaco 和其他 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。
+首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，未审阅的删除或签名变化会使命令失败。1.1.0 的 TaskName 删除通过显式 `--approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md` 放行，报告仍保留差异。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及 P3-A/B/C、Monaco 和其他 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。
 
 ## 变更规则
 

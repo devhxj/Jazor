@@ -34,7 +34,7 @@ var stageDefinitions = new (string Name, string[] Arguments)[]
     ("toolchain", ["run", "--file", "scripts/csharp/write-toolchain-matrix.cs", "--", Path.Combine(candidateRoot, "toolchain-matrix.md")]),
     ("build", ["build", "Jazor.slnx", "-c", "Release", "/m:1", "/nr:false", "-p:UseSharedCompilation=false"]),
     ("public-api", ["run", "--file", "scripts/csharp/inspect-public-api.cs", "--", "--configuration", "Release", "--output", Path.Combine(candidateRoot, "public-api.md")]),
-    ("public-api-compatibility", ["run", "--file", "scripts/csharp/compare-public-api.cs", "--", "--current", Path.Combine(candidateRoot, "public-api.md"), "--baseline", "docs/03-guides/public-api-baseline.snapshot.md", "--output", Path.Combine(candidateRoot, "public-api-compatibility.md")]),
+    ("public-api-compatibility", ["run", "--file", "scripts/csharp/compare-public-api.cs", "--", "--current", Path.Combine(candidateRoot, "public-api.md"), "--baseline", "docs/03-guides/public-api-baseline.snapshot.md", "--approved-removals", "docs/03-guides/public-api-reviewed-removals.snapshot.md", "--output", Path.Combine(candidateRoot, "public-api-compatibility.md")]),
     ("compiler-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "compiler", "--output-directory", Path.Combine(candidateRoot, "coverage", "compiler")]),
     ("razorvue-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "razorvue", "--output-directory", Path.Combine(candidateRoot, "coverage", "razorvue")]),
     ("vue-binding-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "vue-bindings", "--output-directory", Path.Combine(candidateRoot, "coverage", "vue-bindings")]),

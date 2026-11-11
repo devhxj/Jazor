@@ -3,7 +3,7 @@ name: Verify Embedded NodeApi
 on:
   workflow_dispatch:
   push:
-    branches: [feature/webidl-node-pnpm]
+    branches: [main, feature/webidl-node-pnpm]
     paths:
       - .github/workflows/nodeapi-verify.yml
       - Directory.Build.props

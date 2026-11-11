@@ -82,4 +82,4 @@ Vite 使用与原生版本一致的官方 `lightningcss-wasm`，固定 override 
 
 tree shaking 必须通过实际 bundle 证明：只使用某组件时不拉入无关组件源码或 CSS；组件所需内部依赖、动态 import、字体、worker 和 wasm 仍完整。源码与 NuGet consumer 使用同一声明及标准模块图。
 
-编译语义、覆盖率、绑定契约和真实浏览器门槛继续以[当前状态](./current-status.md)为准。工具迁移不得降低它们。正式版后移除旧配置、任务或锁文件契约按 MAJOR 处理，见[发版规则](../03-guides/release-and-versioning.md)。
+编译语义、覆盖率、绑定契约和真实浏览器门槛继续以[当前状态](./current-status.md)为准。工具迁移不得降低它们。维护者指定本次底层重构以 1.1.0 发布，宿主配置迁移和版本例外见[发版规则](../03-guides/release-and-versioning.md)；后续破坏性变更继续按 MAJOR 处理。

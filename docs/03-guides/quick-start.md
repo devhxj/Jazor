@@ -4,7 +4,7 @@
 
 本指南首先验证框架无关的核心能力。Razor-to-Vue 作为后续可选集成提供组件作者入口。
 
-示例使用已发布的 `1.0.0`。P3-A/B/C 与 Monaco 绑定已可从同版本 NuGet 包安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。
+示例使用 `1.1.0`。P3-A/B/C 与 Monaco 绑定已可从同版本 NuGet 包安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍保持 Guidance。
 
 ## 1. 创建模块库
 
@@ -12,7 +12,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 1.0.0
+dotnet add Sample.Modules package Jazor --version 1.1.0
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -38,7 +38,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 1.0.0
+dotnet add Sample.Host package Jazor --version 1.1.0
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
@@ -58,9 +58,9 @@ dotnet add Sample.Host package Jazor --version 1.0.0
 dotnet build Sample.Host
 ```
 
-构建后，MSBuild 在最终 `Exe`/`WinExe` 宿主调用 `Jazor.Emit`，在 `JazorDir` 生成标准项目。当前源码候选通过进程内 pnpm API 恢复 `node_modules` 与 `pnpm-lock.yaml`；Release 通过 Vite API 构建 `dist/`，无需全局 Node/pnpm 或单独运行 JS 工具进程。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主拥有项目目录；跨模块调用仍使用稳定的标准 ECMAScript import。
+构建后，MSBuild 在最终 `Exe`/`WinExe` 宿主调用 `Jazor.Emit`，在 `JazorDir` 生成标准项目。1.1.0 通过进程内 pnpm API 恢复 `node_modules` 与 `pnpm-lock.yaml`；Release 通过 Vite API 构建 `dist/`，无需全局 Node/pnpm 或单独运行 JS 工具进程。类库在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，最终宿主拥有项目目录；跨模块调用仍使用稳定的标准 ECMAScript import。
 
-诊断 manifest 仅保存在 `obj`，不参与运行时解析。发布只复制 `dist/**` 和启用后的 `ssr/**`，源码、根 lock 与 `node_modules` 留在构建项目中。source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。已发布 1.0.0 的运行时说明与当前候选边界见[安装与配置](./installation-and-configuration.md)。
+诊断 manifest 仅保存在 `obj`，不参与运行时解析。发布只复制 `dist/**` 和启用后的 `ssr/**`，源码、根 lock 与 `node_modules` 留在构建项目中。source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。从 1.0.0 升级的运行时迁移步骤见[安装与配置](./installation-and-configuration.md)。
 
 ## 4. 可选：加入 Razor-to-Vue
 
@@ -68,7 +68,7 @@ dotnet build Sample.Host
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="1.0.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="1.1.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

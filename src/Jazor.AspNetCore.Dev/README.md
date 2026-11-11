@@ -1,6 +1,6 @@
 # Jazor.AspNetCore.Dev
 
-统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。当前迁移分支在 Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。四平台宿主/包组合和 Windows x64 本地 NuGet/MSBuild 发布消费者已通过验收；候选按下一 MAJOR 准备。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
+统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。1.1.0 在 Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。四平台宿主/包组合和 Windows x64 本地 NuGet/MSBuild 发布消费者已通过验收；1.1.0 按维护者指定交付该底层重构。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
 
 ## 标准前端宿主
 

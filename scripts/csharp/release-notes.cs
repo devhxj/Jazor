@@ -160,7 +160,9 @@ static string AppendCompareLink(string notes, string? repository, string? previo
 
 static async Task<string?> ResolvePreviousTagAsync(string currentTag)
 {
-    var tags = await RunGitCaptureAsync("tag", "--sort=-version:refname");
+    // Git's default version sort puts preview tags above their stable release.
+    // Treat '-' as the prerelease suffix so 1.1.0 compares from stable 1.0.0.
+    var tags = await RunGitCaptureAsync("-c", "versionsort.suffix=-", "tag", "--sort=-version:refname");
     return tags
         .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
         .FirstOrDefault(tag => !string.Equals(tag, currentTag, StringComparison.Ordinal));

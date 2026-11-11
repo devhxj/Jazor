@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前正式版本：[1.0.0（2026-11-11）](https://github.com/devhxj/Jazor/releases/tag/v1.0.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前正式版本：[1.1.0（2026-11-12）](https://github.com/devhxj/Jazor/releases/tag/v1.1.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -25,6 +25,12 @@
 发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、绑定 contract 与 XML 文档、RazorVue diagnostics、包形状和 SPA/SSR consumer 证据。绑定 contract 报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移或公开绑定文档缺失时阻断候选。它通过后才进入正式发布工作流。
 
 `1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。正式 API 基线与兼容性检查继续约束后续发布。
+
+### 1.1.0 工具链迁移例外
+
+维护者明确指定 NodeApi/pnpm 底层工具链重构以 `1.1.0` 发布，C# 编译语义和组件作者面保持不变。移除 Vite/SSR `TaskName`、旧 Deno 配置和锁文件切换仍须按 CHANGELOG 完成迁移；这是一项明确记录的版本规则例外，不把宿主配置变化描述为完全兼容，也不改变后续 MAJOR 规则。
+
+`public-api-baseline.snapshot.md` 保留 1.0.0 冻结结果；`public-api-reviewed-removals.snapshot.md` 只记录这次已审阅的 TaskName 及访问器签名。候选与 CI 通过显式 `--approved-removals` 参数检查，报告继续列出全部删除，任何未审阅删除仍阻断发布。
 
 ## 发版节奏
 

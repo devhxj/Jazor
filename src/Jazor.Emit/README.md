@@ -10,7 +10,7 @@
 
 这两种 carrier 是并列的一等输入。Emit 可以在内存中把它们归一化为资源记录和 package graph
 来做去重、依赖闭包和冲突校验，并生成标准 `jazor/package.json`。源码 carrier 按声明路径写入项目；
-当前迁移分支通过共享 NodeApi 宿主调用 pnpm API，恢复 `node_modules` 并生成 `pnpm-lock.yaml`。NuGet/MSBuild、全仓库脚本、完整 48 项消费者和四平台组合已通过验收；候选按下一 MAJOR 准备，正式发布版本按其对应文档使用。
+1.1.0 通过共享 NodeApi 宿主调用 pnpm API，恢复 `node_modules` 并生成 `pnpm-lock.yaml`。NuGet/MSBuild、全仓库脚本、完整 48 项消费者和四平台组合已通过验收；1.1.0 按维护者指定交付该底层重构，旧版本按其对应文档使用。
 
 ## 唯一调用边界
 

@@ -55,7 +55,7 @@
 - `JazorReloadOptions`
 - `JazorHmrMapping`
 
-当前源码候选的 frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。1.0.0 冻结快照仍保留为兼容性比较基线；候选移除 Vite/SSR `TaskName` 的破坏性变化必须按[发版规则](./release-and-versioning.md)进入下一 MAJOR，不能通过重写旧快照伪装兼容。
+1.1.0 的 frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。1.0.0 冻结快照仍保留为兼容性比较基线；Vite/SSR `TaskName` 删除按维护者指定的 1.1.0 工具链重构例外发布，迁移步骤见[发版规则](./release-and-versioning.md)。`public-api-reviewed-removals.snapshot.md` 只放行已确认签名，报告仍列出删除，旧冻结快照保持不变。
 
 ## `Jazor.Vue` 原生事件与载荷扩展
 

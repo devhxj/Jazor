@@ -1,7 +1,7 @@
 # Browser Interop
 
-This guide describes the `1.0.0` browser authoring surface. Install all
-Jazor/ECMAScript packages at the same version; see [validation and scope](../04-roadmap/preview8-developer-feedback.md).
+This guide describes the `1.1.0` browser authoring surface. Install all
+Jazor/ECMAScript packages at the same version (`1.1.0`); see [validation and scope](../04-roadmap/preview8-developer-feedback.md).
 
 ## WebIDL and extension mappings
 

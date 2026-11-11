@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.1.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.1.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,9 +26,9 @@
 
 </div>
 
-> Jazor 1.0.0 is the current stable release, built on .NET 11 GA. Native union authoring still requires C# preview language mode.
+> Jazor 1.1.0 is the current release, built on .NET 11 GA. Native union authoring still requires C# preview language mode.
 
-> This source candidate runs tooling and SSR through in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Four-platform CI and Windows SPA/SSR package/browser gates have passed. The breaking migration targets the next MAJOR; 1.0.0 remains the published stable release. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
+> Jazor 1.1.0 runs tooling and SSR through in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Four-platform CI and Windows SPA/SSR package/browser gates have passed. The maintainer selected 1.1.0 for this infrastructure refactor; review the documented host configuration migration before upgrading. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -112,7 +112,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.0.0
+dotnet add package Jazor --version 1.1.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -120,8 +120,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.1.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.1.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -203,14 +203,14 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
-### Jazor 1.0.0 · 2026-11-11
+### Jazor 1.1.0 · 2026-11-12
 
-- Build and run on .NET SDK 11.0.100 and ASP.NET Core/EF Core 11.0.0, with matching SDK Roslyn and GA reference assemblies.
-- Install all Jazor/ECMAScript packages at `1.0.0`; preview.9 consumers keep their existing authoring APIs. Native unions continue to require `<LangVersion>preview</LangVersion>`.
-- Retain the documented compiler, RazorVue, and binding support boundaries. Public API changes now follow stable semantic versioning.
-- Preserve null short-circuiting in array Index/Range access, and fix chart pattern component contracts and admin sample route URL resolution.
+- Run the in-process NodeApi/pnpm toolchain on .NET SDK 11.0.100 with the documented LibNode 20.1800.215 host combination.
+- Install all Jazor/ECMAScript packages at `1.1.0`; C# compiler and component authoring semantics remain unchanged. Review the host configuration migration before upgrading. Native unions continue to require `<LangVersion>preview</LangVersion>`.
+- Adopt pnpm-lock.yaml and direct Vite/SSR API execution; remove old Deno and TaskName settings. Windows hosts use CETCompat=false.
+- Verify the toolchain on Windows, Linux and both macOS architectures, with Windows SPA/SSR package and browser gates.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.0.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.1.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

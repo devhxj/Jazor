@@ -21,7 +21,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0" />
+  <PackageReference Include="Jazor" Version="1.1.0" />
 </ItemGroup>
 ```
 
@@ -33,7 +33,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 定义 module 的类库应隔离这项工具引用：
 
 ```xml
-<PackageReference Include="Jazor" Version="1.0.0" PrivateAssets="all" />
+<PackageReference Include="Jazor" Version="1.1.0" PrivateAssets="all" />
 ```
 
 最终 `Exe`/`WinExe` 宿主需要 Emit 时直接引用 `Jazor`，不设置 `PrivateAssets`。包内
@@ -70,11 +70,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0" />
-  <PackageReference Include="ECMAScript.Style" Version="1.0.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.1.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.1.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.1.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.1.0" />
+  <PackageReference Include="ECMAScript.Style" Version="1.1.0" />
 </ItemGroup>
 ```
 
@@ -103,7 +103,7 @@ app.UseJazorHost();
 app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
-当前 NodeApi 迁移分支由 ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SSR 与 Vite API。pnpm API 恢复项目的 `node_modules` 和 `pnpm-lock.yaml`，无需全局 Node、pnpm 或 CDN。Windows 宿主配置 `CETCompat=false`，随包 Emit apphost 按构建机 RID 选择，部署运行库按目标 RID 解析；原生 pnpm 安装期间的取消需等待引擎实际结束。全仓库脚本已切换；四平台组合与 Windows SPA/SSR 发布门禁已通过。候选按下一 MAJOR 准备，此说明不改变已发布 1.0.0 的执行路径。
+1.1.0 由 ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SSR 与 Vite API。pnpm API 恢复项目的 `node_modules` 和 `pnpm-lock.yaml`，无需全局 Node、pnpm 或 CDN。Windows 宿主配置 `CETCompat=false`，随包 Emit apphost 按构建机 RID 选择，部署运行库按目标 RID 解析；原生 pnpm 安装期间的取消需等待引擎实际结束。全仓库脚本已切换；四平台组合与 Windows SPA/SSR 发布门禁已通过。1.1.0 按维护者指定交付该底层重构，升级前需审阅宿主配置迁移。
 
 ## Razor-to-Vue
 
@@ -111,8 +111,8 @@ app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="1.0.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.1.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.1.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

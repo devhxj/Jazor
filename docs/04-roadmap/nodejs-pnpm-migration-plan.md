@@ -1,6 +1,6 @@
 # Node.js 与 pnpm 迁移方案
 
-> 状态：源码迁移与候选验收完成，下一 MAJOR 尚未发布。编写日期：2026-11-11。迁移前基线：`e2abbf90` / `v1.0.0`。当前分支已接入 NodeApi 工具链，支持声明仍以实际平台和门禁证据为准；不会覆盖已发布的 1.0.0。
+> 状态：源码迁移与候选验收完成，维护者指定以 1.1.0 发布。编写日期：2026-11-11。迁移前基线：`e2abbf90` / `v1.0.0`。当前分支已接入 NodeApi 工具链，支持声明仍以实际平台和门禁证据为准；不会覆盖已发布的 1.0.0。
 
 Jazor 将前端工具链与服务端 JavaScript 执行迁往完整的 NodeApi 技术栈：C# 内嵌 Node，通过 `@pnpm/napi` 恢复依赖，并在内嵌环境调用工具与渲染 API。不得以独立 Node、pnpm、tsc 或 shell 进程完成验证或替代该目标。首先用 WebIDL collector 验证安装、TypeScript 转译、ESM 加载与结果回传；Vite 和 SSR 在同一进程约束下另行完成生命周期设计及验收。迁移完成后，正式交付闭包不再依赖 DenoHost 或 Deno。
 
@@ -12,7 +12,7 @@ WebIDL 试点的实现、固定版本与当前限制见 [collector README](../..
 
 Windows x64 已通过共享宿主、WebIDL、Vite/HMR、Vue SSR、Pinia/VueRoute DOM、JazorAdmin、Wiki PathBase、Authoring 和本地 NuGet 的独立 SPA/SSR 发布目录验证。Release 主测试、默认 Debug 覆盖率门禁已通过。四平台 CI（Windows x64、Linux x64、macOS x64/ARM64）已验证 pnpm、原生 addon、Vite 与 CSS、源码/部署 SSR、取消和固定 WebIDL 基线；见 [NodeApi CI](https://github.com/devhxj/Jazor/actions/runs/43019983602)。最终[四平台组合 CI](https://github.com/devhxj/Jazor/actions/runs/43030143205)还通过 37 项 ASP.NET hosting/标准项目回归和 NuGet 资产闭包；Windows 的完整 Emit 消费者 48/48、干净 23 包 SPA/SSR 浏览器门禁均通过。Linux/macOS 的组合结果不等同于 Windows 浏览器发布门禁，也不外推到未验证 RID 或 musl。
 
-公开 API 对比确认删除 Vite/SSR 的 `TaskName` 及其访问器，旧稳定基线比较按预期失败。结合 CLI、lock 和 scripts 的迁移，版本通道按下一 MAJOR 准备，不覆盖既有 tag 或改写旧基线。可重复入口为 `test-dotnet.cs`、`verify-webidl-nodeapi.cs`、`verify-nodeapi-pipeline.cs`、`verify-windows-spa-release.cs` 与 `verify-windows-ssr-release.cs`。
+公开 API 对比确认删除 Vite/SSR 的 `TaskName` 及其访问器，旧稳定基线比较按预期失败。结合 CLI、lock 和 scripts 的迁移，维护者指定本次底层重构以 1.1.0 发布；配置迁移继续明确记录，API 门禁仅放行已审阅签名，不覆盖既有 tag 或改写旧基线。可重复入口为 `test-dotnet.cs`、`verify-webidl-nodeapi.cs`、`verify-nodeapi-pipeline.cs`、`verify-windows-spa-release.cs` 与 `verify-windows-ssr-release.cs`。
 
 pnpm 原生安装没有取消接口，当前契约是等待实际安装结束再传播取消，期间不启动后续阶段。SSR/Vite/测试环境在可调度 JS 线程上终止并等待退出；同步无限循环的中断仍不支持。布局采用实际验证的 hoisted linker；不宣称已采用 isolated linker，也不执行依赖 lifecycle shell scripts。
 
@@ -477,7 +477,7 @@ RC 统一入口继续为 `scripts/csharp/verify-release-candidate.cs`，它组�
 
 Jazor 已发布 `1.0.0`。[发版规则](../03-guides/release-and-versioning.md)规定正式版后破坏性变更必须进入 MAJOR。
 
-本方案默认按下一 MAJOR 的完整切换准备，若实施时当前版本仍为 `1.x`，通常对应 `2.0.0`。原因包括移除 Deno 配置/命令、替换锁文件、已有 Deno-only scripts、依赖布局和检查时机变化。仅在逐项证明公共 API、MSBuild、产物和可观察行为均兼容时，才可将新增能力判为 MINOR；不预定“1.1.0 必然足够”。
+维护者于 2026-11-12 明确指定本次底层工具链重构以 `1.1.0` 发布，C# 编译语义与组件作者面保持不变。移除 Deno 配置/命令、Vite/SSR `TaskName`、替换锁文件、既有 shell scripts 和依赖布局的迁移仍按本页执行。这是本次发布的版本规则例外，不代表宿主配置完全兼容，也不改变以后破坏性变更进入 MAJOR 的规则。
 
 API baseline 没有成员增删不能证明工具链契约完全兼容。CLI、MSBuild 属性、任务来源、启动/取消、部署资产和支持平台都属于版本审查内容。
 
@@ -495,7 +495,7 @@ API baseline 没有成员增删不能证明工具链契约完全兼容。CLI、M
 
 ### 13.3 移除旧入口
 
-MAJOR 切换提交统一删除 DenoHost runtime 引用、Deno 执行实现、旧 CLI/MSBuild 参数和只服务于它的设置，并更新指南与错误文本。参数移除应得到正常的未知参数/明确迁移诊断，不能被静默忽略。
+本次切换统一删除 DenoHost runtime 引用、Deno 执行实现、旧 CLI/MSBuild 参数和只服务于它的设置，并更新指南与错误文本。参数移除应得到正常的未知参数/明确迁移诊断，不能被静默忽略。
 
 `JsonSerializerIsReflectionEnabledByDefault` 当前含有 DenoHost 原因的设置。移除前检查其他序列化调用和发布模式，不因删掉注释就假定该属性已无其他使用需求。新的 NodeHost 不继承其无关 workaround。
 
@@ -531,9 +531,9 @@ MAJOR 切换提交统一删除 DenoHost runtime 引用、Deno 执行实现、旧
 - [x] 主线、覆盖率、API/产物兼容性、绑定、包形状、平台和性能报告完成，既有门槛没有降低。
 - [x] 依赖清单和执行资产中无 DenoHost/Deno 残留；历史文档、旧版本说明和迁移说明中的文字引用允许保留。
 - [x] 当前架构、安装/开发/发布指南、项目 README、`AGENTS.md` 与 CHANGELOG 同步，支持声明仅覆盖有证据的平台和能力。
-- [x] 版本通道按最终兼容性结果确定为下一 MAJOR；源码候选的本地门禁已通过，正式发布必须由官方 workflow 在新 ref 上重新验收。
+- [x] 维护者指定版本为 1.1.0，并保留宿主配置迁移记录；源码候选的本地门禁已通过，正式发布必须由官方 workflow 在该 ref 上重新验收。
 
-源码候选已完成上述执行路径、资产与本地质量门禁验收，正式发布仍须在新的 MAJOR ref 上由官方 workflow 重新执行门禁。本地实施报告写入 `artifacts/node-pnpm-migration/`，稳定结论在完成时收敛到架构、指南和当前状态；探索过程由 Git 和候选报告追溯，不长期堆积为新的历史快照。
+源码候选已完成上述执行路径、资产与本地质量门禁验收，正式发布仍须在 v1.1.0 ref 上由官方 workflow 重新执行门禁。本地实施报告写入 `artifacts/node-pnpm-migration/`，稳定结论在完成时收敛到架构、指南和当前状态；探索过程由 Git 和候选报告追溯，不长期堆积为新的历史快照。
 
 ## 十五、参考资料
 

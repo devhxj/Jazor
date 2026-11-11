@@ -1,6 +1,6 @@
 # Jazor.AspNetCore
 
-为 ASP.NET Core 提供生成产物托管、SPA 导航 fallback 和 Vue SSR。此程序集及其 XML 文档随 **Jazor** NuGet 包交付；Vue/Razor authoring 另需 **Jazor.Vue**。不需要安装名为 Jazor.AspNetCore 的独立包。项目配置见 [Jazor 包说明](../Jazor/README.md)。当前迁移分支使用进程内 NodeApi；四平台宿主/包组合和 Windows x64 本地 NuGet/MSBuild SPA/SSR 发布消费者已通过验收；候选按下一 MAJOR 准备，已发布版本按其对应说明使用。
+为 ASP.NET Core 提供生成产物托管、SPA 导航 fallback 和 Vue SSR。此程序集及其 XML 文档随 **Jazor** NuGet 包交付；Vue/Razor authoring 另需 **Jazor.Vue**。不需要安装名为 Jazor.AspNetCore 的独立包。项目配置见 [Jazor 包说明](../Jazor/README.md)。1.1.0 使用进程内 NodeApi；四平台宿主/包组合和 Windows x64 本地 NuGet/MSBuild SPA/SSR 发布消费者已通过验收；1.1.0 按维护者指定交付该底层重构，旧版本按其对应说明使用。
 
 ## SPA 接入
 

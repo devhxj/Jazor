@@ -7,6 +7,7 @@ var baselinePath = GetOption("--baseline");
 var allowMissingBaseline = args.Contains("--allow-missing-baseline", StringComparer.Ordinal);
 var current = ReadSnapshot(currentPath);
 var outputPath = GetOption("--output");
+var approvedRemovalsPath = GetOption("--approved-removals");
 
 if (baselinePath is null || !File.Exists(baselinePath))
 {
@@ -21,6 +22,10 @@ if (baselinePath is null || !File.Exists(baselinePath))
 var baseline = ReadSnapshot(baselinePath);
 var removed = baseline.Entries.Except(current.Entries, StringComparer.Ordinal).OrderBy(static line => line, StringComparer.Ordinal).ToArray();
 var added = current.Entries.Except(baseline.Entries, StringComparer.Ordinal).OrderBy(static line => line, StringComparer.Ordinal).ToArray();
+// Keep the frozen baseline and report every deletion. A reviewed release may
+// name exact removed signatures; unrelated removals must still fail the gate.
+var approvedRemovals = approvedRemovalsPath is null ? [] : ReadSnapshot(approvedRemovalsPath).Entries;
+var unapprovedRemovals = removed.Except(approvedRemovals, StringComparer.Ordinal).ToArray();
 
 var report = new StringBuilder();
 report.AppendLine("# Public API compatibility report");
@@ -36,14 +41,20 @@ report.AppendLine($"- Current top-level entries: {current.TopLevelCount}");
 report.AppendLine($"- Current member entries: {current.MemberCount}");
 report.AppendLine($"- Added entries: {added.Length}");
 report.AppendLine($"- Removed entries: {removed.Length}");
+if (approvedRemovalsPath is not null)
+{
+    report.AppendLine($"- Reviewed removal record: `{approvedRemovalsPath}`");
+    report.AppendLine($"- Approved removed entries: {removed.Length - unapprovedRemovals.Length}");
+    report.AppendLine($"- Unapproved removed entries: {unapprovedRemovals.Length}");
+}
 
 AppendSection(report, "Added", added);
 AppendSection(report, "Removed", removed);
 
 WriteReport(report.ToString(), outputPath);
 
-if (removed.Length > 0)
-    throw new InvalidOperationException($"Public API compatibility check failed: {removed.Length} entries were removed or changed.");
+if (unapprovedRemovals.Length > 0)
+    throw new InvalidOperationException($"Public API compatibility check failed: {unapprovedRemovals.Length} unapproved entries were removed or changed.");
 
 static Snapshot ReadSnapshot(string path)
 {

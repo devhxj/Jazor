@@ -1,6 +1,6 @@
 # Jazor.NodeHost
 
-共享的进程内 JavaScript 宿主实现。WebIDL、编译器、CLR、Razor SG、Style、Devtools、Emit、Vite 和 Vue SSR 使用同一宿主。四平台组合 CI 与 Windows x64 示例浏览器、本地 NuGet SPA/SSR 发布消费者已通过验收，见[迁移方案](../../docs/04-roadmap/nodejs-pnpm-migration-plan.md)。候选按下一 MAJOR 准备，尚未正式发布。
+共享的进程内 JavaScript 宿主实现。WebIDL、编译器、CLR、Razor SG、Style、Devtools、Emit、Vite 和 Vue SSR 使用同一宿主。四平台组合 CI 与 Windows x64 示例浏览器、本地 NuGet SPA/SSR 发布消费者已通过验收，见[迁移方案](../../docs/04-roadmap/nodejs-pnpm-migration-plan.md)。1.1.0 按维护者指定交付该底层重构，宿主配置迁移见 CHANGELOG。
 
 `NodeEnvironment` 管理单个 JS 线程与环境，全进程共享一次 Node platform 初始化。`PnpmBootstrap` 引导固定原生安装引擎；`NodeToolchain` 在内嵌环境调用安装和 Vite API。内部接口通过既有 Jazor 包交付，暂不建立新的公开宿主 API。
 

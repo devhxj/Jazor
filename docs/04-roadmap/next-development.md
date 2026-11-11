@@ -15,7 +15,7 @@
 
 ## P0：编写体验与交付闭环
 
-NodeApi 工具链已在当前源码候选接入，完整验收范围见[迁移方案](./nodejs-pnpm-migration-plan.md)。旧稳定版本继续按其 tag 文档使用；新候选经进程内 pnpm、Vite 与 SSR 执行，不保留旧运行时 fallback。四平台组合、Windows SPA/SSR、48 项发布消费者、主线与默认覆盖率门禁已通过；下一 MAJOR 的正式发布继续由 tag workflow 负责。
+NodeApi 工具链已在 1.1.0 接入，完整验收范围见[迁移方案](./nodejs-pnpm-migration-plan.md)。旧稳定版本继续按其 tag 文档使用；1.1.0 经进程内 pnpm、Vite 与 SSR 执行，不保留旧运行时 fallback。四平台组合、Windows SPA/SSR、48 项发布消费者、主线与默认覆盖率门禁已通过；1.1.0 按维护者指定发布，正式上传由 tag workflow 负责。
 
 具体执行顺序、交付物、测量协议和 Definition of Done 见 [RazorVue P0 执行计划](./p0-plan.md)。
 
