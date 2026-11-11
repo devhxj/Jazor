@@ -1,4 +1,5 @@
 using System.Text.Encodings.Web;
+using System.Runtime.InteropServices;
 using Microsoft.JavaScript.NodeApi;
 using Microsoft.JavaScript.NodeApi.Interop;
 using Microsoft.JavaScript.NodeApi.Runtime;
@@ -10,10 +11,45 @@ internal sealed class NodeEnvironment : IDisposable
 {
     private static readonly Lazy<NodeEmbeddingPlatform> Platform = new(() =>
     {
+        if (OperatingSystem.IsLinux()) ExposeLinuxNodeApiSymbols();
         var platform = new NodeEmbeddingPlatform(null);
         AppDomain.CurrentDomain.ProcessExit += (_, _) => platform.Dispose();
         return platform;
     });
+
+    private static void ExposeLinuxNodeApiSymbols()
+    {
+        // .NET loads libnode with RTLD_LOCAL. Linux .node addons resolve napi_*
+        // from the global loader scope, so pnpm otherwise fails with an undefined
+        // napi_create_promise symbol. Promote the exact library selected by .NET;
+        // RTLD_NOLOAD keeps this the same instance for the process-wide platform.
+        var library = NativeLibrary.Load("libnode", typeof(NodeEmbeddingPlatform).Assembly, null);
+        if (DlAddr(NativeLibrary.GetExport(library, "napi_create_promise"), out var info) == 0)
+            throw new DllNotFoundException("Cannot locate the loaded libnode library for Node-API addons.");
+        const int rtldLazy = 1, rtldNoLoad = 4, rtldGlobal = 0x100;
+        if (DlOpen(Marshal.PtrToStringUTF8(info.FileName)!, rtldLazy | rtldNoLoad | rtldGlobal) == 0)
+            throw new DllNotFoundException("Cannot expose libnode symbols: " + Marshal.PtrToStringUTF8(DlError()));
+        // NodeApi owns a single platform for the process lifetime. Keep its
+        // global loader reference alive while native addons can retain pointers.
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DlInfo
+    {
+        public nint FileName;
+        public nint FileBase;
+        public nint SymbolName;
+        public nint SymbolAddress;
+    }
+
+    [DllImport("libdl.so.2", EntryPoint = "dladdr")]
+    private static extern int DlAddr(nint address, out DlInfo info);
+
+    [DllImport("libdl.so.2", EntryPoint = "dlopen")]
+    private static extern nint DlOpen([MarshalAs(UnmanagedType.LPUTF8Str)] string path, int flags);
+
+    [DllImport("libdl.so.2", EntryPoint = "dlerror")]
+    private static extern nint DlError();
 
     private readonly Thread _thread;
     private readonly TaskCompletionSource _ended = new(TaskCreationOptions.RunContinuationsAsynchronously);

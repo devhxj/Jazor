@@ -1,6 +1,6 @@
 # Jazor.NodeHost
 
-共享的进程内 JavaScript 宿主实现。WebIDL、编译器、CLR、Razor SG、Style 和 Devtools 运行时测试使用同一宿主；Emit、Vite 和 SSR 的全局迁移及正式消费者验收仍在进行。
+共享的进程内 JavaScript 宿主实现。WebIDL、编译器、CLR、Razor SG、Style、Devtools、Emit、Vite 和 Vue SSR 使用同一宿主。Windows x64 已完成示例浏览器和本地 NuGet SPA/SSR 发布消费者验证；跨平台及完整发布门禁仍在进行。
 
 `NodeEnvironment` 管理单个 JS 线程与环境，全进程共享一次 Node platform 初始化。`PnpmBootstrap` 引导固定原生安装引擎；`NodeToolchain` 在内嵌环境调用安装和 Vite API。内部接口通过既有 Jazor 包交付，暂不建立新的公开宿主 API。
 
@@ -14,6 +14,8 @@
 
 Rolldown 的 napi-rs loader 将 Windows `shared_library` 误判为 GNU 构建。当前桥接使用其显式 native library path，在该 environment 的私有 `process.env` 对象上选择已安装的 MSVC 绑定，加载完成立即恢复；不会修改 OS 环境或启动 CLI。此限制具有真实失败场景，不能机械套用到其他库。
 
+Linux 的 .NET native loader 默认以局部符号作用域加载 libnode，导致 pnpm addon 无法解析 `napi_create_promise`。宿主在平台初始化前把同一已加载库提升为 `RTLD_GLOBAL`，不加载另一个 Node 实例。此路径针对当前 glibc 发行包；musl 不据此进入支持声明。
+
 验证命令：
 
 ```text
@@ -22,4 +24,4 @@ dotnet run --file scripts/csharp/verify-vite-nodeapi.cs
 dotnet run --file scripts/csharp/verify-nodeapi-pipeline.cs
 ```
 
-Vite 探针验证 pnpm 恢复、原生绑定加载、开发服务启动/HTTP 响应/关闭和生产构建，并断言 JS PID 与 C# PID 一致。管线探针进一步验证真实物化入口、源码 SSR、浏览器/SSR Vite 构建及只复制 SSR runtime 的部署。EmitTest 覆盖 ASP.NET Core 代理、PathBase、WebSocket HMR 与浏览器 hydration；NuGet/MSBuild、全仓库脚本与跨平台交付仍待完成。
+Vite 探针验证 pnpm 恢复、原生绑定加载、开发服务启动/HTTP 响应/关闭和生产构建，并断言 JS PID 与 C# PID 一致。管线探针验证源码 SSR、浏览器/SSR Vite 构建及只复制 SSR runtime 的部署。WebIDL 默认比较固定 Deno 对照指纹和生成文件；EmitTest 覆盖代理、PathBase、WebSocket HMR 与 hydration。完整 Windows 发布消费者使用 `verify-windows-spa-release.cs` / `verify-windows-ssr-release.cs`，跨平台组合使用 `nodeapi-verify.yml`。
