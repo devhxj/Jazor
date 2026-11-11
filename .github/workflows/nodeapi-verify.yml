@@ -37,5 +37,9 @@ jobs:
         run: dotnet run --file scripts/csharp/verify-nodeapi-pipeline.cs
       - name: Async failure propagation and environment cancellation
         run: dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQualifiedName~NodeModuleRunnerTests --nologo -v minimal
+      - name: ASP.NET Core Vite proxy, SSR pool and tool cancellation
+        run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "(FullyQualifiedName~JazorViteProxyTests|FullyQualifiedName~JazorSsrHostingTests|FullyQualifiedName~EmitProgressTests|FullyQualifiedName~StandardPackageProjectTests)&TestCategory!=Browser" --nologo -v minimal
+      - name: NuGet runtime and build-host asset closure
+        run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-build --filter FullyQualifiedName~CreateLocalPackage_CarriesNodeApiRuntimeAndFrontendHost --nologo -v minimal
       - name: WebIDL collector and generated output parity
         run: dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs

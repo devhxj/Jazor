@@ -69,12 +69,16 @@ try
     var options = CoverageGateOptions.Parse(args);
     var repoRoot = RequireRepoRoot();
     ConfigureRepositoryEnvironment(repoRoot);
-    var resultBase = Path.GetFullPath(
-        options.ResultsDirectory ?? Path.Combine(repoRoot, "test", "coverage", "vue-bindings"));
+    var resultBase = Path.GetFullPath(options.ResultsDirectory is null
+        ? Path.Combine(repoRoot, "test", "coverage", "vue-bindings")
+        : Path.Combine(repoRoot, options.ResultsDirectory));
     var resultRoot = Path.Combine(resultBase, Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(resultRoot);
 
     var failures = new List<string>();
+    // Build/test all lanes before reflection loads any outputs. Collectible ALC
+    // unload is deferred by the GC; auditing between builds locks shared peers
+    // such as Pinia.dll on Windows while the next lane tries to rebuild them.
     foreach (var lane in testLanes)
     {
         var laneResultDirectory = Path.Combine(resultRoot, lane.Id);
@@ -95,6 +99,9 @@ try
         }
 
         Console.WriteLine($"{lane.Id} tests: {tests.Passed}/{tests.Total} passed (minimum {lane.MinimumPassedTests})");
+    }
+    foreach (var lane in testLanes)
+    {
         foreach (var target in lane.Targets)
         {
             var assemblyPath = Path.Combine(

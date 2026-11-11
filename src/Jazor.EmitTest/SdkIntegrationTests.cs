@@ -8597,6 +8597,9 @@ public sealed class SdkIntegrationTests
 
         return Directory
             .EnumerateFiles(outputRoot, "*", SearchOption.AllDirectories)
+            // Compare emitted source, maps, config and lock, not pnpm's mutable
+            // installation metadata or the environment's materialized tool cache.
+            .Where(filePath => !IsNodeToolCachePath(outputRoot, filePath))
             .Select(filePath =>
             {
                 var relativePath = Path.GetRelativePath(outputRoot, filePath).Replace('\\', '/');
@@ -8611,12 +8614,20 @@ public sealed class SdkIntegrationTests
     {
         foreach (var filePath in Directory.EnumerateFiles(outputRoot, "*", SearchOption.AllDirectories))
         {
+            if (IsNodeToolCachePath(outputRoot, filePath)) continue;
             var text = File.ReadAllText(filePath);
             var relativePath = Path.GetRelativePath(outputRoot, filePath).Replace('\\', '/');
             Assert.IsFalse(
                 text.Contains(unexpectedText, StringComparison.OrdinalIgnoreCase),
                 $"Artifact '{relativePath}' must not persist the external consumer's absolute project path.");
         }
+    }
+
+    private static bool IsNodeToolCachePath(string root, string path)
+    {
+        var relative = Path.GetRelativePath(root, path).Replace('\\', '/');
+        return relative.StartsWith("node_modules/", StringComparison.Ordinal) ||
+            relative.StartsWith(".jazor/", StringComparison.Ordinal);
     }
 
     private static bool ShouldSkip(string relativePath)

@@ -9,6 +9,34 @@ namespace Jazor.EmitTest;
 public sealed class StandardPackageProjectTests
 {
     [TestMethod]
+    public async Task DependencyCheck_DoesNotOpenTheConfiguredWebSocketPort()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.CheckWithoutWebSocket", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        using var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(root, "package.json"),
+                """{"private":true,"type":"module","devDependencies":{"vite":"8.3.0"}}""");
+            var entry = Path.Combine(root, "entry.js");
+            await File.WriteAllTextAsync(entry, "export const value = 1;");
+            await File.WriteAllTextAsync(Path.Combine(root, "vite.config.js"),
+                "export default { server: { hmr: { port: " + port + " } } };");
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await NodeToolchain.RestoreAsync(root, Path.Combine(RepositoryTemp.Root, "nodeapi-store"), timeout.Token);
+            using var progress = new StringWriter();
+            await NodeToolchain.CheckAsync(root, [entry], timeout.Token, progress);
+            Assert.IsFalse(progress.ToString().Contains("WebSocket server error", StringComparison.Ordinal), progress.ToString());
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ProjectBuild_UsesAuthoredViteConfigAndOutputLayout_AndPropagatesFailure()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.ProjectBuildTest", Guid.NewGuid().ToString("N"));

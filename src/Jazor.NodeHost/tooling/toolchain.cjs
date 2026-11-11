@@ -172,7 +172,7 @@ exports.check = async (requestJson) => {
     const server = await vite.createServer({
         root: projectDirectory,
         appType: 'custom',
-        server: { middlewareMode: true, watch: null, hmr: false },
+        server: { middlewareMode: true, watch: null, hmr: false, ws: false },
         optimizeDeps: { noDiscovery: true, include: [] }
     });
     try {
