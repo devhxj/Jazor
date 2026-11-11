@@ -294,9 +294,14 @@ async function main() {
       httpContentType: response.headers.get("content-type") || "",
       parseError,
       mapFile: sourceMap?.file || "",
+      sources,
       sourceCount: sources.length,
       sourcesContentCount: sourcesContent.length,
-      missingSources: check.expectedSources.filter(source => !sources.includes(source)),
+      // The compiler uses the compilation's common source directory. Isolated
+      // obj roots can move that directory above Wiki; retain the authored path
+      // tail and source content checks without fixing a machine/build prefix.
+      missingSources: check.expectedSources.filter(expected => !sources.some(source =>
+        source === expected || source.endsWith("/" + expected))),
       missingSourceContentMarkers: check.expectedSourceContentMarkers.filter(
         marker => !sourcesContent.some(sourceText => typeof sourceText === "string" && sourceText.includes(marker)))
     };
@@ -356,7 +361,7 @@ async function main() {
         sourceMapPath: externalPath("/jazor/main.mjs.map"),
         moduleFile: "main.mjs",
         expectedSources: [
-          "samples/Wiki/AppModule.cs"
+          "AppModule.cs"
         ],
         expectedSourceContentMarkers: [
           "[ECMAScriptModule(\"main.mjs\")]",
@@ -370,10 +375,10 @@ async function main() {
         sourceMapPath: externalPath("/jazor/components/wiki-home.mjs.map"),
         moduleFile: "components/wiki-home.mjs",
         expectedSources: [
-          "samples/Wiki/WikiHomeModule.cs",
-          "samples/Wiki/WikiHomeModule.DocsPage.cs",
-          "samples/Wiki/WikiHomeModule.RouteContract.cs",
-          "samples/Wiki/obj/wiki/WikiDocsContent.g.cs"
+          "WikiHomeModule.cs",
+          "WikiHomeModule.DocsPage.cs",
+          "WikiHomeModule.RouteContract.cs",
+          "obj/wiki/WikiDocsContent.g.cs"
         ],
         expectedSourceContentMarkers: [
           "public static partial class WikiHomeModule",
@@ -414,7 +419,7 @@ async function main() {
       failures.push(`Source map ${check.sourceMapPath} declared unexpected file '${inspectedSourceMap.mapFile}'.`);
     }
     if (inspectedSourceMap.missingSources.length > 0) {
-      failures.push(`Source map ${check.sourceMapPath} did not retain the expected original C# sources: ${inspectedSourceMap.missingSources.join(", ")}`);
+      failures.push(`Source map ${check.sourceMapPath} did not retain the expected original C# sources: ${inspectedSourceMap.missingSources.join(", ")}; actual: ${inspectedSourceMap.sources.join(", ")}`);
     }
     if (inspectedSourceMap.sourcesContentCount < inspectedSourceMap.sourceCount) {
       failures.push(`Source map ${check.sourceMapPath} did not carry sourcesContent for every original source.`);
