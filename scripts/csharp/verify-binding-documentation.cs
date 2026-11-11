@@ -201,7 +201,7 @@ static string ResolveInsideRepository(string repoRoot, string path)
 static async Task<(int Code, string Output)> Run(string executable, params string[] arguments)
 {
     var start = new ProcessStartInfo(executable) { RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
-    foreach (var name in new[] { "TEMP", "TMP", "DOTNET_CLI_HOME", "NUGET_PACKAGES", "NUGET_HTTP_CACHE_PATH", "DENO_DIR", "NPM_CONFIG_CACHE", "npm_config_cache" })
+    foreach (var name in new[] { "TEMP", "TMP", "DOTNET_CLI_HOME", "NUGET_PACKAGES", "NUGET_HTTP_CACHE_PATH", "NPM_CONFIG_CACHE", "npm_config_cache" })
     {
         var value = Environment.GetEnvironmentVariable(name);
         if (!string.IsNullOrWhiteSpace(value))
@@ -223,7 +223,6 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
         Path.Combine(repoRoot, ".dotnet"),
         Path.Combine(repoRoot, ".dotnet", ".nuget", "packages"),
         Path.Combine(repoRoot, ".tmp", "nuget-http-cache"),
-        Path.Combine(repoRoot, ".tmp", "deno-cache"),
         Path.Combine(repoRoot, ".tmp", "npm-cache")
     })
         Directory.CreateDirectory(directory);
@@ -233,7 +232,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", Path.Combine(repoRoot, ".tmp", "nuget-http-cache"));
-    Environment.SetEnvironmentVariable("DENO_DIR", Path.Combine(repoRoot, ".tmp", "deno-cache"));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", Path.Combine(repoRoot, ".tmp", "npm-cache"));
     Environment.SetEnvironmentVariable("npm_config_cache", Path.Combine(repoRoot, ".tmp", "npm-cache"));
 }

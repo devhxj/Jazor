@@ -115,7 +115,7 @@ internal sealed class EmitPipeline
                     packageImports,
                     applicationManifest.Modules.Select(static module => module.RelativePath));
             }
-            // Standard JavaScript tooling and DenoHost consume this same package.json/node_modules from jazor/.
+            // Standard JavaScript tooling and NodeApi consume this same package.json/node_modules from jazor/.
             LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);
             FinishStage("completed");
             StartStage("restore/check packages");

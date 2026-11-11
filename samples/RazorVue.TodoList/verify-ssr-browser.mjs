@@ -1,16 +1,17 @@
 // Drives a real browser against a published SSR TodoList host.
-// Usage: node verify-ssr-browser.mjs <baseUrl> <cdpPort> <pathBase>
+// Invoked by scripts/csharp/verify-windows-ssr-release.cs inside NodeApi.
 //
 // The page under test is produced by Jazor SSR: the server HTML must already contain the
 // rendered task board, and hydration must restore a live Vue app on top of that markup.
 // Hydration is proven by interaction recovery, not by a marker: the checkbox bind and the
 // add-task handler only respond after the browser module graph mounted the app.
-const baseUrl = process.argv[2];
-const cdpPort = Number(process.argv[3]);
-const configuredPathBase = process.argv[4] || "";
+import WebSocket from "ws";
+
+const [baseUrl, cdpPortText, configuredPathBase = ""] = globalThis.__jazorArguments;
+const cdpPort = Number(cdpPortText);
 
 if (!baseUrl || !Number.isFinite(cdpPort)) {
-  throw new Error("Usage: node verify-ssr-browser.mjs <baseUrl> <cdpPort> [pathBase]");
+  throw new Error("SSR NodeApi browser driver requires baseUrl, cdpPort and optional pathBase.");
 }
 
 const pathBase = configuredPathBase && configuredPathBase !== "/"
@@ -65,6 +66,7 @@ async function connectToPageTarget() {
   }
 
   const ws = new WebSocket(pageTarget.webSocketDebuggerUrl);
+  globalThis.__jazorAfterAll(() => ws.close());
   await new Promise((resolve, reject) => {
     ws.addEventListener("open", () => resolve(), { once: true });
     ws.addEventListener("error", event => reject(event.error || new Error("WebSocket open failed.")), { once: true });
@@ -260,7 +262,4 @@ async function main() {
   ws.close();
 }
 
-main().catch(error => {
-  console.error(error?.stack || error);
-  process.exit(1);
-});
+await main();

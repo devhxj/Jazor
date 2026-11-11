@@ -104,7 +104,6 @@ static async Task<CandidateStage> RunStageAsync(IReadOnlyList<string> arguments,
     startInfo.Environment["TMP"] = RepositoryEnvironment.TempDirectory(workdir);
     startInfo.Environment["NUGET_PACKAGES"] = RepositoryEnvironment.NuGetPackages(workdir);
     startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = RepositoryEnvironment.NuGetHttpCache(workdir);
-    startInfo.Environment["DENO_DIR"] = RepositoryEnvironment.DenoCache(workdir);
     startInfo.Environment["NPM_CONFIG_CACHE"] = RepositoryEnvironment.NpmCache(workdir);
     startInfo.Environment["npm_config_cache"] = RepositoryEnvironment.NpmCache(workdir);
     startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
@@ -207,7 +206,6 @@ static class RepositoryEnvironment
             TempDirectory(repoRoot),
             NuGetPackages(repoRoot),
             NuGetHttpCache(repoRoot),
-            DenoCache(repoRoot),
             NpmCache(repoRoot)
         })
         {
@@ -219,14 +217,13 @@ static class RepositoryEnvironment
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-        Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     }
 
     public static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
     public static string NuGetPackages(string repoRoot)
         => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
     public static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    public static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
     public static string NpmCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "npm-cache");
 }
 

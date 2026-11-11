@@ -394,7 +394,7 @@ internal sealed class LibraryMaterializer
                 return;
             if (!importsBySpecifier.TryGetValue(specifier, out var candidates) || candidates.Count == 0)
             {
-                // An npm/JSR dependency can be intentionally left to Deno's package
+                // An npm/JSR dependency can be intentionally left to NodeApi's package
                 // resolver. The owning manifest must still provide its package identity so the
                 // generated project remains exact and auditable.
                 var reference = ownerSelection?.Manifest.GetPackageReference(specifier);
@@ -468,7 +468,7 @@ internal sealed class LibraryMaterializer
                 // created for an external package.
                 // Keep the C# logical import as the graph key, while allowing metadata to map it
                 // to the exact upstream package export. This preserves authored binding paths and
-                // gives Deno/Vite the real package entry (`pkg/es/button/index.mjs`, etc.).
+                // gives NodeApi/Vite the real package entry (`pkg/es/button/index.mjs`, etc.).
                 plan.AddImport(
                     selection.Specifier,
                     selectedPath,
@@ -996,11 +996,11 @@ internal sealed class LibraryMaterializer
         public void Commit()
         {
             // DestinationRoot 是项目根，必须存在：external npm/JSR 绑定不物化任何文件，
-            // 但调用方仍会在该根上写 package.json、deno.lock 等（见 EmitPipeline）。
+            // 但调用方仍会在该根上写 package.json、pnpm-lock.yaml 等（见 EmitPipeline）。
             Directory.CreateDirectory(DestinationRoot);
 
             // 退役载体：packages/ 曾是 binding-owned 包根，vendor/ecmascript/embedded 是更早的布局。
-            // 自有源码现在直接写在项目源码树里，残留目录必须移除，否则会被 Deno/Vite
+            // 自有源码现在直接写在项目源码树里，残留目录必须移除，否则会被 NodeApi/Vite
             // 当作包图的一部分。
             foreach (var retired in new[] { "packages", "vendor", "ecmascript", "embedded" })
                 DeleteDirectory(Path.Combine(DestinationRoot, retired));
@@ -1074,7 +1074,7 @@ internal sealed record LibraryPackageReference(
     string? Integrity = null,
     string? AuthoredName = null)
 {
-    /// <summary>Canonical package directory used by Deno's npm compatibility resolver.</summary>
+    /// <summary>Canonical package directory used by NodeApi's npm compatibility resolver.</summary>
     public string CanonicalName => LibraryPackageIdentity.GetCanonicalName(this);
 }
 
@@ -1267,7 +1267,7 @@ internal sealed record LibraryManifest(
     internal void ValidateAllFiles()
     {
         // External npm/JSR bindings describe upstream package identities and entry specifiers;
-        // their package files are supplied by Deno. Only an explicit embedded-mjs package
+        // their package files are supplied by NodeApi. Only an explicit embedded-mjs package
         // validates local files.
         if (!IsEmbedded)
             return;

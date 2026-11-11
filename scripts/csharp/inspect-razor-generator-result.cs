@@ -300,8 +300,7 @@ internal static class RepositoryEnvironment
         var dotnet = Path.Combine(repoRoot, ".dotnet");
         var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-        var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
-        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno })
+        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp })
             Directory.CreateDirectory(directory);
 
         Environment.SetEnvironmentVariable("TEMP", temp);
@@ -309,6 +308,6 @@ internal static class RepositoryEnvironment
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
-        Environment.SetEnvironmentVariable("DENO_DIR", deno);
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     }
 }

@@ -341,11 +341,11 @@ internal static class ReleaseVerifier
         RequireFile(Path.Combine(jazorRoot, "dist", "bundle.js"), "release browser bundle");
 
         // Folder Publish carries the executable browser closure only. The source entry,
-        // package metadata, Deno lock and node_modules remain build-time inputs under the
+        // package metadata, pnpm lock and node_modules remain build-time inputs under the
         // generated project and must not be required or copied to the deployment root.
         if (File.Exists(Path.Combine(jazorRoot, "entry.js")) ||
             File.Exists(Path.Combine(jazorRoot, "package.json")) ||
-            File.Exists(Path.Combine(jazorRoot, "deno.lock")) ||
+            File.Exists(Path.Combine(jazorRoot, "pnpm-lock.yaml")) ||
             Directory.Exists(Path.Combine(jazorRoot, "node_modules")))
         {
             throw new InvalidOperationException("Release publish retained build-time standard-project inputs under jazor/.");
@@ -574,7 +574,6 @@ internal static class ScriptHelpers
         startInfo.Environment["TMP"] = TempDirectory(workdir);
         startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(workdir);
         startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(workdir);
-        startInfo.Environment["DENO_DIR"] = DenoCache(workdir);
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
         startInfo.Environment["UseSharedCompilation"] = "false";
@@ -595,7 +594,6 @@ internal static class ScriptHelpers
             TempDirectory(repoRoot),
             NuGetPackages(repoRoot),
             NuGetHttpCache(repoRoot),
-            DenoCache(repoRoot)
         })
         {
             Directory.CreateDirectory(directory);
@@ -606,14 +604,13 @@ internal static class ScriptHelpers
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-        Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     }
 
     public static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
     public static string NuGetPackages(string repoRoot)
         => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
     public static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    public static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
     private static bool IsExcluded(string relativePath)
     {

@@ -28,6 +28,8 @@
 
 > Jazor 1.0.0 is the current stable release, built on .NET 11 GA. Native union authoring still requires C# preview language mode.
 
+> This source branch is migrating tooling and SSR to in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Windows x64 SPA/SSR package consumers and browser flows have passed; full migration and platform gates remain in progress. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
+
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
@@ -40,7 +42,7 @@ AI assistance has primarily helped advance documentation, test coverage, externa
 
 ## Acknowledgements
 
-Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://github.com/adams85/acornima), [Netpack](https://github.com/FlorianRappl/netpack), [DenoHost](https://github.com/thomas3577/DenoHost), [WebRef](https://github.com/w3c/webref), and earlier C#-to-JavaScript projects including [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit).
+Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://github.com/adams85/acornima), [node-api-dotnet](https://github.com/microsoft/node-api-dotnet), [pnpm](https://github.com/pnpm/pnpm), [Vite](https://github.com/vitejs/vite), and [WebRef](https://github.com/w3c/webref). Earlier work also benefited from Netpack, DenoHost, and C#-to-JavaScript projects including [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit).
 
 ## Core Model
 
@@ -94,7 +96,7 @@ pure Jazor form, not a third carrier.
 
 | Library form | Carrier | Direct reference rule |
 | --- | --- | --- |
-| JS resource library (`ECMAScript`, Vue, Vuetify, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `deno.lock`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
+| JS resource library (`ECMAScript`, Vue, Vuetify, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `pnpm-lock.yaml`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
 | Pure Jazor library (`ECMAScript.Style`, `Jazor.Admin`, or other developer-authored C# and RazorVue) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | A pure Jazor authoring project directly references `Jazor`; a RazorVue authoring project directly references both `Jazor` and `Jazor.Vue`. |
 
 The final executable or web host directly references `Jazor` when it runs Emit. It collects the

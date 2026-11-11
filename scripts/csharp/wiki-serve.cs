@@ -147,7 +147,7 @@ else
 {
     Console.WriteLine("Serving jazor.wiki from: " + webRoot);
     Console.WriteLine("Serving emitted Jazor modules from: " + jazorRoot);
-    Console.WriteLine("Start `deno task dev` in the jazor directory for Vite HMR; ASP.NET Core proxies /jazor to that server.");
+    Console.WriteLine("ASP.NET Core starts the in-process NodeApi Vite server and proxies /jazor with HMR.");
 }
 
 Console.WriteLine("Open routes:");
@@ -170,13 +170,18 @@ if (options.DryRun)
 }
 
 var hostArguments = options.Publish
-    ? new[] { "Wiki.dll", "--urls", rootUrl }
-    : new[] { "run", "--project", hostProject, "--no-launch-profile", "-c", configuration, "--urls", rootUrl }
+    ? new[] { "--urls", rootUrl }
+    : new[] { "run", "--project", hostProject, "--no-launch-profile", "-c", configuration }
         .Concat(options.Build || options.BuildLocal ? new[] { "--no-build", "--no-restore" } : Array.Empty<string>())
+        .Concat(string.IsNullOrWhiteSpace(options.BaseOutputPath) ? Array.Empty<string>()
+            : new[] { "-p:JazorIsolatedBaseOutputRoot=" + WikiScriptHelpers.ResolveBuildRoot(repoRoot, options.BaseOutputPath) })
+        .Concat(string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath) ? Array.Empty<string>()
+            : new[] { "-p:JazorIsolatedBaseIntermediateOutputRoot=" + WikiScriptHelpers.ResolveBuildRoot(repoRoot, options.BaseIntermediateOutputPath) })
+        .Concat(new[] { "--", "--urls", rootUrl })
         .ToArray();
 
 using var hostProcess = WikiScriptHelpers.StartProcess(
-    fileName: "dotnet",
+    fileName: options.Publish ? Path.Combine(hostRoot, OperatingSystem.IsWindows() ? "Wiki.exe" : "Wiki") : "dotnet",
     arguments: hostArguments,
     workdir: options.Publish ? hostRoot : sampleRoot,
     environment:
@@ -314,10 +319,9 @@ internal static class WikiScriptHelpers
         var tempDirectory = Path.Combine(repoRoot, ".tmp", "wiki-script-temp");
         var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-        var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
         var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
 
-        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
         {
             Directory.CreateDirectory(directory);
         }
@@ -327,7 +331,7 @@ internal static class WikiScriptHelpers
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-        Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
         Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
         Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
         Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");

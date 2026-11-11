@@ -2,11 +2,8 @@
   "name": "jazor-monaco-runtime-build",
   "private": true,
   "type": "module",
-  "description": "Isolated build inputs for the ECMAScript.Monaco resource closure. Produces the editor bundle, its stylesheet, and the four language workers as self-contained ESM artifacts that a browser can load without a bundler.",
+  "description": "Pinned upstream inputs for ECMAScript.Monaco metadata and export validation through the in-process pnpm API.",
   "dependencies": {
     "monaco-editor": "0.56.0"
-  },
-  "devDependencies": {
-    "esbuild": "0.28.2"
   }
 }

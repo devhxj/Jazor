@@ -162,10 +162,9 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     var tempDirectory = Path.Combine(repoRoot, ".tmp", "wiki-script-temp");
     var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
     var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
     var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
 
-    foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+    foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
     {
         Directory.CreateDirectory(directory);
     }
@@ -175,7 +174,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-    Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
     Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
@@ -464,7 +463,7 @@ static async Task RemoveDirectoryWithRetryAsync(string path, int attempts = 8, i
         }
         catch when (attempt < attempts - 1)
         {
-            // Windows can keep DenoHost/runtime assemblies locked briefly after the
+            // Windows can keep host/runtime assemblies locked briefly after the
             // host process tree exits. Retry only the teardown boundary, not export work.
             await Task.Delay(delayMilliseconds);
         }

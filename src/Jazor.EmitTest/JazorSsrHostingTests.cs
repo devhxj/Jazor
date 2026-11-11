@@ -103,10 +103,10 @@ public sealed partial class JazorSsrHostingTests
 
         var result = await renderer.RenderAsync(new JazorSsrRequest(
             "components/counter.js",
-            new { Title = "DenoHost" }));
+            new { Title = "NodeApi" }));
 
         Assert.AreEqual("components/counter.js", result.ModulePath);
-        Assert.AreEqual("<main id=\"ssr-output\">DenoHost|prefetched</main>", result.Html);
+        Assert.AreEqual("<main id=\"ssr-output\">NodeApi|prefetched</main>", result.Html);
     }
 
     [TestMethod]
@@ -461,7 +461,7 @@ public sealed partial class JazorSsrHostingTests
                 }
                 catch (InvalidOperationException) when (!timeout.IsCancellationRequested)
                 {
-                    // A request overlapping Deno's restart may fail; it must not hang or be
+                    // A request overlapping NodeApi's restart may fail; it must not hang or be
                     // silently replayed by the host. The next request uses the new listener.
                 }
                 await Task.Delay(50, timeout.Token);
@@ -784,7 +784,7 @@ public sealed partial class JazorSsrHostingTests
                 """);
 
             // SSR fixtures use the same standard package project as MSBuild Emit. Restore once
-            // at the artifact root so DenoHost resolves Vue through node_modules; the SSR host
+            // at the artifact root so NodeApi resolves Vue through node_modules; the SSR host
             // remains a consumer of this already-prepared graph.
             ProjectEntryWriter.Write(
                 artifactRoot,

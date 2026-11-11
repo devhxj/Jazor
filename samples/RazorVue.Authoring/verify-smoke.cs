@@ -102,7 +102,7 @@ static void AssertDebugArtifacts(string root)
 {
     RequireFile(root, "entry.js", "standard browser entry");
     RequireFile(root, "package.json", "standard package declaration");
-    RequireFile(root, "deno.lock", "Deno dependency lock");
+    RequireFile(root, "pnpm-lock.yaml", "pnpm dependency lock");
     RequireFile(root, "vite.config.js", "Vite project configuration");
     RequireDirectory(root, "node_modules", "restored project dependencies");
     RequireFile(root, "app.js", "debug application entry");
@@ -161,7 +161,7 @@ static void AssertReleaseArtifacts(string root)
 {
     RequireFile(root, "entry.js", "standard browser entry");
     RequireFile(root, "package.json", "standard package declaration");
-    RequireFile(root, "deno.lock", "Deno dependency lock");
+    RequireFile(root, "pnpm-lock.yaml", "pnpm dependency lock");
     RequireDirectory(root, "node_modules", "restored project dependencies");
     RequireFile(root, "dist/bundle.js", "Release browser bundle");
     RequireFile(root, "dist/bundle.js.map", "Release browser source map");

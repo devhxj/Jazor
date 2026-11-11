@@ -1,5 +1,11 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
+using Jazor.NodeHost;
+using Microsoft.JavaScript.NodeApi;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -43,13 +49,15 @@ foreach (var testCase in cases)
         Console.Error.WriteLine(result.StandardError);
 }
 
+using var nodeEnvironment = new NodeEnvironment(repoRoot);
+var nodeVersion = await nodeEnvironment.RunAsync(_ => Task.FromResult((string)JSValue.Global["process"]["version"]));
 var report = new Report(
     DateTimeOffset.UtcNow,
     RunGit(repoRoot, "rev-parse", "HEAD"),
     options.Configuration,
     options.SkipBrowser,
     await ReadVersionAsync("dotnet", "--version"),
-    await ReadVersionAsync("node", "--version"),
+    nodeVersion,
     ResolveChromeVersion(),
     Environment.OSVersion.ToString(),
     results);
@@ -68,7 +76,6 @@ static async Task<(int ExitCode, string Stdout, string Stderr)> RunAsync(IReadOn
     start.Environment["TMP"] = TempDirectory(workingDirectory);
     start.Environment["NUGET_PACKAGES"] = NuGetPackages(workingDirectory);
     start.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(workingDirectory);
-    start.Environment["DENO_DIR"] = DenoCache(workingDirectory);
     start.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
     start.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start dotnet.");
@@ -84,20 +91,19 @@ static async Task<(int ExitCode, string Stdout, string Stderr)> RunAsync(IReadOn
 
 static void ConfigureRepositoryEnvironment(string repoRoot)
 {
-    foreach (var directory in new[] { TempDirectory(repoRoot), NuGetPackages(repoRoot), NuGetHttpCache(repoRoot), DenoCache(repoRoot) })
+    foreach (var directory in new[] { TempDirectory(repoRoot), NuGetPackages(repoRoot), NuGetHttpCache(repoRoot) })
         Directory.CreateDirectory(directory);
     Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
     Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 }
 
 static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
 static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
 static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
 static string ToMarkdown(Report report)
 {

@@ -257,7 +257,6 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
         TempDirectory(repoRoot),
         NuGetPackages(repoRoot),
         NuGetHttpCache(repoRoot),
-        DenoCache(repoRoot),
         NpmCache(repoRoot),
         Path.Combine(repoRoot, ".dotnet")
     })
@@ -268,7 +267,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", NpmCache(repoRoot));
     Environment.SetEnvironmentVariable("npm_config_cache", NpmCache(repoRoot));
 }
@@ -280,7 +279,6 @@ static void ApplyRepositoryEnvironment(ProcessStartInfo startInfo, string repoRo
     startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
     startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
     startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
-    startInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
     startInfo.Environment["NPM_CONFIG_CACHE"] = NpmCache(repoRoot);
     startInfo.Environment["npm_config_cache"] = NpmCache(repoRoot);
 }
@@ -288,7 +286,6 @@ static void ApplyRepositoryEnvironment(ProcessStartInfo startInfo, string repoRo
 static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
 static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
 static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 static string NpmCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "npm-cache");
 
 static async Task RunDotNetAsync(string projectPath, IReadOnlyList<string> commandArguments, string workdir)

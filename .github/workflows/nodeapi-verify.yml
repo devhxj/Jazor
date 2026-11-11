@@ -1,0 +1,41 @@
+name: Verify Embedded NodeApi
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/webidl-node-pnpm]
+    paths:
+      - .github/workflows/nodeapi-verify.yml
+      - Directory.Build.props
+      - src/Jazor.NodeHost/**
+      - src/Jazor.Emit/**
+      - src/Jazor.AspNetCore/**
+      - src/ECMAScript.WebIDL.Generator/**
+      - scripts/csharp/verify-*-nodeapi.cs
+      - scripts/csharp/verify-nodeapi-pipeline.cs
+
+permissions:
+  contents: read
+
+jobs:
+  embedded:
+    name: NodeApi / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-15-intel, macos-15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Vite API lifecycle and same-process evidence
+        run: dotnet run --file scripts/csharp/verify-vite-nodeapi.cs
+      - name: Restore, build and runtime-only SSR deployment
+        run: dotnet run --file scripts/csharp/verify-nodeapi-pipeline.cs
+      - name: Async failure propagation and environment cancellation
+        run: dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQualifiedName~NodeModuleRunnerTests --nologo -v minimal
+      - name: WebIDL collector and generated output parity
+        run: dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs

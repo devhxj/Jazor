@@ -1,5 +1,10 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Text.Json;
@@ -7,7 +12,7 @@ using System.Xml.Linq;
 
 // Windows SSR release consumer gate: packages Jazor locally, publishes the RazorVue TodoList
 // sample as an isolated NuGet consumer with JazorSSR=true, and verifies the published app
-// end to end. Deno renders from the self-contained SSR bundle and ASP.NET Core serves the
+// end to end. NodeApi renders from the self-contained SSR bundle and ASP.NET Core serves the
 // published browser closure, including a configured public PathBase.
 var options = VerificationOptions.Parse(args);
 var repoRoot = RequireRepoRoot();
@@ -27,8 +32,6 @@ var chromeStderrLog = Path.Combine(workRoot, "todo-chrome.stderr.log");
 var nodeStdoutLog = Path.Combine(workRoot, "todo-node.stdout.log");
 var nodeStderrLog = Path.Combine(workRoot, "todo-node.stderr.log");
 var chromeUserDataRoot = Path.Combine(workRoot, "todo-chrome-profile");
-var nodeExecutable = FindExecutableOnPath(OperatingSystem.IsWindows() ? "node.exe" : "node")
-    ?? throw new FileNotFoundException("Node.js executable 'node' was not found on PATH.");
 var chromeExecutable = ResolveChromeExecutable();
 
 Console.WriteLine("Starting Windows SSR release consumer verification.");
@@ -100,8 +103,8 @@ try
 
     var rootUrl = "http://127.0.0.1:" + options.Port;
     hostProcess = StartProcess(
-        "dotnet",
-        ["Todo.Host.dll", "--urls", rootUrl],
+        Path.Combine(publishRoot, OperatingSystem.IsWindows() ? "Todo.Host.exe" : "Todo.Host"),
+        ["--urls", rootUrl],
         publishRoot,
         [
             new KeyValuePair<string, string?>("DOTNET_CLI_HOME", dotnetCliHome),
@@ -152,12 +155,27 @@ try
 
     await WaitForCdpReadyAsync(options.CdpPort, chromeProcess, TimeSpan.FromSeconds(options.BrowserStartupTimeoutSeconds), chromeStdoutLog, chromeStderrLog);
 
-    await RunProcessAsync(
-        nodeExecutable,
-        [browserScriptPath, rootUrl, options.CdpPort.ToString(), options.PathBase],
-        workRoot,
-        nodeStdoutLog,
-        nodeStderrLog);
+    var driverRoot = Path.Combine(workRoot, "browser-driver");
+    Directory.CreateDirectory(driverRoot);
+    await File.WriteAllTextAsync(Path.Combine(driverRoot, "package.json"),
+        """{"private":true,"type":"module","dependencies":{"ws":"8.18.3"}}""");
+    await NodeToolchain.RestoreAsync(driverRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+        CancellationToken.None, Console.Out);
+    var driverPath = Path.Combine(driverRoot, "verify-ssr-browser.mjs");
+    File.Copy(browserScriptPath, driverPath);
+    using var browserTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+    try
+    {
+        var output = await NodeModuleRunner.RunAsync(driverRoot, driverPath,
+            [rootUrl, options.CdpPort.ToString(), options.PathBase], browserTimeout.Token);
+        await File.WriteAllTextAsync(nodeStdoutLog, output);
+        Console.WriteLine(output);
+    }
+    catch (Exception exception)
+    {
+        await File.WriteAllTextAsync(nodeStderrLog, exception.ToString());
+        throw;
+    }
 
     Console.WriteLine("Windows SSR release consumer verification passed.");
 }
@@ -318,23 +336,6 @@ void RedirectOutput(StreamReader reader, string logPath)
     });
 }
 
-async Task RunProcessAsync(
-    string fileName,
-    IReadOnlyList<string> arguments,
-    string workdir,
-    string stdoutLogPath,
-    string stderrLogPath)
-{
-    var process = StartProcess(fileName, arguments, workdir, [], stdoutLogPath, stderrLogPath);
-    await process.WaitForExitAsync();
-    if (process.ExitCode != 0)
-    {
-        throw new InvalidOperationException(
-            "Process failed with exit code " + process.ExitCode + ": " + fileName + " " + string.Join(' ', arguments) +
-            " Stdout: " + ReadLogHead(stdoutLogPath) + " Stderr: " + ReadLogHead(stderrLogPath));
-    }
-}
-
 async Task RunDotNetAsync(IReadOnlyList<string> arguments, string workdir, string dotnetCliHome)
 {
     var startInfo = new ProcessStartInfo
@@ -355,7 +356,6 @@ async Task RunDotNetAsync(IReadOnlyList<string> arguments, string workdir, strin
     startInfo.Environment["TMP"] = TempDirectory(workdir);
     startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(workdir);
     startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(workdir);
-    startInfo.Environment["DENO_DIR"] = DenoCache(workdir);
     startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
     startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     startInfo.Environment["UseSharedCompilation"] = "false";
@@ -376,7 +376,6 @@ void ConfigureRepositoryEnvironment(string repoRoot)
         TempDirectory(repoRoot),
         NuGetPackages(repoRoot),
         NuGetHttpCache(repoRoot),
-        DenoCache(repoRoot)
     })
     {
         Directory.CreateDirectory(directory);
@@ -387,14 +386,13 @@ void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 }
 
 string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
 string NuGetPackages(string repoRoot)
     => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
 string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
 async Task WaitForCdpReadyAsync(int port, Process process, TimeSpan timeout, string stdoutLog, string stderrLog)
 {
@@ -565,32 +563,6 @@ string RequireRepoRoot()
 
 string ResolvePath(string repoRoot, string path)
     => Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(repoRoot, path));
-
-string? FindExecutableOnPath(string fileName)
-{
-    var path = Environment.GetEnvironmentVariable("PATH");
-    if (string.IsNullOrWhiteSpace(path))
-    {
-        return null;
-    }
-
-    foreach (var segment in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-    {
-        try
-        {
-            var candidate = Path.Combine(segment, fileName);
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-        catch
-        {
-        }
-    }
-
-    return null;
-}
 
 string ResolveChromeExecutable()
 {
@@ -912,7 +884,7 @@ internal static class SsrReleaseVerifier
         RequireFile(Path.Combine(jazorRoot, "ssr", "ssr-entry.js"), "bundled SSR entry");
         RequireFile(Path.Combine(jazorRoot, "ssr", "package.json"), "bundled SSR task package");
         if (File.Exists(Path.Combine(jazorRoot, "package.json")) ||
-            File.Exists(Path.Combine(jazorRoot, "deno.lock")) ||
+            File.Exists(Path.Combine(jazorRoot, "pnpm-lock.yaml")) ||
             Directory.Exists(Path.Combine(jazorRoot, "node_modules")))
         {
             throw new InvalidOperationException("SSR release publish retained build-time standard-project inputs under jazor/.");
@@ -936,7 +908,7 @@ internal static class SsrReleaseVerifier
 
     public static void VerifySsrDocument(string html, string pathBase)
     {
-        // The DenoHost worker executed the real generated component: the initial task state
+        // The NodeApi environment executed the real generated component: the initial task state
         // (2 open, 1 done, 3 total) can only appear when renderToString ran the lowered module.
         RequireContains(html, "<div id=\"app\">", "SSR mount element");
         RequireContains(html, "data-todo-template=\"todo-template-v1\"", "server-rendered TodoApp board");

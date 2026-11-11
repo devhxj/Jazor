@@ -1,16 +1,12 @@
-const baseUrl = process.argv[2];
-const cdpPort = Number(process.argv[3]);
-const verificationMode = process.argv[4] || "development";
-const configuredPathBase = process.argv[5] || "";
-const homeTitle = process.argv[6] || "";
-const homeSummary = process.argv[7] || "";
-const primaryPath = process.argv[8] || "";
-const primaryTitle = process.argv[9] || "";
-const relatedPath = process.argv[10] || "";
+import WebSocket from "ws";
+
+const [baseUrl, cdpPortText, verificationMode = "development", configuredPathBase = "",
+  homeTitle = "", homeSummary = "", primaryPath = "", primaryTitle = "", relatedPath = ""] = globalThis.__jazorArguments;
+const cdpPort = Number(cdpPortText);
 
 if (!baseUrl || !Number.isFinite(cdpPort) || !["development", "production"].includes(verificationMode) ||
     !homeTitle || !homeSummary || !primaryPath || !primaryTitle || !relatedPath) {
-  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort> <development|production> [pathBase] <homeTitle> <homeSummary> <primaryPath> <primaryTitle> <relatedPath>");
+  throw new Error("Wiki NodeApi browser driver requires baseUrl, cdpPort, verificationMode, pathBase and route expectations.");
 }
 
 const isDevelopmentVerification = verificationMode === "development";
@@ -79,6 +75,7 @@ async function connectToPageTarget() {
   }
 
   const ws = new WebSocket(pageTarget.webSocketDebuggerUrl);
+  globalThis.__jazorAfterAll(() => ws.close());
   await new Promise((resolve, reject) => {
     ws.addEventListener("open", () => resolve(), { once: true });
     ws.addEventListener("error", event => reject(event.error || new Error("WebSocket open failed.")), { once: true });
@@ -359,7 +356,7 @@ async function main() {
         sourceMapPath: externalPath("/jazor/main.mjs.map"),
         moduleFile: "main.mjs",
         expectedSources: [
-          "AppModule.cs"
+          "samples/Wiki/AppModule.cs"
         ],
         expectedSourceContentMarkers: [
           "[ECMAScriptModule(\"main.mjs\")]",
@@ -373,10 +370,10 @@ async function main() {
         sourceMapPath: externalPath("/jazor/components/wiki-home.mjs.map"),
         moduleFile: "components/wiki-home.mjs",
         expectedSources: [
-          "WikiHomeModule.cs",
-          "WikiHomeModule.DocsPage.cs",
-          "WikiHomeModule.RouteContract.cs",
-          "obj/wiki/WikiDocsContent.g.cs"
+          "samples/Wiki/WikiHomeModule.cs",
+          "samples/Wiki/WikiHomeModule.DocsPage.cs",
+          "samples/Wiki/WikiHomeModule.RouteContract.cs",
+          "samples/Wiki/obj/wiki/WikiDocsContent.g.cs"
         ],
         expectedSourceContentMarkers: [
           "public static partial class WikiHomeModule",
@@ -931,7 +928,12 @@ async function main() {
     scrim.click();
     return true;
   })()`);
-  await delay(400);
+  // Sober clears the animated slot's temporary display override when its
+  // 400ms animation finishes. Observe that completion instead of racing it.
+  for (let attempt = 0; attempt < 40; attempt++) {
+    if (!isPanelVisibleOnScreen((await mobileDrawerState()).navRect)) break;
+    await delay(50);
+  }
 
   report.mobile.stateAfterBackdrop = await mobileDrawerState();
   if (report.mobile.backdropClicked && isPanelVisibleOnScreen(report.mobile.stateAfterBackdrop.navRect)) {
@@ -1015,14 +1017,8 @@ async function main() {
   ws.close();
 
   if (failures.length > 0) {
-    for (const failure of failures) {
-      console.error(failure);
-    }
-    process.exitCode = 1;
+    throw new Error(failures.join("\n"));
   }
 }
 
-main().catch(error => {
-  console.error(error && error.stack ? error.stack : String(error));
-  process.exitCode = 1;
-});
+await main();

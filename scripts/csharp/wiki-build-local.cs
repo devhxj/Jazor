@@ -130,10 +130,9 @@ internal static class WikiScriptHelpers
         var tempDirectory = Path.Combine(repoRoot, ".tmp", "wiki-script-temp");
         var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-        var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
         var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
 
-        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
         {
             Directory.CreateDirectory(directory);
         }
@@ -143,7 +142,7 @@ internal static class WikiScriptHelpers
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-        Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
         Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
         Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
         Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");

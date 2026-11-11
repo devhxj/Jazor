@@ -15,8 +15,8 @@ namespace Jazor.CLR.Test;
 /// 所以"取消真的会触发回调"只能通过 <c>new CancellationToken(true)</c> 这条已取消路径验证：
 /// RegisterCancellationCallback 在 signal 已 abort 时同步调用回调。
 /// <para>
-/// 延迟取消一律用 -1（Timeout.Infinite）或极小值：runner 没有 Deno.exit，残留的长定时器会把整批
-/// 场景拖到 30 秒超时。
+/// 延迟取消一律用 -1（Timeout.Infinite）或极小值：验证 token 行为时不依赖长期计时器；
+/// NodeApi runner 在断言结束后关闭该场景的 environment。
 /// </para>
 /// </remarks>
 internal static class ClrRuntimeCancellationScenarios

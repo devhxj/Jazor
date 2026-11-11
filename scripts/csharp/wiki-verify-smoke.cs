@@ -232,13 +232,16 @@ Process? hostProcess = null;
 var keepLogs = false;
 try
 {
-    var hostArguments = options.Publish
-        ? new[] { "Wiki.dll", "--urls", rootUrl }
-        : new[] { "run", "--project", hostProject, "--no-launch-profile", "-c", configuration, "--no-build", "--no-restore", "--urls", rootUrl };
+    var hostOutput = options.Publish ? hostRoot
+        : string.IsNullOrWhiteSpace(options.BaseOutputPath)
+            ? Path.Combine(sampleRoot, "bin", configuration, "net11.0")
+            : Path.Combine(WikiScriptHelpers.ResolveBuildRoot(repoRoot, options.BaseOutputPath), "Wiki", "bin", configuration, "net11.0");
+    var hostExecutable = Path.Combine(hostOutput, OperatingSystem.IsWindows() ? "Wiki.exe" : "Wiki");
+    WikiScriptHelpers.EnsureFileExists(hostExecutable, "Wiki apphost for the requested build");
 
     hostProcess = WikiScriptHelpers.StartProcess(
-        fileName: "dotnet",
-        arguments: hostArguments,
+        fileName: hostExecutable,
+        arguments: ["--urls", rootUrl],
         workdir: options.Publish ? hostRoot : sampleRoot,
         environment:
         [
@@ -753,10 +756,9 @@ internal static class WikiScriptHelpers
         var tempDirectory = Path.Combine(repoRoot, ".tmp", "wiki-script-temp");
         var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-        var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
         var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
 
-        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
         {
             Directory.CreateDirectory(directory);
         }
@@ -766,7 +768,7 @@ internal static class WikiScriptHelpers
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-        Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
         Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
         Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
         Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");

@@ -1,5 +1,10 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -81,9 +86,8 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     var dotnet = Path.Combine(repoRoot, ".dotnet");
     var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
     var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
     var npm = Path.Combine(repoRoot, ".tmp", "npm-cache");
-    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, npm })
         Directory.CreateDirectory(directory);
 
     Environment.SetEnvironmentVariable("TEMP", temp);
@@ -91,7 +95,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
-    Environment.SetEnvironmentVariable("DENO_DIR", deno);
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
     Environment.SetEnvironmentVariable("npm_config_cache", npm);
 }
@@ -109,14 +113,12 @@ static async Task<DirectRuntimeReport> RunNodeBenchmarkAsync(string repoRoot, Be
     var scriptPath = Path.Combine(directory, "direct-benchmark.mjs");
     WriteText(scriptPath, CreateNodeBenchmark(options));
 
-    var result = await RunProcessAsync("node", ["--expose-gc", scriptPath], directory);
-    if (result.ExitCode != 0)
-        throw new InvalidOperationException("Direct render Node benchmark failed." + Environment.NewLine + result.StandardError);
+    var output = await NodeModuleRunner.RunAsync(directory, scriptPath);
 
     // Node emits camelCase JSON while the C# report keeps PascalCase record members.
     // Keep this boundary explicit so protocol naming does not affect benchmark parsing.
     return JsonSerializer.Deserialize(
-        result.StandardOutput,
+        output,
         BenchmarkJsonContext.Default.DirectRuntimeReport)
         ?? throw new InvalidOperationException("Node benchmark returned no report.");
 }
@@ -128,6 +130,13 @@ static string CreateNodeBenchmark(BenchmarkOptions options)
     return $$"""
         import { performance } from "node:perf_hooks";
         import { gzipSync } from "node:zlib";
+        import { setFlagsFromString } from "node:v8";
+        import { runInNewContext } from "node:vm";
+
+        // This probe measures retained heap after collection in the embedded
+        // environment; no external Node CLI flags or process are involved.
+        setFlagsFromString('--expose_gc');
+        const collect = runInNewContext('gc');
 
         const samples = {{samples}};
         const iterations = {{iterations}};
@@ -212,12 +221,12 @@ static string CreateNodeBenchmark(BenchmarkOptions options)
         };
 
         const retained = operation => {
-          if (typeof globalThis.gc === "function") globalThis.gc();
+          collect();
           const before = process.memoryUsage().heapUsed;
           let sink;
           for (let index = 0; index < iterations; index++) sink = operation(index);
           if (sink === undefined) throw new Error("retained operation returned undefined");
-          if (typeof globalThis.gc === "function") globalThis.gc();
+          collect();
           return process.memoryUsage().heapUsed - before;
         };
 
@@ -288,7 +297,7 @@ static string CreateNodeBenchmark(BenchmarkOptions options)
           scope: "direct render-function call shape; no DOM patch, hydration, or compile timing",
           fixtures
         };
-        process.stdout.write(JSON.stringify(report));
+        console.log(JSON.stringify(report));
         """;
 }
 
@@ -376,42 +385,11 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
     WriteText(
         Path.Combine(embeddedPackageRoot, "package.json"),
         "{\"name\":\"@jazor/vue-runtime\",\"version\":\"1.0.0-preview.1\",\"type\":\"module\",\"exports\":{\"./raw-markup.mjs\":\"./raw-markup.mjs\"}}\n");
-    var deno = ResolveDenoExecutable(repoRoot);
-    var install = await RunProcessAsync(
-        deno,
-        ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
-        directory);
-    if (install.ExitCode != 0)
-        return new ProductionVueRuntimeVerification(
-            "razorvue-production-vue-runtime-v1",
-            false,
-            "failed",
-            deno,
-            "Deno package restore failed.\n" + install.StandardError);
+    await NodeToolchain.RestoreAsync(directory, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+        CancellationToken.None, Console.Out);
     var ssrScript = Path.Combine(directory, "verify-ssr.mjs");
     WriteText(ssrScript, CreateProductionVueSsrScript());
-    var check = await RunProcessAsync(
-        deno,
-        ["check", "--node-modules-dir=manual", "--no-config", "--no-remote", "--frozen-lockfile", "verify-ssr.mjs"],
-        directory);
-    if (check.ExitCode != 0)
-        return new ProductionVueRuntimeVerification(
-            "razorvue-production-vue-runtime-v1",
-            false,
-            "failed",
-            deno,
-            "Deno package check failed.\n" + check.StandardError);
-    var ssrResult = await RunProcessAsync("node", [ssrScript], directory);
-    if (ssrResult.ExitCode != 0)
-    {
-        return new ProductionVueRuntimeVerification(
-            "razorvue-production-vue-runtime-v1",
-            false,
-            "failed",
-            "node",
-            ssrResult.StandardError);
-    }
-
+    await NodeModuleRunner.RunAsync(directory, ssrScript);
     var htmlPath = Path.Combine(directory, "verify-browser.html");
     WriteText(htmlPath, CreateProductionVueBrowserHtml());
     var browserResult = await RunProcessAsync(
@@ -449,7 +427,7 @@ static string CreateProductionVueSsrScript()
         const output = await renderToString(createSSRApp(App));
         for (const [id] of cases) if (!output.includes(id)) throw new Error("SSR omitted " + id);
         if (!output.includes("comment-safe")) throw new Error("SSR omitted comment-framed markup");
-        process.stdout.write("passed");
+        console.log("passed");
         """;
 
 static string CreateProductionVueBrowserHtml()
@@ -678,38 +656,6 @@ static string? ResolveBrowserExecutable()
             ? new[] { "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }
             : new[] { "google-chrome", "google-chrome-stable", "chromium" };
     return candidates.FirstOrDefault(File.Exists);
-}
-
-static string ResolveDenoExecutable(string repoRoot)
-{
-    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_PATH");
-    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
-        return Path.GetFullPath(explicitPath);
-
-    var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-    var rid = OperatingSystem.IsWindows()
-        ? "win-x64"
-        : OperatingSystem.IsMacOS()
-            ? "osx-x64"
-            : "linux-x64";
-    foreach (var project in new[] { "Jazor.EmitTest", "Jazor.AspNetCore" })
-    {
-        var candidate = Path.Combine(
-            repoRoot,
-            "src",
-            project,
-            "bin",
-            "Debug",
-            "net11.0",
-            "runtimes",
-            rid,
-            "native",
-            runtimeName);
-        if (File.Exists(candidate))
-            return candidate;
-    }
-
-    return runtimeName;
 }
 
 static async Task<ProcessResult> RunProcessAsync(

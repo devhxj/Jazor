@@ -19,6 +19,8 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | 脚本 | 用途 |
 | --- | --- |
 | `test-dotnet.cs` | 构建一次并运行当前主测试 lane，支持 `--project <name>` 聚焦项目（例如 `dataui`、`lucide`） |
+| `restore-node-project.cs` | 使用固定 pnpm API 在进程内恢复一个或多个工具项目，无需全局 Node/npm/pnpm；参数为项目目录 |
+| `verify-webidl-nodeapi.cs`、`verify-vite-nodeapi.cs`、`verify-nodeapi-pipeline.cs` | 验证 WebIDL、Vite 生命周期、浏览器/SSR 构建和 runtime 部署的 NodeApi 技术栈 |
 | `clean-workspace.cs` | 默认预览忽略目录中的临时输出和 `src/`、`samples/` 下的构建产物占用；传 `--apply` 执行清理，保留 Git 管理的文件、未忽略的新文件、NuGet 缓存、worktree 与 IDE 设置 |
 | `inspect-public-api.cs` | 从宿主、Jazor.Admin、Jazor/Jazor.Vue 和 ECMAScript 生态公开程序集生成稳定排序的 API 快照；可用 `--configuration` 指定构建位置 |
 | `compare-public-api.cs` | 将当前公开 API 快照与候选基线逐行比较，并在报告中分别给出顶层声明与成员声明数量；缺失基线默认失败，只有本地首次建基线可显式传 `--allow-missing-baseline`，删除或签名变化时失败 |
@@ -33,7 +35,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
 | `wiki-import-docs.cs`、`wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs`、`wiki-export-static.cs` | 导入 `docs/`、构建、预览、验证与静态导出 Jazor 官方网站；机器生成的 `*.snapshot.md` 默认只作为仓库证据，不进入浏览器目录 |
 | `verify-windows-spa-release.cs` | 打包本地 NuGet 后，以隔离 Wiki 消费者完成 Windows Release publish 和 Chrome 浏览器验证 |
-| `verify-windows-ssr-release.cs` | 打包本地 NuGet 后，以隔离 RazorVue TodoList 消费者完成 `JazorSSR=true` Release publish、Deno SSR HTML、发布目录资源解析与 Chrome hydration 交互验证 |
+| `verify-windows-ssr-release.cs` | 打包本地 NuGet 后，以隔离 RazorVue TodoList 消费者完成 `JazorSSR=true` Release publish、NodeApi SSR HTML、发布目录资源解析与 Chrome hydration 交互验证 |
 | `verify-typed-bootstrap.cs` | 启动应用自有 typed bootstrap endpoint，验证 GET、过期版本 409、校验失败 422、客户端草稿保留和成功提交；支持 `--report` 生成可归档证据；不注册 Jazor runtime 服务 |
 | `inspect-razorvue-chain.cs` | 检查 `.razor` → Razor SG generated C# → render-function module → source map 链路；支持文本、JSON、版本化 remediation 报告（`--report`）和 IDE 可消费的 SARIF（`--sarif`）输出，并在断链时返回非零退出码 |
 | `verify-razorvue-diagnostics.cs` | 在隔离 fixture 中持续验证链路检查器的成功报告、`JAZORVGA020`/`JAZORVGA026` 失败诊断、HelpLink、SARIF 和 remediation 协议，并归档摘要 |

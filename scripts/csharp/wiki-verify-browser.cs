@@ -1,5 +1,10 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
@@ -25,8 +30,6 @@ var nodeStderrLog = Path.Combine(sampleRoot, $".wiki-browser-node-{Environment.P
 var chromeUserDataRoot = Path.Combine(sampleRoot, $".wiki-browser-chrome-profile-{Environment.ProcessId}");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 var chromeExecutable = WikiScriptHelpers.ResolveChromeExecutable();
-var nodeExecutable = WikiScriptHelpers.FindNodeOnPath()
-    ?? throw new FileNotFoundException("Node.js executable 'node' was not found on PATH.");
 
 if (options.Publish && (options.Build || options.BuildLocal || options.PublishedRoot is not null))
 {
@@ -187,13 +190,18 @@ try
     try
     {
         Trace("Starting Wiki host process.");
-        var hostArguments = isPublished
-            ? new[] { "Wiki.dll", "--urls", rootUrl }
-            : new[] { "run", "--project", hostProject, "--no-launch-profile", "-c", effectiveConfiguration, "--no-build", "--no-restore", "--urls", rootUrl };
+        var hostOutput = isPublished ? hostRoot
+            : string.IsNullOrWhiteSpace(options.BaseOutputPath)
+                ? Path.Combine(sampleRoot, "bin", effectiveConfiguration, "net11.0")
+                : Path.Combine(WikiScriptHelpers.ResolveBuildRoot(repoRoot, options.BaseOutputPath), "Wiki", "bin", effectiveConfiguration, "net11.0");
+        // Use this build's apphost: it carries CETCompat=false, and isolated
+        // output selection must not silently launch the default bin directory.
+        var hostExecutable = Path.Combine(hostOutput, OperatingSystem.IsWindows() ? "Wiki.exe" : "Wiki");
+        WikiScriptHelpers.EnsureFileExists(hostExecutable, "Wiki apphost for the requested build");
 
         hostProcess = WikiScriptHelpers.StartProcess(
-            fileName: "dotnet",
-            arguments: hostArguments,
+            fileName: hostExecutable,
+            arguments: ["--urls", rootUrl],
             workdir: isPublished ? hostRoot : sampleRoot,
             environment:
             [
@@ -277,11 +285,19 @@ try
 
         var verificationMode = isPublished ? "production" : "development";
         Trace("Starting browser verification script.");
-        await WikiScriptHelpers.RunProcessAsync(
-            fileName: nodeExecutable,
-            arguments:
+        var driverRoot = Path.Combine(repoRoot, ".tmp", "wiki-browser-driver", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(driverRoot);
+        await File.WriteAllTextAsync(Path.Combine(driverRoot, "package.json"),
+            """{"private":true,"type":"module","dependencies":{"ws":"8.18.3"}}""");
+        await NodeToolchain.RestoreAsync(driverRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+            CancellationToken.None, Console.Out);
+        var driverPath = Path.Combine(driverRoot, "verify-browser.mjs");
+        File.Copy(browserScriptPath, driverPath);
+        using var browserTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        try
+        {
+            var output = await NodeModuleRunner.RunAsync(driverRoot, driverPath,
             [
-                browserScriptPath,
                 rootUrl,
                 options.CdpPort.ToString(),
                 verificationMode,
@@ -291,10 +307,15 @@ try
                 verificationRoutes.PrimaryPath,
                 verificationRoutes.PrimaryTitle,
                 verificationRoutes.RelatedPath
-            ],
-            workdir: sampleRoot,
-            stdoutLogPath: nodeStdoutLog,
-            stderrLogPath: nodeStderrLog);
+            ], browserTimeout.Token);
+            await File.WriteAllTextAsync(nodeStdoutLog, output);
+            Console.WriteLine(output);
+        }
+        catch (Exception exception)
+        {
+            await File.WriteAllTextAsync(nodeStderrLog, exception.ToString());
+            throw;
+        }
         Trace("Browser verification script completed.");
 
         Console.WriteLine(isPublished
@@ -650,10 +671,9 @@ internal static class WikiScriptHelpers
         var tempDirectory = Path.Combine(repoRoot, ".tmp", "wiki-script-temp");
         var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-        var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
         var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
 
-        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+        foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
         {
             Directory.CreateDirectory(directory);
         }
@@ -663,7 +683,7 @@ internal static class WikiScriptHelpers
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-        Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
         Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
         Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
         Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
@@ -1010,9 +1030,6 @@ internal static class WikiScriptHelpers
             }
         }
     }
-
-    public static string? FindNodeOnPath()
-        => FindExecutableOnPath(OperatingSystem.IsWindows() ? "node.exe" : "node");
 
     public static string ResolveChromeExecutable()
     {

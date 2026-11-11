@@ -8,6 +8,7 @@
 
 #### 其他变更
 
+- 将当前候选的仓库脚本、浏览器驱动与 CI 改为进程内 NodeApi；移除全局 Node/npm 安装要求，工具依赖由 `restore-node-project.cs` 调用 pnpm API。JazorAdmin、Wiki `/docs`、Windows NuGet SPA/SSR 发布与 hydration 已验证；Windows 启动脚本使用所选构建的 `CETCompat=false` apphost。跨平台及完整发布门禁继续验收。by @devhxj
 - NodeApi 候选的 Pinia 与 VueRoute 示例通过 pnpm API 恢复依赖并在进程内执行 runtime/DOM smoke，示例使用 `--frontend-only` 重验现有产物；DOM fixture 固定为支持当前 LibNode 的 jsdom 26。Pinia 恢复元数据对齐绑定声明的 Pinia 4.0.3 / Testing 2.0.1，保留 predicate action stub 语义。by @devhxj
 - 修复多个绑定共同引用相同 npm/JSR 包时的误报冲突，按外部包身份合并；不同版本和不兼容资源继续报错。BindingsShowcase 已以进程内 Vite 通过真实浏览器渲染、语言切换与 HMR 状态保持验证。by @devhxj
 - NodeApi 候选的 LibNode 统一升级至 `20.1800.215`，继续使用已接受的 `CETCompat=false` 配置；此更新仍属 Node 20 系列。by @devhxj
@@ -19,6 +20,7 @@
 
 #### Chores
 
+- Run candidate repository scripts, browser drivers, and CI tooling through embedded NodeApi. Restore fixtures with the pnpm API instead of global Node/npm. Verify JazorAdmin, Wiki `/docs`, and Windows NuGet SPA/SSR publication with hydration; launch the selected build's `CETCompat=false` apphost on Windows. Cross-platform and full release gates remain in progress. by @devhxj
 - Restore Pinia and VueRoute sample dependencies through the pnpm API and run runtime/DOM smoke inside NodeApi. Recheck existing artifacts with `--frontend-only`; pin DOM fixtures to jsdom 26 for the current LibNode. Align Pinia restore metadata with the authored Pinia 4.0.3 / Testing 2.0.1 contracts, preserving predicate action stubs. by @devhxj
 - Merge identical external npm/JSR package identities shared by multiple bindings without false conflicts; continue rejecting incompatible versions/assets. Verify BindingsShowcase rendering, locale changes, and preserved HMR state with in-process Vite and a real browser. by @devhxj
 - Upgrade the NodeApi candidate's shared LibNode dependency to `20.1800.215`, retaining the accepted `CETCompat=false` configuration. This package remains in the Node 20 family. by @devhxj

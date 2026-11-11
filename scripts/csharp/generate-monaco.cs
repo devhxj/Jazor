@@ -1,6 +1,10 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
-using System.Diagnostics;
+using Jazor.NodeHost;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -35,18 +39,19 @@ if (version is null && File.Exists(manifestPath))
 if (string.IsNullOrWhiteSpace(version))
     throw new ArgumentException("Provide --version on the first run; later runs reuse the manifest version.");
 
-// The validation input is locked by package.json/package-lock.json; the requested version must
+// The validation input is locked by package.json/pnpm-lock.yaml; the requested version must
 // match it before the package is inspected.
 var buildPackage = JsonNode.Parse(File.ReadAllText(Path.Combine(buildRoot, "package.json")))!;
 var lockedMonaco = buildPackage["dependencies"]!["monaco-editor"]!.GetValue<string>();
 if (lockedMonaco != version)
     throw new InvalidOperationException(
         $"monaco-runtime/package.json pins monaco-editor {lockedMonaco}, but {version} was requested. " +
-        "Update the build inputs (package.json + package-lock.json) first.");
+        "Update the build inputs (package.json + pnpm-lock.yaml) first.");
 
 if (!options.SkipInstall)
 {
-    await RunAsync("cmd.exe", ["/d", "/c", "npm.cmd", "ci", "--ignore-scripts", "--no-audit", "--no-fund"], buildRoot, root);
+    await NodeToolchain.RestoreAsync(buildRoot, Path.Combine(root, ".tmp", "nodeapi-store"),
+        CancellationToken.None, Console.Out);
 }
 
 var monacoRoot = Path.Combine(buildRoot, "node_modules", "monaco-editor");
@@ -114,33 +119,6 @@ WriteInventory(projectRoot, version, entries.Length);
 Console.WriteLine($"Validated {entries.Length} monaco-editor {version} export entries.");
 Console.WriteLine("Review contract drift for bound editor/model/language APIs before committing.");
 
-static async Task<int> RunAsync(string fileName, IEnumerable<string> arguments, string workingDirectory, string environmentRoot, bool throwOnFailure = true)
-{
-    var startInfo = new ProcessStartInfo(fileName)
-    {
-        WorkingDirectory = workingDirectory,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false,
-    };
-    ApplyRepositoryEnvironment(startInfo, environmentRoot);
-    foreach (var argument in arguments)
-        startInfo.ArgumentList.Add(argument);
-
-    using var process = Process.Start(startInfo)
-        ?? throw new InvalidOperationException($"Failed to start '{fileName}'.");
-    // 并发读取两个管道，避免先读完 stdout 时子进程写满 stderr 造成死锁。
-    var stdoutTask = process.StandardOutput.ReadToEndAsync();
-    var stderrTask = process.StandardError.ReadToEndAsync();
-    await Task.WhenAll(stdoutTask, stderrTask);
-    await process.WaitForExitAsync();
-
-    if (process.ExitCode != 0 && throwOnFailure)
-        throw new InvalidOperationException($"{fileName} failed ({process.ExitCode}).\n{stdoutTask.Result}\n{stderrTask.Result}");
-
-    return process.ExitCode;
-}
-
 static void ValidateEntry(string path, string specifier)
 {
     // Validate the authored entry without rewriting it. Runtime import edges and CSS are resolved
@@ -158,7 +136,6 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
         Path.Combine(repoRoot, ".dotnet"),
         NuGetPackages(repoRoot),
         NuGetHttpCache(repoRoot),
-        DenoCache(repoRoot),
         NpmCache(repoRoot)
     })
         Directory.CreateDirectory(directory);
@@ -168,27 +145,14 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", NpmCache(repoRoot));
     Environment.SetEnvironmentVariable("npm_config_cache", NpmCache(repoRoot));
-}
-
-static void ApplyRepositoryEnvironment(ProcessStartInfo startInfo, string repoRoot)
-{
-    startInfo.Environment["TEMP"] = TempDirectory(repoRoot);
-    startInfo.Environment["TMP"] = TempDirectory(repoRoot);
-    startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
-    startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
-    startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
-    startInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
-    startInfo.Environment["NPM_CONFIG_CACHE"] = NpmCache(repoRoot);
-    startInfo.Environment["npm_config_cache"] = NpmCache(repoRoot);
 }
 
 static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
 static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
 static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 static string NpmCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "npm-cache");
 
 static JsonNode BuildManifest(

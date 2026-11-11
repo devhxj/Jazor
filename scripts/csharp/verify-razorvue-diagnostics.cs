@@ -76,7 +76,6 @@ async Task<InspectionResult> RunInspectorAsync(string name, string source, strin
     process.StartInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
     process.StartInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
     process.StartInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
-    process.StartInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
     foreach (var argument in arguments) process.StartInfo.ArgumentList.Add(argument);
     process.Start();
     var stdout = process.StandardOutput.ReadToEndAsync();
@@ -125,7 +124,6 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
         TempDirectory(repoRoot),
         NuGetPackages(repoRoot),
         NuGetHttpCache(repoRoot),
-        DenoCache(repoRoot)
     })
     {
         Directory.CreateDirectory(directory);
@@ -136,14 +134,13 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 }
 
 static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
 static string NuGetPackages(string repoRoot)
     => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
 static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
 static void EnsureInsideRepository(string repoRoot, string path)
 {

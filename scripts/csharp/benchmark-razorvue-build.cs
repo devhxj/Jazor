@@ -418,9 +418,8 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     var dotnet = Path.Combine(repoRoot, ".dotnet");
     var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
     var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
     var npm = Path.Combine(repoRoot, ".tmp", "npm-cache");
-    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, npm })
         Directory.CreateDirectory(directory);
 
     Environment.SetEnvironmentVariable("TEMP", temp);
@@ -428,7 +427,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
-    Environment.SetEnvironmentVariable("DENO_DIR", deno);
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
     Environment.SetEnvironmentVariable("npm_config_cache", npm);
 }

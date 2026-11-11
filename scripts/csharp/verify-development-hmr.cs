@@ -1,8 +1,13 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 #:sdk Microsoft.NET.Sdk.Web
 #:project ../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj
 #:project ../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj
 
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -41,9 +46,10 @@ try
         "dist",
         "vue.runtime.esm-browser.js");
     if (!File.Exists(vueRuntimeSourcePath))
-        throw new InvalidOperationException("Deno restore did not produce the Vue browser runtime at '" + vueRuntimeSourcePath + "'.");
+        throw new InvalidOperationException("pnpm restore did not produce the Vue browser runtime at '" + vueRuntimeSourcePath + "'.");
     File.Copy(vueRuntimeSourcePath, vueRuntimePath);
     await WriteFixtureAsync(componentPath, componentSourceMapPath, manifestPath, "v1", "content-v1", "template-v1");
+    await File.WriteAllTextAsync(Path.Combine(artifactRoot, "entry.js"), "export {};\n");
     var indexPath = Path.Combine(webRoot, "index.html");
     await File.WriteAllTextAsync(indexPath, CreateBrowserHarness(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
@@ -89,7 +95,7 @@ try
     });
     await app.StartAsync();
 
-    var browserOpen = await RunPlaywrightCliAsync(repoRoot, browserSessionName, "open", baseAddress.ToString());
+    var browserOpen = await RunPlaywrightApiAsync(repoRoot, browserSessionName, "open", baseAddress.ToString());
     EnsureProcessSucceeded(browserOpen, "Playwright could not open the development HMR fixture.");
     browserSessionOpened = true;
 
@@ -108,7 +114,7 @@ try
             "Development HMR fixture did not register its v1 handler: " + ready + Environment.NewLine + browserState);
     }
 
-    var click = await RunPlaywrightCliAsync(
+    var click = await RunPlaywrightApiAsync(
         repoRoot,
         browserSessionName,
         "eval",
@@ -142,7 +148,7 @@ try
     await VerifyBrowserSourceMapAsync(httpClient, baseAddress, "v2");
 
     Console.WriteLine("Development HMR browser verification passed.");
-    Console.WriteLine("  Browser: Playwright CLI");
+    Console.WriteLine("  Browser: Playwright API / NodeApi");
     Console.WriteLine("  Flow: generated-component registration -> Vue HMR reload -> parent state preserved -> authored Razor source map available");
 }
 finally
@@ -151,7 +157,7 @@ finally
     {
         try
         {
-            _ = await RunPlaywrightCliAsync(repoRoot, browserSessionName, "close");
+            _ = await RunPlaywrightApiAsync(repoRoot, browserSessionName, "close");
         }
         catch (System.ComponentModel.Win32Exception)
         {
@@ -354,7 +360,7 @@ static async Task<string> WaitForBrowserConditionAsync(
     ProcessResult? lastFailure = null;
     for (var attempt = 0; attempt < 3; attempt++)
     {
-        var result = await RunPlaywrightCliAsync(
+        var result = await RunPlaywrightApiAsync(
             repoRoot,
             browserSessionName,
             "eval",
@@ -374,29 +380,12 @@ static async Task<string> WaitForBrowserConditionAsync(
     throw new InvalidOperationException("Unreachable.");
 }
 
-static Task<ProcessResult> RunPlaywrightCliAsync(
-    string repoRoot,
-    string browserSessionName,
-    string command,
-    params string[] commandArguments)
-{
-    var arguments = new List<string>
-    {
-        "--yes",
-        "--package",
-        "@playwright/cli",
-        "playwright-cli",
-        "-s=" + browserSessionName,
-        command
-    };
-    arguments.AddRange(commandArguments);
-    var npxExecutable = ResolveNpxExecutable();
-    return RunProcessAsync(npxExecutable, repoRoot, arguments, TimeSpan.FromSeconds(90));
-}
-
+static Task<ProcessResult> RunPlaywrightApiAsync(
+    string repoRoot, string browserSessionName, string command, params string[] commandArguments)
+    => HmrBrowser.RunAsync(repoRoot, command, commandArguments);
 static async Task<string> ReadBrowserStateAsync(string repoRoot, string browserSessionName)
 {
-    var result = await RunPlaywrightCliAsync(
+    var result = await RunPlaywrightApiAsync(
         repoRoot,
         browserSessionName,
         "eval",
@@ -443,63 +432,9 @@ static async Task RestoreVueRuntimeAsync(string repoRoot, string artifactRoot)
         """ + Environment.NewLine,
         new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-    var deno = ResolveDenoExecutable(repoRoot);
-    var restore = await RunProcessAsync(
-        deno,
-        artifactRoot,
-        ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
-        TimeSpan.FromSeconds(90));
-    EnsureProcessSucceeded(restore, "Deno could not restore the Vue runtime for the development HMR fixture.");
+    await NodeToolchain.RestoreAsync(artifactRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+        CancellationToken.None, Console.Out);
 }
-
-static string ResolveDenoExecutable(string repoRoot)
-{
-    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_PATH");
-    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
-        return Path.GetFullPath(explicitPath);
-
-    var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-    var rid = OperatingSystem.IsWindows()
-        ? "win-x64"
-        : OperatingSystem.IsMacOS()
-            ? "osx-x64"
-            : "linux-x64";
-    foreach (var project in new[] { "Jazor.EmitTest", "Jazor.AspNetCore" })
-    {
-        var candidate = Path.Combine(
-            repoRoot,
-            "src",
-            project,
-            "bin",
-            "Debug",
-            "net11.0",
-            "runtimes",
-            rid,
-            "native",
-            runtimeName);
-        if (File.Exists(candidate))
-            return candidate;
-    }
-
-    return runtimeName;
-}
-
-static string ResolveNpxExecutable()
-{
-    if (!OperatingSystem.IsWindows())
-        return "npx";
-
-    foreach (var directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
-                 .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
-    {
-        var candidate = Path.Combine(directory.Trim().Trim('"'), "npx.cmd");
-        if (File.Exists(candidate))
-            return candidate;
-    }
-
-    throw new InvalidOperationException("npx.cmd was not found on PATH. Install Node.js/npm before running this verification.");
-}
-
 static void EnsureProcessSucceeded(ProcessResult result, string message)
 {
     if (result.ExitCode == 0)
@@ -508,48 +443,6 @@ static void EnsureProcessSucceeded(ProcessResult result, string message)
     throw new InvalidOperationException(
         message + " Exit code: " + result.ExitCode + Environment.NewLine +
         result.StandardOutput + Environment.NewLine + result.StandardError);
-}
-
-static async Task<ProcessResult> RunProcessAsync(
-    string fileName,
-    string workingDirectory,
-    IReadOnlyList<string> arguments,
-    TimeSpan timeout)
-{
-    var startInfo = new ProcessStartInfo(fileName)
-    {
-        WorkingDirectory = workingDirectory,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        UseShellExecute = false
-    };
-    foreach (var argument in arguments)
-        startInfo.ArgumentList.Add(argument);
-
-    using var process = new Process { StartInfo = startInfo };
-    process.Start();
-    var standardOutput = process.StandardOutput.ReadToEndAsync();
-    var standardError = process.StandardError.ReadToEndAsync();
-    using var timeoutSource = new CancellationTokenSource(timeout);
-    try
-    {
-        await process.WaitForExitAsync(timeoutSource.Token);
-    }
-    catch (OperationCanceledException)
-    {
-        try
-        {
-            process.Kill(entireProcessTree: true);
-        }
-        catch (InvalidOperationException)
-        {
-        }
-
-        await process.WaitForExitAsync();
-        return new ProcessResult(-1, await standardOutput, await standardError);
-    }
-
-    return new ProcessResult(process.ExitCode, await standardOutput, await standardError);
 }
 
 static string RequireRepoRoot()
@@ -570,10 +463,9 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     var tempDirectory = Path.Combine(repoRoot, ".tmp", "development-hmr-temp");
     var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
     var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
     var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
 
-    foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, denoCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
+    foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
     {
         Directory.CreateDirectory(directory);
     }
@@ -583,7 +475,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-    Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
     Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
@@ -591,3 +483,66 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
 }
 
 internal sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);
+
+static class HmrBrowser
+{
+    private static NodeEnvironment? _environment;
+    private static string? _module;
+
+    public static async Task<ProcessResult> RunAsync(string repoRoot, string command, string[] arguments)
+    {
+        try
+        {
+            if (_environment is null)
+            {
+                var root = Path.Combine(repoRoot, ".tmp", "nodeapi-browser");
+                Directory.CreateDirectory(root);
+                await File.WriteAllTextAsync(Path.Combine(root, "package.json"),
+                    """{"private":true,"type":"module","dependencies":{"playwright-core":"1.65.0"}}""");
+                await NodeToolchain.RestoreAsync(root, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+                    CancellationToken.None, Console.Out);
+                _module = Path.Combine(root, "hmr-browser.cjs");
+                await File.WriteAllTextAsync(_module, """
+                    const { chromium } = require('playwright-core');
+                    let browser, page;
+                    exports.run = async (requestJson) => {
+                        const { command, arguments: args, executablePath } = JSON.parse(requestJson);
+                        switch (command) {
+                            case 'open':
+                                browser = await chromium.launch(executablePath
+                                    ? { executablePath, headless: true }
+                                    : { channel: 'chrome', headless: true });
+                                page = await browser.newPage();
+                                await page.goto(args[0]);
+                                return 'opened';
+                            case 'eval':
+                                return JSON.stringify(await page.evaluate('(' + args[0] + ')()'));
+                            case 'close':
+                                await browser.close();
+                                browser = page = undefined;
+                                return 'closed';
+                            default:
+                                throw new Error('Unsupported browser operation: ' + command);
+                        }
+                    };
+                    """);
+                _environment = new NodeEnvironment(root);
+            }
+            var output = await _environment.InvokeAsync(_module!, "run",
+                JsonSerializer.Serialize(new { command, arguments, executablePath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE") }));
+            return new ProcessResult(0, output, "");
+        }
+        catch (Exception exception)
+        {
+            return new ProcessResult(1, "", exception.ToString());
+        }
+        finally
+        {
+            if (command == "close")
+            {
+                _environment?.Dispose();
+                _environment = null;
+            }
+        }
+    }
+}

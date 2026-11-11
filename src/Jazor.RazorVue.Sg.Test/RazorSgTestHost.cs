@@ -71,9 +71,9 @@ internal static class RazorSgTestHost
         var dotnet = Path.Combine(processRoot, "dotnet-home");
         var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
         var nugetHttp = Path.Combine(processRoot, "nuget-http-cache");
-        var deno = Path.Combine(processRoot, "deno-cache");
+        var pnpmStore = Path.Combine(processRoot, "nodeapi-store");
         var npm = Path.Combine(processRoot, "npm-cache");
-        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+        foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, pnpmStore, npm })
             Directory.CreateDirectory(directory);
 
         startInfo.Environment["TEMP"] = temp;
@@ -81,7 +81,7 @@ internal static class RazorSgTestHost
         startInfo.Environment["DOTNET_CLI_HOME"] = dotnet;
         startInfo.Environment["NUGET_PACKAGES"] = nuget;
         startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = nugetHttp;
-        startInfo.Environment["DENO_DIR"] = deno;
+        startInfo.Environment["JazorPnpmStoreDirectory"] = pnpmStore;
         startInfo.Environment["NPM_CONFIG_CACHE"] = npm;
         startInfo.Environment["npm_config_cache"] = npm;
     }

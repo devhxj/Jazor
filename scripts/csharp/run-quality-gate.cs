@@ -91,7 +91,6 @@ static void ConfigureProcessEnvironment(ProcessStartInfo startInfo, string repoR
     startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(repoRoot, ".dotnet");
     startInfo.Environment["NUGET_PACKAGES"] = NuGetPackages(repoRoot);
     startInfo.Environment["NUGET_HTTP_CACHE_PATH"] = NuGetHttpCache(repoRoot);
-    startInfo.Environment["DENO_DIR"] = DenoCache(repoRoot);
     startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
     startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
     startInfo.Environment["UseSharedCompilation"] = "false";
@@ -99,20 +98,19 @@ static void ConfigureProcessEnvironment(ProcessStartInfo startInfo, string repoR
 
 static void ConfigureRepositoryEnvironment(string repoRoot)
 {
-    foreach (var directory in new[] { TempDirectory(repoRoot), NuGetPackages(repoRoot), NuGetHttpCache(repoRoot), DenoCache(repoRoot) })
+    foreach (var directory in new[] { TempDirectory(repoRoot), NuGetPackages(repoRoot), NuGetHttpCache(repoRoot) })
         Directory.CreateDirectory(directory);
     Environment.SetEnvironmentVariable("TEMP", TempDirectory(repoRoot));
     Environment.SetEnvironmentVariable("TMP", TempDirectory(repoRoot));
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-    Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
 }
 
 static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
 static string NuGetPackages(string repoRoot) => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
 static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 
 async Task CopyOutputAsync(StreamReader reader, TextWriter destination)
 {

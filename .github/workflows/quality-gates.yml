@@ -66,7 +66,7 @@ env:
   DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
   NUGET_PACKAGES: '${{ github.workspace }}\.dotnet\.nuget\packages\'
   NUGET_HTTP_CACHE_PATH: '${{ github.workspace }}\.tmp\nuget-http-cache'
-  DENO_DIR: '${{ github.workspace }}\.tmp\deno-cache'
+  JazorPnpmStoreDirectory: '${{ github.workspace }}\.tmp\nodeapi-store'
   NPM_CONFIG_CACHE: '${{ github.workspace }}\.tmp\npm-cache'
 
 permissions:
@@ -79,7 +79,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,15 +91,9 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
       - name: Restore Vuetify generator runtime
         shell: pwsh
-        run: npm ci --ignore-scripts
-        working-directory: src/ECMAScript.Vue.Generator/vuetify-runtime
+        run: dotnet run --file ./scripts/csharp/restore-node-project.cs -- src/ECMAScript.Vue.Generator/vuetify-runtime
 
       - name: Record toolchain matrix
         shell: pwsh
@@ -120,7 +114,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -157,7 +151,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -200,7 +194,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -240,7 +234,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -277,7 +271,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -311,7 +305,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -343,7 +337,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -356,15 +350,9 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
       - name: Restore Vuetify generator runtime
         shell: pwsh
-        run: npm ci --ignore-scripts
-        working-directory: src/ECMAScript.Vue.Generator/vuetify-runtime
+        run: dotnet run --file ./scripts/csharp/restore-node-project.cs -- src/ECMAScript.Vue.Generator/vuetify-runtime
 
       - name: Verify generated binding contracts
         shell: pwsh
@@ -389,7 +377,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache", "${{ github.workspace }}\artifacts\binding-documentation" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache", "${{ github.workspace }}\artifacts\binding-documentation" -Force | Out-Null
 
       - name: Checkout tested ref
         uses: actions/checkout@v4
@@ -450,7 +438,7 @@ jobs:
     steps:
       - name: Prepare repository-local toolchain directories
         shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\deno-cache", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
 
       - name: Checkout
         uses: actions/checkout@v4

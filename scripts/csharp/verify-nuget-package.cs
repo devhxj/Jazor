@@ -339,7 +339,6 @@ internal static class ScriptHelpers
                 new KeyValuePair<string, string?>("TMP", RepositoryEnvironment.TempDirectory(workdir)),
                 new KeyValuePair<string, string?>("NUGET_PACKAGES", RepositoryEnvironment.NuGetPackages(workdir)),
                 new KeyValuePair<string, string?>("NUGET_HTTP_CACHE_PATH", RepositoryEnvironment.NuGetHttpCache(workdir)),
-                new KeyValuePair<string, string?>("DENO_DIR", RepositoryEnvironment.DenoCache(workdir)),
                 new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1"),
                 new KeyValuePair<string, string?>("MSBUILDDISABLENODEREUSE", "1"),
                 new KeyValuePair<string, string?>("UseSharedCompilation", "false")
@@ -400,7 +399,6 @@ internal static class RepositoryEnvironment
             TempDirectory(repoRoot),
             NuGetPackages(repoRoot),
             NuGetHttpCache(repoRoot),
-            DenoCache(repoRoot)
         })
         {
             Directory.CreateDirectory(directory);
@@ -411,12 +409,11 @@ internal static class RepositoryEnvironment
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
         Environment.SetEnvironmentVariable("NUGET_PACKAGES", NuGetPackages(repoRoot));
         Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", NuGetHttpCache(repoRoot));
-        Environment.SetEnvironmentVariable("DENO_DIR", DenoCache(repoRoot));
+        Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     }
 
     public static string TempDirectory(string repoRoot) => Path.Combine(repoRoot, ".tmp", "agent-temp");
     public static string NuGetPackages(string repoRoot)
         => Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
     public static string NuGetHttpCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    public static string DenoCache(string repoRoot) => Path.Combine(repoRoot, ".tmp", "deno-cache");
 }

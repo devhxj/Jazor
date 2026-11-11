@@ -1,7 +1,12 @@
 #!/usr/bin/env dotnet run
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 #:sdk Microsoft.NET.Sdk.Web
 #:project ../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj
 
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -28,7 +33,7 @@ try
 {
     var artifactRoot = await MaterializeArtifactGraphAsync(repoRoot, workspace);
     var coldSamples = new List<double>(options.Samples);
-    var coldProcessIds = new List<int>(options.Samples);
+    var coldEnvironmentIds = new List<string>(options.Samples);
     for (var index = 0; index < options.Samples; index++)
     {
         await using var app = CreateApplication(workspace, artifactRoot, options.WorkerCount);
@@ -37,23 +42,23 @@ try
         var result = await renderer.RenderAsync(
             new JazorSsrRequest("components/benchmark.mjs", new { Sequence = index }));
         coldSamples.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
-        coldProcessIds.Add(ParseProcessId(result.Html));
+        coldEnvironmentIds.Add(ParseEnvironmentId(result.Html));
     }
 
     await using var warmApp = CreateApplication(workspace, artifactRoot, options.WorkerCount);
     var warmRenderer = warmApp.Services.GetRequiredService<IJazorSsrRenderer>();
     var warmup = await warmRenderer.RenderAsync(
         new JazorSsrRequest("components/benchmark.mjs", new { Sequence = -1 }));
-    var warmupProcessId = ParseProcessId(warmup.Html);
+    var warmupEnvironmentId = ParseEnvironmentId(warmup.Html);
     var warmSamples = new List<double>(options.Iterations);
-    var warmProcessIds = new HashSet<int>();
+    var warmEnvironmentIds = new HashSet<string>();
     for (var index = 0; index < options.Iterations; index++)
     {
         var started = Stopwatch.GetTimestamp();
         var result = await warmRenderer.RenderAsync(
             new JazorSsrRequest("components/benchmark.mjs", new { Sequence = index }));
         warmSamples.Add(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
-        warmProcessIds.Add(ParseProcessId(result.Html));
+        warmEnvironmentIds.Add(ParseEnvironmentId(result.Html));
     }
 
     var concurrentStarted = Stopwatch.GetTimestamp();
@@ -62,8 +67,8 @@ try
             .Select(index => warmRenderer.RenderAsync(
                 new JazorSsrRequest("components/benchmark.mjs", new { Sequence = index }))));
     var concurrentElapsed = Stopwatch.GetElapsedTime(concurrentStarted);
-    var concurrentProcessIds = concurrentResults
-        .Select(static result => ParseProcessId(result.Html))
+    var concurrentEnvironmentIds = concurrentResults
+        .Select(static result => ParseEnvironmentId(result.Html))
         .Distinct()
         .Order()
         .ToArray();
@@ -86,10 +91,10 @@ try
             : Median(coldSamples) / Math.Max(Median(warmSamples), 0.000001),
         options.ConcurrentRequests / Math.Max(concurrentElapsed.TotalSeconds, 0.000001),
         concurrentElapsed.TotalMilliseconds,
-        warmupProcessId,
-        warmProcessIds.Order().ToArray(),
-        concurrentProcessIds,
-        coldProcessIds,
+        warmupEnvironmentId,
+        warmEnvironmentIds.Order().ToArray(),
+        concurrentEnvironmentIds,
+        coldEnvironmentIds,
         Directory.GetFiles(artifactRoot, "ssr-request-*.json", SearchOption.AllDirectories).Length);
 
     WriteText(
@@ -135,9 +140,6 @@ static async Task<string> MaterializeArtifactGraphAsync(string repoRoot, string 
             ".": "./entry.js",
             "./ssr": "./ssr-entry.js"
           },
-          "scripts": {
-            "ssr": "deno run --node-modules-dir=manual --frozen-lockfile --no-remote --no-prompt --allow-env=NODE_ENV --allow-read=. --allow-net=127.0.0.1 ssr-entry.js"
-          },
           "dependencies": {
             "vue": "3.5.42",
             "@vue/server-renderer": "3.5.42"
@@ -152,30 +154,19 @@ static async Task<string> MaterializeArtifactGraphAsync(string repoRoot, string 
         Path.Combine(artifactRoot, "components", "benchmark.mjs"),
         """
         import { defineComponent, h } from "vue";
+        import { randomUUID } from "node:crypto";
+        const environmentId = randomUUID();
 
         export default defineComponent({
           props: ["Sequence"],
           setup(props) {
-            return () => h("main", null, `${Deno.pid}|${props.Sequence}`);
+            return () => h("main", null, `${environmentId}|${props.Sequence}`);
           }
         });
         """);
-    var deno = ResolveDenoExecutable(repoRoot);
-    var install = await RunProcessAsync(
-        deno,
-        ["install", "--package-json", "--node-modules-dir=manual", "--node-modules-linker=hoisted", "--frozen=false"],
-        artifactRoot);
-    if (install.ExitCode != 0)
-        throw new InvalidOperationException("SSR benchmark Deno restore failed." + Environment.NewLine + install.StandardError);
-
-    var check = await RunProcessAsync(
-        deno,
-        ["check", "--node-modules-dir=manual", "--no-remote", "--no-config", "--frozen-lockfile", "entry.js", "ssr-entry.js"],
-        artifactRoot);
-    if (check.ExitCode != 0)
-        throw new InvalidOperationException("SSR benchmark Deno offline check failed." + Environment.NewLine + check.StandardError);
-
-    if (!File.Exists(Path.Combine(artifactRoot, "deno.lock")) ||
+    await NodeToolchain.RestoreAsync(artifactRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+        CancellationToken.None, Console.Out);
+    if (!File.Exists(Path.Combine(artifactRoot, "pnpm-lock.yaml")) ||
         !File.Exists(Path.Combine(artifactRoot, "node_modules", "vue", "package.json")) ||
         !File.Exists(Path.Combine(artifactRoot, "node_modules", "@vue", "server-renderer", "package.json")))
     {
@@ -185,55 +176,7 @@ static async Task<string> MaterializeArtifactGraphAsync(string repoRoot, string 
     return artifactRoot;
 }
 
-static string ResolveDenoExecutable(string repoRoot)
-{
-    var explicitPath = Environment.GetEnvironmentVariable("JAZOR_DENO_PATH");
-    if (!string.IsNullOrWhiteSpace(explicitPath) && File.Exists(explicitPath))
-        return Path.GetFullPath(explicitPath);
-
-    var runtimeName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-    var rid = OperatingSystem.IsWindows()
-        ? "win-x64"
-        : OperatingSystem.IsMacOS()
-            ? "osx-x64"
-            : "linux-x64";
-    foreach (var project in new[] { "Jazor.EmitTest", "Jazor.AspNetCore" })
-    {
-        var candidate = Path.Combine(repoRoot, "src", project, "bin", "Debug", "net11.0", "runtimes", rid, "native", runtimeName);
-        if (File.Exists(candidate))
-            return candidate;
-    }
-
-    return runtimeName;
-}
-
-static async Task<ProcessResult> RunProcessAsync(
-    string fileName,
-    IReadOnlyList<string> arguments,
-    string workingDirectory)
-{
-    using var process = new Process
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            FileName = fileName,
-            WorkingDirectory = workingDirectory,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        }
-    };
-    foreach (var argument in arguments)
-        process.StartInfo.ArgumentList.Add(argument);
-    process.Start();
-    var stdout = process.StandardOutput.ReadToEndAsync();
-    var stderr = process.StandardError.ReadToEndAsync();
-    await process.WaitForExitAsync();
-    return new ProcessResult(process.ExitCode, await stdout, await stderr);
-}
-
-static int ParseProcessId(string html)
+static string ParseEnvironmentId(string html)
 {
     const string prefix = "<main>";
     const string suffix = "</main>";
@@ -244,13 +187,12 @@ static int ParseProcessId(string html)
     }
 
     var separator = html.IndexOf('|', prefix.Length);
-    if (separator < 0 ||
-        !int.TryParse(html.AsSpan(prefix.Length, separator - prefix.Length), out var processId))
+    if (separator < 0)
     {
-        throw new InvalidOperationException("SSR benchmark payload has no Deno process id: " + html);
+        throw new InvalidOperationException("SSR benchmark payload has no environment id: " + html);
     }
 
-    return processId;
+    return html[prefix.Length..separator];
 }
 
 static MetricSummary Summarize(IReadOnlyList<double> samples)
@@ -296,9 +238,8 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     var dotnet = Path.Combine(repoRoot, ".dotnet");
     var nuget = Path.Combine(dotnet, ".nuget", "packages") + Path.DirectorySeparatorChar;
     var nugetHttp = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var deno = Path.Combine(repoRoot, ".tmp", "deno-cache");
     var npm = Path.Combine(repoRoot, ".tmp", "npm-cache");
-    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, deno, npm })
+    foreach (var directory in new[] { temp, dotnet, nuget, nugetHttp, npm })
         Directory.CreateDirectory(directory);
 
     Environment.SetEnvironmentVariable("TEMP", temp);
@@ -306,7 +247,7 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnet);
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nuget);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttp);
-    Environment.SetEnvironmentVariable("DENO_DIR", deno);
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npm);
     Environment.SetEnvironmentVariable("npm_config_cache", npm);
 }
@@ -380,10 +321,10 @@ internal sealed record SsrBenchmarkReport(
     double ColdToWarmMedianRatio,
     double ConcurrentRequestsPerSecond,
     double ConcurrentElapsedMilliseconds,
-    int WarmupProcessId,
-    IReadOnlyList<int> WarmProcessIds,
-    IReadOnlyList<int> ConcurrentProcessIds,
-    IReadOnlyList<int> ColdProcessIds,
+    string WarmupEnvironmentId,
+    IReadOnlyList<string> WarmEnvironmentIds,
+    IReadOnlyList<string> ConcurrentEnvironmentIds,
+    IReadOnlyList<string> ColdEnvironmentIds,
     int RequestTempFileCount)
 {
     public string ToMarkdown()
@@ -406,11 +347,11 @@ internal sealed record SsrBenchmarkReport(
 
             - Cold/warm median ratio: {ColdToWarmMedianRatio:0.##}x
             - Concurrent lane: {ConcurrentRequestCount} requests in {ConcurrentElapsedMilliseconds:0.###} ms ({ConcurrentRequestsPerSecond:0.##} req/s)
-            - Warm process ids: `{string.Join(",", WarmProcessIds)}` (warmup `{WarmupProcessId}`)
-            - Concurrent process ids: `{string.Join(",", ConcurrentProcessIds)}`
+            - Warm environment ids: `{string.Join(",", WarmEnvironmentIds)}` (warmup `{WarmupEnvironmentId}`)
+            - Concurrent environment ids: `{string.Join(",", ConcurrentEnvironmentIds)}`
             - Per-request temporary JSON files: {RequestTempFileCount}
 
-            Cold creates and disposes a real ASP.NET Core renderer for each sample. Warm and concurrent lanes reuse the production `IJazorSsrRenderer`; the fixture uses the packaged DenoHost runtime and production Vue/server-renderer assets.
+            Cold creates and disposes a real ASP.NET Core renderer for each sample. Warm and concurrent lanes reuse the production `IJazorSsrRenderer`; the fixture uses the in-process NodeApi runtime and production Vue/server-renderer assets.
             """;
 }
 

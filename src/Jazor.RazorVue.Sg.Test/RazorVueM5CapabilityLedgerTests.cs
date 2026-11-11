@@ -57,7 +57,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
@@ -88,7 +88,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityStatus.Support, browserServiceInjection.Status);
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, browserServiceInjection.Decision);
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
-        Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
@@ -119,7 +119,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityStatus.Support, authentication.Status);
         Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
         StringAssert.Contains(authentication.Blocker, "AuthenticationStateProvider", StringComparison.Ordinal);
 
@@ -170,7 +170,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
@@ -183,7 +183,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(locationChanging.Fixture, "ProvesInternalCancellationInRealBrowser", StringComparison.Ordinal);
@@ -196,7 +196,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(navigation.Fixture, "push/replace", StringComparison.Ordinal);
@@ -212,7 +212,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(route.Fixture, "samples/RazorVue.Authoring/verify-smoke.cs", StringComparison.Ordinal);
@@ -228,7 +228,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(tdesign.Fixture, "typed rules", StringComparison.Ordinal);
@@ -243,7 +243,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(coreDomEvents.ImplementationPath, "typed onchange capture wrapper", StringComparison.Ordinal);
@@ -255,7 +255,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
-        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime));
         Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(elementReference.ImplementationPath, "Import(ElementReferenceExtensions focus helper)", StringComparison.Ordinal);
@@ -331,7 +331,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
             var eventSlice = entries.Single(entry => entry.Id == id);
             Assert.AreEqual(RazorVueCapabilityStatus.Support, eventSlice.Status, id);
             Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator), id);
-            Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime), id);
+            Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.NodeApiRuntime), id);
             Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke), id);
             Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer), id);
         }

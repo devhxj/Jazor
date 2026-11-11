@@ -477,7 +477,7 @@ static void AssertDemoArtifacts(string generatedOutputRoot)
 {
     AssertFile(Path.Combine(generatedOutputRoot, "entry.js"), "DemoClient standard browser entry");
     AssertFile(Path.Combine(generatedOutputRoot, "package.json"), "DemoClient standard package declaration");
-    AssertFile(Path.Combine(generatedOutputRoot, "deno.lock"), "DemoClient Deno dependency lock");
+    AssertFile(Path.Combine(generatedOutputRoot, "pnpm-lock.yaml"), "DemoClient pnpm dependency lock");
     AssertDirectory(Path.Combine(generatedOutputRoot, "node_modules"), "DemoClient restored dependencies");
     AssertFile(Path.Combine(generatedOutputRoot, "app.js"), "DemoClient explicit application module");
     var portalModule = Path.Combine(generatedOutputRoot, "components", "portal-page.js");

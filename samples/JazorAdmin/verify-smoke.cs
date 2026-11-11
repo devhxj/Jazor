@@ -1,3 +1,9 @@
+#:property AssemblyName=Jazor.NodeApiVerification
+#:property CETCompat=false
+#:property PublishAot=false
+#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
+
+using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -95,7 +101,7 @@ static void AssertConciseTypeNames(string repoRoot)
 
 static void AssertGeneratedArtifacts(string generatedOutputRoot)
 {
-    foreach (var projectFile in new[] { "entry.js", "package.json", "deno.lock", "vite.config.js" })
+    foreach (var projectFile in new[] { "entry.js", "package.json", "pnpm-lock.yaml", "vite.config.js" })
         AssertPathExists(Path.Combine(generatedOutputRoot, projectFile), "generated standard project file " + projectFile);
     AssertPathExists(Path.Combine(generatedOutputRoot, "node_modules"), "restored JazorAdmin dependencies");
     if (File.Exists(Path.Combine(generatedOutputRoot, "jazor-manifest.json")) ||
@@ -381,7 +387,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
 
 static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
 {
-    foreach (var projectFile in new[] { "entry.js", "package.json", "deno.lock", "vite.config.js" })
+    foreach (var projectFile in new[] { "entry.js", "package.json", "pnpm-lock.yaml", "vite.config.js" })
         AssertPathExists(Path.Combine(generatedOutputRoot, projectFile), "generated VueInject standard project file " + projectFile);
     AssertPathExists(Path.Combine(generatedOutputRoot, "node_modules"), "restored VueInject dependencies");
     if (File.Exists(Path.Combine(generatedOutputRoot, "jazor-manifest.json")) ||
@@ -440,8 +446,6 @@ static async Task VerifyBrowserSmokeAsync(
         Console.WriteLine("JazorAdmin browser smoke skipped: Google Chrome or Chromium was not found. Set RAZORVUE_BROWSER_EXE to enable it.");
         return;
     }
-
-    var denoPath = ResolveDenoHostRuntime(repoRoot);
 
     var harnessRoot = Path.Combine(repoRoot, ".tmp", "sample-smoke", "JazorAdmin", "browser-" + Environment.ProcessId);
     SweepStaleBrowserHarnessRoots(Path.GetDirectoryName(harnessRoot)!, repoRoot);
@@ -1563,15 +1567,39 @@ static async Task VerifyBrowserSmokeAsync(
             testPath,
             BuildBrowserSmokeTestScript(browserPath, browserPayloadMarker),
             Encoding.UTF8);
-        var browser = await RunProcessAsync(
-            denoPath,
-            harnessRoot,
-            ["run", "--quiet", "-A", testPath],
-            TimeSpan.FromSeconds(180));
-        if (browser.ExitCode != 0)
-            throw new InvalidOperationException("JazorAdmin browser smoke failed." + Environment.NewLine + browser);
+        // Browser automation and Vite both run inside the .NET process. Only
+        // Chromium itself is a child process, owned and closed by Playwright.
+        var packagePath = Path.Combine(harnessRoot, "package.json");
+        var package = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(packagePath))!;
+        package["devDependencies"]!["playwright-core"] = "1.65.0";
+        await File.WriteAllTextAsync(packagePath, package.ToJsonString());
+        await NodeToolchain.RestoreAsync(harnessRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
+            CancellationToken.None, Console.Out);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(180));
+        using var vite = new NodeEnvironment(harnessRoot, Console.Out);
+        var bridge = NodeToolchain.MaterializeBridge(harnessRoot);
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var vitePort = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        var started = await vite.InvokeAsync(bridge, "startVite", timeout.Token, JsonSerializer.Serialize(new
+        {
+            projectDirectory = harnessRoot, host = "127.0.0.1", port = vitePort, @base = "/"
+        }));
+        using var startedPayload = JsonDocument.Parse(started);
+        var origin = new Uri(startedPayload.RootElement.GetProperty("origin").GetString()!);
+        string browser;
+        try
+        {
+            browser = await NodeModuleRunner.RunAsync(harnessRoot, testPath,
+                [origin.Port.ToString(System.Globalization.CultureInfo.InvariantCulture)], timeout.Token);
+        }
+        finally
+        {
+            await vite.InvokeAsync(bridge, "closeVite");
+        }
 
-        using var payload = ReadJsonLinePayload(browser.StandardOutput, browserPayloadMarker, "JazorAdmin browser");
+        using var payload = ReadJsonLinePayload(browser, browserPayloadMarker, "JazorAdmin browser");
         var root = payload.RootElement;
         if (!root.TryGetProperty("ok", out var ok) || ok.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
         {
@@ -1812,15 +1840,16 @@ static string BuildBrowserSmokeTestScript(string browserPath, string payloadMark
     var payloadMarkerJson = JsonSerializer.Serialize(payloadMarker, SmokeJsonContext.Default.String);
     return $$"""
         const root = new URL("./", import.meta.url);
+        import { chromium } from "playwright-core";
         const browserPath = {{browserPathJson}};
         const payloadMarker = {{payloadMarkerJson}};
 
         async function run() {
-          const server = await startServer(root);
+          const server = { port: Number(globalThis.__jazorArguments[0]), diagnostics: [] };
           const browser = await startBrowser(browserPath);
           let page = null;
           try {
-            page = await connectToPage(browser.port);
+            page = await connectToPage(browser);
             try {
               await page.send("Page.enable");
               await page.send("Runtime.enable");
@@ -2113,185 +2142,35 @@ static string BuildBrowserSmokeTestScript(string browserPath, string payloadMark
             }
           } finally {
             await browser.dispose(page);
-            await server.dispose();
-          }
-        }
-
-        async function startServer(root) {
-          const diagnostics = [];
-          const port = await reservePort();
-          const process = new Deno.Command(Deno.execPath(), {
-            cwd: Deno.cwd(),
-            args: ["task", "dev", "--host", "127.0.0.1", "--port", String(port), "--strictPort", "--base", "/"],
-            stdin: "null",
-            stdout: "piped",
-            stderr: "piped"
-          }).spawn();
-          const drain = async (stream, kind) => {
-            for await (const chunk of stream) {
-              const message = new TextDecoder().decode(chunk).trim();
-              if (message) diagnostics.push(`${kind}: ${message}`);
-            }
-          };
-          const stdout = drain(process.stdout, "stdout");
-          const stderr = drain(process.stderr, "stderr");
-          const deadline = Date.now() + 30000;
-          while (Date.now() < deadline) {
-            try {
-              const response = await fetch(`http://127.0.0.1:${port}/`, { cache: "no-store" });
-              if (response.ok) break;
-            } catch {
-            }
-            await delay(100);
-          }
-          try {
-            const response = await fetch(`http://127.0.0.1:${port}/`, { cache: "no-store" });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          } catch (error) {
-            try { process.kill("SIGKILL"); } catch { }
-            await Promise.allSettled([process.status, stdout, stderr]);
-            throw new Error(`Vite dev server did not start: ${error}. ${diagnostics.join("\n")}`);
-          }
-          return {
-            port,
-            diagnostics,
-            dispose: async () => {
-              try { process.kill("SIGKILL"); } catch { }
-              await Promise.allSettled([process.status, stdout, stderr]);
-            }
-          };
-        }
-
-        async function killBrowserProcessTree(process) {
-          // SIGKILL only terminates the root browser process; on Windows the Chromium
-          // child processes (crashpad handler, storage service, renderers, ...) can
-          // survive as orphans and keep profile file locks. / 只杀浏览器主进程会留下
-          // 持有 profile 文件锁的孤儿子进程，必须整树终止。
-          if (Deno.build.os === "windows") {
-            const killer = new Deno.Command("taskkill", {
-              args: ["/PID", String(process.pid), "/T", "/F"],
-              stdin: "null",
-              stdout: "null",
-              stderr: "null"
-            }).spawn();
-            await killer.status;
-            return;
-          }
-          try {
-            process.kill("SIGKILL");
-          } catch {
           }
         }
 
         async function startBrowser(browserPath) {
-          const port = await reservePort();
-          // Keep the Chrome profile outside the Vite root: managed extensions mutate it
-          // during startup, and those writes otherwise trigger dev-server page reloads.
-          // 浏览器 profile 必须位于 Vite root 外，避免扩展写入触发整页 reload。
-          const userDataDir = await Deno.makeTempDir({ prefix: "jazoradmin-browser-profile-" });
-          const process = new Deno.Command(browserPath, {
-            args: [
-              "--headless=new",
-              "--disable-gpu",
-              "--disable-dev-shm-usage",
-              "--no-first-run",
-              "--no-default-browser-check",
-              "--no-sandbox",
-              `--remote-debugging-port=${port}`,
-              `--user-data-dir=${userDataDir}`,
-              "about:blank"
-            ],
-            stdin: "null",
-            stdout: "null",
-            stderr: "null"
-          }).spawn();
-
-          let exited = false;
-          const exitPromise = process.status.then((status) => {
-            exited = true;
-            return status;
-          });
-          const deadline = Date.now() + 15000;
-          while (Date.now() < deadline) {
-            if (exited) {
-              throw new Error("Browser exited before CDP was ready.");
-            }
-            try {
-              const response = await fetch(`http://127.0.0.1:${port}/json/list`, { cache: "no-store" });
-              if (response.ok) {
-                return {
-                  port,
-                  dispose: async (page) => {
-                    if (!exited && page) {
-                      // Graceful CDP close lets Chromium stop its own child processes
-                      // (the crashpad handler holds profile file locks); tree-kill is
-                      // only the fallback. / 优雅关闭让 Chromium 自行收尾子进程，
-                      // 失败或超时再整树强杀，避免孤儿进程锁住 profile 目录。
-                      try {
-                        await Promise.race([page.send("Browser.close"), delay(2000)]);
-                      } catch {
-                      }
-                    }
-                    if (!exited) {
-                      await killBrowserProcessTree(process);
-                    }
-                    await exitPromise;
-                    await Deno.remove(userDataDir, { recursive: true }).catch(() => {});
-                  }
-                };
-              }
-            } catch {
-            }
-            await delay(100);
-          }
-
-          if (!exited) {
-            await killBrowserProcessTree(process);
-            await exitPromise;
-          }
-          await Deno.remove(userDataDir, { recursive: true }).catch(() => {});
-          throw new Error("Timed out waiting for browser CDP.");
+          const browser = await chromium.launch({ executablePath: browserPath, headless: true });
+          globalThis.__jazorAfterAll(() => browser.close());
+          const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+          return { context, dispose: () => browser.close() };
         }
 
-        async function reservePort() {
-          const listener = Deno.listen({ hostname: "127.0.0.1", port: 0 });
-          const port = listener.addr.port;
-          listener.close();
-          return port;
-        }
-
-        async function connectToPage(port) {
-          const targets = await fetch(`http://127.0.0.1:${port}/json/list`, { cache: "no-store" })
-            .then((response) => response.json());
-          const target = targets.find((candidate) => candidate.type === "page" && candidate.webSocketDebuggerUrl);
-          if (!target) {
-            throw new Error("Browser CDP did not expose a page target.");
-          }
-
-          const socket = new WebSocket(target.webSocketDebuggerUrl);
-          await new Promise((resolvePromise, reject) => {
-            socket.addEventListener("open", resolvePromise, { once: true });
-            socket.addEventListener("error", () => reject(new Error("CDP websocket failed to open.")), { once: true });
-          });
-          return new Page(socket);
+        async function connectToPage(browser) {
+          const page = await browser.context.newPage();
+          const session = await browser.context.newCDPSession(page);
+          return new Page(session);
         }
 
         class Page {
-          nextId = 1;
-          pending = new Map();
           loadResolvers = [];
           diagnostics = [];
 
-          constructor(socket) {
-            this.socket = socket;
-            socket.addEventListener("message", (event) => this.handle(JSON.parse(String(event.data))));
+          constructor(session) {
+            this.session = session;
+            for (const method of ['Page.loadEventFired', 'Runtime.exceptionThrown', 'Runtime.consoleAPICalled', 'Log.entryAdded', 'Network.responseReceived', 'Network.loadingFailed']) {
+              session.on(method, (params) => this.handle({ method, params }));
+            }
           }
 
           send(method, params = {}) {
-            const id = this.nextId++;
-            const promise = new Promise((resolvePromise, reject) => this.pending.set(id, { resolve: resolvePromise, reject }));
-            this.socket.send(JSON.stringify({ id, method, params }));
-            return promise;
+            return this.session.send(method, params);
           }
 
           async navigate(url) {
@@ -2406,19 +2285,6 @@ static string BuildBrowserSmokeTestScript(string browserPath, string payloadMark
           }
 
           handle(message) {
-            if (message.id !== undefined) {
-              const pending = this.pending.get(message.id);
-              if (pending === undefined) {
-                return;
-              }
-              this.pending.delete(message.id);
-              if (message.error) {
-                pending.reject(new Error(message.error.message ?? JSON.stringify(message.error)));
-              } else {
-                pending.resolve(message.result);
-              }
-              return;
-            }
             if (message.method === "Page.loadEventFired") {
               for (const resolvePromise of this.loadResolvers.splice(0)) {
                 resolvePromise();
@@ -2483,9 +2349,8 @@ static void SetCommonEnvironment(string repoRoot)
     var dotnetHome = Path.Combine(repoRoot, ".dotnet");
     var nugetPackages = Path.Combine(dotnetHome, ".nuget", "packages") + Path.DirectorySeparatorChar;
     var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var denoCache = Path.Combine(repoRoot, ".tmp", "deno-cache");
     var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
-    foreach (var directory in new[] { tempDirectory, dotnetHome, nugetPackages, nugetHttpCache, denoCache, npmCache })
+    foreach (var directory in new[] { tempDirectory, dotnetHome, nugetPackages, nugetHttpCache, npmCache })
         Directory.CreateDirectory(directory);
 
     Environment.SetEnvironmentVariable("TEMP", tempDirectory);
@@ -2493,7 +2358,7 @@ static void SetCommonEnvironment(string repoRoot)
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnetHome);
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-    Environment.SetEnvironmentVariable("DENO_DIR", denoCache);
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
     Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
@@ -2596,60 +2461,6 @@ static void RunDotNet(string workdir, IReadOnlyList<string> arguments)
     process.WaitForExit();
     if (process.ExitCode != 0)
         throw new InvalidOperationException($"Process failed with exit code {process.ExitCode}: dotnet {string.Join(' ', arguments)}");
-}
-
-static async Task<BrowserSmokeProcessResult> RunProcessAsync(
-    string fileName,
-    string workingDirectory,
-    IReadOnlyList<string> arguments,
-    TimeSpan timeout)
-{
-    var startInfo = new ProcessStartInfo(fileName)
-    {
-        WorkingDirectory = workingDirectory,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true,
-        // Deno emits UTF-8 regardless of the Windows console code page. Without explicit
-        // decoding, Chinese smoke text can corrupt the JSON framing itself.
-        // Deno 固定输出 UTF-8；不能沿用 Windows 控制台代码页，否则中文会破坏 JSON 边界。
-        StandardOutputEncoding = Encoding.UTF8,
-        StandardErrorEncoding = Encoding.UTF8,
-        UseShellExecute = false,
-        CreateNoWindow = true
-    };
-    foreach (var argument in arguments)
-        startInfo.ArgumentList.Add(argument);
-
-    using var process = new Process { StartInfo = startInfo };
-    process.Start();
-    var standardOutput = process.StandardOutput.ReadToEndAsync();
-    var standardError = process.StandardError.ReadToEndAsync();
-
-    var timedOut = false;
-    using var timeoutSource = new CancellationTokenSource(timeout);
-    try
-    {
-        await process.WaitForExitAsync(timeoutSource.Token);
-    }
-    catch (OperationCanceledException)
-    {
-        timedOut = true;
-        try
-        {
-            process.Kill(entireProcessTree: true);
-        }
-        catch
-        {
-        }
-
-        await process.WaitForExitAsync();
-    }
-
-    var output = await standardOutput;
-    var error = await standardError;
-    return timedOut
-        ? new BrowserSmokeProcessResult(-1, output, "Process timed out after " + timeout + "." + Environment.NewLine + error)
-        : new BrowserSmokeProcessResult(process.ExitCode, output, error);
 }
 
 static JsonDocument ReadJsonLinePayload(string output, string marker, string markerDescription)
@@ -2848,36 +2659,6 @@ static void CopyInjectBrowserArtifacts(string sourceRoot, string targetRoot)
     CopyDirectory(source, target);
 }
 
-static string ResolveDenoHostRuntime(string repoRoot)
-{
-    var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-    var candidates = new List<string>();
-
-    var packageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages");
-    if (Directory.Exists(packageRoot))
-    {
-        foreach (var runtimePackage in Directory.EnumerateDirectories(packageRoot, "denohost.runtime.*"))
-            AddDenoRuntimeCandidates(candidates, runtimePackage, executableName);
-    }
-
-    var denoPath = candidates.FirstOrDefault(File.Exists);
-    return denoPath ?? throw new FileNotFoundException(
-        "DenoHost runtime was not restored with the local Jazor package.");
-}
-
-static void AddDenoRuntimeCandidates(ICollection<string> candidates, string root, string executableName)
-{
-    if (!Directory.Exists(root))
-        return;
-
-    foreach (var candidate in Directory
-        .EnumerateFiles(root, executableName, SearchOption.AllDirectories)
-        .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase))
-    {
-        candidates.Add(candidate);
-    }
-}
-
 static string? ResolveBrowserExecutable()
 {
     var explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE")?.Trim();
@@ -3044,14 +2825,4 @@ internal sealed record SmokeOptions(
 [JsonSerializable(typeof(string))]
 internal sealed partial class SmokeJsonContext : JsonSerializerContext
 {
-}
-
-internal sealed record BrowserSmokeProcessResult(int ExitCode, string StandardOutput, string StandardError)
-{
-    public override string ToString()
-        => "ExitCode: " + ExitCode + Environment.NewLine +
-           "STDOUT:" + Environment.NewLine +
-           StandardOutput + Environment.NewLine +
-           "STDERR:" + Environment.NewLine +
-           StandardError;
 }

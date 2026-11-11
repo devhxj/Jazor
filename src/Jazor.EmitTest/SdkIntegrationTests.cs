@@ -734,7 +734,7 @@ public sealed class SdkIntegrationTests
 
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "ssr-entry.js")));
         Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "package.json")), "The shared package project was not emitted.");
-        Assert.IsTrue(Directory.Exists(Path.Combine(browserRoot, "node_modules")), "The shared Deno node_modules graph was not restored.");
+        Assert.IsTrue(Directory.Exists(Path.Combine(browserRoot, "node_modules")), "The shared pnpm node_modules graph was not restored.");
     }
 
     [TestMethod]
@@ -3064,7 +3064,7 @@ public sealed class SdkIntegrationTests
         var package = await LocalCorePackage.Value;
 
         using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDenoConsumer");
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgNodeApiConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
         WriteFile(
             Path.Combine(projectRoot, "Counter.razor"),
@@ -3209,7 +3209,7 @@ public sealed class SdkIntegrationTests
             }
 
             // Direct RazorVue modules import Vue's compiler-oriented helpers when a vnode has
-            // a proven patch surface. Keep this local Deno shim shape-compatible with Vue so
+            // a proven patch surface. Keep this local NodeApi fixture shape-compatible with Vue so
             // the external-package test exercises the same generated import contract.
             // block helper 是 direct artifact 的正式 import，不是 runtime bridge fallback。
             export function openBlock() {
@@ -3656,7 +3656,7 @@ public sealed class SdkIntegrationTests
             "The Release consumer did not emit the standard jazor package project.");
         Assert.IsTrue(
             File.Exists(Path.Combine(outputRoot, "pnpm-lock.yaml")),
-            "The Release consumer did not freeze the restored Deno package graph.");
+            "The Release consumer did not freeze the restored pnpm package graph.");
         Assert.IsTrue(
             File.Exists(Path.Combine(outputRoot, "node_modules", "tdesign-vue-next", "package.json")),
             "The Release consumer did not restore the selected TDesign npm package.");
